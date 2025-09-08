@@ -490,18 +490,7 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): Set<UnreadCountByAccount> {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    val filter =
-                        accessControl.requireAuthorizationFilter(
-                            tx,
-                            user,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
-                    tx.getUnreadMessagesCounts(filter, user.id)
-                }
-            }
+        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsEmployee(user.id) } }
             .also { response ->
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = AuditId(response.map { it.accountId })

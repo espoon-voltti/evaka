@@ -1510,7 +1510,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun unreadMessagesCount(personId: PersonId) =
         db.read { tx ->
-            tx.getUnreadMessagesCounts(
+            tx.getUnreadMessagesCountsCitizen(
                     accessControl.requireAuthorizationFilter(
                         tx,
                         AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),

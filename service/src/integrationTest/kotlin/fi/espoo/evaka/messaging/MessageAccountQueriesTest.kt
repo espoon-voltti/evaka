@@ -273,17 +273,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `unread counts`() {
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
-        val counts =
-            db.read {
-                it.getUnreadMessagesCounts(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(supervisorId, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
-                )
-            }
+        val counts = db.read { it.getUnreadMessagesCountsEmployee(supervisorId) }
         assertEquals(0, counts.first().unreadCount)
 
         val employeeAccount = counts.first().accountId
@@ -321,31 +311,12 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             3,
             db.read { tx ->
-                tx.getUnreadMessagesCounts(
-                        accessControl.requireAuthorizationFilter(
-                            tx,
-                            AuthenticatedUser.Employee(supervisorId, emptySet()),
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
-                    )
-                    .sumOf { it.unreadCount }
+                tx.getUnreadMessagesCountsEmployee(supervisorId).sumOf { it.unreadCount }
             },
         )
         assertEquals(
             1,
-            db.read {
-                    it.getUnreadMessagesCounts(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            AuthenticatedUser.Employee(supervisorId, emptySet()),
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
-                    )
-                }
-                .first()
-                .unreadCount,
+            db.read { it.getUnreadMessagesCountsEmployee(supervisorId) }.first().unreadCount,
         )
     }
 }
