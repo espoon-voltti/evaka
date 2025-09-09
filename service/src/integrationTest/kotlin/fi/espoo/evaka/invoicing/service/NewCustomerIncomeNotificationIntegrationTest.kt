@@ -11,11 +11,15 @@ import fi.espoo.evaka.incomestatement.Gross
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -34,6 +38,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
+import fi.espoo.evaka.snDaycareContractDays15
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,8 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired
 class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
-    private lateinit var clock: MockEvakaClock
 
     private val child =
         DevPerson(
@@ -71,10 +74,16 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     private val daycare = DevDaycare(areaId = area.id)
     private val employee = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
+    private lateinit var clock: MockEvakaClock
+    private lateinit var placementStart: LocalDate
+    private lateinit var placementEnd: LocalDate
+
     @BeforeEach
     fun beforeEach() {
         MockEmailClient.clear()
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 2, 1), LocalTime.of(21, 0)))
+        placementStart = clock.today().plusWeeks(2)
+        placementEnd = clock.today().plusMonths(6)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -92,6 +101,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     endDate = clock.today().plusYears(1),
                 )
             )
+
+            tx.insertServiceNeedOptions()
         }
     }
 
@@ -100,8 +111,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         start: LocalDate,
         end: LocalDate,
         type: PlacementType = PlacementType.DAYCARE,
-    ) {
-        db.transaction { tx ->
+    ): PlacementId {
+        return db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     childId = child.id,
@@ -114,9 +125,26 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
+    private fun insertServiceNeed(placementId: PlacementId, start: LocalDate, end: LocalDate) {
+        db.transaction { tx ->
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = start,
+                endDate = end,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
+                confirmedBy = null,
+                confirmedAt = null,
+            )
+        }
+    }
+
     @Test
     fun `notification is sent when placement starts in current month`() {
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
         assertEquals(1, getEmails().size)
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
         assertEquals(
@@ -127,19 +155,15 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `notifications are not sent when placement does not start in current month`() {
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
         clock.tick(Duration.ofDays(-1))
         assertEquals(0, getEmails().size)
     }
 
     @Test
     fun `notification is not sent when non-invoiced placement starts in current month`() {
-        insertPlacement(
-            child,
-            clock.today().plusWeeks(2),
-            clock.today().plusMonths(6),
-            PlacementType.PRESCHOOL,
-        )
+        insertPlacement(child, placementStart, placementEnd, PlacementType.PRESCHOOL)
         assertEquals(0, getEmails().size)
     }
 
@@ -158,8 +182,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             )
         }
 
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
-        insertPlacement(otherChild, clock.today().minusYears(1), clock.today().plusYears(1))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        val otherPlacementStart = clock.today().minusYears(1)
+        val otherPlacementEnd = clock.today().plusYears(1)
+        val otherPlacementId = insertPlacement(otherChild, otherPlacementStart, otherPlacementEnd)
+        insertServiceNeed(otherPlacementId, otherPlacementStart, otherPlacementEnd)
 
         assertEquals(0, getEmails().size)
     }
@@ -179,7 +208,9 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             )
         }
 
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
         insertPlacement(
             otherChild,
             clock.today().minusYears(1),
@@ -204,8 +235,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
-        insertPlacement(otherChild, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        val otherPlacementStart = clock.today().plusWeeks(2)
+        val otherPlacementEnd = clock.today().plusMonths(6)
+        val otherPlacementId = insertPlacement(otherChild, otherPlacementStart, otherPlacementEnd)
+        insertServiceNeed(otherPlacementId, otherPlacementStart, otherPlacementEnd)
 
         assertEquals(1, getEmails().size)
     }
@@ -239,7 +275,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(2, getEmails().size)
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
@@ -293,8 +330,14 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
-        insertPlacement(partnersChild, clock.today().minusYears(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        val otherPlacementStart = clock.today().minusYears(2)
+        val otherPlacementEnd = clock.today().plusMonths(6)
+        val otherPlacementId =
+            insertPlacement(partnersChild, otherPlacementStart, otherPlacementEnd)
+        insertServiceNeed(otherPlacementId, otherPlacementStart, otherPlacementEnd)
 
         assertEquals(0, getEmails().size)
     }
@@ -314,7 +357,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(0, getEmails().size)
     }
@@ -337,7 +381,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(1, getEmails().size)
     }
@@ -356,7 +401,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(1, getEmails().size)
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
@@ -376,7 +422,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(0, getEmails().size)
     }
@@ -405,7 +452,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(0, getEmails().size)
     }
@@ -438,7 +486,8 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-        insertPlacement(child, clock.today().plusWeeks(2), clock.today().plusMonths(6))
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
 
         assertEquals(1, getEmails().size)
     }
