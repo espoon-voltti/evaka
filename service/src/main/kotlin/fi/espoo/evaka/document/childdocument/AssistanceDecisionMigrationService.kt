@@ -58,7 +58,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                         .filter {
                             it.type ==
                                 ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION &&
-                                it.language.isoLanguage == decision.language.isoLanguage
+                                it.language.isoLanguage == decision.language.isoLanguage &&
+                                it.published
                         }
                         .also {
                             if (it.isEmpty()) {
@@ -141,7 +142,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                         .filter {
                             it.type ==
                                 ChildDocumentType.MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION &&
-                                it.language.isoLanguage == decision.form.language.isoLanguage
+                                it.language.isoLanguage == decision.form.language.isoLanguage &&
+                                it.published
                         }
                         .also {
                             if (it.isEmpty()) {
