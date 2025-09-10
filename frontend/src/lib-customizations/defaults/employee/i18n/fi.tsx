@@ -5385,7 +5385,7 @@ export const fi = {
       SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
       STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio',
       OTHER_DECISION: 'Muut päätökset',
-      CITIZEN_BASIC_DOCUMENT: 'Muut dokumentit'
+      CITIZEN_BASIC_DOCUMENT: 'Huoltajien täytettävät dokumentit'
     }
   },
   roles: {
