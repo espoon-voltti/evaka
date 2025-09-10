@@ -2471,7 +2471,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageController
             .getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
             .find { it.accountId == accountId }
-            ?.unreadCount ?: throw Exception("No unread count for account $accountId")
+            ?.unreadCount ?: 0
     }
 
     private fun unreadMessagesCounts(

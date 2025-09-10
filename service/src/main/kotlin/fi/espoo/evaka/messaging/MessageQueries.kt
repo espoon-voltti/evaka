@@ -73,26 +73,36 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
     val query = createQuery {
         sql(
             """
+        WITH limits AS (
+            SELECT
+                daycare_group_id,
+                (created - $accessLimitInterval)::date AS access_limit
+            FROM daycare_group_acl 
+            WHERE employee_id = ${bind(employeeId)}
+        )
         SELECT 
             acc.id as account_id, 
-            coalesce(mt.is_copy, false) as is_copy, 
+            mt.is_copy as is_copy, 
             mtp.folder_id, 
             count(mt.id) AS count
         FROM message_account acc
-        LEFT JOIN (
-            SELECT
-                dga.employee_id,
-                daycare_group_id,
-                (dga.created - $accessLimitInterval)::date AS access_limit
-            FROM daycare_group_acl dga
-        ) dga ON dga.employee_id = ${bind(employeeId)} AND dga.daycare_group_id = acc.daycare_group_id
         LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
-        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id AND mr.read_at IS NULL
-        LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
-        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id AND (da.role = 'UNIT_SUPERVISOR' OR (mtp.folder_id IS NOT NULL OR mtp.last_message_timestamp >= dga.access_limit))
-        LEFT JOIN message_thread mt ON m.thread_id = mt.id AND (da.role = 'UNIT_SUPERVISOR' OR (mtp.folder_id IS NOT NULL OR mt.is_copy = false OR m.sent_at >= dga.access_limit))
+        JOIN message_recipients mr ON mr.recipient_id = acc.id
+        JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
+        JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
+        JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
-        WHERE acc.id IN (
+        WHERE
+          mr.read_at IS NULL AND
+          (
+            mtp.folder_id IS NOT NULL OR
+            da.role = 'UNIT_SUPERVISOR' OR
+            mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+            m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+            mt.is_copy = false
+         ) AND
+         (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
+         acc.id IN (
             -- Employee's own message account
             SELECT acc.id
             FROM message_account acc
@@ -147,7 +157,6 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             WHERE e.id = ${bind(employeeId)}
               AND e.roles && '{FINANCE_ADMIN}'::user_role[]
         )
-        AND (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE')
         GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
         )

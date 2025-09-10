@@ -13,7 +13,7 @@ evaka:
   clock:
     mock: true
   database:
-    log_sql: true
+    log_sql: false
     password: app
     url: jdbc:postgresql://localhost:5432/evaka_local
     username: evaka_application_local
