@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
@@ -137,7 +138,15 @@ class DocumentTemplateController(
                             it.placementTypes.contains(placement.type) &&
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN)
+                                it.language == UiLanguage.EN) &&
+                            (placement.enabledPilotFeatures.contains(
+                                PilotFeature.VASU_AND_PEDADOC
+                            ) || !isPedagogicalDocument((it.type))) &&
+                            (placement.enabledPilotFeatures.contains(PilotFeature.OTHER_DECISION) ||
+                                it.type != ChildDocumentType.OTHER_DECISION) &&
+                            (placement.enabledPilotFeatures.contains(
+                                PilotFeature.CITIZEN_BASIC_DOCUMENT
+                            ) || it.type != ChildDocumentType.CITIZEN_BASIC)
                     }
                 }
             }
@@ -449,7 +458,11 @@ private fun assertUniqueIds(content: DocumentTemplateContent) {
         throw BadRequest("Found non unique question ids")
 }
 
-private data class ActivePlacementInfo(val type: PlacementType, val unitLanguage: Language)
+private data class ActivePlacementInfo(
+    val type: PlacementType,
+    val unitLanguage: Language,
+    val enabledPilotFeatures: Set<PilotFeature>,
+)
 
 private fun Database.Read.getChildActivePlacementInfo(
     childId: ChildId,
@@ -458,7 +471,7 @@ private fun Database.Read.getChildActivePlacementInfo(
     createQuery {
             sql(
                 """
-SELECT pl.type, d.language AS unit_language
+SELECT pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
 WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
@@ -466,3 +479,15 @@ WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '
             )
         }
         .exactlyOneOrNull<ActivePlacementInfo>()
+
+private val PEDAGOGICAL_DOCUMENT_TYPES =
+    setOf(
+        ChildDocumentType.HOJKS,
+        ChildDocumentType.LEOPS,
+        ChildDocumentType.MIGRATED_LEOPS,
+        ChildDocumentType.MIGRATED_VASU,
+        ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+        ChildDocumentType.VASU,
+    )
+
+private fun isPedagogicalDocument(type: ChildDocumentType) = type in PEDAGOGICAL_DOCUMENT_TYPES

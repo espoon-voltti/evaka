@@ -2285,6 +2285,8 @@ export const testDaycare = Fixture.daycare({
     'MOBILE',
     'RESERVATIONS',
     'VASU_AND_PEDADOC',
+    'OTHER_DECISION',
+    'CITIZEN_BASIC_DOCUMENT',
     'MOBILE_MESSAGING',
     'PLACEMENT_TERMINATION',
     'SERVICE_APPLICATIONS'
@@ -2459,6 +2461,7 @@ export const testDaycarePrivateVoucher = Fixture.daycare({
     'MOBILE',
     'RESERVATIONS',
     'VASU_AND_PEDADOC',
+    'OTHER_DECISION',
     'MOBILE_MESSAGING',
     'PLACEMENT_TERMINATION'
   ],
@@ -2544,6 +2547,7 @@ export const testPreschool = Fixture.daycare({
     'MESSAGING',
     'MOBILE',
     'VASU_AND_PEDADOC',
+    'OTHER_DECISION',
     'PLACEMENT_TERMINATION'
   ],
   businessId: '',
