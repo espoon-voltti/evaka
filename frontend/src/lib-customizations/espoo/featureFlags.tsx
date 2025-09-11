@@ -120,7 +120,7 @@ const features: Features = {
     feeDecisionPreschoolClubFilter: false,
     placementGuarantee: true,
     assistanceNeedDecisionsLanguageSelect: true,
-    staffAttendanceTypes: false,
+    staffAttendanceTypes: true,
     extendedPreschoolTerm: true,
     hideOvertimeSelection: true,
     citizenAttendanceSummary: false,
