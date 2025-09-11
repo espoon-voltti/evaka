@@ -463,7 +463,7 @@ export default React.memo(function PersonDetails({
                           placeholder={i18n.common.form.ophPersonOid}
                           onChange={(value) =>
                             updateForm({
-                              ophPersonOid: value
+                              ophPersonOid: value.trim()
                             })
                           }
                         />
