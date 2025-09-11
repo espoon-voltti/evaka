@@ -488,6 +488,7 @@ private val PEDAGOGICAL_DOCUMENT_TYPES =
         ChildDocumentType.MIGRATED_VASU,
         ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
         ChildDocumentType.VASU,
+        ChildDocumentType.OTHER,
     )
 
 private fun isPedagogicalDocument(type: ChildDocumentType) = type in PEDAGOGICAL_DOCUMENT_TYPES
