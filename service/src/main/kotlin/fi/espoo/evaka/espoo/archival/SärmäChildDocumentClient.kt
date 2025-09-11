@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
@@ -32,6 +33,7 @@ class SärmäChildDocumentClient(
         childDocumentDetails: ChildDocumentDetails,
         documentMetadata: DocumentMetadata,
         documentKey: String,
+        evakaUser: EvakaUser,
     ): String? {
         // Get the document from the original location
         val originalLocation = documentClient.locate(DocumentKey.ChildDocument(documentKey))

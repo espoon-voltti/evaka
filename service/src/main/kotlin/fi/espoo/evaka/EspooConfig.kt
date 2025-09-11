@@ -305,7 +305,7 @@ class EspooConfig {
         if (evakaEnv.archivalEnabled) {
             return SärmäChildDocumentClient(archivalClient, documentService)
         }
-        return ArchivalIntegrationClient.MockClient()
+        return ArchivalIntegrationClient.FailingClient()
     }
 }
 

@@ -610,7 +610,7 @@ class ChildDocumentController(
 
                     asyncJobRunner.plan(
                         tx = tx,
-                        payloads = listOf(AsyncJob.ArchiveChildDocument(documentId)),
+                        payloads = listOf(AsyncJob.ArchiveChildDocument(documentId, user)),
                         runAt = clock.now(),
                         retryCount = 1,
                     )

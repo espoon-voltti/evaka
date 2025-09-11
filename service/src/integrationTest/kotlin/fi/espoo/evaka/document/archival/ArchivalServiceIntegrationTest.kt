@@ -23,6 +23,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -235,7 +236,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `uploadToArchive marks document as archived in database when successful`() {
         // Execute the archive method
-        archivalService.uploadChildDocumentToArchive(db, documentId)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->
@@ -261,7 +262,10 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         // Execute the archive method and expect exception
         assertThrows<RuntimeException> {
-            archivalService.uploadChildDocumentToArchive(db, documentId)
+            archivalService.uploadChildDocumentToArchive(
+                db,
+                AsyncJob.ArchiveChildDocument(documentId),
+            )
         }
 
         // Verify the document was NOT marked as archived in the database
@@ -285,7 +289,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         )
 
         // Execute the archive method
-        archivalService.uploadChildDocumentToArchive(db, documentId)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->
@@ -313,7 +317,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         )
 
         // Execute the archive method
-        archivalService.uploadChildDocumentToArchive(db, documentId)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->

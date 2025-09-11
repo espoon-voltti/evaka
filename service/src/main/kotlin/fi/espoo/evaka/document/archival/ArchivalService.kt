@@ -10,12 +10,13 @@ import fi.espoo.evaka.document.childdocument.getChildDocument
 import fi.espoo.evaka.document.childdocument.getChildDocumentKey
 import fi.espoo.evaka.document.childdocument.markDocumentAsArchived
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.user.getEvakaUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -29,16 +30,26 @@ class ArchivalService(
 
     init {
         asyncJobRunner?.registerHandler<AsyncJob.ArchiveChildDocument> { db, _, msg ->
-            uploadChildDocumentToArchive(db, msg.documentId)
+            uploadChildDocumentToArchive(db, msg)
         }
     }
 
-    fun uploadChildDocumentToArchive(db: Database.Connection, documentId: ChildDocumentId) {
+    fun uploadChildDocumentToArchive(db: Database.Connection, msg: AsyncJob.ArchiveChildDocument) {
+        val (documentId, user) = msg
         logger.info { "Starting archival process for document $documentId" }
+
+        val evakaUser =
+            (user ?: AuthenticatedUser.SystemInternalUser).let {
+                db.read { tx ->
+                    tx.getEvakaUser(it.evakaUserId)
+                        ?: throw NotFound("EvakaUser not found with ${it.evakaUserId}")
+                }
+            }
 
         val document =
             db.read { tx ->
-                tx.getChildDocument(documentId) ?: throw NotFound("document $documentId not found")
+                tx.getChildDocument(msg.documentId)
+                    ?: throw NotFound("document $documentId not found")
             }
         val childInfo =
             db.read { tx ->
@@ -63,6 +74,7 @@ class ArchivalService(
                 childDocumentDetails = document,
                 documentMetadata = documentMetadata,
                 documentKey = documentKey,
+                evakaUser = evakaUser,
             )
 
         db.transaction { tx -> tx.markDocumentAsArchived(documentId, HelsinkiDateTime.now()) }
