@@ -12,6 +12,8 @@ import fi.espoo.evaka.caseprocess.DocumentMetadata
 import fi.espoo.evaka.caseprocess.DocumentOrigin
 import fi.espoo.evaka.document.*
 import fi.espoo.evaka.document.childdocument.*
+import fi.espoo.evaka.espoo.archival.createDocumentMetadata
+import fi.espoo.evaka.espoo.archival.marshalMetadata
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.*

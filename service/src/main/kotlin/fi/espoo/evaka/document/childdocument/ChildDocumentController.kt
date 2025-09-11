@@ -581,9 +581,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        särmäEnabled: Boolean = evakaEnv.särmäEnabled,
+        archivalEnabled: Boolean = evakaEnv.archivalEnabled,
     ) {
-        if (!särmäEnabled) {
+        if (!archivalEnabled) {
             throw BadRequest("Document archival is not enabled")
         }
 

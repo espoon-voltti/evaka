@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.document.archival
+package fi.espoo.evaka.espoo.archival
 
 import fi.espoo.evaka.caseprocess.CaseProcess
 import fi.espoo.evaka.caseprocess.CaseProcessState
@@ -16,8 +16,10 @@ import jakarta.xml.bind.JAXBContext
 import java.io.StringWriter
 import java.time.LocalDate
 import java.time.ZoneId
+import javax.xml.datatype.DatatypeConstants
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
+import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper
 
 fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
     val zdt = this.toLocalDateTime().atZone(ZoneId.of("Europe/Helsinki"))
@@ -26,11 +28,11 @@ fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
             zdt.year,
             zdt.monthValue,
             zdt.dayOfMonth,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
         )
 }
 
@@ -41,11 +43,11 @@ fun LocalDate.toXMLGregorianCalendar(): XMLGregorianCalendar {
             this.year,
             this.monthValue,
             this.dayOfMonth,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
-            javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
+            DatatypeConstants.FIELD_UNDEFINED,
         )
 }
 
@@ -68,7 +70,7 @@ fun marshalMetadata(metadata: RecordMetadataInstance): String {
             // is actually needed
             setProperty(
                 "org.glassfish.jaxb.namespacePrefixMapper",
-                object : org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper() {
+                object : NamespacePrefixMapper() {
                     override fun getPreferredPrefix(
                         namespaceUri: String,
                         suggestion: String?,

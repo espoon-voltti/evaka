@@ -35,7 +35,7 @@ data class EvakaEnv(
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
     val aromiEnabled: Boolean,
-    val särmäEnabled: Boolean,
+    val archivalEnabled: Boolean,
     val nekkuEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
     val asyncJobRunnerDisabled: Boolean,
@@ -66,7 +66,7 @@ data class EvakaEnv(
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
-                särmäEnabled = env.lookup("evaka.integration.sarma.enabled") ?: false,
+                archivalEnabled = env.lookup("evaka.integration.archival.enabled") ?: false,
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
@@ -688,10 +688,10 @@ data class ArchiveEnv(
     companion object {
         fun fromEnvironment(env: Environment) =
             ArchiveEnv(
-                url = URI.create(env.lookup("evaka.integration.sarma.url")),
-                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client") ?: false,
-                userId = env.lookup("evaka.integration.sarma.user_id"),
-                userRole = env.lookup("evaka.integration.sarma.user_role"),
+                url = URI.create(env.lookup("evaka.integration.archival.url")),
+                useMockClient = env.lookup("evaka.integration.archival.use_mock_client") ?: false,
+                userId = env.lookup("evaka.integration.archival.user_id"),
+                userRole = env.lookup("evaka.integration.archival.user_role"),
             )
     }
 }

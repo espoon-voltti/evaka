@@ -105,7 +105,7 @@ class EnvConfig {
 
     @Bean
     fun archiveEnv(evakaEnv: EvakaEnv, env: Environment): ArchiveEnv? =
-        when (evakaEnv.särmäEnabled) {
+        when (evakaEnv.archivalEnabled) {
             true -> ArchiveEnv.fromEnvironment(env)
             false -> null
         }

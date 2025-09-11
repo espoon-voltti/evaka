@@ -64,7 +64,7 @@ evaka:
         trust_store:
           password: password
           type: JKS
-    sarma:
+    archival:
       enabled: true
       use_mock_client: true
       url: https://eoy3xw8tftt5shn.m.pipedream.net/archive-core/
