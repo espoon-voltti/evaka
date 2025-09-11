@@ -58,8 +58,8 @@ WITH latest_income AS (
 ), expiring_income_with_billable_placement_day_after_expiration AS (
     SELECT DISTINCT i.person_id, i.valid_to
     FROM placement pl
-    JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(dayAfterExpiration)}
-    JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
+        JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(dayAfterExpiration)}
+        JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
     JOIN daycare u ON u.id = pl.unit_id
     
     -- head of child
@@ -132,6 +132,10 @@ WITH previously_placed_children AS (
 ), fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
     FROM placement pl
+    
+    -- placement must be billable
+        JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> pl.start_date
+        JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
     
     -- head of child
     JOIN fridge_child fc_head ON (
