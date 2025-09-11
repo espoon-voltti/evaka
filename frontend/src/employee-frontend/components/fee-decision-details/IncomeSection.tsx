@@ -130,7 +130,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
               (child) => child.childIncome && child.childIncome.totalIncome > 0
             )
             .map((childWithIncome) => ({
-              label: formatPersonName(childWithIncome.child, 'First Last'),
+              label: formatPersonName(childWithIncome.child, 'Last First'),
               value: personIncome(incomeTypes, childWithIncome.childIncome),
               valueWidth: '100%',
               dataQa: 'child-income'
