@@ -4356,7 +4356,7 @@ export const fi = {
         BREAKFAST: 'Aamupala',
         LUNCH: 'Lounas',
         SNACK: 'Välipala',
-        DINNER: 'Illallinen',
+        DINNER: 'Päivällinen',
         SUPPER: 'Iltapala'
       },
       mealTypeValues: {
