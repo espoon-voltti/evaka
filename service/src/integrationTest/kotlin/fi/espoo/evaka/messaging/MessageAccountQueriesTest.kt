@@ -39,7 +39,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val personId = PersonId(UUID.randomUUID())
     private val supervisorId = EmployeeId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
-    private lateinit var accountId: MessageAccountId
+    private lateinit var supervisorAccountId: MessageAccountId
     private val employee2Id = EmployeeId(UUID.randomUUID())
     private val accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
     private lateinit var clock: EvakaClock
@@ -56,7 +56,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
             )
-            accountId = it.upsertEmployeeMessageAccount(supervisorId)
+            supervisorAccountId = it.upsertEmployeeMessageAccount(supervisorId)
 
             it.insert(
                 DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1")
@@ -275,11 +275,20 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `unread counts`() {
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
-        // val counts = db.read { it.getUnreadMessagesCountsEmployee(supervisorId) }
-        // assertEquals(0, counts.first().unreadCount)
+        val counts =
+            db.read {
+                it.getUnreadMessagesCountsEmployee(
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        AuthenticatedUser.Employee(supervisorId, emptySet()),
+                        clock,
+                        Action.MessageAccount.ACCESS,
+                    ),
+                    supervisorId,
+                )
+            }
+        assertEquals(0, counts.size)
 
-        // val employeeAccount = counts.first().accountId
-        val employeeAccount = accountId
         db.transaction { tx ->
             val allAccounts =
                 tx.createQuery {
@@ -287,7 +296,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     }
                     .toList<MessageAccount>()
 
-            val contentId = tx.insertMessageContent("content", employeeAccount)
+            val contentId = tx.insertMessageContent("content", supervisorAccountId)
             val threadId =
                 tx.insertThread(
                     MessageType.MESSAGE,
@@ -301,7 +310,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     now = now.minusSeconds(30),
                     contentId = contentId,
                     threadId = threadId,
-                    sender = employeeAccount,
+                    sender = supervisorAccountId,
                     sentAt = now.minusSeconds(30),
                     recipientNames = allAccounts.map { it.name },
                     municipalAccountName = "Espoo",
@@ -310,7 +319,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
             tx.upsertSenderThreadParticipants(
-                employeeAccount,
+                supervisorAccountId,
                 listOf(threadId),
                 now.minusSeconds(30),
             )
@@ -320,13 +329,33 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             3,
             db.read { tx ->
-                val r = tx.getUnreadMessagesCountsEmployee(supervisorId)
-                r.sumOf { it.unreadCount }
+                tx.getUnreadMessagesCountsEmployee(
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            AuthenticatedUser.Employee(supervisorId, emptySet()),
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        ),
+                        supervisorId,
+                    )
+                    .sumOf { it.unreadCount }
             },
         )
         assertEquals(
             1,
-            db.read { it.getUnreadMessagesCountsEmployee(supervisorId) }.first().unreadCount,
+            db.read {
+                    it.getUnreadMessagesCountsEmployee(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Employee(supervisorId, emptySet()),
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        ),
+                        supervisorId,
+                    )
+                }
+                .first()
+                .unreadCount,
         )
     }
 }

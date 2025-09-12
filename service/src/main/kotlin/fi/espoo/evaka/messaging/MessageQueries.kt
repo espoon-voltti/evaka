@@ -27,8 +27,6 @@ import org.jdbi.v3.json.Json
 
 private val logger = KotlinLogging.logger {}
 
-val accessLimitInterval = "interval '1 week'"
-
 sealed class AccountAccessLimit {
     data object NoFurtherLimit : AccountAccessLimit()
 
@@ -61,7 +59,8 @@ fun Database.Read.getFolder(id: MessageThreadFolderId) =
         .exactlyOneOrNull<MessageThreadFolder>()
 
 fun Database.Read.getUnreadMessagesCountsEmployee(
-    employeeId: EmployeeId
+    idFilter: AccessControlFilter<MessageAccountId>,
+    employeeId: EmployeeId,
 ): Set<UnreadCountByAccount> {
     data class RawData(
         val accountId: MessageAccountId,
@@ -70,13 +69,14 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
         val count: Int,
     )
 
-    val query = createQuery {
-        sql(
-            """
+    val data =
+        createQuery {
+                sql(
+                    """
         WITH limits AS (
             SELECT
                 daycare_group_id,
-                (created - $accessLimitInterval)::date AS access_limit
+                (created - interval '1 week')::date AS access_limit
             FROM daycare_group_acl 
             WHERE employee_id = ${bind(employeeId)}
         )
@@ -86,83 +86,28 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             mtp.folder_id, 
             count(mt.id) AS count
         FROM message_account acc
-        LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
-        JOIN message_recipients mr ON mr.recipient_id = acc.id
-        JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
-        JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
-        JOIN message_thread mt ON m.thread_id = mt.id
-        LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
+            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
+            JOIN message_recipients mr ON mr.recipient_id = acc.id
+            JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
+            JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
+            JOIN message_thread mt ON m.thread_id = mt.id
+            LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
         WHERE
-          mr.read_at IS NULL AND
-          (
-            mtp.folder_id IS NOT NULL OR
-            da.role = 'UNIT_SUPERVISOR' OR
-            mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
-            m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
-            mt.is_copy = false
-         ) AND
-         (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
-         acc.id IN (
-            -- Employee's own message account
-            SELECT acc.id
-            FROM message_account acc
-            JOIN employee ON acc.employee_id = employee.id
-            WHERE employee.id = ${bind(employeeId)}
-              AND acc.active = TRUE
-            
-            UNION ALL
-            
-            -- Group-based access (daycare group ACL)
-            SELECT acc.id
-            FROM message_account acc
-            JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
-            WHERE gacl.employee_id = ${bind(employeeId)}
-              AND acc.active = TRUE
-            
-            UNION ALL
-            
-            -- Unit supervisor access to all group accounts in their units
-            SELECT acc.id
-            FROM message_account acc
-            JOIN daycare_group dg ON acc.daycare_group_id = dg.id
-            JOIN daycare_acl da ON da.daycare_id = dg.daycare_id
-            WHERE da.employee_id = ${bind(employeeId)}
-              AND da.role = 'UNIT_SUPERVISOR'
-              AND acc.active = TRUE
-            
-            UNION ALL
-            
-            -- Municipal account for admins/messaging roles
-            SELECT acc.id
-            FROM employee e
-            JOIN message_account acc ON acc.type = 'MUNICIPAL'
-            WHERE e.id = ${bind(employeeId)}
-              AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
-            
-            UNION ALL
-            
-            -- Service worker account
-            SELECT acc.id
-            FROM employee e
-            JOIN message_account acc ON acc.type = 'SERVICE_WORKER'
-            WHERE e.id = ${bind(employeeId)}
-              AND e.roles && '{SERVICE_WORKER}'::user_role[]
-            
-            UNION ALL
-            
-            -- Finance account
-            SELECT acc.id
-            FROM employee e
-            JOIN message_account acc ON acc.type = 'FINANCE'
-            WHERE e.id = ${bind(employeeId)}
-              AND e.roles && '{FINANCE_ADMIN}'::user_role[]
-        )
+            mr.read_at IS NULL AND
+            (
+                mtp.folder_id IS NOT NULL OR
+                da.role = 'UNIT_SUPERVISOR' OR
+                mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                mt.is_copy = false
+            ) AND
+            (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
+            ${predicate(idFilter.forTable("acc"))}
         GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
-        )
-    }
-    logger.debug { query.toString() }
-    val data = query.toList<RawData>()
+                )
+            }
+            .toList<RawData>()
 
     return data
         .groupBy { it.accountId }
@@ -688,7 +633,7 @@ fun Database.Read.getAccountAccessLimit(
             sql(
                 """
 SELECT
-    (dga.created - $accessLimitInterval)::date
+    (dga.created - interval '1 week')::date
 FROM daycare_group_acl dga
 JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
 JOIN daycare_group dg ON dga.daycare_group_id = dg.id
@@ -1470,7 +1415,7 @@ SELECT DISTINCT
     p.first_name,
     p.last_name
 FROM children c
-JOIN person p ON p.id = c.child_id
+JOIN person p ON c.child_id = p.id
 WHERE EXISTS (
     SELECT 1
     FROM guardian g
