@@ -899,6 +899,8 @@ export const fi = {
       },
       select: 'Valitse asiakirja',
       removeConfirmation: 'Haluatko varmasti poistaa asiakirjan?',
+      confirmation:
+        'Oletko varma, että haluat avata tämän asiakirjan lapselle? Kaikki asiakirjat julkaistaan huoltajille ja arkistoidaan automaattisesti toimintakauden päättyessä',
       statuses: {
         DRAFT: 'Luonnos',
         PREPARED: 'Laadittu',
