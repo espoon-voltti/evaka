@@ -10,7 +10,7 @@ import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
-import fi.espoo.evaka.messaging.getUnreadMessagesCounts
+import fi.espoo.evaka.messaging.getUnreadMessagesCountsCitizen
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.placement.PlacementType
@@ -350,7 +350,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertNotNull(messagingAccount)
         val messageCount =
             db.read {
-                it.getUnreadMessagesCounts(
+                it.getUnreadMessagesCountsCitizen(
                         accessCpontrol.requireAuthorizationFilter(
                             it,
                             AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
@@ -448,7 +448,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertNotNull(messagingAccount)
         val messageCount =
             db.read {
-                it.getUnreadMessagesCounts(
+                it.getUnreadMessagesCountsCitizen(
                         accessCpontrol.requireAuthorizationFilter(
                             it,
                             AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),

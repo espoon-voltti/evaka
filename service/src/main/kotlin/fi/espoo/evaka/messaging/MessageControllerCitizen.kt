@@ -76,7 +76,7 @@ class MessageControllerCitizen(
     fun getUnreadMessages(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): Int {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    tx.getUnreadMessagesCounts(
+                    tx.getUnreadMessagesCountsCitizen(
                             accessControl.requireAuthorizationFilter(
                                 tx,
                                 user,

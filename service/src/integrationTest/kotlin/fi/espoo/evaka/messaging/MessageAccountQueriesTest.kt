@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -38,6 +39,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val personId = PersonId(UUID.randomUUID())
     private val supervisorId = EmployeeId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
+    private lateinit var supervisorAccountId: MessageAccountId
     private val employee2Id = EmployeeId(UUID.randomUUID())
     private val accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
     private lateinit var clock: EvakaClock
@@ -54,7 +56,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
             )
-            it.upsertEmployeeMessageAccount(supervisorId)
+            supervisorAccountId = it.upsertEmployeeMessageAccount(supervisorId)
 
             it.insert(
                 DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1")
@@ -275,18 +277,18 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
         val counts =
             db.read {
-                it.getUnreadMessagesCounts(
+                it.getUnreadMessagesCountsEmployee(
                     accessControl.requireAuthorizationFilter(
                         it,
                         AuthenticatedUser.Employee(supervisorId, emptySet()),
                         clock,
                         Action.MessageAccount.ACCESS,
-                    )
+                    ),
+                    supervisorId,
                 )
             }
-        assertEquals(0, counts.first().unreadCount)
+        assertEquals(0, counts.size)
 
-        val employeeAccount = counts.first().accountId
         db.transaction { tx ->
             val allAccounts =
                 tx.createQuery {
@@ -294,7 +296,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     }
                     .toList<MessageAccount>()
 
-            val contentId = tx.insertMessageContent("content", employeeAccount)
+            val contentId = tx.insertMessageContent("content", supervisorAccountId)
             val threadId =
                 tx.insertThread(
                     MessageType.MESSAGE,
@@ -308,7 +310,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     now = now.minusSeconds(30),
                     contentId = contentId,
                     threadId = threadId,
-                    sender = employeeAccount,
+                    sender = supervisorAccountId,
                     sentAt = now.minusSeconds(30),
                     recipientNames = allAccounts.map { it.name },
                     municipalAccountName = "Espoo",
@@ -316,18 +318,25 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     financeAccountName = "Espoo asiakasmaksut",
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
+            tx.upsertSenderThreadParticipants(
+                supervisorAccountId,
+                listOf(threadId),
+                now.minusSeconds(30),
+            )
+            tx.upsertRecipientThreadParticipants(contentId, now.minusSeconds(30))
         }
 
         assertEquals(
             3,
             db.read { tx ->
-                tx.getUnreadMessagesCounts(
+                tx.getUnreadMessagesCountsEmployee(
                         accessControl.requireAuthorizationFilter(
                             tx,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
                             Action.MessageAccount.ACCESS,
-                        )
+                        ),
+                        supervisorId,
                     )
                     .sumOf { it.unreadCount }
             },
@@ -335,13 +344,14 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             1,
             db.read {
-                    it.getUnreadMessagesCounts(
+                    it.getUnreadMessagesCountsEmployee(
                         accessControl.requireAuthorizationFilter(
                             it,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
                             Action.MessageAccount.ACCESS,
-                        )
+                        ),
+                        supervisorId,
                     )
                 }
                 .first()

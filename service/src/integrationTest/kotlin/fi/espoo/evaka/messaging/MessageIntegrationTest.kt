@@ -1005,6 +1005,111 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `unread message count excludes messages beyond employee access limit`() {
+        val aclCreationDate = LocalDate.of(2022, 5, 14)
+        val area = DevCareArea(shortName = "testArea")
+        val unit =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val group = DevDaycareGroup(daycareId = unit.id, startDate = placementStart.minusYears(1))
+        val employee = DevEmployee()
+        val employeeUser =
+            AuthenticatedUser.Employee(id = employee.id, roles = setOf(UserRole.STAFF))
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val adminUser = AuthenticatedUser.Employee(id = admin.id, roles = setOf(UserRole.ADMIN))
+        val daycareGroupAcl =
+            DevDaycareGroupAcl(
+                groupId = group.id,
+                employeeId = employee.id,
+                created = HelsinkiDateTime.of(aclCreationDate, LocalTime.of(12, 0)),
+            )
+        val adult = DevPerson()
+        val adultUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+        val child = DevPerson()
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(admin)
+            tx.insert(daycareGroupAcl)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(adult.id, child.id))
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementStart.minusMonths(5),
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = placementStart.minusMonths(5),
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val groupAccount = db.transaction { tx -> tx.createDaycareGroupMessageAccount(group.id) }
+        val municipalAccount = db.transaction { tx -> tx.createMunicipalMessageAccount() }
+
+        // Message thread beyond employee access limit (1 week before daycare group acl creation)
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = groupAccount,
+            recipients = listOf(MessageRecipient.Child(child.id)),
+            user = employeeUser,
+            now = HelsinkiDateTime.of(aclCreationDate.minusDays(8), LocalTime.of(12, 11)),
+        )
+
+        // Bulletin thread beyond employee access limit
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.BULLETIN,
+            sender = municipalAccount,
+            recipients = listOf(MessageRecipient.Area(area.id)),
+            user = adminUser,
+            now = HelsinkiDateTime.of(aclCreationDate.minusDays(8), LocalTime.of(12, 11)),
+        )
+
+        // Bulletin thread within employee access limit
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.BULLETIN,
+            sender = municipalAccount,
+            recipients = listOf(MessageRecipient.Area(area.id)),
+            user = adminUser,
+            now = HelsinkiDateTime.of(aclCreationDate.minusDays(7), LocalTime.of(12, 11)),
+        )
+
+        assertEquals(1, allUnreadMessagesCount(employeeUser))
+
+        // Citizen replies to the message thread which makes it visible to the employee
+        // since the newest message is in the employee's access limit
+        replyToMessage(
+            user = adultUser,
+            messageId =
+                getRegularMessageThreads(adultUser)
+                    .first { it.messageType == MessageType.MESSAGE }
+                    .messages
+                    .first()
+                    .id,
+            recipientAccountIds = setOf(groupAccount),
+            content = "Kiitos tiedosta",
+        )
+
+        assertEquals(2, allUnreadMessagesCount(employeeUser))
+    }
+
+    @Test
     fun `message sent by employee should not be visible to citizen before the asyncjob has been executed`() {
         disableAsyncJobRunning {
             postNewThread(
@@ -2366,7 +2471,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageController
             .getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
             .find { it.accountId == accountId }
-            ?.unreadCount ?: throw Exception("No unread count for account $accountId")
+            ?.unreadCount ?: 0
     }
 
     private fun unreadMessagesCounts(
@@ -2377,6 +2482,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageController.getUnreadMessages(dbInstance(), user, MockEvakaClock(now)).find {
             it.accountId == accountId
         } ?: throw Exception("No unread counts for account $accountId")
+    }
+
+    private fun allUnreadMessagesCount(
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
+    ): Int {
+        var totalUnreadCount = 0
+        val messagesIterator =
+            messageController.getUnreadMessages(dbInstance(), user, MockEvakaClock(now)).iterator()
+        while (messagesIterator.hasNext()) {
+            val messageAccount = messagesIterator.next()
+            totalUnreadCount += messageAccount.totalUnreadCount
+        }
+        return totalUnreadCount
     }
 
     private fun getFolders(user: AuthenticatedUser.Employee, now: HelsinkiDateTime = readTime) =

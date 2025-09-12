@@ -58,7 +58,72 @@ fun Database.Read.getFolder(id: MessageThreadFolderId) =
         }
         .exactlyOneOrNull<MessageThreadFolder>()
 
-fun Database.Read.getUnreadMessagesCounts(
+fun Database.Read.getUnreadMessagesCountsEmployee(
+    idFilter: AccessControlFilter<MessageAccountId>,
+    employeeId: EmployeeId,
+): Set<UnreadCountByAccount> {
+    data class RawData(
+        val accountId: MessageAccountId,
+        val isCopy: Boolean,
+        val folderId: MessageThreadFolderId?,
+        val count: Int,
+    )
+
+    val data =
+        createQuery {
+                sql(
+                    """
+        WITH limits AS (
+            SELECT
+                daycare_group_id,
+                (created - interval '1 week')::date AS access_limit
+            FROM daycare_group_acl 
+            WHERE employee_id = ${bind(employeeId)}
+        )
+        SELECT 
+            acc.id as account_id, 
+            mt.is_copy as is_copy, 
+            mtp.folder_id, 
+            count(mt.id) AS count
+        FROM message_account acc
+            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
+            JOIN message_recipients mr ON mr.recipient_id = acc.id
+            JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
+            JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
+            JOIN message_thread mt ON m.thread_id = mt.id
+            LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
+        WHERE
+            mr.read_at IS NULL AND
+            (
+                mtp.folder_id IS NOT NULL OR
+                da.role = 'UNIT_SUPERVISOR' OR
+                mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                mt.is_copy = false
+            ) AND
+            (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
+            ${predicate(idFilter.forTable("acc"))}
+        GROUP BY acc.id, mt.is_copy, mtp.folder_id
+        """
+                )
+            }
+            .toList<RawData>()
+
+    return data
+        .groupBy { it.accountId }
+        .map { (accountId, counts) ->
+            UnreadCountByAccount(
+                accountId = accountId,
+                unreadCount = counts.find { !it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCopyCount = counts.find { it.isCopy && it.folderId == null }?.count ?: 0,
+                unreadCountByFolder =
+                    counts.filter { it.folderId != null }.associate { it.folderId!! to it.count },
+            )
+        }
+        .toSet()
+}
+
+fun Database.Read.getUnreadMessagesCountsCitizen(
     idFilter: AccessControlFilter<MessageAccountId>
 ): Set<UnreadCountByAccount> {
     data class RawData(
@@ -568,7 +633,7 @@ fun Database.Read.getAccountAccessLimit(
             sql(
                 """
 SELECT
-    dga.created::date
+    (dga.created - interval '1 week')::date
 FROM daycare_group_acl dga
 JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
 JOIN daycare_group dg ON dga.daycare_group_id = dg.id
@@ -580,8 +645,7 @@ WHERE ma.id = ${bind(groupAccountId)} AND dga.employee_id = ${bind(employeeId)} 
         .mapTo<LocalDate>()
         .exactlyOneOrNull()
         .let {
-            it?.let { AccountAccessLimit.AvailableFrom(it.minusWeeks(1)) }
-                ?: AccountAccessLimit.NoFurtherLimit
+            it?.let { AccountAccessLimit.AvailableFrom(it) } ?: AccountAccessLimit.NoFurtherLimit
         }
 }
 
