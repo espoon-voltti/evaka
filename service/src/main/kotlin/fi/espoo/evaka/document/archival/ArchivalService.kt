@@ -10,6 +10,8 @@ import fi.espoo.evaka.document.childdocument.getChildDocument
 import fi.espoo.evaka.document.childdocument.getChildDocumentKey
 import fi.espoo.evaka.document.childdocument.markDocumentAsArchived
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.s3.DocumentKey
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -26,6 +28,7 @@ private val logger = KotlinLogging.logger {}
 class ArchivalService(
     asyncJobRunner: AsyncJobRunner<AsyncJob>?,
     private val archivalIntegrationClient: ArchivalIntegrationClient,
+    private val documentClient: DocumentService,
 ) {
 
     init {
@@ -66,6 +69,10 @@ class ArchivalService(
                     ?: throw NotFound("Document key not found for document $documentId")
             }
 
+        // Get the document from the original location
+        val originalLocation = documentClient.locate(DocumentKey.ChildDocument(documentKey))
+        val documentContent = documentClient.get(originalLocation)
+
         val instanceId =
             archivalIntegrationClient.uploadChildDocumentToArchive(
                 caseProcess = caseProcess,
@@ -73,7 +80,7 @@ class ArchivalService(
                 childInfo = childInfo,
                 childDocumentDetails = document,
                 documentMetadata = documentMetadata,
-                documentKey = documentKey,
+                documentContent = documentContent,
                 evakaUser = evakaUser,
             )
 

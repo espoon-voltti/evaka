@@ -143,7 +143,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     fun setUpOnce() {
         super.beforeAll()
         archivalService =
-            ArchivalService(null, SärmäChildDocumentClient(särmäClient, documentService))
+            ArchivalService(null, SärmäChildDocumentClient(särmäClient), documentService)
     }
 
     @BeforeEach

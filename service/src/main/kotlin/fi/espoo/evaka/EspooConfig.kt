@@ -37,7 +37,6 @@ import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuReportingService
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
@@ -300,10 +299,9 @@ class EspooConfig {
     fun archivalIntegrationClient(
         evakaEnv: EvakaEnv,
         archivalClient: ArchivalClient,
-        documentService: DocumentService,
     ): ArchivalIntegrationClient {
         if (evakaEnv.archivalEnabled) {
-            return SärmäChildDocumentClient(archivalClient, documentService)
+            return SärmäChildDocumentClient(archivalClient)
         }
         return ArchivalIntegrationClient.FailingClient()
     }

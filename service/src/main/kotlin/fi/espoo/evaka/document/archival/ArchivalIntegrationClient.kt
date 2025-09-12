@@ -8,6 +8,7 @@ import fi.espoo.evaka.caseprocess.CaseProcess
 import fi.espoo.evaka.caseprocess.DocumentMetadata
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.user.EvakaUser
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,7 +22,7 @@ interface ArchivalIntegrationClient {
         childInfo: PersonDTO,
         childDocumentDetails: ChildDocumentDetails,
         documentMetadata: DocumentMetadata,
-        documentKey: String,
+        documentContent: Document,
         evakaUser: EvakaUser,
     ): String?
 
@@ -32,7 +33,7 @@ interface ArchivalIntegrationClient {
             childInfo: PersonDTO,
             childDocumentDetails: ChildDocumentDetails,
             documentMetadata: DocumentMetadata,
-            documentKey: String,
+            documentContent: Document,
             evakaUser: EvakaUser,
         ): String? {
             logger.info {
@@ -49,7 +50,7 @@ interface ArchivalIntegrationClient {
             childInfo: PersonDTO,
             childDocumentDetails: ChildDocumentDetails,
             documentMetadata: DocumentMetadata,
-            documentKey: String,
+            documentContent: Document,
             evakaUser: EvakaUser,
         ): String {
             throw RuntimeException("Child document archival not in use")

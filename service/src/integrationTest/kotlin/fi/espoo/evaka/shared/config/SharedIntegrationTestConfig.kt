@@ -31,7 +31,6 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
@@ -239,10 +238,8 @@ class SharedIntegrationTestConfig {
     @Bean fun särmäClient(): ArchivalClient = SärmäMockClient()
 
     @Bean
-    fun archivalIntegrationClient(
-        archivalClient: ArchivalClient,
-        documentService: DocumentService,
-    ): ArchivalIntegrationClient = SärmäChildDocumentClient(archivalClient, documentService)
+    fun archivalIntegrationClient(archivalClient: ArchivalClient): ArchivalIntegrationClient =
+        SärmäChildDocumentClient(archivalClient)
 }
 
 val testFeatureConfig =

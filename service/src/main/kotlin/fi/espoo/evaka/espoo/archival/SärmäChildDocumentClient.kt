@@ -9,8 +9,7 @@ import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.s3.DocumentKey
-import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.voltti.logging.loggers.info
@@ -21,10 +20,8 @@ import org.apache.http.client.utils.URLEncodedUtils
 
 private val logger = KotlinLogging.logger {}
 
-class SärmäChildDocumentClient(
-    private val uploadClient: ArchivalClient,
-    private val documentClient: DocumentService,
-) : ArchivalIntegrationClient {
+class SärmäChildDocumentClient(private val uploadClient: ArchivalClient) :
+    ArchivalIntegrationClient {
 
     override fun uploadChildDocumentToArchive(
         documentId: ChildDocumentId,
@@ -32,12 +29,9 @@ class SärmäChildDocumentClient(
         childInfo: PersonDTO,
         childDocumentDetails: ChildDocumentDetails,
         documentMetadata: DocumentMetadata,
-        documentKey: String,
+        documentContent: Document,
         evakaUser: EvakaUser,
     ): String? {
-        // Get the document from the original location
-        val originalLocation = documentClient.locate(DocumentKey.ChildDocument(documentKey))
-        val documentContent = documentClient.get(originalLocation)
         val masterId =
             "yleinen" // Defined as fixed value in Evaka_Särmä_metatietomääritykset.xlsx specs. TODO
         // should be mapped from metadata
