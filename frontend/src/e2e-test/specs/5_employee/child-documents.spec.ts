@@ -1455,6 +1455,7 @@ describe('Employee - Child documents - unit groups page', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
+    await page.pause()
     await childDocumentsSection.createExternalDocumentButton.click()
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       template.name
