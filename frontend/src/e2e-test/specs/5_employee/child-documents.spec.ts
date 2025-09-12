@@ -126,6 +126,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       'HOJKS 2022-2023'
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     // Fill an answer and return
@@ -204,6 +205,7 @@ describe('Employee - Child documents', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createInternalDocumentButton.click()
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     // go to next status
@@ -228,6 +230,7 @@ describe('Employee - Child documents', () => {
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     let childDocument = new ChildDocumentPage(page)
@@ -302,6 +305,7 @@ describe('Employee - Child documents', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     let childDocument = new ChildDocumentPage(page)
@@ -332,6 +336,7 @@ describe('Employee - Child documents', () => {
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createInternalDocumentButton.click()
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
     let childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
@@ -500,6 +505,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       'VASU 2022-2023'
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     // Fill an answer and return
@@ -598,6 +604,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       documentName
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
     await childDocument.status.assertTextEquals('Luonnos')
@@ -738,6 +745,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       documentName
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
     await childDocument.status.assertTextEquals('Luonnos')
@@ -840,6 +848,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       templateName
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     await childInformationPage.navigateToChild(child2.id)
@@ -848,6 +857,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       templateName
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
   })
 
@@ -998,6 +1008,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.selectOption(
       'Päätösasiakirja 3'
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     // Decision proposal is sent to decision maker (director)
@@ -1101,6 +1112,7 @@ describe('Employee - Child documents', () => {
     await childDocumentsSection.createModalTemplateSelect.selectOption(
       'Päätösasiakirja'
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
 
     // Decision proposal is sent to decision maker (director)
@@ -1459,6 +1471,7 @@ describe('Employee - Child documents - unit groups page', () => {
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       template.name
     )
+    await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
     await childDocument.status.assertTextEquals('Luonnos')

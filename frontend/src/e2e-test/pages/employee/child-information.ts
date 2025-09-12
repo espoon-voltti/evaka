@@ -374,6 +374,7 @@ export class ChildDocumentsSection extends Section {
   createExternalDocumentButton: Element
   createModalTemplateSelect: Select
   modalOk: Element
+  modalConfirm: Checkbox
 
   constructor(page: Page, root: Element) {
     super(page, root)
@@ -390,6 +391,7 @@ export class ChildDocumentsSection extends Section {
       page.findByDataQa('template-select')
     )
     this.modalOk = page.findByDataQa('modal-okBtn')
+    this.modalConfirm = new Checkbox(page.findByDataQa('confirmation'))
   }
 
   async assertInternalChildDocuments(expectedRows: { id: UUID }[]) {
