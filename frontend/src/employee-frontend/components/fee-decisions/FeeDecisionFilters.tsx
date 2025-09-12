@@ -52,7 +52,7 @@ function FeeDecisionFilters() {
     useQueryResult(financeDecisionHandlersQuery()).map((employees) =>
       employees.map((e) => ({
         value: e.id,
-        label: formatPersonName(e, 'First Last')
+        label: formatPersonName(e, 'Last First')
       }))
     )
 

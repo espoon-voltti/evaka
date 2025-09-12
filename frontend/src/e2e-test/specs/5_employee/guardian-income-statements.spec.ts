@@ -85,8 +85,9 @@ describe('Guardian income statements', () => {
     const incomesSection = guardianPage.getCollapsible('incomes')
     await incomesSection.assertIncomeStatementChildName(
       0,
-      `${child.firstName} ${child.lastName}`
+      `${child.lastName} ${child.firstName}`
     )
+
     await incomesSection.assertIncomeStatementRowCount(1)
     const incomeStatementPage = await incomesSection.openIncomeStatement(0)
     await incomeStatementPage.assertChildIncomeStatement('Test other info', 0)

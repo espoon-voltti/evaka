@@ -140,7 +140,7 @@ export default React.memo(function FosterChildren({ id }: Props) {
                 >
                   <NameTd data-qa="name">
                     <Link to={`/child-information/${child.id}`}>
-                      <PersonName person={child} format="First Last" />
+                      <PersonName person={child} format="Last First" />
                     </Link>
                   </NameTd>
                   <Td>{child.socialSecurityNumber}</Td>

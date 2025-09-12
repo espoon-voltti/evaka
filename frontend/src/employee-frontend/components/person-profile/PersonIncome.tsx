@@ -70,7 +70,7 @@ export default React.memo(function PersonIncome({ id }: Props) {
             <ChildIncomeStatementsContainer key={child.id}>
               <Gap size="m" />
               <span data-qa="child-income-statement-title">
-                <PersonName person={child} format="First Last" />
+                <PersonName person={child} format="Last First" />
               </span>
               <IncomeStatements personId={child.id} />
             </ChildIncomeStatementsContainer>

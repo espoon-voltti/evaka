@@ -210,7 +210,7 @@ const ChildSection = React.memo(function ChildSection({
       <FixedSpaceRow justifyContent="space-between" alignItems="center">
         <ChildNameLink to={`/child-information/${child.id}`}>
           <H4 noMargin>
-            <PersonName person={child} format="First Last" />
+            <PersonName person={child} format="Last First" />
           </H4>
         </ChildNameLink>
 
