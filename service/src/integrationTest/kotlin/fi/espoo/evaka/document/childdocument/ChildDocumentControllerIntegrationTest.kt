@@ -1189,7 +1189,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 employeeUser.user,
                 clock,
                 documentId,
-                särmäEnabled = true,
+                archivalEnabled = true,
             )
         }
     }
@@ -1211,7 +1211,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 employeeUser.user,
                 clock,
                 documentId2,
-                särmäEnabled = true,
+                archivalEnabled = true,
             )
         }
     }
@@ -1248,7 +1248,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             employeeUser.user,
             clock,
             documentId2,
-            särmäEnabled = true,
+            archivalEnabled = true,
         )
     }
 

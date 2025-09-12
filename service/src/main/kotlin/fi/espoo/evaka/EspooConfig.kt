@@ -5,9 +5,14 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.document.archival.ArchivalClient
+import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.*
+import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
+import fi.espoo.evaka.espoo.archival.SärmäHttpClient
+import fi.espoo.evaka.espoo.archival.SärmäMockClient
 import fi.espoo.evaka.espoo.bi.EspooBiClient
 import fi.espoo.evaka.espoo.bi.EspooBiHttpClient
 import fi.espoo.evaka.espoo.bi.EspooBiJob
@@ -281,6 +286,25 @@ class EspooConfig {
                 minSymbols = 1,
             )
         )
+
+    @Bean
+    fun särmäClient(evakaEnv: EvakaEnv, archiveEnv: ArchiveEnv?): ArchivalClient {
+        if (!evakaEnv.archivalEnabled || archiveEnv?.useMockClient == true) {
+            return SärmäMockClient()
+        }
+        return SärmäHttpClient(archiveEnv)
+    }
+
+    @Bean
+    fun archivalIntegrationClient(
+        evakaEnv: EvakaEnv,
+        archivalClient: ArchivalClient,
+    ): ArchivalIntegrationClient {
+        if (evakaEnv.archivalEnabled) {
+            return SärmäChildDocumentClient(archivalClient)
+        }
+        return ArchivalIntegrationClient.FailingClient()
+    }
 }
 
 data class EspooEnv(

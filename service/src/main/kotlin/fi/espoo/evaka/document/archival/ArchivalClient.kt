@@ -6,7 +6,7 @@ package fi.espoo.evaka.document.archival
 
 import fi.espoo.evaka.s3.Document
 
-interface SärmäClientInterface {
+interface ArchivalClient {
     fun putDocument(
         documentContent: Document,
         metadataXml: String,

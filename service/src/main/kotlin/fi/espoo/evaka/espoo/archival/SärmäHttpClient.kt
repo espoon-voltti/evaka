@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.document.archival
+package fi.espoo.evaka.espoo.archival
 
 import fi.espoo.evaka.ArchiveEnv
+import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.s3.Document
 import java.time.Duration
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
-class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : SärmäClientInterface {
+class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : ArchivalClient {
 
     private val httpClient =
         OkHttpClient.Builder()
