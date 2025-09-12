@@ -106,7 +106,7 @@ fun Database.Read.getNekkuReportRows(
                 WHERE nor.daycare_id = ${bind(daycareId)}
                 AND nor.group_id =ANY(${bind ( groupIds)})
                 AND nor.delivery_date =ANY(${bind ( dates)})
-                ORDER BY nor.delivery_date
+                ORDER BY nor.delivery_date, nor.group_id, nor.meal_sku
             """
             )
         }
