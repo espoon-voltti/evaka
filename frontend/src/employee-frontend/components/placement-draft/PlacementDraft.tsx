@@ -15,7 +15,8 @@ import type { DaycarePlacementPlan } from 'lib-common/generated/api-types/applic
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import type {
   PlacementPlanDraft,
-  PlacementSummary
+  PlacementSummary,
+  PlacementType
 } from 'lib-common/generated/api-types/placement'
 import type {
   ApplicationId,
@@ -23,6 +24,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -43,7 +45,9 @@ import { useTranslation } from '../../state/i18n'
 import { asUnitType } from '../../types/daycare'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
+import { InputWarning } from '../common/InputWarning'
 import WarningLabel from '../common/WarningLabel'
+import { getPreschoolTermsQuery } from '../unit/queries'
 
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
@@ -64,6 +68,9 @@ const SelectContainer = styled.div`
 
 const FloatRight = styled.div`
   float: right;
+`
+const WarningContainer = styled.div`
+  margin: 5px 0;
 `
 
 export interface PlacementSummaryWithOverlaps extends PlacementSummary {
@@ -126,7 +133,6 @@ export default React.memo(function PlacementDraft() {
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
-
   const [formState, setFormState] = useState<DaycarePlacementPlanForm>({
     unitId: null,
     period: null,
@@ -136,6 +142,8 @@ export default React.memo(function PlacementDraft() {
   const [additionalUnits, setAdditionalUnits] = useState<PublicUnit[]>([])
   const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
     useState<boolean>(false)
+
+  const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
   useEffect(() => {
     if (units.isSuccess && formState.unitId) {
@@ -197,6 +205,54 @@ export default React.memo(function PlacementDraft() {
     )
   }, [applicationId, redirectToMainPage])
 
+  const isPreschoolPlacement = (placementType: PlacementType) =>
+    placementType === 'PRESCHOOL' ||
+    placementType === 'PREPARATORY' ||
+    placementType === 'PRESCHOOL_DAYCARE' ||
+    placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
+    placementType === 'PREPARATORY_DAYCARE'
+
+  const preschoolDatesAreValid = useMemo(() => {
+    if (
+      preschoolTermsResult.isSuccess &&
+      placementDraft.isSuccess &&
+      isPreschoolPlacement(placementDraft.value.type) &&
+      formState.period !== null
+    ) {
+      const matchingPreschoolTerm = preschoolTermsResult
+        .map((preschoolTerms) =>
+          preschoolTerms.find(
+            (term) =>
+              term.finnishPreschool.asDateRange().contains(formState.period!) ||
+              term.swedishPreschool.asDateRange().contains(formState.period!)
+          )
+        )
+        .getOrElse(undefined)
+
+      if (!matchingPreschoolTerm) return false
+      if (!formState.hasPreschoolDaycarePeriod) {
+        return true
+      } else {
+        const validExtendedPreschoolDaycarePeriod = new FiniteDateRange(
+          matchingPreschoolTerm.extendedTerm.start,
+          LocalDate.of(matchingPreschoolTerm.finnishPreschool.end.year, 7, 31)
+        )
+
+        // must overlap with placement period at least 1 day
+        return (
+          formState.hasPreschoolDaycarePeriod &&
+          formState.preschoolDaycarePeriod !== null &&
+          validExtendedPreschoolDaycarePeriod.contains(
+            formState.preschoolDaycarePeriod
+          ) &&
+          formState.period.overlaps(formState.preschoolDaycarePeriod)
+        )
+      }
+    } else {
+      return false
+    }
+  }, [preschoolTermsResult, placementDraft, formState])
+
   useEffect(() => {
     if (placementDraft.isSuccess) {
       void getApplicationUnitsResult({
@@ -205,7 +261,7 @@ export default React.memo(function PlacementDraft() {
         shiftCare: null
       }).then(setUnits)
     }
-  }, [placementDraft, formState.period?.start])
+  }, [placementDraft, formState.period?.start, preschoolTermsResult])
 
   useTitle(
     placementDraft.map(
@@ -257,6 +313,7 @@ export default React.memo(function PlacementDraft() {
         ...formState,
         [periodType]: fixedPeriod
       })
+
       if (fixedPeriod !== null && placementDraft.isSuccess) {
         const updatedPlacementDraft = placementDraft.map((draft) => ({
           ...draft,
@@ -289,7 +346,12 @@ export default React.memo(function PlacementDraft() {
 
   const validPlan: DaycarePlacementPlan | null = useMemo(() => {
     const { unitId, period, hasPreschoolDaycarePeriod } = formState
-    if (!unitId || !period || selectedUnitIsGhostUnit) {
+    if (
+      !unitId ||
+      !period ||
+      selectedUnitIsGhostUnit ||
+      !preschoolDatesAreValid
+    ) {
       return null
     } else {
       return {
@@ -300,7 +362,7 @@ export default React.memo(function PlacementDraft() {
           : null
       }
     }
-  }, [formState, selectedUnitIsGhostUnit])
+  }, [formState, selectedUnitIsGhostUnit, preschoolDatesAreValid])
 
   return (
     <Container
@@ -368,6 +430,19 @@ export default React.memo(function PlacementDraft() {
                 'end'
               )}
             />
+            {!preschoolDatesAreValid && (
+              <div data-qa="preschool-term-warning">
+                <WarningContainer>
+                  <InputWarning
+                    text={
+                      i18n.childInformation.placements.createPlacement
+                        .preschoolTermNotOpen
+                    }
+                    iconPosition="after"
+                  />
+                </WarningContainer>
+              </div>
+            )}
             <Gap size="L" />
             <UnitCards
               additionalUnits={additionalUnits}
