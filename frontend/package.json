@@ -30,7 +30,7 @@
     "@sentry/react": "10.8.0",
     "@tanstack/react-query": "5.85.9",
     "autosize": "6.0.1",
-    "axios": "1.11.0",
+    "axios": "1.12.0",
     "chart.js": "4.5.0",
     "chartjs-adapter-date-fns": "3.0.0",
     "chartjs-plugin-annotation": "3.1.0",
