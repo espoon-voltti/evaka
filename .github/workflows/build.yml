@@ -134,7 +134,7 @@ jobs:
           path: frontend/node_modules
           key: fortawesome-${{ hashFiles('frontend/setup-pro-icons.sh') }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: ${{ !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
         with:
           node-version: 22.19.0
