@@ -24,7 +24,7 @@
     "dd-trace": "5.65.0",
     "express": "5.1.0",
     "express-basic-auth": "1.2.1",
-    "express-http-proxy": "2.1.1",
+    "express-http-proxy": "2.1.2",
     "express-session": "1.18.2",
     "fast-xml-parser": "5.2.5",
     "helmet": "8.1.0",
