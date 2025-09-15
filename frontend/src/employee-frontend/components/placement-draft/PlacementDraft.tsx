@@ -214,6 +214,14 @@ export default React.memo(function PlacementDraft() {
 
   const preschoolDatesAreValid = useMemo(() => {
     if (
+      placementDraft.isSuccess &&
+      !isPreschoolPlacement(placementDraft.value.type)
+    ) {
+      // Not a preschool placement so the preschool dates are irrelevant
+      return true
+    }
+
+    if (
       preschoolTermsResult.isSuccess &&
       placementDraft.isSuccess &&
       isPreschoolPlacement(placementDraft.value.type) &&

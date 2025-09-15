@@ -344,6 +344,102 @@ describe('Application transitions', () => {
       .status.assertText((text) => text.includes('Poistettu käsittelystä'))
   })
 
+  test('Placement dialog works for early childhood education placement', async () => {
+    const preferredStartDate = mockedDate
+
+    const group = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+    await Fixture.daycareCaretakers({
+      groupId: group.id,
+      startDate: preferredStartDate,
+      amount: 1
+    }).save()
+
+    const group2 = await Fixture.daycareGroup({
+      daycareId: testPreschool.id
+    }).save()
+    await Fixture.daycareCaretakers({
+      groupId: group2.id,
+      startDate: preferredStartDate,
+      amount: 2
+    }).save()
+
+    // Create existing placements to show meaningful occupancy values
+    await Fixture.placement({
+      unitId: testDaycare.id,
+      childId: testChildRestricted.id,
+      startDate: preferredStartDate
+    }).save()
+    await Fixture.placement({
+      unitId: testPreschool.id,
+      childId: testChild.id,
+      startDate: preferredStartDate
+    }).save()
+
+    const fixture = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        undefined,
+        'DAYCARE',
+        null,
+        [testDaycare.id],
+        true,
+        'SENT',
+        preferredStartDate
+      ),
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
+    }
+    const applicationId = fixture.id
+
+    await createApplications({ body: [fixture] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      ['MOVE_TO_WAITING_PLACEMENT'],
+      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+
+    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+    await applicationListView.searchButton.click()
+
+    const placementDraftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionCreatePlacementPlan()
+    await placementDraftPage.waitUntilLoaded()
+
+    const planStartDate = preferredStartDate.addDays(1)
+    await placementDraftPage.startDate.fill(planStartDate)
+    await placementDraftPage.assertOccupancies(testDaycare.id, {
+      max3Months: '14,3 %',
+      max6Months: '14,3 %',
+      max3MonthsSpeculated: '28,6 %',
+      max6MonthsSpeculated: '28,6 %'
+    })
+
+    await placementDraftPage.addOtherUnit(testPreschool.name)
+    await placementDraftPage.assertOccupancies(testPreschool.id, {
+      max3Months: '7,1 %',
+      max6Months: '7,1 %',
+      max3MonthsSpeculated: '14,3 %',
+      max6MonthsSpeculated: '14,3 %'
+    })
+
+    await placementDraftPage.placeToUnit(testPreschool.id)
+
+    await placementDraftPage.submit()
+
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    await applicationListView
+      .applicationRow(applicationId)
+      .assertStartDate(planStartDate)
+  })
+
   test('Placement dialog works', async () => {
     const preferredStartDate = mockedDate
 
