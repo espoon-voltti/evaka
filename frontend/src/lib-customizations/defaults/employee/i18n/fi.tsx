@@ -1604,6 +1604,9 @@ export const fi = {
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
         startDateMissing: 'Alkupäivä on pakollinen tieto',
         unitMissing: 'Yksikkö puuttuu',
+        preschoolTermNotOpen: 'Sijoituksen tulee olla esiopetuskaudella',
+        preschoolExtendedTermNotOpen:
+          'Sijoituksen tulee olla esiopetuskaudella',
         placeGuarantee: {
           title: 'Varhaiskasvatuspaikkatakuu',
           info: 'Tulevaisuuden sijoitus liittyy varhaiskasvatuspaikkatakuuseen'

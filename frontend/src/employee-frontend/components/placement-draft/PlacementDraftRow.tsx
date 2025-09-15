@@ -136,6 +136,7 @@ export default React.memo(function PlacementDraftSection({
             onChange={updateEnd}
             minDate={formState.period?.start ?? today}
             locale="fi"
+            data-qa="end-date"
           />
         </DateRowItem>
         <DateRowItem>
@@ -159,6 +160,7 @@ export default React.memo(function PlacementDraftSection({
               onChange={updatePreschoolStart}
               minDate={today}
               locale="fi"
+              data-qa="preschool-daycare-start-date"
             />
             <DatePickerSpacer />
             <DatePicker
@@ -166,6 +168,7 @@ export default React.memo(function PlacementDraftSection({
               onChange={updatePreschoolEnd}
               minDate={formState.preschoolDaycarePeriod?.start ?? today}
               locale="fi"
+              data-qa="preschool-daycare-end-date"
             />
           </DateRowItem>
           {formState.preschoolDaycarePeriod !== null &&
