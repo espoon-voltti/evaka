@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test
 
 internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
     val employeeNumber = "SARASTIA_1"
+    val sarastiaId = "9$employeeNumber"
     lateinit var employee: DevEmployee
     lateinit var area: DevCareArea
     lateinit var daycare: DevDaycare
@@ -67,7 +68,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val shifts =
             listOf(
                 Shift(
-                    employeeNumber,
+                    sarastiaId,
                     "WORK_SHIFT_1",
                     HelsinkiDateTime.of(today.atTime(8, 0)),
                     HelsinkiDateTime.of(today.atTime(16, 0)),
@@ -119,7 +120,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val shifts =
             listOf(
                 Shift(
-                    employeeNumber,
+                    sarastiaId,
                     "WORK_SHIFT_1",
                     HelsinkiDateTime.of(today.atTime(16, 0)),
                     HelsinkiDateTime.of(today.atTime(8, 0)),
@@ -142,7 +143,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val shifts =
             listOf(
                 Shift(
-                    employeeNumber,
+                    sarastiaId,
                     "WORK_SHIFT_1",
                     HelsinkiDateTime.of(today.atTime(8, 0)),
                     HelsinkiDateTime.of(today.atTime(16, 0)),
@@ -150,7 +151,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     "Uusi",
                 ),
                 Shift(
-                    employeeNumber,
+                    sarastiaId,
                     "WORK_SHIFT_2",
                     HelsinkiDateTime.of(today.atTime(10, 0)),
                     HelsinkiDateTime.of(today.atTime(18, 0)),
@@ -171,6 +172,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
     fun `new plans for employees in disabled daycares are ignored`() {
         val today = LocalDate.now()
         val employeeNumber2 = "SARASTIA_2"
+        val sarastiaId2 = "9$employeeNumber2"
         val employee2 = DevEmployee(employeeNumber = employeeNumber2)
         val daycare2 = DevDaycare(areaId = area.id, enabledPilotFeatures = setOf())
         db.transaction { tx ->
@@ -182,7 +184,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val shifts =
             listOf(
                 Shift(
-                    employeeNumber2,
+                    sarastiaId2,
                     "WORK_SHIFT_1",
                     HelsinkiDateTime.of(today.atTime(8, 0)),
                     HelsinkiDateTime.of(today.atTime(16, 0)),
@@ -355,7 +357,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // end is rounded
                         Stamping(
                             attendanceIds[1]!!.toString(),
-                            employeeNumber,
+                            sarastiaId,
                             now.minusDays(1).minusHours(3).plusMinutes(6),
                             now.minusDays(1),
                             StampingType.PRESENT,
@@ -363,7 +365,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // 3rd attendance start and end are rounded to times from different plans
                         Stamping(
                             attendanceIds[2]!!.toString(),
-                            employeeNumber,
+                            sarastiaId,
                             now.minusDays(1),
                             now.minusDays(1).plusHours(3),
                             StampingType.PRESENT,
@@ -371,7 +373,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // 4th attendance is rounded to the matching plan
                         Stamping(
                             attendanceIds[3]!!.toString(),
-                            employeeNumber,
+                            sarastiaId,
                             now.minusDays(1).plusHours(3),
                             now.minusDays(1).plusHours(5),
                             StampingType.OTHER_WORK,
@@ -380,7 +382,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         // rounded
                         Stamping(
                             attendanceIds[4]!!.toString(),
-                            employeeNumber,
+                            sarastiaId,
                             now.minusHours(2).minusMinutes(3),
                             now.minusHours(1),
                             StampingType.TRAINING,
