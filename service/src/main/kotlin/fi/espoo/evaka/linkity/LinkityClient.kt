@@ -49,17 +49,22 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
 
         val req = Request.Builder().url(url).get().header("x-api-key", env.apikey.value).build()
 
-        return httpClient.newCall(req).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw IllegalStateException(
-                    "Failed to fetch shifts from Linkity. Status: ${response.code}"
-                )
+        val result =
+            httpClient.newCall(req).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IllegalStateException(
+                        "Failed to fetch shifts from Linkity. Status: ${response.code}"
+                    )
+                }
+
+                response.body?.string()?.let { json -> jsonMapper.readValue<List<Shift?>>(json) }
+                    ?: throw IllegalStateException(
+                        "Failed to fetch shifts from Linkity: empty response"
+                    )
             }
-            response.body?.string()?.let { json -> jsonMapper.readValue(json) }
-                ?: throw IllegalStateException(
-                    "Failed to fetch shifts from Linkity: empty response"
-                )
-        }
+
+        // Linkity seems to sometimes return nulls in the list, filter them out
+        return result.filterNotNull()
     }
 
     override fun postStampings(batch: StampingBatch) {
