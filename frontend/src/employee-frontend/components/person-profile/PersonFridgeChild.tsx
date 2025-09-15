@@ -146,7 +146,7 @@ export default React.memo(function PersonFridgeChild({ id }: Props) {
                       <Link to={`/child-information/${fridgeChild.child.id}`}>
                         <PersonName
                           person={fridgeChild.child}
-                          format="First Last"
+                          format="Last First"
                         />
                       </Link>
                     </NameTd>
