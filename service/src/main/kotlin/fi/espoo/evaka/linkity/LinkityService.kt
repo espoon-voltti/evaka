@@ -55,10 +55,13 @@ fun updateStaffAttendancePlansFromLinkity(
 ) {
     val linkityShifts = client.getShifts(period)
 
-    val sarastiaIds = linkityShifts.map { it.sarastiaId }.toSet()
+    val employeeNumbers = linkityShifts.map { sarastiaIdToEmployeeNumber(it.sarastiaId) }.toSet()
 
     db.transaction { tx ->
-        val sarastiaIdToEmployeeId = tx.getEmployeeIdsForEnabledDaycares(sarastiaIds)
+        val sarastiaIdToEmployeeId =
+            tx.getEmployeeIdsForEnabledDaycares(employeeNumbers).mapKeys { (k, _) ->
+                employeeNumberToSarastiaId(k)
+            }
 
         val shifts = filterValidShifts(linkityShifts, sarastiaIdToEmployeeId)
 
@@ -128,7 +131,10 @@ fun sendStaffAttendancesToLinkity(
     lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
 
     db.transaction { tx ->
-        attendances = tx.getStaffAttendancesForEnabledDaycares(period).groupBy { it.employeeId }
+        attendances =
+            tx.getStaffAttendancesForEnabledDaycares(period)
+                .map { it.copy(sarastiaId = employeeNumberToSarastiaId(it.sarastiaId)) }
+                .groupBy { it.employeeId }
         val employeeIds = attendances.keys
         plans =
             tx.findStaffAttendancePlansBy(period = period, employeeIds = employeeIds).groupBy {
@@ -181,3 +187,7 @@ private fun roundAttendancesToPlans(
         }
     }
 }
+
+fun employeeNumberToSarastiaId(employeeNumber: String): String = "9$employeeNumber"
+
+fun sarastiaIdToEmployeeNumber(sarastiaId: String): String = sarastiaId.removePrefix("9")
