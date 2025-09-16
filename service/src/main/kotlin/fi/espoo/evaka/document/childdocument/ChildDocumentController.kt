@@ -581,9 +581,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        särmäEnabled: Boolean = evakaEnv.särmäEnabled,
+        archivalEnabled: Boolean = evakaEnv.archivalEnabled,
     ) {
-        if (!särmäEnabled) {
+        if (!archivalEnabled) {
             throw BadRequest("Document archival is not enabled")
         }
 
@@ -610,7 +610,7 @@ class ChildDocumentController(
 
                     asyncJobRunner.plan(
                         tx = tx,
-                        payloads = listOf(AsyncJob.ArchiveChildDocument(documentId)),
+                        payloads = listOf(AsyncJob.ArchiveChildDocument(documentId, user)),
                         runAt = clock.now(),
                         retryCount = 1,
                     )

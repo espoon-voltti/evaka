@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.document.archival
+package fi.espoo.evaka.espoo.archival
 
+import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.s3.Document
 
-class SärmäMockClient : SärmäClientInterface {
+class SärmäMockClient : ArchivalClient {
     override fun putDocument(
         documentContent: Document,
         metadataXml: String,

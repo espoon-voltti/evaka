@@ -14,6 +14,7 @@ import fi.espoo.evaka.caseprocess.insertCaseProcess
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.*
+import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentKey
@@ -22,11 +23,11 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.UiLanguage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,6 +36,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -42,17 +44,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ContentDisposition
 import org.springframework.http.ResponseEntity
 
-class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private var documentService = TestDocumentService()
     private var särmäClient = TestSärmäClient()
-    private val logger = KotlinLogging.logger {}
     private val logAppender = TestAppender()
 
     private val templateId = DocumentTemplateId(UUID.randomUUID())
     private val documentId = ChildDocumentId(UUID.randomUUID())
     private val childId = PersonId(UUID.randomUUID())
     private val now = HelsinkiDateTime.of(LocalDateTime.of(2023, 2, 1, 12, 0))
+
+    private lateinit var archivalService: ArchivalService
 
     // Simple log appender to capture log events
     class TestAppender : AppenderBase<ILoggingEvent>() {
@@ -95,7 +98,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     // Client for Särmä archival system that only captures calls for verification
-    class TestSärmäClient : SärmäClientInterface {
+    class TestSärmäClient : ArchivalClient {
         data class Call(
             val documentContent: Document,
             val metadataXml: String,
@@ -134,6 +137,13 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
             calls.add(Call(documentContent, metadataXml, masterId, classId, virtualArchiveId))
             return Pair(responseCode, responseString)
         }
+    }
+
+    @BeforeAll
+    fun setUpOnce() {
+        super.beforeAll()
+        archivalService =
+            ArchivalService(null, SärmäChildDocumentClient(särmäClient), documentService)
     }
 
     @BeforeEach
@@ -226,7 +236,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `uploadToArchive marks document as archived in database when successful`() {
         // Execute the archive method
-        uploadToArchive(db, documentId, särmäClient, documentService, logger)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->
@@ -252,7 +262,10 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
 
         // Execute the archive method and expect exception
         assertThrows<RuntimeException> {
-            uploadToArchive(db, documentId, särmäClient, documentService, logger)
+            archivalService.uploadChildDocumentToArchive(
+                db,
+                AsyncJob.ArchiveChildDocument(documentId),
+            )
         }
 
         // Verify the document was NOT marked as archived in the database
@@ -276,7 +289,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
         )
 
         // Execute the archive method
-        uploadToArchive(db, documentId, särmäClient, documentService, logger)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->
@@ -304,7 +317,7 @@ class ArchiveChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBe
         )
 
         // Execute the archive method
-        uploadToArchive(db, documentId, särmäClient, documentService, logger)
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
 
         // Verify the document was marked as archived in the database
         db.read { tx ->

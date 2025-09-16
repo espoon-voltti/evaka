@@ -11,9 +11,13 @@ import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.TestInvoiceProductProvider
+import fi.espoo.evaka.document.archival.ArchivalClient
+import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.DefaultPasswordSpecification
+import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
+import fi.espoo.evaka.espoo.archival.SärmäMockClient
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -230,6 +234,12 @@ class SharedIntegrationTestConfig {
         DefaultPasswordSpecification(
             PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1)
         )
+
+    @Bean fun särmäClient(): ArchivalClient = SärmäMockClient()
+
+    @Bean
+    fun archivalIntegrationClient(archivalClient: ArchivalClient): ArchivalIntegrationClient =
+        SärmäChildDocumentClient(archivalClient)
 }
 
 val testFeatureConfig =

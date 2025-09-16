@@ -35,7 +35,7 @@ data class EvakaEnv(
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
     val aromiEnabled: Boolean,
-    val särmäEnabled: Boolean,
+    val archivalEnabled: Boolean,
     val nekkuEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
     val asyncJobRunnerDisabled: Boolean,
@@ -66,7 +66,10 @@ data class EvakaEnv(
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
-                särmäEnabled = env.lookup("evaka.integration.sarma.enabled") ?: false,
+                archivalEnabled =
+                    env.lookup("evaka.integration.archival.enabled")
+                        ?: env.lookup("evaka.integration.sarma.enabled")
+                        ?: false,
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
@@ -176,6 +179,7 @@ data class EmailEnv(
             when (val volttiEnv = System.getenv("VOLTTI_ENV")) {
                 "prod",
                 null -> null
+
                 else -> volttiEnv
             }
 

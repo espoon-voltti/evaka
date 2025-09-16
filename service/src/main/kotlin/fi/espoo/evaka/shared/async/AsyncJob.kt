@@ -474,9 +474,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class ArchiveChildDocument(val documentId: ChildDocumentId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
+    data class ArchiveChildDocument(
+        val documentId: ChildDocumentId,
+        override val user: AuthenticatedUser? = null,
+    ) : AsyncJob
 
     companion object {
         val main =
