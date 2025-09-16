@@ -180,3 +180,27 @@ class DeserializingTestNekkuClient(
         )
     }
 }
+
+class FailingNekkuClient(
+    private val customers: List<NekkuApiCustomer> = emptyList(),
+    private val specialDiets: List<NekkuApiSpecialDiet> = emptyList(),
+    private val nekkuProducts: List<NekkuApiProduct> = emptyList(),
+) : NekkuClient {
+    val orders = mutableListOf<NekkuClient.NekkuOrders>()
+
+    override fun getCustomers(): List<NekkuCustomer> {
+        return customers.map { it.toEvaka() }
+    }
+
+    override fun getSpecialDiets(): List<NekkuSpecialDiet> {
+        return specialDiets.map { it.toEvaka() }
+    }
+
+    override fun getProducts(): List<NekkuProduct> {
+        return nekkuProducts.map { it.toEvaka() }
+    }
+
+    override fun createNekkuMealOrder(nekkuOrders: NekkuClient.NekkuOrders): NekkuOrderResult {
+        throw RuntimeException("Test failure")
+    }
+}
