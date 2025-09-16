@@ -1296,21 +1296,15 @@ sealed interface Action {
         READ_FEE_ALTERATIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChild(),
         ),
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild(),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
             HasGlobalRole(ADMIN),
