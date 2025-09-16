@@ -8,7 +8,7 @@ import React, { useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
+import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import NavLink from 'lib-components/atoms/NavLink'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -91,8 +91,8 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
+  const containerRef = useCloseOnOutsideEvent(open, close)
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
@@ -102,7 +102,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   }, [open])
 
   return (
-    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}

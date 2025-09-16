@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { Link } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
+import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -211,8 +211,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
+  const containerRef = useCloseOnOutsideEvent(open, close)
 
   const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
   useEffect(() => {
@@ -244,7 +244,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   )
 
   return (
-    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         className={classNames({ active })}
         onClick={toggleOpen}
@@ -313,8 +313,8 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
 }) {
   const t = useTranslation()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnFocusOutside = useOnFocusOutside(close)
   const closeOnEscape = useOnEscape(close)
+  const containerRef = useCloseOnOutsideEvent(open, close)
   const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
@@ -329,7 +329,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   }, [open])
 
   return (
-    <DropDownContainer onBlur={closeOnFocusOutside} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
       <DropDownButton
         onClick={toggleOpen}
         data-qa="sub-nav-menu-desktop"

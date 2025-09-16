@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { useOnFocusOutside } from 'lib-common/utils/useOnFocusOutside'
+import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins } from 'lib-components/white-space'
@@ -31,12 +31,12 @@ export default React.memo(function EllipsisMenu({
   ['data-qa']: dataQa
 }: Props) {
   const [isMenuOpen, { toggle: toggleMenu, off: closeMenu }] = useBoolean(false)
-  const closeOnFocusOutside = useOnFocusOutside(closeMenu)
+  const containerRef = useCloseOnOutsideEvent(isMenuOpen, closeMenu)
 
   const { i18n } = useTranslation()
 
   return (
-    <Container onBlur={closeOnFocusOutside}>
+    <Container ref={containerRef}>
       {items.length > 0 && (
         <>
           <IconOnlyButton
