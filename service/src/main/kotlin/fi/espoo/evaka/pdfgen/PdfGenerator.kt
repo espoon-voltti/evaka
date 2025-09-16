@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pdfgen
 
-import com.lowagie.text.pdf.BaseFont
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -28,6 +27,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
+import org.openpdf.text.pdf.BaseFont
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
