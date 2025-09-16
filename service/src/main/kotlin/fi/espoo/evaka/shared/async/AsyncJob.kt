@@ -415,6 +415,16 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNekkuOrderFailureWarningEmail(
+        val groupId: GroupId,
+        val groupName: String,
+        val orderDate: LocalDate,
+        val employeeId: EmployeeId,
+        val errorMessage: String,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAbsenceApplicationDecidedEmail(val absenceApplicationId: AbsenceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -549,6 +559,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendMissingReservationsReminder::class,
                     SendNekkuCustomerNumberNullificationWarningEmail::class,
                     SendNekkuSpecialDietRemovalWarningEmail::class,
+                    SendNekkuOrderFailureWarningEmail::class,
                     SendNewBrowserLoginEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
                     SendNewDecisionEmail::class,

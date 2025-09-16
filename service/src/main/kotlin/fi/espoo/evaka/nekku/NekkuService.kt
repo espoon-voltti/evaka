@@ -11,6 +11,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.NekkuEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.getDaycareIdByGroup
+import fi.espoo.evaka.absence.getGroupName
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
@@ -29,6 +30,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -42,6 +45,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
@@ -65,6 +69,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::sendNekkuOrder)
         asyncJobRunner.registerHandler(::sendNekkuCustomerNumberNullificationWarningEmail)
         asyncJobRunner.registerHandler(::sendNekkuSpecialDietRemovalWarningEmail)
+        asyncJobRunner.registerHandler(::sendNekkuOrderFailureWarningEmail)
     }
 
     fun syncNekkuCustomers(
@@ -166,7 +171,14 @@ class NekkuService(
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
-        createAndSendNekkuOrder(client, dbc, groupId = job.groupId, date = job.date)
+        createAndSendNekkuOrder(
+            client,
+            dbc,
+            groupId = job.groupId,
+            date = job.date,
+            asyncJobRunner = asyncJobRunner,
+            clock.now(),
+        )
     }
 
     fun sendNekkuCustomerNumberNullificationWarningEmail(
@@ -223,6 +235,29 @@ class NekkuService(
                 job.employeeId,
                 content = content,
                 traceId = "${job.unitId}:${job.employeeId}",
+                emailEnv.sender(Language.fi),
+            )
+            ?.let { emailClient.send(it) }
+    }
+
+    fun sendNekkuOrderFailureWarningEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendNekkuOrderFailureWarningEmail,
+    ) {
+        val formattedDate = job.orderDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        val content =
+            EmailContent.fromHtml(
+                subject = "Ryhmän ${job.groupName} Nekku-tilaus epäonnistui",
+                html =
+                    "<p>Ryhmän ${job.groupName} Nekku-tilaus päivälle $formattedDate epäonnistui</p><p>Virheilmoitus: ${job.errorMessage}</p>",
+            )
+
+        Email.createForEmployee(
+                dbc,
+                job.employeeId,
+                content = content,
+                traceId = "${job.groupId}:${job.employeeId}",
                 emailEnv.sender(Language.fi),
             )
             ?.let { emailClient.send(it) }
@@ -412,6 +447,8 @@ fun createAndSendNekkuOrder(
     dbc: Database.Connection,
     groupId: GroupId,
     date: LocalDate,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
 ) {
     try {
 
@@ -492,6 +529,29 @@ fun createAndSendNekkuOrder(
 
         dbc.transaction { tx ->
             tx.setNekkuReportOrderErrorReport(groupId, date, e.localizedMessage)
+
+            val daycareId = tx.getDaycareIdByGroup(groupId)
+            val groupName = tx.getGroupName(groupId) ?: "Tuntematon ryhmä"
+            val supervisors =
+                tx.getDaycareAclRows(
+                    daycareId = daycareId,
+                    includeStaffOccupancy = false,
+                    includeStaffEmployeeNumber = false,
+                    role = UserRole.UNIT_SUPERVISOR,
+                )
+            asyncJobRunner.plan(
+                tx,
+                supervisors.map {
+                    AsyncJob.SendNekkuOrderFailureWarningEmail(
+                        groupId,
+                        groupName,
+                        date,
+                        it.employee.id,
+                        e.localizedMessage,
+                    )
+                },
+                runAt = now,
+            )
         }
     }
 }
