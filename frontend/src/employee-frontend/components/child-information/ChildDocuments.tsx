@@ -10,8 +10,8 @@ import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { openEndedLocalDateRange } from 'lib-common/form/fields'
-import { object, oneOf, required } from 'lib-common/form/form'
+import { boolean, openEndedLocalDateRange } from 'lib-common/form/fields'
+import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
   ChildDocumentSummary,
@@ -34,6 +34,7 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import type { ChildDocumentCategory } from 'lib-components/document-templates/documents'
 import { getDocumentCategory } from 'lib-components/document-templates/documents'
@@ -533,25 +534,35 @@ const CreationModal = React.memo(function CreationModal({
   )
   const [, navigate] = useLocation()
 
-  const form = required(oneOf<DocumentTemplateId>())
-  const bind = useForm(
-    form,
+  const formModel = object({
+    templateId: required(oneOf<DocumentTemplateId>()),
+    confirmation: validated(boolean(), (value) =>
+      !value ? 'required' : undefined
+    )
+  })
+  const form = useForm(
+    formModel,
     () => ({
-      domValue: templates[0]?.id,
-      options: templates.map((t) => ({
-        domValue: t.id,
-        value: t.id,
-        label: t.name
-      }))
+      templateId: {
+        domValue: templates[0]?.id,
+        options: templates.map((t) => ({
+          domValue: t.id,
+          value: t.id,
+          label: t.name
+        }))
+      },
+      confirmation: false
     }),
     i18n.validationErrors
   )
+
+  const { templateId, confirmation } = useFormFields(form)
 
   const submit = async () => {
     const res = await createChildDocument({
       body: {
         childId,
-        templateId: bind.value()
+        templateId: templateId.value()
       }
     })
     if (res.isSuccess) {
@@ -568,11 +579,16 @@ const CreationModal = React.memo(function CreationModal({
       resolveLabel={i18n.common.confirm}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
-      resolveDisabled={!bind.isValid()}
+      resolveDisabled={!form.isValid()}
     >
       <FixedSpaceColumn>
         <Label>{i18n.childInformation.childDocuments.select}</Label>
-        <SelectF bind={bind} data-qa="template-select" />
+        <SelectF bind={templateId} data-qa="template-select" />
+        <CheckboxF
+          bind={confirmation}
+          label={i18n.childInformation.childDocuments.confirmation}
+          data-qa="confirmation"
+        />
       </FixedSpaceColumn>
     </AsyncFormModal>
   )
