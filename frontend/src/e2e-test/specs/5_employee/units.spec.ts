@@ -237,4 +237,24 @@ describe('Employee - Units', () => {
       .unitRow(closedUnit.id)
       .assertFields({ name: closedUnit.name })
   })
+
+  test('Units list is shown when there is only one open unit and some closed units', async () => {
+    const area = await Fixture.careArea().save()
+    const closedUnit = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Wanha päiväkoti',
+      openingDate: LocalDate.of(1900, 1, 1),
+      closingDate: LocalDate.of(2000, 1, 1)
+    }).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unitFixture.id)
+      .unitSupervisor(closedUnit.id)
+      .save()
+
+    await employeeLogin(page, unitSupervisor)
+    const unitsPage = await UnitsPage.open(page)
+    await unitsPage.assertRowCount(1)
+    await unitsPage.showClosedUnits(true)
+    await unitsPage.assertRowCount(2)
+  })
 })

@@ -61,7 +61,7 @@ export default React.memo(function Units() {
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
   const [, navigate] = useLocation()
-  const units = useQueryResult(daycaresQuery({ includeClosed }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
 
   const sortBy = (column: SearchColumn) => {
     if (sortColumn === column) {
