@@ -55,6 +55,7 @@ function ServiceNeedReadRow({
       <Td>
         <Toolbar
           dataQaEdit="service-need-edit"
+          dataQaDelete="service-need-delete"
           dateRange={serviceNeed}
           onEdit={onEdit}
           editable={permittedActions.includes('UPDATE')}

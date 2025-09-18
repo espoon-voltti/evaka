@@ -138,8 +138,6 @@ const q = new Queries()
 
 export const childQuery = q.query(getChild)
 
-export const deleteServiceNeedMutation = q.mutation(deleteServiceNeed, [])
-
 export const guardiansQuery = q.query(getPersonGuardians)
 
 export const updateGuardianEvakaRightsMutation = q.mutation(
@@ -192,6 +190,10 @@ export const createServiceNeedMutation = q.mutation(postServiceNeed, [
 ])
 
 export const updateServiceNeedMutation = q.mutation(putServiceNeed, [
+  placementsQuery.prefix
+])
+
+export const deleteServiceNeedMutation = q.mutation(deleteServiceNeed, [
   placementsQuery.prefix
 ])
 
