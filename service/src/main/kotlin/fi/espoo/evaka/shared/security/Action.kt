@@ -1296,21 +1296,13 @@ sealed interface Action {
         READ_FEE_ALTERATIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild(),
         ),
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChild(),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1641,17 +1633,13 @@ sealed interface Action {
         ),
         CREATE_CHILD_DOCUMENTS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inUnitOfGroup(),
-            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
+            HasGroupRole(STAFF).inGroup(),
         ), // used in UI
         READ_CITIZEN_DOCUMENT_RESPONSE_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inUnitOfGroup(),
-            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inGroup(),
+            HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup(),
+            HasGroupRole(STAFF).inGroup(),
         ),
         NEKKU_MANUAL_ORDER(
             HasGlobalRole(ADMIN),
@@ -2368,17 +2356,11 @@ sealed interface Action {
         READ(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
@@ -2386,50 +2368,34 @@ sealed interface Action {
         DOWNLOAD(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(editable = true),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(editable = true),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(editable = true),
         ),
         PUBLISH(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(publishable = true),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(publishable = true),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(publishable = true),
         ),
         NEXT_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
         ),
         PREV_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(canGoToPrevStatus = true),
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(canGoToPrevStatus = true),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
@@ -2437,16 +2403,12 @@ sealed interface Action {
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(deletable = true),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(deletable = true),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(deletable = true),
         ),
         PROPOSE_DECISION(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfChildDocument(),
         ),
         ACCEPT_DECISION(IsEmployee.andIsDecisionMakerForChildDocumentDecision()),
