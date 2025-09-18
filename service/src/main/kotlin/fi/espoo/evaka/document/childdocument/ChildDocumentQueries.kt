@@ -513,12 +513,15 @@ fun Database.Read.getChildDocumentDecisionMakers(documentId: ChildDocumentId): L
 SELECT id, first_name, last_name, email, external_id, created, updated, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
 FROM employee e
 WHERE e.roles && ${bind(listOf(UserRole.ADMIN, UserRole.DIRECTOR))} OR EXISTS(
-    SELECT FROM daycare_acl acl 
-    WHERE acl.employee_id = e.id AND acl.role = ANY(${bind(listOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER))})
+    SELECT FROM daycare_acl acl
+        JOIN daycare d ON d.id = acl.daycare_id
+    WHERE acl.employee_id = e.id 
+        AND acl.role = ANY(${bind(listOf(UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER))})
+        AND d.provider_type <> 'PRIVATE_SERVICE_VOUCHER'
 ) OR EXISTS( -- always include currently selected even if roles change
     SELECT FROM child_document cd
     WHERE cd.id = ${bind(documentId)} AND cd.decision_maker = e.id
-) 
+)
 """
             )
         }
