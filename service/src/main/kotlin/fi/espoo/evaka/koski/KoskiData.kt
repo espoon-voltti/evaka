@@ -328,7 +328,8 @@ data class KoskiActivePreschoolDataRaw(
         val childSupportWithoutEce = childSupport.intersection(listOf(placementSpan))
         val childSupportWithEce =
             childSupportAndExtendedCompulsoryEducation.intersection(listOf(placementSpan))
-        val allChildSupport = childSupportWithoutEce.addAll(childSupportWithEce)
+        val allChildSupport =
+            childSupportWithoutEce.addAll(childSupportWithEce).addAll(childSupportWithOldEce)
 
         // Koski only accepts one range
         val longestTransportBenefit =
