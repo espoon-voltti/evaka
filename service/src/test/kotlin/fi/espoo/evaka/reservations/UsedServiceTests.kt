@@ -175,6 +175,30 @@ class UsedServiceTests {
     }
 
     @Test
+    fun `returns no used service for billable planned absence`() {
+        compute(
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                absences = listOf(AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE),
+            )
+            .also {
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+        compute(
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                absences =
+                    listOf(
+                        AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE,
+                        AbsenceType.OTHER_ABSENCE to AbsenceCategory.NONBILLABLE,
+                    ),
+            )
+            .also {
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+    }
+
+    @Test
     fun `uses hours divided by 21 if other than planned absences exist without reservation`() {
         compute(absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)).also {
             assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).toLong())

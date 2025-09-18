@@ -696,9 +696,13 @@ fun computeUsedService(
         )
     }
 
+    val absenceCategoriesByType = absences.groupBy({ it.first }, { it.second })
     val isPlannedAbsence =
         absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
-            absenceCategories == placementType.absenceCategories()
+            absenceCategories == placementType.absenceCategories() ||
+            absenceCategoriesByType[AbsenceType.PLANNED_ABSENCE]?.contains(
+                AbsenceCategory.BILLABLE
+            ) == true
 
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
