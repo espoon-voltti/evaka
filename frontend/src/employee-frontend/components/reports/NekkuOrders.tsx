@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { Failure, Loading, Success, wrapResult } from 'lib-common/api'
@@ -92,13 +92,40 @@ export default React.memo(function NekkuOrders() {
     filters.groupIds
   ])
 
-  const sortedUnits = units
-    .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
-    .getOrElse([])
+  const sortedUnits = useMemo(
+    () =>
+      units
+        .map((data) =>
+          data
+            .filter(
+              (value) =>
+                (value.openingDate == null ||
+                  value.openingDate <= filters.range.end) &&
+                (value.closingDate == null ||
+                  filters.range.start <= value.closingDate)
+            )
+            .sort((a, b) => a.name.localeCompare(b.name, lang))
+        )
+        .getOrElse([]),
+    [filters, units, lang]
+  )
 
-  const sortedGroups = groups
-    .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
-    .getOrElse([])
+  const sortedGroups = useMemo(
+    () =>
+      groups
+        .map((data) =>
+          data
+            .filter(
+              (value) =>
+                (value.startDate == null ||
+                  value.startDate <= filters.range.end) &&
+                (value.endDate == null || filters.range.start <= value.endDate)
+            )
+            .sort((a, b) => a.name.localeCompare(b.name, lang))
+        )
+        .getOrElse([]),
+    [filters, groups, lang]
+  )
 
   return (
     <Container>
