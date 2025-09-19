@@ -755,6 +755,17 @@ export class PlacementsSection extends Section {
   #nthServiceNeedEditButton = (index: number) =>
     this.#serviceNeedRow(index).findByDataQa('service-need-edit')
 
+  nthServiceNeedDeleteButton = (index: number) =>
+    this.#serviceNeedRow(index).findByDataQa('service-need-delete')
+
+  confirmDelete = async () => {
+    await this.find('[data-qa="modal-okBtn"]').click()
+  }
+
+  assertServiceNeedRowCount = async (expected: number) => {
+    await this.findAll('[data-qa="service-need-row"]').assertCount(expected)
+  }
+
   #serviceNeedShiftCareCheckBox = new Checkbox(
     this.findByDataQa('shift-care-toggle')
   )

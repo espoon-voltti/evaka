@@ -19,6 +19,7 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -144,5 +145,21 @@ describe('Service need', () => {
       serviceNeedOptionPartWeekNull.nameFi
     )
     await section.assertNthServiceNeedPartWeek(0, true)
+  })
+
+  test('service needs update after deleting', async () => {
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      optionId: activeServiceNeedOption.id,
+      confirmedBy: evakaUserId(employee.id),
+      startDate: mockToday,
+      endDate: mockToday.addDays(10)
+    }).save()
+    const section = await openCollapsible()
+    await section.assertServiceNeedRowCount(1)
+    await section.nthServiceNeedDeleteButton(0).click()
+    await section.confirmDelete()
+    await waitUntilTrue(() => section.addMissingServiceNeedButton.visible)
+    await section.assertServiceNeedRowCount(0)
   })
 })
