@@ -442,11 +442,7 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
 ): Map<ChildId, DateSet> {
     val enabledForHourBasedServiceNeedsPredicate =
         if (enabledForHourBasedServiceNeeds) {
-            PredicateSql {
-                where(
-                    "COALESCE(sno.daycare_hours_per_month, sno_default.daycare_hours_per_month) IS NOT NULL"
-                )
-            }
+            PredicateSql { where("ro.daycare_hours_per_month IS NOT NULL") }
         } else {
             PredicateSql.alwaysFalse()
         }
@@ -454,21 +450,58 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
     return createQuery {
             sql(
                 """
-            SELECT
-                pl.child_id,
-                range_agg(daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)}) AS enabled_ranges
-            FROM placement pl
-            JOIN service_need sn ON sn.placement_id = pl.id
-            JOIN service_need_option sno ON sno.id = sn.option_id
-            LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
-            WHERE
-                pl.child_id = ANY(${bind(childIds)}) AND
-                daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
-                daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND (
-                    COALESCE(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL OR
-                    ${predicate(enabledForHourBasedServiceNeedsPredicate)}
-                )
-            GROUP BY child_id
+WITH relevant_placements AS
+         (SELECT pl.id,
+                 pl.type,
+                 pl.child_id,
+                 daterange(pl.start_date, pl.end_date, '[]') * ${bind(range)} AS period
+          FROM placement pl
+          WHERE pl.child_id = ANY (${bind(childIds)})
+            AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}),
+     relevant_defaults AS (SELECT sno.id,
+                                  sno.valid_placement_type,
+                                  daterange(sno.valid_from, sno.valid_to, '[]') * ${bind(range)} AS period,
+                                  sno.daycare_hours_per_month,
+                                  sno.contract_days_per_month
+                           FROM service_need_option sno
+                           WHERE sno.default_option = true
+                             AND daterange(sno.valid_from, sno.valid_to, '[]') && ${bind(range)}),
+     relevant_service_needs AS (SELECT sn.id,
+                                       daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS period,
+                                       rpl.child_id,
+                                       rpl.id                                                       AS placement_id,
+                                       sno.daycare_hours_per_month,
+                                       sno.contract_days_per_month
+                                FROM relevant_placements rpl
+                                         JOIN service_need sn ON sn.placement_id = rpl.id
+                                         JOIN service_need_option sno
+                                              ON sn.option_id = sno.id),
+     relevant_gaps AS (SELECT rpl.child_id,
+                              unnest(
+                                      range_agg(rpl.period * rd.period)
+                                          - range_agg(rsn.period)
+                              ) AS period,
+                              rd.contract_days_per_month,
+                              rd.daycare_hours_per_month
+                       FROM relevant_placements rpl
+                                JOIN relevant_defaults rd
+                                     ON rpl.type = rd.valid_placement_type AND rpl.period && rd.period
+                                LEFT JOIN relevant_service_needs rsn ON rpl.id = rsn.placement_id
+                       GROUP BY rpl.id, rpl.period, rpl.child_id, rd.contract_days_per_month, rd.daycare_hours_per_month)
+SELECT un.child_id, range_agg(un.period) AS enabled_ranges
+FROM (SELECT ro.child_id,
+             ro.period AS period
+      FROM relevant_service_needs ro
+      WHERE (${predicate(enabledForHourBasedServiceNeedsPredicate)} OR
+             ro.contract_days_per_month IS NOT NULL)
+      UNION ALL
+
+      SELECT ro.child_id,
+             ro.period AS period
+      FROM relevant_gaps ro
+      WHERE (${predicate(enabledForHourBasedServiceNeedsPredicate)} OR
+                 ro.contract_days_per_month IS NOT NULL)) AS un
+GROUP BY un.child_id;
             """
             )
         }

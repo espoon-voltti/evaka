@@ -59,6 +59,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.user.EvakaUserType
@@ -543,6 +544,152 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 .containsExactlyInAnyOrder(
                     Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE),
                     Tuple(AbsenceCategory.NONBILLABLE, AbsenceType.OTHER_ABSENCE),
+                )
+        }
+
+        @Test
+        fun `postAbsences inserts billable planned absence when contract hours for default service need`() {
+            db.transaction { tx ->
+                // modify placement type default service need for DAYCARE to be hourly allowing
+                // PLANNED_ABSENCE
+                tx.execute {
+                    sql(
+                        "UPDATE service_need_option SET daycare_hours_per_month = 85 WHERE id = '${snDefaultDaycare.id}'"
+                    )
+                }
+
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = wednesday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareFullDay35.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = wednesday,
+                        endDate = wednesday,
+                        optionId = snDaycareFullDay35.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, wednesday),
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                ),
+            )
+
+            // check service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                )
+
+            // check default service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, tuesday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                )
+
+            // check new service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, wednesday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                )
+        }
+
+        @Test
+        fun `postAbsences inserts billable other absence when contract hours for default service need`() {
+            db.transaction { tx ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = PlacementType.DAYCARE,
+                            childId = child.id,
+                            unitId = unit.id,
+                            startDate = monday,
+                            endDate = wednesday,
+                        )
+                    )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = monday,
+                        endDate = monday,
+                        optionId = snDaycareHours120.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = wednesday,
+                        endDate = wednesday,
+                        optionId = snDaycareHours120.id,
+                        shiftCare = ShiftCareType.NONE,
+                        confirmedBy = employee.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+            postAbsences(
+                adult.user(CitizenAuthLevel.WEAK),
+                AbsenceRequest(
+                    childIds = setOf(child.id),
+                    dateRange = FiniteDateRange(monday, wednesday),
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                ),
+            )
+
+            // check service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, monday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
+                )
+
+            // check default service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, tuesday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.OTHER_ABSENCE)
+                )
+
+            // check new service need absence
+            assertThat(db.transaction { tx -> tx.getAbsencesOfChildByDate(child.id, wednesday) })
+                .extracting({ it.category }, { it.absenceType })
+                .containsExactlyInAnyOrder(
+                    Tuple(AbsenceCategory.BILLABLE, AbsenceType.PLANNED_ABSENCE)
                 )
         }
     }
