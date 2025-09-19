@@ -776,7 +776,7 @@ export const fi = {
           CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION:
             'Lapsikohtainen tuki ja varhennettu oppivelvollisuus (Koskeen, älä käytä ennen 1.10.2025)',
           CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION:
-            'Lapsikohtainen tuki ja vanhan mallinen pidennetty oppivelvollisuus (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
+            'Lapsikohtainen tuki ja vanhan mallinen pidennetty ov - muu kuin vaikeimmin kehitysvammainen (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
           GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot'
         },
         otherAssistanceMeasureType: {

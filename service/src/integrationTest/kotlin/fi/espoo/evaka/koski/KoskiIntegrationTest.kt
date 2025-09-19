@@ -431,6 +431,35 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `transition period preschool assistance info is converted to Koski extra information`() {
+        val assistance =
+            DevPreschoolAssistance(
+                modifiedBy = testDecisionMaker_1.toEvakaUser(),
+                childId = testChild_1.id,
+                validDuring = testPeriod(0L to 1L),
+                level = PreschoolAssistanceLevel.CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION,
+            )
+
+        insertPlacement(testChild_1)
+        db.transaction { tx -> tx.insert(assistance) }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        assertEquals(
+            Lisätiedot(
+                vammainen = listOf(Aikajakso.from(assistance.validDuring)),
+                vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = Aikajakso.from(assistance.validDuring),
+                varhennetunOppivelvollisuudenJaksot = null,
+                kuljetusetu = null,
+                erityisenTuenPäätökset = null,
+                tuenPäätöksenJaksot = listOf(Tukijakso.from(assistance.validDuring)),
+            ),
+            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
+        )
+    }
+
+    @Test
     fun `post-2026 preschool assistance info is converted to Koski extra information`() {
         data class TestCase(val period: FiniteDateRange, val level: PreschoolAssistanceLevel)
         insertPlacement(testChild_1, period = preschoolTerm2027)
