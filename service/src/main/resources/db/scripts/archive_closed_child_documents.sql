@@ -8,6 +8,25 @@
 -- Archiving strategy: Distributes the job limit evenly across all eligible document types,
 -- selecting the oldest unarchived documents first from each type to ensure balanced processing.
 
+-- Follow the progress via Kibana:
+-- {
+--   "bool": {
+--     "minimum_should_match": 1,
+--     "should": [
+--       {
+--         "match_phrase": {
+--           "loggerName": "fi.espoo.evaka.shared.async.AsyncJobPool.AsyncJob.bulk"
+--         }
+--       },
+--       {
+--         "match_phrase": {
+--           "loggerName": "fi.espoo.evaka.document.archival.ArchiveChildDocumentService"
+--         }
+--       }
+--     ]
+--   }
+-- }
+
 -- A configurable limit for how many archive jobs to schedule in one run.
 \set job_limit 100
 
