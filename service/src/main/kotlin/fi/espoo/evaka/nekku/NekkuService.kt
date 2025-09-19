@@ -389,7 +389,7 @@ fun planNekkuManualOrderJob(
     if (date.isOnOrBefore(today))
         throw BadRequest("Can only make a manual order beginning tomorrow")
     // this week we have made the orders for up to the week after next
-    if (date.isAfter(today.nextWeeksSunday().plusDays(7)))
+    if (date.isAfter(today.nextWeeksSunday().plusDays(14)))
         throw BadRequest(
             "Can only make a manual order if an automatic order has been made for the day"
         )

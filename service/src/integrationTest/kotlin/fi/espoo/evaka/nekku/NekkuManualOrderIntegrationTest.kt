@@ -91,13 +91,7 @@ class NekkuManualOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
 
             assertThrows<BadRequest> {
-                planNekkuManualOrderJob(
-                    tx,
-                    asyncJobRunner,
-                    now,
-                    group.id,
-                    LocalDate.of(2025, 5, 26),
-                )
+                planNekkuManualOrderJob(tx, asyncJobRunner, now, group.id, LocalDate.of(2025, 6, 2))
             }
         }
     }
