@@ -28,7 +28,7 @@ export default React.memo(function NekkuOrderModal({
   const [date, setDate] = useState<LocalDate | null>(null)
 
   const lastOrderedDate = (today: LocalDate) => {
-    return today.addDays(21 - today.getIsoDayOfWeek())
+    return today.addDays(28 - today.getIsoDayOfWeek())
   }
 
   return (
