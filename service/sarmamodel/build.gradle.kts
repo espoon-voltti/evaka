@@ -17,7 +17,7 @@ sourceSets {
 dependencies {
     xsd2java("com.sun.xml.bind:jaxb-xjc:4.0.5")
     xsd2java("com.sun.xml.bind:jaxb-impl:4.0.5")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.3")
 }
 
 tasks.register<JavaExec>("generateJaxb") {
