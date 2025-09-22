@@ -58,6 +58,7 @@ export default React.memo(function CreateUnitPage() {
               financeDecisionHandlerOptions={financeDecisionHandlerOptions}
               unit={undefined}
               lastPlacementDate={null}
+              reservedOphUnitOIDs={[]}
             >
               {(getFormData, isValid) => (
                 <>

@@ -4898,6 +4898,7 @@ export const fi = {
       daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
       capacity: 'Kapasiteetti on virheellinen',
       costCenter: 'Kustannuspaikka puuttuu',
+      reservedOphUnitOid: 'Yksikön OPH OID on jo käytössä toisessa yksikössä',
       url: 'URL-osoitteessa pitää olla https://- tai http://-etuliite',
       visitingAddress: {
         streetAddress: 'Käyntiosoitteen katuosoite puuttuu',

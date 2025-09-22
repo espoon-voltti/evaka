@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -291,5 +293,32 @@ describe('Employee - unit editor validations and warnings', () => {
       '',
       false
     )
+  })
+
+  test('Setting a reserved oph unit oid shows a validation error', async () => {
+    const reservedOphUnitOID = 'reserved-oph-unit-oid'
+    await Fixture.daycare({
+      ...testDaycare,
+      id: randomId<DaycareId>(),
+      ophUnitOid: reservedOphUnitOID
+    }).save()
+
+    const unitEditorPage = await openUnitEditorPage()
+    await unitEditorPage.fillManagerData(
+      'Päiväkodin Johtaja',
+      '01234567',
+      'manager@example.com'
+    )
+
+    // The daycare fixture has this on but it needs to be turned off to be able to save
+    await unitEditorPage.setInvoiceByMunicipality(false)
+
+    await unitEditorPage.fillDayTimeRange(3, '10:00', '16:00')
+
+    await unitEditorPage.setOphUnitOID(reservedOphUnitOID)
+    await unitEditorPage.assertWarningIsVisible('reserved-oph-unit-oid')
+    await unitEditorPage.setOphUnitOID('a-unique-oph-unit-oid')
+    await unitEditorPage.assertWarningIsNotVisible('reserved-oph-unit-oid')
+    await unitEditorPage.submit()
   })
 })
