@@ -547,6 +547,7 @@ export interface DevDaycare {
   preschoolApplyPeriod: DateRange | null
   providerId: string
   providerType: ProviderType
+  serviceWorkerNote: string
   shiftCareOpenOnHolidays: boolean
   shiftCareOperationTimes: (TimeRange | null)[] | null
   type: CareType[]
