@@ -226,7 +226,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-\t0\t0'
       )
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
@@ -234,7 +234,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-\t0\t0'
       )
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
@@ -245,14 +245,14 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-\t0\t0'
       )
 
     await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-\t0\t0'
       )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
@@ -260,7 +260,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-\t0\t0'
       )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
@@ -271,7 +271,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-\t0\t0'
       )
   })
   test('Shows assistance decision counts', async () => {
@@ -428,7 +428,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t1\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-\t0\t0'
       )
 
     await report.providerTypeSelect.fillAndSelectFirst('Palveluseteli')
@@ -539,7 +539,7 @@ describe('Assistance need and actions report', () => {
     const anteroRow =
       'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5\t1\t1'
     const lisaRow =
-      'Lisä Lapsi\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t1\t0\t0'
+      'Lisä Lapsi\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-\t0\t0'
 
     //Group view count check
     await report.needsAndActionsRows
