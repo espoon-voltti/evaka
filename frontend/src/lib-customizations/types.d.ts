@@ -326,6 +326,11 @@ interface BaseFeatureFlags {
    * Enable showing metadata in citizen applications
    */
   showMetadataToCitizen?: boolean
+
+  /**
+   * Enable option to display applications in a service worker placement desktop mode
+   */
+  placementDesktop?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
