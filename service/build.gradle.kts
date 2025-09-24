@@ -293,6 +293,10 @@ tasks {
             nodeAuditEnabled = false
             nodeEnabled = false
             nuspecEnabled = false
+            ossIndex.apply {
+                username = System.getenv("OSS_INDEX_USERNAME")
+                password = System.getenv("OSS_INDEX_PASSWORD")
+            }
         }
         nvd.apply { apiKey = System.getenv("NVD_API_KEY") }
         suppressionFile = "$projectDir/owasp-suppressions.xml"
