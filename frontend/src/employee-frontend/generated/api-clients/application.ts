@@ -32,6 +32,7 @@ import type { RejectDecisionRequest } from 'lib-common/generated/api-types/appli
 import type { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
 import type { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import type { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
+import type { TrialPlacementUpdateRequest } from 'lib-common/generated/api-types/application'
 import type { UnitApplications } from 'lib-common/generated/api-types/application'
 import { AxiosProgressEvent } from 'axios'
 import { client } from '../../api/client'
@@ -563,6 +564,24 @@ export async function updateServiceWorkerNote(
     url: uri`/employee/note/service-worker/application/${request.applicationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<NoteRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.updateApplicationTrialPlacement
+*/
+export async function updateApplicationTrialPlacement(
+  request: {
+    applicationId: ApplicationId,
+    body: TrialPlacementUpdateRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/placement-desktop/applications/${request.applicationId}/trial-unit`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<TrialPlacementUpdateRequest>
   })
   return json
 }
