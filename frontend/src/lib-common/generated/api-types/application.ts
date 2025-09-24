@@ -324,6 +324,7 @@ export interface ApplicationSummary {
   status: ApplicationStatus
   streetAddress: string | null
   transferApplication: boolean
+  trialPlacementUnit: DaycareId | null
   type: ApplicationType
   urgent: boolean
   wasOnClubCare: boolean | null

@@ -466,7 +466,8 @@ fun Database.Read.fetchApplicationSummaries(
             a.status_modified_at,
             e.id AS status_modified_by_id,
             e.name AS status_modified_by_name,
-            e.type AS status_modified_by_type
+            e.type AS status_modified_by_type,
+            a.trial_placement_unit
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
@@ -601,6 +602,7 @@ fun Database.Read.fetchApplicationSummaries(
                         column<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, column("current_placement_unit_name"))
                         },
+                    trialPlacementUnit = column("trial_placement_unit"),
                 )
             }
 
