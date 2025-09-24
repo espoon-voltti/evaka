@@ -8,6 +8,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnitInfoBasics
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -38,6 +39,7 @@ data class AssistanceNeedPreschoolDecision(
     val preparer1Name: String?,
     val preparer2Name: String?,
     val decisionMakerName: String?,
+    val processId: CaseProcessId?,
 ) {
     val isValid: Boolean
         get() {

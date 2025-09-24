@@ -10,6 +10,7 @@ import type { AssistanceNeedDecisionId } from './shared'
 import type { AssistanceNeedPreschoolDecisionGuardianId } from './shared'
 import type { AssistanceNeedPreschoolDecisionId } from './shared'
 import type { AssistanceNeedVoucherCoefficientId } from './shared'
+import type { CaseProcessId } from './shared'
 import DateRange from '../../date-range'
 import type { DaycareId } from './shared'
 import type { EmployeeId } from './shared'
@@ -68,6 +69,7 @@ export interface AssistanceNeedDecision {
   pedagogicalMotivation: string | null
   preparedBy1: AssistanceNeedDecisionEmployee | null
   preparedBy2: AssistanceNeedDecisionEmployee | null
+  processId: CaseProcessId | null
   selectedUnit: UnitInfo | null
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
@@ -247,6 +249,7 @@ export interface AssistanceNeedPreschoolDecision {
   isValid: boolean
   preparer1Name: string | null
   preparer2Name: string | null
+  processId: CaseProcessId | null
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   unitName: string | null
