@@ -300,7 +300,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                         // todo
                         preschoolAbsenceTypes.associateWith { type ->
                             when (type) {
-                                AbsenceType.UNKNOWN_ABSENCE -> 4
+                                AbsenceType.OTHER_ABSENCE -> 5
                                 else -> 0
                             }
                         },
@@ -335,7 +335,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                         dailyPreschoolTime =
                             TimeRange(LocalTime.of(9, 0, 0), LocalTime.of(14, 0, 0)),
                         dailyPreparatoryTime =
-                            TimeRange(LocalTime.of(9, 0, 0), LocalTime.of(13, 0, 0)),
+                            TimeRange(LocalTime.of(10, 0, 0), LocalTime.of(15, 0, 0)),
                     )
                 )
             val groupAId =
@@ -576,10 +576,21 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     id = AbsenceId(UUID.randomUUID()),
                     testChildDonald.id,
                     monday,
-                    AbsenceType.UNKNOWN_ABSENCE,
+                    AbsenceType.PLANNED_ABSENCE,
                     HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE,
+                )
+            )
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildDonald.id,
+                    monday,
+                    AbsenceType.PLANNED_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(monday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.BILLABLE,
                 )
             )
 
