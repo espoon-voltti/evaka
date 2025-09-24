@@ -820,6 +820,13 @@ export interface TransferApplicationUnitSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.TrialPlacementUpdateRequest
+*/
+export interface TrialPlacementUpdateRequest {
+  trialUnitId: DaycareId | null
+}
+
+/**
 * Generated from fi.espoo.evaka.application.UnitApplications
 */
 export interface UnitApplications {

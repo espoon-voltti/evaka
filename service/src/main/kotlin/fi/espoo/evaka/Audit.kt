@@ -75,6 +75,7 @@ enum class Audit(
     ApplicationSearch,
     ApplicationSend,
     ApplicationSendDecisionsWithoutProposal,
+    ApplicationTrialPlacementUnitUpdate,
     ApplicationUpdate,
     ApplicationVerify,
     ApplicationsReportRead,

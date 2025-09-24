@@ -722,7 +722,8 @@ sealed interface Action {
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication(),
         ),
-        UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, SERVICE_WORKER));
+        UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        UPDATE_TRIAL_PLACEMENT(HasGlobalRole(ADMIN, SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
