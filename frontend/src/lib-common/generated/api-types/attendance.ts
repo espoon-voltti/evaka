@@ -80,6 +80,7 @@ export interface AttendanceChild {
   dateOfBirth: LocalDate
   firstName: string
   groupId: GroupId | null
+  hasGuardian: boolean
   id: PersonId
   imageUrl: string | null
   lastName: string

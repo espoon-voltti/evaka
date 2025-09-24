@@ -48,6 +48,7 @@ data class AttendanceChild(
     val stickyNotes: List<ChildStickyNote>,
     val imageUrl: String?,
     val reservations: List<ReservationResponse>,
+    val hasGuardian: Boolean,
 )
 
 enum class AttendanceStatus {

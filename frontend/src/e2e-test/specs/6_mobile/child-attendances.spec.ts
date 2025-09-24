@@ -78,8 +78,7 @@ beforeEach(async () => {
 
   await testChild2.saveChild()
   await testChild.saveChild()
-  await Fixture.person(familyWithTwoGuardians.children[0]).saveChild()
-
+  await familyWithTwoGuardians.save()
   await testChildRestricted.saveChild()
 
   await Fixture.employee({ roles: ['ADMIN'] }).save()
@@ -1089,6 +1088,29 @@ describe('Child mobile attendance list', () => {
     await page.goto(mobileSignupUrl)
 
     await assertAttendanceCounts(1, 0, 0, 0, 1)
+  })
+
+  test('If child does not have guardians a message about this is shown ', async () => {
+    await openPage()
+    await createPlacements(testChild.id, group2.id)
+
+    const childWithGuardians = familyWithTwoGuardians.children[0]
+    await Fixture.guardian(
+      childWithGuardians,
+      familyWithTwoGuardians.guardian
+    ).save()
+    await createPlacements(childWithGuardians.id, group2.id)
+
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.selectChild(testChild.id)
+    await childPage.noGuardiansInfoBox.waitUntilVisible()
+
+    await page.goto(mobileSignupUrl)
+    await listPage.selectChild(childWithGuardians.id)
+    await childPage.noGuardiansInfoBox.waitUntilHidden()
   })
 })
 
