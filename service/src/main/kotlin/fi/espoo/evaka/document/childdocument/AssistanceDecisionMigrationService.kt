@@ -79,6 +79,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
 
         if (!decision.status.isDecided())
             throw IllegalStateException("Decision ${decision.id} is not in a decided state")
+        if (!decision.hasDocument)
+            throw IllegalStateException("Decision ${decision.id} has no document key")
         val childId =
             decision.child?.id
                 ?: throw IllegalStateException("Decision ${decision.id} has no child")
