@@ -719,7 +719,7 @@ class MessageController(
                         }
                     }
 
-                    val createdId =
+                    val (createdId, recipientCount) =
                         messageService.sendMessageAsEmployee(
                             tx,
                             user,
@@ -743,15 +743,62 @@ class MessageController(
                     if (body.draftId != null) {
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
                     }
-                    CreateMessageResponse(createdId)
+                    CreateMessageResponse(createdId) to recipientCount
                 }
             }
-            .also {
+            .also { (response, recipientCount) ->
+                // Create metadata for audit logging
+                val auditMeta =
+                    mutableMapOf<String, Any>(
+                        "recipientCount" to recipientCount,
+                        "originalRecipientTypes" to
+                            body.recipients.map { it.type.name }.toSet().sorted(),
+                    )
+
+                // Add specific recipient IDs for areas, units, and groups
+                val areaRecipients = body.recipients.filterIsInstance<MessageRecipient.Area>()
+                if (areaRecipients.isNotEmpty()) {
+                    auditMeta["recipients.areas"] = areaRecipients.map { it.id.toString() }.sorted()
+                }
+
+                val unitRecipients = body.recipients.filterIsInstance<MessageRecipient.Unit>()
+                if (unitRecipients.isNotEmpty()) {
+                    auditMeta["recipients.units"] = unitRecipients.map { it.id.toString() }.sorted()
+                }
+
+                val groupRecipients = body.recipients.filterIsInstance<MessageRecipient.Group>()
+                if (groupRecipients.isNotEmpty()) {
+                    auditMeta["recipients.groups"] =
+                        groupRecipients.map { it.id.toString() }.sorted()
+                }
+
+                // Add filter information if filters are applied
+                body.filters?.let { filters ->
+                    if (filters.yearsOfBirth.isNotEmpty()) {
+                        auditMeta["appliedFilters.yearsOfBirth"] = filters.yearsOfBirth.sorted()
+                    }
+                    if (filters.shiftCare) {
+                        auditMeta["appliedFilters.shiftCare"] = true
+                    }
+                    if (filters.intermittentShiftCare) {
+                        auditMeta["appliedFilters.intermittentShiftCare"] = true
+                    }
+                    if (filters.familyDaycare) {
+                        auditMeta["appliedFilters.familyDaycare"] = true
+                    }
+                    if (filters.placementTypes.isNotEmpty()) {
+                        auditMeta["appliedFilters.placementTypes"] =
+                            filters.placementTypes.map { it.name }.sorted()
+                    }
+                }
+
                 Audit.MessagingNewMessageWrite.log(
                     targetId = AuditId(accountId),
-                    objectId = it.createdId?.let(AuditId::invoke),
+                    objectId = response.createdId?.let(AuditId::invoke),
+                    meta = auditMeta.toMap(),
                 )
             }
+            .first
     }
 
     @GetMapping("/employee/messages/{accountId}/drafts")
