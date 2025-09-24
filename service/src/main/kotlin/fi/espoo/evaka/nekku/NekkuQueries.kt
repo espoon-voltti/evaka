@@ -36,7 +36,7 @@ fun fetchAndUpdateNekkuCustomers(
         error("Refusing to sync empty Nekku customer list into database")
     db.transaction { tx ->
         val nulledGroups = tx.resetNekkuCustomerNumbersNotContainedWithin(customersFromNekku)
-        if (nulledGroups.size != 0)
+        if (nulledGroups.isNotEmpty())
             logger.warn {
                 "Nekku customer list update caused ${nulledGroups.size} customer numbers to be set to null"
             }
@@ -84,13 +84,23 @@ fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
     val affectedGroups =
         createQuery {
                 sql(
-                    "SELECT id FROM daycare_group WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
+                    """
+SELECT id
+FROM daycare_group
+WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})
+                    """
+                        .trimIndent()
                 )
             }
             .toList<GroupId>()
     execute {
         sql(
-            "UPDATE daycare_group SET nekku_customer_number = null WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})"
+            """
+UPDATE daycare_group
+SET nekku_customer_number = null
+WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})
+            """
+                .trimIndent()
         )
     }
     return affectedGroups
@@ -110,10 +120,10 @@ VALUES (
     ${bind{it.name}},
     ${bind{it.group}}
 )
-ON CONFLICT (number) DO 
+ON CONFLICT (number) DO
 UPDATE SET
-  name = excluded.name,
-  customer_group = excluded.customer_group
+    name = excluded.name,
+    customer_group = excluded.customer_group
 WHERE
     nekku_customer.name <> excluded.name OR
     nekku_customer.customer_group <> excluded.customer_group;
@@ -166,15 +176,15 @@ fun Database.Read.getNekkuGroupCustomerMapping(
     createQuery {
             sql(
                 """
-                SELECT 
-                    dg.nekku_customer_number as customerNumber, 
-                    dg.name as groupName, 
-                    nct.type as customerType
-                FROM daycare_group dg 
-                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-                    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
-                WHERE dg.id = ${bind(groupId)}
-                AND ${bind(weekday)} = ANY(nct.weekdays)
+SELECT
+    dg.nekku_customer_number as customerNumber,
+    dg.name as groupName,
+    nct.type as customerType
+FROM daycare_group dg
+    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+WHERE dg.id = ${bind(groupId)}
+    AND ${bind(weekday)} = ANY(nct.weekdays)
             """
             )
         }
@@ -184,15 +194,15 @@ fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
             sql(
                 """
-    SELECT 
-        nc.number, 
-        nc.name, 
-        nc.customer_group AS "group",
-        JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
-    FROM nekku_customer nc
-    LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
-    GROUP BY nc.number, nc.name, nc.customer_group
-    """
+SELECT
+    nc.number,
+    nc.name,
+    nc.customer_group AS "group",
+    JSON_AGG(JSON_BUILD_OBJECT('weekdays', nct.weekdays, 'type', nct.type)) AS customerType
+FROM nekku_customer nc
+LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+GROUP BY nc.number, nc.name, nc.customer_group
+                    """
             )
         }
         .toList<NekkuCustomer>()
@@ -274,7 +284,7 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>) {
     executeBatch(specialDiets) {
         sql(
             """
-    INSERT INTO nekku_special_diet (
+INSERT INTO nekku_special_diet (
     id,
     name
 ) VALUES (
@@ -283,7 +293,7 @@ fun Database.Transaction.setSpecialDiets(specialDiets: List<NekkuSpecialDiet>) {
 )
 ON CONFLICT (id) DO 
 UPDATE SET
-  name = excluded.name
+    name = excluded.name
 WHERE
     nekku_special_diet.name <> excluded.name;
 """
@@ -331,10 +341,10 @@ INSERT INTO nekku_special_diet_field (
 )
 ON CONFLICT (id) DO 
 UPDATE SET
-  name = excluded.name,
-  type = excluded.type
+    name = excluded.name,
+    type = excluded.type
 WHERE
-    nekku_special_diet_field.name <> excluded.name OR 
+    nekku_special_diet_field.name <> excluded.name OR
     nekku_special_diet_field.type <> excluded.type;
 
 """
@@ -352,9 +362,9 @@ fun Database.Transaction.setSpecialDietOptions(
     executeBatch(specialDietOptions) {
         sql(
             """
-                    DELETE FROM nekku_special_diet_choices
-                    WHERE field_id = ${bind { (fieldId, _ ) -> fieldId }}
-                    AND value != ALL(${bind { (_, option) -> option.map { it.value } }})
+DELETE FROM nekku_special_diet_choices
+WHERE field_id = ${bind { (fieldId, _ ) -> fieldId }}
+AND value != ALL(${bind { (_, option) -> option.map { it.value } }})
                 """
                 .trimIndent()
         )
@@ -367,7 +377,7 @@ fun Database.Transaction.setSpecialDietOptions(
 DELETE FROM nekku_special_diet_option 
 WHERE field_id = ${bind { (fieldId, _) -> fieldId}} 
 AND value != ALL(${bind { (_, option) -> option.map { it.value } }});
-            """
+                    """
                     .trimIndent()
             )
         }
@@ -393,12 +403,12 @@ INSERT INTO nekku_special_diet_option (
 )
 ON CONFLICT (field_id, value) DO
 UPDATE SET
-weight = excluded.weight,
-key = excluded.key
+    weight = excluded.weight,
+    key = excluded.key
 WHERE
-nekku_special_diet_option.weight <> excluded.weight OR
-nekku_special_diet_option.key <> excluded.key;
- """
+    nekku_special_diet_option.weight <> excluded.weight OR
+    nekku_special_diet_option.key <> excluded.key;
+                """
         )
     }
 
@@ -416,10 +426,10 @@ fun Database.Transaction.fetchChildrenWithRemovedDiets(
         createQuery {
                 sql(
                     """
-            SELECT DISTINCT child_id
-            FROM nekku_special_diet_choices
-            WHERE diet_id != ALL(${bind(newDiets.map { it.id })})
-        """
+SELECT DISTINCT child_id
+FROM nekku_special_diet_choices
+WHERE diet_id != ALL(${bind(newDiets.map { it.id })})
+                    """
                         .trimIndent()
                 )
             }
@@ -430,10 +440,10 @@ fun Database.Transaction.fetchChildrenWithRemovedDiets(
         createQuery {
                 sql(
                     """
-            SELECT DISTINCT child_id
-            FROM nekku_special_diet_choices
-            WHERE field_id != ALL(${bind(newDiets.flatMap { it.fields.map { it.id } }) })
-        """
+SELECT DISTINCT child_id
+FROM nekku_special_diet_choices
+WHERE field_id != ALL(${bind(newDiets.flatMap { it.fields.map { it.id } }) })
+                    """
                         .trimIndent()
                 )
             }
@@ -448,10 +458,10 @@ fun Database.Transaction.fetchChildrenWithRemovedDiets(
                 createQuery {
                         sql(
                             """
-                SELECT DISTINCT child_id
-                FROM nekku_special_diet_choices
-                WHERE field_id = ${bind(it.id)} AND value != ALL(${bind(it.options?.map { it.value }) })
-            """
+SELECT DISTINCT child_id
+FROM nekku_special_diet_choices
+WHERE field_id = ${bind(it.id)} AND value != ALL(${bind(it.options?.map { it.value }) })
+                        """
                                 .trimIndent()
                         )
                     }
@@ -467,10 +477,10 @@ fun Database.Transaction.fetchChildrenWithRemovedDiets(
     return createQuery {
             sql(
                 """
-            SELECT child_id, diet_id, field_id, value
-            FROM nekku_special_diet_choices
-            WHERE child_id =ANY (${bind(allChildren)})
-        """
+SELECT child_id, diet_id, field_id, value
+FROM nekku_special_diet_choices
+WHERE child_id = ANY (${bind(allChildren)})
+                """
                     .trimIndent()
             )
         }
@@ -503,15 +513,15 @@ fun Database.Transaction.getUnitAndGroupForChildren(
     createQuery {
             sql(
                 """
-            SELECT p.child_id, p.unit_id, dg.name
-            FROM placement p
-            JOIN daycare_group_placement dgp on p.id = dgp.daycare_placement_id
-            JOIN daycare_group dg on dgp.daycare_group_id = dg.id
-            WHERE p.child_id =ANY (${bind(childIds)})
-            AND p.start_date >= ${bind(today)}
-            AND p.end_date <= ${bind(today)}
-            AND dgp.start_date >= ${bind(today)}
-            AND dgp.end_date <= ${bind(today)}
+SELECT p.child_id, p.unit_id, dg.name
+FROM placement p
+    JOIN daycare_group_placement dgp on p.id = dgp.daycare_placement_id
+    JOIN daycare_group dg on dgp.daycare_group_id = dg.id
+WHERE p.child_id =ANY (${bind(childIds)})
+    AND p.start_date >= ${bind(today)}
+    AND p.end_date <= ${bind(today)}
+    AND dgp.start_date >= ${bind(today)}
+    AND dgp.end_date <= ${bind(today)}
         """
                     .trimIndent()
             )
@@ -557,18 +567,21 @@ VALUES (
     ${bind{it.mealTime}},
     ${bind{it.mealType}}
 )
-ON CONFLICT (sku) DO 
+ON CONFLICT (sku) DO
 UPDATE SET
-  name = excluded.name,
-  options_id = excluded.options_id,
-  customer_types = excluded.customer_types,
-  meal_time = excluded.meal_time,
-  meal_type = excluded.meal_type
+    name = excluded.name,
+    options_id = excluded.options_id,
+    customer_types = excluded.customer_types,
+    meal_time = excluded.meal_time,
+    meal_type = excluded.meal_type
 WHERE
+    nekku_product.meal_time IS NULL OR
+    nekku_product.meal_type IS NULL OR
+    excluded.meal_type IS NULL OR
     nekku_product.name <> excluded.name OR
     nekku_product.options_id <> excluded.options_id OR
-    nekku_product.customer_types <> excluded.customer_types OR 
-    nekku_product.meal_time <> excluded.meal_time OR 
+    nekku_product.customer_types <> excluded.customer_types OR
+    nekku_product.meal_time <> excluded.meal_time OR
     nekku_product.meal_type <> excluded.meal_type;
 """
         )
@@ -613,10 +626,10 @@ SELECT
         WHERE a.child_id = rp.child_id AND a.date = ${bind(date)}
     ), '{}'::absence_category[]) AS absences
 FROM realized_placement_one(${bind(date)}) rp
-JOIN daycare_group dg ON dg.id = rp.group_id
-JOIN child ch ON ch.id = rp.child_id
-JOIN person p on ch.id = p.id
-LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+    JOIN daycare_group dg ON dg.id = rp.group_id
+    JOIN child ch ON ch.id = rp.child_id
+    JOIN person p on ch.id = p.id
+    LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.id = ${bind(nekkuGroupId)}
                     """
             )
@@ -650,15 +663,16 @@ fun Database.Read.getNekkuOpenDaycareGroupDates(range: FiniteDateRange): List<Gr
     createQuery {
             sql(
                 """
-                    SELECT dg.id as id,
-                    GREATEST(d.opening_date, dg.start_date) as valid_from,
-                    LEAST(d.closing_date, dg.end_date) as valid_to
-                    FROM daycare_group dg
-                    JOIN daycare d ON d.id = dg.daycare_id
-                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-                    WHERE dg.nekku_customer_number IS NOT NULL
-                      AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
-                      AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
+SELECT 
+    dg.id as id,
+    GREATEST(d.opening_date, dg.start_date) as valid_from,
+    LEAST(d.closing_date, dg.end_date) as valid_to
+FROM daycare_group dg
+    JOIN daycare d ON d.id = dg.daycare_id
+    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+WHERE dg.nekku_customer_number IS NOT NULL
+    AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
+    AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
                 """
             )
         }
@@ -668,15 +682,16 @@ fun Database.Read.findNekkuGroupsOpeningInNextWeek(date: LocalDate): List<GroupD
     createQuery {
             sql(
                 """
-                SELECT dg.id as id,
-                    GREATEST(d.opening_date, dg.start_date) as valid_from,
-                    LEAST(d.closing_date, dg.end_date) as valid_to
-                    FROM daycare_group dg
-                    JOIN daycare d ON d.id = dg.daycare_id
-                    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
-                    WHERE dg.nekku_customer_number IS NOT NULL
-                    AND GREATEST(d.opening_date, dg.start_date) > ${bind(date)}
-                    AND GREATEST(d.opening_date, dg.start_date) <= ${bind(date.plusDays(7))}
+SELECT
+    dg.id as id,
+    GREATEST(d.opening_date, dg.start_date) as valid_from,
+    LEAST(d.closing_date, dg.end_date) as valid_to
+FROM daycare_group dg
+    JOIN daycare d ON d.id = dg.daycare_id
+    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+WHERE dg.nekku_customer_number IS NOT NULL
+    AND GREATEST(d.opening_date, dg.start_date) > ${bind(date)}
+    AND GREATEST(d.opening_date, dg.start_date) <= ${bind(date.plusDays(7))}
             """
                     .trimIndent()
             )
@@ -704,10 +719,10 @@ fun Database.Read.specialDietChoicesForChildren(
             sql(
                 """
 SELECT
-  c.id as child_id,
-  jsonb_agg(jsonb_build_object('dietId', nsdc.diet_id, 'fieldId', nsdc.field_id, 'value', nsdc.value)) AS choices
+    c.id as child_id,
+    jsonb_agg(jsonb_build_object('dietId', nsdc.diet_id, 'fieldId', nsdc.field_id, 'value', nsdc.value)) AS choices
 FROM child c
-JOIN nekku_special_diet_choices nsdc ON nsdc.child_id = c.id
+    JOIN nekku_special_diet_choices nsdc ON nsdc.child_id = c.id
 WHERE c.id = ANY (${bind(childIds)})
 GROUP BY c.id
         """
@@ -722,9 +737,9 @@ fun Database.Read.getNekkuTextFields(): Map<String, String> =
     createQuery {
             sql(
                 """
-            SELECT diet_id, id
-            FROM nekku_special_diet_field
-            WHERE type='TEXT'
+SELECT diet_id, id
+FROM nekku_special_diet_field
+WHERE type='TEXT'
         """
             )
         }
@@ -746,9 +761,9 @@ fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecia
     createQuery {
             sql(
                 """
-            SELECT diet_id, field_id, value
-            FROM nekku_special_diet_choices
-            WHERE child_id = ${bind(childId)}
+SELECT diet_id, field_id, value
+FROM nekku_special_diet_choices
+WHERE child_id = ${bind(childId)}
         """
                     .trimIndent()
             )
@@ -762,7 +777,24 @@ fun Database.Read.getNekkuOrderReport(
 ): List<NekkuOrdersReport> =
     createQuery {
             sql(
-                "SELECT delivery_date, daycare_id, group_id, meal_sku, total_quantity, meal_time, meal_type, meals_by_special_diet, nekku_order_info FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = (${bind(groupId)}) AND delivery_date = ${bind(date)} ORDER BY delivery_date, group_id, meal_sku"
+                """
+SELECT 
+    delivery_date,
+    daycare_id,
+    group_id,
+    meal_sku,
+    total_quantity,
+    meal_time,
+    meal_type,
+    meals_by_special_diet,
+    nekku_order_info
+FROM nekku_orders_report
+WHERE daycare_id = ${bind(daycareId)}
+    AND group_id = (${bind(groupId)})
+    AND delivery_date = ${bind(date)}
+ORDER BY delivery_date, group_id, meal_sku
+                """
+                    .trimIndent()
             )
         }
         .toList<NekkuOrdersReport>()
@@ -794,7 +826,13 @@ fun Database.Transaction.setNekkuReportOrderReport(
 
     val deletedNekkuOrders = execute {
         sql(
-            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(LocalDate.parse(nekkuOrders.orders.first().deliveryDate))}"
+            """
+DELETE FROM nekku_orders_report
+WHERE daycare_id = ${bind(daycareId)}
+    AND group_id = ${bind(groupId)}
+    AND delivery_date = ${bind(LocalDate.parse(nekkuOrders.orders.first().deliveryDate))}
+            """
+                .trimMargin()
         )
     }
 
@@ -808,25 +846,26 @@ fun Database.Transaction.setNekkuReportOrderReport(
         sql(
             """
 INSERT INTO nekku_orders_report (
-delivery_date,
-daycare_id,
-group_id,
-meal_sku,
-total_quantity,
-meal_time,
-meal_type,
-meals_by_special_diet,
-nekku_order_info)
+    delivery_date,
+    daycare_id,
+    group_id,
+    meal_sku,
+    total_quantity,
+    meal_time,
+    meal_type,
+    meals_by_special_diet,
+    nekku_order_info
+)
 VALUES (
-${bind {it.deliveryDate}},
-${bind {it.daycareId}},
-${bind {it.groupId}},
-${bind {it.mealSku}},
-${bind {it.totalQuantity}},
-${bind {it.mealTime}},
-${bind {it.mealType}},
-${bind {it.mealsBySpecialDiet}},
-${bind {it.nekkuOrderInfo}}
+    ${bind {it.deliveryDate}},
+    ${bind {it.daycareId}},
+    ${bind {it.groupId}},
+    ${bind {it.mealSku}},
+    ${bind {it.totalQuantity}},
+    ${bind {it.mealTime}},
+    ${bind {it.mealType}},
+    ${bind {it.mealsBySpecialDiet}},
+    ${bind {it.nekkuOrderInfo}}
 )
             """
                 .trimIndent()
@@ -847,7 +886,12 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
 
     val deletedNekkuOrders = execute {
         sql(
-            "DELETE FROM nekku_orders_report WHERE daycare_id = ${bind(daycareId)} AND group_id = ${bind(groupId)} AND delivery_date = ${bind(date)}"
+            """
+DELETE FROM nekku_orders_report
+WHERE daycare_id = ${bind(daycareId)}
+    AND group_id = ${bind(groupId)} AND delivery_date = ${bind(date)}
+            """
+                .trimIndent()
         )
     }
 
@@ -860,27 +904,27 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     execute {
         sql(
             """
-        INSERT INTO nekku_orders_report (
-            delivery_date,
-            daycare_id,
-            group_id,
-            meal_sku,
-            total_quantity,
-            meal_time,
-            meal_type,
-            meals_by_special_diet,
-            nekku_order_info)
-        VALUES (
-            ${bind (reportRow.deliveryDate)},
-            ${bind (reportRow.daycareId)},
-            ${bind (reportRow.groupId)},
-            ${bind (reportRow.mealSku)},
-            ${bind (reportRow.totalQuantity)},
-            ${bind (reportRow.mealTime)},
-            ${bind (reportRow.mealType)},
-            ${bind (reportRow.mealsBySpecialDiet)},
-            ${bind (reportRow.nekkuOrderInfo)}
-        )
+INSERT INTO nekku_orders_report (
+    delivery_date,
+    daycare_id,
+    group_id,
+    meal_sku,
+    total_quantity,
+    meal_time,
+    meal_type,
+    meals_by_special_diet,
+    nekku_order_info)
+VALUES (
+    ${bind (reportRow.deliveryDate)},
+    ${bind (reportRow.daycareId)},
+    ${bind (reportRow.groupId)},
+    ${bind (reportRow.mealSku)},
+    ${bind (reportRow.totalQuantity)},
+    ${bind (reportRow.mealTime)},
+    ${bind (reportRow.mealType)},
+    ${bind (reportRow.mealsBySpecialDiet)},
+    ${bind (reportRow.nekkuOrderInfo)}
+)
             """
                 .trimIndent()
         )
@@ -895,18 +939,18 @@ fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperation
     createQuery {
             sql(
                 """
-            SELECT ARRAY(
-                SELECT DISTINCT unnest(
-                    COALESCE(d.operation_days, '{}')::int[] || 
-                    COALESCE(d.shift_care_operation_days, '{}')::int[]
-                    )
-                ) AS combined_days,
-                d.shift_care_open_on_holidays,
-                d.nekku_no_weekend_meal_orders as no_weekend_meal_orders
-            FROM daycare_group dcg
-                JOIN daycare d ON d.id = dcg.daycare_id
-            WHERE dcg.id = ${bind(groupId)}
-            """
+SELECT ARRAY(
+    SELECT DISTINCT unnest(
+        COALESCE(d.operation_days, '{}')::int[] || 
+        COALESCE(d.shift_care_operation_days, '{}')::int[]
+        )
+    ) AS combined_days,
+    d.shift_care_open_on_holidays,
+    d.nekku_no_weekend_meal_orders as no_weekend_meal_orders
+FROM daycare_group dcg
+    JOIN daycare d ON d.id = dcg.daycare_id
+WHERE dcg.id = ${bind(groupId)}
+                """
             )
         }
         .exactlyOneOrNull<NekkuDaycareOperationInfo>()
@@ -921,12 +965,11 @@ fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) =
     createQuery {
             sql(
                 """
-            SELECT nekku_order_reduction_percentage
-            FROM daycare dc
-            JOIN daycare_group dg
-            ON dg.daycare_id = dc.id
-            WHERE dg.id = ${bind(groupId)}
-            """
+SELECT nekku_order_reduction_percentage
+FROM daycare dc
+    JOIN daycare_group dg ON dg.daycare_id = dc.id
+WHERE dg.id = ${bind(groupId)}
+                """
                     .trimIndent()
             )
         }

@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
@@ -1590,6 +1591,64 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
             assertEquals("2", products[0].optionsId)
             assertEquals("100-lasta", products[0].customerTypes.first())
             assertEquals(null, products[0].mealTime)
+            assertEquals(NekkuProductMealType.VEGAN, products[0].mealType)
+        }
+    }
+
+    @Test
+    fun `Nekku product updates values which were previously null`() {
+        var client =
+            TestNekkuClient(
+                nekkuProducts =
+                    listOf(
+                        NekkuApiProduct(
+                            "Ateriapalvelu 1 null",
+                            "31000010",
+                            "",
+                            listOf("alle-50-lasta"),
+                            null,
+                            null,
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuProducts(client, db)
+        db.read { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals(1, products.size)
+        }
+
+        client =
+            TestNekkuClient(
+                nekkuProducts =
+                    listOf(
+                        NekkuApiProduct(
+                            "Ateriapalvelu 1 vegaani",
+                            "31000010",
+                            "2",
+                            listOf("100-lasta"),
+                            listOf(
+                                NekkuProductMealTime.BREAKFAST,
+                                NekkuProductMealTime.LUNCH,
+                                NekkuProductMealTime.SNACK,
+                            ),
+                            NekkuApiProductMealType.Vegaani,
+                        )
+                    )
+            )
+        fetchAndUpdateNekkuProducts(client, db)
+        db.transaction { tx ->
+            val products = tx.getNekkuProducts()
+            assertEquals("Ateriapalvelu 1 vegaani", products[0].name)
+            assertEquals("2", products[0].optionsId)
+            assertEquals("100-lasta", products[0].customerTypes.first())
+            assertContentEquals(
+                listOf(
+                    NekkuProductMealTime.BREAKFAST,
+                    NekkuProductMealTime.LUNCH,
+                    NekkuProductMealTime.SNACK,
+                ),
+                products[0].mealTime,
+            )
             assertEquals(NekkuProductMealType.VEGAN, products[0].mealType)
         }
     }
