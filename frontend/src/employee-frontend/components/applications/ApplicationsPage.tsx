@@ -97,7 +97,7 @@ export default React.memo(function ApplicationsPage() {
           {featureFlags.placementDesktop &&
             searchFilters?.status === 'WAITING_PLACEMENT' && (
               <>
-                <FixedSpaceRow>
+                <FixedSpaceRow alignItems="center">
                   <Label>Näytä:</Label>
                   <Radio
                     checked={mode === 'list'}

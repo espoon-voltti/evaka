@@ -111,6 +111,7 @@ export { faQuestionCircle } from '@fortawesome/free-solid-svg-icons/faQuestionCi
 export { faRedo } from '@fortawesome/free-solid-svg-icons/faRedo'
 export { faRefresh } from '@fortawesome/free-solid-svg-icons/faRefresh'
 export { faSearch } from '@fortawesome/free-solid-svg-icons/faSearch'
+export { faSection } from '@fortawesome/free-solid-svg-icons/faSection'
 export { faSignInAlt as faSignIn } from '@fortawesome/free-solid-svg-icons/faSignInAlt'
 export { faSignOutAlt as faSignOut } from '@fortawesome/free-solid-svg-icons/faSignOutAlt'
 export { faSignOut as farSignOut } from '@fortawesome/free-solid-svg-icons/faSignOut'
