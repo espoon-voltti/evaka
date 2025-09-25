@@ -36,6 +36,7 @@ import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
+import fi.espoo.evaka.reservations.deleteInvalidatedShiftCareReservationsByDate
 import fi.espoo.evaka.sficlient.SfiAsyncJobs
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.FeatureConfig
@@ -289,6 +290,15 @@ enum class ScheduledJob(
     ),
     MigrateMetadata(
         ScheduledJobs::migrateMetadata,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+
+    /**
+     * Removes future non-operation day reservations from children placed in shift care units but
+     * without shift care right
+     */
+    RemoveInvalidatedShiftCareReservations(
+        ScheduledJobs::removeInvalidatedShiftCareReservations,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 }
@@ -631,5 +641,12 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun migrateMetadata(db: Database.Connection, clock: EvakaClock) {
         migrateProcessMetadata(db, clock, featureConfig, tracer)
+    }
+
+    fun removeInvalidatedShiftCareReservations(db: Database.Connection, clock: EvakaClock) {
+        db.transaction {
+            val removalCounts = it.deleteInvalidatedShiftCareReservationsByDate(clock.today())
+            logger.info { "Removed $removalCounts invalidated shift care reservations." }
+        }
     }
 }
