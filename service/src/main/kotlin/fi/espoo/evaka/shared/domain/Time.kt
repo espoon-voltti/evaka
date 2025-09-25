@@ -272,6 +272,8 @@ fun LocalDate.isWeekend() =
 
 fun LocalDate.isHoliday() = isHoliday(this)
 
+fun LocalDate.isWeekendOrHoliday() = this.isWeekend() || this.isHoliday()
+
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
 
 fun LocalDate.asHelsinkiDateTimeRange(): HelsinkiDateTimeRange =

@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isHoliday
+import fi.espoo.evaka.shared.domain.isWeekendOrHoliday
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.DayOfWeek
 import java.time.Duration
@@ -280,7 +281,8 @@ fun planNekkuOrderJobs(
                 orderDates.dates().mapNotNull { date ->
                     if (
                         isGroupValidOnDate(date, nekkuGroup) &&
-                            isGroupOpenOnDate(date, groupOperationDays)
+                            isGroupOpenOnDate(date, groupOperationDays) &&
+                            !(groupOperationDays.noWeekendMealOrders && date.isWeekendOrHoliday())
                     ) {
                         AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = date)
                     } else null

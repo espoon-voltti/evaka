@@ -536,6 +536,7 @@ export interface DevDaycare {
   mealtimeSnack: TimeRange | null
   mealtimeSupper: TimeRange | null
   name: string
+  nekkuNoWeekendMealOrders: boolean
   nekkuOrderReductionPercentage: number
   openingDate: LocalDate | null
   operationTimes: (TimeRange | null)[]

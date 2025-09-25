@@ -9,9 +9,12 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -267,6 +270,54 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 listOf(group2.id, group3.id).sortedBy { it },
                 result.sortedBy { it.id }.map { it.id },
             )
+        }
+    }
+
+    @Test
+    fun `fetching group operating days should work`() {
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                operationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
+                shiftCareOpenOnHolidays = true,
+                nekkuNoWeekendMealOrders = true,
+            )
+
+        val group = DevDaycareGroup(daycareId = daycare.id)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+
+            val result = tx.getGroupOperationDays(group.id)
+            assertNotNull(result)
+
+            assertEquals(7, result.combinedDays.size)
+            assertEquals(true, result.noWeekendMealOrders)
+            assertEquals(true, result.shiftCareOpenOnHolidays)
         }
     }
 }

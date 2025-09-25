@@ -2012,6 +2012,7 @@ data class DevDaycare(
     val mealtimeEveningSnack: TimeRange? = null,
     val withSchool: Boolean = false,
     val nekkuOrderReductionPercentage: Int = 10,
+    val nekkuNoWeekendMealOrders: Boolean = false,
 )
 
 data class DevDaycareGroup(

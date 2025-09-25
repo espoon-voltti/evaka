@@ -551,3 +551,4 @@ V552__child_document_published_modified_metadata.sql
 V553__other_decision_pilot_feature_flag.sql
 V554__citizen_basic_document_pilot_feature_flag.sql
 V555__decision_archived_at.sql
+V556__daycare_nekku_no_weekend_orders_flag.sql

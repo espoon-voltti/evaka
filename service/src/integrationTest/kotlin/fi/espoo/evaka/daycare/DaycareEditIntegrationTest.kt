@@ -124,6 +124,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     eveningSnack = null,
                 ),
             nekkuOrderReductionPercentage = 15,
+            nekkuNoWeekendMealOrders = false,
         )
 
     @BeforeEach
