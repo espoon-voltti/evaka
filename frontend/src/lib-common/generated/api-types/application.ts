@@ -665,6 +665,15 @@ export interface PersonBasics {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDesktopDaycare
+*/
+export interface PlacementDesktopDaycare {
+  foo: number | null
+  id: DaycareId
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.application.PlacementProposalConfirmationUpdate
 */
 export interface PlacementProposalConfirmationUpdate {

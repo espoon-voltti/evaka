@@ -159,6 +159,7 @@ export default React.memo(function ApplicationCard({
                     mutation={updateApplicationTrialPlacementMutation}
                     onClick={() => ({
                       applicationId: application.id,
+                      previousUnitId: application.trialPlacementUnit,
                       body: {
                         trialUnitId:
                           application.trialPlacementUnit === unit.id
@@ -177,6 +178,7 @@ export default React.memo(function ApplicationCard({
                     onFailure={() => {
                       onUpdateApplicationPlacementFailure()
                     }}
+                    successTimeout={0}
                   />
                 </FixedSpaceRow>
               ))}
