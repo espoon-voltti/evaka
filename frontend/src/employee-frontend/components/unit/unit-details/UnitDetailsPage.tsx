@@ -68,6 +68,7 @@ export default React.memo(function UnitDetailsPage() {
               unit={unit.daycare}
               lastPlacementDate={unit.lastPlacementDate}
               onClickEdit={useEditable.on}
+              reservedOphUnitOIDs={unit.reservedOphUnitOIDs}
             >
               {(getFormData, isValid) => (
                 <>

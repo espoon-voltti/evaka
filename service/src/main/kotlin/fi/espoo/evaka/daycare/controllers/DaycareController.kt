@@ -28,6 +28,7 @@ import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getLastPlacementDate
+import fi.espoo.evaka.daycare.getOphUnitOIDs
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.getUnitOperationPeriods
 import fi.espoo.evaka.daycare.insertCaretakers
@@ -174,6 +175,11 @@ class DaycareController(
                             clock,
                             groups.map { it.id },
                         )
+                    val reservedOphUnitOIDs =
+                        tx.getOphUnitOIDs()
+                            .filter { it.key != daycareId && it.value.trim().isNotEmpty() }
+                            .values
+                            .toSet()
                     DaycareResponse(
                         daycare,
                         groups.map {
@@ -186,6 +192,7 @@ class DaycareController(
                         },
                         lastPlacementDate,
                         accessControl.getPermittedActions(tx, user, clock, daycareId),
+                        reservedOphUnitOIDs,
                     )
                 }
             }
@@ -836,6 +843,7 @@ class DaycareController(
         val groups: List<DaycareGroupResponse>,
         val lastPlacementDate: LocalDate?,
         val permittedActions: Set<Action.Unit>,
+        val reservedOphUnitOIDs: Set<String>,
     )
 
     data class UpdateFeaturesRequest(
