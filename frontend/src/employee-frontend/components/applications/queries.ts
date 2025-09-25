@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
   cancelApplication,
   getApplicationSummaries,
+  getPlacementDesktopDaycare,
+  getPlacementDesktopDaycares,
   simpleApplicationAction,
   simpleBatchAction,
   updateApplicationTrialPlacement,
@@ -40,6 +43,27 @@ export const serviceNeedPublicInfosQuery = q.query(
   getServiceNeedOptionPublicInfos
 )
 
-export const updateApplicationTrialPlacementMutation = q.mutation(
-  updateApplicationTrialPlacement
+export const updateApplicationTrialPlacementMutation = q.parametricMutation<{
+  previousUnitId: DaycareId | null
+}>()(updateApplicationTrialPlacement, [
+  ({ body: { trialUnitId } }) =>
+    trialUnitId
+      ? getPlacementDesktopDaycareQuery({ daycareId: trialUnitId })
+      : undefined,
+  ({ previousUnitId }) =>
+    previousUnitId
+      ? getPlacementDesktopDaycareQuery({ daycareId: previousUnitId })
+      : undefined
+])
+
+export const getPlacementDesktopDaycareQuery = q.prefixedQuery(
+  getPlacementDesktopDaycare,
+  ({ daycareId }) => daycareId,
+  {
+    refetchOnMount: false
+  }
+)
+
+export const getPlacementDesktopDaycaresQuery = q.query(
+  getPlacementDesktopDaycares
 )

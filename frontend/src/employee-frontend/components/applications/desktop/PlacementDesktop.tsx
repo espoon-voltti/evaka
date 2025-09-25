@@ -3,17 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
+import orderBy from 'lodash/orderBy'
+import uniqBy from 'lodash/uniqBy'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
   ApplicationSummary,
-  PagedApplicationSummaries
+  PagedApplicationSummaries,
+  PreferredUnit
 } from 'lib-common/generated/api-types/application'
 import type {
   ApplicationId,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
+import Spinner from 'lib-components/atoms/state/Spinner'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -21,9 +26,14 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
-import { getApplicationSummariesQuery } from '../queries'
+import {
+  getApplicationSummariesQuery,
+  getPlacementDesktopDaycareQuery,
+  getPlacementDesktopDaycaresQuery
+} from '../queries'
 
 import ApplicationCard from './ApplicationCard'
+import DaycareCard from './DaycareCard'
 
 export default React.memo(function PlacementDesktop({
   applicationSummaries
@@ -71,11 +81,14 @@ const PlacementDesktopValidated = React.memo(
     const queryClient = useQueryClient()
 
     // optimistic cache to avoid refetching all applications when updating trial placements
-    const [trialUnits, setTrialUnits] = useState<
+    const [trialPlacements, setTrialPlacements] = useState<
       Record<ApplicationId, DaycareId | null>
     >({})
+
+    const [shownDaycares, setShownDaycares] = useState<PreferredUnit[]>()
+
     useEffect(() => {
-      setTrialUnits(
+      setTrialPlacements(
         applications.reduce(
           (acc, application) => ({
             ...acc,
@@ -84,11 +97,20 @@ const PlacementDesktopValidated = React.memo(
           {}
         )
       )
+      setShownDaycares(
+        orderBy(
+          uniqBy(
+            applications.flatMap((a) => a.preferredUnits),
+            (u) => u.id
+          ),
+          (u) => u.name
+        )
+      )
     }, [applications])
 
     const onUpdateApplicationPlacementSuccess = useCallback(
       (applicationId: ApplicationId, unitId: DaycareId | null) => {
-        setTrialUnits((prev) => ({
+        setTrialPlacements((prev) => ({
           ...prev,
           [applicationId]: unitId
         }))
@@ -105,7 +127,14 @@ const PlacementDesktopValidated = React.memo(
 
     return (
       <FixedSpaceRow>
-        <DaycaresColumn>Yksiköitä: {primaryUnits.length}</DaycaresColumn>
+        <DaycaresColumn>
+          <div>Yksiköitä: {primaryUnits.length}</div>
+          <Gap size="s" />
+          {shownDaycares !== undefined && (
+            <PrefetchedDaycares shownDaycares={shownDaycares} />
+          )}
+        </DaycaresColumn>
+
         <ApplicationsColumn>
           <div style={{ textAlign: 'right' }}>
             Hakemuksia: {applications.length}
@@ -117,7 +146,7 @@ const PlacementDesktopValidated = React.memo(
                 key={application.id}
                 application={{
                   ...application,
-                  trialPlacementUnit: trialUnits[application.id]
+                  trialPlacementUnit: trialPlacements[application.id]
                 }}
                 onUpdateApplicationPlacementSuccess={
                   onUpdateApplicationPlacementSuccess
@@ -133,6 +162,42 @@ const PlacementDesktopValidated = React.memo(
     )
   }
 )
+
+const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
+  shownDaycares
+}: {
+  shownDaycares: PreferredUnit[]
+}) {
+  const queryClient = useQueryClient()
+  const initialData = useQueryResult(
+    getPlacementDesktopDaycaresQuery({
+      daycareIds: shownDaycares.map((d) => d.id)
+    })
+  )
+  const [initialDataInserted, setInitialDataInserted] = useState(false)
+
+  useEffect(() => {
+    if (initialData.isSuccess) {
+      initialData.value.forEach((daycare) => {
+        void queryClient.setQueryData(
+          getPlacementDesktopDaycareQuery({ daycareId: daycare.id }).queryKey,
+          daycare
+        )
+      })
+      setInitialDataInserted(true)
+    }
+  }, [initialData, queryClient])
+
+  if (!initialDataInserted) return <Spinner />
+
+  return (
+    <FixedSpaceColumn>
+      {shownDaycares.map((daycare) => (
+        <DaycareCard key={daycare.id} daycare={daycare} />
+      ))}
+    </FixedSpaceColumn>
+  )
+})
 
 const DaycaresColumn = styled.div`
   flex-grow: 1;

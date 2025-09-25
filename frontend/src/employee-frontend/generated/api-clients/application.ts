@@ -24,6 +24,7 @@ import type { PagedApplicationSummaries } from 'lib-common/generated/api-types/a
 import type { PaperApplicationCreateRequest } from 'lib-common/generated/api-types/application'
 import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
 import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import type { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
 import type { PlacementToolValidation } from 'lib-common/generated/api-types/application'
@@ -564,6 +565,42 @@ export async function updateServiceWorkerNote(
     url: uri`/employee/note/service-worker/application/${request.applicationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<NoteRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycare
+*/
+export async function getPlacementDesktopDaycare(
+  request: {
+    daycareId: DaycareId
+  }
+): Promise<PlacementDesktopDaycare> {
+  const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare>>({
+    url: uri`/employee/placement-desktop/daycares/${request.daycareId}`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycares
+*/
+export async function getPlacementDesktopDaycares(
+  request: {
+    daycareIds?: DaycareId[] | null
+  }
+): Promise<PlacementDesktopDaycare[]> {
+  const params = createUrlSearchParams(
+    ...(request.daycareIds?.map((e): [string, string | null | undefined] => ['daycareIds', e]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare[]>>({
+    url: uri`/employee/placement-desktop/daycares`.toString(),
+    method: 'GET',
+    params
   })
   return json
 }
