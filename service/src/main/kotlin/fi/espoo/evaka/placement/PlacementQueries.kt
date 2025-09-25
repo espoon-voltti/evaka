@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.backupcare.recreateBackupCares
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -23,6 +24,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
@@ -483,6 +485,12 @@ fun Database.Read.getDaycarePlacements(
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
                 ELSE days_in_range(daterange(pl.start_date, pl.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need
             END AS missing_service_need_days,
+            created_by.id AS created_by_id,
+            created_by.name AS created_by_name,
+            created_by.type AS created_by_type,
+            pl.source,
+            app.origin AS source_application_type,
+            source_application_user.type AS source_application_created_by,
             pl.modified_at,
             modified_by.id AS modified_by_id,
             modified_by.name AS modified_by_name,
@@ -499,12 +507,90 @@ fun Database.Read.getDaycarePlacements(
         JOIN care_area a ON d.care_area_id = a.id
         LEFT JOIN evaka_user terminated_by ON pl.terminated_by = terminated_by.id
         LEFT JOIN evaka_user modified_by ON pl.modified_by = modified_by.id
+        LEFT JOIN evaka_user created_by ON pl.created_by = created_by.id
+        LEFT JOIN application app ON pl.source_application_id = app.id
+        LEFT JOIN evaka_user source_application_user ON app.created_by = source_application_user.id
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
         AND ${predicate(placementPredicate.forTable("pl"))}
 """
             )
         }
-        .toList<DaycarePlacementDetails>()
+        .toList {
+            val sourceApplicationType = column<ApplicationOrigin?>("source_application_type")
+            val sourceApplicationCreatedBy = column<EvakaUserType?>("source_application_created_by")
+            val source = column<PlacementSource>("source")
+            val placementSourceCreatedBy =
+                when (source) {
+                    PlacementSource.APPLICATION if
+                        sourceApplicationType == ApplicationOrigin.PAPER &&
+                            sourceApplicationCreatedBy == EvakaUserType.SYSTEM
+                     -> PlacementSourceCreatedBy.SYSTEM
+
+                    PlacementSource.APPLICATION if
+                        sourceApplicationType == ApplicationOrigin.PAPER &&
+                            sourceApplicationCreatedBy == EvakaUserType.EMPLOYEE
+                     -> PlacementSourceCreatedBy.EMPLOYEE_PAPER
+
+                    PlacementSource.MANUAL -> PlacementSourceCreatedBy.EMPLOYEE_MANUAL
+                    PlacementSource.APPLICATION -> PlacementSourceCreatedBy.CITIZEN
+                    PlacementSource.SERVICE_APPLICATION -> PlacementSourceCreatedBy.CITIZEN
+                    PlacementSource.PLACEMENT_TERMINATION -> PlacementSourceCreatedBy.CITIZEN
+                }
+
+            DaycarePlacementDetails(
+                id = column("id"),
+                startDate = column("start_date"),
+                endDate = column("end_date"),
+                type = column("type"),
+                child =
+                    ChildBasics(
+                        id = column("child_id"),
+                        firstName = column("child_first_name"),
+                        lastName = column("child_last_name"),
+                        socialSecurityNumber = column("child_social_security_number"),
+                        dateOfBirth = column("child_date_of_birth"),
+                    ),
+                daycare =
+                    DaycareBasics(
+                        id = column("daycare_id"),
+                        name = column("daycare_name"),
+                        providerType = column("daycare_provider_type"),
+                        enabledPilotFeatures = column("daycare_enabled_pilot_features"),
+                        language = column("daycare_language"),
+                        area = column("daycare_area"),
+                    ),
+                missingServiceNeedDays = column("missing_service_need_days"),
+                terminationRequestedDate = column("termination_requested_date"),
+                updated = null,
+                terminatedBy =
+                    column<EvakaUserId?>("terminated_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("terminated_by_name"),
+                            type = column("terminated_by_type"),
+                        )
+                    },
+                placeGuarantee = column("place_guarantee"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                source = placementSourceCreatedBy,
+                modifiedAt = column("modified_at"),
+                modifiedBy =
+                    column<EvakaUserId?>("modified_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("modified_by_name"),
+                            type = column("modified_by_type"),
+                        )
+                    },
+            )
+        }
 }
 
 fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
