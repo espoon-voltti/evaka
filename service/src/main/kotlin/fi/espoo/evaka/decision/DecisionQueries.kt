@@ -28,7 +28,7 @@ private fun Database.Read.createDecisionQuery(
     sql(
         """
         SELECT
-            d.id, d.type, d.start_date, d.end_date, d.document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, d.document_contains_contact_info,
+            d.id, d.type, d.start_date, d.end_date, d.document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, d.document_contains_contact_info, d.archived_at,
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
             u.phone,
@@ -81,6 +81,7 @@ private fun Row.decisionFromResultSet(): Decision =
         childId = column("child_id"),
         childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}",
         documentContainsContactInfo = column("document_contains_contact_info"),
+        archivedAt = column("archived_at"),
     )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
@@ -349,3 +350,7 @@ AND status = 'PENDING'
         )
     }
 }
+
+fun Database.Transaction.markDecisionAsArchived(id: DecisionId, now: HelsinkiDateTime) =
+    createUpdate { sql("UPDATE decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}") }
+        .updateExactlyOne()

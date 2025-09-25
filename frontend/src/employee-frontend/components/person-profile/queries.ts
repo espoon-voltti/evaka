@@ -6,7 +6,10 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import { getGuardianApplicationSummaries } from '../../generated/api-clients/application'
-import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
+import {
+  getDecisionsByGuardian,
+  planArchiveDecision
+} from '../../generated/api-clients/decision'
 import {
   createFinanceNote,
   deleteFinanceNote,
@@ -262,3 +265,5 @@ export const guardianApplicationSummariesQuery = q.query(
 )
 
 export const decisionsByGuardianQuery = q.query(getDecisionsByGuardian)
+
+export const planArchiveDecisionMutation = q.mutation(planArchiveDecision)

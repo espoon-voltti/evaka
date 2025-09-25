@@ -9,8 +9,14 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.caseprocess.insertCaseProcess
+import fi.espoo.evaka.decision.DecisionStatus
+import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.*
@@ -20,14 +26,19 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.UiLanguage
+import fi.espoo.evaka.toDaycareFormAdult
+import fi.espoo.evaka.toDaycareFormChild
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -36,24 +47,32 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
 import org.springframework.http.ContentDisposition
 import org.springframework.http.ResponseEntity
 
 class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
+    private lateinit var clientSpy: ArchivalIntegrationClient
     private var documentService = TestDocumentService()
     private var särmäClient = TestSärmäClient()
     private val logAppender = TestAppender()
 
+    private val applicationId = ApplicationId(UUID.randomUUID())
+    private val decisionId = DecisionId(UUID.randomUUID())
     private val templateId = DocumentTemplateId(UUID.randomUUID())
     private val documentId = ChildDocumentId(UUID.randomUUID())
     private val childId = PersonId(UUID.randomUUID())
     private val now = HelsinkiDateTime.of(LocalDateTime.of(2023, 2, 1, 12, 0))
+    private val clock = MockEvakaClock(now)
 
     private lateinit var archivalService: ArchivalService
 
@@ -139,15 +158,11 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
     }
 
-    @BeforeAll
-    fun setUpOnce() {
-        super.beforeAll()
-        archivalService =
-            ArchivalService(null, SärmäChildDocumentClient(särmäClient), documentService)
-    }
-
     @BeforeEach
     fun setUp() {
+        clientSpy = spy(SärmäChildDocumentClient(särmäClient))
+        archivalService = ArchivalService(null, clientSpy, documentService)
+
         // Setup the test appender
         val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
         logAppender.start()
@@ -160,6 +175,14 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         // Set up test data
         db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unit = DevDaycare(areaId = areaId)
+            tx.insert(unit)
+
+            // Create a guardian using DevPerson
+            val guardian = DevPerson()
+            tx.insert(guardian, DevPersonType.ADULT)
+
             // Create a child using DevPerson
             val personData =
                 DevPerson(
@@ -202,6 +225,37 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             val emptyContent = DocumentContent(emptyList())
             val employee = DevEmployee()
             tx.insert(employee)
+
+            // Create an application
+            tx.insertTestApplication(
+                id = applicationId,
+                type = ApplicationType.DAYCARE,
+                guardianId = guardian.id,
+                childId = childId,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = guardian.toDaycareFormAdult(),
+                        child = personData.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = now.toLocalDate(),
+                    ),
+                processId = process.id,
+            )
+            tx.insertTestDecision(
+                TestDecision(
+                    id = decisionId,
+                    createdBy = employee.evakaUserId,
+                    unitId = unit.id,
+                    applicationId = applicationId,
+                    type = DecisionType.DAYCARE,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now(),
+                    status = DecisionStatus.ACCEPTED,
+                    documentKey = "test-document-key",
+                )
+            )
+
             val childDocument =
                 DevChildDocument(
                     id = documentId,
@@ -231,6 +285,42 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     fun tearDown() {
         val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
         root.detachAppender(logAppender)
+    }
+
+    @Test
+    fun `uploadDecisionToArchive marks document as archived in database when successful`() {
+        doReturn("uploadDecisionToArchiveMock")
+            .whenever(clientSpy)
+            .uploadDecisionToArchive(any(), any(), any(), any(), any())
+
+        // Execute the archive method
+        archivalService.uploadDecisionToArchive(db, clock, AsyncJob.ArchiveDecision(decisionId))
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getDecision(decisionId)
+            assertNotNull(decision)
+            assertEquals(clock.now(), decision.archivedAt)
+        }
+    }
+
+    @Test
+    fun `uploadDecisionToArchive does not mark document as archived when client throws`() {
+        doThrow(RuntimeException("uploadDecisionToArchiveMock"))
+            .whenever(clientSpy)
+            .uploadDecisionToArchive(any(), any(), any(), any(), any())
+
+        // Execute the archive method and expect exception
+        assertThrows<RuntimeException> {
+            archivalService.uploadDecisionToArchive(db, clock, AsyncJob.ArchiveDecision(decisionId))
+        }
+
+        // Verify the document was NOT marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getDecision(decisionId)
+            assertNotNull(decision)
+            assertNull(decision.archivedAt)
+        }
     }
 
     @Test

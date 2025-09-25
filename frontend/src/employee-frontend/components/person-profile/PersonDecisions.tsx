@@ -9,13 +9,19 @@ import { Link } from 'wouter'
 import type { Decision } from 'lib-common/generated/api-types/decision'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { featureFlags } from 'lib-customizations/employee'
+import { faBoxArchive } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { DateTd, NameTd, StatusTd } from './common'
-import { decisionsByGuardianQuery } from './queries'
+import {
+  decisionsByGuardianQuery,
+  planArchiveDecisionMutation
+} from './queries'
 
 interface Props {
   id: PersonId
@@ -35,6 +41,9 @@ const PersonDecisions = React.memo(function PersonDecisions({ id }: Props) {
           <Th>{i18n.personProfile.decision.sentDate}</Th>
           <Th>{i18n.personProfile.application.type}</Th>
           <Th>{i18n.personProfile.decision.status}</Th>
+          {featureFlags.archiveIntegration?.decisions && (
+            <Th>{i18n.personProfile.decision.archived}</Th>
+          )}
         </Tr>
       </Thead>
       <Tbody>
@@ -66,6 +75,25 @@ const PersonDecisions = React.memo(function PersonDecisions({ id }: Props) {
             <StatusTd data-qa="decision-status">
               {i18n.personProfile.decision.statuses[decision.status]}
             </StatusTd>
+            {featureFlags.archiveIntegration?.decisions && (
+              <Td>
+                {decision.archivedAt !== null ? (
+                  decision.archivedAt.toLocalDate().format()
+                ) : (
+                  <MutateButton
+                    icon={faBoxArchive}
+                    text={i18n.personProfile.decision.archive}
+                    mutation={planArchiveDecisionMutation}
+                    onClick={() => ({ decisionId: decision.id })}
+                    data-qa="archive-button"
+                    disabled={
+                      decision.status !== 'ACCEPTED' &&
+                      decision.status !== 'REJECTED'
+                    }
+                  />
+                )}
+              </Td>
+            )}
           </Tr>
         ))}
       </Tbody>
