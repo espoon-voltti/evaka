@@ -297,7 +297,10 @@ interface BaseFeatureFlags {
   /**
    * Enable support for document archival integration
    */
-  archiveIntegrationEnabled?: boolean
+  archiveIntegration?: {
+    decisions?: boolean
+    childDocuments?: boolean
+  }
 
   /**
    * Enable support for citizen child document types

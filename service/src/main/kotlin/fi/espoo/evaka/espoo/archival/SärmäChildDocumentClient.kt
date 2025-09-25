@@ -5,6 +5,7 @@
 package fi.espoo.evaka.espoo.archival
 
 import fi.espoo.evaka.caseprocess.*
+import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.document.childdocument.*
@@ -22,6 +23,15 @@ private val logger = KotlinLogging.logger {}
 
 class SärmäChildDocumentClient(private val uploadClient: ArchivalClient) :
     ArchivalIntegrationClient {
+    override fun uploadDecisionToArchive(
+        caseProcess: CaseProcess,
+        child: PersonDTO,
+        decision: Decision,
+        document: Document,
+        user: EvakaUser,
+    ): String {
+        TODO("Not yet implemented")
+    }
 
     override fun uploadChildDocumentToArchive(
         documentId: ChildDocumentId,

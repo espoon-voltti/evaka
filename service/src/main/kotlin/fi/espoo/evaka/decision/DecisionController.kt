@@ -6,20 +6,27 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.document.archival.validateArchivability
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -29,6 +36,8 @@ import org.springframework.web.bind.annotation.RestController
 class DecisionController(
     private val decisionService: DecisionService,
     private val accessControl: AccessControl,
+    private val evakaEnv: EvakaEnv,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
@@ -131,6 +140,42 @@ class DecisionController(
                 decisionService.getDecisionPdf(dbc, decision)
             }
             .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
+    }
+
+    @PostMapping("/{decisionId}/archive")
+    fun planArchiveDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable decisionId: DecisionId,
+        archivalEnabled: Boolean = evakaEnv.archivalEnabled,
+    ) {
+        if (!archivalEnabled) {
+            throw BadRequest("Archival is not enabled")
+        }
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Decision.ARCHIVE,
+                    decisionId,
+                )
+
+                val decision =
+                    tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
+                validateArchivability(decision)
+
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = listOf(AsyncJob.ArchiveDecision(decision.id, user)),
+                    runAt = clock.now(),
+                    retryCount = 1,
+                )
+            }
+        }
     }
 }
 

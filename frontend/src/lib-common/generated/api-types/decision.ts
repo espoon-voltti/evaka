@@ -7,6 +7,7 @@
 import type { ApplicationId } from './shared'
 import type { DaycareId } from './shared'
 import type { DecisionId } from './shared'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
@@ -17,6 +18,7 @@ import type { ProviderType } from './daycare'
 */
 export interface Decision {
   applicationId: ApplicationId
+  archivedAt: HelsinkiDateTime | null
   childId: PersonId
   childName: string
   createdBy: string
@@ -107,6 +109,7 @@ export interface DecisionUnit {
 export function deserializeJsonDecision(json: JsonOf<Decision>): Decision {
   return {
     ...json,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     endDate: LocalDate.parseIso(json.endDate),
     requestedStartDate: (json.requestedStartDate != null) ? LocalDate.parseIso(json.requestedStartDate) : null,
     resolved: (json.resolved != null) ? LocalDate.parseIso(json.resolved) : null,

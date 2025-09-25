@@ -507,5 +507,6 @@ fun createValidDecision(
         resolved = resolved,
         resolvedByName = null,
         documentContainsContactInfo = false,
+        archivedAt = null,
     )
 }

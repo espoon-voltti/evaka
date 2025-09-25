@@ -320,7 +320,7 @@ const ChildDocumentReadViewInner = React.memo(
                       </span>
                     </FixedSpaceRow>
                   </a>
-                  {featureFlags.archiveIntegrationEnabled &&
+                  {featureFlags.archiveIntegration?.childDocuments &&
                     permittedActions.includes('ARCHIVE') && (
                       <Tooltip
                         tooltip={

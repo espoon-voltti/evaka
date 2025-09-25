@@ -281,6 +281,7 @@ export type DaycareAssistance =
   | 'UPDATE'
 
 export type Decision =
+  | 'ARCHIVE'
   | 'DOWNLOAD_PDF'
   | 'READ'
 

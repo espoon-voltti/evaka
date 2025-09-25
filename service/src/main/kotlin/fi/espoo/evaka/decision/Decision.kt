@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 data class Decision(
@@ -32,6 +33,7 @@ data class Decision(
     val resolvedByName: String?,
     // True if the document is a legacy document that may contain guardian name and address.
     val documentContainsContactInfo: Boolean,
+    val archivedAt: HelsinkiDateTime?,
 ) {
     fun validRequestedStartDatePeriod(featureConfig: FeatureConfig, isCitizen: Boolean) =
         FiniteDateRange(

@@ -484,6 +484,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class ArchiveDecision(
+        val decisionId: DecisionId,
+        override val user: AuthenticatedUser? = null,
+    ) : AsyncJob
+
     data class ArchiveChildDocument(
         val documentId: ChildDocumentId,
         override val user: AuthenticatedUser? = null,
@@ -601,7 +606,7 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "bulk"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(ArchiveChildDocument::class),
+                setOf(ArchiveDecision::class, ArchiveChildDocument::class),
             )
     }
 }

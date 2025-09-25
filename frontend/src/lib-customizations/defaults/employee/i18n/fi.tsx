@@ -2040,11 +2040,13 @@ export const fi = {
       decisions: 'Päätökset',
       decisionUnit: 'Sijoitusyksikkö',
       status: 'Tila',
+      archived: 'Arkistoitu',
       statuses: {
         PENDING: 'Odottaa vastausta',
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
+      archive: 'Arkistoi',
       startDate: 'Aloituspvm päätöksellä',
       sentDate: 'Päätös lähetetty'
     },

@@ -60,3 +60,19 @@ export async function getDecisionsByGuardian(
   })
   return deserializeJsonDecisionListResponse(json)
 }
+
+
+/**
+* Generated from fi.espoo.evaka.decision.DecisionController.planArchiveDecision
+*/
+export async function planArchiveDecision(
+  request: {
+    decisionId: DecisionId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/decisions/${request.decisionId}/archive`.toString(),
+    method: 'POST'
+  })
+  return json
+}
