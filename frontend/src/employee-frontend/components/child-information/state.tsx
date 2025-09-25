@@ -18,6 +18,7 @@ export interface ChildState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Child | Action.Person>
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
+  hasGuardian: Result<boolean>
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -26,7 +27,8 @@ const defaultState: ChildState = {
   childId: undefined,
   person: Loading.of(),
   permittedActions: emptyPermittedActions,
-  assistanceNeedVoucherCoefficientsEnabled: Loading.of()
+  assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
+  hasGuardian: Loading.of()
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -53,6 +55,11 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     [childResponse]
   )
 
+  const hasGuardian = useMemo(
+    () => childResponse.map((res) => res.hasGuardian),
+    [childResponse]
+  )
+
   const person = useMemo(
     () => childResponse.map((response) => response.person),
     [childResponse]
@@ -63,9 +70,16 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       childId: id,
       person,
       permittedActions,
-      assistanceNeedVoucherCoefficientsEnabled
+      assistanceNeedVoucherCoefficientsEnabled,
+      hasGuardian
     }),
-    [id, person, permittedActions, assistanceNeedVoucherCoefficientsEnabled]
+    [
+      id,
+      person,
+      permittedActions,
+      assistanceNeedVoucherCoefficientsEnabled,
+      hasGuardian
+    ]
   )
 
   return <ChildContext.Provider value={value}>{children}</ChildContext.Provider>
