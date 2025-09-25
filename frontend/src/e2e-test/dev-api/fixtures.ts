@@ -261,6 +261,7 @@ export class Fixture {
       mealtimeEveningSnack: null,
       withSchool: false,
       nekkuOrderReductionPercentage: 10,
+      nekkuNoWeekendMealOrders: false,
       ...initial
     }
     return {

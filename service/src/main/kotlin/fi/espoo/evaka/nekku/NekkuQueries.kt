@@ -901,7 +901,8 @@ fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperation
                     COALESCE(d.shift_care_operation_days, '{}')::int[]
                     )
                 ) AS combined_days,
-                d.shift_care_open_on_holidays
+                d.shift_care_open_on_holidays,
+                d.nekku_no_weekend_meal_orders as no_weekend_meal_orders
             FROM daycare_group dcg
                 JOIN daycare d ON d.id = dcg.daycare_id
             WHERE dcg.id = ${bind(groupId)}
@@ -913,6 +914,7 @@ fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperation
 data class NekkuDaycareOperationInfo(
     val combinedDays: List<Int>,
     val shiftCareOpenOnHolidays: Boolean,
+    val noWeekendMealOrders: Boolean,
 )
 
 fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) =

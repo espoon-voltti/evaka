@@ -114,6 +114,7 @@ type FormData = {
   providerId: string
   partnerCode: string
   nekkuOrderReductionPercentage: string
+  nekkuNoWeekendMealOrders: boolean
 } & MealtimeData
 
 interface UnitDecisionCustomization {
@@ -688,7 +689,8 @@ function validateForm(
     providerId,
     partnerCode,
     providesShiftCare,
-    shiftCareOpenOnHolidays
+    shiftCareOpenOnHolidays,
+    nekkuNoWeekendMealOrders
   } = form
 
   if (
@@ -757,7 +759,8 @@ function validateForm(
           supper: mealtimeSupper,
           eveningSnack: mealtimeEveningSnack
         },
-        nekkuOrderReductionPercentage
+        nekkuOrderReductionPercentage,
+        nekkuNoWeekendMealOrders
       },
       {
         formErrors: errors,
@@ -888,7 +891,8 @@ function toFormData(unit: Daycare | undefined): FormData {
     mealtimeEveningSnack: formatTimeRange(unit?.mealTimes.eveningSnack),
     nekkuOrderReductionPercentage: (
       unit?.nekkuOrderReductionPercentage ?? 0
-    ).toString()
+    ).toString(),
+    nekkuNoWeekendMealOrders: unit?.nekkuNoWeekendMealOrders ?? false
   }
 }
 
@@ -2173,19 +2177,33 @@ export default function UnitEditor(props: Props) {
         </>
       )}
       {featureFlags.nekkuIntegration && (
-        <FormPart>
-          <label>{i18n.unitEditor.label.nekkuMealReduction}</label>
-          <InputField
-            id="nekku-reduction"
-            value={form.nekkuOrderReductionPercentage}
-            width="xs"
-            onChange={(value) =>
-              updateForm({
-                nekkuOrderReductionPercentage: value
-              })
-            }
-          />
-        </FormPart>
+        <>
+          <FormPart>
+            <label>{i18n.unitEditor.label.nekkuMealReduction}</label>
+            <InputField
+              id="nekku-reduction"
+              value={form.nekkuOrderReductionPercentage}
+              width="xs"
+              onChange={(value) =>
+                updateForm({
+                  nekkuOrderReductionPercentage: value
+                })
+              }
+            />
+          </FormPart>
+          <FormPart>
+            <label>{i18n.unitEditor.label.nekkuNoWeekendMealOrders}</label>
+            <Checkbox
+              disabled={!props.editable}
+              label={i18n.unitEditor.field.nekkuNoWeekendMealOrders}
+              checked={form.nekkuNoWeekendMealOrders}
+              onChange={(nekkuNoWeekendMealOrders) =>
+                updateForm({ nekkuNoWeekendMealOrders })
+              }
+              data-qa="check-invoice-by-municipality"
+            />
+          </FormPart>
+        </>
       )}
       {props.editable && (
         <>

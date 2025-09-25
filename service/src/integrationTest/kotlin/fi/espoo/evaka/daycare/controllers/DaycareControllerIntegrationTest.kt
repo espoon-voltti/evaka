@@ -929,4 +929,5 @@ private fun DaycareFields.Companion.fromDaycare(daycare: Daycare): DaycareFields
         partnerCode = daycare.partnerCode,
         mealtimes = daycare.mealTimes,
         nekkuOrderReductionPercentage = 15,
+        nekkuNoWeekendMealOrders = false,
     )

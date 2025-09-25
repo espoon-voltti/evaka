@@ -4837,7 +4837,8 @@ export const fi = {
         supper: 'Päivällinen',
         eveningSnack: 'Iltapala'
       },
-      nekkuMealReduction: 'Nekku-vähennysprosentti'
+      nekkuMealReduction: 'Nekku-vähennysprosentti',
+      nekkuNoWeekendMealOrders: 'Ei Nekku-tilauksia viikonloppuisin'
     },
     info: {
       varda: 'Käytetään Varda-integraatiossa',
@@ -4865,7 +4866,8 @@ export const fi = {
           'Ledare inom småbarnspedagogik',
           'Svenska bildningstjänster / Småbarnspedagogik'
         ]
-      }
+      },
+      nekkuNoWeekendMealOrders: 'Nekku-tilauksia ei tehdä viikonlopuille'
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
