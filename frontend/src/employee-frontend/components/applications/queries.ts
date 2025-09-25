@@ -9,6 +9,7 @@ import {
   getApplicationSummaries,
   simpleApplicationAction,
   simpleBatchAction,
+  updateApplicationTrialPlacement,
   updateServiceWorkerNote
 } from '../../generated/api-clients/application'
 import { getServiceNeedOptionPublicInfos } from '../../generated/api-clients/serviceneed'
@@ -37,4 +38,8 @@ export const updateServiceWorkerNoteMutation = q.mutation(
 
 export const serviceNeedPublicInfosQuery = q.query(
   getServiceNeedOptionPublicInfos
+)
+
+export const updateApplicationTrialPlacementMutation = q.mutation(
+  updateApplicationTrialPlacement
 )

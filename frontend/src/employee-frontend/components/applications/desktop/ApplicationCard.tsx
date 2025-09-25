@@ -3,14 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import type { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
@@ -27,16 +31,25 @@ import {
   fasCommentAltLines,
   faSection
 } from 'lib-icons'
+import { faUndo } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 import { BasisFragment, DateOfBirthInfo } from '../ApplicationsList'
+import { updateApplicationTrialPlacementMutation } from '../queries'
 
 export default React.memo(function ApplicationCard({
-  application
+  application,
+  onUpdateApplicationPlacementSuccess,
+  onUpdateApplicationPlacementFailure
 }: {
   application: ApplicationSummary
+  onUpdateApplicationPlacementSuccess: (
+    applicationId: ApplicationId,
+    unitId: DaycareId | null
+  ) => void
+  onUpdateApplicationPlacementFailure: () => void
 }) {
   const { i18n } = useTranslation()
 
@@ -126,10 +139,45 @@ export default React.memo(function ApplicationCard({
             <FixedSpaceColumn spacing="xxs">
               {application.preferredUnits.map((unit, index) => (
                 <FixedSpaceRow key={index}>
-                  <UnitListItem>
+                  <UnitListItem
+                    $current={application.trialPlacementUnit === unit.id}
+                  >
                     {index + 1}. {unit.name}
                   </UnitListItem>
-                  <Button appearance="inline" text="Lisää" icon={faArrowLeft} />
+                  <MutateButton
+                    appearance="inline"
+                    text={
+                      application.trialPlacementUnit === unit.id
+                        ? 'Palauta'
+                        : 'Lisää'
+                    }
+                    icon={
+                      application.trialPlacementUnit === unit.id
+                        ? faUndo
+                        : faArrowLeft
+                    }
+                    mutation={updateApplicationTrialPlacementMutation}
+                    onClick={() => ({
+                      applicationId: application.id,
+                      body: {
+                        trialUnitId:
+                          application.trialPlacementUnit === unit.id
+                            ? null
+                            : unit.id
+                      }
+                    })}
+                    onSuccess={() => {
+                      onUpdateApplicationPlacementSuccess(
+                        application.id,
+                        application.trialPlacementUnit === unit.id
+                          ? null
+                          : unit.id
+                      )
+                    }}
+                    onFailure={() => {
+                      onUpdateApplicationPlacementFailure()
+                    }}
+                  />
                 </FixedSpaceRow>
               ))}
             </FixedSpaceColumn>
@@ -154,10 +202,17 @@ const Card = styled.div`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-const UnitListItem = styled.span`
+const UnitListItem = styled.span<{ $current: boolean }>`
   width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-left: ${defaultMargins.xs};
+
+  ${(p) =>
+    p.$current
+      ? css`
+          font-weight: 600;
+        `
+      : ''}
 `
