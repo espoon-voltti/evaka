@@ -93,9 +93,9 @@ fun Database.Read.getGuardiansForChildren(
             sql(
                 """
             SELECT c.id AS child_id,
-                   COALESCE(array_agg(g.guardian_id ORDER BY g.guardian_id)
+                   COALESCE(array_agg(g.guardian_id)
                             FILTER (WHERE g.guardian_id IS NOT NULL), '{}') AS guardian_ids
-            FROM child c
+            FROM person c
             LEFT JOIN guardian g ON g.child_id = c.id
             WHERE child_id = ANY(${bind(childIds)})
             GROUP BY c.id
@@ -103,6 +103,25 @@ fun Database.Read.getGuardiansForChildren(
             )
         }
         .toMap { columnPair("child_id", "guardian_ids") }
+}
+
+fun Database.Read.getFosterParentsForChildren(
+    childIds: Collection<ChildId>
+): Map<ChildId, List<PersonId>> {
+    return createQuery {
+            sql(
+                """
+            SELECT c.id AS child_id,
+                   COALESCE(array_agg(fp.parent_id)
+                            FILTER (WHERE fp.parent_id IS NOT NULL), '{}') AS foster_parent_ids
+            FROM person c
+            LEFT JOIN foster_parent fp ON fp.child_id = c.id
+            WHERE child_id = ANY(${bind(childIds)})
+            GROUP BY c.id
+            """
+            )
+        }
+        .toMap { columnPair("child_id", "foster_parent_ids") }
 }
 
 fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
