@@ -1333,7 +1333,10 @@ const ReportByChildTable = ({
             label:
               i18n.reports.assistanceNeedsAndActions
                 .assistanceNeedVoucherCoefficient,
-            value: (row) => row.assistanceNeedVoucherCoefficient,
+            value: (row) =>
+              row.assistanceNeedVoucherCoefficient > 1
+                ? row.assistanceNeedVoucherCoefficient
+                : null,
             exclude: !report.showAssistanceNeedVoucherCoefficient
           },
           {
@@ -1521,7 +1524,11 @@ const ReportByChildTable = ({
                     </Td>
 
                     {report.showAssistanceNeedVoucherCoefficient && (
-                      <Td>{row.assistanceNeedVoucherCoefficient}</Td>
+                      <Td>
+                        {row.assistanceNeedVoucherCoefficient > 1
+                          ? row.assistanceNeedVoucherCoefficient
+                          : '-'}
+                      </Td>
                     )}
                     <Td>{row.daycareAssistanceNeedDecisionCount}</Td>
                     <Td>{row.preschoolAssistanceNeedDecisionCount}</Td>
@@ -1562,10 +1569,11 @@ const ReportByChildTable = ({
             <Td />
             {report.showAssistanceNeedVoucherCoefficient && (
               <Td>
-                {reducePropertySum(
-                  filteredRows,
-                  (r) => r.assistanceNeedVoucherCoefficient
-                )}
+                {
+                  filteredRows.filter(
+                    (r) => r.assistanceNeedVoucherCoefficient > 1
+                  ).length
+                }
               </Td>
             )}
             <Td>
