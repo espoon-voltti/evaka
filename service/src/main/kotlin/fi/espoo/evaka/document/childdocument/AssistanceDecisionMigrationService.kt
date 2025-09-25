@@ -614,12 +614,20 @@ private fun Database.Transaction.insertMigratedDocument(
     val userId = EvakaUserId(decisionMaker.raw)
     val systemUser = AuthenticatedUser.SystemInternalUser.evakaUserId
 
+    // constraint: valid_from must be null when status is REJECTED
+    val validFrom =
+        when (decisionStatus) {
+            ChildDocumentDecisionStatus.ACCEPTED,
+            ChildDocumentDecisionStatus.ANNULLED -> decisionValidity.start
+            ChildDocumentDecisionStatus.REJECTED -> null
+        }
+
     val childDocumentDecisionId =
         createQuery {
                 sql(
                     """
         INSERT INTO child_document_decision (created_at, created_by, modified_at, modified_by, status, valid_from, valid_to, decision_number, daycare_id) 
-        VALUES (${bind(decidedAt)}, ${bind(userId)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(decisionStatus)}, ${bind(decisionValidity.start)}, ${bind(decisionValidity.end)}, ${bind(decisionNumber)}, ${bind(daycareId)})
+        VALUES (${bind(decidedAt)}, ${bind(userId)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(decisionStatus)}, ${bind(validFrom)}, ${bind(decisionValidity.end)}, ${bind(decisionNumber)}, ${bind(daycareId)})
         RETURNING id
     """
                 )
