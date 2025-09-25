@@ -12,8 +12,6 @@ import fi.espoo.evaka.assistanceneed.decision.getAssistanceNeedDecisionDocumentK
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecision
 import fi.espoo.evaka.assistanceneed.preschooldecision.getAssistanceNeedPreschoolDecisionById
 import fi.espoo.evaka.assistanceneed.preschooldecision.getAssistanceNeedPreschoolDecisionDocumentKey
-import fi.espoo.evaka.caseprocess.getCaseProcessByAssistanceNeedDecisionId
-import fi.espoo.evaka.caseprocess.getCaseProcessByAssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.document.getTemplateSummaries
@@ -94,6 +92,9 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
             decision.decisionMade?.let { HelsinkiDateTime.atStartOfDay(it) }
                 ?: throw IllegalStateException("Decision ${decision.id} has no decision made date")
         val documentId = ChildDocumentId(decision.id.raw)
+        val processId =
+            decision.processId
+                ?: throw IllegalStateException("Decision ${decision.id} has no process id")
 
         val content = migrateDaycareContent(decision, getTranslations(decision.language))
         validateContentAgainstTemplate(content, template.content)
@@ -101,7 +102,6 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
         db.transaction { tx ->
             tx.deletePreviouslyMigratedDecision(documentId)
             val documentKey = tx.getAssistanceNeedDecisionDocumentKey(decision.id)
-            val processId = tx.getCaseProcessByAssistanceNeedDecisionId(decision.id)?.id
             tx.insertMigratedDocument(
                 id = documentId,
                 type = ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION,
@@ -180,6 +180,9 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
         val validFrom =
             decision.form.validFrom
                 ?: throw IllegalStateException("Decision ${decision.id} has no validity start date")
+        val processId =
+            decision.processId
+                ?: throw IllegalStateException("Decision ${decision.id} has no process id")
         val documentId = ChildDocumentId(decision.id.raw)
 
         val content = migratePreschoolContent(decision, getTranslations(decision.form.language))
@@ -188,7 +191,6 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
         db.transaction { tx ->
             tx.deletePreviouslyMigratedDecision(documentId)
             val documentKey = tx.getAssistanceNeedPreschoolDecisionDocumentKey(decision.id)
-            val processId = tx.getCaseProcessByAssistanceNeedPreschoolDecisionId(decision.id)?.id
             tx.insertMigratedDocument(
                 id = documentId,
                 type = ChildDocumentType.MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION,
