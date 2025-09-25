@@ -764,12 +764,39 @@ class MessageController(
                 val unitRecipients = body.recipients.filterIsInstance<MessageRecipient.Unit>()
                 if (unitRecipients.isNotEmpty()) {
                     auditMeta["recipients.units"] = unitRecipients.map { it.id.toString() }.sorted()
+                    val starterUnits = unitRecipients.filter { it.starter }
+                    if (starterUnits.isNotEmpty()) {
+                        auditMeta["recipients.units.starters"] =
+                            starterUnits.map { it.id.toString() }.sorted()
+                    }
                 }
 
                 val groupRecipients = body.recipients.filterIsInstance<MessageRecipient.Group>()
                 if (groupRecipients.isNotEmpty()) {
                     auditMeta["recipients.groups"] =
                         groupRecipients.map { it.id.toString() }.sorted()
+                    val starterGroups = groupRecipients.filter { it.starter }
+                    if (starterGroups.isNotEmpty()) {
+                        auditMeta["recipients.groups.starters"] =
+                            starterGroups.map { it.id.toString() }.sorted()
+                    }
+                }
+
+                val childRecipients = body.recipients.filterIsInstance<MessageRecipient.Child>()
+                if (childRecipients.isNotEmpty()) {
+                    auditMeta["recipients.children"] =
+                        childRecipients.map { it.id.toString() }.sorted()
+                    val starterChildren = childRecipients.filter { it.starter }
+                    if (starterChildren.isNotEmpty()) {
+                        auditMeta["recipients.children.starters"] =
+                            starterChildren.map { it.id.toString() }.sorted()
+                    }
+                }
+
+                val citizenRecipients = body.recipients.filterIsInstance<MessageRecipient.Citizen>()
+                if (citizenRecipients.isNotEmpty()) {
+                    auditMeta["recipients.citizens"] =
+                        citizenRecipients.map { it.id.toString() }.sorted()
                 }
 
                 // Add filter information if filters are applied
