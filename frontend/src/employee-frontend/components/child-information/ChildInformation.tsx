@@ -27,8 +27,9 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H2 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faUsers } from 'lib-icons'
 
@@ -86,6 +87,9 @@ const HeadOfFamilyLink = styled(Link)`
     line-height: 26px;
     text-transform: uppercase;
   }
+`
+const NoGuardianInfoBoxContainer = styled.div`
+  margin: ${defaultMargins.xs};
 `
 
 interface SectionProps {
@@ -377,7 +381,7 @@ const ChildInformation = React.memo(function ChildInformation({
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
   const { roles } = useContext(UserContext)
-  const { person } = useContext<ChildState>(ChildContext)
+  const { person, hasGuardian } = useContext<ChildState>(ChildContext)
 
   useTitle(
     person.map(
@@ -414,7 +418,10 @@ const ChildInformation = React.memo(function ChildInformation({
                 />
               )}
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
-                <WarningLabel text={i18n.childInformation.restrictedDetails} />
+                <WarningLabel
+                  text={i18n.childInformation.restrictedDetails}
+                  data-qa="restricted-warning"
+                />
               )}
               <FixedSpaceRow spacing="L">
                 {person.isSuccess &&
@@ -447,6 +454,16 @@ const ChildInformation = React.memo(function ChildInformation({
               </FixedSpaceRow>
             </div>
           </HeaderRow>
+          {!hasGuardian.getOrElse(true) && (
+            <NoGuardianInfoBoxContainer>
+              <InfoBox
+                message={i18n.childInformation.personDetails.noGuardian}
+                thin
+                noMargin={false}
+                data-qa="no-guardians-info-box"
+              />
+            </NoGuardianInfoBoxContainer>
+          )}
         </ContentArea>
 
         <Gap size="m" />

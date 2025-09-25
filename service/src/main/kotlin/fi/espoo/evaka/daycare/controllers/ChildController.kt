@@ -13,6 +13,8 @@ import fi.espoo.evaka.nekku.NekkuProductMealType
 import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.pis.service.getFosterParentsForChildren
+import fi.espoo.evaka.pis.service.getGuardiansForChildren
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePreferredName
 import fi.espoo.evaka.shared.ChildId
@@ -68,6 +70,17 @@ class ChildController(
                                         childId,
                                     ),
                             ) ?: throw NotFound("Child $childId not found")
+
+                    val childHasGuardian =
+                        tx.getGuardiansForChildren(listOf(childId))
+                            .map { it.key to it.value.isNotEmpty() }
+                            .toMap()
+
+                    val childHasFosterParent =
+                        tx.getFosterParentsForChildren(listOf(childId))
+                            .map { it.key to it.value.isNotEmpty() }
+                            .toMap()
+
                     ChildResponse(
                         person = PersonJSON.from(child),
                         permittedActions =
@@ -76,6 +89,9 @@ class ChildController(
                             accessControl.getPermittedActions(tx, user, clock, childId),
                         assistanceNeedVoucherCoefficientsEnabled =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
+                        hasGuardian =
+                            childHasGuardian[childId] ?: false ||
+                                childHasFosterParent[childId] ?: false,
                     )
                 }
             }
@@ -132,6 +148,7 @@ class ChildController(
         val permittedActions: Set<Action.Child>,
         val permittedPersonActions: Set<Action.Person>,
         val assistanceNeedVoucherCoefficientsEnabled: Boolean,
+        val hasGuardian: Boolean,
     )
 }
 
