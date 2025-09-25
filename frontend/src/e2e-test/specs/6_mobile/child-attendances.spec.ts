@@ -8,7 +8,7 @@ import DateRange from 'lib-common/date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import TimeRange from 'lib-common/time-range'
 
@@ -28,6 +28,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
+  createFosterParent,
   resetServiceState
 } from '../../generated/api-clients'
 import type { DevPlacement } from '../../generated/api-types'
@@ -1110,6 +1111,35 @@ describe('Child mobile attendance list', () => {
 
     await page.goto(mobileSignupUrl)
     await listPage.selectChild(childWithGuardians.id)
+    await childPage.noGuardiansInfoBox.waitUntilHidden()
+  })
+
+  test('If child does has foster parent a message about missing guardian is not shown ', async () => {
+    await openPage()
+    await createPlacements(testChild.id, group2.id)
+    const fosterParent = await Fixture.person().saveAdult()
+    const employee = await Fixture.employee().save()
+
+    await createFosterParent({
+      body: [
+        {
+          id: randomId(),
+          childId: testChild.id,
+          parentId: fosterParent.id,
+          validDuring: new DateRange(
+            HelsinkiDateTime.now().toLocalDate(),
+            HelsinkiDateTime.now().toLocalDate()
+          ),
+          modifiedAt: HelsinkiDateTime.now(),
+          modifiedBy: evakaUserId(employee.id)
+        }
+      ]
+    })
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+
+    await page.goto(mobileSignupUrl)
+    await listPage.comingChildrenTab.click()
+    await listPage.selectChild(testChild.id)
     await childPage.noGuardiansInfoBox.waitUntilHidden()
   })
 })
