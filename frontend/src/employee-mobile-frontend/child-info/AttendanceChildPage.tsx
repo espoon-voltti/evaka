@@ -20,6 +20,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
@@ -116,6 +117,10 @@ export default React.memo(function AttendanceChildPage({
     )
   }
 
+  const NoGuardianInfoBoxContainer = styled.div`
+    margin: ${defaultMargins.xs};
+  `
+
   return (
     <>
       <TallContentAreaNoOverflow
@@ -206,6 +211,16 @@ export default React.memo(function AttendanceChildPage({
                   </Zindex>
 
                   <FlexColumn paddingHorizontal="s">
+                    {!child.hasGuardian && (
+                      <NoGuardianInfoBoxContainer>
+                        <InfoBox
+                          message={i18n.childInfo.noGuardians}
+                          thin
+                          noMargin={false}
+                          data-qa="no-guardians-info-box"
+                        />
+                      </NoGuardianInfoBoxContainer>
+                    )}
                     {childAttendance.hasOperationalDay ? (
                       <>
                         <AttendanceDailyServiceTimes

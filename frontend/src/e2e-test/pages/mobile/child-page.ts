@@ -43,6 +43,7 @@ export default class MobileChildPage {
     arrivalTimes: ElementCollection
     departureTimes: ElementCollection
   }
+  noGuardiansInfoBox: Element
   constructor(page: Page) {
     this.childName = page.findByDataQa('child-name')
     this.reservation = page.findByDataQa('reservation')
@@ -89,6 +90,8 @@ export default class MobileChildPage {
       arrivalTimes: page.findAllByDataQa('arrival-time'),
       departureTimes: page.findAllByDataQa('departure-time')
     }
+
+    this.noGuardiansInfoBox = page.findByDataQa('no-guardians-info-box')
   }
 
   async waitUntilLoaded() {

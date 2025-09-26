@@ -16,7 +16,8 @@ import {
   testCareArea,
   testDaycare,
   testDaycare2,
-  testCareArea2
+  testCareArea2,
+  testChildRestricted
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -170,7 +171,17 @@ describe('Child Information - edit additional information', () => {
   })
 })
 
-describe('Child Information - deceased child', () => {
+describe('Child Information - header', () => {
+  test('Child has no guardian indicator and restricted labels are shown', async () => {
+    await testChildRestricted.saveChild({ updateMockVtj: true })
+    await page.goto(
+      config.employeeUrl + '/child-information/' + testChildRestricted.id
+    )
+    await childInformationPage.waitUntilLoaded()
+    await childInformationPage.restrictedWarning.waitUntilVisible()
+    await childInformationPage.noGuardianInfo.waitUntilVisible()
+  })
+
   test('Deceased child indicator is shown', async () => {
     await testChildDeceased.saveChild({ updateMockVtj: true })
     await page.goto(
