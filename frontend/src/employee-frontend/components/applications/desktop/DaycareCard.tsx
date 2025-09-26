@@ -10,6 +10,7 @@ import type { PreferredUnit } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
 import {
   FixedSpaceColumn,
@@ -17,6 +18,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Label, LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faEyeSlash } from 'lib-icons'
 import { faUndo } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -29,7 +31,8 @@ import {
 export default React.memo(function DaycareCard({
   daycare,
   onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure
+  onUpdateApplicationPlacementFailure,
+  onRemoveFromShownDaycares
 }: {
   daycare: PreferredUnit
   onUpdateApplicationPlacementSuccess: (
@@ -37,6 +40,7 @@ export default React.memo(function DaycareCard({
     unit: PreferredUnit | null
   ) => void
   onUpdateApplicationPlacementFailure: () => void
+  onRemoveFromShownDaycares: () => void
 }) {
   const { i18n } = useTranslation()
   const unitDetails = useQueryResult(
@@ -45,7 +49,15 @@ export default React.memo(function DaycareCard({
   return (
     <Card>
       <FixedSpaceColumn spacing="s">
-        <LabelLike>{daycare.name}</LabelLike>
+        <FixedSpaceRow justifyContent="space-between">
+          <LabelLike>{daycare.name}</LabelLike>
+          <IconOnlyButton
+            icon={faEyeSlash}
+            aria-label="Piilota"
+            onClick={onRemoveFromShownDaycares}
+          />
+        </FixedSpaceRow>
+
         {renderResult(unitDetails, (unitDetails) => (
           <FixedSpaceColumn spacing="xxs">
             <Label>

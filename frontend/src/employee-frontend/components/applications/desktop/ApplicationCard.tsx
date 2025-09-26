@@ -13,6 +13,7 @@ import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import {
@@ -23,6 +24,7 @@ import {
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faEye } from 'lib-icons'
 import {
   faArrowLeft,
   faCommentAlt,
@@ -41,15 +43,19 @@ import { updateApplicationPlacementDraftMutation } from '../queries'
 
 export default React.memo(function ApplicationCard({
   application,
+  shownDaycares,
   onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure
+  onUpdateApplicationPlacementFailure,
+  onAddToShownDaycares
 }: {
   application: ApplicationSummary
+  shownDaycares: PreferredUnit[]
   onUpdateApplicationPlacementSuccess: (
     applicationId: ApplicationId,
     unit: PreferredUnit | null
   ) => void
   onUpdateApplicationPlacementFailure: () => void
+  onAddToShownDaycares: (unit: PreferredUnit) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -144,43 +150,52 @@ export default React.memo(function ApplicationCard({
                   >
                     {index + 1}. {unit.name}
                   </UnitListItem>
-                  <MutateButton
-                    appearance="inline"
-                    text={
-                      application.placementDraftUnit?.id === unit.id
-                        ? 'Palauta'
-                        : 'Lisää'
-                    }
-                    icon={
-                      application.placementDraftUnit?.id === unit.id
-                        ? faUndo
-                        : faArrowLeft
-                    }
-                    mutation={updateApplicationPlacementDraftMutation}
-                    onClick={() => ({
-                      applicationId: application.id,
-                      previousUnitId:
-                        application.placementDraftUnit?.id ?? null,
-                      body: {
-                        unitId:
+                  {shownDaycares.some(({ id }) => id === unit.id) ? (
+                    <MutateButton
+                      appearance="inline"
+                      text={
+                        application.placementDraftUnit?.id === unit.id
+                          ? 'Palauta'
+                          : 'Lisää'
+                      }
+                      icon={
+                        application.placementDraftUnit?.id === unit.id
+                          ? faUndo
+                          : faArrowLeft
+                      }
+                      mutation={updateApplicationPlacementDraftMutation}
+                      onClick={() => ({
+                        applicationId: application.id,
+                        previousUnitId:
+                          application.placementDraftUnit?.id ?? null,
+                        body: {
+                          unitId:
+                            application.placementDraftUnit?.id === unit.id
+                              ? null
+                              : unit.id
+                        }
+                      })}
+                      onSuccess={() => {
+                        onUpdateApplicationPlacementSuccess(
+                          application.id,
                           application.placementDraftUnit?.id === unit.id
                             ? null
-                            : unit.id
-                      }
-                    })}
-                    onSuccess={() => {
-                      onUpdateApplicationPlacementSuccess(
-                        application.id,
-                        application.placementDraftUnit?.id === unit.id
-                          ? null
-                          : unit
-                      )
-                    }}
-                    onFailure={() => {
-                      onUpdateApplicationPlacementFailure()
-                    }}
-                    successTimeout={0}
-                  />
+                            : unit
+                        )
+                      }}
+                      onFailure={() => {
+                        onUpdateApplicationPlacementFailure()
+                      }}
+                      successTimeout={0}
+                    />
+                  ) : (
+                    <Button
+                      appearance="inline"
+                      icon={faEye}
+                      text="Näytä"
+                      onClick={() => onAddToShownDaycares(unit)}
+                    />
+                  )}
                 </FixedSpaceRow>
               ))}
               {application.placementDraftUnit &&
@@ -191,28 +206,41 @@ export default React.memo(function ApplicationCard({
                     <UnitListItem $current>
                       *. {application.placementDraftUnit.name}
                     </UnitListItem>
-                    <MutateButton
-                      appearance="inline"
-                      text="Palauta"
-                      icon={faUndo}
-                      mutation={updateApplicationPlacementDraftMutation}
-                      onClick={() => ({
-                        applicationId: application.id,
-                        previousUnitId:
-                          application.placementDraftUnit?.id ?? null,
-                        body: { unitId: null }
-                      })}
-                      onSuccess={() => {
-                        onUpdateApplicationPlacementSuccess(
-                          application.id,
-                          null
-                        )
-                      }}
-                      onFailure={() => {
-                        onUpdateApplicationPlacementFailure()
-                      }}
-                      successTimeout={0}
-                    />
+                    {shownDaycares.some(
+                      (d) => d.id === application.placementDraftUnit?.id
+                    ) ? (
+                      <MutateButton
+                        appearance="inline"
+                        text="Palauta"
+                        icon={faUndo}
+                        mutation={updateApplicationPlacementDraftMutation}
+                        onClick={() => ({
+                          applicationId: application.id,
+                          previousUnitId:
+                            application.placementDraftUnit?.id ?? null,
+                          body: { unitId: null }
+                        })}
+                        onSuccess={() => {
+                          onUpdateApplicationPlacementSuccess(
+                            application.id,
+                            null
+                          )
+                        }}
+                        onFailure={() => {
+                          onUpdateApplicationPlacementFailure()
+                        }}
+                        successTimeout={0}
+                      />
+                    ) : (
+                      <Button
+                        appearance="inline"
+                        icon={faEye}
+                        text="Näytä"
+                        onClick={() =>
+                          onAddToShownDaycares(application.placementDraftUnit!)
+                        }
+                      />
+                    )}
                   </FixedSpaceRow>
                 )}
             </FixedSpaceColumn>
