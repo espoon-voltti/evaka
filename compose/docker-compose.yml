@@ -46,7 +46,7 @@ services:
       retries: 5
 
   s3-mock:
-    image: adobe/s3mock:4.8.0
+    image: adobe/s3mock:4.9.1
     ports:
       - "9876:9191"
     volumes:
