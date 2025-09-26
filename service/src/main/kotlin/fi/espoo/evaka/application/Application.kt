@@ -74,7 +74,7 @@ data class ApplicationSummary(
     val streetAddress: String?,
     val postalCode: String?,
     val postOffice: String?,
-    val placementDraftUnitId: DaycareId? = null,
+    val placementDraftUnit: PreferredUnit? = null,
 )
 
 data class PlacementProposalStatus(
