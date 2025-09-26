@@ -509,9 +509,7 @@ private val perussanoma3Response =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
-        .let(::StringSource)
+    """.let(::StringSource)
 
 @Language("xml")
 private val huoltajaHuollettavatResponse =
@@ -724,9 +722,7 @@ private val huoltajaHuollettavatResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
-        .let(::StringSource)
+    """.let(::StringSource)
 
 @Language("xml")
 private val huollettavaHuoltajaResponse =
@@ -909,9 +905,7 @@ private val huollettavaHuoltajaResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>    
-    """
-        .trimIndent()
-        .let(::StringSource)
+    """.let(::StringSource)
 
 @Language("xml")
 private val asukasMaaraResponse =
@@ -988,6 +982,4 @@ private val asukasMaaraResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
-        .let(::StringSource)
+    """.let(::StringSource)

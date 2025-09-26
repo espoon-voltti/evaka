@@ -568,8 +568,7 @@ $unsubscribeSv
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -628,8 +627,7 @@ $unsubscribeSv
 <p>You have received a new decision in eVaka.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -657,8 +655,7 @@ $unsubscribeSv
 <p>You have received a new $decisionTypeEn in eVaka.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -689,8 +686,7 @@ $unsubscribeSv
 <p>Reservation can be cancelled 2 business days before the reserved time using the eVaka calendar view. For later cancellations contact the daycare staff.</p>
 $unsubscribeEn
 <hr>
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -718,8 +714,7 @@ $unsubscribeSv
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
 $unsubscribeEn
 <hr>
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -747,8 +742,7 @@ $unsubscribeSv
 <p>You can reserve a time using eVaka calendar view</p>
 $unsubscribeEn
 <hr>
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -779,8 +773,7 @@ $unsubscribeSv
 <p>Reservation can be cancelled 2 business days before the reserved time using the eVaka calendar view. For later cancellations contact the daycare staff.</p>
 $unsubscribeEn
 <hr>
-            """
-                    .trimIndent(),
+            """,
         )
     }
 
@@ -812,7 +805,6 @@ $unsubscribeEn
                 <hr>
                 <p>The service need you have proposed has been accepted as of $start.</p>
             """
-                        .trimIndent()
                 else
                     """
                 <p>Ehdottamasi palveluntarve on hylätty, lue lisätiedot hylkäyksestä eVakassa.</p>
@@ -820,8 +812,7 @@ $unsubscribeEn
                 <p>Det servicebehov som du har föreslagit har avslagits, läs mer om avslaget i eVaka.</p>
                 <hr>
                 <p>The service need you have suggested has been rejected. Please log in to eVaka to read the grounds for rejection.</p>
-            """
-                        .trimIndent(),
+            """,
         )
     }
 

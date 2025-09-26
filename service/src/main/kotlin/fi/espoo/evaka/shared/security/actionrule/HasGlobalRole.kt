@@ -67,7 +67,6 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
-                                    .trimIndent()
                             )
                         }
                         .toSet<Id<DatabaseTable>>()
@@ -114,7 +113,6 @@ FROM attachment
 JOIN evaka_user ON uploaded_by = evaka_user.id
 WHERE evaka_user.type = 'EMPLOYEE'
             """
-                    .trimIndent()
             )
         }
 
@@ -127,7 +125,6 @@ FROM assistance_need_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -140,7 +137,6 @@ FROM assistance_need_preschool_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -152,7 +148,6 @@ SELECT id
 FROM assistance_need_decision
 WHERE sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -164,7 +159,6 @@ SELECT id
 FROM assistance_need_preschool_decision
 WHERE sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -177,7 +171,6 @@ FROM placement p
 JOIN daycare pd ON pd.id = p.unit_id
 WHERE pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
             """
-                    .trimIndent()
             )
         }
 
@@ -196,7 +189,6 @@ ${
     else ""
 }
             """
-                    .trimIndent()
             )
         }
 }

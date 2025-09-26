@@ -104,7 +104,6 @@ private val childDocumentCss =
         padding-right: 16px;
     }
 """
-        .trimIndent()
 
 fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
     return """
@@ -115,7 +114,6 @@ fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
             ${generateBody(document).toHtml()}
         </html>
     """
-        .trimIndent()
 }
 
 private fun generateBody(document: ChildDocumentDetails): HtmlElement {

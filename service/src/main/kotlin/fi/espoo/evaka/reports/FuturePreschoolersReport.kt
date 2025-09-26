@@ -113,7 +113,6 @@ ELSE
     extract(year from :today) -  extract(year from p.date_of_birth) = $preschoolSelectionAge
 END
             """
-                    .trimIndent()
             )
         }
         .bind("today", today)
@@ -146,7 +145,6 @@ FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
 d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
             """
-                    .trimIndent()
             )
         }
         .bind("today", today)
@@ -164,7 +162,6 @@ SELECT d.id,
 FROM daycare d
 WHERE d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
             """
-                    .trimIndent()
             )
         }
         .bind("today", today)
