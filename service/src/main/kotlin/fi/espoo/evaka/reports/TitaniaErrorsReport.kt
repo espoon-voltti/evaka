@@ -98,7 +98,6 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
             ) emp_units on emp_units.employee_id = te.employee_id
             ORDER BY request_time, unit_names, last_name, first_name, shift_date;
             """
-                        .trimIndent()
                 )
             }
             .toList<TitaniaDbRow>()
@@ -149,7 +148,6 @@ fun Database.Transaction.deleteTitaniaError(id: TitaniaConflictId) {
                 DELETE FROM titania_errors 
                 WHERE id = ${bind(id)}
             """
-                    .trimIndent()
             )
         }
         .execute()

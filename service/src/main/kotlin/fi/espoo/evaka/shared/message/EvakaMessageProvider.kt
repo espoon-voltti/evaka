@@ -76,14 +76,12 @@ Vänligen observera att du ska ge ditt svar till beslutet inom två veckor."""
             
             As you are a user of Suomi.fi, you can also find the decision in the attachments below.
             """
-                    .trimIndent()
             OfficialLanguage.SV ->
                 """
             Beslut har fattats för ditt barn. Du kan se beslutet i eVaka.
             
             Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du också läsa beslutet i bilagorna nedan.
             """
-                    .trimIndent()
         }
 
     override fun getFeeDecisionHeader(lang: OfficialLanguage): String =
@@ -148,14 +146,12 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
             
             As you are a user of Suomi.fi, you can also find the decision in the attachments below.
             """
-                    .trimIndent()
             OfficialLanguage.SV ->
                 """
             Beslut om behov har fattats för ditt barn. Du kan se beslutet i eVaka.
             
             Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du också läsa beslutet i bilagorna nedan.
             """
-                    .trimIndent()
         }
 
     override fun getAssistanceNeedPreschoolDecisionHeader(lang: OfficialLanguage): String =
@@ -233,11 +229,9 @@ If you want to apply for a place other than the one assigned to your child, you 
 
 If you accept the assigned pre-school place, you don't have to do anything.
                 """
-                    .trimIndent()
             OfficialLanguage.SV ->
                 """
 Vi har gjort en förifylld ansökan om förskoleundervisning för ditt barn.
                 """
-                    .trimIndent()
         }
 }
