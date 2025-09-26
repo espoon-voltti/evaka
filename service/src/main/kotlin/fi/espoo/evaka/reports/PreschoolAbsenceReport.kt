@@ -317,7 +317,10 @@ WITH intersection AS(
     SELECT
         (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
-        ) AS range,
+        ) AS preschool_range,
+        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
+            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
+        ) AS preparatory_range,
         ca.date,
         ca.child_id,
         p.type
@@ -329,8 +332,10 @@ WITH intersection AS(
         AND ca.end_time IS NOT NULL
         AND ca.unit_id = d.id
     -- pick out attendance intersecting preschool service time
-    WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+    WHERE (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
+        OR tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)}))
         AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
         AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
         AND p.unit_id = ${bind(daycareId)}
@@ -339,7 +344,7 @@ WITH intersection AS(
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)}) 
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preschool_range) - lower(preschool_range)))
     ) / 60) AS missing_minutes,
     date,
     child_id
@@ -350,7 +355,7 @@ GROUP BY date, child_id
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preschool_range) - lower(preschool_range)))
     ) / 60
 ) >= 20
 
@@ -360,7 +365,7 @@ UNION
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)}) 
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preparatory_range) - lower(preparatory_range)))
     ) / 60) AS missing_minutes,
     date,
     child_id
@@ -371,7 +376,7 @@ GROUP BY date, child_id
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preparatory_range) - lower(preparatory_range)))
     ) / 60
 ) >= 20;
     """
@@ -401,7 +406,10 @@ WITH intersection AS (
     SELECT
         (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
             tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
-        ) AS range,
+        ) AS preschool_range,
+        (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
+            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
+        ) AS preparatory_range,
         ca.date,
         ca.child_id,
         p.type
@@ -418,7 +426,9 @@ WITH intersection AS (
         AND ca.unit_id = d.id
     -- pick out attendance intersecting preschool service time
     WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-        tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
+            tsrange(ca.date + ${bind(preschoolStartTime)}, ca.date + ${bind(preschoolEndTime)})
+        OR tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
+            tsrange(ca.date + ${bind(preparatoryStartTime)}, ca.date + ${bind(preparatoryEndTime)})
         AND daterange(p.start_date, p.end_date, '[]') && ${bind(preschoolTerm)}
         AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
         AND p.unit_id = ${bind(daycareId)}
@@ -427,7 +437,7 @@ WITH intersection AS (
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preschool_range) - lower(preschool_range)))
     ) / 60) AS missing_minutes,
     date,
     child_id
@@ -438,7 +448,7 @@ GROUP BY date, child_id
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preschoolEndTime)} - ${bind(preschoolStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preschool_range) - lower(preschool_range)))
     ) / 60
 ) >= 20
 
@@ -448,7 +458,7 @@ UNION
 SELECT floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preparatory_range) - lower(preparatory_range)))
     ) / 60) AS missing_minutes,
     date,
     child_id
@@ -459,7 +469,7 @@ GROUP BY date, child_id
 HAVING floor(
     extract(
         EPOCH FROM (${bind(preparatoryEndTime)} - ${bind(preparatoryStartTime)})
-        - sum((upper(range) - lower(range)))
+        - sum((upper(preparatory_range) - lower(preparatory_range)))
     ) / 60
 ) >= 20;
     """
