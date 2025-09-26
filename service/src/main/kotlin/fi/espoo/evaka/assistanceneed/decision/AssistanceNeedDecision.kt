@@ -7,6 +7,7 @@ package fi.espoo.evaka.assistanceneed.decision
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.AssistanceNeedDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -51,6 +52,7 @@ data class AssistanceNeedDecision(
     val motivationForDecision: String?,
     val annulmentReason: String,
     val hasDocument: Boolean,
+    val processId: CaseProcessId?,
 ) {
     fun toForm() =
         AssistanceNeedDecisionForm(
