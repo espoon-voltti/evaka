@@ -3051,7 +3051,6 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
                 Virheilmoitus: Test failure
         """
-                .trimIndent()
 
         assertEquals(1, MockEmailClient.emails.size)
         assertEquals(
