@@ -190,6 +190,14 @@ const initialRowState = (
       .filter((type) =>
         featureFlags?.hideOvertimeSelection ? type.value !== 'OVERTIME' : true
       )
+      .filter((type) =>
+        featureFlags?.hideSicknessSelection ? type.value !== 'SICKNESS' : true
+      )
+      .filter((type) =>
+        featureFlags?.hideChildSicknessSelection
+          ? type.value !== 'CHILD_SICKNESS'
+          : true
+      )
   },
   groupEditMode: false,
   groupId: {

@@ -365,7 +365,9 @@ export const staffAttendanceTypes = [
   'OTHER_WORK',
   'TRAINING',
   'OVERTIME',
-  'JUSTIFIED_CHANGE'
+  'JUSTIFIED_CHANGE',
+  'SICKNESS',
+  'CHILD_SICKNESS'
 ] as const
 
 export type StaffAttendanceType = typeof staffAttendanceTypes[number]

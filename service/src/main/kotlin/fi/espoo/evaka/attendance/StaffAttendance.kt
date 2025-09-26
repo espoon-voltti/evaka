@@ -27,7 +27,9 @@ enum class StaffAttendanceType : DatabaseEnum {
     OTHER_WORK,
     TRAINING,
     OVERTIME,
-    JUSTIFIED_CHANGE;
+    JUSTIFIED_CHANGE,
+    SICKNESS,
+    CHILD_SICKNESS;
 
     override val sqlType: String = "staff_attendance_type"
 

@@ -2959,7 +2959,9 @@ export const fi = {
         OTHER_WORK: 'Työasia',
         TRAINING: 'Koulutus',
         OVERTIME: 'Ylityö',
-        JUSTIFIED_CHANGE: 'Perusteltu muutos'
+        JUSTIFIED_CHANGE: 'Perusteltu muutos',
+        SICKNESS: 'Keskeytynyt työpäivä 1',
+        CHILD_SICKNESS: 'Keskeytynyt työpäivä 2'
       },
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',

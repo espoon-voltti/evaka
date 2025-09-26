@@ -361,9 +361,20 @@ function StaffAttendanceDetailsModal<
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
-  const allowedStaffAttendanceTypes = featureFlags.hideOvertimeSelection
-    ? staffAttendanceTypes.filter((type) => type !== 'OVERTIME')
-    : staffAttendanceTypes
+  // const allowedStaffAttendanceTypes = featureFlags.hideOvertimeSelection
+  //   ? staffAttendanceTypes.filter((type) => type !== 'OVERTIME')
+  //   : staffAttendanceTypes
+
+  const allowedStaffAttendanceTypes = staffAttendanceTypes
+    .filter((type) =>
+      featureFlags.hideOvertimeSelection ? type !== 'OVERTIME' : true
+    )
+    .filter((type) =>
+      featureFlags.hideSicknessSelection ? type !== 'SICKNESS' : true
+    )
+    .filter((type) =>
+      featureFlags.hideChildSicknessSelection ? type !== 'CHILD_SICKNESS' : true
+    )
 
   return (
     <PlainModal

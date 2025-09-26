@@ -86,7 +86,16 @@ export function getAttendanceDepartureDifferenceReasons(
   const departedAfterMaxThreshold = departure.isAfter(closestEnd.addMinutes(5))
 
   if (departedBeforeMinThreshold) {
-    return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
+    let reasons: StaffAttendanceType[] = [
+      'OTHER_WORK',
+      'TRAINING',
+      'JUSTIFIED_CHANGE'
+    ]
+    if (!featureFlags.hideSicknessSelection)
+      reasons = reasons.concat('SICKNESS')
+    if (!featureFlags.hideChildSicknessSelection)
+      reasons = reasons.concat('CHILD_SICKNESS')
+    return reasons
   }
   if (departedAfterMaxThreshold) {
     if (featureFlags.hideOvertimeSelection) return ['JUSTIFIED_CHANGE']

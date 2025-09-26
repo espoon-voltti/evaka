@@ -166,7 +166,9 @@ export const fi = {
       OTHER_WORK: 'Työasia',
       TRAINING: 'Koulutus',
       OVERTIME: 'Ylityö',
-      JUSTIFIED_CHANGE: 'Perusteltu muutos'
+      JUSTIFIED_CHANGE: 'Perusteltu muutos',
+      SICKNESS: 'Keskeytynyt työpäivä, sairastuminan',
+      CHILD_SICKNESS: 'Keskeytynyt työpäivä, lapsen sairastuminen'
     },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
