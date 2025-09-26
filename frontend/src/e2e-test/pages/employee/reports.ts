@@ -476,6 +476,7 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
 }
 
 export class AssistanceNeedsAndActionsReport {
+  needsAndActionsHeader: Element
   needsAndActionsRows: ElementCollection
   childRows: ElementCollection
   careAreaSelect: Combobox
@@ -484,9 +485,13 @@ export class AssistanceNeedsAndActionsReport {
   typeSelect: Combobox
   daycareAssistanceLevelSelect: MultiSelect
   preschoolAssistanceLevelSelect: MultiSelect
+  assistanceActionOptionSelect: MultiSelect
   placementTypeSelect: MultiSelect
 
   constructor(private page: Page) {
+    this.needsAndActionsHeader = page.findByDataQa(
+      'assistance-needs-and-actions-header'
+    )
     this.needsAndActionsRows = page.findAllByDataQa(
       'assistance-needs-and-actions-row'
     )
@@ -502,6 +507,9 @@ export class AssistanceNeedsAndActionsReport {
     )
     this.preschoolAssistanceLevelSelect = new MultiSelect(
       this.page.findByDataQa('preschool-assistance-level-filter')
+    )
+    this.assistanceActionOptionSelect = new MultiSelect(
+      this.page.findByDataQa('assistance-action-option-filter')
     )
     this.placementTypeSelect = new MultiSelect(
       this.page.findByDataQa('placement-type-filter')

@@ -118,6 +118,76 @@ describe('Assistance need and actions report', () => {
         'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5\t0\t0'
       )
   })
+  test('Column filters', async () => {
+    await Fixture.assistanceActionOption({
+      category: 'DAYCARE',
+      value: 'v1',
+      nameFi: 'Vaka 1'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'DAYCARE',
+      value: 'v2',
+      nameFi: 'Vaka 2'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'DAYCARE',
+      value: 'v3',
+      nameFi: 'Vaka 3'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'PRESCHOOL',
+      value: 'e1',
+      nameFi: 'Eskari 1'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'PRESCHOOL',
+      value: 'e2',
+      nameFi: 'Eskari 2'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'PRESCHOOL',
+      value: 'e3',
+      nameFi: 'Eskari 3'
+    }).save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tVAKA 1\tVAKA 2\tVAKA 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+    )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
+      'Tehostettu tuki'
+    )
+    await report.daycareAssistanceLevelSelect.fillAndSelectFirst('Kuljetusetu')
+    await report.assistanceActionOptionSelect.fillAndSelectFirst('Vaka 2')
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+    )
+
+    await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+    )
+    await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
+      'Lapsen kotoutumisen tuki'
+    )
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 2\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+    )
+    await report.assistanceActionOptionSelect.fillAndSelectFirst('Eskari 1')
+    await report.assistanceActionOptionSelect.fillAndSelectFirst('Eskari 3')
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+    )
+
+    await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+    )
+  })
   test('Counts actions only if child has selected assistance', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
 
@@ -132,14 +202,22 @@ describe('Assistance need and actions report', () => {
       level: 'INTENSIFIED_SUPPORT'
     }).save()
     await Fixture.assistanceActionOption({
-      value: 'ASSISTANCE_SERVICE_CHILD'
+      category: 'DAYCARE',
+      value: 'DAYCARE_ASSISTANCE_SERVICE_CHILD'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'PRESCHOOL',
+      value: 'PRESCHOOL_ASSISTANCE_SERVICE_CHILD'
     }).save()
     await Fixture.assistanceAction({
       childId,
       modifiedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
-      actions: ['ASSISTANCE_SERVICE_CHILD']
+      actions: [
+        'DAYCARE_ASSISTANCE_SERVICE_CHILD',
+        'PRESCHOOL_ASSISTANCE_SERVICE_CHILD'
+      ]
     }).save()
 
     await page.goto(
@@ -205,14 +283,22 @@ describe('Assistance need and actions report', () => {
       level: 'INTENSIFIED_SUPPORT'
     }).save()
     await Fixture.assistanceActionOption({
-      value: 'ASSISTANCE_SERVICE_CHILD'
+      category: 'DAYCARE',
+      value: 'DAYCARE_ASSISTANCE_SERVICE_CHILD'
+    }).save()
+    await Fixture.assistanceActionOption({
+      category: 'PRESCHOOL',
+      value: 'PRESCHOOL_ASSISTANCE_SERVICE_CHILD'
     }).save()
     await Fixture.assistanceAction({
       childId,
       modifiedBy: evakaUserId(admin.id),
       startDate: validDuring.start,
       endDate: validDuring.end,
-      actions: ['ASSISTANCE_SERVICE_CHILD']
+      actions: [
+        'DAYCARE_ASSISTANCE_SERVICE_CHILD',
+        'PRESCHOOL_ASSISTANCE_SERVICE_CHILD'
+      ]
     }).save()
 
     await page.goto(
