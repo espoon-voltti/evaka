@@ -310,6 +310,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
+  placementDraftUnitId: DaycareId | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
@@ -324,7 +325,6 @@ export interface ApplicationSummary {
   status: ApplicationStatus
   streetAddress: string | null
   transferApplication: boolean
-  trialPlacementUnit: DaycareId | null
   type: ApplicationType
   urgent: boolean
   wasOnClubCare: boolean | null
@@ -674,6 +674,13 @@ export interface PlacementDesktopDaycare {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
+*/
+export interface PlacementDraftUpdateRequest {
+  unitId: DaycareId | null
+}
+
+/**
 * Generated from fi.espoo.evaka.application.PlacementProposalConfirmationUpdate
 */
 export interface PlacementProposalConfirmationUpdate {
@@ -827,13 +834,6 @@ export interface TransferApplicationUnitSummary {
   firstName: string
   lastName: string
   preferredStartDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.TrialPlacementUpdateRequest
-*/
-export interface TrialPlacementUpdateRequest {
-  trialUnitId: DaycareId | null
 }
 
 /**

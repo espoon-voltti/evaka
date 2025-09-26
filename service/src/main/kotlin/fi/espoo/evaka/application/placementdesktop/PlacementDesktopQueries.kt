@@ -6,25 +6,38 @@ package fi.espoo.evaka.application.placementdesktop
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
-fun Database.Transaction.updateApplicationTrialPlacement(
+fun Database.Transaction.updateApplicationPlacementDraft(
     applicationId: ApplicationId,
-    trialUnitId: DaycareId?,
+    unitId: DaycareId?,
     now: HelsinkiDateTime,
-    user: AuthenticatedUser.Employee,
-) =
-    createUpdate {
+    userId: EmployeeId,
+) {
+    if (unitId == null) {
+        execute {
             sql(
                 """
-    UPDATE application
-    SET trial_placement_unit = ${bind(trialUnitId)}, 
-        modified_at = ${bind(now)}, 
-        modified_by = ${bind(user.evakaUserId)}
-    WHERE id = ${bind(applicationId)}
-"""
+            DELETE FROM placement_draft
+            WHERE application_id = ${bind(applicationId)}
+        """
             )
         }
-        .updateExactlyOne()
+    } else {
+        createUpdate {
+                sql(
+                    """
+            INSERT INTO placement_draft (application_id, unit_id, created_at, created_by, modified_at, modified_by)
+            VALUES (${bind(applicationId)}, ${bind(unitId)}, ${bind(now)}, ${bind(userId)}, ${bind(now)}, ${bind(userId)})
+            ON CONFLICT (application_id) DO UPDATE SET
+                unit_id = ${bind(unitId)},
+                modified_at = ${bind(now)},
+                modified_by = ${bind(userId)}
+        """
+                )
+            }
+            .updateExactlyOne()
+    }
+}

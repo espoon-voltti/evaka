@@ -27,15 +27,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/employee/placement-desktop")
 class PlacementDesktopController(private val accessControl: AccessControl) {
-    data class TrialPlacementUpdateRequest(val trialUnitId: DaycareId?)
+    data class PlacementDraftUpdateRequest(val unitId: DaycareId?)
 
-    @PutMapping("/applications/{applicationId}/trial-unit")
-    fun updateApplicationTrialPlacement(
+    @PutMapping("/applications/{applicationId}/placement-draft")
+    fun updateApplicationPlacementDraft(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: TrialPlacementUpdateRequest,
+        @RequestBody body: PlacementDraftUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -43,18 +43,18 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     tx,
                     user,
                     clock,
-                    Action.Application.UPDATE_TRIAL_PLACEMENT,
+                    Action.Application.UPDATE_PLACEMENT_DRAFT,
                     applicationId,
                 )
-                tx.updateApplicationTrialPlacement(
-                    applicationId,
-                    body.trialUnitId,
-                    clock.now(),
-                    user,
+                tx.updateApplicationPlacementDraft(
+                    applicationId = applicationId,
+                    unitId = body.unitId,
+                    now = clock.now(),
+                    userId = user.id,
                 )
             }
         }
-        Audit.ApplicationTrialPlacementUnitUpdate.log(targetId = AuditId(applicationId))
+        Audit.ApplicationPlacementDraftUpdate.log(targetId = AuditId(applicationId))
     }
 
     data class PlacementDesktopDaycare(val id: DaycareId, val name: String, val foo: Int?)
