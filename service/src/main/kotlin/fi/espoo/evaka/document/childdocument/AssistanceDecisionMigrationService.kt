@@ -150,11 +150,11 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                         .also {
                             if (it.isEmpty()) {
                                 throw IllegalStateException(
-                                    "No template found for migrating daycare assistance decision in language ${decision.form.language}"
+                                    "No template found for migrating preschool assistance decision in language ${decision.form.language}"
                                 )
                             } else if (it.size > 1) {
                                 throw IllegalStateException(
-                                    "Multiple templates found for migrating daycare assistance decision in language ${decision.form.language}"
+                                    "Multiple templates found for migrating preschool assistance decision in language ${decision.form.language}"
                                 )
                             }
                         }
