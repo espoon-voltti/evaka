@@ -143,7 +143,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         val endpoint = URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
         upsertSubscription(device, endpoint)
 
-        val contentId =
+        val (contentId, _) =
             db.transaction { tx ->
                 messageService.sendMessageAsEmployee(
                     tx,
