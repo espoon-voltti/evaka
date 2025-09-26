@@ -5,11 +5,11 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import type { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import type {
-  ApplicationId,
-  DaycareId
-} from 'lib-common/generated/api-types/shared'
+  ApplicationSummary,
+  PreferredUnit
+} from 'lib-common/generated/api-types/application'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -47,7 +47,7 @@ export default React.memo(function ApplicationCard({
   application: ApplicationSummary
   onUpdateApplicationPlacementSuccess: (
     applicationId: ApplicationId,
-    unitId: DaycareId | null
+    unit: PreferredUnit | null
   ) => void
   onUpdateApplicationPlacementFailure: () => void
 }) {
@@ -140,29 +140,30 @@ export default React.memo(function ApplicationCard({
               {application.preferredUnits.map((unit, index) => (
                 <FixedSpaceRow key={index}>
                   <UnitListItem
-                    $current={application.placementDraftUnitId === unit.id}
+                    $current={application.placementDraftUnit?.id === unit.id}
                   >
                     {index + 1}. {unit.name}
                   </UnitListItem>
                   <MutateButton
                     appearance="inline"
                     text={
-                      application.placementDraftUnitId === unit.id
+                      application.placementDraftUnit?.id === unit.id
                         ? 'Palauta'
                         : 'Lisää'
                     }
                     icon={
-                      application.placementDraftUnitId === unit.id
+                      application.placementDraftUnit?.id === unit.id
                         ? faUndo
                         : faArrowLeft
                     }
                     mutation={updateApplicationPlacementDraftMutation}
                     onClick={() => ({
                       applicationId: application.id,
-                      previousUnitId: application.placementDraftUnitId,
+                      previousUnitId:
+                        application.placementDraftUnit?.id ?? null,
                       body: {
                         unitId:
-                          application.placementDraftUnitId === unit.id
+                          application.placementDraftUnit?.id === unit.id
                             ? null
                             : unit.id
                       }
@@ -170,9 +171,9 @@ export default React.memo(function ApplicationCard({
                     onSuccess={() => {
                       onUpdateApplicationPlacementSuccess(
                         application.id,
-                        application.placementDraftUnitId === unit.id
+                        application.placementDraftUnit?.id === unit.id
                           ? null
-                          : unit.id
+                          : unit
                       )
                     }}
                     onFailure={() => {
@@ -182,6 +183,38 @@ export default React.memo(function ApplicationCard({
                   />
                 </FixedSpaceRow>
               ))}
+              {application.placementDraftUnit &&
+                !application.preferredUnits.some(
+                  ({ id }) => id === application.placementDraftUnit?.id
+                ) && (
+                  <FixedSpaceRow>
+                    <UnitListItem $current>
+                      *. {application.placementDraftUnit.name}
+                    </UnitListItem>
+                    <MutateButton
+                      appearance="inline"
+                      text="Palauta"
+                      icon={faUndo}
+                      mutation={updateApplicationPlacementDraftMutation}
+                      onClick={() => ({
+                        applicationId: application.id,
+                        previousUnitId:
+                          application.placementDraftUnit?.id ?? null,
+                        body: { unitId: null }
+                      })}
+                      onSuccess={() => {
+                        onUpdateApplicationPlacementSuccess(
+                          application.id,
+                          null
+                        )
+                      }}
+                      onFailure={() => {
+                        onUpdateApplicationPlacementFailure()
+                      }}
+                      successTimeout={0}
+                    />
+                  </FixedSpaceRow>
+                )}
             </FixedSpaceColumn>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">

@@ -467,7 +467,8 @@ fun Database.Read.fetchApplicationSummaries(
             e.id AS status_modified_by_id,
             e.name AS status_modified_by_name,
             e.type AS status_modified_by_type,
-            pd.unit_id AS placement_draft_unit_id
+            pd.unit_id AS placement_draft_unit_id,
+            pd.unit_name AS placement_draft_unit_name
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
@@ -524,8 +525,9 @@ fun Database.Read.fetchApplicationSummaries(
             WHERE u2.id = ANY(pu.preferredUnits)
         ) pua ON true
         LEFT JOIN LATERAL (
-            SELECT pd.unit_id
+            SELECT pd.unit_id, daycare.name as unit_name
             FROM placement_draft pd
+            JOIN daycare ON pd.unit_id = daycare.id
             WHERE pd.application_id = a.id
         ) pd ON true
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
@@ -607,7 +609,10 @@ fun Database.Read.fetchApplicationSummaries(
                         column<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, column("current_placement_unit_name"))
                         },
-                    placementDraftUnitId = column("placement_draft_unit_id"),
+                    placementDraftUnit =
+                        column<DaycareId?>("placement_draft_unit_id")?.let {
+                            PreferredUnit(it, column("placement_draft_unit_name"))
+                        },
                 )
             }
 

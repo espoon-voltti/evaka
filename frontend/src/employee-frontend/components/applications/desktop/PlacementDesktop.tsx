@@ -82,7 +82,7 @@ const PlacementDesktopValidated = React.memo(
 
     // optimistic cache to avoid refetching all applications when updating placements drafts
     const [placementDraftUnits, setPlacementDraftUnits] = useState<
-      Record<ApplicationId, DaycareId | null>
+      Record<ApplicationId, PreferredUnit | null>
     >({})
 
     const [shownDaycares, setShownDaycares] = useState<PreferredUnit[]>()
@@ -92,7 +92,7 @@ const PlacementDesktopValidated = React.memo(
         applications.reduce(
           (acc, application) => ({
             ...acc,
-            [application.id]: application.placementDraftUnitId
+            [application.id]: application.placementDraftUnit
           }),
           {}
         )
@@ -109,10 +109,10 @@ const PlacementDesktopValidated = React.memo(
     }, [applications])
 
     const onUpdateApplicationPlacementSuccess = useCallback(
-      (applicationId: ApplicationId, unitId: DaycareId | null) => {
+      (applicationId: ApplicationId, unit: PreferredUnit | null) => {
         setPlacementDraftUnits((prev) => ({
           ...prev,
-          [applicationId]: unitId
+          [applicationId]: unit
         }))
       },
       []
@@ -146,7 +146,8 @@ const PlacementDesktopValidated = React.memo(
                 key={application.id}
                 application={{
                   ...application,
-                  placementDraftUnitId: placementDraftUnits[application.id]
+                  placementDraftUnit:
+                    placementDraftUnits[application.id] ?? null
                 }}
                 onUpdateApplicationPlacementSuccess={
                   onUpdateApplicationPlacementSuccess

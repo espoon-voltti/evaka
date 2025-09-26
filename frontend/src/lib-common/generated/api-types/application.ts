@@ -310,7 +310,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
-  placementDraftUnitId: DaycareId | null
+  placementDraftUnit: PreferredUnit | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
