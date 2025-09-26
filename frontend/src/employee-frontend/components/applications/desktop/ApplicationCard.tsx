@@ -69,7 +69,7 @@ export default React.memo(function ApplicationCard({
               }
             />
             <LabelLike>
-              {application.firstName} {application.lastName}
+              {application.lastName} {application.firstName}
             </LabelLike>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
