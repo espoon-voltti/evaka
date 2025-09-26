@@ -575,11 +575,11 @@ export async function updateServiceWorkerNote(
 */
 export async function getPlacementDesktopDaycare(
   request: {
-    daycareId: DaycareId
+    unitId: DaycareId
   }
 ): Promise<PlacementDesktopDaycare> {
   const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare>>({
-    url: uri`/employee/placement-desktop/daycares/${request.daycareId}`.toString(),
+    url: uri`/employee/placement-desktop/daycares/${request.unitId}`.toString(),
     method: 'GET'
   })
   return json
@@ -591,11 +591,11 @@ export async function getPlacementDesktopDaycare(
 */
 export async function getPlacementDesktopDaycares(
   request: {
-    daycareIds?: DaycareId[] | null
+    unitIds?: DaycareId[] | null
   }
 ): Promise<PlacementDesktopDaycare[]> {
   const params = createUrlSearchParams(
-    ...(request.daycareIds?.map((e): [string, string | null | undefined] => ['daycareIds', e]) ?? [])
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare[]>>({
     url: uri`/employee/placement-desktop/daycares`.toString(),

@@ -13,10 +13,7 @@ import type {
   PagedApplicationSummaries,
   PreferredUnit
 } from 'lib-common/generated/api-types/application'
-import type {
-  ApplicationId,
-  DaycareId
-} from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import {
@@ -62,21 +59,14 @@ export default React.memo(function PlacementDesktop({
     )
   }
 
-  return (
-    <PlacementDesktopValidated
-      applications={applicationSummaries.data}
-      primaryUnits={primaryUnits}
-    />
-  )
+  return <PlacementDesktopValidated applications={applicationSummaries.data} />
 })
 
 const PlacementDesktopValidated = React.memo(
   function PlacementDesktopValidated({
-    applications,
-    primaryUnits
+    applications
   }: {
     applications: ApplicationSummary[]
-    primaryUnits: DaycareId[]
   }) {
     const queryClient = useQueryClient()
 
@@ -131,7 +121,15 @@ const PlacementDesktopValidated = React.memo(
           <div>Yksiköitä: {shownDaycares?.length}</div>
           <Gap size="s" />
           {shownDaycares !== undefined && (
-            <PrefetchedDaycares shownDaycares={shownDaycares} />
+            <PrefetchedDaycares
+              shownDaycares={shownDaycares}
+              onUpdateApplicationPlacementSuccess={
+                onUpdateApplicationPlacementSuccess
+              }
+              onUpdateApplicationPlacementFailure={
+                onUpdateApplicationPlacementFailure
+              }
+            />
           )}
         </DaycaresColumn>
 
@@ -165,24 +163,31 @@ const PlacementDesktopValidated = React.memo(
 )
 
 const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
-  shownDaycares
+  shownDaycares,
+  onUpdateApplicationPlacementSuccess,
+  onUpdateApplicationPlacementFailure
 }: {
   shownDaycares: PreferredUnit[]
+  onUpdateApplicationPlacementSuccess: (
+    applicationId: ApplicationId,
+    unit: PreferredUnit | null
+  ) => void
+  onUpdateApplicationPlacementFailure: () => void
 }) {
   const queryClient = useQueryClient()
   const initialData = useQueryResult(
     getPlacementDesktopDaycaresQuery({
-      daycareIds: shownDaycares.map((d) => d.id)
+      unitIds: shownDaycares.map((d) => d.id)
     })
   )
   const [initialDataInserted, setInitialDataInserted] = useState(false)
 
   useEffect(() => {
     if (initialData.isSuccess) {
-      initialData.value.forEach((daycare) => {
+      initialData.value.forEach((unit) => {
         void queryClient.setQueryData(
-          getPlacementDesktopDaycareQuery({ daycareId: daycare.id }).queryKey,
-          daycare
+          getPlacementDesktopDaycareQuery({ unitId: unit.id }).queryKey,
+          unit
         )
       })
       setInitialDataInserted(true)
@@ -194,7 +199,16 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   return (
     <FixedSpaceColumn>
       {shownDaycares.map((daycare) => (
-        <DaycareCard key={daycare.id} daycare={daycare} />
+        <DaycareCard
+          key={daycare.id}
+          daycare={daycare}
+          onUpdateApplicationPlacementSuccess={
+            onUpdateApplicationPlacementSuccess
+          }
+          onUpdateApplicationPlacementFailure={
+            onUpdateApplicationPlacementFailure
+          }
+        />
       ))}
     </FixedSpaceColumn>
   )

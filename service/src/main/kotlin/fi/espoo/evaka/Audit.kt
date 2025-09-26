@@ -505,6 +505,7 @@ enum class Audit(
     PlacementCancel,
     PlacementCountReportRead,
     PlacementCreate,
+    PlacementDesktopDaycaresRead,
     PlacementSketchingReportRead,
     PlacementPlanCreate,
     PlacementPlanRespond,
