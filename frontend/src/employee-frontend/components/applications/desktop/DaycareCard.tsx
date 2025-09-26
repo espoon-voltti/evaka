@@ -97,7 +97,7 @@ export default React.memo(function DaycareCard({
 })
 
 const Card = styled.div`
-  width: 580px;
+  min-width: 450px;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   border-radius: 4px;
   padding: ${defaultMargins.s};

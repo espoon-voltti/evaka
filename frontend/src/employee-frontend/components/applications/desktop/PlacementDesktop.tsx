@@ -166,14 +166,15 @@ const PlacementDesktopValidated = React.memo(
     return (
       <FixedSpaceRow>
         <DaycaresColumn>
-          <div>Näytettäviä ysiköitä: {shownDaycares?.length}</div>
+          <div>Näytettäviä yksiköitä: {shownDaycares?.length}</div>
           <Gap size="xs" />
           <Combobox
             items={otherAvailableUnits}
             selectedItem={null}
             onChange={(unit) => unit && onAddToShownDaycares(unit)}
-            placeholder="Lisää yksikkö"
+            placeholder="Lisää näytettävä yksikkö..."
             getItemLabel={(unit) => unit.name}
+            fullWidth
           />
           <Gap size="s" />
           {shownDaycares !== undefined && (
@@ -207,6 +208,7 @@ const PlacementDesktopValidated = React.memo(
                       placementDraftUnits[application.id] ?? null
                   }}
                   shownDaycares={shownDaycares}
+                  allUnits={allUnits}
                   onUpdateApplicationPlacementSuccess={
                     onUpdateApplicationPlacementSuccess
                   }
@@ -283,10 +285,9 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 
 const DaycaresColumn = styled.div`
   flex-grow: 1;
-  width: 50%;
+  max-width: 40%;
 `
 
 const ApplicationsColumn = styled.div`
-  flex-grow: 1;
-  width: 50%;
+  flex-grow: 2;
 `
