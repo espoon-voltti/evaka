@@ -128,7 +128,7 @@ const PlacementDesktopValidated = React.memo(
     return (
       <FixedSpaceRow>
         <DaycaresColumn>
-          <div>Yksiköitä: {primaryUnits.length}</div>
+          <div>Yksiköitä: {shownDaycares?.length}</div>
           <Gap size="s" />
           {shownDaycares !== undefined && (
             <PrefetchedDaycares shownDaycares={shownDaycares} />
