@@ -8,8 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
-import fi.espoo.evaka.assistanceaction.AssistanceActionOption
-import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -62,7 +60,6 @@ class AssistanceNeedsAndActionsReportController(
                         if (placementTypes.isEmpty()) Predicate.alwaysTrue()
                         else Predicate { where("$it.type = ANY (${bind(placementTypes)})") }
                     AssistanceNeedsAndActionsReport(
-                        actions = tx.getAssistanceActionOptions(),
                         rows =
                             tx.getReportRows(
                                 date,
@@ -85,7 +82,6 @@ class AssistanceNeedsAndActionsReportController(
     }
 
     data class AssistanceNeedsAndActionsReport(
-        val actions: List<AssistanceActionOption>,
         val rows: List<AssistanceNeedsAndActionsReportRow>,
         val showAssistanceNeedVoucherCoefficient: Boolean,
     )
@@ -133,7 +129,6 @@ class AssistanceNeedsAndActionsReportController(
                         if (placementTypes.isEmpty()) Predicate.alwaysTrue()
                         else Predicate { where("$it.type = ANY (${bind(placementTypes)})") }
                     AssistanceNeedsAndActionsReportByChild(
-                        actions = tx.getAssistanceActionOptions(),
                         rows =
                             tx.getReportRowsByChild(
                                 date,
@@ -156,7 +151,6 @@ class AssistanceNeedsAndActionsReportController(
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
-        val actions: List<AssistanceActionOption>,
         val rows: List<AssistanceNeedsAndActionsReportRowByChild>,
         val showAssistanceNeedVoucherCoefficient: Boolean,
     )

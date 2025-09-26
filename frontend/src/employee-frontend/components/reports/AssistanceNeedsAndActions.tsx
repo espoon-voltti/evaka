@@ -11,6 +11,8 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import type {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
@@ -49,7 +51,7 @@ import {
 } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { areasQuery } from '../../queries'
+import { areasQuery, getAssistanceActionOptionsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
@@ -103,10 +105,14 @@ const emptyRowFilters: RowFilters = {
 
 interface ColumnFilters {
   type: Type
+  daycareAssistanceActionOptions: AssistanceActionOption[]
+  preschoolAssistanceActionOptions: AssistanceActionOption[]
 }
 
 const emptyColumnFilters: ColumnFilters = {
-  type: 'DAYCARE'
+  type: 'DAYCARE',
+  daycareAssistanceActionOptions: [],
+  preschoolAssistanceActionOptions: []
 }
 
 const Wrapper = styled.div`
@@ -299,6 +305,17 @@ const resolveGroupingType = (
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
   const permittedReports = useQueryResult(permittedReportsQuery())
+  const assistanceActionOptionsResult = useQueryResult(
+    getAssistanceActionOptionsQuery()
+  ).map((options) => orderBy(options, (option) => option.displayOrder))
+  const daycareAssistanceActionOptionsResult =
+    assistanceActionOptionsResult.map((options) =>
+      options.filter((option) => option.category === 'DAYCARE')
+    )
+  const preschoolAssistanceActionOptionsResult =
+    assistanceActionOptionsResult.map((options) =>
+      options.filter((option) => option.category === 'PRESCHOOL')
+    )
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz(),
@@ -605,79 +622,103 @@ export default React.memo(function AssistanceNeedsAndActions() {
         </FilterRow>
 
         {columnFilters.type === 'DAYCARE' && (
-          <FilterRow>
-            <FilterLabel>
-              {i18n.reports.assistanceNeedsAndActions.level}
-            </FilterLabel>
-            <Wrapper>
-              <MultiSelect
-                options={daycareColumns}
-                onChange={(selectedItems) =>
-                  setFilters({
-                    ...filters,
-                    daycareAssistanceLevels: selectedItems.filter(
-                      (item): item is DaycareAssistanceLevel =>
-                        daycareAssistanceLevels.includes(
-                          item as DaycareAssistanceLevel
-                        )
-                    ),
-                    otherAssistanceMeasureTypes: selectedItems.filter(
-                      (item): item is OtherAssistanceMeasureType =>
-                        otherAssistanceMeasureTypes.includes(
-                          item as OtherAssistanceMeasureType
-                        )
-                    )
-                  })
-                }
-                value={[
-                  ...filters.daycareAssistanceLevels,
-                  ...filters.otherAssistanceMeasureTypes
-                ]}
-                getOptionId={(level) => level}
-                getOptionLabel={(level) => daycareColumnTexts[level]}
-                placeholder={i18n.common.all}
-                data-qa="daycare-assistance-level-filter"
-              />
-            </Wrapper>
-          </FilterRow>
+          <>
+            <FilterRow>
+              <FilterLabel>
+                {i18n.reports.assistanceNeedsAndActions.level}
+              </FilterLabel>
+              <Wrapper>
+                <MultiSelect
+                  options={daycareColumns}
+                  onChange={(selectedItems) =>
+                    setFilters({
+                      ...filters,
+                      daycareAssistanceLevels: selectedItems.filter(
+                        (item): item is DaycareAssistanceLevel =>
+                          daycareAssistanceLevels.includes(
+                            item as DaycareAssistanceLevel
+                          )
+                      ),
+                      otherAssistanceMeasureTypes: selectedItems.filter(
+                        (item): item is OtherAssistanceMeasureType =>
+                          otherAssistanceMeasureTypes.includes(
+                            item as OtherAssistanceMeasureType
+                          )
+                      )
+                    })
+                  }
+                  value={[
+                    ...filters.daycareAssistanceLevels,
+                    ...filters.otherAssistanceMeasureTypes
+                  ]}
+                  getOptionId={(level) => level}
+                  getOptionLabel={(level) => daycareColumnTexts[level]}
+                  placeholder={i18n.common.all}
+                  data-qa="daycare-assistance-level-filter"
+                />
+              </Wrapper>
+            </FilterRow>
+            <AssistanceActionOptionFilterRow
+              optionsResult={daycareAssistanceActionOptionsResult}
+              onChange={(selectedOptions) =>
+                setColumnFilters({
+                  ...columnFilters,
+                  daycareAssistanceActionOptions: selectedOptions
+                })
+              }
+              value={columnFilters.daycareAssistanceActionOptions}
+            />
+          </>
         )}
 
         {columnFilters.type === 'PRESCHOOL' && (
-          <FilterRow>
-            <FilterLabel>
-              {i18n.reports.assistanceNeedsAndActions.level}
-            </FilterLabel>
-            <Wrapper>
-              <MultiSelect
-                options={preschoolColumns}
-                onChange={(selectedItems) =>
-                  setFilters({
-                    ...filters,
-                    preschoolAssistanceLevels: selectedItems.filter(
-                      (item): item is PreschoolAssistanceLevel =>
-                        preschoolAssistanceLevels.includes(
-                          item as PreschoolAssistanceLevel
-                        )
-                    ),
-                    otherAssistanceMeasureTypes: selectedItems.filter(
-                      (item): item is OtherAssistanceMeasureType =>
-                        otherAssistanceMeasureTypes.includes(
-                          item as OtherAssistanceMeasureType
-                        )
-                    )
-                  })
-                }
-                value={[
-                  ...filters.preschoolAssistanceLevels,
-                  ...filters.otherAssistanceMeasureTypes
-                ]}
-                getOptionId={(level) => level}
-                getOptionLabel={(level) => preschoolColumnTexts[level]}
-                placeholder={i18n.common.all}
-                data-qa="preschool-assistance-level-filter"
-              />
-            </Wrapper>
-          </FilterRow>
+          <>
+            <FilterRow>
+              <FilterLabel>
+                {i18n.reports.assistanceNeedsAndActions.level}
+              </FilterLabel>
+              <Wrapper>
+                <MultiSelect
+                  options={preschoolColumns}
+                  onChange={(selectedItems) =>
+                    setFilters({
+                      ...filters,
+                      preschoolAssistanceLevels: selectedItems.filter(
+                        (item): item is PreschoolAssistanceLevel =>
+                          preschoolAssistanceLevels.includes(
+                            item as PreschoolAssistanceLevel
+                          )
+                      ),
+                      otherAssistanceMeasureTypes: selectedItems.filter(
+                        (item): item is OtherAssistanceMeasureType =>
+                          otherAssistanceMeasureTypes.includes(
+                            item as OtherAssistanceMeasureType
+                          )
+                      )
+                    })
+                  }
+                  value={[
+                    ...filters.preschoolAssistanceLevels,
+                    ...filters.otherAssistanceMeasureTypes
+                  ]}
+                  getOptionId={(level) => level}
+                  getOptionLabel={(level) => preschoolColumnTexts[level]}
+                  placeholder={i18n.common.all}
+                  data-qa="preschool-assistance-level-filter"
+                />
+              </Wrapper>
+            </FilterRow>
+            <AssistanceActionOptionFilterRow
+              optionsResult={preschoolAssistanceActionOptionsResult}
+              onChange={(selectedOptions) =>
+                setColumnFilters({
+                  ...columnFilters,
+                  preschoolAssistanceActionOptions: selectedOptions
+                })
+              }
+              value={columnFilters.preschoolAssistanceActionOptions}
+            />
+          </>
         )}
 
         <FilterRow>
@@ -693,38 +734,136 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </Wrapper>
         </FilterRow>
 
-        {!reportByChild ? (
-          <ReportByGroup
-            filters={filters}
-            rowFilters={rowFilters}
-            columnFilters={columnFilters}
-            selectedDaycareColumns={selectedDaycareColumns}
-            selectedPreschoolColumns={selectedPreschoolColumns}
-            selectedOtherColumns={selectedOtherColumns}
-          />
-        ) : (
-          <ReportByChild
-            filters={filters}
-            rowFilters={rowFilters}
-            columnFilters={columnFilters}
-            selectedDaycareColumns={selectedDaycareColumns}
-            selectedPreschoolColumns={selectedPreschoolColumns}
-            selectedOtherColumns={selectedOtherColumns}
-          />
+        {renderResult(
+          combine(
+            daycareAssistanceActionOptionsResult,
+            preschoolAssistanceActionOptionsResult
+          ),
+          ([
+            daycareAssistanceActionOptions,
+            preschoolAssistanceActionOptions
+          ]) => (
+            <Report
+              filters={filters}
+              rowFilters={rowFilters}
+              columnFilters={columnFilters}
+              selectedDaycareColumns={selectedDaycareColumns}
+              selectedPreschoolColumns={selectedPreschoolColumns}
+              selectedOtherColumns={selectedOtherColumns}
+              reportByChild={reportByChild}
+              daycareAssistanceActionOptions={daycareAssistanceActionOptions}
+              preschoolAssistanceActionOptions={
+                preschoolAssistanceActionOptions
+              }
+            />
+          )
         )}
       </ContentArea>
     </Container>
   )
 })
 
-const ReportByGroup = (props: {
+const AssistanceActionOptionFilterRow = ({
+  optionsResult,
+  onChange,
+  value
+}: {
+  optionsResult: Result<AssistanceActionOption[]>
+  onChange: (selectedOptions: AssistanceActionOption[]) => void
+  value: AssistanceActionOption[]
+}) => {
+  const { i18n } = useTranslation()
+
+  return (
+    <FilterRow>
+      <FilterLabel>{i18n.childInformation.assistanceAction.title}</FilterLabel>
+      <Wrapper>
+        {renderResult(optionsResult, (options) => (
+          <MultiSelect
+            options={options}
+            onChange={onChange}
+            value={value}
+            getOptionId={(option) => option.value}
+            getOptionLabel={(option) => option.nameFi}
+            placeholder={i18n.common.all}
+            data-qa="assistance-action-option-filter"
+          />
+        ))}
+      </Wrapper>
+    </FilterRow>
+  )
+}
+
+interface ReportTableProps {
   filters: AssistanceNeedsAndActionsReportFilters
   rowFilters: RowFilters
   columnFilters: ColumnFilters
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
-}) => {
+  selectedAssistanceActionColumns: AssistanceActionOption[]
+}
+
+type ReportProps = Omit<ReportTableProps, 'selectedAssistanceActionColumns'> & {
+  reportByChild: boolean | null
+  daycareAssistanceActionOptions: AssistanceActionOption[]
+  preschoolAssistanceActionOptions: AssistanceActionOption[]
+}
+
+const Report = ({
+  reportByChild,
+  daycareAssistanceActionOptions,
+  preschoolAssistanceActionOptions,
+  ...props
+}: ReportProps) => {
+  const selectedAssistanceActionColumns = useMemo(() => {
+    const daycareColumns =
+      props.columnFilters.type === 'DAYCARE'
+        ? props.columnFilters.daycareAssistanceActionOptions.length === 0
+          ? daycareAssistanceActionOptions
+          : daycareAssistanceActionOptions.filter((option) =>
+              props.columnFilters.daycareAssistanceActionOptions.some(
+                (selectedOption) => selectedOption.value === option.value
+              )
+            )
+        : []
+    const preschoolColumns =
+      props.columnFilters.type === 'PRESCHOOL'
+        ? props.columnFilters.preschoolAssistanceActionOptions.length === 0
+          ? preschoolAssistanceActionOptions
+          : preschoolAssistanceActionOptions.filter((option) =>
+              props.columnFilters.preschoolAssistanceActionOptions.some(
+                (selectedOption) => selectedOption.value === option.value
+              )
+            )
+        : []
+    return [...daycareColumns, ...preschoolColumns]
+  }, [
+    props.columnFilters.type,
+    props.columnFilters.daycareAssistanceActionOptions,
+    props.columnFilters.preschoolAssistanceActionOptions,
+    daycareAssistanceActionOptions,
+    preschoolAssistanceActionOptions
+  ])
+
+  if (reportByChild) {
+    return (
+      <ReportByChild
+        {...props}
+        selectedAssistanceActionColumns={selectedAssistanceActionColumns}
+      />
+    )
+  }
+
+  return (
+    <ReportByGroup
+      {...props}
+      selectedAssistanceActionColumns={selectedAssistanceActionColumns}
+    />
+  )
+}
+
+const ReportByGroup = (props: ReportTableProps) => {
   const result = useQueryResult(
     props.filters.date !== null
       ? assistanceNeedsAndActionsReportQuery({
@@ -764,15 +903,10 @@ const ReportByGroupTable = ({
   selectedDaycareColumns,
   selectedPreschoolColumns,
   selectedOtherColumns,
+  selectedAssistanceActionColumns,
   report,
   filename
-}: {
-  filters: AssistanceNeedsAndActionsReportFilters
-  rowFilters: RowFilters
-  columnFilters: ColumnFilters
-  selectedDaycareColumns: DaycareAssistanceLevel[]
-  selectedPreschoolColumns: PreschoolAssistanceLevel[]
-  selectedOtherColumns: OtherAssistanceMeasureType[]
+}: ReportTableProps & {
   report: AssistanceNeedsAndActionsReport
   filename: string
 }) => {
@@ -791,7 +925,10 @@ const ReportByGroupTable = ({
           const key = groupKeyFn(row)
           const groupData =
             data[key] ??
-            emptyGroupingDataByGroup(groupNameFn(row), report.actions)
+            emptyGroupingDataByGroup(
+              groupNameFn(row),
+              selectedAssistanceActionColumns
+            )
           groupData.rows.push(row)
           data[key] = {
             ...groupData,
@@ -837,7 +974,13 @@ const ReportByGroupTable = ({
       groupData,
       groupKeyFn
     }
-  }, [report, filters, rowFilters, columnFilters])
+  }, [
+    report,
+    filters,
+    rowFilters,
+    columnFilters,
+    selectedAssistanceActionColumns
+  ])
 
   return (
     <>
@@ -880,7 +1023,7 @@ const ReportByGroupTable = ({
             value: (row: AssistanceNeedsAndActionsReportRow) =>
               row.otherAssistanceMeasureCounts[type] ?? 0
           })),
-          ...report.actions.map((action) => ({
+          ...selectedAssistanceActionColumns.map((action) => ({
             label: action.nameFi,
             value: (row: AssistanceNeedsAndActionsReportRow) =>
               row.actionCounts[action.value] ?? 0
@@ -912,7 +1055,7 @@ const ReportByGroupTable = ({
       />
       <TableScrollable data-qa="assistance-needs-and-actions-table">
         <Thead>
-          <Tr>
+          <Tr data-qa="assistance-needs-and-actions-header">
             {groupData.type !== 'NO_GROUPING' && (
               <Th>
                 {
@@ -948,7 +1091,7 @@ const ReportByGroupTable = ({
                 }
               </Th>
             ))}
-            {report.actions.map((action) => (
+            {selectedAssistanceActionColumns.map((action) => (
               <Th key={action.value}>{action.nameFi}</Th>
             ))}
             {featureFlags.assistanceActionOther && (
@@ -1021,7 +1164,7 @@ const ReportByGroupTable = ({
                       {data.otherAssistanceMeasureCounts[type] ?? 0}
                     </Td>
                   ))}
-                  {report.actions.map((action) => (
+                  {selectedAssistanceActionColumns.map((action) => (
                     <Td key={action.value}>
                       {data.actionCounts[action.value] ?? 0}
                     </Td>
@@ -1066,7 +1209,7 @@ const ReportByGroupTable = ({
                         {row.otherAssistanceMeasureCounts[type] ?? 0}
                       </Td>
                     ))}
-                    {report.actions.map((action) => (
+                    {selectedAssistanceActionColumns.map((action) => (
                       <Td key={action.value}>
                         {row.actionCounts[action.value] ?? 0}
                       </Td>
@@ -1113,7 +1256,7 @@ const ReportByGroupTable = ({
                 )}
               </Td>
             ))}
-            {report.actions.map((action) => (
+            {selectedAssistanceActionColumns.map((action) => (
               <Td key={action.value}>
                 {reducePropertySum(
                   filteredRows,
@@ -1154,14 +1297,7 @@ const ReportByGroupTable = ({
   )
 }
 
-const ReportByChild = (props: {
-  filters: AssistanceNeedsAndActionsReportFilters
-  rowFilters: RowFilters
-  columnFilters: ColumnFilters
-  selectedDaycareColumns: DaycareAssistanceLevel[]
-  selectedPreschoolColumns: PreschoolAssistanceLevel[]
-  selectedOtherColumns: OtherAssistanceMeasureType[]
-}) => {
+const ReportByChild = (props: ReportTableProps) => {
   const result = useQueryResult(
     props.filters.date !== null
       ? assistanceNeedsAndActionsReportByChildQuery({
@@ -1201,15 +1337,10 @@ const ReportByChildTable = ({
   selectedDaycareColumns,
   selectedPreschoolColumns,
   selectedOtherColumns,
+  selectedAssistanceActionColumns,
   report,
   filename
-}: {
-  filters: AssistanceNeedsAndActionsReportFilters
-  rowFilters: RowFilters
-  columnFilters: ColumnFilters
-  selectedDaycareColumns: DaycareAssistanceLevel[]
-  selectedPreschoolColumns: PreschoolAssistanceLevel[]
-  selectedOtherColumns: OtherAssistanceMeasureType[]
+}: ReportTableProps & {
   report: AssistanceNeedsAndActionsReportByChild
   filename: string
 }) => {
@@ -1318,7 +1449,7 @@ const ReportByChildTable = ({
             value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
               row.otherAssistanceMeasureCounts[type] ?? 0
           })),
-          ...report.actions.map((action) => ({
+          ...selectedAssistanceActionColumns.map((action) => ({
             label: action.nameFi,
             value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
               row.actions.includes(action.value) ? 1 : 0
@@ -1503,7 +1634,7 @@ const ReportByChildTable = ({
                       </Td>
                     ))}
                     <Td>
-                      {report.actions
+                      {selectedAssistanceActionColumns
                         .filter((action) => row.actions.includes(action.value))
                         .map((action, index) => (
                           <span key={action.value}>
