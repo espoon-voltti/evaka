@@ -467,7 +467,7 @@ fun Database.Read.fetchApplicationSummaries(
             e.id AS status_modified_by_id,
             e.name AS status_modified_by_name,
             e.type AS status_modified_by_type,
-            a.trial_placement_unit
+            pd.unit_id AS placement_draft_unit_id
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
@@ -523,6 +523,11 @@ fun Database.Read.fetchApplicationSummaries(
             FROM daycare u2
             WHERE u2.id = ANY(pu.preferredUnits)
         ) pua ON true
+        LEFT JOIN LATERAL (
+            SELECT pd.unit_id
+            FROM placement_draft pd
+            WHERE pd.application_id = a.id
+        ) pd ON true
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
         $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
         """
@@ -602,7 +607,7 @@ fun Database.Read.fetchApplicationSummaries(
                         column<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, column("current_placement_unit_name"))
                         },
-                    trialPlacementUnit = column("trial_placement_unit"),
+                    placementDraftUnitId = column("placement_draft_unit_id"),
                 )
             }
 

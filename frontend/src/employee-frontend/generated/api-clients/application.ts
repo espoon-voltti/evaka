@@ -25,6 +25,7 @@ import type { PaperApplicationCreateRequest } from 'lib-common/generated/api-typ
 import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { PlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
+import type { PlacementDraftUpdateRequest } from 'lib-common/generated/api-types/application'
 import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import type { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
 import type { PlacementToolValidation } from 'lib-common/generated/api-types/application'
@@ -33,7 +34,6 @@ import type { RejectDecisionRequest } from 'lib-common/generated/api-types/appli
 import type { SearchApplicationRequest } from 'lib-common/generated/api-types/application'
 import type { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
 import type { SimpleBatchRequest } from 'lib-common/generated/api-types/application'
-import type { TrialPlacementUpdateRequest } from 'lib-common/generated/api-types/application'
 import type { UnitApplications } from 'lib-common/generated/api-types/application'
 import { AxiosProgressEvent } from 'axios'
 import { client } from '../../api/client'
@@ -607,18 +607,18 @@ export async function getPlacementDesktopDaycares(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.updateApplicationTrialPlacement
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.updateApplicationPlacementDraft
 */
-export async function updateApplicationTrialPlacement(
+export async function updateApplicationPlacementDraft(
   request: {
     applicationId: ApplicationId,
-    body: TrialPlacementUpdateRequest
+    body: PlacementDraftUpdateRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/placement-desktop/applications/${request.applicationId}/trial-unit`.toString(),
+    url: uri`/employee/placement-desktop/applications/${request.applicationId}/placement-draft`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<TrialPlacementUpdateRequest>
+    data: request.body satisfies JsonCompatible<PlacementDraftUpdateRequest>
   })
   return json
 }

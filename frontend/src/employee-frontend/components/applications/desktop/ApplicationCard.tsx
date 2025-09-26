@@ -37,7 +37,7 @@ import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 import { BasisFragment, DateOfBirthInfo } from '../ApplicationsList'
-import { updateApplicationTrialPlacementMutation } from '../queries'
+import { updateApplicationPlacementDraftMutation } from '../queries'
 
 export default React.memo(function ApplicationCard({
   application,
@@ -140,29 +140,29 @@ export default React.memo(function ApplicationCard({
               {application.preferredUnits.map((unit, index) => (
                 <FixedSpaceRow key={index}>
                   <UnitListItem
-                    $current={application.trialPlacementUnit === unit.id}
+                    $current={application.placementDraftUnitId === unit.id}
                   >
                     {index + 1}. {unit.name}
                   </UnitListItem>
                   <MutateButton
                     appearance="inline"
                     text={
-                      application.trialPlacementUnit === unit.id
+                      application.placementDraftUnitId === unit.id
                         ? 'Palauta'
                         : 'Lisää'
                     }
                     icon={
-                      application.trialPlacementUnit === unit.id
+                      application.placementDraftUnitId === unit.id
                         ? faUndo
                         : faArrowLeft
                     }
-                    mutation={updateApplicationTrialPlacementMutation}
+                    mutation={updateApplicationPlacementDraftMutation}
                     onClick={() => ({
                       applicationId: application.id,
-                      previousUnitId: application.trialPlacementUnit,
+                      previousUnitId: application.placementDraftUnitId,
                       body: {
-                        trialUnitId:
-                          application.trialPlacementUnit === unit.id
+                        unitId:
+                          application.placementDraftUnitId === unit.id
                             ? null
                             : unit.id
                       }
@@ -170,7 +170,7 @@ export default React.memo(function ApplicationCard({
                     onSuccess={() => {
                       onUpdateApplicationPlacementSuccess(
                         application.id,
-                        application.trialPlacementUnit === unit.id
+                        application.placementDraftUnitId === unit.id
                           ? null
                           : unit.id
                       )
