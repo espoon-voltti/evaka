@@ -47,16 +47,16 @@ export const updateApplicationPlacementDraftMutation = q.parametricMutation<{
   previousUnitId: DaycareId | null
 }>()(updateApplicationPlacementDraft, [
   ({ body: { unitId } }) =>
-    unitId ? getPlacementDesktopDaycareQuery({ daycareId: unitId }) : undefined,
+    unitId ? getPlacementDesktopDaycareQuery({ unitId }) : undefined,
   ({ previousUnitId }) =>
     previousUnitId
-      ? getPlacementDesktopDaycareQuery({ daycareId: previousUnitId })
+      ? getPlacementDesktopDaycareQuery({ unitId: previousUnitId })
       : undefined
 ])
 
 export const getPlacementDesktopDaycareQuery = q.prefixedQuery(
   getPlacementDesktopDaycare,
-  ({ daycareId }) => daycareId,
+  ({ unitId }) => unitId,
   {
     refetchOnMount: false
   }

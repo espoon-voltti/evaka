@@ -339,7 +339,8 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit(),
         ),
         READ_AROMI_ORDERS(HasGlobalRole(ADMIN)),
-        SEND_NEKKU_ORDER(HasGlobalRole(ADMIN));
+        SEND_NEKKU_ORDER(HasGlobalRole(ADMIN)),
+        READ_PLACEMENT_DESKTOP_DAYCARES(HasGlobalRole(ADMIN, SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
