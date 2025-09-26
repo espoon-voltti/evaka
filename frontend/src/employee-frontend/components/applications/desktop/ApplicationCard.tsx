@@ -9,13 +9,16 @@ import type {
   ApplicationSummary,
   PreferredUnit
 } from 'lib-common/generated/api-types/application'
+import type { UnitStub } from 'lib-common/generated/api-types/daycare'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import { useMutationResult } from 'lib-common/query'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
@@ -44,12 +47,14 @@ import { updateApplicationPlacementDraftMutation } from '../queries'
 export default React.memo(function ApplicationCard({
   application,
   shownDaycares,
+  allUnits,
   onUpdateApplicationPlacementSuccess,
   onUpdateApplicationPlacementFailure,
   onAddToShownDaycares
 }: {
   application: ApplicationSummary
   shownDaycares: PreferredUnit[]
+  allUnits: UnitStub[]
   onUpdateApplicationPlacementSuccess: (
     applicationId: ApplicationId,
     unit: PreferredUnit | null
@@ -58,6 +63,9 @@ export default React.memo(function ApplicationCard({
   onAddToShownDaycares: (unit: PreferredUnit) => void
 }) {
   const { i18n } = useTranslation()
+
+  const { mutateAsync: updateApplicationPlacementDraft, isPending } =
+    useMutationResult(updateApplicationPlacementDraftMutation)
 
   return (
     <Card>
@@ -252,6 +260,28 @@ export default React.memo(function ApplicationCard({
             </FixedSpaceFlexWrap>
           </FixedSpaceColumn>
         </FixedSpaceRow>
+        <Combobox
+          items={allUnits}
+          selectedItem={null}
+          onChange={(unit) => {
+            if (unit) {
+              onAddToShownDaycares(unit)
+              updateApplicationPlacementDraft({
+                applicationId: application.id,
+                previousUnitId: application.placementDraftUnit?.id ?? null,
+                body: { unitId: unit.id }
+              })
+                .then(() =>
+                  onUpdateApplicationPlacementSuccess(application.id, unit)
+                )
+                .catch(onUpdateApplicationPlacementFailure)
+            }
+          }}
+          placeholder="Lisää muuhun yksikköön..."
+          getItemLabel={(unit) => unit.name}
+          isLoading={isPending}
+          fullWidth
+        />
       </FixedSpaceColumn>
     </Card>
   )
