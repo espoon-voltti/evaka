@@ -310,6 +310,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
+  placementDraftUnit: PreferredUnit | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
@@ -661,6 +662,32 @@ export interface PersonBasics {
   firstName: string
   lastName: string
   socialSecurityNumber: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopDaycare
+*/
+export interface PlacementDesktopDaycare {
+  id: DaycareId
+  name: string
+  placementDrafts: PlacementDraft[]
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDraft
+*/
+export interface PlacementDraft {
+  applicationId: ApplicationId
+  childId: string
+  childName: string
+  unitId: DaycareId
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
+*/
+export interface PlacementDraftUpdateRequest {
+  unitId: DaycareId | null
 }
 
 /**

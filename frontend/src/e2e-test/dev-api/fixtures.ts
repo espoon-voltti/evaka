@@ -262,6 +262,7 @@ export class Fixture {
       withSchool: false,
       nekkuOrderReductionPercentage: 10,
       nekkuNoWeekendMealOrders: false,
+      serviceWorkerNote: '',
       ...initial
     }
     return {
