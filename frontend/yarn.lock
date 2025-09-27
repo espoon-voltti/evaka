@@ -6448,7 +6448,7 @@ __metadata:
     seamless-scroll-polyfill: "npm:2.3.4"
     styled-components: "npm:6.1.19"
     terser: "npm:5.44.0"
-    ts-jest: "npm:29.4.2"
+    ts-jest: "npm:29.4.4"
     ts-node: "npm:10.9.2"
     tslib: "npm:2.8.1"
     typescript: "npm:5.9.2"
@@ -11152,9 +11152,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:29.4.2":
-  version: 29.4.2
-  resolution: "ts-jest@npm:29.4.2"
+"ts-jest@npm:29.4.4":
+  version: 29.4.4
+  resolution: "ts-jest@npm:29.4.4"
   dependencies:
     bs-logger: "npm:^0.2.6"
     fast-json-stable-stringify: "npm:^2.1.0"
@@ -11188,7 +11188,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10/09494224db6933f666a5f6a0dc5694181515d65f1abe8d602b5edfe45c475c20c4c5e59ca4755030439400efb9cf0d727e5bb8700b5234a2103fe09cf7d5bdf1
+  checksum: 10/759913fdb9795416abe918ba41c2ab3865f796f909d22bbf219a6a6c5e7daecad06ad85ecc905ea1af89fde2eb048c3b981493dfad6e3a21f7d5c602e630d34d
   languageName: node
   linkType: hard
 
