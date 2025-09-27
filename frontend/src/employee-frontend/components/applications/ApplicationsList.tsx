@@ -574,9 +574,11 @@ const ApplicationsList = React.memo(function Applications({
 })
 
 export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
-  application
+  application,
+  chipOnly
 }: {
   application: ApplicationSummary
+  chipOnly?: boolean
 }) {
   const startDateOrDueDate =
     application.startDate && application.dueDate
@@ -596,7 +598,7 @@ export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
         <AgeIndicatorChip
           age={startDateOrDueDate.differenceInYears(application.dateOfBirth)}
         />
-        <span>{application.dateOfBirth.format()}</span>
+        {!chipOnly && <span>{application.dateOfBirth.format()}</span>}
       </FixedSpaceRow>
     )
   )

@@ -8,46 +8,61 @@ import styled from 'styled-components'
 
 import Tooltip from './Tooltip'
 
-const Circle = styled.div`
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
-  max-width: 34px;
-  max-height: 34px;
+const CircleContainer = styled.div<{ $size: number }>`
+  width: ${(p) => p.$size}px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+`
+
+const Circle = styled.div<{ $size: number }>`
+  width: ${(p) => p.$size}px;
+  height: ${(p) => p.$size}px;
+  min-width: ${(p) => p.$size}px;
+  min-height: ${(p) => p.$size}px;
+  max-width: ${(p) => p.$size}px;
+  max-height: ${(p) => p.$size}px;
   background-color: ${(p) => p.theme.colors.main.m1};
   border-radius: 100%;
 `
 
-const HalfCircle = styled.div`
-  width: 17px;
-  height: 34px;
-  min-width: 17px;
-  min-height: 34px;
-  max-width: 17px;
-  max-height: 34px;
+const HalfCircle = styled.div<{ $size: number }>`
+  width: ${(p) => p.$size / 2}px;
+  height: ${(p) => p.$size}px;
+  min-width: ${(p) => p.$size / 2}px;
+  min-height: ${(p) => p.$size}px;
+  max-width: ${(p) => p.$size / 2}px;
+  max-height: ${(p) => p.$size}px;
   background-color: ${(p) => p.theme.colors.main.m1};
-  border-top-left-radius: 17px;
-  border-bottom-left-radius: 17px;
+  border-top-left-radius: ${(p) => p.$size / 2}px;
+  border-bottom-left-radius: ${(p) => p.$size / 2}px;
 `
 
 type Props = {
   type: 'half' | 'full'
   label: ReactNode
   tooltipUp?: boolean
+  size?: number
 }
 
 export default React.memo(function PlacementCircle({
   type,
   label,
-  tooltipUp
+  tooltipUp,
+  size = 34
 }: Props) {
   return (
     <Tooltip
       tooltip={<span>{label}</span>}
       position={tooltipUp ? 'top' : 'bottom'}
     >
-      {type === 'half' ? <HalfCircle /> : <Circle />}
+      <CircleContainer $size={size}>
+        {type === 'half' ? (
+          <HalfCircle $size={size} />
+        ) : (
+          <Circle $size={size} />
+        )}
+      </CircleContainer>
     </Tooltip>
   )
 })

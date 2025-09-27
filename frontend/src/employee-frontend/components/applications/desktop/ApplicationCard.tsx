@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled, { css } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
 import type {
   ApplicationSummary,
@@ -24,9 +24,8 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { LabelLike } from 'lib-components/typography'
+import { H4, LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faEye } from 'lib-icons'
 import {
   faArrowLeft,
@@ -63,6 +62,7 @@ export default React.memo(function ApplicationCard({
   onAddToShownDaycares: (unit: PreferredUnit) => void
 }) {
   const { i18n } = useTranslation()
+  const { colors } = useTheme()
 
   const { mutateAsync: updateApplicationPlacementDraft, isPending } =
     useMutationResult(updateApplicationPlacementDraftMutation)
@@ -82,9 +82,9 @@ export default React.memo(function ApplicationCard({
                   : i18n.placement.type[application.placementType]
               }
             />
-            <LabelLike>
+            <H4 noMargin>
               {application.lastName} {application.firstName}
-            </LabelLike>
+            </H4>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
             <CareTypeChip type={application.placementType} />
