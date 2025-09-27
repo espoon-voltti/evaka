@@ -180,6 +180,7 @@ const PlacementDesktopValidated = React.memo(
           {shownDaycares !== undefined && (
             <PrefetchedDaycares
               shownDaycares={shownDaycares}
+              applications={applications}
               onUpdateApplicationPlacementSuccess={
                 onUpdateApplicationPlacementSuccess
               }
@@ -227,11 +228,13 @@ const PlacementDesktopValidated = React.memo(
 
 const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   shownDaycares,
+  applications,
   onUpdateApplicationPlacementSuccess,
   onUpdateApplicationPlacementFailure,
   onRemoveFromShownDaycares
 }: {
   shownDaycares: PreferredUnit[]
+  applications: ApplicationSummary[]
   onUpdateApplicationPlacementSuccess: (
     applicationId: ApplicationId,
     unit: PreferredUnit | null
@@ -268,6 +271,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
         <DaycareCard
           key={daycare.id}
           daycare={daycare}
+          applications={applications}
           onUpdateApplicationPlacementSuccess={
             onUpdateApplicationPlacementSuccess
           }

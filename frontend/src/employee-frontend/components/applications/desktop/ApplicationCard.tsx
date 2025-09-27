@@ -24,7 +24,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { LabelLike } from 'lib-components/typography'
+import { H4, LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faEye } from 'lib-icons'
@@ -82,9 +82,9 @@ export default React.memo(function ApplicationCard({
                   : i18n.placement.type[application.placementType]
               }
             />
-            <LabelLike>
+            <H4 noMargin>
               {application.lastName} {application.firstName}
-            </LabelLike>
+            </H4>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
             <CareTypeChip type={application.placementType} />
