@@ -5,7 +5,13 @@
 import { useQueryClient } from '@tanstack/react-query'
 import orderBy from 'lodash/orderBy'
 import uniqBy from 'lodash/uniqBy'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -29,6 +35,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../../queries'
+import { ApplicationUIContext } from '../../../state/application-ui'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import {
@@ -98,6 +105,15 @@ const PlacementDesktopValidated = React.memo(
     const { i18n } = useTranslation()
     const queryClient = useQueryClient()
 
+    const { confirmedSearchFilters } = useContext(ApplicationUIContext)
+    const searchedUnits = useMemo(
+      () =>
+        allUnits.filter((u1) =>
+          (confirmedSearchFilters?.units ?? []).some((u2) => u1.id === u2)
+        ),
+      [allUnits, confirmedSearchFilters?.units]
+    )
+
     // optimistic cache to avoid refetching all applications when updating placements drafts
     const [placementDraftUnits, setPlacementDraftUnits] = useState<
       Record<ApplicationId, PreferredUnit | null>
@@ -124,11 +140,15 @@ const PlacementDesktopValidated = React.memo(
         )
       )
 
-      // by default, show daycares that are either a preferred unit or already have a placement draft
+      // by default, show daycares that are
+      // - one of the searched units, or
+      // - a preferred unit of some result application, or
+      // - already have a placement draft from some result application
       setShownDaycares(
         orderBy(
           uniqBy(
             [
+              ...searchedUnits,
               ...applications.map((a) => a.preferredUnits[0]),
               ...applications.flatMap((a) =>
                 a.placementDraftUnit ? [a.placementDraftUnit] : []
@@ -139,7 +159,7 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications])
+    }, [applications, searchedUnits])
 
     const onUpdateApplicationPlacementSuccess = useCallback(
       (applicationId: ApplicationId, unit: PreferredUnit | null) => {
