@@ -12,7 +12,6 @@ import type {
   ApplicationSummary,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -188,8 +187,7 @@ const ApplicationsList = React.memo(function Applications({
   const [actionInProgress, { on: actionStarted, off: actionEnded }] =
     useBoolean(false)
 
-  const [editedNote, setEditedNote] = useState<ApplicationId | null>(null)
-  const [editedNoteText, setEditedNoteText] = useState<string>('')
+  const [editedNote, setEditedNote] = useState<ApplicationSummary | null>(null)
 
   const isSorted = (column: ApplicationSortColumn) =>
     sortBy === column ? sortDirection : undefined
@@ -422,8 +420,7 @@ const ApplicationsList = React.memo(function Applications({
                 }
                 onClick={(e) => {
                   e.stopPropagation()
-                  setEditedNoteText(application.serviceWorkerNote)
-                  setEditedNote(application.id)
+                  setEditedNote(application)
                 }}
                 aria-label={
                   application.serviceWorkerNote
@@ -544,34 +541,55 @@ const ApplicationsList = React.memo(function Applications({
       </ApplicationsTableContainer>
 
       {!!editedNote && (
-        <MutateFormModal
-          title={i18n.applications.list.serviceWorkerNote}
-          resolveMutation={updateServiceWorkerNoteMutation}
-          resolveAction={() => ({
-            applicationId: editedNote,
-            body: { text: editedNoteText }
-          })}
-          resolveLabel={i18n.common.save}
-          onSuccess={() => setEditedNote(null)}
-          rejectAction={() => setEditedNote(null)}
-          rejectLabel={i18n.common.cancel}
-        >
-          <AlignRight>
-            <Button
-              appearance="inline"
-              onClick={() => setEditedNoteText('')}
-              text={i18n.common.clear}
-              icon={faTrash}
-              disabled={!editedNoteText}
-            />
-          </AlignRight>
-          <Gap />
-          <TextArea value={editedNoteText} onChange={setEditedNoteText} />
-        </MutateFormModal>
+        <ServiceWorkerNoteModal
+          application={editedNote}
+          onClose={() => setEditedNote(null)}
+        />
       )}
     </div>
   )
 })
+
+export const ServiceWorkerNoteModal = React.memo(
+  function ServiceWorkerNoteModal({
+    application,
+    onClose
+  }: {
+    application: ApplicationSummary
+    onClose: () => void
+  }) {
+    const { i18n } = useTranslation()
+    const [noteText, setNoteText] = useState<string>(
+      application.serviceWorkerNote
+    )
+    return (
+      <MutateFormModal
+        title={i18n.applications.list.serviceWorkerNote}
+        resolveMutation={updateServiceWorkerNoteMutation}
+        resolveAction={() => ({
+          applicationId: application.id,
+          body: { text: noteText }
+        })}
+        resolveLabel={i18n.common.save}
+        onSuccess={onClose}
+        rejectAction={onClose}
+        rejectLabel={i18n.common.cancel}
+      >
+        <AlignRight>
+          <Button
+            appearance="inline"
+            onClick={() => setNoteText('')}
+            text={i18n.common.clear}
+            icon={faTrash}
+            disabled={!noteText}
+          />
+        </AlignRight>
+        <Gap />
+        <TextArea value={noteText} onChange={setNoteText} />
+      </MutateFormModal>
+    )
+  }
+)
 
 export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
   application,
