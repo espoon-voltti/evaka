@@ -141,6 +141,7 @@ interface Props {
   applicationId: ApplicationId
   unitId: DaycareId
   unitName: string
+  preferenceNumber: number | null
   period: FiniteDateRange
   preschoolDaycarePeriod?: FiniteDateRange
   additionalUnits: PublicUnit[]
@@ -154,6 +155,7 @@ export default React.memo(function UnitCard({
   applicationId,
   unitId,
   unitName,
+  preferenceNumber,
   period,
   preschoolDaycarePeriod,
   additionalUnits,
@@ -202,7 +204,11 @@ export default React.memo(function UnitCard({
         rel="noreferrer"
       >
         <Bold>
-          <Title primary>{unitName}</Title> <FontAwesomeIcon icon={faLink} />
+          <Title primary>
+            {!!preferenceNumber && `${preferenceNumber}. `}
+            {unitName}
+          </Title>{' '}
+          <FontAwesomeIcon icon={faLink} />
         </Bold>
       </a>
       <Gap size="m" />

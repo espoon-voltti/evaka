@@ -181,9 +181,11 @@ export default React.memo(function PlacementPlanDraft() {
         const withoutOldPlacements = removeOldPlacements(placementPlanDraft)
         setPlacementPlanDraft(withoutOldPlacements)
         if (withoutOldPlacements.isSuccess) {
+          const preselectedUnit =
+            withoutOldPlacements.value.placementDraftUnit?.id ?? null
           if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
             setFormState({
-              unitId: null,
+              unitId: preselectedUnit,
               period: withoutOldPlacements.value.period,
               hasPreschoolDaycarePeriod: true,
               preschoolDaycarePeriod:
@@ -191,7 +193,7 @@ export default React.memo(function PlacementPlanDraft() {
             })
           } else {
             setFormState({
-              unitId: null,
+              unitId: preselectedUnit,
               period: withoutOldPlacements.value.period,
               hasPreschoolDaycarePeriod: false
             })
