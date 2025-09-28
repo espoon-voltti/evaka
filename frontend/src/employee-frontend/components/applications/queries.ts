@@ -58,7 +58,8 @@ export const getPlacementDesktopDaycareQuery = q.prefixedQuery(
   getPlacementDesktopDaycare,
   ({ unitId }) => unitId,
   {
-    refetchOnMount: false
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   }
 )
 

@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled, { css, useTheme } from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type {
   ApplicationSummary,
@@ -21,7 +22,6 @@ import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   FixedSpaceColumn,
-  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H4, LabelLike } from 'lib-components/typography'
@@ -63,6 +63,7 @@ export default React.memo(function ApplicationCard({
 }) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
+  const [, navigate] = useLocation()
 
   const { mutateAsync: updateApplicationPlacementDraft, isPending } =
     useMutationResult(updateApplicationPlacementDraftMutation)
@@ -127,13 +128,13 @@ export default React.memo(function ApplicationCard({
           </FixedSpaceRow>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <div style={{ width: '25%' }}>
+          <div style={{ width: '22%' }}>
             <DateOfBirthInfo application={application} />
           </div>
           <FixedSpaceRow
             spacing="xs"
             alignItems="center"
-            style={{ width: '25%' }}
+            style={{ width: '22%' }}
           >
             <RoundIcon content={faSection} color={colors.main.m1} size="m" />
             <div>{application.dueDate?.format() ?? '-'}</div>
@@ -141,54 +142,109 @@ export default React.memo(function ApplicationCard({
           <FixedSpaceRow
             spacing="xs"
             alignItems="center"
-            style={{ width: '25%' }}
+            style={{ width: '22%' }}
           >
             <RoundIcon content={faPlay} color={colors.main.m1} size="m" />
             <div>{application.startDate?.format() ?? '-'}</div>
           </FixedSpaceRow>
+          <FixedSpaceRow
+            spacing="xs"
+            alignItems="center"
+            justifyContent="flex-end"
+            style={{ flexGrow: 1 }}
+          >
+            <BasisFragment application={application} />
+          </FixedSpaceRow>
         </FixedSpaceRow>
-        <FixedSpaceRow>
-          <FixedSpaceColumn spacing="xs" style={{ width: '70%' }}>
-            <LabelLike>Hakutoiveet</LabelLike>
-            <FixedSpaceColumn spacing="xxs">
-              {application.preferredUnits.map((unit, index) => (
-                <FixedSpaceRow key={index}>
-                  <UnitListItem
-                    $current={application.placementDraftUnit?.id === unit.id}
-                  >
-                    {index + 1}. {unit.name}
+
+        <FixedSpaceColumn spacing="xs">
+          <LabelLike>Hakutoiveet</LabelLike>
+          <FixedSpaceColumn spacing="xxs">
+            {application.preferredUnits.map((unit, index) => (
+              <FixedSpaceRow key={index}>
+                <UnitListItem
+                  $current={application.placementDraftUnit?.id === unit.id}
+                >
+                  {index + 1}. {unit.name}
+                </UnitListItem>
+                {application.checkedByAdmin && (
+                  <>
+                    {shownDaycares.some(({ id }) => id === unit.id) ? (
+                      <MutateButton
+                        appearance="inline"
+                        text={
+                          application.placementDraftUnit?.id === unit.id
+                            ? 'Palauta'
+                            : 'Lisää yksikköön'
+                        }
+                        icon={
+                          application.placementDraftUnit?.id === unit.id
+                            ? faUndo
+                            : faArrowLeft
+                        }
+                        mutation={updateApplicationPlacementDraftMutation}
+                        onClick={() => ({
+                          applicationId: application.id,
+                          previousUnitId:
+                            application.placementDraftUnit?.id ?? null,
+                          body: {
+                            unitId:
+                              application.placementDraftUnit?.id === unit.id
+                                ? null
+                                : unit.id
+                          }
+                        })}
+                        onSuccess={() => {
+                          onUpdateApplicationPlacementSuccess(
+                            application.id,
+                            application.placementDraftUnit?.id === unit.id
+                              ? null
+                              : unit
+                          )
+                        }}
+                        onFailure={() => {
+                          onUpdateApplicationPlacementFailure()
+                        }}
+                        successTimeout={0}
+                      />
+                    ) : (
+                      <Button
+                        appearance="inline"
+                        icon={faEye}
+                        text="Näytä yksikkö"
+                        onClick={() => onAddToShownDaycares(unit)}
+                      />
+                    )}
+                  </>
+                )}
+              </FixedSpaceRow>
+            ))}
+            {application.placementDraftUnit &&
+              !application.preferredUnits.some(
+                ({ id }) => id === application.placementDraftUnit?.id
+              ) && (
+                <FixedSpaceRow>
+                  <UnitListItem $current>
+                    *. {application.placementDraftUnit.name}
                   </UnitListItem>
-                  {shownDaycares.some(({ id }) => id === unit.id) ? (
+                  {shownDaycares.some(
+                    (d) => d.id === application.placementDraftUnit?.id
+                  ) ? (
                     <MutateButton
                       appearance="inline"
-                      text={
-                        application.placementDraftUnit?.id === unit.id
-                          ? 'Palauta'
-                          : 'Lisää'
-                      }
-                      icon={
-                        application.placementDraftUnit?.id === unit.id
-                          ? faUndo
-                          : faArrowLeft
-                      }
+                      text="Palauta"
+                      icon={faUndo}
                       mutation={updateApplicationPlacementDraftMutation}
                       onClick={() => ({
                         applicationId: application.id,
                         previousUnitId:
                           application.placementDraftUnit?.id ?? null,
-                        body: {
-                          unitId:
-                            application.placementDraftUnit?.id === unit.id
-                              ? null
-                              : unit.id
-                        }
+                        body: { unitId: null }
                       })}
                       onSuccess={() => {
                         onUpdateApplicationPlacementSuccess(
                           application.id,
-                          application.placementDraftUnit?.id === unit.id
-                            ? null
-                            : unit
+                          null
                         )
                       }}
                       onFailure={() => {
@@ -201,87 +257,65 @@ export default React.memo(function ApplicationCard({
                       appearance="inline"
                       icon={faEye}
                       text="Näytä"
-                      onClick={() => onAddToShownDaycares(unit)}
+                      onClick={() =>
+                        onAddToShownDaycares(application.placementDraftUnit!)
+                      }
                     />
                   )}
                 </FixedSpaceRow>
-              ))}
-              {application.placementDraftUnit &&
-                !application.preferredUnits.some(
-                  ({ id }) => id === application.placementDraftUnit?.id
-                ) && (
-                  <FixedSpaceRow>
-                    <UnitListItem $current>
-                      *. {application.placementDraftUnit.name}
-                    </UnitListItem>
-                    {shownDaycares.some(
-                      (d) => d.id === application.placementDraftUnit?.id
-                    ) ? (
-                      <MutateButton
-                        appearance="inline"
-                        text="Palauta"
-                        icon={faUndo}
-                        mutation={updateApplicationPlacementDraftMutation}
-                        onClick={() => ({
-                          applicationId: application.id,
-                          previousUnitId:
-                            application.placementDraftUnit?.id ?? null,
-                          body: { unitId: null }
-                        })}
-                        onSuccess={() => {
-                          onUpdateApplicationPlacementSuccess(
-                            application.id,
-                            null
-                          )
-                        }}
-                        onFailure={() => {
-                          onUpdateApplicationPlacementFailure()
-                        }}
-                        successTimeout={0}
-                      />
-                    ) : (
-                      <Button
-                        appearance="inline"
-                        icon={faEye}
-                        text="Näytä"
-                        onClick={() =>
-                          onAddToShownDaycares(application.placementDraftUnit!)
-                        }
-                      />
-                    )}
-                  </FixedSpaceRow>
-                )}
-            </FixedSpaceColumn>
+              )}
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
-            <LabelLike>Perusteet</LabelLike>
-            <FixedSpaceFlexWrap horizontalSpacing="xs">
-              <BasisFragment application={application} />
-            </FixedSpaceFlexWrap>
-          </FixedSpaceColumn>
+        </FixedSpaceColumn>
+
+        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <div style={{ width: '50%' }}>
+            {application.checkedByAdmin && (
+              <Combobox
+                items={allUnits}
+                selectedItem={null}
+                onChange={(unit) => {
+                  if (unit) {
+                    onAddToShownDaycares(unit)
+                    updateApplicationPlacementDraft({
+                      applicationId: application.id,
+                      previousUnitId:
+                        application.placementDraftUnit?.id ?? null,
+                      body: { unitId: unit.id }
+                    })
+                      .then(() =>
+                        onUpdateApplicationPlacementSuccess(
+                          application.id,
+                          unit
+                        )
+                      )
+                      .catch(onUpdateApplicationPlacementFailure)
+                  }
+                }}
+                placeholder="Lisää muuhun yksikköön..."
+                getItemLabel={(unit) => unit.name}
+                isLoading={isPending}
+                fullWidth
+              />
+            )}
+          </div>
+          {application.checkedByAdmin ? (
+            <Button
+              appearance="button"
+              text="Sijoitussuunnitelmaan"
+              onClick={() =>
+                navigate(`/applications/${application.id}/placement`)
+              }
+            />
+          ) : (
+            <a
+              href={`/employee/applications/${application.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button appearance="button" text="Tarkista" />
+            </a>
+          )}
         </FixedSpaceRow>
-        <Combobox
-          items={allUnits}
-          selectedItem={null}
-          onChange={(unit) => {
-            if (unit) {
-              onAddToShownDaycares(unit)
-              updateApplicationPlacementDraft({
-                applicationId: application.id,
-                previousUnitId: application.placementDraftUnit?.id ?? null,
-                body: { unitId: unit.id }
-              })
-                .then(() =>
-                  onUpdateApplicationPlacementSuccess(application.id, unit)
-                )
-                .catch(onUpdateApplicationPlacementFailure)
-            }
-          }}
-          placeholder="Lisää muuhun yksikköön..."
-          getItemLabel={(unit) => unit.name}
-          isLoading={isPending}
-          fullWidth
-        />
       </FixedSpaceColumn>
     </Card>
   )
@@ -296,7 +330,7 @@ const Card = styled.div`
 `
 
 const UnitListItem = styled.span<{ $current: boolean }>`
-  width: 260px;
+  width: 305px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

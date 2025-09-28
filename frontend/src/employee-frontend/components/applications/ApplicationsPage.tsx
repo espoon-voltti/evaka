@@ -30,10 +30,12 @@ export default React.memo(function ApplicationsPage() {
     useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
 
-  const { confirmedSearchFilters: searchFilters, page } =
-    useContext(ApplicationUIContext)
-
-  const [mode, setMode] = useState<'list' | 'desktop'>('list')
+  const {
+    confirmedSearchFilters: searchFilters,
+    page,
+    placementMode,
+    setPlacementMode
+  } = useContext(ApplicationUIContext)
 
   const applications = useQueryResult(
     searchFilters
@@ -100,13 +102,13 @@ export default React.memo(function ApplicationsPage() {
                 <FixedSpaceRow alignItems="center">
                   <Label>Näytä:</Label>
                   <Radio
-                    checked={mode === 'list'}
-                    onChange={() => setMode('list')}
+                    checked={placementMode === 'list'}
+                    onChange={() => setPlacementMode('list')}
                     label="Listana"
                   />
                   <Radio
-                    checked={mode === 'desktop'}
-                    onChange={() => setMode('desktop')}
+                    checked={placementMode === 'desktop'}
+                    onChange={() => setPlacementMode('desktop')}
                     label="Työpöytänä"
                   />
                 </FixedSpaceRow>
@@ -116,7 +118,7 @@ export default React.memo(function ApplicationsPage() {
 
           {renderResult(applications, (applications) => {
             if (
-              mode === 'desktop' &&
+              placementMode === 'desktop' &&
               featureFlags.placementDesktop &&
               searchFilters?.status === 'WAITING_PLACEMENT'
             ) {

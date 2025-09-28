@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { useLocation } from 'wouter'
 
 import type {
   ApplicationSummary,
@@ -14,6 +15,7 @@ import type {
   DaycareId
 } from 'lib-common/generated/api-types/shared'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
 import {
   FixedSpaceColumn,
@@ -21,6 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import { faUndo } from 'lib-icons'
+import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
@@ -42,6 +45,7 @@ export default React.memo(function ApplicationCardMini({
   onUpdateApplicationPlacementFailure: () => void
 }) {
   const { i18n } = useTranslation()
+  const [, navigate] = useLocation()
 
   return (
     <SmallCard>
@@ -50,20 +54,31 @@ export default React.memo(function ApplicationCardMini({
           <div>
             {application.lastName} {application.firstName}
           </div>
-          <MutateIconOnlyButton
-            icon={faUndo}
-            aria-label="Palauta"
-            mutation={updateApplicationPlacementDraftMutation}
-            onClick={() => ({
-              applicationId: application.id,
-              previousUnitId: unitId,
-              body: { unitId: null }
-            })}
-            onSuccess={() =>
-              onUpdateApplicationPlacementSuccess(application.id, null)
-            }
-            onFailure={onUpdateApplicationPlacementFailure}
-          />
+          <FixedSpaceRow spacing="xs">
+            {application.checkedByAdmin && (
+              <IconOnlyButton
+                icon={faCheck}
+                aria-label="Sijoitussuunnitelmaan"
+                onClick={() =>
+                  navigate(`/applications/${application.id}/placement`)
+                }
+              />
+            )}
+            <MutateIconOnlyButton
+              icon={faUndo}
+              aria-label="Palauta"
+              mutation={updateApplicationPlacementDraftMutation}
+              onClick={() => ({
+                applicationId: application.id,
+                previousUnitId: unitId,
+                body: { unitId: null }
+              })}
+              onSuccess={() =>
+                onUpdateApplicationPlacementSuccess(application.id, null)
+              }
+              onFailure={onUpdateApplicationPlacementFailure}
+            />
+          </FixedSpaceRow>
         </FixedSpaceRow>
         <FixedSpaceRow spacing="xs" alignItems="center">
           <PlacementCircle
