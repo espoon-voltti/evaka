@@ -22,12 +22,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faFile } from 'lib-icons'
 import { faEyeSlash } from 'lib-icons'
 
+import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { getPlacementDesktopDaycareQuery } from '../queries'
 
-import ApplicationCardMini from './ApplicationCardMini'
+import ApplicationCardPlaced from './ApplicationCardPlaced'
 
 export default React.memo(function DaycareCard({
   daycare,
@@ -45,6 +47,7 @@ export default React.memo(function DaycareCard({
   onUpdateApplicationPlacementFailure: () => void
   onRemoveFromShownDaycares: () => void
 }) {
+  const { i18n } = useTranslation()
   const { colors } = useTheme()
   const unitDetails = useQueryResult(
     getPlacementDesktopDaycareQuery({ unitId: daycare.id })
@@ -134,7 +137,7 @@ export default React.memo(function DaycareCard({
                       placementDraftsWithApplication,
                       (pd) => pd.childName
                     ).map((pd) => (
-                      <ApplicationCardMini
+                      <ApplicationCardPlaced
                         key={pd.application.id}
                         application={pd.application}
                         unitId={daycare.id}
@@ -164,9 +167,24 @@ export default React.memo(function DaycareCard({
                   <FixedSpaceColumn spacing="xs">
                     {orderBy(otherPlacementDrafts, (pd) => pd.childName).map(
                       (pd) => (
-                        <FixedSpaceRow key={pd.applicationId}>
-                          <span>{pd.childName}</span>
-                        </FixedSpaceRow>
+                        <OtherPlacementDraft key={pd.applicationId}>
+                          <FixedSpaceRow
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <span>{pd.childName}</span>
+                            <a
+                              href={`/employee/applications/${pd.applicationId}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <IconOnlyButton
+                                icon={faFile}
+                                aria-label={i18n.common.open}
+                              />
+                            </a>
+                          </FixedSpaceRow>
+                        </OtherPlacementDraft>
                       )
                     )}
                   </FixedSpaceColumn>
@@ -190,4 +208,10 @@ const Card = styled.div`
 
 const ApplicationsWrapper = styled.div`
   padding: 0 ${defaultMargins.s};
+`
+
+const OtherPlacementDraft = styled.div`
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
+  border-radius: 4px;
+  padding: ${defaultMargins.xs};
 `

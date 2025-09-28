@@ -40,7 +40,11 @@ import { faUndo } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'
-import { BasisFragment, DateOfBirthInfo } from '../ApplicationsList'
+import {
+  BasisFragment,
+  DateOfBirthInfo,
+  ServiceWorkerNoteModal
+} from '../ApplicationsList'
 import { updateApplicationPlacementDraftMutation } from '../queries'
 
 export default React.memo(function ApplicationCard({
@@ -68,8 +72,16 @@ export default React.memo(function ApplicationCard({
   const { mutateAsync: updateApplicationPlacementDraft, isPending } =
     useMutationResult(updateApplicationPlacementDraftMutation)
 
+  const [editingNote, setEditingNote] = React.useState(false)
+
   return (
     <Card>
+      {editingNote && (
+        <ServiceWorkerNoteModal
+          application={application}
+          onClose={() => setEditingNote(false)}
+        />
+      )}
       <FixedSpaceColumn spacing="s">
         <FixedSpaceRow alignItems="flex-start" justifyContent="space-between">
           <FixedSpaceRow alignItems="center" spacing="xs">
@@ -89,14 +101,7 @@ export default React.memo(function ApplicationCard({
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
             <CareTypeChip type={application.placementType} />
-            <FixedSpaceRow spacing="s" alignItems="center">
-              <a
-                href={`/employee/applications/${application.id}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconOnlyButton icon={faFile} aria-label={i18n.common.open} />
-              </a>
+            <FixedSpaceRow spacing="xs" alignItems="center">
               <Tooltip
                 tooltip={
                   application.serviceWorkerNote ? (
@@ -114,7 +119,7 @@ export default React.memo(function ApplicationCard({
                   }
                   onClick={(e) => {
                     e.stopPropagation()
-                    // todo
+                    setEditingNote(true)
                   }}
                   aria-label={
                     application.serviceWorkerNote
@@ -124,6 +129,13 @@ export default React.memo(function ApplicationCard({
                   data-qa="service-worker-note"
                 />
               </Tooltip>
+              <a
+                href={`/employee/applications/${application.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <IconOnlyButton icon={faFile} aria-label={i18n.common.open} />
+              </a>
             </FixedSpaceRow>
           </FixedSpaceRow>
         </FixedSpaceRow>
@@ -159,9 +171,13 @@ export default React.memo(function ApplicationCard({
 
         <FixedSpaceColumn spacing="xs">
           <LabelLike>Hakutoiveet</LabelLike>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn spacing="xs">
             {application.preferredUnits.map((unit, index) => (
-              <FixedSpaceRow key={index}>
+              <FixedSpaceRow
+                key={index}
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <UnitListItem
                   $current={application.placementDraftUnit?.id === unit.id}
                 >
@@ -174,8 +190,8 @@ export default React.memo(function ApplicationCard({
                         appearance="inline"
                         text={
                           application.placementDraftUnit?.id === unit.id
-                            ? 'Palauta'
-                            : 'Lisää yksikköön'
+                            ? 'Peru hahmotelma'
+                            : 'Hahmottele'
                         }
                         icon={
                           application.placementDraftUnit?.id === unit.id
@@ -223,7 +239,10 @@ export default React.memo(function ApplicationCard({
               !application.preferredUnits.some(
                 ({ id }) => id === application.placementDraftUnit?.id
               ) && (
-                <FixedSpaceRow>
+                <FixedSpaceRow
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <UnitListItem $current>
                     *. {application.placementDraftUnit.name}
                   </UnitListItem>
@@ -232,7 +251,7 @@ export default React.memo(function ApplicationCard({
                   ) ? (
                     <MutateButton
                       appearance="inline"
-                      text="Palauta"
+                      text="Peru hahmotelma"
                       icon={faUndo}
                       mutation={updateApplicationPlacementDraftMutation}
                       onClick={() => ({
@@ -268,7 +287,7 @@ export default React.memo(function ApplicationCard({
         </FixedSpaceColumn>
 
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <div style={{ width: '50%' }}>
+          <div style={{ width: '360px' }}>
             {application.checkedByAdmin && (
               <Combobox
                 items={allUnits}
@@ -291,7 +310,7 @@ export default React.memo(function ApplicationCard({
                       .catch(onUpdateApplicationPlacementFailure)
                   }
                 }}
-                placeholder="Lisää muuhun yksikköön..."
+                placeholder="Hahmottele muuhun yksikköön..."
                 getItemLabel={(unit) => unit.name}
                 isLoading={isPending}
                 fullWidth
@@ -301,7 +320,7 @@ export default React.memo(function ApplicationCard({
           {application.checkedByAdmin ? (
             <Button
               appearance="button"
-              text="Sijoitussuunnitelmaan"
+              text="Sijoita"
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
@@ -330,7 +349,8 @@ const Card = styled.div`
 `
 
 const UnitListItem = styled.span<{ $current: boolean }>`
-  width: 305px;
+  flex-grow: 1;
+  max-width: 360px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
