@@ -170,7 +170,9 @@ export default React.memo(function ApplicationCard({
         </FixedSpaceRow>
 
         <FixedSpaceColumn spacing="xs">
-          <LabelLike>Hakutoiveet</LabelLike>
+          <LabelLike>
+            {i18n.applications.placementDesktop.preferences}
+          </LabelLike>
           <FixedSpaceColumn spacing="xs">
             {application.preferredUnits.map((unit, index) => (
               <FixedSpaceRow
@@ -190,8 +192,10 @@ export default React.memo(function ApplicationCard({
                         appearance="inline"
                         text={
                           application.placementDraftUnit?.id === unit.id
-                            ? 'Peru hahmotelma'
-                            : 'Hahmottele'
+                            ? i18n.applications.placementDesktop
+                                .cancelPlacementDraft
+                            : i18n.applications.placementDesktop
+                                .createPlacementDraft
                         }
                         icon={
                           application.placementDraftUnit?.id === unit.id
@@ -227,7 +231,7 @@ export default React.memo(function ApplicationCard({
                       <Button
                         appearance="inline"
                         icon={faEye}
-                        text="Näytä yksikkö"
+                        text={i18n.applications.placementDesktop.showUnit}
                         onClick={() => onAddToShownDaycares(unit)}
                       />
                     )}
@@ -251,7 +255,9 @@ export default React.memo(function ApplicationCard({
                   ) ? (
                     <MutateButton
                       appearance="inline"
-                      text="Peru hahmotelma"
+                      text={
+                        i18n.applications.placementDesktop.cancelPlacementDraft
+                      }
                       icon={faUndo}
                       mutation={updateApplicationPlacementDraftMutation}
                       onClick={() => ({
@@ -275,7 +281,7 @@ export default React.memo(function ApplicationCard({
                     <Button
                       appearance="inline"
                       icon={faEye}
-                      text="Näytä"
+                      text={i18n.applications.placementDesktop.showUnit}
                       onClick={() =>
                         onAddToShownDaycares(application.placementDraftUnit!)
                       }
@@ -310,7 +316,10 @@ export default React.memo(function ApplicationCard({
                       .catch(onUpdateApplicationPlacementFailure)
                   }
                 }}
-                placeholder="Hahmottele muuhun yksikköön..."
+                placeholder={
+                  i18n.applications.placementDesktop
+                    .createPlacementDraftToOtherUnit
+                }
                 getItemLabel={(unit) => unit.name}
                 isLoading={isPending}
                 fullWidth
@@ -320,7 +329,7 @@ export default React.memo(function ApplicationCard({
           {application.checkedByAdmin ? (
             <Button
               appearance="button"
-              text="Sijoita"
+              text={i18n.applications.placementDesktop.toPlacementPlan}
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
@@ -331,7 +340,10 @@ export default React.memo(function ApplicationCard({
               target="_blank"
               rel="noreferrer"
             >
-              <Button appearance="button" text="Tarkista" />
+              <Button
+                appearance="button"
+                text={i18n.applications.placementDesktop.checkApplication}
+              />
             </a>
           )}
         </FixedSpaceRow>

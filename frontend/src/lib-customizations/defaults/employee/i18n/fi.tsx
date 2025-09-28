@@ -346,6 +346,35 @@ export const fi = {
         noFilter: 'Ei rajausta'
       }
     },
+    placementDesktop: {
+      warnings: {
+        tooManyApplicationsTitle: (count: number) =>
+          `Liikaa hakemuksia (${count})`,
+        tooManyApplicationsMessage:
+          'Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl.',
+        tooManyPrimaryUnitsTitle: (count: number) =>
+          `Liikaa ensisijaisia hakuyksiköitä (${count})`,
+        tooManyPrimaryUnitsMessage:
+          'Tarkenna hakuehtoja niin, että hakemuksien ykköstoiveissa on enintään 10 eri yksikköä.'
+      },
+      shownUnitsCount: 'Näytettäviä yksiköitä',
+      addShownUnit: 'Lisää näytettävä yksikkö...',
+      applicationsCount: 'Hakemuksia',
+      preferences: 'Hakutoiveet',
+      createPlacementDraft: 'Hahmottele',
+      createPlacementDraftToOtherUnit: 'Hahmottele muuhun yksikköön...',
+      cancelPlacementDraft: 'Peru hahmotelma',
+      showUnit: 'Näytä yksikkö',
+      hideUnit: 'Piilota yksikkö',
+      toPlacementPlan: 'Sijoita',
+      checkApplication: 'Tarkista hakemus',
+      occupancyConfirmed: 'Vahvistettu',
+      occupancyPlanned: 'Suunniteltu',
+      occupancyDraft: 'Hahmoteltu',
+      placementDraftsWithApplication:
+        'Sijoitushahmotelmat (valitut hakemukset)',
+      otherPlacementDrafts: 'Sijoitushahmotelmat (muut)'
+    },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
       returnToSent: 'Palauta saapuneisiin',

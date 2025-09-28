@@ -71,7 +71,9 @@ export default React.memo(function ApplicationCardPlaced({
           <FixedSpaceRow spacing="xs" alignItems="center">
             <MutateIconOnlyButton
               icon={faUndo}
-              aria-label="Peru hahmotelma"
+              aria-label={
+                i18n.applications.placementDesktop.cancelPlacementDraft
+              }
               mutation={updateApplicationPlacementDraftMutation}
               onClick={() => ({
                 applicationId: application.id,
@@ -141,7 +143,7 @@ export default React.memo(function ApplicationCardPlaced({
             {application.checkedByAdmin && (
               <Button
                 appearance="inline"
-                text="Sijoita"
+                text={i18n.applications.placementDesktop.toPlacementPlan}
                 onClick={() =>
                   navigate(`/applications/${application.id}/placement`)
                 }

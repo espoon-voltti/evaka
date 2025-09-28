@@ -97,22 +97,24 @@ export default React.memo(function DaycareCard({
           </a>
           <IconOnlyButton
             icon={faEyeSlash}
-            aria-label="Piilota"
+            aria-label={i18n.applications.placementDesktop.hideUnit}
             onClick={onRemoveFromShownDaycares}
           />
         </FixedSpaceRow>
 
         <FixedSpaceRow>
           <FixedSpaceColumn spacing="xxs">
-            <Label>Vahvistettu</Label>
+            <Label>
+              {i18n.applications.placementDesktop.occupancyConfirmed}
+            </Label>
             <span>?? %</span>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xxs">
-            <Label>Suunniteltu</Label>
+            <Label>{i18n.applications.placementDesktop.occupancyPlanned}</Label>
             <span>?? %</span>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xxs">
-            <Label>Hahmoteltu</Label>
+            <Label>{i18n.applications.placementDesktop.occupancyDraft}</Label>
             <span>?? %</span>
           </FixedSpaceColumn>
         </FixedSpaceRow>
@@ -125,7 +127,14 @@ export default React.memo(function DaycareCard({
                 opaque
                 open={placementDraftsWithApplicationOpen}
                 toggleOpen={togglePlacementDraftsWithApplication}
-                title={<Label>Sijoitushahmotelmat (valitut hakemukset)</Label>}
+                title={
+                  <Label>
+                    {
+                      i18n.applications.placementDesktop
+                        .placementDraftsWithApplication
+                    }
+                  </Label>
+                }
                 countIndicator={placementDraftsWithApplication.length}
                 countIndicatorColor={colors.accents.a8lightBlue}
                 paddingHorizontal="zero"
@@ -157,7 +166,11 @@ export default React.memo(function DaycareCard({
                 opaque
                 open={otherPlacementDraftsOpen}
                 toggleOpen={toggleOtherPlacementDrafts}
-                title={<Label>Sijoitushahmotelmat (muut)</Label>}
+                title={
+                  <Label>
+                    {i18n.applications.placementDesktop.otherPlacementDrafts}
+                  </Label>
+                }
                 countIndicator={otherPlacementDrafts.length}
                 countIndicatorColor={colors.accents.a8lightBlue}
                 paddingHorizontal="zero"

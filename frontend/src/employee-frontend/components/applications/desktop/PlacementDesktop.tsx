@@ -29,6 +29,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../../queries'
+import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import {
   getApplicationSummariesQuery,
@@ -44,13 +45,19 @@ export default React.memo(function PlacementDesktop({
 }: {
   applicationSummaries: PagedApplicationSummaries
 }) {
+  const { i18n } = useTranslation()
+
   const allUnits = useQueryResult(unitsQuery({}))
 
   if (applicationSummaries.pages > 1 || applicationSummaries.total > 50) {
     return (
       <AlertBox
-        title={`Liikaa hakemuksia (${applicationSummaries.total})`}
-        message="Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl."
+        title={i18n.applications.placementDesktop.warnings.tooManyApplicationsTitle(
+          applicationSummaries.total
+        )}
+        message={
+          i18n.applications.placementDesktop.warnings.tooManyApplicationsMessage
+        }
       />
     )
   }
@@ -62,8 +69,12 @@ export default React.memo(function PlacementDesktop({
   if (primaryUnits.length > 10) {
     return (
       <AlertBox
-        title={`Liikaa ensisijaisia hakuyksiköitä (${primaryUnits.length})`}
-        message="Tarkenna hakuehtoja niin, että hakemuksien ykköstoiveissa on enintään 10 eri yksikköä."
+        title={i18n.applications.placementDesktop.warnings.tooManyPrimaryUnitsTitle(
+          primaryUnits.length
+        )}
+        message={
+          i18n.applications.placementDesktop.warnings.tooManyPrimaryUnitsMessage
+        }
       />
     )
   }
@@ -84,6 +95,7 @@ const PlacementDesktopValidated = React.memo(
     applications: ApplicationSummary[]
     allUnits: UnitStub[]
   }) {
+    const { i18n } = useTranslation()
     const queryClient = useQueryClient()
 
     // optimistic cache to avoid refetching all applications when updating placements drafts
@@ -166,13 +178,16 @@ const PlacementDesktopValidated = React.memo(
     return (
       <FixedSpaceRow>
         <DaycaresColumn>
-          <div>Näytettäviä yksiköitä: {shownDaycares?.length}</div>
+          <div>
+            {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
+            {shownDaycares?.length}
+          </div>
           <Gap size="xs" />
           <Combobox
             items={otherAvailableUnits}
             selectedItem={null}
             onChange={(unit) => unit && onAddToShownDaycares(unit)}
-            placeholder="Lisää näytettävä yksikkö..."
+            placeholder={i18n.applications.placementDesktop.addShownUnit}
             getItemLabel={(unit) => unit.name}
             fullWidth
           />
@@ -195,7 +210,8 @@ const PlacementDesktopValidated = React.memo(
 
         <ApplicationsColumn>
           <div style={{ textAlign: 'right' }}>
-            Hakemuksia: {applications.length}
+            {i18n.applications.placementDesktop.applicationsCount}:{' '}
+            {applications.length}
           </div>
           <Gap size="s" />
           <FixedSpaceColumn alignItems="flex-end">
