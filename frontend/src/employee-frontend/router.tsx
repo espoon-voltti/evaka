@@ -211,7 +211,7 @@ const routes: EmployeeRoute[] = [
   {
     path: '/applications/:id/placement',
     component: PlacementDraftPage,
-    title: 'placementDraft'
+    title: 'placementPlan'
   },
   {
     path: '/applications/:id/decisions',

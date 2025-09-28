@@ -274,7 +274,7 @@ export default React.memo(function PlacementDraft() {
   useTitle(
     placementDraft.map(
       (value) =>
-        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.placementDraft}`
+        `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.placementPlan}`
     )
   )
 

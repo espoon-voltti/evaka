@@ -25,7 +25,7 @@ export const fi = {
     financeBasics: 'Talouden maksuasetukset',
     units: 'Yksiköt',
     customers: 'Asiakastiedot',
-    placementDraft: 'Sijoitushahmotelma',
+    placementPlan: 'Sijoitussuunnitelma',
     decision: 'Päätöksen teko ja lähetys',
     documentTemplates: 'Asiakirjapohjat',
     feeDecisions: 'Maksupäätökset',
@@ -3747,8 +3747,8 @@ export const fi = {
     addOtherUnit: 'Lisää muu yksikkö',
     placementOverlapError:
       'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
-    createPlacementDraft: 'Luo sijoitushahmotelma',
-    datesTitle: 'Nyt luotava sijoitushahmotelma',
+    createPlacementDraft: 'Luo sijoitussuunnitelma',
+    datesTitle: 'Nyt luotava sijoitussuunnitelma',
     type: 'Sijoitustyyppi',
     date: 'Sijoituspäivämäärä',
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
@@ -3763,7 +3763,7 @@ export const fi = {
   decisionDraft: {
     title: 'Päätöksen teko ja lähetys',
     info1:
-      'Lähettämällä päätöksen hyväksyt sijoitushahmotelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
+      'Lähettämällä päätöksen hyväksyt sijoitussuunnitelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
     info2:
       'Huomaathan, että valinnat ja päivämäärät vaikuttavat ainoastaan päätösdokumentteihin. Jos haluat muokata varsinaista sijoitusta, palauta hakemus takaisin sijoitettaviin ja sijoita se uudelleen.',
     ssnInfo1:
