@@ -11,7 +11,7 @@ import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placemen
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { defaultMargins } from 'lib-components/white-space'
 
-import type { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementPlanDraft'
 import UnitCard from './UnitCard'
 
 const FlexContainer = styled.div`
@@ -26,7 +26,7 @@ interface Props {
   applicationId: ApplicationId
   formState: DaycarePlacementPlanForm
   setFormState: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
-  placementDraft: PlacementPlanDraft
+  placementPlanDraft: PlacementPlanDraft
   selectedUnitIsGhostUnit: boolean
 }
 
@@ -36,7 +36,7 @@ export default React.memo(function UnitCards({
   applicationId,
   formState,
   setFormState,
-  placementDraft,
+  placementPlanDraft,
   selectedUnitIsGhostUnit
 }: Props) {
   const { unitId, period, hasPreschoolDaycarePeriod } = formState
@@ -53,7 +53,7 @@ export default React.memo(function UnitCards({
 
   return (
     <FlexContainer data-qa="placement-list">
-      {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => {
+      {placementPlanDraft.preferredUnits.concat(additionalUnits).map((unit) => {
         const isSelectedUnit = unitId === unit.id
         return (
           <UnitCard

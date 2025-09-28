@@ -30,7 +30,7 @@ import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 import { unitSpeculatedOccupancyRatesQuery } from '../unit/queries'
 
-import type { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementPlanDraft'
 
 const Numbers = styled.div`
   display: flex;

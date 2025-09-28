@@ -49,7 +49,7 @@ import { InputWarning } from '../common/InputWarning'
 import WarningLabel from '../common/WarningLabel'
 import { getPreschoolTermsQuery } from '../unit/queries'
 
-import PlacementDraftRow from './PlacementDraftRow'
+import PlacementPlanDraftRow from './PlacementPlanDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
 
@@ -82,19 +82,21 @@ interface PlacementPlanDraftWithOverlaps extends PlacementPlanDraft {
 }
 
 function calculateOverLaps(
-  placementDraft: Result<PlacementPlanDraft>,
-  setPlacementDraft: Dispatch<
+  placementPlanDraft: Result<PlacementPlanDraft>,
+  setPlacementPlanDraft: Dispatch<
     SetStateAction<Result<PlacementPlanDraftWithOverlaps>>
   >
 ) {
-  if (placementDraft.isSuccess) {
-    const placements = placementDraft.value.placements.map(
+  if (placementPlanDraft.isSuccess) {
+    const placements = placementPlanDraft.value.placements.map(
       (placement: PlacementSummary) => ({
         ...placement,
-        overlap: hasOverlap(placement, placementDraft)
+        overlap: hasOverlap(placement, placementPlanDraft)
       })
     )
-    setPlacementDraft(placementDraft.map((draft) => ({ ...draft, placements })))
+    setPlacementPlanDraft(
+      placementPlanDraft.map((draft) => ({ ...draft, placements }))
+    )
   }
 }
 
@@ -125,11 +127,11 @@ export type DaycarePlacementPlanForm =
       preschoolDaycarePeriod: FiniteDateRange | null
     }
 
-export default React.memo(function PlacementDraft() {
+export default React.memo(function PlacementPlanDraft() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const [placementDraft, setPlacementDraft] = useState<
+  const [placementPlanDraft, setPlacementPlanDraft] = useState<
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
@@ -157,9 +159,9 @@ export default React.memo(function PlacementDraft() {
   }, [formState, units])
 
   function removeOldPlacements(
-    placementDraft: Result<PlacementPlanDraft>
+    placementPlanDraft: Result<PlacementPlanDraft>
   ): Result<PlacementPlanDraft> {
-    return placementDraft.map((draft) => ({
+    return placementPlanDraft.map((draft) => ({
       ...draft,
       placements: draft.placements.filter(
         (p) => !p.endDate.isBefore(LocalDate.todayInSystemTz())
@@ -173,11 +175,11 @@ export default React.memo(function PlacementDraft() {
   )
 
   useEffect(() => {
-    setPlacementDraft(Loading.of())
+    setPlacementPlanDraft(Loading.of())
     void getPlacementPlanDraftResult({ applicationId }).then(
-      (placementDraft) => {
-        const withoutOldPlacements = removeOldPlacements(placementDraft)
-        setPlacementDraft(withoutOldPlacements)
+      (placementPlanDraft) => {
+        const withoutOldPlacements = removeOldPlacements(placementPlanDraft)
+        setPlacementPlanDraft(withoutOldPlacements)
         if (withoutOldPlacements.isSuccess) {
           if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
             setFormState({
@@ -194,11 +196,14 @@ export default React.memo(function PlacementDraft() {
               hasPreschoolDaycarePeriod: false
             })
           }
-          calculateOverLaps(withoutOldPlacements, setPlacementDraft)
+          calculateOverLaps(withoutOldPlacements, setPlacementPlanDraft)
         }
 
         // Application has already changed its status
-        if (placementDraft.isFailure && placementDraft.statusCode === 409) {
+        if (
+          placementPlanDraft.isFailure &&
+          placementPlanDraft.statusCode === 409
+        ) {
           redirectToMainPage()
         }
       }
@@ -214,8 +219,8 @@ export default React.memo(function PlacementDraft() {
 
   const preschoolDatesAreValid = useMemo(() => {
     if (
-      placementDraft.isSuccess &&
-      !isPreschoolPlacement(placementDraft.value.type)
+      placementPlanDraft.isSuccess &&
+      !isPreschoolPlacement(placementPlanDraft.value.type)
     ) {
       // Not a preschool placement so the preschool dates are irrelevant
       return true
@@ -223,8 +228,8 @@ export default React.memo(function PlacementDraft() {
 
     if (
       preschoolTermsResult.isSuccess &&
-      placementDraft.isSuccess &&
-      isPreschoolPlacement(placementDraft.value.type) &&
+      placementPlanDraft.isSuccess &&
+      isPreschoolPlacement(placementPlanDraft.value.type) &&
       formState.period !== null
     ) {
       const matchingPreschoolTerm = preschoolTermsResult
@@ -259,20 +264,20 @@ export default React.memo(function PlacementDraft() {
     } else {
       return false
     }
-  }, [preschoolTermsResult, placementDraft, formState])
+  }, [preschoolTermsResult, placementPlanDraft, formState])
 
   useEffect(() => {
-    if (placementDraft.isSuccess) {
+    if (placementPlanDraft.isSuccess) {
       void getApplicationUnitsResult({
-        type: asUnitType(placementDraft.value.type),
-        date: formState.period?.start ?? placementDraft.value.period.start,
+        type: asUnitType(placementPlanDraft.value.type),
+        date: formState.period?.start ?? placementPlanDraft.value.period.start,
         shiftCare: null
       }).then(setUnits)
     }
-  }, [placementDraft, formState.period?.start, preschoolTermsResult])
+  }, [placementPlanDraft, formState.period?.start, preschoolTermsResult])
 
   useTitle(
-    placementDraft.map(
+    placementPlanDraft.map(
       (value) =>
         `${formatPersonName(value.child, 'Last First')} | ${i18n.titles.placementPlan}`
     )
@@ -283,9 +288,9 @@ export default React.memo(function PlacementDraft() {
     dateType: 'start' | 'end',
     date: LocalDate | null
   ) {
-    if (placementDraft.isSuccess) {
+    if (placementPlanDraft.isSuccess) {
       if (!date) return null
-      const period = placementDraft.value[periodType]
+      const period = placementPlanDraft.value[periodType]
       if (!period) return period
       if (dateType === 'start') {
         if (period.end && period.end.isBefore(date)) {
@@ -322,23 +327,23 @@ export default React.memo(function PlacementDraft() {
         [periodType]: fixedPeriod
       })
 
-      if (fixedPeriod !== null && placementDraft.isSuccess) {
-        const updatedPlacementDraft = placementDraft.map((draft) => ({
+      if (fixedPeriod !== null && placementPlanDraft.isSuccess) {
+        const updatedPlacementPlanDraft = placementPlanDraft.map((draft) => ({
           ...draft,
           [periodType]: fixedPeriod
         }))
-        setPlacementDraft(updatedPlacementDraft)
-        calculateOverLaps(updatedPlacementDraft, setPlacementDraft)
+        setPlacementPlanDraft(updatedPlacementPlanDraft)
+        calculateOverLaps(updatedPlacementPlanDraft, setPlacementPlanDraft)
       }
     }
 
   function addUnit(unitId: DaycareId) {
     return (
       units.isSuccess &&
-      placementDraft.isSuccess &&
+      placementPlanDraft.isSuccess &&
       setAdditionalUnits((prevUnits) => {
         if (
-          placementDraft.value.preferredUnits
+          placementPlanDraft.value.preferredUnits
             .map((unit) => unit.id)
             .includes(unitId)
         ) {
@@ -375,14 +380,14 @@ export default React.memo(function PlacementDraft() {
   return (
     <Container
       data-qa="placement-draft-page"
-      data-isloading={isLoading(placementDraft)}
+      data-isloading={isLoading(placementPlanDraft)}
     >
       <ContentArea opaque>
         <Gap size="xs" />
-        {renderResult(placementDraft, (placementDraft) => (
+        {renderResult(placementPlanDraft, (placementPlanDraft) => (
           <>
             <section>
-              {placementDraft.guardianHasRestrictedDetails && (
+              {placementPlanDraft.guardianHasRestrictedDetails && (
                 <FloatRight>
                   <Tooltip
                     tooltip={i18n.placementDraft.restrictedDetailsTooltip}
@@ -398,16 +403,19 @@ export default React.memo(function PlacementDraft() {
               <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
               <Gap size="xs" />
               <H2 noMargin>
-                <PersonName person={placementDraft.child} format="First Last" />
+                <PersonName
+                  person={placementPlanDraft.child}
+                  format="First Last"
+                />
               </H2>
               <Gap size="L" />
               <ListGrid>
                 <Label>{i18n.placementDraft.dateOfBirth}</Label>
-                <span>{placementDraft.child.dob.format()}</span>
+                <span>{placementPlanDraft.child.dob.format()}</span>
               </ListGrid>
               <Gap size="s" />
               <a
-                href={`/employee/child-information/${placementDraft.child.id}`}
+                href={`/employee/child-information/${placementPlanDraft.child.id}`}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -417,15 +425,15 @@ export default React.memo(function PlacementDraft() {
                 </Bold>
               </a>
             </section>
-            {placementDraft.placements && (
+            {placementPlanDraft.placements && (
               <>
                 <Gap size="XL" />
-                <Placements placements={placementDraft.placements} />
+                <Placements placements={placementPlanDraft.placements} />
               </>
             )}
             <Gap size="XL" />
-            <PlacementDraftRow
-              placementDraft={placementDraft}
+            <PlacementPlanDraftRow
+              placementPlanDraft={placementPlanDraft}
               formState={formState}
               updateStart={updatePlacementDate('period', 'start')}
               updateEnd={updatePlacementDate('period', 'end')}
@@ -458,7 +466,7 @@ export default React.memo(function PlacementDraft() {
               applicationId={applicationId}
               formState={formState}
               setFormState={setFormState}
-              placementDraft={placementDraft}
+              placementPlanDraft={placementPlanDraft}
               selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
             />
             <Gap size="XL" />

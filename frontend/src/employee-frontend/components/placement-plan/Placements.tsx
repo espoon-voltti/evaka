@@ -16,7 +16,7 @@ import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../common/StatusLabel'
 
-import type { PlacementSummaryWithOverlaps } from './PlacementDraft'
+import type { PlacementSummaryWithOverlaps } from './PlacementPlanDraft'
 
 const Type = styled.span`
   display: inline-block;

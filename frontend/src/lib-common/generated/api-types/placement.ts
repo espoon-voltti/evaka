@@ -249,6 +249,7 @@ export interface PlacementPlanDraft {
   child: PlacementDraftChild
   guardianHasRestrictedDetails: boolean
   period: FiniteDateRange
+  placementDraftUnit: PlacementDraftUnit | null
   placements: PlacementSummary[]
   preferredUnits: PlacementDraftUnit[]
   preschoolDaycarePeriod: FiniteDateRange | null

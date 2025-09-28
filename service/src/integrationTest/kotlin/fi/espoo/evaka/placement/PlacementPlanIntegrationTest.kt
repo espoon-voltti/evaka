@@ -597,6 +597,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                     ),
                 preferredUnits =
                     preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) },
+                placementDraftUnit = null,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
                 placements = placements,
