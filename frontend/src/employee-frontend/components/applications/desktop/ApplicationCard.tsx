@@ -117,10 +117,7 @@ export default React.memo(function ApplicationCard({
                       ? fasCommentAltLines
                       : faCommentAlt
                   }
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setEditingNote(true)
-                  }}
+                  onClick={() => setEditingNote(true)}
                   aria-label={
                     application.serviceWorkerNote
                       ? i18n.common.edit
