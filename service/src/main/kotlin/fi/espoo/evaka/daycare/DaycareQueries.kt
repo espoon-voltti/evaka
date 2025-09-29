@@ -237,6 +237,7 @@ fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> =
                 """
 SELECT id, oph_unit_oid AS oph_unit_oid
 FROM daycare
+WHERE oph_unit_oid IS NOT NULL
 """
             )
         }
