@@ -178,62 +178,76 @@ export default React.memo(function ApplicationCard({
                 alignItems="center"
               >
                 <UnitListItem
-                  $current={application.placementDraftUnit?.id === unit.id}
+                  $selection={
+                    application.placementDraftUnit === null
+                      ? 'none'
+                      : application.placementDraftUnit.id === unit.id
+                        ? 'this'
+                        : 'other'
+                  }
                 >
                   {index + 1}. {unit.name}
                 </UnitListItem>
-                {application.checkedByAdmin && (
-                  <>
-                    {shownDaycares.some(({ id }) => id === unit.id) ? (
-                      <MutateButton
-                        appearance="inline"
-                        text={
-                          application.placementDraftUnit?.id === unit.id
-                            ? i18n.applications.placementDesktop
-                                .cancelPlacementDraft
-                            : i18n.applications.placementDesktop
-                                .createPlacementDraft
-                        }
-                        icon={
-                          application.placementDraftUnit?.id === unit.id
-                            ? faUndo
-                            : faArrowLeft
-                        }
-                        mutation={updateApplicationPlacementDraftMutation}
-                        onClick={() => ({
-                          applicationId: application.id,
-                          previousUnitId:
-                            application.placementDraftUnit?.id ?? null,
-                          body: {
-                            unitId:
-                              application.placementDraftUnit?.id === unit.id
-                                ? null
-                                : unit.id
-                          }
-                        })}
-                        onSuccess={() => {
-                          onUpdateApplicationPlacementSuccess(
-                            application.id,
-                            application.placementDraftUnit?.id === unit.id
-                              ? null
-                              : unit
-                          )
-                        }}
-                        onFailure={() => {
-                          onUpdateApplicationPlacementFailure()
-                        }}
-                        successTimeout={0}
-                      />
-                    ) : (
-                      <Button
-                        appearance="inline"
-                        icon={faEye}
-                        text={i18n.applications.placementDesktop.showUnit}
-                        onClick={() => onAddToShownDaycares(unit)}
-                      />
-                    )}
-                  </>
+                {application.placementDraftUnit?.id === unit.id && (
+                  <MutateButton
+                    appearance="inline"
+                    text={
+                      i18n.applications.placementDesktop.cancelPlacementDraft
+                    }
+                    icon={faUndo}
+                    mutation={updateApplicationPlacementDraftMutation}
+                    onClick={() => ({
+                      applicationId: application.id,
+                      previousUnitId: unit.id,
+                      body: {
+                        unitId: null
+                      }
+                    })}
+                    onSuccess={() =>
+                      onUpdateApplicationPlacementSuccess(application.id, null)
+                    }
+                    onFailure={onUpdateApplicationPlacementFailure}
+                    successTimeout={0}
+                  />
                 )}
+                {application.checkedByAdmin &&
+                  application.placementDraftUnit === null && (
+                    <>
+                      {shownDaycares.some(({ id }) => id === unit.id) ? (
+                        <MutateButton
+                          appearance="inline"
+                          text={
+                            i18n.applications.placementDesktop
+                              .createPlacementDraft
+                          }
+                          icon={faArrowLeft}
+                          mutation={updateApplicationPlacementDraftMutation}
+                          onClick={() => ({
+                            applicationId: application.id,
+                            previousUnitId: null,
+                            body: {
+                              unitId: unit.id
+                            }
+                          })}
+                          onSuccess={() =>
+                            onUpdateApplicationPlacementSuccess(
+                              application.id,
+                              unit
+                            )
+                          }
+                          onFailure={onUpdateApplicationPlacementFailure}
+                          successTimeout={0}
+                        />
+                      ) : (
+                        <Button
+                          appearance="inline"
+                          icon={faEye}
+                          text={i18n.applications.placementDesktop.showUnit}
+                          onClick={() => onAddToShownDaycares(unit)}
+                        />
+                      )}
+                    </>
+                  )}
               </FixedSpaceRow>
             ))}
             {application.placementDraftUnit &&
@@ -244,8 +258,9 @@ export default React.memo(function ApplicationCard({
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <UnitListItem $current>
-                    *. {application.placementDraftUnit.name}
+                  <UnitListItem $selection="this">
+                    {i18n.applications.placementDesktop.other}:{' '}
+                    {application.placementDraftUnit.name}
                   </UnitListItem>
                   {shownDaycares.some(
                     (d) => d.id === application.placementDraftUnit?.id
@@ -263,15 +278,13 @@ export default React.memo(function ApplicationCard({
                           application.placementDraftUnit?.id ?? null,
                         body: { unitId: null }
                       })}
-                      onSuccess={() => {
+                      onSuccess={() =>
                         onUpdateApplicationPlacementSuccess(
                           application.id,
                           null
                         )
-                      }}
-                      onFailure={() => {
-                        onUpdateApplicationPlacementFailure()
-                      }}
+                      }
+                      onFailure={onUpdateApplicationPlacementFailure}
                       successTimeout={0}
                     />
                   ) : (
@@ -357,7 +370,7 @@ const Card = styled.div`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-const UnitListItem = styled.span<{ $current: boolean }>`
+const UnitListItem = styled.span<{ $selection: 'this' | 'other' | 'none' }>`
   flex-grow: 1;
   max-width: 360px;
   overflow: hidden;
@@ -366,9 +379,13 @@ const UnitListItem = styled.span<{ $current: boolean }>`
   padding-left: ${defaultMargins.xs};
 
   ${(p) =>
-    p.$current
+    p.$selection === 'this'
       ? css`
           font-weight: 600;
         `
-      : ''}
+      : p.$selection === 'other'
+        ? css`
+            color: ${p.theme.colors.grayscale.g70};
+          `
+        : ''}
 `

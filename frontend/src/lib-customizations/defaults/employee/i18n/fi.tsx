@@ -366,6 +366,7 @@ export const fi = {
       cancelPlacementDraft: 'Peru hahmotelma',
       showUnit: 'Näytä yksikkö',
       hideUnit: 'Piilota yksikkö',
+      other: 'Muu',
       toPlacementPlan: 'Sijoita',
       checkApplication: 'Tarkista hakemus',
       occupancyConfirmed: 'Vahvistettu',
