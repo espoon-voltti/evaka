@@ -47,7 +47,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     applicationId = applicationId,
                     unitId = body.unitId,
                     now = clock.now(),
-                    userId = user.id,
+                    userId = user.evakaUserId,
                 )
             }
         }

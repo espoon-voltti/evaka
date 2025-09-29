@@ -6,7 +6,7 @@ package fi.espoo.evaka.application.placementdesktop
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -16,7 +16,7 @@ fun Database.Transaction.updateApplicationPlacementDraft(
     applicationId: ApplicationId,
     unitId: DaycareId?,
     now: HelsinkiDateTime,
-    userId: EmployeeId,
+    userId: EvakaUserId,
 ) {
     if (unitId == null) {
         execute {
