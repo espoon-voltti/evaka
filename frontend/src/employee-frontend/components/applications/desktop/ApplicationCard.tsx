@@ -75,7 +75,7 @@ export default React.memo(function ApplicationCard({
   const [editingNote, setEditingNote] = React.useState(false)
 
   return (
-    <Card>
+    <Card $placed={application.placementDraftUnit !== null}>
       {editingNote && (
         <ServiceWorkerNoteModal
           application={application}
@@ -343,6 +343,7 @@ export default React.memo(function ApplicationCard({
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
+              primary={application.placementDraftUnit !== null}
             />
           ) : (
             <a
@@ -362,9 +363,16 @@ export default React.memo(function ApplicationCard({
   )
 })
 
-const Card = styled.div`
+const Card = styled.div<{ $placed: boolean }>`
   width: 580px;
-  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
+  ${(p) =>
+    p.$placed
+      ? css`
+          border: 2px solid ${p.theme.colors.status.success};
+        `
+      : css`
+          border: 1px solid ${p.theme.colors.grayscale.g35};
+        `}
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
