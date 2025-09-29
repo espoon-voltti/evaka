@@ -513,7 +513,19 @@ class DocumentMetadataUtilsTest {
                                         name = "Testi Testaaja",
                                         type = EvakaUserType.EMPLOYEE,
                                     ),
-                            )
+                            ),
+                            CaseProcessHistoryRow(
+                                rowIndex = 2,
+                                state = CaseProcessState.COMPLETED,
+                                enteredAt =
+                                    HelsinkiDateTime.of(caseProcessInitialDate.plusDays(200)),
+                                enteredBy =
+                                    EvakaUser(
+                                        id = EvakaUserId(userId),
+                                        name = "Testi Testaaja",
+                                        type = EvakaUserType.EMPLOYEE,
+                                    ),
+                            ),
                         )
                 )
 
@@ -531,5 +543,99 @@ class DocumentMetadataUtilsTest {
 
         // Should use document metadata creation date when no case process
         assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.created)
+    }
+
+    @Test
+    fun `createCaseFile uses case process initial date for caseCreated when available`() {
+        val document = createTestDocument()
+        val documentMetadata =
+            createTestDocumentMetadata()
+                .copy(createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")))
+
+        // Create case process with different initial date than document metadata
+        val caseProcessInitialDate = LocalDateTime.parse("2019-01-15T10:30:00")
+        val caseProcess =
+            createTestCaseProcess(null)
+                .copy(
+                    history =
+                        listOf(
+                            CaseProcessHistoryRow(
+                                rowIndex = 1,
+                                state = CaseProcessState.INITIAL,
+                                enteredAt = HelsinkiDateTime.of(caseProcessInitialDate),
+                                enteredBy =
+                                    EvakaUser(
+                                        id = EvakaUserId(userId),
+                                        name = "Testi Testaaja",
+                                        type = EvakaUserType.EMPLOYEE,
+                                    ),
+                            )
+                        )
+                )
+
+        val result = createCaseFile(documentMetadata, caseProcess, document)
+
+        // Should use case process initial date, not document metadata creation date
+        assertEquals(
+            caseProcessInitialDate.toLocalDate().toXMLGregorianCalendar(),
+            result.caseCreated,
+        )
+    }
+
+    @Test
+    fun `createCaseFile falls back to document metadata for caseCreated when no case process`() {
+        val document = createTestDocument()
+        val documentMetadata = createTestDocumentMetadata()
+
+        val result = createCaseFile(documentMetadata, null, document)
+
+        // Should use document metadata creation date when no case process
+        assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.caseCreated)
+    }
+
+    @Test
+    fun `getCaseFinishDate uses case process initial date in fallback calculation when available`() {
+        val document =
+            createTestDocument()
+                .copy(
+                    template =
+                        createTestDocument()
+                            .template
+                            .copy(
+                                validity =
+                                    DateRange(start = LocalDate.parse("2022-08-01"), end = null)
+                            )
+                )
+
+        val documentMetadata =
+            createTestDocumentMetadata()
+                .copy(createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")))
+
+        // Create case process with different initial date than document metadata
+        val caseProcessInitialDate = LocalDateTime.parse("2019-08-01T10:30:00")
+        val caseProcess =
+            createTestCaseProcess(null)
+                .copy(
+                    history =
+                        listOf(
+                            CaseProcessHistoryRow(
+                                rowIndex = 1,
+                                state = CaseProcessState.INITIAL,
+                                enteredAt = HelsinkiDateTime.of(caseProcessInitialDate),
+                                enteredBy =
+                                    EvakaUser(
+                                        id = EvakaUserId(userId),
+                                        name = "Testi Testaaja",
+                                        type = EvakaUserType.EMPLOYEE,
+                                    ),
+                            )
+                        )
+                )
+
+        val result = createCaseFile(documentMetadata, caseProcess, document)
+
+        // For a case process created on 2019-08-01, the next July 31 is 2020-07-31
+        val expectedFinishDate = LocalDate.parse("2020-07-31").toXMLGregorianCalendar()
+        assertEquals(expectedFinishDate, result.caseFinished)
     }
 }

@@ -301,15 +301,20 @@ private fun createFormat(filename: String): StandardMetadataType.Format {
     }
 }
 
+private fun getCreationDate(
+    documentMetadata: DocumentMetadata,
+    caseProcess: CaseProcess?,
+): HelsinkiDateTime? {
+    return caseProcess?.history?.find { it.state == CaseProcessState.INITIAL }?.enteredAt
+        ?: documentMetadata.createdAt
+}
+
 fun createCreation(
     documentMetadata: DocumentMetadata,
     caseProcess: CaseProcess?,
 ): StandardMetadataType.Creation {
     return StandardMetadataType.Creation().apply {
-        created =
-            (caseProcess?.history?.find { it.state == CaseProcessState.INITIAL }?.enteredAt
-                    ?: documentMetadata.createdAt)
-                ?.asXMLGregorianCalendar()
+        created = getCreationDate(documentMetadata, caseProcess)?.asXMLGregorianCalendar()
         originatingSystem = "Varhaiskasvatuksen toiminnanohjausjärjestelmä"
     }
 }
@@ -342,7 +347,7 @@ private fun getCaseFinishDate(
         ?.enteredAt
         ?.asXMLGregorianCalendar()
         ?: document.template.validity.end?.toXMLGregorianCalendar()
-        ?: documentMetadata.createdAt?.let {
+        ?: getCreationDate(documentMetadata, caseProcess)?.let {
             val createdDate = it.toLocalDateTime().toLocalDate()
             calculateNextJuly31(createdDate).toXMLGregorianCalendar()
         }
@@ -354,7 +359,7 @@ fun createCaseFile(
     document: ChildDocumentDetails,
 ): CaseFileType {
     return CaseFileType().apply {
-        caseCreated = documentMetadata.createdAt?.asXMLGregorianCalendar()
+        caseCreated = getCreationDate(documentMetadata, caseProcess)?.asXMLGregorianCalendar()
 
         caseFinished = getCaseFinishDate(documentMetadata, caseProcess, document)
     }
