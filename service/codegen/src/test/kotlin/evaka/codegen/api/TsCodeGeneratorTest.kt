@@ -76,8 +76,7 @@ class TsCodeGeneratorTest {
   bool: boolean,
   list: string[] | null,
   str: string
-}"""
-                .trimIndent(),
+}""",
             type = typeOf<ObjectLiteral>(),
         )
 
@@ -96,8 +95,7 @@ class TsCodeGeneratorTest {
   bool: boolean,
   list: string[] | null,
   str: string
-} | null)[]"""
-                .trimIndent(),
+} | null)[]""",
             type = typeOf<List<ObjectLiteral?>>(),
         )
 
@@ -126,8 +124,7 @@ class TsCodeGeneratorTest {
   bool: boolean,
   list: string[] | null,
   str: string
-} | null>>"""
-                .trimIndent(),
+} | null>>""",
             type = typeOf<Map<String, ObjectLiteral?>>(),
         )
     }

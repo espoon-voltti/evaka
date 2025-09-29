@@ -2143,7 +2143,6 @@ fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> =
                 SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends
                 FROM titania_errors
             """
-                    .trimIndent()
             )
         }
         .toList<TitaniaTestDbRow>()

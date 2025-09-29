@@ -74,7 +74,6 @@ cfztBMk40W05+0rxkIDQ0ov3MjZaB152PT4I8mJvDgLLQOf44isg4sknBlK8hQHw
 KlXzU4Q98gbl6+f5fHprIYrVln1ERtWT8JNgxh74sgCEUpkI9GJWOWHiTgkEgAzd
 JDuPQL7iuc5ASUjOrGoAjswTGWjDDw==
     """
-        .trimIndent()
 
 private val algorithm: Algorithm by lazy {
     val kf = KeyFactory.getInstance("RSA")

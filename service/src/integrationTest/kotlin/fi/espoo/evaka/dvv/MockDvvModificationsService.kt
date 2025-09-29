@@ -116,8 +116,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+    """,
         "010179-9992" to
             """
 {
@@ -136,8 +135,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+    """,
         "020180-999Y" to
             """
 {
@@ -166,8 +164,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+    """,
         "030180-999L" to
             """
 {
@@ -223,8 +220,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+    """,
         "010180-999A" to
             """
 {
@@ -242,8 +238,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+    """,
         "yksinhuoltaja-muutos" to
             """
 {
@@ -316,8 +311,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """
-                .trimIndent(),
+    """,
         "huoltaja" to
             """
 {
@@ -358,8 +352,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }            
-    """
-                .trimIndent(),
+    """,
         "010181-999K" to
             """
 {
@@ -388,8 +381,7 @@ val modifications =
       ],
       "muutospv": "2019-09-24T21:00:00.000Z"
     }
-    """
-                .trimIndent(),
+    """,
         "040180-9998" to
             """
 {
@@ -460,8 +452,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """
-                .trimIndent(),
+    """,
         "050180-999W" to
             """
 {
@@ -491,8 +482,7 @@ val modifications =
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+    """,
         "060118A999J" to
             """
 {
@@ -522,8 +512,7 @@ val modifications =
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+    """,
         "tuntematon_muutos" to
             """
 {
@@ -536,8 +525,7 @@ val modifications =
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+    """,
         "010170-123F" to
             """
 {
@@ -557,8 +545,7 @@ val modifications =
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }
-    """
-                .trimIndent(),
+    """,
         "rikkinainen_tietue" to
             """
 {
@@ -566,8 +553,7 @@ val modifications =
   "bogus": [],
   "bogus": "2021-09-14T12:01:04.568Z"
 }
-    """
-                .trimIndent(),
+    """,
     )
 
 data class ModificationsRequest(val viimeisinKirjausavain: String, val hetulista: List<String>)

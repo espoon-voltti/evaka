@@ -3047,10 +3047,10 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val expectedContent =
             """
-                Ryhmän Testiryhmä Nekku-tilaus päivälle 05.05.2025 epäonnistui
+                    Ryhmän Testiryhmä Nekku-tilaus päivälle 05.05.2025 epäonnistui
 
-                Virheilmoitus: Test failure
-        """
+                    Virheilmoitus: Test failure
+            """
                 .trimIndent()
 
         assertEquals(1, MockEmailClient.emails.size)
