@@ -328,6 +328,7 @@ interface Props {
   lastPlacementDate: LocalDate | null
   editable: boolean
   onClickEdit?: () => void
+  reservedOphUnitOIDs: string[]
   children: (
     getFormData: () => DaycareFields | undefined,
     isValid: boolean
@@ -366,6 +367,7 @@ function validateTimeRange({
 function validateForm(
   i18n: Translations,
   lastPlacementDate: LocalDate | null,
+  reservedOphUnitOIDs: string[],
   form: FormData
 ): [DaycareFields | undefined, UnitEditorErrors] {
   const errors: FormErrorItem[] = []
@@ -665,6 +667,13 @@ function validateForm(
     form.nekkuOrderReductionPercentage,
     10
   )
+
+  if (form.ophUnitOid !== '' && reservedOphUnitOIDs.includes(form.ophUnitOid)) {
+    errors.push({
+      text: i18n.unitEditor.error.reservedOphUnitOid,
+      key: 'reserved-oph-unit-oid'
+    })
+  }
 
   const {
     openingDate,
@@ -974,7 +983,12 @@ export default function UnitEditor(props: Props) {
   const updateForm = (updates: Partial<FormData>) => {
     const newForm = { ...form, ...updates }
     setForm(newForm)
-    const [, errors] = validateForm(i18n, props.lastPlacementDate, newForm)
+    const [, errors] = validateForm(
+      i18n,
+      props.lastPlacementDate,
+      props.reservedOphUnitOIDs,
+      newForm
+    )
     setValidationErrors(errors)
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
@@ -1035,7 +1049,12 @@ export default function UnitEditor(props: Props) {
   )
 
   const getFormData = () => {
-    const [fields, errors] = validateForm(i18n, props.lastPlacementDate, form)
+    const [fields, errors] = validateForm(
+      i18n,
+      props.lastPlacementDate,
+      props.reservedOphUnitOIDs,
+      form
+    )
     setValidationErrors(errors)
     if (fields && checkFormValidation()) {
       return fields
@@ -1045,7 +1064,12 @@ export default function UnitEditor(props: Props) {
   }
 
   const onClickEditHandler = () => {
-    const [, errors] = validateForm(i18n, props.lastPlacementDate, form)
+    const [, errors] = validateForm(
+      i18n,
+      props.lastPlacementDate,
+      props.reservedOphUnitOIDs,
+      form
+    )
     setValidationErrors(errors)
     if (props.onClickEdit) props.onClickEdit()
   }
@@ -1781,6 +1805,7 @@ export default function UnitEditor(props: Props) {
             value={form.ophUnitOid}
             onChange={(value) => updateForm({ ophUnitOid: value.trim() })}
             width="L"
+            data-qa="oph-unit-oid-input-field"
           />
         ) : (
           form.ophUnitOid

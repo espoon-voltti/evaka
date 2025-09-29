@@ -353,6 +353,7 @@ export interface DaycareResponse {
   groups: DaycareGroupResponse[]
   lastPlacementDate: LocalDate | null
   permittedActions: Action.Unit[]
+  reservedOphUnitOIDs: string[]
 }
 
 /**

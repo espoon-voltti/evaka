@@ -231,6 +231,17 @@ fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery { daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }) }
         .exactlyOneOrNull<Daycare>()
 
+fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> =
+    createQuery {
+            sql(
+                """
+SELECT id, oph_unit_oid AS oph_unit_oid
+FROM daycare
+"""
+            )
+        }
+        .toMap { columnPair("id", "oph_unit_oid") }
+
 fun Database.Read.getLastPlacementDate(daycareId: DaycareId): LocalDate? =
     createQuery {
             sql(

@@ -241,6 +241,7 @@ export class UnitEditor {
   #invoiceByMunicipality: Checkbox
   #closingDateInput: DatePicker
   #unitHandlerAddressInput: TextInput
+  #ophUnitOIDInput: TextInput
   unitCostCenterInput: TextInput
   saveButton: Element
 
@@ -267,6 +268,9 @@ export class UnitEditor {
     )
     this.#unitHandlerAddressInput = new TextInput(
       page.find('#unit-handler-address')
+    )
+    this.#ophUnitOIDInput = new TextInput(
+      page.findByDataQa('oph-unit-oid-input-field')
     )
     this.unitCostCenterInput = new TextInput(page.find('#unit-cost-center'))
     this.saveButton = page.findByDataQa('save-button')
@@ -408,6 +412,10 @@ export class UnitEditor {
 
   async setUnitHandlerAddress(text: string) {
     await this.#unitHandlerAddressInput.fill(text)
+  }
+
+  async setOphUnitOID(text: string) {
+    await this.#ophUnitOIDInput.fill(text)
   }
 
   async assertUnitHandlerAddressVisibility(
