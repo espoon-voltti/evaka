@@ -678,7 +678,7 @@ export interface PlacementDesktopDaycare {
 */
 export interface PlacementDraft {
   applicationId: ApplicationId
-  childId: string
+  childId: PersonId
   childName: string
   unitId: DaycareId
 }

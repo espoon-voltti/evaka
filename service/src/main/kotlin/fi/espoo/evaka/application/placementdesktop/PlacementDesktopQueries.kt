@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application.placementdesktop
 
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
@@ -53,7 +54,7 @@ data class PlacementDesktopDaycare(
 data class PlacementDraft(
     val applicationId: ApplicationId,
     val unitId: DaycareId,
-    val childId: String,
+    val childId: ChildId,
     val childName: String,
 )
 
