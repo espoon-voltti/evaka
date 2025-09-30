@@ -11,9 +11,13 @@ import type {
   PreferredUnit
 } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { defaultMargins } from 'lib-components/white-space'
 import { faUndo } from 'lib-icons'
@@ -43,9 +47,18 @@ export default React.memo(function ApplicationCardPlaced({
   return (
     <SmallCard>
       <FixedSpaceRow justifyContent="space-between">
-        <ChildName $applicationInSearchResults={applicationInSearchResults}>
-          {placementDraft.childName}
-        </ChildName>
+        <Tooltip
+          tooltip={
+            <FixedSpaceColumn spacing="xxs">
+              <div>{placementDraft.modifiedBy.name}</div>
+              <div>{placementDraft.modifiedAt.format()}</div>
+            </FixedSpaceColumn>
+          }
+        >
+          <ChildName $applicationInSearchResults={applicationInSearchResults}>
+            {placementDraft.childName}
+          </ChildName>
+        </Tooltip>
 
         <FixedSpaceRow spacing="xs" alignItems="center">
           {applicationInSearchResults ? (

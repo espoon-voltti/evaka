@@ -45,6 +45,7 @@ import { deserializeJsonApplicationResponse } from 'lib-common/generated/api-typ
 import { deserializeJsonDecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { deserializeJsonPlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitApplications } from 'lib-common/generated/api-types/application'
@@ -582,7 +583,7 @@ export async function getPlacementDesktopDaycare(
     url: uri`/employee/placement-desktop/daycares/${request.unitId}`.toString(),
     method: 'GET'
   })
-  return json
+  return deserializeJsonPlacementDesktopDaycare(json)
 }
 
 
@@ -602,7 +603,7 @@ export async function getPlacementDesktopDaycares(
     method: 'GET',
     params
   })
-  return json
+  return json.map(e => deserializeJsonPlacementDesktopDaycare(e))
 }
 
 

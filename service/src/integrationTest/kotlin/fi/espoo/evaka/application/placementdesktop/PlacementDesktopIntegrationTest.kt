@@ -88,6 +88,8 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare1.id,
                     childId = child.id,
                     childName = "${child.lastName} ${child.firstName}",
+                    modifiedAt = clock.now(),
+                    modifiedBy = serviceWorker.evakaUser,
                 )
             ),
             getPlacementDesktopDaycare(daycare1.id).placementDrafts,
@@ -108,6 +110,8 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     childId = child.id,
                     childName = "${child.lastName} ${child.firstName}",
+                    modifiedAt = clock.now(),
+                    modifiedBy = serviceWorker.evakaUser,
                 )
             ),
             getPlacementDesktopDaycare(daycare2.id).placementDrafts,
@@ -129,6 +133,8 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 unitId = daycare2.id,
                                 childId = child.id,
                                 childName = "${child.lastName} ${child.firstName}",
+                                modifiedAt = clock.now(),
+                                modifiedBy = serviceWorker.evakaUser,
                             )
                         ),
                 ),

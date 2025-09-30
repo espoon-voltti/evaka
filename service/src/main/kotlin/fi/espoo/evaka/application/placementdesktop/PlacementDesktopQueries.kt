@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.json.Json
 
 fun Database.Transaction.updateApplicationPlacementDraft(
@@ -56,6 +57,8 @@ data class PlacementDraft(
     val unitId: DaycareId,
     val childId: ChildId,
     val childName: String,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUser,
 )
 
 fun Database.Read.getPlacementDesktopDaycares(unitIds: Set<DaycareId>) =
@@ -70,11 +73,18 @@ fun Database.Read.getPlacementDesktopDaycares(unitIds: Set<DaycareId>) =
                 'applicationId', pd.application_id, 
                 'unitId', pd.unit_id,
                 'childId', c.id,
-                'childName', c.last_name || ' ' || c.first_name
+                'childName', c.last_name || ' ' || c.first_name,
+                'modifiedAt', pd.modified_at,
+                'modifiedBy', jsonb_build_object(
+                    'id', eu.id, 
+                    'name', eu.name,
+                    'type', eu.type
+                )
             ))
             FROM placement_draft pd
             JOIN application a ON a.id = pd.application_id
             JOIN person c ON c.id = a.child_id
+            JOIN evaka_user eu ON eu.id = pd.modified_by
             WHERE d.id = pd.unit_id
         ), '[]'::jsonb) AS placement_drafts
     FROM daycare d

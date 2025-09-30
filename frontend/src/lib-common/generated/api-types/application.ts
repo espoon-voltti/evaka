@@ -680,6 +680,8 @@ export interface PlacementDraft {
   applicationId: ApplicationId
   childId: PersonId
   childName: string
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
   unitId: DaycareId
 }
 
@@ -1124,6 +1126,22 @@ export function deserializeJsonPersonApplicationSummary(json: JsonOf<PersonAppli
     ...json,
     preferredStartDate: (json.preferredStartDate != null) ? LocalDate.parseIso(json.preferredStartDate) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonPlacementDesktopDaycare(json: JsonOf<PlacementDesktopDaycare>): PlacementDesktopDaycare {
+  return {
+    ...json,
+    placementDrafts: json.placementDrafts.map(e => deserializeJsonPlacementDraft(e))
+  }
+}
+
+
+export function deserializeJsonPlacementDraft(json: JsonOf<PlacementDraft>): PlacementDraft {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 
