@@ -24,7 +24,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H4, LabelLike } from 'lib-components/typography'
+import { H4, LabelLike, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEye } from 'lib-icons'
 import {
@@ -100,7 +100,12 @@ export default React.memo(function ApplicationCard({
             </H4>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
-            <CareTypeChip type={application.placementType} />
+            <FixedSpaceColumn spacing="xxs" alignItems="center">
+              <CareTypeChip type={application.placementType} />
+              {application.transferApplication && (
+                <Light>{i18n.applications.list.transfer}</Light>
+              )}
+            </FixedSpaceColumn>
             <FixedSpaceRow spacing="xs" alignItems="center">
               <Tooltip
                 tooltip={
