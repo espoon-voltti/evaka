@@ -6,7 +6,6 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type {
   ApplicationSummary,
@@ -22,7 +21,6 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { faFile } from 'lib-icons'
 import { faEyeSlash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -53,34 +51,23 @@ export default React.memo(function DaycareCard({
     getPlacementDesktopDaycareQuery({ unitId: daycare.id })
   )
 
-  const placementDraftsWithApplication = useMemo(
+  const placementDraftsWithApplications = useMemo(
     () =>
       unitDetails.map((unitDetails) =>
-        unitDetails.placementDrafts.flatMap((pd) => {
+        unitDetails.placementDrafts.map((placementDraft) => {
           const application = applications.find(
-            (a) => a.id === pd.applicationId
+            (a) => a.id === placementDraft.applicationId
           )
-          return application ? [{ ...pd, application }] : []
+          return {
+            placementDraft,
+            application
+          }
         })
       ),
     [unitDetails, applications]
   )
-  const [
-    placementDraftsWithApplicationOpen,
-    { toggle: togglePlacementDraftsWithApplication }
-  ] = useBoolean(true)
-
-  const otherPlacementDrafts = useMemo(
-    () =>
-      unitDetails.map((unitDetails) =>
-        unitDetails.placementDrafts.filter(
-          (pd) => !applications.some((a) => a.id === pd.applicationId)
-        )
-      ),
-    [unitDetails, applications]
-  )
-  const [otherPlacementDraftsOpen, { toggle: toggleOtherPlacementDrafts }] =
-    useBoolean(false)
+  const [placementDraftsOpen, { toggle: togglePlacementDraftsOpen }] =
+    useBoolean(true)
 
   return (
     <Card>
@@ -120,90 +107,43 @@ export default React.memo(function DaycareCard({
         </FixedSpaceRow>
 
         {renderResult(
-          combine(placementDraftsWithApplication, otherPlacementDrafts),
-          ([placementDraftsWithApplication, otherPlacementDrafts]) => (
-            <FixedSpaceColumn spacing="s">
-              <CollapsibleContentArea
-                opaque
-                open={placementDraftsWithApplicationOpen}
-                toggleOpen={togglePlacementDraftsWithApplication}
-                title={
-                  <Label>
-                    {
-                      i18n.applications.placementDesktop
-                        .placementDraftsWithApplication
-                    }
-                  </Label>
-                }
-                countIndicator={placementDraftsWithApplication.length}
-                countIndicatorColor={colors.accents.a8lightBlue}
-                paddingHorizontal="zero"
-                paddingVertical="zero"
-              >
-                <ApplicationsWrapper>
-                  <FixedSpaceColumn>
-                    {orderBy(
-                      placementDraftsWithApplication,
-                      (pd) => pd.childName
-                    ).map((pd) => (
-                      <ApplicationCardPlaced
-                        key={pd.application.id}
-                        application={pd.application}
-                        unitId={daycare.id}
-                        onUpdateApplicationPlacementSuccess={
-                          onUpdateApplicationPlacementSuccess
-                        }
-                        onUpdateApplicationPlacementFailure={
-                          onUpdateApplicationPlacementFailure
-                        }
-                      />
-                    ))}
-                  </FixedSpaceColumn>
-                </ApplicationsWrapper>
-              </CollapsibleContentArea>
-
-              <CollapsibleContentArea
-                opaque
-                open={otherPlacementDraftsOpen}
-                toggleOpen={toggleOtherPlacementDrafts}
-                title={
-                  <Label>
-                    {i18n.applications.placementDesktop.otherPlacementDrafts}
-                  </Label>
-                }
-                countIndicator={otherPlacementDrafts.length}
-                countIndicatorColor={colors.accents.a8lightBlue}
-                paddingHorizontal="zero"
-                paddingVertical="zero"
-              >
-                <ApplicationsWrapper>
-                  <FixedSpaceColumn spacing="xs">
-                    {orderBy(otherPlacementDrafts, (pd) => pd.childName).map(
-                      (pd) => (
-                        <OtherPlacementDraft key={pd.applicationId}>
-                          <FixedSpaceRow
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <span>{pd.childName}</span>
-                            <a
-                              href={`/employee/applications/${pd.applicationId}`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <IconOnlyButton
-                                icon={faFile}
-                                aria-label={i18n.common.open}
-                              />
-                            </a>
-                          </FixedSpaceRow>
-                        </OtherPlacementDraft>
-                      )
-                    )}
-                  </FixedSpaceColumn>
-                </ApplicationsWrapper>
-              </CollapsibleContentArea>
-            </FixedSpaceColumn>
+          placementDraftsWithApplications,
+          (placementDraftsWithApplications) => (
+            <CollapsibleContentArea
+              opaque
+              open={placementDraftsOpen}
+              toggleOpen={togglePlacementDraftsOpen}
+              title={
+                <Label>
+                  {i18n.applications.placementDesktop.placementDrafts}
+                </Label>
+              }
+              countIndicator={placementDraftsWithApplications.length}
+              countIndicatorColor={colors.accents.a8lightBlue}
+              paddingHorizontal="zero"
+              paddingVertical="zero"
+            >
+              <ApplicationsWrapper>
+                <FixedSpaceColumn>
+                  {orderBy(
+                    placementDraftsWithApplications,
+                    (pd) => pd.placementDraft.childName
+                  ).map(({ placementDraft, application }) => (
+                    <ApplicationCardPlaced
+                      key={placementDraft.applicationId}
+                      placementDraft={placementDraft}
+                      application={application}
+                      onUpdateApplicationPlacementSuccess={
+                        onUpdateApplicationPlacementSuccess
+                      }
+                      onUpdateApplicationPlacementFailure={
+                        onUpdateApplicationPlacementFailure
+                      }
+                    />
+                  ))}
+                </FixedSpaceColumn>
+              </ApplicationsWrapper>
+            </CollapsibleContentArea>
           )
         )}
       </FixedSpaceColumn>
@@ -221,10 +161,4 @@ const Card = styled.div`
 
 const ApplicationsWrapper = styled.div`
   padding: 0 ${defaultMargins.s};
-`
-
-const OtherPlacementDraft = styled.div`
-  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
-  border-radius: 4px;
-  padding: ${defaultMargins.xs};
 `

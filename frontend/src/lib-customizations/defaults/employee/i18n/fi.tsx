@@ -364,6 +364,10 @@ export const fi = {
       createPlacementDraft: 'Hahmottele',
       createPlacementDraftToOtherUnit: 'Hahmottele muuhun yksikköön...',
       cancelPlacementDraft: 'Peru hahmotelma',
+      cancelPlacementDraftConfirmationTitle:
+        'Haluatko varmasti perua sijoitushahmotelman?',
+      cancelPlacementDraftConfirmationMessage:
+        'Tähän liittyvä hakemus ei ole mukana nyt näytettävissä hakutuloksissa.',
       showUnit: 'Näytä yksikkö',
       hideUnit: 'Piilota yksikkö',
       other: 'Muu',
@@ -372,9 +376,7 @@ export const fi = {
       occupancyConfirmed: 'Vahvistettu',
       occupancyPlanned: 'Suunniteltu',
       occupancyDraft: 'Hahmoteltu',
-      placementDraftsWithApplication:
-        'Sijoitushahmotelmat (valitut hakemukset)',
-      otherPlacementDrafts: 'Sijoitushahmotelmat (muut)'
+      placementDrafts: 'Sijoitushahmotelmat'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
