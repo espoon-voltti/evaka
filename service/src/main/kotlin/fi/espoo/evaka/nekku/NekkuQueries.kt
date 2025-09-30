@@ -974,3 +974,19 @@ WHERE dg.id = ${bind(groupId)}
             )
         }
         .exactlyOne<Int>()
+
+fun Database.Read.groupHasShiftCareChildren(groupId: GroupId, date: LocalDate): Boolean =
+    createQuery {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT 1
+    FROM realized_placement_one(${bind(date)}) rp
+    LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+    WHERE rp.group_id = ${bind(groupId)} AND sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE'
+)
+            """
+                    .trimIndent()
+            )
+        }
+        .exactlyOne()

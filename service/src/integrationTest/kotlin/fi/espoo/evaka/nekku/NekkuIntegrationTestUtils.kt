@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -118,6 +119,12 @@ fun getNekkuJobs(db: Database.Connection) =
         tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
             .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
             .toList()
+    }
+
+fun getServiceNeedOptionId(db: Database.Connection, nameFi: String): ServiceNeedOptionId =
+    db.read { tx ->
+        tx.createQuery { sql("SELECT id FROM service_need_option WHERE name_fi=${bind(nameFi)}") }
+            .exactlyOne()
     }
 
 class TestNekkuClient(

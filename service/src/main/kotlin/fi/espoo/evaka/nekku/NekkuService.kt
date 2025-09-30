@@ -519,10 +519,21 @@ fun createAndSendNekkuOrder(
                 }
             }
         } else {
-            logger.info {
-                "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
+            if (
+                date.isWeekendOrHoliday() &&
+                    !dbc.read { tx -> tx.groupHasShiftCareChildren(groupId, date) }
+            ) {
+                logger.info {
+                    "Ignored missing customer for date: ${date.dayOfWeek} groupId=$groupId because there were only children with no shift care"
+                }
+            } else {
+                logger.info {
+                    "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
+                }
+                error(
+                    "Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId"
+                )
             }
-            error("Could not find any customer with given date: ${date.dayOfWeek} groupId=$groupId")
         }
     } catch (e: Exception) {
         logger.warn(e) {
