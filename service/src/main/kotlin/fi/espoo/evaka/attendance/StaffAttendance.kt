@@ -36,7 +36,9 @@ enum class StaffAttendanceType : DatabaseEnum {
     fun presentInGroup() =
         when (this) {
             OTHER_WORK,
-            TRAINING -> false
+            TRAINING,
+            SICKNESS,
+            CHILD_SICKNESS-> false
             else -> true
         }
 }

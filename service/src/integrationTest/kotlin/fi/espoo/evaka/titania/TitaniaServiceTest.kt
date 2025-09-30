@@ -2134,6 +2134,202 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 )
             )
     }
+
+    @Test
+    fun `getStampedWorkingTimeEvents with interrupted workday`() {
+        val date = LocalDate.of(2025, 5, 19)
+        val now = HelsinkiDateTime.of(date, LocalTime.of(18, 0))
+        db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
+
+            DevEmployee(firstName = "IINES", lastName = "ANKKA", employeeNumber = "177111")
+                .also { tx.insert(it) }
+                .let { employee ->
+                    tx.insert(
+                        DevStaffAttendancePlan(
+                            employeeId = employee.id,
+                            type = StaffAttendanceType.PRESENT,
+                            startTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
+                            endTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
+                            description = null,
+                        )
+                    )
+                    tx.upsertStaffAttendance(
+                        attendanceId = null,
+                        employeeId = employee.id,
+                        groupId = groupId,
+                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
+                        departureTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        occupancyCoefficient = BigDecimal("7.0"),
+                        type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
+                    )
+                    tx.upsertStaffAttendance(
+                        attendanceId = null,
+                        employeeId = employee.id,
+                        groupId = groupId,
+                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        departureTime = null,
+                        occupancyCoefficient = BigDecimal("7.0"),
+                        type = StaffAttendanceType.SICKNESS,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
+                    )
+                }
+            DevEmployee(firstName = "HESSU", lastName = "HOPO", employeeNumber = "255145")
+                .also { tx.insert(it) }
+                .let { employee ->
+                    tx.insert(
+                        DevStaffAttendancePlan(
+                            employeeId = employee.id,
+                            type = StaffAttendanceType.PRESENT,
+                            startTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
+                            endTime = HelsinkiDateTime.of(date, LocalTime.of(13, 0)),
+                            description = null,
+                        )
+                    )
+                    tx.upsertStaffAttendance(
+                        attendanceId = null,
+                        employeeId = employee.id,
+                        groupId = groupId,
+                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(6, 30)),
+                        departureTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        occupancyCoefficient = BigDecimal("7.0"),
+                        type = StaffAttendanceType.PRESENT,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
+                    )
+                    tx.upsertStaffAttendance(
+                        attendanceId = null,
+                        employeeId = employee.id,
+                        groupId = groupId,
+                        arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
+                        departureTime = null,
+                        occupancyCoefficient = BigDecimal("7.0"),
+                        type = StaffAttendanceType.CHILD_SICKNESS,
+                        modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
+                    )
+                }
+        }
+
+        val responseIines =
+            db.transaction { tx ->
+                titaniaService.getStampedWorkingTimeEvents(
+                    tx,
+                    GetStampedWorkingTimeEventsRequest(
+                        period = TitaniaPeriod(beginDate = date, endDate = date),
+                        schedulingUnit =
+                            listOf(
+                                TitaniaStampedUnitRequest(
+                                    code = "from titania",
+                                    person =
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                                )
+                            ),
+                    ),
+                )
+            }
+
+        val responseHessu =
+            db.transaction { tx ->
+                titaniaService.getStampedWorkingTimeEvents(
+                    tx,
+                    GetStampedWorkingTimeEventsRequest(
+                        period = TitaniaPeriod(beginDate = date, endDate = date),
+                        schedulingUnit =
+                            listOf(
+                                TitaniaStampedUnitRequest(
+                                    code = "from titania",
+                                    person =
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "255145")),
+                                )
+                            ),
+                    ),
+                )
+            }
+
+        assertThat(responseIines)
+            .isEqualTo(
+                GetStampedWorkingTimeEventsResponse(
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitResponse(
+                                code = "from titania",
+                                person =
+                                    listOf(
+                                        TitaniaStampedPersonResponse(
+                                            employeeId = "00177111",
+                                            name = "ANKKA IINES",
+                                            stampedWorkingTimeEvents =
+                                                TitaniaStampedWorkingTimeEvents(
+                                                    event =
+                                                        listOf(
+                                                            TitaniaStampedWorkingTimeEvent(
+                                                                date = date,
+                                                                beginTime = "0630",
+                                                                beginReasonCode = null,
+                                                                endTime = "1026",
+                                                                endReasonCode = null,
+                                                            ),
+                                                            TitaniaStampedWorkingTimeEvent(
+                                                                date = date,
+                                                                beginTime = "1026",
+                                                                beginReasonCode = "Z",
+                                                                endTime = null,
+                                                                endReasonCode = null,
+                                                            )
+                                                        )
+                                                ),
+                                        )
+                                    ),
+                            )
+                        )
+                )
+            )
+
+        assertThat(responseHessu)
+            .isEqualTo(
+                GetStampedWorkingTimeEventsResponse(
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitResponse(
+                                code = "from titania",
+                                person =
+                                    listOf(
+                                        TitaniaStampedPersonResponse(
+                                            employeeId = "255145",
+                                            name = "HOPO HESSU",
+                                            stampedWorkingTimeEvents =
+                                                TitaniaStampedWorkingTimeEvents(
+                                                    event =
+                                                        listOf(
+                                                            TitaniaStampedWorkingTimeEvent(
+                                                                date = date,
+                                                                beginTime = "0630",
+                                                                beginReasonCode = null,
+                                                                endTime = "1026",
+                                                                endReasonCode = null,
+                                                            ),
+                                                            TitaniaStampedWorkingTimeEvent(
+                                                                date = date,
+                                                                beginTime = "1026",
+                                                                beginReasonCode = "7",
+                                                                endTime = null,
+                                                                endReasonCode = null,
+                                                            )
+                                                        )
+                                                ),
+                                        )
+                                    ),
+                            )
+                        )
+                )
+            )
+    }
 }
 
 fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> =
