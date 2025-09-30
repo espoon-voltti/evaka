@@ -5,10 +5,18 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -318,6 +326,139 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             assertEquals(7, result.combinedDays.size)
             assertEquals(true, result.noWeekendMealOrders)
             assertEquals(true, result.shiftCareOpenOnHolidays)
+        }
+    }
+
+    @Test
+    fun `checking for shift care children in group should work correctly`() {
+
+        val placementStartDay = LocalDate.of(2025, 5, 12)
+        val placementEndDay = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
+        val employee = DevEmployee()
+
+        val noShiftCareChild1 = DevPerson()
+        val noShiftCareChild2 = DevPerson()
+        val shiftCareBeforeCheckedDayChild = DevPerson()
+
+        db.transaction { tx -> tx.insertServiceNeedOptions() }
+
+        val serviceNeedOptionId = getServiceNeedOptionId(db, "Kokopäiväinen")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+
+            listOf(noShiftCareChild1, noShiftCareChild2).map {
+                tx.insert(it, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = it.id,
+                            unitId = daycare.id,
+                            startDate = placementStartDay,
+                            endDate = placementEndDay,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = placementStartDay,
+                                endDate = placementEndDay,
+                            )
+                        )
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = placementStartDay,
+                                endDate = placementEndDay,
+                                confirmedBy = employee.evakaUserId,
+                                optionId = serviceNeedOptionId,
+                                shiftCare = ShiftCareType.NONE,
+                            )
+                        )
+                    }
+            }
+
+            tx.insert(shiftCareBeforeCheckedDayChild, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = shiftCareBeforeCheckedDayChild.id,
+                        unitId = daycare.id,
+                        startDate = placementStartDay.minusWeeks(2),
+                        endDate = placementEndDay.minusWeeks(2),
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = placementStartDay.minusWeeks(2),
+                            endDate = placementEndDay.minusWeeks(2),
+                        )
+                    )
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementStartDay.minusWeeks(2),
+                            endDate = placementEndDay.minusWeeks(2),
+                            confirmedBy = employee.evakaUserId,
+                            optionId = serviceNeedOptionId,
+                            shiftCare = ShiftCareType.FULL,
+                        )
+                    )
+                }
+
+            assertEquals(
+                false,
+                tx.groupHasShiftCareChildren(group.id, placementStartDay.plusDays(3)),
+            )
+        }
+
+        val shiftCareOnCheckedDayChild = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(shiftCareOnCheckedDayChild, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = shiftCareOnCheckedDayChild.id,
+                        unitId = daycare.id,
+                        startDate = placementStartDay,
+                        endDate = placementEndDay,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group.id,
+                            startDate = placementStartDay,
+                            endDate = placementEndDay,
+                        )
+                    )
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementStartDay,
+                            endDate = placementEndDay,
+                            confirmedBy = employee.evakaUserId,
+                            optionId = serviceNeedOptionId,
+                            shiftCare = ShiftCareType.FULL,
+                        )
+                    )
+                }
+
+            assertEquals(
+                true,
+                tx.groupHasShiftCareChildren(group.id, placementStartDay.plusDays(3)),
+            )
         }
     }
 }

@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.reports.getNekkuReportRows
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,7 +24,9 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -3132,6 +3135,213 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         planNekkuOrderJobs(db, asyncJobRunner, now)
 
         assertEquals(4, getNekkuJobs(db).count())
+    }
+
+    @Test
+    fun `Should not make weekly order for weekends for children who are not in extended care in extended care units`() {
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 4, 28)
+        val sunday = LocalDate.of(2025, 5, 4)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
+                shiftCareOpenOnHolidays = true,
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        val extendedCareChild1 = DevPerson()
+        val extendedCareChild2 = DevPerson()
+        val notInExtendedCareChild = DevPerson()
+
+        db.transaction { tx -> tx.insertServiceNeedOptions() }
+
+        val serviceNeedOptionId = getServiceNeedOptionId(db, "Kokopäiväinen")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+
+            listOf(extendedCareChild1, extendedCareChild2, notInExtendedCareChild).map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = sunday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = sunday,
+                            )
+                        )
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = monday,
+                                endDate = sunday,
+                                confirmedBy = employee.evakaUserId,
+                                optionId = serviceNeedOptionId,
+                                shiftCare =
+                                    if (child != notInExtendedCareChild) ShiftCareType.FULL
+                                    else ShiftCareType.NONE,
+                            )
+                        )
+                    }
+            }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, sunday, asyncJobRunner, now)
+
+        assertEquals(1, client.orders.size)
+        val order = client.orders.first()
+        assertEquals(2, order.orders.first().items.first().quantity)
+    }
+
+    @Test
+    fun `Should not cause an error for missing Nekku customer number for weekend for a shift care unit if the group has no shift care children`() {
+        val client =
+            TestNekkuClient(
+                customers =
+                    listOf(
+                        NekkuApiCustomer(
+                            "2501K6089",
+                            "Ahvenojan päiväkoti",
+                            "Varhaiskasvatus",
+                            listOf(
+                                CustomerApiType(
+                                    listOf(
+                                        NekkuCustomerApiWeekday.MONDAY,
+                                        NekkuCustomerApiWeekday.TUESDAY,
+                                        NekkuCustomerApiWeekday.WEDNESDAY,
+                                        NekkuCustomerApiWeekday.THURSDAY,
+                                        NekkuCustomerApiWeekday.FRIDAY,
+                                    ),
+                                    "100-lasta",
+                                )
+                            ),
+                        )
+                    ),
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 4, 28)
+        val sunday = LocalDate.of(2025, 5, 4)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
+                shiftCareOpenOnHolidays = true,
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val child3 = DevPerson()
+
+        db.transaction { tx -> tx.insertServiceNeedOptions() }
+
+        val serviceNeedOptionId = getServiceNeedOptionId(db, "Kokopäiväinen")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+
+            listOf(child1, child2, child3).map { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = daycare.id,
+                            startDate = monday,
+                            endDate = sunday,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = group.id,
+                                startDate = monday,
+                                endDate = sunday,
+                            )
+                        )
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = monday,
+                                endDate = sunday,
+                                confirmedBy = employee.evakaUserId,
+                                optionId = serviceNeedOptionId,
+                                shiftCare = ShiftCareType.NONE,
+                            )
+                        )
+                    }
+            }
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, sunday, asyncJobRunner, now)
+
+        assertEquals(0, client.orders.size)
+
+        assertEquals(0, db.read { tx -> tx.getNekkuOrderReport(daycare.id, group.id, sunday) }.size)
     }
 
     @Test
