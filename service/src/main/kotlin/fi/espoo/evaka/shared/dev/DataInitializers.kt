@@ -129,6 +129,8 @@ fun Database.Transaction.resetDatabase() {
     }
 }
 
+const val INSERT_APPLICATION_PLACEMENT_TEST_DATA = false
+
 fun Database.Transaction.ensureDevData() {
     if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
         listOf(
@@ -140,7 +142,9 @@ fun Database.Transaction.ensureDevData() {
             )
             .forEach { runDevScript(it) }
 
-        insertApplicationPlacementTestData(this)
+        if (INSERT_APPLICATION_PLACEMENT_TEST_DATA) {
+            insertApplicationPlacementTestData(tx = this)
+        }
     }
 }
 
