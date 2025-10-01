@@ -18,6 +18,6 @@ proxy_set_header X-User "";
 proxy_no_cache 1;
 
 {{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
-opentracing_operation_name "$request_method $uri";
-opentracing_propagate_context;
+otel_span_name "$request_method $uri";
+otel_trace_context propagate;
 {{ end }}
