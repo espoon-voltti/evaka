@@ -895,6 +895,18 @@ export class PlacementsSection extends Section {
     await this.#terminatedByGuardian(placementId).waitUntilHidden()
   }
 
+  async assertSource(placementId: string, source: string) {
+    await this.#placementRow(placementId)
+      .findByDataQa('placement-source')
+      .assertTextEquals(source)
+  }
+
+  async assertCreatedBy(placementId: string, creator: string) {
+    await this.#placementRow(placementId)
+      .findByDataQa('placement-created-by')
+      .assertTextEquals(creator)
+  }
+
   async createNewPlacement({
     unitName,
     startDate,
