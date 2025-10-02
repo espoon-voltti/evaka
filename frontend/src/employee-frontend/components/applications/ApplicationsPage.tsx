@@ -17,6 +17,7 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { ApplicationUIContext } from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
 import type { SearchOrder } from '../../types'
 import { renderResult } from '../async-rendering'
 
@@ -26,6 +27,7 @@ import PlacementDesktop from './desktop/PlacementDesktop'
 import { getApplicationSummariesQuery } from './queries'
 
 export default React.memo(function ApplicationsPage() {
+  const { i18n } = useTranslation()
   const [sortBy, setSortBy] =
     useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
@@ -100,16 +102,16 @@ export default React.memo(function ApplicationsPage() {
             searchFilters?.status === 'WAITING_PLACEMENT' && (
               <>
                 <FixedSpaceRow alignItems="center">
-                  <Label>Näytä:</Label>
+                  <Label>{i18n.applications.show}:</Label>
                   <Radio
                     checked={placementMode === 'list'}
                     onChange={() => setPlacementMode('list')}
-                    label="Listana"
+                    label={i18n.applications.asList}
                   />
                   <Radio
                     checked={placementMode === 'desktop'}
                     onChange={() => setPlacementMode('desktop')}
-                    label="Työpöytänä"
+                    label={i18n.applications.asDesktop}
                   />
                 </FixedSpaceRow>
                 <Gap size="m" />

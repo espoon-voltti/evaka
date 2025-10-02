@@ -104,7 +104,7 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
     showMetadataToCitizen: true,
-    placementDesktop: false
+    placementDesktop: true
   },
   prod: {
     environmentLabel: null,

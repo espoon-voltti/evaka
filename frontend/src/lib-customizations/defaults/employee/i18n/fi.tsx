@@ -312,6 +312,9 @@ export const fi = {
     }
   },
   applications: {
+    show: 'Näytä',
+    asList: 'Listana',
+    asDesktop: 'Työpöytänä',
     list: {
       addNote: 'Lisää muistiinpano',
       areaPlaceholder: 'Valitse alue',
