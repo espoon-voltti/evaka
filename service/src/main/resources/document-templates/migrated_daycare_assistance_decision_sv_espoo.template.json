@@ -1,0 +1,379 @@
+{
+  "name": "Beslut om stöd",
+  "type": "MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION",
+  "placementTypes": [
+    "DAYCARE",
+    "PRESCHOOL_DAYCARE",
+    "PREPARATORY_DAYCARE",
+    "DAYCARE_PART_TIME"
+  ],
+  "language": "SV",
+  "confidentiality": null,
+  "legalBasis": "Lagen om småbarnspedagogik 40 §",
+  "validity": {
+    "start": "2020-08-03",
+    "end": "2025-07-31"
+  },
+  "processDefinitionNumber": "12.06.03",
+  "archiveDurationMonths": 120,
+  "archiveExternally": true,
+  "endDecisionWhenUnitChanges": true,
+  "content": {
+    "sections": [
+      {
+        "id": "6d788a31-b4f9-4396-9b14-1204cb63a23d",
+        "label": "Stödformer utgående från barnets behov",
+        "questions": [
+          {
+            "id": "pedagogical_motivation",
+            "label": "Pedagogiska stödformer och motivering",
+            "infoText": "Beskriv de former av stöd barnet behöver, såsom lösningar relaterade till dagens struktur, dagsrytm och lärmiljö samt pedagogiska och specialpedagogiska lösningar. Förklara kort varför barnet får dessa former av stödåtgärder.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "structural_motivation",
+            "label": "Strukturella stödformer",
+            "options": [
+              {
+                "id": "structural_motivation_opt_smaller_group",
+                "label": "Minskad gruppstorlek",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_special_group",
+                "label": "Specialgrupp",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_small_group",
+                "label": "Smågrupp",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_group_assistant",
+                "label": "Assistent för gruppen",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_child_assistant",
+                "label": "Assistent för barnet",
+                "withText": false
+              },
+              {
+                "id": "structural_motivation_opt_additional_staff",
+                "label": "Ökad personalresurs i gruppen",
+                "withText": false
+              }
+            ],
+            "infoText": "Välj de former av strukturellt stöd barnet behöver. Förklara varför barnet får dessa former av stöd.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "structural_motivation_description",
+            "label": "Beskrivning och motivering av de valda strukturella stödformerna",
+            "infoText": "Förklara varför barnet får dessa former av stöd.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "care_motivation",
+            "label": "Vårdinriktade stödformer och motivering",
+            "infoText":   "Fyll i de stödet som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, rörelse och hjälpmedel som relaterar till dessa. Förklara varför barnet får dessa vårdinriktade stödformer.",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "services",
+            "label": "Stödtjänster",
+            "options": [
+              {
+                "id": "service_opt_consultation_special_ed",
+                "label": "Konsultation med speciallärare inom småbarnspedagogik",
+                "withText": false
+              },
+              {
+                "id": "service_opt_part_time_special_ed",
+                "label": "Undervisning på deltid av speciallärare inom småbarnspedagogik",
+                "withText": false
+              },
+              {
+                "id": "service_opt_full_time_special_ed",
+                "label": "Undervisning på heltid av speciallärare inom småbarnspedagogik",
+                "withText": false
+              },
+              {
+                "id": "service_opt_interpretation_and_assistance_services",
+                "label": "Tolknings-och assistenttjänster",
+                "withText": false
+              },
+              {
+                "id": "service_opt_special_aides",
+                "label": "Hjälpmedel",
+                "withText": false
+              }
+            ],
+            "infoText": "Välj stödtjänster för barnet här.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "services_motivation",
+            "label": "Motivering av de valda vårdinriktade stödformer",
+            "infoText": "Förklara varför barnet får dessa stödtjänster",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "447a5fd8-3bcf-4237-a7a5-3817309da6ab",
+        "label": "Samarbete med vårdnadshavarna",
+        "questions": [
+          {
+            "id": "guardians_heard_on",
+            "label": "Datum för hörande av vårdnadshavarna",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "196854b0-2f56-4230-9ed8-5f6caca1e4af",
+            "label": "Vårdnadshavare som har hörts och hörandesätt",
+            "text": "",
+            "infoText": "Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här, hur och när hen har kallats för att höras och hur och när barnets plan för småbarnspedagogiken getts till kännedom (till vårdnadshavaren). Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt åt en annan förmyndare att företräda sig själv.",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "guardian_1",
+            "label": "Vårdnadshavare 1",
+            "fieldLabels": [
+              "Namn",
+              "Vårdnadshavaren har hörts"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_1_details",
+            "label": "Hörandesätt",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "guardian_2",
+            "label": "Vårdnadshavare 2",
+            "fieldLabels": [
+              "Namn",
+              "Vårdnadshavaren har hörts"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_2_details",
+            "label": "Hörandesätt",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "other_representative_heard",
+            "label": "Annan laglig företrädare har hörts",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "other_representative_details",
+            "label": "Namn, telefonnummer och hörandesätt för annan laglig företrädare",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "view_of_guardians",
+            "label": "Vårdnadshavarnas syn på det föreslagna stödet",
+            "infoText": "Anteckna vårdnadshavarnas syn på det stöd som erbjuds barnet.",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4d87a839-2e7e-4a55-972c-ef7515956404",
+        "label": "Beslut om stödnivån och när beslutet träder i kraft",
+        "questions": [
+          {
+            "id": "assistance_levels",
+            "label": "Barnets stödnivå framöver",
+            "options": [
+              {
+                "id": "SPECIAL_ASSISTANCE",
+                "label": "Särskilt stöd",
+                "withText": false
+              },
+              {
+                "id": "ENHANCED_ASSISTANCE",
+                "label": "Intensifierat stöd",
+                "withText": false
+              },
+              {
+                "id": "ASSISTANCE_SERVICES_FOR_TIME",
+                "label": "Stödtjänster under beslutets giltighetstid",
+                "withText": false
+              },
+              {
+                "id": "ASSISTANCE_ENDS",
+                "label": "Särskilda/intensifierade stödet avslutas",
+                "withText": false
+              }
+            ],
+            "infoText": "",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "validity_period_start",
+            "label": "Stödet är i kraft fr.o.m.",
+            "infoText": "Barnets stöd ses över närhelst behovet ändras och minst en gång per år.",
+            "type": "DATE"
+          },
+          {
+            "id": "validity_period_end",
+            "label": "Beslutet angående stödtjänster i kraft till",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "selected_unit_name",
+            "label": "Enheten där stödet ges",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "motivation_for_decision",
+            "label": "Motivering för barnets stödbehov och arrangemang för stöd under lovtider",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4e1b3fc3-bd01-4daf-acaf-ca9ccf6ef13c",
+        "label": "Tillämpade bestämmelser",
+        "questions": [
+          {
+            "id": "a212b887-1b84-4945-b262-a9b0e23b5149",
+            "label": "",
+            "text": "Lag om småbarnspedagogik, 3 a kap 15 §",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "e7dc2e28-d5af-451a-b89d-3bfbee847d54",
+        "label": "Befogenhet",
+        "questions": [
+          {
+            "id": "4720d2bb-6dad-417a-b6c9-0f4bae152859",
+            "label": "",
+            "text":   "Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "cbfbd188-a01b-478b-aae9-69d87815da0f",
+        "label": "Ansvarspersoner",
+        "questions": [
+          {
+            "id": "preparers",
+            "label": "Beslutets beredare",
+            "fieldLabels": [
+              "Namn",
+              "Titel",
+              "Telefonnummer"
+            ],
+            "infoText": "",
+            "allowMultipleRows": true,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "decision_maker",
+            "label": "Beslutsfattare",
+            "fieldLabels": [
+              "Namn",
+              "Titel"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "51f2a6d6-59d2-4699-b773-97ae79d03b35",
+            "label": "",
+            "text":   "Ett beslut som fattats i enlighet med lagen om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "382e88af-2e52-48e7-b7da-eb41fd5e123b",
+        "label": "Anvisningar för begäran om omprövning",
+        "questions": [
+          {
+            "id": "f2083143-2cf5-4ab8-ab98-e74cce37a578",
+            "label": "Rätt att begära omprövning",
+            "text": "Omprövning får begäras av den som beslutet avser eller vars rätt, skyldighet eller fördel direkt påverkas av beslutet (part).",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "086aac4a-8ec2-4a45-844f-c519e47ea2b1",
+            "label": "Tidsfrist för omprövningsbegäran",
+            "text"  : "En begäran om omprövning ska framställas inom 30 dagar från delfåendet av beslutet.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "54634279-0f24-4229-ab96-b93a15bf4f58",
+            "label": "Delgivning av beslut",
+            "text": "Om inte något annat visas, anses en part ha fått del av beslutet sju dagar från det att det postades, tre dagar efter att det skickades elektroniskt, enligt tiden som anges i mottagningsbeviset eller enligt tidpunkten som anges i delgivningsbeviset. Delgivningsdagen räknas inte med i beräkningen av tidsfristen. Om den utsatta dagen för begäran om omprövning är en helgdag, självständighetsdag, första maj, julafton, midsommarafton eller lördag, är det möjligt att göra begäran om omprövning ännu under följande vardag.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f056da35-c2e9-4425-9d9a-8ce719cd3ffa",
+            "label": "Omprövningsmyndighet",
+            "text"  : "Begäran om omprövning görs hos Regionförvaltningsverket i Västra och Inre Finland (huvudkontoret i Vasa). En omprövningsbegäran kan göras antingen elektronisk eller per post.\n\nOmprövningsbegäran – småbarnspedagogik, undervisning och utbildning - Suomi.fi\n\nRegionförvaltningsverket i Västra och Inre Finlands huvudkontor\nBesöksadress: Bangårdsvägen 9, 00520 Helsingfors\nÖppet: mån–fre kl. 8.00–16.15\nPostadress: PB 5, 13035 AVI\nE-post: registratur.vastra@rfv.fi\nFax 06-317 4817\nTelefonväxel 0295 018 450",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "26c85f53-4fb1-4530-9800-ff0c2c093622",
+            "label": "Omprövningsbegärans form och innehåll",
+            "text": "Omprövning ska begäras skriftligt. Också elektroniska dokument uppfyller kravet på skriftlig form.\n\nI omprövningsbegäran ska uppges:\n - det beslut i vilket omprövning begärs\n - hurdan omprövning som yrkas\n - på vilka grunder omprövning begärs.\n\nI omprövningsbegäran ska dessutom uppges namn på den som begär omprövning, personens hemkommun, postadress och telefonnummer samt övrig kontaktinformation som behövs för att ärendet ska kunna skötas.\n\nOm omprövningsbeslutet får delges som ett elektroniskt meddelande ska också e-postadress uppges.\n\nOm talan för den som begär omprövning förs av personens lagliga företrädare eller ombud eller om någon annan person har upprättat omprövningsbegäran, ska även denna persons namn och hemkommun uppges i omprövningsbegäran.\n\nTill omprövningsbegäran ska fogas:\n - det beslut som avses, i original eller kopia\n - ett intyg över vilken dag beslutet har delgetts eller någon annan utredning över när tidsfristen för omprövningsbegäran har börjat\n - de handlingar som den som begär omprövning åberopar, om de inte redan tidigare har lämnats till myndigheten.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      }
+    ]
+  }
+}
+
+
+

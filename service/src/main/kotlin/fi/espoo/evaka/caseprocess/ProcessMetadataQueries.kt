@@ -94,8 +94,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                             basis = column("confidentiality_basis"),
                         )
                     } else null,
-                downloadPath =
-                    column<String?>("document_key")?.let { "/employee/child-documents/$it/pdf" },
+                downloadPath = "/employee/child-documents/$documentId/pdf",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
             )

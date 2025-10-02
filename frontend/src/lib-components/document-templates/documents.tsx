@@ -216,6 +216,8 @@ export const getDocumentCategory = (
     case 'OTHER':
       return 'internal'
     case 'OTHER_DECISION':
+    case 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION':
+    case 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION':
       return 'decision'
     case 'CITIZEN_BASIC':
       return 'external'

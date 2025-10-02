@@ -134,7 +134,7 @@ SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.las
   )) FILTER (WHERE dg.id IS NOT NULL), '[]') as guardian_info,
   selected_unit selected_unit_id, unit.name selected_unit_name, unit.street_address selected_unit_street_address,
   unit.postal_code selected_unit_postal_code, unit.post_office selected_unit_post_office,
-  (document_key IS NOT NULL) has_document, child.date_of_birth child_date_of_birth
+  (document_key IS NOT NULL) has_document, child.date_of_birth child_date_of_birth, process_id
 FROM assistance_need_decision ad
 LEFT JOIN assistance_need_decision_guardian dg ON dg.assistance_need_decision_id = ad.id
 LEFT JOIN person p ON p.id = dg.person_id

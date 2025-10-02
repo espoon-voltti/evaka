@@ -15,6 +15,8 @@ const statusesByType: Record<ChildDocumentType, DocumentStatus[]> = {
   HOJKS: ['DRAFT', 'PREPARED', 'COMPLETED'],
   MIGRATED_VASU: ['COMPLETED'],
   MIGRATED_LEOPS: ['COMPLETED'],
+  MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION: ['COMPLETED'],
+  MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION: ['COMPLETED'],
   VASU: ['DRAFT', 'PREPARED', 'COMPLETED'],
   LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED'],
   CITIZEN_BASIC: ['DRAFT', 'CITIZEN_DRAFT', 'COMPLETED'],
@@ -79,7 +81,9 @@ export const isChildDocumentPublishable = (
 ) =>
   status !== 'COMPLETED' &&
   type !== 'CITIZEN_BASIC' &&
-  type !== 'OTHER_DECISION'
+  type !== 'OTHER_DECISION' &&
+  type !== 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION' &&
+  type !== 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
 
 export const isChildDocumentDecidable = (
   type: ChildDocumentType,

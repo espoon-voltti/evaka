@@ -996,6 +996,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         ),
                     annulmentReason = "",
                     endDateNotKnown = false,
+                    processId = null,
                 ),
             )
 

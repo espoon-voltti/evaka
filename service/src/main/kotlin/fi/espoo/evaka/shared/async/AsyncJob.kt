@@ -494,6 +494,17 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null,
     ) : AsyncJob
 
+    data class MigrateDaycareAssistanceDecision(val decisionId: AssistanceNeedDecisionId) :
+        AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class MigratePreschoolAssistanceDecision(
+        val decisionId: AssistanceNeedPreschoolDecisionId
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -512,6 +523,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     GenerateFinanceDecisions::class,
                     InitializeFamilyFromApplication::class,
                     InvoiceCorrectionMigration::class,
+                    MigrateDaycareAssistanceDecision::class,
+                    MigratePreschoolAssistanceDecision::class,
                     NotifyDecisionCreated::class,
                     NotifyFeeDecisionApproved::class,
                     NotifyFeeDecisionPdfGenerated::class,

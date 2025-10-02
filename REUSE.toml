@@ -51,6 +51,12 @@ SPDX-FileCopyrightText = "2017-2020 City of Espoo"
 SPDX-License-Identifier = "LGPL-2.1-or-later"
 
 [[annotations]]
+path = "service/src/main/resources/document-templates/**.template.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2025 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
 path = ".nvmrc"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2017-2022 City of Espoo"

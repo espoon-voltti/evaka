@@ -1,0 +1,345 @@
+{
+  "name": "Päätös tuesta esiopetuksessa",
+  "type": "MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION",
+  "placementTypes": [
+    "PRESCHOOL",
+    "PREPARATORY",
+    "PREPARATORY_DAYCARE",
+    "PRESCHOOL_DAYCARE"
+  ],
+  "language": "FI",
+  "confidentiality": null,
+  "legalBasis": "",
+  "validity": {
+    "start": "2020-08-03",
+    "end": "2025-07-31"
+  },
+  "processDefinitionNumber": "12.06.04",
+  "archiveDurationMonths": 120,
+  "archiveExternally": true,
+  "endDecisionWhenUnitChanges": true,
+  "content": {
+    "sections": [
+      {
+        "id": "6d788a31-b4f9-4396-9b14-1204cb63a23d",
+        "label": "Päätettävä tuki",
+        "questions": [
+          {
+            "id": "type",
+            "label": "Erityisen tuen tila",
+            "options": [
+              {
+                "id": "NEW",
+                "label": "Erityinen tuki alkaa"
+              },
+              {
+                "id": "CONTINUING",
+                "label": "Erityinen tuki jatkuu"
+              },
+              {
+                "id": "TERMINATED",
+                "label": "Erityinen tuki päättyy"
+              }
+            ],
+            "infoText": "",
+            "type": "RADIO_BUTTON_GROUP"
+          },
+          {
+            "id": "valid_from",
+            "label": "Voimassa alkaen",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "5e0291e7-4cb8-46bb-bbc8-f6d7a5445207",
+            "label": "Pidennetty oppivelvollisuus",
+            "text": "",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "extended_compulsory_education",
+            "label": "Lapsella on pidennetty oppivelvollisuus",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "extended_compulsory_education_info",
+            "label": "Lisätiedot pidennetystä oppivelvollisuudesta",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "granted_services",
+            "label": "Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet",
+            "options": [
+              {
+                "id": "granted_assistance_service",
+                "label": "Lapselle myönnetään avustajapalveluita",
+                "withText": false
+              },
+              {
+                "id": "granted_interpretation_service",
+                "label": "Lapselle myönnetään tulkitsemispalveluita",
+                "withText": false
+              },
+              {
+                "id": "granted_assistive_devices",
+                "label": "Lapselle myönnetään erityisiä apuvälineitä",
+                "withText": false
+              }
+            ],
+            "infoText": "Merkitään jos lapselle myönnetään avustamis-/tulkitsemispalveluita tai apuvälineitä. Kirjataan perusteluihin ”Lapselle myönnetään perusopetuslain 31§ mukaisena tukipalveluna avustamispalvelua/tarvittavat erityiset apuvälineet/tulkitsemispalvelua/opetuksen poikkeava järjestäminen” sekä lyhyt perustelu.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "granted_services_basis",
+            "label": "Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "selected_unit_name",
+            "label": "Esiopetuksen järjestämispaikka",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "primary_group",
+            "label": "Pääsääntöinen opetusryhmä",
+            "infoText": "Kirjaa tähän ryhmän muoto erityisryhmä/pedagogisesti vahvistettu ryhmä/esiopetusryhmä/3-5-vuotiaiden ryhmä.",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "decision_basis",
+            "label": "Perustelut päätökselle",
+            "infoText": "Kirjaa mihin selvityksiin päätös perustuu (pedagoginen selvitys ja/tai psykologinen tai lääketieteellinen lausunto sekä päivämäärät). Jos lapselle on myönnetty pidennetty oppivelvollisuus, kirjataan ”lapselle on tehty pidennetyn oppivelvollisuuden päätös pvm.\"",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "basis_documents",
+            "label": "Asiakirjat, joihin päätös perustuu",
+            "options": [
+              {
+                "id": "basis_document_pedagogical_report",
+                "label": "Pedagoginen selvitys",
+                "withText": true
+              },
+              {
+                "id": "basis_document_psychologist_statement",
+                "label": "Psykologin lausunto",
+                "withText": true
+              },
+              {
+                "id": "basis_document_social_report",
+                "label": "Sosiaalinen selvitys",
+                "withText": true
+              },
+              {
+                "id": "basis_document_doctor_statement",
+                "label": "Lääkärin lausunto",
+                "withText": true
+              },
+              {
+                "id": "basis_document_other_or_missing",
+                "label": "Liite puuttuu, tai muu liite, mikä?",
+                "withText": true
+              }
+            ],
+            "infoText": "Liitteenä voi olla myös huoltajan yksilöity valtakirja, huoltajan nimi ja päivämäärä.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "basis_documents_info",
+            "label": "Lisätiedot liitteistä",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "447a5fd8-3bcf-4237-a7a5-3817309da6ab",
+        "label": "Huoltajien kanssa tehty yhteistyö",
+        "questions": [
+          {
+            "id": "guardians_heard_on",
+            "label": "Huoltajien kuulemisen päivämäärä",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "196854b0-2f56-4230-9ed8-5f6caca1e4af",
+            "label": "Huoltajat, joita on kuultu, ja kuulemistapa",
+            "text": "",
+            "infoText": "Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "guardian_1",
+            "label": "Huoltaja 1",
+            "fieldLabels": [
+              "Nimi",
+              "Huoltajaa on kuultu"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_1_details",
+            "label": "Kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "guardian_2",
+            "label": "Huoltaja 2",
+            "fieldLabels": [
+              "Nimi",
+              "Huoltajaa on kuultu"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_2_details",
+            "label": "Kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "other_representative_heard",
+            "label": "Muuta laillista edustajaa kuultu",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "other_representative_details",
+            "label": "Muun laillisen edustajan nimi, puhelinnumero ja kuulemistapa",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "view_of_guardians",
+            "label": "Huoltajien näkemys esitetystä tuesta",
+            "infoText": "Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4e1b3fc3-bd01-4daf-acaf-ca9ccf6ef13c",
+        "label": "Sovelletut oikeusohjeet",
+        "questions": [
+          {
+            "id": "a212b887-1b84-4945-b262-a9b0e23b5149",
+            "label": "",
+            "text": "Perusopetuslaki 17 §\n\nOppivelvollisuulaki 2 §",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "e7dc2e28-d5af-451a-b89d-3bfbee847d54",
+        "label": "Toimivalta",
+        "questions": [
+          {
+            "id": "4720d2bb-6dad-417a-b6c9-0f4bae152859",
+            "label": "",
+            "text": "Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "cbfbd188-a01b-478b-aae9-69d87815da0f",
+        "label": "Vastuuhenkilöt",
+        "questions": [
+          {
+            "id": "preparers",
+            "label": "Päätöksen valmistelijat",
+            "fieldLabels": [
+              "Nimi",
+              "Titteli",
+              "Puhelinnumero"
+            ],
+            "infoText": "",
+            "allowMultipleRows": true,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "decision_maker",
+            "label": "Päätöksen tekijä",
+            "fieldLabels": [
+              "Nimi",
+              "Titteli"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "382e88af-2e52-48e7-b7da-eb41fd5e123b",
+        "label": "Oikaisuvaatimusohje",
+        "questions": [
+          {
+            "id": "7b659e33-9c1b-46f5-a771-a50f20977dc1",
+            "label": "",
+            "text": "Tähän päätökseen tyytymätön voi tehdä kirjallisen oikaisuvaatimuksen. Päätökseen ei saa hakea muutosta valittamalla tuomioistuimeen.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "eaa7530d-b91b-40bd-b1ea-f34fb56c6acf",
+            "label": "Oikaisuvaatimusoikeus",
+            "text": "Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi vaikuttaa (asianosainen).",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f4fd8b89-c366-435d-9d00-c964e4b7220c",
+            "label": "Oikaisuvaatimusaika",
+            "text": "Oikaisuvaatimus on tehtävä 14 päivän kuluessa päätöksen tiedoksisaannista.\n\nOikaisuvaatimus on toimitettava Etelä-Suomen aluehallintovirastolle viimeistään määräajan viimeisenä päivänä ennen Etelä-Suomen aluehallintoviraston aukioloajan päättymistä.\n\nAsianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.\n\nKäytettäessä tavallista sähköistä tiedoksiantoa asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä, kolmantena päivänä viestin lähettämisestä\n\nTiedoksisaantipäivää ei lueta oikaisuvaatimusaikaan. Jos oikaisuvaatimusajan viimeinen päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa oikaisuvaatimuksen tehdä ensimmäisenä arkipäivänä sen jälkeen.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "bdeff344-4ffb-425d-af57-d1d5d7104c51",
+            "label": "Oikaisuviranomainen",
+            "text": "Viranomainen, jolle oikaisuvaatimus tehdään, on Etelä-Suomen aluehallintovirasto. Oikaisuvaatimuksen voi tehdä joko sähköisenä tai postitse.\n\nOikaisuvaatimus – varhaiskasvatus, opetus ja koulutus - Suomi.fi\n\nPostiosoite: PL 1, 13035 AVI\nHelsingin toimipaikan käyntiosoite: Ratapihantie 9, 00521 Helsinki\nSähköpostiosoite: kirjaamo.etela@avi.fi\nPuhelinvaihde: 0295 016 000\nFaksinumero: 0295 016 661\nVirastoaika: ma-pe 8.00-16.15",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f9a2da10-a300-4fdd-adc0-276ba67e3b5e",
+            "label": "Oikaisuvaatimuksen muoto ja sisältö",
+            "text": "Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja täyttää vaatimuksen kirjallisesta muodosta.\n\nOikaisuvaatimuksessa on ilmoitettava\n - päätös, johon vaaditaan oikaisua,\n - millaista oikaisua päätökseen vaaditaan,\n - millä perusteilla oikaisua vaaditaan\n\nOikaisuvaatimuksessa on lisäksi ilmoitettava tekijän nimi, kotikunta, postiosoite, puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot.\n\nJos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä viestinä, yhteystietona pyydetään ilmoittamaan myös sähköpostiosoite.\n\nJos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän nimi ja kotikunta.\n\nOikaisuvaatimukseen on liitettävä\n - päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä\n - todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu selvitys oikaisuvaatimusajan alkamisen ajankohdasta\n - asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin toimitettu viranomaiselle.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      }
+    ]
+  }
+}

@@ -121,6 +121,7 @@ SELECT
     ad.decision_maker_has_opened,
     ad.annulment_reason,
     (ad.document_key IS NOT NULL) has_document,
+    ad.process_id,
     
     d.name as unit_name,
     d.street_address as unit_street_address,

@@ -1,0 +1,345 @@
+{
+  "name": "Beslut om stöd i förskoleundervisningen",
+  "type": "MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION",
+  "placementTypes": [
+    "PRESCHOOL",
+    "PREPARATORY",
+    "PREPARATORY_DAYCARE",
+    "PRESCHOOL_DAYCARE"
+  ],
+  "language": "SV",
+  "confidentiality": null,
+  "legalBasis": "",
+  "validity": {
+    "start": "2020-08-03",
+    "end": "2025-07-31"
+  },
+  "processDefinitionNumber": "12.06.04",
+  "archiveDurationMonths": 120,
+  "archiveExternally": true,
+  "endDecisionWhenUnitChanges": true,
+  "content": {
+    "sections": [
+      {
+        "id": "6d788a31-b4f9-4396-9b14-1204cb63a23d",
+        "label": "Stöd som avgörs",
+        "questions": [
+          {
+            "id": "type",
+            "label": "Status för särskilt stöd",
+            "options": [
+              {
+                "id": "NEW",
+                "label": "Särskilt stöd börjar"
+              },
+              {
+                "id": "CONTINUING",
+                "label": "Särskilt stöd fortsätter"
+              },
+              {
+                "id": "TERMINATED",
+                "label": "Särskilt stöd upphör"
+              }
+            ],
+            "infoText": "",
+            "type": "RADIO_BUTTON_GROUP"
+          },
+          {
+            "id": "valid_from",
+            "label": "Gäller från och med",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "5e0291e7-4cb8-46bb-bbc8-f6d7a5445207",
+            "label": "Förlängd läroplikt",
+            "text": "",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "extended_compulsory_education",
+            "label": "Barnet har förlängd läroplikt",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "extended_compulsory_education_info",
+            "label": "Mer information om förlängd läroplikt",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "granted_services",
+            "label": "Tolknings- och assistenttjänster eller särskilda hjälpmedel som beviljas",
+            "options": [
+              {
+                "id": "granted_assistance_service",
+                "label": "Barnet beviljas assistenttjänster",
+                "withText": false
+              },
+              {
+                "id": "granted_interpretation_service",
+                "label": "Barnet beviljas tolkningstjänster",
+                "withText": false
+              },
+              {
+                "id": "granted_assistive_devices",
+                "label": "Barnet beviljas särskilda hjälpmedel",
+                "withText": false
+              }
+            ],
+            "infoText": "Antecknas om barnet beviljas assistans-/tolktjänster eller hjälpmedel. I motiveringarna anges: \"Barnet beviljas som stödtjänst enligt 31 § i lagen om grundläggande utbildning assistanstjänst/nödvändiga särskilda hjälpmedel/tolktjänst/undantagande arrangemang av undervisningen\" samt en kort motivering.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "granted_services_basis",
+            "label": "Motiveringar till de tolknings- och assistenstjänster och hjälpmedel som beviljas",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "selected_unit_name",
+            "label": "Plats för förskoleundervisning",
+            "infoText": "",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "primary_group",
+            "label": "Huvudsaklig undervisningsgrupp",
+            "infoText": "Skriv här gruppens form: specialgrupp/pedagogiskt förstärkt grupp/förskolegrupp/grupp för 3-5-åringar.",
+            "multiline": false,
+            "type": "TEXT"
+          },
+          {
+            "id": "decision_basis",
+            "label": "Motiveringar till beslutet",
+            "infoText": "Ange vilka utredningar beslutet grundar sig på (pedagogisk utredning och/eller psykologiskt eller medicinskt utlåtande samt datum). Om barnet har beviljats förlängd läroplikt, antecknas ”beslut om förlängd läroplikt har fattats för barnet, datum.”",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "basis_documents",
+            "label": "Handlingar som beslutet grundar sig på",
+            "options": [
+              {
+                "id": "basis_document_pedagogical_report",
+                "label": "Pedagogisk utredning",
+                "withText": true
+              },
+              {
+                "id": "basis_document_psychologist_statement",
+                "label": "Psykologiskt utlåtande",
+                "withText": true
+              },
+              {
+                "id": "basis_document_social_report",
+                "label": "Social utredning",
+                "withText": true
+              },
+              {
+                "id": "basis_document_doctor_statement",
+                "label": "Läkarutlåtande",
+                "withText": true
+              },
+              {
+                "id": "basis_document_other_or_missing",
+                "label": "Bilaga saknas, eller annan bilaga, vilken?",
+                "withText": true
+              }
+            ],
+            "infoText": "Som bilaga kan även bifogas en individualiserad fullmakt från vårdnadshavaren, vårdnadshavarens namn och datum.",
+            "type": "CHECKBOX_GROUP"
+          },
+          {
+            "id": "basis_documents_info",
+            "label": "Mer information om bilagorna",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "447a5fd8-3bcf-4237-a7a5-3817309da6ab",
+        "label": "Samarbete med vårdnadshavarna",
+        "questions": [
+          {
+            "id": "guardians_heard_on",
+            "label": "Datum för hörande av vårdnadshavarna",
+            "infoText": "",
+            "type": "DATE"
+          },
+          {
+            "id": "196854b0-2f56-4230-9ed8-5f6caca1e4af",
+            "label": "Vårdnadshavare som har hörts och hörandesätt",
+            "text": "",
+            "infoText": "Anteckna här på vilket sätt vårdnadshavaren har hörts (t.ex. möte, distanskontakt, vårdnadshavarens skriftliga svar, fullmakt). Om vårdnadshavaren inte har hörts, anteckna här en utredning om hur och när hen har kallats till att höras.",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "guardian_1",
+            "label": "Vårdnadshavare 1",
+            "fieldLabels": [
+              "Namn",
+              "Vårdnadshavaren har hörts"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_1_details",
+            "label": "Hörandesätt",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "guardian_2",
+            "label": "Vårdnadshavare 2",
+            "fieldLabels": [
+              "Namn",
+              "Vårdnadshavaren har hörts"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "guardian_2_details",
+            "label": "Hörandesätt",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "other_representative_heard",
+            "label": "Annan laglig företrädare har hörts",
+            "infoText": "",
+            "type": "CHECKBOX"
+          },
+          {
+            "id": "other_representative_details",
+            "label": "Namn, telefonnummer och hörandesätt för annan laglig företrädare",
+            "infoText": "",
+            "multiline": true,
+            "type": "TEXT"
+          },
+          {
+            "id": "view_of_guardians",
+            "label": "Vårdnadshavarnas syn på det föreslagna stödet",
+            "infoText": "Anteckna vårdnadshavarnas syn på det stöd som erbjuds barnet.",
+            "multiline": true,
+            "type": "TEXT"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "4e1b3fc3-bd01-4daf-acaf-ca9ccf6ef13c",
+        "label": "Avgiften baserar sig på:",
+        "questions": [
+          {
+            "id": "a212b887-1b84-4945-b262-a9b0e23b5149",
+            "label": "",
+            "text": "Lag om grundläggande utbildning 17 §\n\nLäropliktslag 2 §",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "e7dc2e28-d5af-451a-b89d-3bfbee847d54",
+        "label": "Befogenhet",
+        "questions": [
+          {
+            "id": "4720d2bb-6dad-417a-b6c9-0f4bae152859",
+            "label": "",
+            "text": "Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn 3 § punkt 1",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "cbfbd188-a01b-478b-aae9-69d87815da0f",
+        "label": "Ansvariga personer",
+        "questions": [
+          {
+            "id": "preparers",
+            "label": "Beslutets beredare",
+            "fieldLabels": [
+              "Namn",
+              "Titel",
+              "Telefonnummer"
+            ],
+            "infoText": "",
+            "allowMultipleRows": true,
+            "type": "GROUPED_TEXT_FIELDS"
+          },
+          {
+            "id": "decision_maker",
+            "label": "Beslutsfattare",
+            "fieldLabels": [
+              "Namn",
+              "Titel"
+            ],
+            "infoText": "",
+            "allowMultipleRows": false,
+            "type": "GROUPED_TEXT_FIELDS"
+          }
+        ],
+        "infoText": ""
+      },
+      {
+        "id": "382e88af-2e52-48e7-b7da-eb41fd5e123b",
+        "label": "Anvisningar för begäran om omprövning",
+        "questions": [
+          {
+            "id": "7b659e33-9c1b-46f5-a771-a50f20977dc1",
+            "label": "",
+            "text": "Den som är missnöjd med detta beslut kan begära omprövning skriftligt. Ändring i beslutet får inte sökas genom besvär hos domstol.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "eaa7530d-b91b-40bd-b1ea-f34fb56c6acf",
+            "label": "Rätt att begära omprövning",
+            "text": "Omprövning får begäras av den som beslutet avser eller vars rätt, skyldighet eller fördel direkt påverkas av beslutet (part).",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f4fd8b89-c366-435d-9d00-c964e4b7220c",
+            "label": "Tidsfrist för omprövningsbegäran",
+            "text": "En begäran om omprövning ska framställas inom 14 dagar från delfåendet av beslutet.\n\nBegäran om omprövning ska lämnas in till Regionförvaltningsverket i Västra och Inre Finland senast under tidsfristens sista dag innan regionförvaltningsverket stänger.\n\nEn part anses ha fått del av beslutet sju dagar efter att brevet sändes eller på den mottagningsdag som anges i mottagningsbeviset eller delgivningsbeviset, om inte något annat visas.\n\nVid vanlig elektronisk delgivning anses parten ha fått del av beslutet den tredje dagen efter att meddelandet sändes.\n\nDagen för delfåendet räknas inte med i tidsfristen för omprövningsbegäran. Om den sista dagen för omprövningsbegäran infaller på en helgdag, självständighetsdagen, första maj, julafton, midsommarafton eller en helgfri lördag, får omprövning begäras den första vardagen därefter.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "bdeff344-4ffb-425d-af57-d1d5d7104c51",
+            "label": "Omprövningsmyndighet",
+            "text": "Omprövning begärs hos Regionförvaltningsverket i Västra och Inre Finland\n\nPostadress: PB 5, 13035 AVI\nBesöksadress: Verksamhetsstället i Helsingfors, Bangårdsvägen 9, 00520 Helsingfors\nE-post: registratur.vastra@rfv.fi\nTelefonväxel: 0295 016 000\nFax: 06 317 4817\nTjänstetid: 8.00–16.15",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          },
+          {
+            "id": "f9a2da10-a300-4fdd-adc0-276ba67e3b5e",
+            "label": "Omprövningsbegärans form och innehåll",
+            "text": "Omprövning ska begäras skriftligt. Också elektroniska dokument uppfyller kravet på skriftlig form.\n\nI omprövningsbegäran ska uppges:\n - det beslut i vilket omprövning begärs\n - hurdan omprövning som yrkas\n - på vilka grunder omprövning begärs.\n\nI omprövningsbegäran ska dessutom uppges namn på den som begär omprövning, personens hemkommun, postadress och telefonnummer samt övrig kontaktinformation som behövs för att ärendet ska kunna skötas.\n\nOm omprövningsbeslutet får delges som ett elektroniskt meddelande ska också e-postadress uppges.\n\nOm talan för den som begär omprövning förs av personens lagliga företrädare eller ombud eller om någon annan person har upprättat omprövningsbegäran, ska även denna persons namn och hemkommun uppges i omprövningsbegäran.\n\nTill omprövningsbegäran ska fogas:\n - det beslut som avses, i original eller kopia\n - ett intyg över vilken dag beslutet har delgetts eller någon annan utredning över när tidsfristen för omprövningsbegäran har börjat\n - de handlingar som den som begär omprövning åberopar, om de inte redan tidigare har lämnats till myndigheten.",
+            "infoText": "",
+            "type": "STATIC_TEXT_DISPLAY"
+          }
+        ],
+        "infoText": ""
+      }
+    ]
+  }
+}
