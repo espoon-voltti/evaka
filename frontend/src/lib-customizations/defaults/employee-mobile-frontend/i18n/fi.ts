@@ -399,7 +399,8 @@ export const fi = {
           'Kuvan tallennuksessa on lyhyt viive, jonka aikana kuva ei näy. Kuva alkaa näkyä viimeistään noin minuutti tallennuksen jälkeen.'
       }
     },
-    showSensitiveInfo: 'Näytä arkaluontoiset tiedot'
+    showSensitiveInfo: 'Näytä arkaluontoiset tiedot',
+    noGuardians: 'Huoltajia ei voi tavoittaa eVakan kautta'
   },
   staff: {
     title: 'Henkilökunnan määrä tänään',

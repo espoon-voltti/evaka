@@ -86,13 +86,51 @@ VALUES (${bind { it.guardianId }}, ${bind { it.childId }})
     }
 }
 
+fun Database.Read.getGuardiansForChildren(
+    childIds: Collection<ChildId>
+): Map<ChildId, List<PersonId>> {
+    return createQuery {
+            sql(
+                """
+            SELECT c.id AS child_id,
+                   COALESCE(array_agg(g.guardian_id)
+                            FILTER (WHERE g.guardian_id IS NOT NULL), '{}') AS guardian_ids
+            FROM person c
+            LEFT JOIN guardian g ON g.child_id = c.id
+            WHERE child_id = ANY(${bind(childIds)})
+            GROUP BY c.id
+            """
+            )
+        }
+        .toMap { columnPair("child_id", "guardian_ids") }
+}
+
+fun Database.Read.getFosterParentsForChildren(
+    childIds: Collection<ChildId>
+): Map<ChildId, List<PersonId>> {
+    return createQuery {
+            sql(
+                """
+            SELECT c.id AS child_id,
+                   COALESCE(array_agg(fp.parent_id)
+                            FILTER (WHERE fp.parent_id IS NOT NULL), '{}') AS foster_parent_ids
+            FROM person c
+            LEFT JOIN foster_parent fp ON fp.child_id = c.id
+            WHERE child_id = ANY(${bind(childIds)})
+            GROUP BY c.id
+            """
+            )
+        }
+        .toMap { columnPair("child_id", "foster_parent_ids") }
+}
+
 fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
     return createQuery {
             sql(
                 """
-                select guardian_id
-                from guardian
-                where child_id = ${bind(childId)}
+SELECT guardian_id
+FROM guardian
+WHERE child_id = ${bind(childId)}
                 """
             )
         }

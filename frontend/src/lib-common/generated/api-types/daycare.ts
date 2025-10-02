@@ -145,6 +145,7 @@ export interface CaretakersResponse {
 */
 export interface ChildResponse {
   assistanceNeedVoucherCoefficientsEnabled: boolean
+  hasGuardian: boolean
   permittedActions: Action.Child[]
   permittedPersonActions: Action.Person[]
   person: PersonJSON

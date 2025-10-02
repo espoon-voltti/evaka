@@ -678,6 +678,8 @@ export const fi = {
       participatesInBreakfastNo: 'Ei',
       nekkuDiet: 'Nekku-ruokatilauksen ruokavalio',
       nekkuSpecialDiet: 'Nekku-erityisruokavalio',
+      noGuardian:
+        'Huoltajatiedot puuttuvat. Lapsen huoltajat eivät pysty asioimaan eVakassa',
       placeholder: {
         languageAtHome: 'Valitse kieli',
         languageAtHomeDetails: 'Lisätiedot kotikielestä',

@@ -16,6 +16,8 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesForChildren
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChildren
+import fi.espoo.evaka.pis.service.getFosterParentsForChildren
+import fi.espoo.evaka.pis.service.getGuardiansForChildren
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.getExpectedAbsenceCategories
@@ -89,6 +91,16 @@ class ChildAttendanceController(
                         tx.getChildStickyNotesForChildren(childIds).groupBy { it.childId }
                     val reservations = tx.getUnitReservations(unitId, today)
 
+                    val childHasGuardian =
+                        tx.getGuardiansForChildren(childIds)
+                            .map { it.key to it.value.isNotEmpty() }
+                            .toMap()
+
+                    val childHasFosterParent =
+                        tx.getFosterParentsForChildren(childIds)
+                            .map { it.key to it.value.isNotEmpty() }
+                            .toMap()
+
                     childrenBasics.map { child ->
                         AttendanceChild(
                             id = child.id,
@@ -107,6 +119,9 @@ class ChildAttendanceController(
                             stickyNotes = stickyNotes[child.id] ?: emptyList(),
                             imageUrl = child.imageUrl,
                             reservations = reservations[child.id] ?: emptyList(),
+                            hasGuardian =
+                                childHasGuardian[child.id] ?: false ||
+                                    childHasFosterParent[child.id] ?: false,
                         )
                     }
                 }

@@ -32,12 +32,16 @@ import { IncomeSection } from './guardian-information'
 
 export default class ChildInformationPage {
   #deceased: Element
+  restrictedWarning: Element
+  noGuardianInfo: Element
   #ophPersonOidInput: TextInput
   #editButton: Element
   confirmButton: Element
 
   constructor(private readonly page: Page) {
     this.#deceased = page.findByDataQa('deceased-label')
+    this.restrictedWarning = page.findByDataQa('restricted-warning')
+    this.noGuardianInfo = page.findByDataQa('no-guardians-info-box')
     this.#ophPersonOidInput = new TextInput(
       page.findByDataQa('person-oph-person-oid')
     )
