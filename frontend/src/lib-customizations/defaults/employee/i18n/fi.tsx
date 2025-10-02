@@ -3902,8 +3902,8 @@ export const fi = {
       totalChildren: 'Lapsia hakenut yhteensä'
     },
     childDocumentDecisions: {
-      title: 'Muut päätökset',
-      description: 'Päätöksen tekijälle lähetetyt muut lapsen päätökset.',
+      title: 'Tuen päätökset',
+      description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
       statusFilter: 'Näytettävät tilat',
       otherFilters: 'Muut valinnat',
       includeEnded: 'Näytä päättyneet päätökset',
@@ -3939,8 +3939,9 @@ export const fi = {
         'Vähemmän pitkälle jalostettu laaja tietoaineisto, josta voi itse muodostaa erilaisia raportteja.'
     },
     assistanceNeedDecisions: {
-      title: 'Tuen päätökset',
-      description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
+      title: 'Vanhan malliset tuen päätökset',
+      description:
+        'Päätöksen tekijälle lähetetyt vanhan malliset tuen päätökset.',
       decisionNumber: 'Päätösnumero',
       childhoodEducationPrefix: 'VK ',
       preschoolPrefix: 'EO ',
