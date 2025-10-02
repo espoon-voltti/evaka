@@ -2013,6 +2013,7 @@ data class DevDaycare(
     val withSchool: Boolean = false,
     val nekkuOrderReductionPercentage: Int = 10,
     val nekkuNoWeekendMealOrders: Boolean = false,
+    val serviceWorkerNote: String = "",
 )
 
 data class DevDaycareGroup(

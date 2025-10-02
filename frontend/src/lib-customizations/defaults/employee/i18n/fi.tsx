@@ -25,7 +25,7 @@ export const fi = {
     financeBasics: 'Talouden maksuasetukset',
     units: 'Yksiköt',
     customers: 'Asiakastiedot',
-    placementDraft: 'Sijoitushahmotelma',
+    placementPlan: 'Sijoitussuunnitelma',
     decision: 'Päätöksen teko ja lähetys',
     documentTemplates: 'Asiakirjapohjat',
     feeDecisions: 'Maksupäätökset',
@@ -312,6 +312,9 @@ export const fi = {
     }
   },
   applications: {
+    show: 'Näytä',
+    asList: 'Listana',
+    asDesktop: 'Työpöytänä',
     list: {
       addNote: 'Lisää muistiinpano',
       areaPlaceholder: 'Valitse alue',
@@ -345,6 +348,38 @@ export const fi = {
         hideVoucher: 'Piilota palvelusetelihakemukset',
         noFilter: 'Ei rajausta'
       }
+    },
+    placementDesktop: {
+      warnings: {
+        tooManyApplicationsTitle: (count: number) =>
+          `Liikaa hakemuksia (${count})`,
+        tooManyApplicationsMessage:
+          'Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl.',
+        tooManyPrimaryUnitsTitle: (count: number) =>
+          `Liikaa ensisijaisia hakuyksiköitä (${count})`,
+        tooManyPrimaryUnitsMessage:
+          'Tarkenna hakuehtoja niin, että hakemuksien ykköstoiveissa on enintään 10 eri yksikköä.'
+      },
+      shownUnitsCount: 'Näytettäviä yksiköitä',
+      addShownUnit: 'Lisää näytettävä yksikkö...',
+      applicationsCount: 'Hakemuksia',
+      preferences: 'Hakutoiveet',
+      createPlacementDraft: 'Hahmottele',
+      createPlacementDraftToOtherUnit: 'Hahmottele muuhun yksikköön...',
+      cancelPlacementDraft: 'Peru hahmotelma',
+      cancelPlacementDraftConfirmationTitle:
+        'Haluatko varmasti perua sijoitushahmotelman?',
+      cancelPlacementDraftConfirmationMessage:
+        'Tähän liittyvä hakemus ei ole mukana nyt näytettävissä hakutuloksissa.',
+      showUnit: 'Näytä yksikkö',
+      hideUnit: 'Piilota yksikkö',
+      other: 'Muu',
+      toPlacementPlan: 'Sijoita',
+      checkApplication: 'Tarkista hakemus',
+      occupancyConfirmed: 'Vahvistettu',
+      occupancyPlanned: 'Suunniteltu',
+      occupancyDraft: 'Hahmoteltu',
+      placementDrafts: 'Sijoitushahmotelmat'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
@@ -3747,8 +3782,8 @@ export const fi = {
     addOtherUnit: 'Lisää muu yksikkö',
     placementOverlapError:
       'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
-    createPlacementDraft: 'Luo sijoitushahmotelma',
-    datesTitle: 'Nyt luotava sijoitushahmotelma',
+    createPlacementDraft: 'Luo sijoitussuunnitelma',
+    datesTitle: 'Nyt luotava sijoitussuunnitelma',
     type: 'Sijoitustyyppi',
     date: 'Sijoituspäivämäärä',
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
@@ -3763,7 +3798,7 @@ export const fi = {
   decisionDraft: {
     title: 'Päätöksen teko ja lähetys',
     info1:
-      'Lähettämällä päätöksen hyväksyt sijoitushahmotelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
+      'Lähettämällä päätöksen hyväksyt sijoitussuunnitelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
     info2:
       'Huomaathan, että valinnat ja päivämäärät vaikuttavat ainoastaan päätösdokumentteihin. Jos haluat muokata varsinaista sijoitusta, palauta hakemus takaisin sijoitettaviin ja sijoita se uudelleen.',
     ssnInfo1:

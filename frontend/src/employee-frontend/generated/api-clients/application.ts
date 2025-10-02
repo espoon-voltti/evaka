@@ -24,6 +24,8 @@ import type { PagedApplicationSummaries } from 'lib-common/generated/api-types/a
 import type { PaperApplicationCreateRequest } from 'lib-common/generated/api-types/application'
 import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { PlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
+import type { PlacementDraftUpdateRequest } from 'lib-common/generated/api-types/application'
 import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import type { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
 import type { PlacementToolValidation } from 'lib-common/generated/api-types/application'
@@ -43,6 +45,7 @@ import { deserializeJsonApplicationResponse } from 'lib-common/generated/api-typ
 import { deserializeJsonDecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { deserializeJsonPlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitApplications } from 'lib-common/generated/api-types/application'
@@ -563,6 +566,60 @@ export async function updateServiceWorkerNote(
     url: uri`/employee/note/service-worker/application/${request.applicationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<NoteRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycare
+*/
+export async function getPlacementDesktopDaycare(
+  request: {
+    unitId: DaycareId
+  }
+): Promise<PlacementDesktopDaycare> {
+  const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare>>({
+    url: uri`/employee/placement-desktop/daycares/${request.unitId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonPlacementDesktopDaycare(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycares
+*/
+export async function getPlacementDesktopDaycares(
+  request: {
+    unitIds?: DaycareId[] | null
+  }
+): Promise<PlacementDesktopDaycare[]> {
+  const params = createUrlSearchParams(
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
+  )
+  const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare[]>>({
+    url: uri`/employee/placement-desktop/daycares`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonPlacementDesktopDaycare(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.updateApplicationPlacementDraft
+*/
+export async function updateApplicationPlacementDraft(
+  request: {
+    applicationId: ApplicationId,
+    body: PlacementDraftUpdateRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/placement-desktop/applications/${request.applicationId}/placement-draft`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<PlacementDraftUpdateRequest>
   })
   return json
 }

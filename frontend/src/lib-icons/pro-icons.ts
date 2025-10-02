@@ -113,6 +113,7 @@ export { faQuestionCircle } from '@fortawesome/pro-light-svg-icons/faQuestionCir
 export { faRedo } from '@fortawesome/pro-light-svg-icons/faRedo'
 export { faRefresh } from '@fortawesome/pro-light-svg-icons/faRefresh'
 export { faSearch } from '@fortawesome/pro-light-svg-icons/faSearch'
+export { faSection } from '@fortawesome/pro-light-svg-icons/faSection'
 export { faSignIn } from '@fortawesome/pro-light-svg-icons/faSignIn'
 export { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
 export { faStickyNote } from '@fortawesome/pro-light-svg-icons/faStickyNote'

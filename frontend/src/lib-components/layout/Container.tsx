@@ -102,6 +102,7 @@ export type CollapsibleContentAreaProps = ContentAreaProps & {
         count: number
         ariaLabel: string
       }
+  countIndicatorColor?: string
   icon?: IconDefinition
 }
 
@@ -116,6 +117,7 @@ export const CollapsibleContentArea = React.memo(
     title,
     children,
     countIndicator = 0,
+    countIndicatorColor,
     icon,
     ...props
   }: CollapsibleContentAreaProps) {
@@ -142,7 +144,7 @@ export const CollapsibleContentArea = React.memo(
               <>
                 <RoundIcon
                   size="m"
-                  color={colors.status.warning}
+                  color={countIndicatorColor ?? colors.status.warning}
                   content={(typeof countIndicator === 'number'
                     ? countIndicator
                     : countIndicator.count

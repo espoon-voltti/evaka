@@ -9,24 +9,35 @@ import type {
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
 import { constantQuery, useQueryResult } from 'lib-common/query'
+import Radio from 'lib-components/atoms/form/Radio'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { ApplicationUIContext } from '../../state/application-ui'
+import { useTranslation } from '../../state/i18n'
 import type { SearchOrder } from '../../types'
 import { renderResult } from '../async-rendering'
 
 import ApplicationFilters from './ApplicationsFilters'
 import ApplicationsList from './ApplicationsList'
+import PlacementDesktop from './desktop/PlacementDesktop'
 import { getApplicationSummariesQuery } from './queries'
 
 export default React.memo(function ApplicationsPage() {
+  const { i18n } = useTranslation()
   const [sortBy, setSortBy] =
     useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
 
-  const { confirmedSearchFilters: searchFilters, page } =
-    useContext(ApplicationUIContext)
+  const {
+    confirmedSearchFilters: searchFilters,
+    page,
+    placementMode,
+    setPlacementMode
+  } = useContext(ApplicationUIContext)
 
   const applications = useQueryResult(
     searchFilters
@@ -82,17 +93,52 @@ export default React.memo(function ApplicationsPage() {
         <Gap size="xs" />
         <ApplicationFilters />
       </ContentArea>
+
       <Gap size="XL" />
-      {searchFilters &&
-        renderResult(applications, (applications) => (
-          <ApplicationsList
-            applicationsResult={applications}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            sortDirection={sortDirection}
-            setSortDirection={setSortDirection}
-          />
-        ))}
+
+      {searchFilters && (
+        <ContentArea opaque>
+          {featureFlags.placementDesktop &&
+            searchFilters?.status === 'WAITING_PLACEMENT' && (
+              <>
+                <FixedSpaceRow alignItems="center">
+                  <Label>{i18n.applications.show}:</Label>
+                  <Radio
+                    checked={placementMode === 'list'}
+                    onChange={() => setPlacementMode('list')}
+                    label={i18n.applications.asList}
+                  />
+                  <Radio
+                    checked={placementMode === 'desktop'}
+                    onChange={() => setPlacementMode('desktop')}
+                    label={i18n.applications.asDesktop}
+                  />
+                </FixedSpaceRow>
+                <Gap size="m" />
+              </>
+            )}
+
+          {renderResult(applications, (applications) => {
+            if (
+              placementMode === 'desktop' &&
+              featureFlags.placementDesktop &&
+              searchFilters?.status === 'WAITING_PLACEMENT'
+            ) {
+              return <PlacementDesktop applicationSummaries={applications} />
+            } else {
+              return (
+                <ApplicationsList
+                  applicationsResult={applications}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  sortDirection={sortDirection}
+                  setSortDirection={setSortDirection}
+                />
+              )
+            }
+          })}
+        </ContentArea>
+      )}
     </Container>
   )
 })

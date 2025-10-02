@@ -50,7 +50,7 @@ import PaymentsPage from './components/payments/PaymentsPage'
 import PersonProfile from './components/person-profile/PersonProfile'
 import Search from './components/person-search/Search'
 import PersonalMobileDevicesPage from './components/personal-mobile-devices/PersonalMobileDevicesPage'
-import PlacementDraftPage from './components/placement-draft/PlacementDraft'
+import PlacementDraftPage from './components/placement-plan/PlacementPlanDraft'
 import PlacementToolPage from './components/placement-tool/PlacementToolPage'
 import ReportApplications from './components/reports/Applications'
 import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
@@ -211,7 +211,7 @@ const routes: EmployeeRoute[] = [
   {
     path: '/applications/:id/placement',
     component: PlacementDraftPage,
-    title: 'placementDraft'
+    title: 'placementPlan'
   },
   {
     path: '/applications/:id/decisions',

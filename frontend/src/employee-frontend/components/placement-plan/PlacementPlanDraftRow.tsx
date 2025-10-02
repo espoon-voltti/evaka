@@ -22,7 +22,7 @@ import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import type { DaycarePlacementPlanForm } from './PlacementDraft'
+import type { DaycarePlacementPlanForm } from './PlacementPlanDraft'
 
 const DateRow = styled.div`
   display: flex;
@@ -58,7 +58,7 @@ const OverlapError = styled.span`
 `
 
 interface Props {
-  placementDraft: PlacementPlanDraft
+  placementPlanDraft: PlacementPlanDraft
   formState: DaycarePlacementPlanForm
   updateStart: (date: LocalDate | null) => void
   updateEnd: (date: LocalDate | null) => void
@@ -67,7 +67,7 @@ interface Props {
 }
 
 export default React.memo(function PlacementDraftSection({
-  placementDraft,
+  placementPlanDraft,
   formState,
   updateStart,
   updateEnd,
@@ -120,7 +120,7 @@ export default React.memo(function PlacementDraftSection({
       </DateRow>
       <DateRow>
         <DateRowItem width="225px">
-          {dateRowLabel(placementDraft.type)}
+          {dateRowLabel(placementPlanDraft.type)}
         </DateRowItem>
         <DateRowItem>
           <DatePicker
@@ -141,7 +141,7 @@ export default React.memo(function PlacementDraftSection({
         </DateRowItem>
         <DateRowItem>
           {formState.period &&
-            hasOverlap(formState.period, placementDraft.placements) && (
+            hasOverlap(formState.period, placementPlanDraft.placements) && (
               <OverlapError>
                 <FontAwesomeIcon icon={faExclamationTriangle} />
                 {i18n.placementDraft.dateError}
@@ -174,7 +174,7 @@ export default React.memo(function PlacementDraftSection({
           {formState.preschoolDaycarePeriod !== null &&
             hasOverlap(
               formState.preschoolDaycarePeriod,
-              placementDraft.placements
+              placementPlanDraft.placements
             ) && (
               <OverlapError>
                 <FontAwesomeIcon icon={faExclamationTriangle} />

@@ -12,7 +12,6 @@ import type {
   ApplicationSummary,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -70,7 +69,6 @@ const TitleRowContainer = styled.div`
   position: sticky;
   top: 0;
   z-index: 3;
-  background: ${colors.grayscale.g0};
 `
 
 interface PaginationWrapperProps {
@@ -189,8 +187,7 @@ const ApplicationsList = React.memo(function Applications({
   const [actionInProgress, { on: actionStarted, off: actionEnded }] =
     useBoolean(false)
 
-  const [editedNote, setEditedNote] = useState<ApplicationId | null>(null)
-  const [editedNoteText, setEditedNoteText] = useState<string>('')
+  const [editedNote, setEditedNote] = useState<ApplicationSummary | null>(null)
 
   const isSorted = (column: ApplicationSortColumn) =>
     sortBy === column ? sortDirection : undefined
@@ -246,31 +243,6 @@ const ApplicationsList = React.memo(function Applications({
       return colors.status.danger
 
     return colors.main.m3
-  }
-
-  const dateOfBirthInfo = (application: ApplicationSummary) => {
-    const startDateOrDueDate =
-      application.startDate && application.dueDate
-        ? application.startDate.isAfter(application.dueDate)
-          ? application.startDate
-          : application.dueDate
-        : application.startDate
-          ? application.startDate
-          : application.dueDate
-            ? application.dueDate
-            : null
-
-    return (
-      application.dateOfBirth &&
-      startDateOrDueDate && (
-        <FixedSpaceRow spacing="xs" alignItems="center">
-          <AgeIndicatorChip
-            age={startDateOrDueDate.differenceInYears(application.dateOfBirth)}
-          />
-          <span>{application.dateOfBirth.format()}</span>
-        </FixedSpaceRow>
-      )
-    )
   }
 
   const rows = applications.map((application) => {
@@ -333,7 +305,7 @@ const ApplicationsList = React.memo(function Applications({
                 <PersonName person={application} format="Last First" />
               </Bold>
             </Tooltip>
-            {dateOfBirthInfo(application)}
+            <DateOfBirthInfo application={application} />
           </FixedSpaceColumn>
         </Td>
         <Td>
@@ -346,77 +318,7 @@ const ApplicationsList = React.memo(function Applications({
         </Td>
         <Td>
           <FixedSpaceRow spacing="xs">
-            {application.additionalInfo && (
-              <RoundIcon
-                content="L"
-                color={applicationBasisColors.ADDITIONAL_INFO}
-                size="s"
-              />
-            )}
-            {application.siblingBasis && (
-              <RoundIcon
-                content="S"
-                color={applicationBasisColors.SIBLING_BASIS}
-                size="s"
-              />
-            )}
-            {application.assistanceNeed && (
-              <RoundIcon
-                content="T"
-                color={applicationBasisColors.ASSISTANCE_NEED}
-                size="s"
-              />
-            )}
-            {application.wasOnClubCare && (
-              <RoundIcon
-                content="K"
-                color={applicationBasisColors.CLUB_CARE}
-                size="s"
-              />
-            )}
-            {application.wasOnDaycare && (
-              <RoundIcon
-                content="P"
-                color={applicationBasisColors.DAYCARE}
-                size="s"
-              />
-            )}
-            {application.continuation && (
-              <RoundIcon
-                content="="
-                color={applicationBasisColors.CONTINUATION}
-                size="s"
-              />
-            )}
-            {application.extendedCare && (
-              <RoundIcon
-                content="V"
-                color={applicationBasisColors.EXTENDED_CARE}
-                size="s"
-              />
-            )}
-            {application.duplicateApplication && (
-              <RoundIcon
-                content="2"
-                color={applicationBasisColors.DUPLICATE_APPLICATION}
-                size="s"
-              />
-            )}
-            {application.urgent && (
-              <RoundIcon
-                content="!"
-                color={applicationBasisColors.URGENT}
-                size="s"
-              />
-            )}
-            {(application.urgent || application.extendedCare) &&
-              application.attachmentCount > 0 && (
-                <RoundIcon
-                  content={faPaperclip}
-                  color={applicationBasisColors.HAS_ATTACHMENTS}
-                  size="s"
-                />
-              )}
+            <BasisFragment application={application} />
           </FixedSpaceRow>
         </Td>
         <Td>
@@ -518,8 +420,7 @@ const ApplicationsList = React.memo(function Applications({
                 }
                 onClick={(e) => {
                   e.stopPropagation()
-                  setEditedNoteText(application.serviceWorkerNote)
-                  setEditedNote(application.id)
+                  setEditedNote(application)
                 }}
                 aria-label={
                   application.serviceWorkerNote
@@ -640,32 +541,162 @@ const ApplicationsList = React.memo(function Applications({
       </ApplicationsTableContainer>
 
       {!!editedNote && (
-        <MutateFormModal
-          title={i18n.applications.list.serviceWorkerNote}
-          resolveMutation={updateServiceWorkerNoteMutation}
-          resolveAction={() => ({
-            applicationId: editedNote,
-            body: { text: editedNoteText }
-          })}
-          resolveLabel={i18n.common.save}
-          onSuccess={() => setEditedNote(null)}
-          rejectAction={() => setEditedNote(null)}
-          rejectLabel={i18n.common.cancel}
-        >
-          <AlignRight>
-            <Button
-              appearance="inline"
-              onClick={() => setEditedNoteText('')}
-              text={i18n.common.clear}
-              icon={faTrash}
-              disabled={!editedNoteText}
-            />
-          </AlignRight>
-          <Gap />
-          <TextArea value={editedNoteText} onChange={setEditedNoteText} />
-        </MutateFormModal>
+        <ServiceWorkerNoteModal
+          application={editedNote}
+          onClose={() => setEditedNote(null)}
+        />
       )}
     </div>
+  )
+})
+
+export const ServiceWorkerNoteModal = React.memo(
+  function ServiceWorkerNoteModal({
+    application,
+    onClose
+  }: {
+    application: ApplicationSummary
+    onClose: () => void
+  }) {
+    const { i18n } = useTranslation()
+    const [noteText, setNoteText] = useState<string>(
+      application.serviceWorkerNote
+    )
+    return (
+      <MutateFormModal
+        title={i18n.applications.list.serviceWorkerNote}
+        resolveMutation={updateServiceWorkerNoteMutation}
+        resolveAction={() => ({
+          applicationId: application.id,
+          body: { text: noteText }
+        })}
+        resolveLabel={i18n.common.save}
+        onSuccess={onClose}
+        rejectAction={onClose}
+        rejectLabel={i18n.common.cancel}
+      >
+        <AlignRight>
+          <Button
+            appearance="inline"
+            onClick={() => setNoteText('')}
+            text={i18n.common.clear}
+            icon={faTrash}
+            disabled={!noteText}
+          />
+        </AlignRight>
+        <Gap />
+        <TextArea value={noteText} onChange={setNoteText} />
+      </MutateFormModal>
+    )
+  }
+)
+
+export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
+  application,
+  chipOnly
+}: {
+  application: ApplicationSummary
+  chipOnly?: boolean
+}) {
+  const startDateOrDueDate =
+    application.startDate && application.dueDate
+      ? application.startDate.isAfter(application.dueDate)
+        ? application.startDate
+        : application.dueDate
+      : application.startDate
+        ? application.startDate
+        : application.dueDate
+          ? application.dueDate
+          : null
+
+  return (
+    application.dateOfBirth &&
+    startDateOrDueDate && (
+      <FixedSpaceRow spacing="xs" alignItems="center">
+        <AgeIndicatorChip
+          age={startDateOrDueDate.differenceInYears(application.dateOfBirth)}
+        />
+        {!chipOnly && <span>{application.dateOfBirth.format()}</span>}
+      </FixedSpaceRow>
+    )
+  )
+})
+
+export const BasisFragment = React.memo(function BasisFragment({
+  application
+}: {
+  application: ApplicationSummary
+}) {
+  return (
+    <>
+      {application.additionalInfo && (
+        <RoundIcon
+          content="L"
+          color={applicationBasisColors.ADDITIONAL_INFO}
+          size="s"
+        />
+      )}
+      {application.siblingBasis && (
+        <RoundIcon
+          content="S"
+          color={applicationBasisColors.SIBLING_BASIS}
+          size="s"
+        />
+      )}
+      {application.assistanceNeed && (
+        <RoundIcon
+          content="T"
+          color={applicationBasisColors.ASSISTANCE_NEED}
+          size="s"
+        />
+      )}
+      {application.wasOnClubCare && (
+        <RoundIcon
+          content="K"
+          color={applicationBasisColors.CLUB_CARE}
+          size="s"
+        />
+      )}
+      {application.wasOnDaycare && (
+        <RoundIcon
+          content="P"
+          color={applicationBasisColors.DAYCARE}
+          size="s"
+        />
+      )}
+      {application.continuation && (
+        <RoundIcon
+          content="="
+          color={applicationBasisColors.CONTINUATION}
+          size="s"
+        />
+      )}
+      {application.extendedCare && (
+        <RoundIcon
+          content="V"
+          color={applicationBasisColors.EXTENDED_CARE}
+          size="s"
+        />
+      )}
+      {application.duplicateApplication && (
+        <RoundIcon
+          content="2"
+          color={applicationBasisColors.DUPLICATE_APPLICATION}
+          size="s"
+        />
+      )}
+      {application.urgent && (
+        <RoundIcon content="!" color={applicationBasisColors.URGENT} size="s" />
+      )}
+      {(application.urgent || application.extendedCare) &&
+        application.attachmentCount > 0 && (
+          <RoundIcon
+            content={faPaperclip}
+            color={applicationBasisColors.HAS_ATTACHMENTS}
+            size="s"
+          />
+        )}
+    </>
   )
 })
 

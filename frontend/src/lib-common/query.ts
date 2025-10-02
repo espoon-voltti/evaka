@@ -186,7 +186,7 @@ function uniqueString(prefix: string): string {
 }
 
 type Invalidations<Arg> = (
-  | ((arg: Arg) => { queryKey: QueryKey })
+  | ((arg: Arg) => { queryKey: QueryKey } | undefined)
   | QueriesQuery<[], unknown>
   | QueryKey
 )[]
@@ -206,11 +206,12 @@ function invalidateQueryKeysFn<Arg>(
         () => invalidation().queryKey
       : typeof invalidation === 'function'
         ? // If the invalidation is some other function, it will compute the query key based on the mutation's argument.
-          (arg: Arg) => invalidation(arg).queryKey
+          (arg: Arg) => invalidation(arg)?.queryKey
         : // Otherwise, the invalidation is already query key and we can just return it.
           () => invalidation
   )
-  return (arg: Arg) => invalidationFns.map((f) => f(arg))
+  return (arg: Arg) =>
+    invalidationFns.map((f) => f(arg)).filter((k) => k !== undefined)
 }
 
 export interface QueryOptions {

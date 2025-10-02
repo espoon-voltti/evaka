@@ -310,6 +310,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
+  placementDraftUnit: PreferredUnit | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
@@ -661,6 +662,34 @@ export interface PersonBasics {
   firstName: string
   lastName: string
   socialSecurityNumber: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopDaycare
+*/
+export interface PlacementDesktopDaycare {
+  id: DaycareId
+  name: string
+  placementDrafts: PlacementDraft[]
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDraft
+*/
+export interface PlacementDraft {
+  applicationId: ApplicationId
+  childId: PersonId
+  childName: string
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: EvakaUser
+  unitId: DaycareId
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
+*/
+export interface PlacementDraftUpdateRequest {
+  unitId: DaycareId | null
 }
 
 /**
@@ -1097,6 +1126,22 @@ export function deserializeJsonPersonApplicationSummary(json: JsonOf<PersonAppli
     ...json,
     preferredStartDate: (json.preferredStartDate != null) ? LocalDate.parseIso(json.preferredStartDate) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonPlacementDesktopDaycare(json: JsonOf<PlacementDesktopDaycare>): PlacementDesktopDaycare {
+  return {
+    ...json,
+    placementDrafts: json.placementDrafts.map(e => deserializeJsonPlacementDraft(e))
+  }
+}
+
+
+export function deserializeJsonPlacementDraft(json: JsonOf<PlacementDraft>): PlacementDraft {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
   }
 }
 

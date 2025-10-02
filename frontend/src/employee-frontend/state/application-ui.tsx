@@ -38,6 +38,8 @@ import { areasQuery } from '../queries'
 
 import { UserContext } from './user'
 
+type PlacementMode = 'list' | 'desktop'
+
 interface UIState {
   page: number
   setPage: (p: number) => void
@@ -52,6 +54,9 @@ interface UIState {
   checkedIds: ApplicationId[]
   setCheckedIds: (applicationIds: ApplicationId[]) => void
   showCheckboxes: boolean
+
+  placementMode: PlacementMode
+  setPlacementMode: (mode: PlacementMode) => void
 }
 
 export interface ApplicationSearchFilters {
@@ -105,7 +110,10 @@ const defaultState: UIState = {
 
   checkedIds: [],
   setCheckedIds: () => undefined,
-  showCheckboxes: false
+  showCheckboxes: false,
+
+  placementMode: 'list',
+  setPlacementMode: () => undefined
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -154,6 +162,10 @@ export const ApplicationUIContextProvider = React.memo(
         ].includes(confirmedSearchFilters.status)
       : false
 
+    const [placementMode, setPlacementMode] = useState<'list' | 'desktop'>(
+      'list'
+    )
+
     const value = useMemo(
       () => ({
         page,
@@ -166,7 +178,9 @@ export const ApplicationUIContextProvider = React.memo(
         availableAreas,
         checkedIds,
         setCheckedIds,
-        showCheckboxes
+        showCheckboxes,
+        placementMode,
+        setPlacementMode
       }),
       [
         page,
@@ -177,7 +191,9 @@ export const ApplicationUIContextProvider = React.memo(
         clearSearchFilters,
         availableAreas,
         checkedIds,
-        showCheckboxes
+        showCheckboxes,
+        placementMode,
+        setPlacementMode
       ]
     )
 
