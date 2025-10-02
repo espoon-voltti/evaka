@@ -284,6 +284,7 @@ export type PlacementSourceCreatedBy =
   | 'EMPLOYEE_PAPER'
   | 'EMPLOYEE_MANUAL'
   | 'SYSTEM'
+  | 'UNKNOWN'
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementSummary

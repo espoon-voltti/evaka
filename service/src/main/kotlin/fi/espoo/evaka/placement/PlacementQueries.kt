@@ -518,7 +518,7 @@ fun Database.Read.getDaycarePlacements(
         .toList {
             val sourceApplicationType = column<ApplicationOrigin?>("source_application_type")
             val sourceApplicationCreatedBy = column<EvakaUserType?>("source_application_created_by")
-            val source = column<PlacementSource>("source")
+            val source = column<PlacementSource?>("source")
             val placementSourceCreatedBy =
                 when (source) {
                     PlacementSource.APPLICATION if
@@ -535,6 +535,7 @@ fun Database.Read.getDaycarePlacements(
                     PlacementSource.APPLICATION -> PlacementSourceCreatedBy.CITIZEN
                     PlacementSource.SERVICE_APPLICATION -> PlacementSourceCreatedBy.CITIZEN
                     PlacementSource.PLACEMENT_TERMINATION -> PlacementSourceCreatedBy.CITIZEN
+                    null -> PlacementSourceCreatedBy.UNKNOWN
                 }
 
             DaycarePlacementDetails(

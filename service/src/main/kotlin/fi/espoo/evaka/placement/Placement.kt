@@ -30,6 +30,7 @@ enum class PlacementSourceCreatedBy {
     EMPLOYEE_PAPER,
     EMPLOYEE_MANUAL,
     SYSTEM,
+    UNKNOWN,
 }
 
 data class Placement(

@@ -440,7 +440,7 @@ export default React.memo(function PlacementRow({
             </DataValue>
           </DataRow>
         )}
-        {placement.source && (
+        {placement.source !== 'UNKNOWN' && (
           <DataRow>
             <DataLabel>{i18n.childInformation.placements.source}</DataLabel>
             <DataValue data-qa="placement-source">

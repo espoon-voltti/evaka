@@ -1620,7 +1620,8 @@ export const fi = {
         CITIZEN: 'Kuntalaisen hakemus',
         EMPLOYEE_MANUAL: 'Työntekijä manuaalisesti',
         EMPLOYEE_PAPER: 'Työntekijä paperihakemuksesta',
-        SYSTEM: 'Järjestelmä'
+        SYSTEM: 'Järjestelmä',
+        UNKNOWN: 'Tietoa ei saatavilla'
       },
       modifiedAt: 'Muokattu',
       modifiedBy: 'Muutoksentekijä',
