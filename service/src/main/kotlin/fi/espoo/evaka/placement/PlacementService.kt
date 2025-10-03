@@ -529,6 +529,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
                 placeGuarantee = daycarePlacement.placeGuarantee,
+                createdBy = daycarePlacement.createdBy,
+                source = daycarePlacement.source,
                 modifiedAt = daycarePlacement.modifiedAt,
                 modifiedBy = daycarePlacement.modifiedBy,
             )
@@ -679,6 +681,8 @@ data class DaycarePlacementDetails(
     val updated: HelsinkiDateTime?,
     @Nested("terminated_by") val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
+    @Nested("created_by") val createdBy: EvakaUser?,
+    val source: PlacementSourceCreatedBy,
     val modifiedAt: HelsinkiDateTime?,
     @Nested("modified_by") val modifiedBy: EvakaUser?,
 )
@@ -698,6 +702,8 @@ data class DaycarePlacementWithDetails(
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
+    val createdBy: EvakaUser?,
+    val source: PlacementSourceCreatedBy,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUser?,
 )

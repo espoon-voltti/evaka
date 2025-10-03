@@ -25,6 +25,14 @@ enum class PlacementSource : DatabaseEnum {
     override val sqlType: String = "placement_source"
 }
 
+enum class PlacementSourceCreatedBy {
+    CITIZEN,
+    EMPLOYEE_PAPER,
+    EMPLOYEE_MANUAL,
+    SYSTEM,
+    UNKNOWN,
+}
+
 data class Placement(
     val id: PlacementId,
     val type: PlacementType,

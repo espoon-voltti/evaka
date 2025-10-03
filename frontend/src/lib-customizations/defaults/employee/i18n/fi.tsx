@@ -1614,6 +1614,15 @@ export const fi = {
       rowTitle: 'Sijoituspäätös voimassa',
       startDate: 'Aloituspäivämäärä',
       endDate: 'Päättymispäivämäärä',
+      createdBy: 'Luoja',
+      source: 'Luonnin lähde',
+      sourceOptions: {
+        CITIZEN: 'Kuntalaisen hakemus',
+        EMPLOYEE_MANUAL: 'Työntekijä manuaalisesti',
+        EMPLOYEE_PAPER: 'Työntekijä paperihakemuksesta',
+        SYSTEM: 'Järjestelmä',
+        UNKNOWN: 'Tietoa ei saatavilla'
+      },
       modifiedAt: 'Muokattu',
       modifiedBy: 'Muutoksentekijä',
       terminatedByGuardian: 'Huoltaja irtisanonut',

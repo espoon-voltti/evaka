@@ -432,6 +432,22 @@ export default React.memo(function PlacementRow({
             />
           </WarningRow>
         )}
+        {placement.createdBy && (
+          <DataRow>
+            <DataLabel>{i18n.childInformation.placements.createdBy}</DataLabel>
+            <DataValue data-qa="placement-created-by">
+              {placement.createdBy.name}
+            </DataValue>
+          </DataRow>
+        )}
+        {placement.source !== 'UNKNOWN' && (
+          <DataRow>
+            <DataLabel>{i18n.childInformation.placements.source}</DataLabel>
+            <DataValue data-qa="placement-source">
+              {i18n.childInformation.placements.sourceOptions[placement.source]}
+            </DataValue>
+          </DataRow>
+        )}
         {placement.modifiedAt && (
           <DataRow>
             <DataLabel>{i18n.childInformation.placements.modifiedAt}</DataLabel>

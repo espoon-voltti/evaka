@@ -112,6 +112,15 @@ describe('Child Information placement info', () => {
     childPlacements = await openChildPlacements(page, childId)
     await childPlacements.assertTerminatedByGuardianIsShown(placementId)
   })
+
+  test('Placement source and creator are shown', async () => {
+    const placementId = randomId<PlacementId>()
+    await setupPlacement(placementId, childId, unitId, 'DAYCARE')
+
+    const childPlacements = await openChildPlacements(page, childId)
+    await childPlacements.assertSource(placementId, 'Työntekijä manuaalisesti')
+    await childPlacements.assertCreatedBy(placementId, 'eVaka')
+  })
 })
 
 describe('Child Information placement create (feature flag place guarantee = true)', () => {

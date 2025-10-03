@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -29,6 +30,8 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -1086,6 +1089,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         terminatedBy = null,
                         terminationRequestedDate = null,
                         placeGuarantee = false,
+                        createdBy =
+                            EvakaUser(
+                                id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                                name = "eVaka",
+                                type = EvakaUserType.SYSTEM,
+                            ),
+                        source = PlacementSourceCreatedBy.EMPLOYEE_MANUAL,
                         modifiedAt = null,
                         modifiedBy = null,
                     )
@@ -1257,6 +1267,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         terminatedBy = null,
                         terminationRequestedDate = null,
                         placeGuarantee = false,
+                        createdBy =
+                            EvakaUser(
+                                id = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                                name = "eVaka",
+                                type = EvakaUserType.SYSTEM,
+                            ),
+                        source = PlacementSourceCreatedBy.EMPLOYEE_MANUAL,
                         modifiedAt = null,
                         modifiedBy = null,
                     )
