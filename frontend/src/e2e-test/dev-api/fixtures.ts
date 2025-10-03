@@ -1588,6 +1588,7 @@ export class Fixture {
       ),
       modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
       modifiedBy: systemInternalUser.id,
+      nekkuUnorderedMeals: [],
       eventType: 'DAYCARE_EVENT',
       ...initial
     }

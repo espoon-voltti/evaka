@@ -110,6 +110,7 @@ import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.nekku.NekkuCustomer
+import fi.espoo.evaka.nekku.NekkuProductMealTime
 import fi.espoo.evaka.nekku.NekkuProductMealType
 import fi.espoo.evaka.nekku.NekkuSpecialDiet
 import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
@@ -2459,6 +2460,7 @@ data class DevCalendarEvent(
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUserId,
     val eventType: CalendarEventType,
+    val nekkuUnorderedMeals: List<NekkuProductMealTime> = listOf(),
 )
 
 data class DevCalendarEventAttendee(

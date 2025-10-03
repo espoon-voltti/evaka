@@ -1407,8 +1407,8 @@ fun Database.Transaction.insert(row: DevCalendarEvent): CalendarEventId =
     createUpdate {
             sql(
                 """
-INSERT INTO calendar_event (id, title, description, period, created_at, created_by, modified_at, modified_by, content_modified_at, content_modified_by, event_type)
-VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.eventType)})
+INSERT INTO calendar_event (id, title, description, period, created_at, created_by, modified_at, modified_by, content_modified_at, content_modified_by, event_type, nekku_unordered_meals)
+VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.eventType)}, ${bind(row.nekkuUnorderedMeals)}::nekku_product_meal_time[])
 RETURNING id
 """
             )

@@ -27,6 +27,7 @@ import type {
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
 import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
+import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import type {
   ChildId,
@@ -46,6 +47,7 @@ import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
   hasUncheckedChildren
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -476,6 +478,7 @@ interface CreationForm {
   period: FiniteDateRange
   title: string
   description: string
+  nekkuUnorderedMeals: NekkuProductMealTime[]
 }
 
 const getFormTree = (
@@ -505,6 +508,8 @@ const getFormTree = (
   )
 }
 
+const nekkuMealList: NekkuProductMealTime[] = ['BREAKFAST', 'LUNCH', 'SNACK']
+
 const CreateEventModal = React.memo(function CreateEventModal({
   unitId,
   onClose,
@@ -525,7 +530,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
       LocalDate.todayInHelsinkiTz()
     ),
     title: '',
-    description: ''
+    description: '',
+    nekkuUnorderedMeals: []
   })
 
   const groupData = useQueryResult(
@@ -746,7 +752,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
             period: form.period,
             tree: getFormTree(form.attendees),
             eventType: 'DAYCARE_EVENT',
-            times: []
+            times: [],
+            nekkuUnorderedMeals: form.nekkuUnorderedMeals
           }
         })
       }
@@ -823,6 +830,32 @@ const CreateEventModal = React.memo(function CreateEventModal({
         placeholder={i18n.unit.calendar.events.create.descriptionPlaceholder}
         data-qa="description-input"
       />
+
+      {featureFlags.nekkuIntegration && (
+        <>
+          <Gap size="s" />
+          <Label>{i18n.unit.calendar.events.create.unorderedMeals}</Label>
+          {nekkuMealList.map((meal) => (
+            <Checkbox
+              key={meal}
+              label={i18n.unit.calendar.events.create.meals[meal]}
+              checked={form.nekkuUnorderedMeals.includes(meal)}
+              onChange={(checked) => {
+                if (!checked)
+                  updateForm(
+                    'nekkuUnorderedMeals',
+                    form.nekkuUnorderedMeals.filter((value) => value !== meal)
+                  )
+                else
+                  updateForm('nekkuUnorderedMeals', [
+                    ...form.nekkuUnorderedMeals,
+                    meal
+                  ])
+              }}
+            />
+          ))}
+        </>
+      )}
     </AsyncFormModal>
   )
 })
@@ -867,10 +900,12 @@ const EditEventModal = React.memo(function EditEventModal({
     title: string
     description: string
     tree: Record<GroupId, ChildId[] | null> | null
+    nekkuUnorderedMeals: NekkuProductMealTime[]
   }>({
     title: event.title,
     description: event.description,
-    tree: null
+    tree: null,
+    nekkuUnorderedMeals: event.nekkuUnorderedMeals
   })
 
   const updateForm = useCallback(
@@ -938,6 +973,34 @@ const EditEventModal = React.memo(function EditEventModal({
             }
             data-qa="description-input"
           />
+
+          {featureFlags.nekkuIntegration && (
+            <>
+              <Gap size="s" />
+              <Label>{i18n.unit.calendar.events.create.unorderedMeals}</Label>
+              {nekkuMealList.map((meal) => (
+                <Checkbox
+                  key={meal}
+                  label={i18n.unit.calendar.events.create.meals[meal]}
+                  checked={form.nekkuUnorderedMeals.includes(meal)}
+                  onChange={(checked) => {
+                    if (!checked)
+                      updateForm(
+                        'nekkuUnorderedMeals',
+                        form.nekkuUnorderedMeals.filter(
+                          (value) => value !== meal
+                        )
+                      )
+                    else
+                      updateForm('nekkuUnorderedMeals', [
+                        ...form.nekkuUnorderedMeals,
+                        meal
+                      ])
+                  }}
+                />
+              ))}
+            </>
+          )}
 
           <Gap size="m" />
 

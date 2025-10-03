@@ -205,11 +205,18 @@ data class NekkuApiProduct(
     val sku: String,
     @JsonProperty("options_id") val optionsId: String,
     @JsonProperty("customer_types") val customerTypes: List<String>,
-    @JsonProperty("meal_time") val mealTime: List<NekkuProductMealTime>? = null,
+    @JsonProperty("meal_time") val mealTime: List<NekkuApiProductMealTime>? = null,
     @JsonProperty("meal_type") val mealType: NekkuApiProductMealType? = null,
 ) {
     fun toEvaka(): NekkuProduct =
-        NekkuProduct(name, sku, optionsId, customerTypes, mealTime, mealType?.toEvaka())
+        NekkuProduct(
+            name,
+            sku,
+            optionsId,
+            customerTypes,
+            mealTime?.map { it.toEvaka() },
+            mealType?.toEvaka(),
+        )
 }
 
 enum class NekkuApiProductMealType(@JsonValue val description: String) {
@@ -221,4 +228,24 @@ enum class NekkuApiProductMealType(@JsonValue val description: String) {
     };
 
     abstract fun toEvaka(): NekkuProductMealType
+}
+
+enum class NekkuApiProductMealTime(@JsonValue val description: String) {
+    BREAKFAST("aamupala") {
+        override fun toEvaka(): NekkuProductMealTime = NekkuProductMealTime.BREAKFAST
+    },
+    LUNCH("lounas") {
+        override fun toEvaka(): NekkuProductMealTime = NekkuProductMealTime.LUNCH
+    },
+    SNACK("välipala") {
+        override fun toEvaka(): NekkuProductMealTime = NekkuProductMealTime.SNACK
+    },
+    DINNER("päivällinen") {
+        override fun toEvaka(): NekkuProductMealTime = NekkuProductMealTime.DINNER
+    },
+    SUPPER("iltapala") {
+        override fun toEvaka(): NekkuProductMealTime = NekkuProductMealTime.SUPPER
+    };
+
+    abstract fun toEvaka(): NekkuProductMealTime
 }

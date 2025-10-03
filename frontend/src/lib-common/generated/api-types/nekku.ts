@@ -13,6 +13,16 @@ export interface NekkuMealType {
 }
 
 /**
+* Generated from fi.espoo.evaka.nekku.NekkuProductMealTime
+*/
+export type NekkuProductMealTime =
+  | 'BREAKFAST'
+  | 'LUNCH'
+  | 'SNACK'
+  | 'DINNER'
+  | 'SUPPER'
+
+/**
 * Generated from fi.espoo.evaka.nekku.NekkuProductMealType
 */
 export const nekku_product_meal_type = [

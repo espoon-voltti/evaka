@@ -557,3 +557,4 @@ V558__migrated_assistance_decision_document_types_part_2.sql
 V559__placement_draft.sql
 V560__new_staff_attendance_types.sql
 V561__finance_decision_archived_at.sql
+V562__calendar_event_nekku_unordered_meals.sql

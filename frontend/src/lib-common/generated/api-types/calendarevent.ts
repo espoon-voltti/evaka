@@ -14,6 +14,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import type { NekkuProductMealTime } from './nekku'
 import type { PersonId } from './shared'
 import TimeRange from '../../time-range'
 
@@ -46,6 +47,7 @@ export interface CalendarEvent {
   groups: GroupInfo[]
   id: CalendarEventId
   individualChildren: IndividualChild[]
+  nekkuUnorderedMeals: NekkuProductMealTime[]
   period: FiniteDateRange
   times: CalendarEventTime[]
   title: string
@@ -58,6 +60,7 @@ export interface CalendarEvent {
 export interface CalendarEventForm {
   description: string
   eventType: CalendarEventType
+  nekkuUnorderedMeals: NekkuProductMealTime[]
   period: FiniteDateRange
   times: CalendarEventTimeForm[] | null
   title: string
@@ -120,6 +123,7 @@ export type CalendarEventType =
 */
 export interface CalendarEventUpdateForm {
   description: string
+  nekkuUnorderedMeals: NekkuProductMealTime[]
   title: string
   tree: Partial<Record<GroupId, PersonId[] | null>> | null
 }

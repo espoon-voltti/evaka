@@ -2663,7 +2663,15 @@ export const fi = {
           descriptionPlaceholder:
             'Lyhyet ohjeet huoltajalle, esim. kellonaika, mitä pakata mukaan',
           missingPlacementsWarning:
-            'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.'
+            'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.',
+          unorderedMeals: 'Tilaamatta jätettävät ateriat',
+          meals: {
+            BREAKFAST: 'Aamiainen',
+            LUNCH: 'Lounas',
+            SNACK: 'Välipala',
+            DINNER: 'Päivällinen',
+            SUPPER: 'Iltapala'
+          }
         },
         discussionReservation: {
           calendar: {

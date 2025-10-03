@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.calendarevent
 
+import fi.espoo.evaka.nekku.NekkuProductMealTime
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
@@ -39,6 +40,7 @@ data class CalendarEvent(
     val contentModifiedAt: HelsinkiDateTime,
     @Nested("content_modified_by") val contentModifiedBy: EvakaUser,
     val eventType: CalendarEventType,
+    val nekkuUnorderedMeals: List<NekkuProductMealTime>,
 )
 
 data class DiscussionReservationDay(
@@ -90,6 +92,7 @@ data class CalendarEventForm(
     val period: FiniteDateRange,
     val times: List<CalendarEventTimeForm>? = null,
     val eventType: CalendarEventType,
+    val nekkuUnorderedMeals: List<NekkuProductMealTime> = listOf(),
 )
 
 data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)
@@ -113,4 +116,5 @@ data class CalendarEventUpdateForm(
     val title: String,
     val description: String,
     val tree: Map<GroupId, Set<ChildId>?>? = null,
+    val nekkuUnorderedMeals: List<NekkuProductMealTime>,
 )

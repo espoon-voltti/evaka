@@ -480,6 +480,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 tree = mapOf(groupId to setOf(testChild_1.id)),
+                nekkuUnorderedMeals = listOf(),
             )
         val updated = updateCalendarEvent(created.id, updateForm)
 
@@ -539,6 +540,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 tree = mapOf(groupId to setOf(testChild_2.id)),
+                nekkuUnorderedMeals = listOf(),
             )
         val updated = updateCalendarEvent(created.id, updateForm)
         assertThat(updated)
@@ -674,7 +676,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.plusDays(4),
                 )[0]
                 .id,
-            CalendarEventUpdateForm(title = "Updated title", description = "desc, updated"),
+            CalendarEventUpdateForm(
+                title = "Updated title",
+                description = "desc, updated",
+                nekkuUnorderedMeals = listOf(),
+            ),
         )
 
         val event =
@@ -2136,6 +2142,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Updated title",
                 description = form.description,
                 tree = form.tree,
+                nekkuUnorderedMeals = listOf(),
             )
 
         val modifiedEventData =
