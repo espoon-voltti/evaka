@@ -694,29 +694,30 @@ VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGrou
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-fun Database.Transaction.insertTestPlacementPlan(
-    applicationId: ApplicationId,
-    unitId: DaycareId,
-    id: PlacementPlanId = PlacementPlanId(UUID.randomUUID()),
-    type: PlacementType = PlacementType.DAYCARE,
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    preschoolDaycareStartDate: LocalDate? = null,
-    preschoolDaycareEndDate: LocalDate? = null,
-    updated: HelsinkiDateTime = HelsinkiDateTime.now(),
-    deleted: Boolean? = false,
-): PlacementPlanId {
+data class DevPlacementPlan(
+    val id: PlacementPlanId = PlacementPlanId(UUID.randomUUID()),
+    val applicationId: ApplicationId,
+    val unitId: DaycareId,
+    val type: PlacementType = PlacementType.DAYCARE,
+    val startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    val endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    val preschoolDaycareStartDate: LocalDate? = null,
+    val preschoolDaycareEndDate: LocalDate? = null,
+    val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val deleted: Boolean? = false,
+)
+
+fun Database.Transaction.insert(row: DevPlacementPlan): PlacementPlanId =
     createUpdate {
             sql(
                 """
 INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
-VALUES (${bind(id)}, ${bind(unitId)}, ${bind(applicationId)}, ${bind(type)}::placement_type, ${bind(startDate)}, ${bind(endDate)}, ${bind(preschoolDaycareStartDate)}, ${bind(preschoolDaycareEndDate)}, ${bind(updated)}, ${bind(deleted)})
+VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind(row.type)}::placement_type, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.preschoolDaycareStartDate)}, ${bind(row.preschoolDaycareEndDate)}, ${bind(row.updated)}, ${bind(row.deleted)})
 """
             )
         }
-        .execute()
-    return id
-}
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class TestDecision(
     val id: DecisionId? = DecisionId(UUID.randomUUID()),

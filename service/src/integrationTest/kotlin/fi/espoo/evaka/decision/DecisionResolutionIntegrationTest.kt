@@ -26,11 +26,11 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowById
@@ -471,14 +471,16 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         preferredStartDate = period.start,
                     ),
             )
-            tx.insertTestPlacementPlan(
-                applicationId = applicationId,
-                unitId = unit.id,
-                type = type,
-                startDate = period.start,
-                endDate = period.end,
-                preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
-                preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
+            tx.insert(
+                DevPlacementPlan(
+                    applicationId = applicationId,
+                    unitId = unit.id,
+                    type = type,
+                    startDate = period.start,
+                    endDate = period.end,
+                    preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
+                    preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
+                )
             )
             val primaryId =
                 if (preschoolDaycareWithoutPreschool) {

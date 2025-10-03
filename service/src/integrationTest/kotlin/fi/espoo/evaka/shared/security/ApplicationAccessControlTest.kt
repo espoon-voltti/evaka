@@ -19,9 +19,9 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
@@ -115,7 +115,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
                         "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
                     )
                 }
-                tx.insertTestPlacementPlan(applicationId, daycareId)
+                tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycareId))
                 daycareId
             }
         val unitSupervisor =

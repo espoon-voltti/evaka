@@ -20,23 +20,32 @@ import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.SearchApplicationRequest
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.insertApplication
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementDraftUnit
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevApplicationWithForm
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertApplication
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -156,6 +165,102 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(0, getPlacementDesktopDaycare(daycare2.id).placementDrafts.size)
     }
 
+    @Test
+    fun `occupancies are calculated`() {
+        val area = DevCareArea()
+        val daycare1 = DevDaycare(areaId = area.id, name = "Daycare 1")
+        val group1 = DevDaycareGroup(daycareId = daycare1.id)
+        val group1Caretakers =
+            DevDaycareCaretaker(groupId = group1.id, amount = BigDecimal.valueOf(3.0))
+        val daycare2 = DevDaycare(areaId = area.id, name = "Daycare 2")
+        val group2 = DevDaycareGroup(daycareId = daycare2.id)
+        val group2Caretakers =
+            DevDaycareCaretaker(groupId = group2.id, amount = BigDecimal.valueOf(3.0))
+        val guardian = DevPerson()
+
+        val placedChild1 = DevPerson()
+        val placement1 =
+            DevPlacement(
+                childId = placedChild1.id,
+                unitId = daycare1.id,
+                startDate = clock.today().minusDays(10),
+                endDate = clock.today().plusYears(1),
+                type = PlacementType.DAYCARE,
+            )
+
+        val placedChild2 = DevPerson()
+        val placement2 =
+            DevPlacement(
+                childId = placedChild2.id,
+                unitId = daycare2.id,
+                startDate = clock.today().minusDays(10),
+                endDate = clock.today().plusYears(1),
+                type = PlacementType.DAYCARE_PART_TIME,
+            )
+
+        val plannedChild = DevPerson()
+        val application1 =
+            createTestApplication(
+                child = plannedChild,
+                guardian = guardian,
+                preferredUnits = listOf(daycare1),
+                status = ApplicationStatus.WAITING_DECISION,
+            )
+        val placementPlan =
+            DevPlacementPlan(
+                applicationId = application1.id,
+                unitId = daycare1.id,
+                startDate = clock.today().plusDays(10),
+                endDate = clock.today().plusYears(1),
+            )
+
+        val draftPlacedChild = DevPerson()
+        val application2 =
+            createTestApplication(
+                child = draftPlacedChild,
+                guardian = guardian,
+                preferredUnits = listOf(daycare1),
+            )
+
+        db.transaction { tx ->
+            tx.insertServiceNeedOptions()
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(group1)
+            tx.insert(group1Caretakers)
+            tx.insert(daycare2)
+            tx.insert(group2)
+            tx.insert(group2Caretakers)
+            tx.insert(serviceWorker)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(placedChild1, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(placedChild2, DevPersonType.CHILD)
+            tx.insert(placement2)
+            tx.insert(plannedChild, DevPersonType.RAW_ROW)
+            tx.insertApplication(application1)
+            tx.insert(placementPlan)
+            tx.insert(draftPlacedChild, DevPersonType.RAW_ROW)
+            tx.insertApplication(application2)
+        }
+        updateApplicationPlacementDraft(applicationId = application2.id, daycareId = daycare1.id)
+
+        val result1 = getPlacementDesktopDaycare(daycare1.id)
+        assertEquals(4.8, result1.maxOccupancyConfirmed)
+        assertEquals(9.5, result1.maxOccupancyPlanned)
+        assertEquals(14.3, result1.maxOccupancyDraft)
+
+        val result2 = getPlacementDesktopDaycare(daycare2.id)
+        assertEquals(2.6, result2.maxOccupancyConfirmed)
+        assertEquals(2.6, result2.maxOccupancyPlanned)
+        assertEquals(2.6, result2.maxOccupancyDraft)
+
+        getPlacementDesktopDaycares(setOf(daycare1.id, daycare2.id)).also {
+            assertTrue(it.contains(result1))
+            assertTrue(it.contains(result2))
+        }
+    }
+
     private fun getAllApplicationSummaries() =
         applicationController.getApplicationSummaries(
             dbInstance(),
@@ -224,6 +329,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         child: DevPerson,
         guardian: DevPerson,
         preferredUnits: List<DevDaycare>,
+        status: ApplicationStatus = ApplicationStatus.WAITING_PLACEMENT,
         transferApplication: Boolean = false,
         assistanceNeed: String = "",
         otherInfo: String = "",
@@ -241,7 +347,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             modifiedBy = guardian.evakaUserId(),
             sentDate = clock.today().minusDays(55),
             dueDate = clock.today().plusDays(18),
-            status = ApplicationStatus.WAITING_PLACEMENT,
+            status = status,
             guardianId = guardian.id,
             childId = child.id,
             origin = ApplicationOrigin.ELECTRONIC,
