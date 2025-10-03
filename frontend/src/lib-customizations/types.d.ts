@@ -223,6 +223,16 @@ interface BaseFeatureFlags {
   hideOvertimeSelection: boolean
 
   /**
+   * Hide sickness selection in real time staff attendance
+   */
+  hideSicknessSelection: boolean
+
+  /**
+   * Hide child sickness selection in real time staff attendance
+   */
+  hideChildSicknessSelection: boolean
+
+  /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
    * in eVaka implementations. They are optional (have `?` after the property name)

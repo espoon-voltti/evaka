@@ -182,6 +182,8 @@ private fun roundAttendancesToPlans(
                         StaffAttendanceType.JUSTIFIED_CHANGE -> StampingType.JUSTIFIED_CHANGE
                         StaffAttendanceType.TRAINING -> StampingType.TRAINING
                         StaffAttendanceType.OTHER_WORK -> StampingType.OTHER_WORK
+                        StaffAttendanceType.SICKNESS -> StampingType.OTHER_WORK
+                        StaffAttendanceType.CHILD_SICKNESS -> StampingType.OTHER_WORK
                     },
             )
         }
