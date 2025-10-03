@@ -6,6 +6,7 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
+import fi.espoo.evaka.nekku.toDb
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
@@ -114,8 +115,8 @@ fun Database.Transaction.createCalendarEvent(
         createUpdate {
                 sql(
                     """
-INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type)
-VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)})
+INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type, nekku_unordered_meals)
+VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)}, ${bind(toDb(event.nekkuUnorderedMeals))})
 RETURNING id
 """
                 )

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.calendarevent
 
+import fi.espoo.evaka.nekku.NekkuFrontMealTime
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
@@ -90,6 +91,7 @@ data class CalendarEventForm(
     val period: FiniteDateRange,
     val times: List<CalendarEventTimeForm>? = null,
     val eventType: CalendarEventType,
+    val nekkuUnorderedMeals: List<NekkuFrontMealTime> = listOf(),
 )
 
 data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)

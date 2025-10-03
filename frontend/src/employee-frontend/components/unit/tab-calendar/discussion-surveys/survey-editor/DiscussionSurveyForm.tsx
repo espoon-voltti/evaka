@@ -237,7 +237,8 @@ export default React.memo(function DiscussionSurveyForm({
                     period: getPeriodFromDatesOrToday(
                       values.times.map((t) => t.date)
                     ),
-                    unitId
+                    unitId,
+                    nekkuUnorderedMeals: []
                   }
                 }
               } else return cancelMutation

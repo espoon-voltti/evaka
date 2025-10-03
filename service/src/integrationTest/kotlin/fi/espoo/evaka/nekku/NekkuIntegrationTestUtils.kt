@@ -7,13 +7,19 @@ package fi.espoo.evaka.nekku
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -125,6 +131,40 @@ fun getServiceNeedOptionId(db: Database.Connection, nameFi: String): ServiceNeed
     db.read { tx ->
         tx.createQuery { sql("SELECT id FROM service_need_option WHERE name_fi=${bind(nameFi)}") }
             .exactlyOne()
+    }
+
+fun createChildrenWithGroupPlacement(
+    db: Database.Connection,
+    daycareId: DaycareId,
+    groupId: GroupId,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    count: Int,
+): List<DevPerson> =
+    db.transaction { tx ->
+        List(count) {
+            val child = DevPerson()
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycareId,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = groupId,
+                            startDate = startDate,
+                            endDate = endDate,
+                        )
+                    )
+                }
+            child
+        }
     }
 
 class TestNekkuClient(
