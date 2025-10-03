@@ -33,11 +33,11 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -199,7 +199,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.CONFIRMED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             assertEquals(2, occupancyValues.size)
@@ -239,7 +239,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         FiniteDateRange(rangeStart, rangeEnd),
                         OccupancyType.REALIZED,
                         AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .find { it.key.groupId == daycareGroup1 }!!
                     .occupancies
@@ -303,7 +303,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             assertEquals(2, occupancyValues.size)
@@ -392,7 +392,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             val occupancies = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies
@@ -975,11 +975,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
         }
@@ -1012,14 +1014,17 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.PRESCHOOL_DAYCARE,
-                        startDate = today.plusDays(preschool.first.toLong()),
-                        endDate = today.plusDays(preschool.last.toLong()),
-                        preschoolDaycareStartDate = today.plusDays(preschoolDaycare.first.toLong()),
-                        preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            startDate = today.plusDays(preschool.first.toLong()),
+                            endDate = today.plusDays(preschool.last.toLong()),
+                            preschoolDaycareStartDate =
+                                today.plusDays(preschoolDaycare.first.toLong()),
+                            preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                        )
                     )
                 }
         }
@@ -1128,12 +1133,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
-                        deleted = true,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                            deleted = true,
+                        )
                     )
                 }
         }
@@ -1163,11 +1170,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1205,11 +1214,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1248,12 +1259,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.DAYCARE_PART_TIME,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.DAYCARE_PART_TIME,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1291,14 +1304,16 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.PRESCHOOL_DAYCARE,
-                        startDate = today.minusDays(1),
-                        endDate = today.plusDays(1),
-                        preschoolDaycareStartDate = today,
-                        preschoolDaycareEndDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            startDate = today.minusDays(1),
+                            endDate = today.plusDays(1),
+                            preschoolDaycareStartDate = today,
+                            preschoolDaycareEndDate = today,
+                        )
                     )
                 }
         }
@@ -1360,7 +1375,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                         type = OccupancyType.REALIZED,
                         unitFilter = AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .first { it.key.groupId == daycareGroup1 }
                     .occupancies
@@ -1397,7 +1412,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
             assertTrue(values.isEmpty())
         }
@@ -1622,7 +1637,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                         type = OccupancyType.CONFIRMED,
                         unitFilter = AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .let { reduceDailyOccupancyValues(it) }
 
@@ -2083,7 +2098,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date1, date3),
                     type = OccupancyType.CONFIRMED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycare247.id,
+                    unitIds = setOf(daycare247.id),
                 )
                 .let { values ->
                     val date1Values = values.first().occupancies[date1]!!
@@ -2099,7 +2114,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date1, date3),
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycare247.id,
+                    unitIds = setOf(daycare247.id),
                 )
                 .let { values ->
                     val date1Values = values.first().occupancies[date1]!!
@@ -2129,7 +2144,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = unitId,
+                    unitIds = setOf(unitId),
                 ),
         )
     }
@@ -2152,7 +2167,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = unitId,
+                    unitIds = setOf(unitId),
                 ),
         )
     }
