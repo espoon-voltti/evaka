@@ -40,7 +40,6 @@
     "redis": "5.8.2",
     "split2": "4.2.0",
     "through2": "4.0.2",
-    "uuid": "11.1.0",
     "zod": "4.1.11"
   },
   "devDependencies": {

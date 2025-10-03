@@ -6445,7 +6445,6 @@ __metadata:
     tslib: "npm:2.8.1"
     typescript: "npm:5.9.2"
     typescript-eslint: "npm:8.45.0"
-    uuid: "npm:11.1.0"
     vite: "npm:7.1.7"
     wouter: "npm:3.7.1"
   peerDependencies:
@@ -11638,15 +11637,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 10/474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"uuid@npm:11.1.0":
-  version: 11.1.0
-  resolution: "uuid@npm:11.1.0"
-  bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
   languageName: node
   linkType: hard
 
