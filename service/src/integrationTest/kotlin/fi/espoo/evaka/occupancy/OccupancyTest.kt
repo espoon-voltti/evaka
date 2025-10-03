@@ -33,11 +33,11 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -975,11 +975,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
         }
@@ -1012,14 +1014,17 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.PRESCHOOL_DAYCARE,
-                        startDate = today.plusDays(preschool.first.toLong()),
-                        endDate = today.plusDays(preschool.last.toLong()),
-                        preschoolDaycareStartDate = today.plusDays(preschoolDaycare.first.toLong()),
-                        preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            startDate = today.plusDays(preschool.first.toLong()),
+                            endDate = today.plusDays(preschool.last.toLong()),
+                            preschoolDaycareStartDate =
+                                today.plusDays(preschoolDaycare.first.toLong()),
+                            preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                        )
                     )
                 }
         }
@@ -1128,12 +1133,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
-                        deleted = true,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                            deleted = true,
+                        )
                     )
                 }
         }
@@ -1163,11 +1170,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1205,11 +1214,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1248,12 +1259,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.DAYCARE_PART_TIME,
-                        startDate = today,
-                        endDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.DAYCARE_PART_TIME,
+                            startDate = today,
+                            endDate = today,
+                        )
                     )
                 }
             tx.insert(
@@ -1291,14 +1304,16 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ),
                 )
                 .also { applicationId ->
-                    tx.insertTestPlacementPlan(
-                        applicationId = applicationId,
-                        unitId = daycareInArea1.id,
-                        type = PlacementType.PRESCHOOL_DAYCARE,
-                        startDate = today.minusDays(1),
-                        endDate = today.plusDays(1),
-                        preschoolDaycareStartDate = today,
-                        preschoolDaycareEndDate = today,
+                    tx.insert(
+                        DevPlacementPlan(
+                            applicationId = applicationId,
+                            unitId = daycareInArea1.id,
+                            type = PlacementType.PRESCHOOL_DAYCARE,
+                            startDate = today.minusDays(1),
+                            endDate = today.plusDays(1),
+                            preschoolDaycareStartDate = today,
+                            preschoolDaycareEndDate = today,
+                        )
                     )
                 }
         }
