@@ -5,7 +5,10 @@
 package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.shared.dev.DevCalendarEvent
+import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -17,7 +20,9 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -458,6 +463,133 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             assertEquals(
                 true,
                 tx.groupHasShiftCareChildren(group.id, placementStartDay.plusDays(3)),
+            )
+        }
+    }
+
+    @Test
+    fun `finding calendar event meal reductions for group should work`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
+        val employee = DevEmployee()
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = LocalDate.of(2025, 5, 14).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
+            )
+        val eventAttendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = null,
+                childId = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(event)
+            tx.insert(eventAttendee)
+
+            val result = tx.getGroupWideEventOrderReductions(group.id, LocalDate.of(2025, 5, 14))
+            assertEquals(setOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK), result)
+        }
+    }
+
+    @Test
+    fun `finding calendar event meal reductions for children should work`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val employee = DevEmployee()
+        val event1 =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = LocalDate.of(2025, 5, 14).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
+            )
+        val event2 =
+            DevCalendarEvent(
+                title = " Muu tapaus",
+                description = "Testausta",
+                period = LocalDate.of(2025, 5, 14).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val event3 =
+            DevCalendarEvent(
+                title = "Outo tapaus",
+                description = "Testausta",
+                period = LocalDate.of(2025, 5, 14).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.BREAKFAST),
+            )
+        val eventAttendee1 =
+            DevCalendarEventAttendee(
+                calendarEventId = event1.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = child1.id,
+            )
+        val eventAttendee2 =
+            DevCalendarEventAttendee(
+                calendarEventId = event2.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = child2.id,
+            )
+        val eventAttendee3 =
+            DevCalendarEventAttendee(
+                calendarEventId = event3.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = child2.id,
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(event1)
+            tx.insert(event2)
+            tx.insert(event3)
+            tx.insert(eventAttendee1)
+            tx.insert(eventAttendee2)
+            tx.insert(eventAttendee3)
+
+            val result =
+                tx.getChildSpecificEventOrderReductions(group.id, LocalDate.of(2025, 5, 14))
+            assertEquals(
+                mapOf(
+                    child1.id to setOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
+                    child2.id to setOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.BREAKFAST),
+                ),
+                result,
             )
         }
     }

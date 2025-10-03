@@ -7,6 +7,7 @@ package fi.espoo.evaka.nekku
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.reports.getNekkuReportRows
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -14,6 +15,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevCalendarEvent
+import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -30,10 +33,12 @@ import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -2690,14 +2695,14 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             "310000030",
                             "",
                             listOf("palveluovelle"),
-                            listOf(NekkuProductMealTime.LUNCH),
+                            listOf(NekkuApiProductMealTime.LUNCH),
                         ),
                         NekkuApiProduct(
                             "Palvelu ovelle päivällinen 1",
                             "310000031",
                             "",
                             listOf("palveluovelle"),
-                            listOf(NekkuProductMealTime.DINNER),
+                            listOf(NekkuApiProductMealTime.DINNER),
                         ),
                     ),
                 specialDiets = listOf(getNekkuSpecialDiet()),
@@ -3342,6 +3347,590 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         assertEquals(0, client.orders.size)
 
         assertEquals(0, db.read { tx -> tx.getNekkuOrderReport(daycare.id, group.id, sunday) }.size)
+    }
+
+    @Test
+    fun `should deduct meals if required by a unit wide calendar event when children do not have reservations`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = null,
+                childId = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(event)
+            tx.insert(attendee)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.forEach { assertNotEquals("31000011", it.sku) }
+    }
+
+    @Test
+    fun `should deduct meals if required by a unit wide calendar event when children do have reservations`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = null,
+                childId = null,
+            )
+
+        db.transaction { tx ->
+            children.map { child ->
+                val reservation =
+                    DevReservation(
+                        childId = child.id,
+                        date = monday.plusDays(2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                tx.insert(reservation)
+            }
+
+            tx.insert(event)
+            tx.insert(attendee)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.forEach { assertNotEquals("31000011", it.sku) }
+    }
+
+    @Test
+    fun `should deduct meals if required by a group wide calendar event when children do not have reservations`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(event)
+            tx.insert(attendee)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.forEach { assertNotEquals("31000011", it.sku) }
+    }
+
+    @Test
+    fun `should deduct meals if required by a group wide calendar event when children do have reservations`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = null,
+            )
+
+        db.transaction { tx ->
+            children.map { child ->
+                val reservation =
+                    DevReservation(
+                        childId = child.id,
+                        date = monday.plusDays(2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                tx.insert(reservation)
+            }
+
+            tx.insert(event)
+            tx.insert(attendee)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.forEach { assertNotEquals("31000011", it.sku) }
+    }
+
+    @Test
+    fun `should deduct meals if required by a child specific calendar event when children do not have reservations`() {
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee1 =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = children.get(0).id,
+            )
+        val attendee2 =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = children.get(1).id,
+            )
+
+        db.transaction { tx ->
+            children.map { child ->
+                val reservation =
+                    DevReservation(
+                        childId = child.id,
+                        date = monday.plusDays(2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                tx.insert(reservation)
+            }
+
+            tx.insert(event)
+            tx.insert(attendee1)
+            tx.insert(attendee2)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.filter { it.sku == "31000011" }.forEach { assertEquals(1, it.quantity) }
+    }
+
+    @Test
+    fun `should deduct meals if required by a child specific calendar event when children do have reservations`() {
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val attendee1 =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = children.get(0).id,
+            )
+        val attendee2 =
+            DevCalendarEventAttendee(
+                calendarEventId = event.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = children.get(1).id,
+            )
+
+        db.transaction { tx ->
+            children.map { child ->
+                val reservation =
+                    DevReservation(
+                        childId = child.id,
+                        date = monday.plusDays(2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                tx.insert(reservation)
+            }
+
+            tx.insert(event)
+            tx.insert(attendee1)
+            tx.insert(attendee2)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        order.items.filter { it.sku == "31000011" }.forEach { assertEquals(1, it.quantity) }
+    }
+
+    @Test
+    fun `should combine meal reductions from calendar events`() {
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val monday = LocalDate.of(2025, 5, 12)
+        val sunday = LocalDate.of(2025, 5, 18)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+        val employee = DevEmployee()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+        }
+
+        val children = createChildrenWithGroupPlacement(db, daycare.id, group.id, monday, sunday, 3)
+
+        val event1 =
+            DevCalendarEvent(
+                title = "Testitapaus",
+                description = "Testausta",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH),
+            )
+        val event2 =
+            DevCalendarEvent(
+                title = "Outo tapaus",
+                description = "Kaikkea sitä",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.SNACK),
+            )
+        val event3 =
+            DevCalendarEvent(
+                title = "Henk. koht. tapaus",
+                description = "Yksityistä",
+                period = monday.plusDays(2).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.BREAKFAST),
+            )
+        val attendee1 =
+            DevCalendarEventAttendee(
+                calendarEventId = event1.id,
+                unitId = daycare.id,
+                groupId = null,
+                childId = null,
+            )
+        val attendee2 =
+            DevCalendarEventAttendee(
+                calendarEventId = event2.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = null,
+            )
+        val attendee3 =
+            DevCalendarEventAttendee(
+                calendarEventId = event3.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = children.get(0).id,
+            )
+
+        db.transaction { tx ->
+            children.map { child ->
+                val reservation =
+                    DevReservation(
+                        childId = child.id,
+                        date = monday.plusDays(2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId,
+                    )
+                tx.insert(reservation)
+            }
+
+            tx.insert(event1)
+            tx.insert(event2)
+            tx.insert(event3)
+            tx.insert(attendee1)
+            tx.insert(attendee2)
+            tx.insert(attendee3)
+        }
+
+        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+
+        val order = client.orders.first().orders.first()
+        assertEquals(1, order.items.size)
+        assertEquals("31000010", order.items.first().sku)
+        assertEquals(2, order.items.first().quantity)
     }
 
     @Test

@@ -990,3 +990,54 @@ SELECT EXISTS (
             )
         }
         .exactlyOne()
+
+fun Database.Read.getCalendarEventMealReductions(
+    groupId: GroupId,
+    date: LocalDate,
+): NekkuEventOrderReductions {
+    return NekkuEventOrderReductions(
+        groupWide = getGroupWideEventOrderReductions(groupId, date),
+        childSpecific = getChildSpecificEventOrderReductions(groupId, date),
+    )
+}
+
+fun Database.Read.getGroupWideEventOrderReductions(
+    groupId: GroupId,
+    date: LocalDate,
+): Set<NekkuProductMealTime> =
+    createQuery {
+            sql(
+                """
+SELECT UNNEST(nekku_unordered_meals)
+FROM calendar_event ce
+JOIN calendar_event_attendee cea ON ce.id = cea.calendar_event_id
+JOIN daycare dc ON dc.id = cea.unit_id
+JOIN daycare_group dg on dg.daycare_id = dc.id
+WHERE dg.id = ${bind(groupId)}
+AND (cea.group_id IS NULL OR (cea.group_id = ${bind(groupId)} AND cea.child_id IS NULL))
+AND ce.period @> ${bind(date)}                 
+            """
+                    .trimIndent()
+            )
+        }
+        .toSet()
+
+fun Database.Read.getChildSpecificEventOrderReductions(
+    groupId: GroupId,
+    date: LocalDate,
+): Map<ChildId, Set<NekkuProductMealTime>> =
+    createQuery {
+            sql(
+                """
+SELECT child_id, ARRAY_AGG(DISTINCT meal) AS reductions
+FROM (
+    SELECT cea.child_id as child_id, UNNEST(ce.nekku_unordered_meals) AS meal
+    FROM calendar_event ce
+    JOIN calendar_event_attendee cea ON ce.id = cea.calendar_event_id
+    WHERE cea.group_id = ${bind(groupId)} AND child_id IS NOT NULL
+)
+GROUP BY child_id
+        """
+            )
+        }
+        .toMap { columnPair("child_id", "reductions") }

@@ -66,9 +66,9 @@ val nekkuProducts =
             "",
             listOf("alle-50-lasta", "alle-100-lasta"),
             listOf(
-                NekkuProductMealTime.BREAKFAST,
-                NekkuProductMealTime.LUNCH,
-                NekkuProductMealTime.SNACK,
+                NekkuApiProductMealTime.BREAKFAST,
+                NekkuApiProductMealTime.LUNCH,
+                NekkuApiProductMealTime.SNACK,
             ),
             NekkuApiProductMealType.Kasvis,
         ),
@@ -78,9 +78,9 @@ val nekkuProducts =
             "2",
             listOf("alle-50-lasta"),
             listOf(
-                NekkuProductMealTime.BREAKFAST,
-                NekkuProductMealTime.LUNCH,
-                NekkuProductMealTime.SNACK,
+                NekkuApiProductMealTime.BREAKFAST,
+                NekkuApiProductMealTime.LUNCH,
+                NekkuApiProductMealTime.SNACK,
             ),
             NekkuApiProductMealType.Kasvis,
         ),
@@ -89,7 +89,7 @@ val nekkuProducts =
             "31000008",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.DINNER),
+            listOf(NekkuApiProductMealTime.DINNER),
             NekkuApiProductMealType.Vegaani,
         ),
         NekkuApiProduct("Lounas kasvis er", "31001011", "2", listOf("50-99-lasta"), null, null),
@@ -102,7 +102,7 @@ val nekkuProductsForOrder =
             "31000010",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             null,
         ),
         NekkuApiProduct(
@@ -110,7 +110,7 @@ val nekkuProductsForOrder =
             "31000011",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.LUNCH),
             null,
         ),
         NekkuApiProduct(
@@ -118,7 +118,7 @@ val nekkuProductsForOrder =
             "31000012",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             null,
         ),
         NekkuApiProduct(
@@ -126,7 +126,7 @@ val nekkuProductsForOrder =
             "31000013",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SUPPER),
+            listOf(NekkuApiProductMealTime.SUPPER),
             null,
         ),
         NekkuApiProduct(
@@ -134,7 +134,7 @@ val nekkuProductsForOrder =
             "31000014",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -142,7 +142,7 @@ val nekkuProductsForOrder =
             "31000015",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.LUNCH),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -150,7 +150,7 @@ val nekkuProductsForOrder =
             "31000016",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -158,7 +158,7 @@ val nekkuProductsForOrder =
             "31000017",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SUPPER),
+            listOf(NekkuApiProductMealTime.SUPPER),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -166,7 +166,7 @@ val nekkuProductsForOrder =
             "31000018",
             "",
             listOf("50-99-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST, NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.BREAKFAST, NekkuApiProductMealTime.LUNCH),
             null,
         ),
         NekkuApiProduct(
@@ -174,7 +174,7 @@ val nekkuProductsForOrder =
             "31000019",
             "",
             listOf("50-99-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             null,
         ),
         NekkuApiProduct(
@@ -182,7 +182,7 @@ val nekkuProductsForOrder =
             "31000020",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             null,
         ),
         NekkuApiProduct(
@@ -190,7 +190,7 @@ val nekkuProductsForOrder =
             "31000021",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.LUNCH),
             null,
         ),
         NekkuApiProduct(
@@ -198,7 +198,7 @@ val nekkuProductsForOrder =
             "31000022",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             null,
         ),
         NekkuApiProduct(
@@ -206,7 +206,7 @@ val nekkuProductsForOrder =
             "31000023",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -214,7 +214,7 @@ val nekkuProductsForOrder =
             "31000024",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.LUNCH),
             NekkuApiProductMealType.Kasvis,
         ),
         NekkuApiProduct(
@@ -222,7 +222,7 @@ val nekkuProductsForOrder =
             "31000025",
             "2",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             NekkuApiProductMealType.Kasvis,
         ),
     )
@@ -234,7 +234,7 @@ val nekkuProductsForErrorOrder =
             "31000010",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             null,
         ),
         NekkuApiProduct(
@@ -242,7 +242,7 @@ val nekkuProductsForErrorOrder =
             "31000011",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.LUNCH),
+            listOf(NekkuApiProductMealTime.LUNCH),
             null,
         ),
         NekkuApiProduct(
@@ -250,7 +250,7 @@ val nekkuProductsForErrorOrder =
             "31000012",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SNACK),
+            listOf(NekkuApiProductMealTime.SNACK),
             null,
         ),
         NekkuApiProduct(
@@ -258,7 +258,7 @@ val nekkuProductsForErrorOrder =
             "31000013",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.SUPPER),
+            listOf(NekkuApiProductMealTime.SUPPER),
             null,
         ),
         NekkuApiProduct(
@@ -266,7 +266,7 @@ val nekkuProductsForErrorOrder =
             "31000010",
             "",
             listOf("100-lasta"),
-            listOf(NekkuProductMealTime.BREAKFAST),
+            listOf(NekkuApiProductMealTime.BREAKFAST),
             null,
         ),
     )

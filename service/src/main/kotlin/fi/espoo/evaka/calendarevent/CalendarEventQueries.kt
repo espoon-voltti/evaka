@@ -42,6 +42,7 @@ SELECT
     eu.name AS content_modified_by_name,
     eu.type AS content_modified_by_type,
     ce.event_type,
+    ce.nekku_unordered_meals,
     (
         coalesce(jsonb_agg(DISTINCT jsonb_build_object(
             'id', cea.group_id,
@@ -114,8 +115,8 @@ fun Database.Transaction.createCalendarEvent(
         createUpdate {
                 sql(
                     """
-INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type)
-VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)})
+INSERT INTO calendar_event (created_at, created_by, title, description, period, modified_at, modified_by, content_modified_at, content_modified_by, event_type, nekku_unordered_meals)
+VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(event.eventType)}, ${bind(event.nekkuUnorderedMeals)})
 RETURNING id
 """
                 )
@@ -264,7 +265,8 @@ SET title = ${bind(updateForm.title)},
     modified_at = ${bind(modifiedAt)},
     modified_by = ${bind(modifiedBy)},
     content_modified_at = ${bind(modifiedAt)},
-    content_modified_by = ${bind(modifiedBy)}
+    content_modified_by = ${bind(modifiedBy)},
+    nekku_unordered_meals = ${bind(updateForm.nekkuUnorderedMeals)}
 WHERE id = ${bind(eventId)}
         """
             )

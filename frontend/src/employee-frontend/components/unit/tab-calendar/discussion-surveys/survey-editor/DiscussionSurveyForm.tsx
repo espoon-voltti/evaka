@@ -206,7 +206,8 @@ export default React.memo(function DiscussionSurveyForm({
                       times: null,
                       unitId,
                       period: eventData.period,
-                      tree: getTreeSelectionAsRecord(attendees.value())
+                      tree: getTreeSelectionAsRecord(attendees.value()),
+                      nekkuUnorderedMeals: []
                     }
                   }
                 : cancelMutation
@@ -237,7 +238,8 @@ export default React.memo(function DiscussionSurveyForm({
                     period: getPeriodFromDatesOrToday(
                       values.times.map((t) => t.date)
                     ),
-                    unitId
+                    unitId,
+                    nekkuUnorderedMeals: []
                   }
                 }
               } else return cancelMutation

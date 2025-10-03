@@ -1521,9 +1521,9 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             "",
                             listOf("alle-50-lasta"),
                             listOf(
-                                NekkuProductMealTime.BREAKFAST,
-                                NekkuProductMealTime.LUNCH,
-                                NekkuProductMealTime.SNACK,
+                                NekkuApiProductMealTime.BREAKFAST,
+                                NekkuApiProductMealTime.LUNCH,
+                                NekkuApiProductMealTime.SNACK,
                             ),
                             NekkuApiProductMealType.Kasvis,
                         ),
@@ -1532,7 +1532,7 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             "31000008",
                             "",
                             listOf("100-lasta"),
-                            listOf(NekkuProductMealTime.DINNER),
+                            listOf(NekkuApiProductMealTime.DINNER),
                             NekkuApiProductMealType.Kasvis,
                         ),
                     )
@@ -1556,9 +1556,9 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             "",
                             listOf("alle-50-lasta"),
                             listOf(
-                                NekkuProductMealTime.BREAKFAST,
-                                NekkuProductMealTime.LUNCH,
-                                NekkuProductMealTime.SNACK,
+                                NekkuApiProductMealTime.BREAKFAST,
+                                NekkuApiProductMealTime.LUNCH,
+                                NekkuApiProductMealTime.SNACK,
                             ),
                             NekkuApiProductMealType.Kasvis,
                         )
@@ -1627,9 +1627,9 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                             "2",
                             listOf("100-lasta"),
                             listOf(
-                                NekkuProductMealTime.BREAKFAST,
-                                NekkuProductMealTime.LUNCH,
-                                NekkuProductMealTime.SNACK,
+                                NekkuApiProductMealTime.BREAKFAST,
+                                NekkuApiProductMealTime.LUNCH,
+                                NekkuApiProductMealTime.SNACK,
                             ),
                             NekkuApiProductMealType.Vegaani,
                         )

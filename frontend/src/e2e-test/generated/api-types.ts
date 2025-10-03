@@ -85,6 +85,7 @@ import type { MailingAddress } from 'lib-common/generated/api-types/daycare'
 import type { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import type { Nationality } from 'lib-common/generated/api-types/vtjclient'
 import type { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
+import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
 import type { OfficialLanguage } from 'lib-common/generated/api-types/shared'
@@ -358,6 +359,7 @@ export interface DevCalendarEvent {
   id: CalendarEventId
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUserId
+  nekkuUnorderedMeals: NekkuProductMealTime[]
   period: FiniteDateRange
   title: string
 }
