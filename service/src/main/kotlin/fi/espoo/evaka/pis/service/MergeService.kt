@@ -168,6 +168,7 @@ SELECT
 DELETE FROM message_account WHERE person_id = ${bind(id)};
 DELETE FROM guardian WHERE guardian_id = ${bind(id)} OR child_id = ${bind(id)};
 DELETE FROM child WHERE id = ${bind(id)};
+DELETE FROM citizen_user WHERE id = ${bind(id)};
 DELETE FROM person WHERE id = ${bind(id)};
 """
                 )
