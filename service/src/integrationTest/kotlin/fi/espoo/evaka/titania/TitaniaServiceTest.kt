@@ -2281,7 +2281,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = "Z",
                                                                 endTime = null,
                                                                 endReasonCode = null,
-                                                            )
+                                                            ),
                                                         )
                                                 ),
                                         )
@@ -2320,7 +2320,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginReasonCode = "7",
                                                                 endTime = null,
                                                                 endReasonCode = null,
-                                                            )
+                                                            ),
                                                         )
                                                 ),
                                         )
