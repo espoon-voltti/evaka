@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isHoliday
 import fi.espoo.evaka.shared.domain.isWeekendOrHoliday
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.DayOfWeek
 import java.time.Duration
@@ -605,6 +606,7 @@ fun nekkuMealReportData(
                         effectivelyAbsent,
                         childInfo.mealTimes,
                         childInfo.eatsBreakfast,
+                        childInfo.calendarEventReductions,
                     )
                     .mapNotNull { mealTime ->
                         val sku =
@@ -669,6 +671,7 @@ private fun nekkuChildMeals(
     absent: Boolean,
     mealtimes: DaycareMealtimes,
     eatsBreakfast: Boolean,
+    calendarEventReductions: Set<NekkuProductMealTime>,
 ): Set<NekkuProductMealTime> {
     // if absent -> no meals
     if (absent) {
@@ -677,19 +680,24 @@ private fun nekkuChildMeals(
     // if we don't have data about when child will be present, default to breakfast + lunch + snack
     if (presentTimeRanges.isEmpty()) {
 
-        return if (eatsBreakfast)
-            setOf(
-                NekkuProductMealTime.BREAKFAST,
-                NekkuProductMealTime.LUNCH,
-                NekkuProductMealTime.SNACK,
-            )
-        else setOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK)
+        return buildSet {
+            if (eatsBreakfast && NekkuProductMealTime.BREAKFAST !in calendarEventReductions)
+                add(NekkuProductMealTime.BREAKFAST)
+            if (NekkuProductMealTime.LUNCH !in calendarEventReductions)
+                add(NekkuProductMealTime.LUNCH)
+            if (NekkuProductMealTime.SNACK !in calendarEventReductions)
+                add(NekkuProductMealTime.SNACK)
+        }
     }
     // otherwise check unit meal times against the present time ranges
     val meals = mutableSetOf<NekkuProductMealTime>()
 
     fun addMealIfPresent(mealTime: TimeRange?, mealType: NekkuProductMealTime) {
-        if (mealTime != null && presentTimeRanges.any { it.overlaps(mealTime) }) {
+        if (
+            mealType !in calendarEventReductions &&
+                mealTime != null &&
+                presentTimeRanges.any { it.overlaps(mealTime) }
+        ) {
             meals.add(mealType)
         }
     }
@@ -708,7 +716,7 @@ private fun getNekkuChildInfos(
     nekkuGroupId: GroupId,
     date: LocalDate,
 ): List<NekkuChildInfo> {
-    val holidays = getHolidays(FiniteDateRange(date, date))
+    val holidays = getHolidays(date.toFiniteDateRange())
 
     val childData = tx.getNekkuChildData(nekkuGroupId, date)
     val unitIds = childData.map { it.unitId }.toSet()
@@ -720,6 +728,8 @@ private fun getNekkuChildInfos(
     val textFieldsPerSpecialDiet = tx.getNekkuTextFields()
     val defaultSpecialDiet =
         textFieldsPerSpecialDiet.keys.maxOrNull() ?: error("No special diets found")
+
+    val calendarEventMealReductions = tx.getCalendarEventMealReductions(nekkuGroupId, date)
 
     return childData.mapNotNull { child ->
         val unit = units[child.unitId] ?: error("Daycare not found for unitId ${child.unitId}")
@@ -758,6 +768,8 @@ private fun getNekkuChildInfos(
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
             mealTimes = unit.mealTimes,
             eatsBreakfast = child.eatsBreakfast,
+            calendarEventReductions =
+                perChildCalendarEventReductions(calendarEventMealReductions, child.childId),
         )
     }
 }
@@ -825,6 +837,14 @@ fun daycareOpenNextTime(
 
     throw IllegalStateException("Päiväkodin seuraavaa aukioloa ei löydetty")
 }
+
+fun perChildCalendarEventReductions(
+    calendarEventReductions: NekkuEventOrderReductions,
+    childId: ChildId,
+): Set<NekkuProductMealTime> =
+    calendarEventReductions.groupWide.union(
+        calendarEventReductions.childSpecific[childId] ?: setOf()
+    )
 
 data class NekkuCustomer(
     val number: String,
@@ -905,7 +925,6 @@ data class NekkuProduct(
 
 data class NekkuMealType(val type: NekkuProductMealType?, val name: String)
 
-@ConstList("nekku_product_meal_time")
 enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEnum {
     BREAKFAST("aamupala"),
     LUNCH("lounas"),
@@ -915,6 +934,28 @@ enum class NekkuProductMealTime(@JsonValue val description: String) : DatabaseEn
 
     override val sqlType: String = "nekku_product_meal_time"
 }
+
+enum class NekkuFrontMealTime {
+    BREAKFAST {
+        override fun toDb(): NekkuProductMealTime = NekkuProductMealTime.BREAKFAST
+    },
+    LUNCH {
+        override fun toDb(): NekkuProductMealTime = NekkuProductMealTime.LUNCH
+    },
+    SNACK {
+        override fun toDb(): NekkuProductMealTime = NekkuProductMealTime.SNACK
+    },
+    DINNER {
+        override fun toDb(): NekkuProductMealTime = NekkuProductMealTime.DINNER
+    },
+    SUPPER {
+        override fun toDb(): NekkuProductMealTime = NekkuProductMealTime.SUPPER
+    };
+
+    abstract fun toDb(): NekkuProductMealTime
+}
+
+fun toDb(values: List<NekkuFrontMealTime>) = values.map { it.toDb() }
 
 @ConstList("nekku_product_meal_type")
 enum class NekkuProductMealType(val description: String) : DatabaseEnum {
@@ -935,6 +976,7 @@ data class NekkuChildInfo(
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes,
     val eatsBreakfast: Boolean,
+    val calendarEventReductions: Set<NekkuProductMealTime>,
 )
 
 data class NekkuMealInfo(
@@ -956,6 +998,11 @@ data class NekkuSpecialDietChoicesWithChild(
     val dietId: String,
     val fieldId: String,
     val value: String,
+)
+
+data class NekkuEventOrderReductions(
+    val groupWide: Set<NekkuProductMealTime>,
+    val childSpecific: Map<ChildId, Set<NekkuProductMealTime>>,
 )
 
 data class NekkuOrdersReport(

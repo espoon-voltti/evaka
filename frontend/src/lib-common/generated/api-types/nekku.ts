@@ -5,6 +5,16 @@
 // GENERATED FILE: no manual modifications
 
 /**
+* Generated from fi.espoo.evaka.nekku.NekkuFrontMealTime
+*/
+export type NekkuFrontMealTime =
+  | 'BREAKFAST'
+  | 'LUNCH'
+  | 'SNACK'
+  | 'DINNER'
+  | 'SUPPER'
+
+/**
 * Generated from fi.espoo.evaka.nekku.NekkuMealType
 */
 export interface NekkuMealType {
