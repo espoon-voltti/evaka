@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { v4 as uuidv4 } from 'uuid'
 
 import { string } from 'lib-common/form/fields'
 import { array, mapped, object, validated, value } from 'lib-common/form/form'
@@ -60,7 +59,7 @@ type TemplateForm = typeof templateForm
 const getTemplateInitialValues = (
   question?: ApiQuestion
 ): StateOf<TemplateForm> => ({
-  id: question?.id ?? uuidv4(),
+  id: question?.id ?? crypto.randomUUID(),
   label: question?.label ?? '',
   options: question?.options ?? [],
   infoText: question?.infoText ?? ''
@@ -219,7 +218,7 @@ const TemplateView = React.memo(function TemplateView({
             options.update((old) => [
               ...old,
               {
-                id: uuidv4(),
+                id: crypto.randomUUID(),
                 label: ''
               }
             ])

@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomUUID as uuidv4 } from 'node:crypto'
+
 import type { Router } from 'express'
 import _ from 'lodash'
-import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
 import { createDevAuthRouter } from '../shared/auth/dev-auth.ts'
