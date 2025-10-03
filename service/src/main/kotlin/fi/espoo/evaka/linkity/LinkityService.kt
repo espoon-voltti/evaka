@@ -163,12 +163,6 @@ private fun roundAttendancesToPlans(
             if (attendance.departed == null) {
                 return@mapNotNull null
             }
-            if (
-                attendance.type in
-                    listOf(StaffAttendanceType.SICKNESS, StaffAttendanceType.CHILD_SICKNESS)
-            ) {
-                return@mapNotNull null
-            }
             val roundedArrivalTime =
                 plannedTimes.find { it.durationSince(attendance.arrived).abs() <= MAX_DRIFT }
                     ?: attendance.arrived
@@ -188,7 +182,8 @@ private fun roundAttendancesToPlans(
                         StaffAttendanceType.JUSTIFIED_CHANGE -> StampingType.JUSTIFIED_CHANGE
                         StaffAttendanceType.TRAINING -> StampingType.TRAINING
                         StaffAttendanceType.OTHER_WORK -> StampingType.OTHER_WORK
-                        else -> StampingType.PRESENT
+                        StaffAttendanceType.SICKNESS -> StampingType.OTHER_WORK
+                        StaffAttendanceType.CHILD_SICKNESS -> StampingType.OTHER_WORK
                     },
             )
         }
