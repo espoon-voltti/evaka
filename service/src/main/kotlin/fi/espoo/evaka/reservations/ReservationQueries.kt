@@ -684,8 +684,8 @@ fun Database.Read.getReservationEnabledPlacementRangesByChild(
         }
         .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }
 
-fun Database.Transaction.deleteInvalidatedShiftCareReservationsByDate(today: LocalDate): Int {
-    val futureHolidays = getHolidays(FiniteDateRange(today, today.plusMonths(6)))
+fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: LocalDate): Int {
+    val futureHolidays = getHolidays(FiniteDateRange(date, date.plusMonths(6)))
     return createUpdate {
             sql(
                 """
@@ -701,8 +701,8 @@ fun Database.Transaction.deleteInvalidatedShiftCareReservationsByDate(today: Loc
                                       AND daterange(sn.start_date, sn.end_date, '[]') @> ar.date
                             WHERE (sn.shift_care IS NULL OR sn.shift_care = 'NONE') 
                             AND (ar.date = ANY (${bind(futureHolidays)})
-                                OR (ar.date >= ${bind(today)}
-                                    AND d.operation_times[extract(isodow FROM ar.date)] IS NULL
+                                OR (ar.date >= ${bind(date)}
+                                    AND d.operation_days[extract(isodow FROM ar.date)] IS NULL
                                 ))
                         )
                     """
