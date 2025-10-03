@@ -5,12 +5,14 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getPlannedCaretakersForGroups
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.SpeculatedPlacement
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -44,6 +46,7 @@ const val workingDayHours = 7.65 // 7 hours 39 minutes
 const val defaultOccupancyCoefficient = 7
 
 enum class OccupancyType {
+    DRAFT,
     PLANNED,
     CONFIRMED,
     REALIZED,
@@ -120,14 +123,14 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
-    unitId: DaycareId? = null,
+    unitIds: Set<DaycareId>? = null,
     speculatedPlacements: List<SpeculatedPlacement> = listOf(),
 ): List<DailyOccupancyValues<UnitKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
-    val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
+    val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitIds?.size == 1)
 
     val caretakerCounts =
-        getDailyGroupCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId)
+        getDailyGroupCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitIds)
             .entries
             // sum per-group data into per-unit data
             .groupingBy { it.key.toUnitKey() }
@@ -155,11 +158,11 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
-    unitId: DaycareId? = null,
+    unitIds: Set<DaycareId>? = null,
     groupId: GroupId? = null,
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
-    val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
+    val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitIds?.size == 1)
 
     val caretakerCounts =
         getDailyGroupCaretakers(
@@ -169,7 +172,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
             areaId,
             providerType,
             unitTypes,
-            unitId,
+            unitIds,
             groupId,
         )
 
@@ -220,7 +223,7 @@ private fun getAndValidatePeriod(
     queryPeriod: FiniteDateRange,
     singleUnit: Boolean,
 ): FiniteDateRange {
-    val maxLength = if (singleUnit) 400 else 50
+    val maxLength = if (singleUnit) 400 else 100
 
     val period =
         if (type == OccupancyType.REALIZED) {
@@ -399,7 +402,7 @@ private fun Database.Read.getDailyGroupCaretakers(
     areaId: AreaId?,
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
-    unitId: DaycareId?,
+    unitIds: Set<DaycareId>?,
     groupId: GroupId? = null,
 ): Map<UnitGroupKey, DateMap<BigDecimal>> {
     val unitPredicate =
@@ -408,7 +411,7 @@ private fun Database.Read.getDailyGroupCaretakers(
                 where("daterange($it.opening_date, $it.closing_date, '[]') && ${bind(period)}")
             },
             if (areaId != null) Predicate { where("$it.care_area_id = ${bind(areaId)}") } else null,
-            if (unitId != null) Predicate { where("$it.id = ${bind(unitId)}") } else null,
+            if (unitIds != null) Predicate { where("$it.id = ANY(${bind(unitIds)})") } else null,
             unitFilter.toPredicate(),
             if (providerType != null)
                 Predicate { where("$it.provider_type = ${bind(providerType)}") }
@@ -454,6 +457,7 @@ WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))
 
     val dailyCountsByGroup =
         when (type) {
+            OccupancyType.DRAFT,
             OccupancyType.PLANNED,
             OccupancyType.CONFIRMED ->
                 getPlannedCaretakersForGroups(
@@ -480,6 +484,49 @@ WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))
                     .removeAll(nonOperational.ranges())
         }
         .toMap()
+}
+
+private fun Database.Read.getPlacementDrafts(
+    unitIds: Set<DaycareId>,
+    period: FiniteDateRange,
+): Iterable<SpeculatedPlacement> {
+    data class QueryResult(
+        val applicationId: ApplicationId,
+        val unitId: DaycareId,
+        val familyUnitPlacement: Boolean,
+    )
+    return createQuery {
+            sql(
+                """
+        SELECT 
+            a.id AS application_id,
+            u.id AS unit_id,
+            u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement
+        FROM placement_draft pd
+        JOIN application a ON pd.application_id = a.id
+        JOIN daycare u ON pd.unit_id = u.id
+        WHERE a.status = 'WAITING_PLACEMENT' AND pd.unit_id = ANY(${bind(unitIds)}) 
+    """
+            )
+        }
+        .toList<QueryResult>()
+        .mapNotNull { row ->
+            val application = fetchApplicationDetails(row.applicationId)!!
+            val estimatedStartDate =
+                application.form.preferences.preferredStartDate
+                    ?: application.dueDate
+                    ?: period.start
+            val period =
+                DateRange(estimatedStartDate, null).intersection(period) ?: return@mapNotNull null
+
+            SpeculatedPlacement(
+                type = application.derivePlacementType(),
+                childId = application.childId,
+                unitId = row.unitId,
+                period = period,
+                familyUnitPlacement = row.familyUnitPlacement,
+            )
+        }
 }
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacements(
@@ -607,14 +654,25 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     range: FiniteDateRange,
     type: OccupancyType,
 ): List<DailyOccupancyValues<K>> {
+    val placementDrafts =
+        if (type == OccupancyType.DRAFT) {
+            this.getPlacementDrafts(caretakerCounts.keys.map { it.unitId }.toSet(), range)
+        } else {
+            listOf()
+        }
+
     val placementPlans =
-        if (type == OccupancyType.PLANNED) {
+        if (type == OccupancyType.PLANNED || type == OccupancyType.DRAFT) {
             this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId })
         } else {
             listOf()
         }
 
-    val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
+    val childIds =
+        (placements.map { it.childId } +
+                placementDrafts.map { it.childId } +
+                placementPlans.map { it.childId })
+            .toSet()
     val childOperationalDates = this.getOperationalDatesForChildren(range, childIds)
 
     val childBirthdays =
@@ -747,7 +805,8 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
         return assistanceCoefficient * serviceNeedCoefficient to under3y
     }
 
-    val placementsAndPlans = (placements + placementPlans).groupBy { it.groupingId }
+    val placementsAndPlans =
+        (placements + placementPlans + placementDrafts).groupBy { it.groupingId }
 
     return caretakerCounts.map { (key, countsForKey) ->
         val occupancies =
