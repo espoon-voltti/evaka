@@ -199,7 +199,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.CONFIRMED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             assertEquals(2, occupancyValues.size)
@@ -239,7 +239,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         FiniteDateRange(rangeStart, rangeEnd),
                         OccupancyType.REALIZED,
                         AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .find { it.key.groupId == daycareGroup1 }!!
                     .occupancies
@@ -303,7 +303,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             assertEquals(2, occupancyValues.size)
@@ -392,7 +392,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
                     AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
 
             val occupancies = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies
@@ -1360,7 +1360,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                         type = OccupancyType.REALIZED,
                         unitFilter = AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .first { it.key.groupId == daycareGroup1 }
                     .occupancies
@@ -1397,7 +1397,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1.id,
+                    unitIds = setOf(daycareInArea1.id),
                 )
             assertTrue(values.isEmpty())
         }
@@ -1622,7 +1622,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                         type = OccupancyType.CONFIRMED,
                         unitFilter = AccessControlFilter.PermitAll,
-                        unitId = daycareInArea1.id,
+                        unitIds = setOf(daycareInArea1.id),
                     )
                     .let { reduceDailyOccupancyValues(it) }
 
@@ -2083,7 +2083,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date1, date3),
                     type = OccupancyType.CONFIRMED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycare247.id,
+                    unitIds = setOf(daycare247.id),
                 )
                 .let { values ->
                     val date1Values = values.first().occupancies[date1]!!
@@ -2099,7 +2099,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date1, date3),
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycare247.id,
+                    unitIds = setOf(daycare247.id),
                 )
                 .let { values ->
                     val date1Values = values.first().occupancies[date1]!!
@@ -2129,7 +2129,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = unitId,
+                    unitIds = setOf(unitId),
                 ),
         )
     }
@@ -2152,7 +2152,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = unitId,
+                    unitIds = setOf(unitId),
                 ),
         )
     }

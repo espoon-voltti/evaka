@@ -669,6 +669,9 @@ export interface PersonBasics {
 */
 export interface PlacementDesktopDaycare {
   id: DaycareId
+  maxOccupancyConfirmed: number | null
+  maxOccupancyDraft: number | null
+  maxOccupancyPlanned: number | null
   name: string
   placementDrafts: PlacementDraft[]
 }

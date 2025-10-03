@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -69,7 +70,13 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_PLACEMENT_DESKTOP_DAYCARES,
                     )
-                    tx.getPlacementDesktopDaycare(unitId)
+                    val today = clock.today()
+                    getPlacementDesktopDaycareWithOccupancies(
+                        tx = tx,
+                        unitId = unitId,
+                        occupancyPeriod = FiniteDateRange(today, today.plusMonths(3)),
+                        today = today,
+                    )
                 }
             }
             .also { Audit.PlacementDesktopDaycaresRead.log(targetId = AuditId(unitId)) }
@@ -90,7 +97,13 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_PLACEMENT_DESKTOP_DAYCARES,
                     )
-                    tx.getPlacementDesktopDaycares(unitIds)
+                    val today = clock.today()
+                    getPlacementDesktopDaycaresWithOccupancies(
+                        tx = tx,
+                        unitIds = unitIds,
+                        occupancyPeriod = FiniteDateRange(today, today.plusMonths(3)),
+                        today = today,
+                    )
                 }
             }
             .also { Audit.PlacementDesktopDaycaresRead.log(targetId = AuditId(unitIds)) }

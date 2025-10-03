@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
+import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type {
   ApplicationSummary,
@@ -20,7 +21,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faEyeSlash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -89,61 +90,67 @@ export default React.memo(function DaycareCard({
           />
         </FixedSpaceRow>
 
-        <FixedSpaceRow>
-          <FixedSpaceColumn spacing="xxs">
-            <Label>
-              {i18n.applications.placementDesktop.occupancyConfirmed}
-            </Label>
-            <span>?? %</span>
-          </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
-            <Label>{i18n.applications.placementDesktop.occupancyPlanned}</Label>
-            <span>?? %</span>
-          </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
-            <Label>{i18n.applications.placementDesktop.occupancyDraft}</Label>
-            <span>?? %</span>
-          </FixedSpaceColumn>
-        </FixedSpaceRow>
-
         {renderResult(
-          placementDraftsWithApplications,
-          (placementDraftsWithApplications) => (
-            <CollapsibleContentArea
-              opaque
-              open={placementDraftsOpen}
-              toggleOpen={togglePlacementDraftsOpen}
-              title={
-                <Label>
-                  {i18n.applications.placementDesktop.placementDrafts}
-                </Label>
-              }
-              countIndicator={placementDraftsWithApplications.length}
-              countIndicatorColor={colors.accents.a8lightBlue}
-              paddingHorizontal="zero"
-              paddingVertical="zero"
-            >
-              <ApplicationsWrapper>
-                <FixedSpaceColumn>
-                  {orderBy(
-                    placementDraftsWithApplications,
-                    (pd) => pd.placementDraft.childName
-                  ).map(({ placementDraft, application }) => (
-                    <ApplicationCardPlaced
-                      key={placementDraft.applicationId}
-                      placementDraft={placementDraft}
-                      application={application}
-                      onUpdateApplicationPlacementSuccess={
-                        onUpdateApplicationPlacementSuccess
-                      }
-                      onUpdateApplicationPlacementFailure={
-                        onUpdateApplicationPlacementFailure
-                      }
-                    />
-                  ))}
+          combine(unitDetails, placementDraftsWithApplications),
+          ([unitDetails, placementDraftsWithApplications]) => (
+            <>
+              <FixedSpaceRow>
+                <FixedSpaceColumn spacing="xxs">
+                  <Label>
+                    {i18n.applications.placementDesktop.occupancyConfirmed}
+                  </Label>
+                  <span>{unitDetails.maxOccupancyConfirmed ?? '??'} %</span>
                 </FixedSpaceColumn>
-              </ApplicationsWrapper>
-            </CollapsibleContentArea>
+                <FixedSpaceColumn spacing="xxs">
+                  <Label>
+                    {i18n.applications.placementDesktop.occupancyPlanned}
+                  </Label>
+                  <span>{unitDetails.maxOccupancyPlanned ?? '??'} %</span>
+                </FixedSpaceColumn>
+                <FixedSpaceColumn spacing="xxs">
+                  <Label>
+                    {i18n.applications.placementDesktop.occupancyDraft}
+                  </Label>
+                  <span>{unitDetails.maxOccupancyDraft ?? '??'} %</span>
+                </FixedSpaceColumn>
+              </FixedSpaceRow>
+              <Gap size="xs" />
+              <CollapsibleContentArea
+                opaque
+                open={placementDraftsOpen}
+                toggleOpen={togglePlacementDraftsOpen}
+                title={
+                  <Label>
+                    {i18n.applications.placementDesktop.placementDrafts}
+                  </Label>
+                }
+                countIndicator={placementDraftsWithApplications.length}
+                countIndicatorColor={colors.accents.a8lightBlue}
+                paddingHorizontal="zero"
+                paddingVertical="zero"
+              >
+                <ApplicationsWrapper>
+                  <FixedSpaceColumn>
+                    {orderBy(
+                      placementDraftsWithApplications,
+                      (pd) => pd.placementDraft.childName
+                    ).map(({ placementDraft, application }) => (
+                      <ApplicationCardPlaced
+                        key={placementDraft.applicationId}
+                        placementDraft={placementDraft}
+                        application={application}
+                        onUpdateApplicationPlacementSuccess={
+                          onUpdateApplicationPlacementSuccess
+                        }
+                        onUpdateApplicationPlacementFailure={
+                          onUpdateApplicationPlacementFailure
+                        }
+                      />
+                    ))}
+                  </FixedSpaceColumn>
+                </ApplicationsWrapper>
+              </CollapsibleContentArea>
+            </>
           )
         )}
       </FixedSpaceColumn>

@@ -5,14 +5,11 @@
 package fi.espoo.evaka.application.placementdesktop
 
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.user.EvakaUser
-import org.jdbi.v3.json.Json
 
 fun Database.Transaction.updateApplicationPlacementDraft(
     applicationId: ApplicationId,
@@ -46,22 +43,7 @@ fun Database.Transaction.updateApplicationPlacementDraft(
     }
 }
 
-data class PlacementDesktopDaycare(
-    val id: DaycareId,
-    val name: String,
-    @Json val placementDrafts: List<PlacementDraft>,
-)
-
-data class PlacementDraft(
-    val applicationId: ApplicationId,
-    val unitId: DaycareId,
-    val childId: ChildId,
-    val childName: String,
-    val modifiedAt: HelsinkiDateTime,
-    val modifiedBy: EvakaUser,
-)
-
-fun Database.Read.getPlacementDesktopDaycares(unitIds: Set<DaycareId>) =
+fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<DaycareId>) =
     createQuery {
             sql(
                 """
@@ -96,5 +78,5 @@ fun Database.Read.getPlacementDesktopDaycares(unitIds: Set<DaycareId>) =
         .also { if (it.size < unitIds.size) throw NotFound() }
         .also { if (it.size > unitIds.size) throw IllegalStateException() }
 
-fun Database.Read.getPlacementDesktopDaycare(unitId: DaycareId) =
-    getPlacementDesktopDaycares(setOf(unitId)).first()
+fun Database.Read.getPlacementDesktopDaycareWithoutOccupancies(unitId: DaycareId) =
+    getPlacementDesktopDaycaresWithoutOccupancies(setOf(unitId)).first()

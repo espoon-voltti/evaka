@@ -82,6 +82,7 @@ export interface OccupancyResponseSpeculated {
 * Generated from fi.espoo.evaka.occupancy.OccupancyType
 */
 export type OccupancyType =
+  | 'DRAFT'
   | 'PLANNED'
   | 'CONFIRMED'
   | 'REALIZED'
