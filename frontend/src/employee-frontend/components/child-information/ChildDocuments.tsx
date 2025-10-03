@@ -298,7 +298,15 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
-              <Td>{document.modifiedAt.format()}</Td>
+              <Td>
+                <Tooltip
+                  tooltip={i18n.childInformation.childDocuments.table.modifiedBy(
+                    document.modifiedBy
+                  )}
+                >
+                  {document.modifiedAt.format()}
+                </Tooltip>
+              </Td>
               <Td>{document.decision?.daycareName ?? ''}</Td>
               <Td>
                 <DecisionValidityCell
