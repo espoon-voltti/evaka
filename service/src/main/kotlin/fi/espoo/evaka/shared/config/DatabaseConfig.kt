@@ -32,7 +32,7 @@ class DatabaseConfig {
         Flyway.configure()
             .apply {
                 pluginRegister
-                    .getPlugin(PostgreSQLConfigurationExtension::class.java)
+                    .getExact(PostgreSQLConfigurationExtension::class.java)
                     .isTransactionalLock = false
             }
             .ignoreMigrationPatterns(
