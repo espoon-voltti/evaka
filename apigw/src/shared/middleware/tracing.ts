@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Buffer } from 'node:buffer'
+import { randomBytes } from 'node:crypto'
 
 import type express from 'express'
-import { v4 as uuidv4 } from 'uuid'
 
 // Generates a random 64-bit tracing ID in hex format
-const randomTracingId = () =>
-  Buffer.from(uuidv4(undefined, Buffer.alloc(16))).toString('hex', 8)
+const randomTracingId = () => randomBytes(8).toString('hex')
 
 const tracing: express.RequestHandler = (req, res, next) => {
   const requestIdHeader = req.header('x-request-id')

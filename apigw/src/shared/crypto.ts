@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import crypto from 'crypto'
+import { createHash } from 'node:crypto'
 
 export const createSha256Hash = (str: string): string =>
-  crypto.createHash('sha256').update(str).digest('hex')
+  createHash('sha256').update(str).digest('hex')
