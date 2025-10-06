@@ -11,6 +11,8 @@ import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.placement.Placement
@@ -321,10 +323,16 @@ class HolidayPeriodControllerCitizen(
         val continuousPlacementPeriod = questionnaire.conditions.continuousPlacement
         val eligibleChildren =
             if (continuousPlacementPeriod != null) {
-                tx.getChildrenWithContinuousPlacement(date, user.id, continuousPlacementPeriod)
-            } else {
-                tx.getUserChildIds(date, user.id)
-            }
+                    tx.getChildrenWithContinuousPlacement(date, user.id, continuousPlacementPeriod)
+                } else {
+                    tx.getUserChildIds(date, user.id)
+                }
+                .filter { childId ->
+                    tx.getPlacementsForChildDuring(childId, date, date).none { placement ->
+                        tx.getDaycare(placement.unitId)?.providerType ==
+                            ProviderType.PRIVATE_SERVICE_VOUCHER
+                    }
+                }
         return when (questionnaire) {
             is HolidayQuestionnaire.FixedPeriodQuestionnaire -> {
                 val periodOptions = questionnaire.periodOptions
