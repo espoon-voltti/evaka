@@ -49,6 +49,10 @@ dependencies {
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
+
+        // These constraints are needed for CVE fixes
+        api("ch.qos.logback:logback-classic:1.5.19")
+        api("ch.qos.logback:logback-core:1.5.19")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.20.0"))
