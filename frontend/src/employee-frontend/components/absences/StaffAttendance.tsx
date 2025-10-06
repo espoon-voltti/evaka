@@ -8,31 +8,28 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { isLoading, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import type { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
 import type { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { useDebouncedSave } from 'lib-common/utils/useDebouncedSave'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
-import {
-  getStaffAttendancesByGroup,
-  upsertStaffAttendance
-} from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 
 import { DisabledCell } from './MonthCalendarCell'
-
-const getStaffAttendancesByGroupResult = wrapResult(getStaffAttendancesByGroup)
-const upsertStaffAttendanceResult = wrapResult(upsertStaffAttendance)
+import {
+  getStaffAttendancesByGroupQuery,
+  upsertStaffAttendanceMutation
+} from './queries'
 
 interface Props {
   groupId: GroupId
@@ -47,16 +44,19 @@ export default React.memo(function StaffAttendance({
   days,
   emptyCols
 }: Props) {
-  const [attendance] = useApiState(() => {
-    const year = selectedDate.getYear()
-    const month = selectedDate.getMonth()
+  const year = selectedDate.getYear()
+  const month = selectedDate.getMonth()
+  const attendance = useQueryResult(
+    getStaffAttendancesByGroupQuery({ groupId, year, month })
+  )
 
-    return getStaffAttendancesByGroupResult({ groupId, year, month })
-  }, [groupId, selectedDate])
+  const { mutateAsync: updateAttendanceMutation } = useMutationResult(
+    upsertStaffAttendanceMutation
+  )
 
   const updateAttendance = useCallback(
     (date: LocalDate, count: number | null) =>
-      upsertStaffAttendanceResult({
+      updateAttendanceMutation({
         groupId,
         body: {
           groupId,
@@ -64,7 +64,7 @@ export default React.memo(function StaffAttendance({
           count
         }
       }),
-    [groupId]
+    [groupId, updateAttendanceMutation]
   )
 
   return (
