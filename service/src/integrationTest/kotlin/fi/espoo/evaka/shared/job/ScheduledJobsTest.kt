@@ -22,8 +22,12 @@ import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reservations.getReservationsCitizen
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -37,12 +41,16 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_5
@@ -62,6 +70,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -80,6 +89,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.insert(snDefaultDaycare)
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)
@@ -663,6 +673,180 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertNotNull(note2AfterCleanup)
             assertEquals(validNoteId, note2AfterCleanup.id)
         }
+    }
+
+    @Test
+    fun removeInvalidatedShiftCareReservations() {
+        val mockClock = MockEvakaClock(2024, 12, 2, 0, 15)
+        val monday = mockClock.today()
+
+        val standardDay = TimeRange(start = LocalTime.of(8, 0), LocalTime.of(17, 0))
+        val shiftCareDay = TimeRange(start = LocalTime.MIN, LocalTime.MAX)
+
+        val unit =
+            DevDaycare(
+                id = DaycareId(UUID.randomUUID()),
+                areaId = testArea.id,
+                operationTimes = List(5) { standardDay } + List(2) { null },
+                shiftCareOperationTimes = List(7) { shiftCareDay },
+                shiftCareOpenOnHolidays = true,
+            )
+        val placement1 =
+            DevPlacement(
+                childId = testChild_1.id,
+                unitId = unit.id,
+                startDate = monday.minusDays(7),
+                endDate = monday.plusDays(7),
+            )
+
+        val placement2 =
+            DevPlacement(
+                childId = testChild_2.id,
+                unitId = unit.id,
+                startDate = monday.minusDays(7),
+                endDate = monday.plusDays(7),
+            )
+
+        val shiftCareReservation =
+            DevReservation(
+                childId = testChild_2.id,
+                date = monday.plusDays(2),
+                startTime = shiftCareDay.start.inner,
+                endTime = shiftCareDay.end.inner,
+                createdBy = serviceWorker.evakaUserId,
+            )
+
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.insertGuardian(testAdult_1.id, testChild_2.id)
+            tx.insert(unit)
+            tx.insert(placement1)
+            tx.insert(placement2)
+
+            // child 1 has full shift care
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement1.id,
+                    startDate = placement1.startDate,
+                    endDate = placement1.endDate,
+                    shiftCare = ShiftCareType.FULL,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = serviceWorker.evakaUserId,
+                )
+            )
+
+            // child 2 has no shift care and only mon-sat service need coverage
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement2.id,
+                    startDate = monday,
+                    endDate = monday.plusDays(5),
+                    shiftCare = ShiftCareType.NONE,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = serviceWorker.evakaUserId,
+                )
+            )
+
+            // add same reservations for both children
+            listOf(testChild_1, testChild_2).forEach {
+                // wednesday a shift care reservation
+                tx.insert(
+                    shiftCareReservation.copy(
+                        id = AttendanceReservationId(UUID.randomUUID()),
+                        childId = it.id,
+                    )
+                )
+
+                // thursday an empty reservation
+                tx.insert(
+                    shiftCareReservation.copy(
+                        id = AttendanceReservationId(UUID.randomUUID()),
+                        date = monday.plusDays(3),
+                        startTime = null,
+                        endTime = null,
+                        childId = it.id,
+                    )
+                )
+
+                // friday is a holiday, shift care reservation
+                tx.insert(
+                    shiftCareReservation.copy(
+                        id = AttendanceReservationId(UUID.randomUUID()),
+                        date = monday.plusDays(4),
+                        childId = it.id,
+                    )
+                )
+
+                // saturday not a standard operation day, shift care reservation
+                tx.insert(
+                    shiftCareReservation.copy(
+                        id = AttendanceReservationId(UUID.randomUUID()),
+                        date = monday.plusDays(5),
+                        childId = it.id,
+                    )
+                )
+
+                // sunday not a standard operation day, shift care reservation
+                tx.insert(
+                    shiftCareReservation.copy(
+                        id = AttendanceReservationId(UUID.randomUUID()),
+                        date = monday.plusDays(6),
+                        childId = it.id,
+                    )
+                )
+            }
+        }
+
+        val reservationsBefore =
+            db.read {
+                    it.getReservationsCitizen(
+                        guardianId = testAdult_1.id,
+                        today = mockClock.today(),
+                        range = FiniteDateRange(monday, monday.plusWeeks(1)),
+                    )
+                }
+                .map { Triple(it.childId, it.date, it.reservation.asTimeRange()) }
+
+        assertThat(reservationsBefore)
+            .containsExactlyInAnyOrderElementsOf(
+                listOf(testChild_1, testChild_2)
+                    .map {
+                        listOf(
+                            Triple(it.id, monday.plusDays(2), shiftCareDay),
+                            Triple(it.id, monday.plusDays(3), null),
+                            Triple(it.id, monday.plusDays(4), shiftCareDay),
+                            Triple(it.id, monday.plusDays(5), shiftCareDay),
+                            Triple(it.id, monday.plusDays(6), shiftCareDay),
+                        )
+                    }
+                    .flatten()
+            )
+
+        scheduledJobs.removeInvalidatedShiftCareReservations(db, mockClock)
+
+        val reservationsAfter =
+            db.read {
+                    it.getReservationsCitizen(
+                        guardianId = testAdult_1.id,
+                        today = mockClock.today(),
+                        range = FiniteDateRange(monday, monday.plusWeeks(1)),
+                    )
+                }
+                .map { Triple(it.childId, it.date, it.reservation.asTimeRange()) }
+
+        // assert that only child 2's non-normal operating days have been removed
+        assertThat(reservationsAfter)
+            .containsExactlyInAnyOrderElementsOf(
+                listOf(
+                    Triple(testChild_1.id, monday.plusDays(2), shiftCareDay),
+                    Triple(testChild_1.id, monday.plusDays(3), null),
+                    Triple(testChild_1.id, monday.plusDays(4), shiftCareDay),
+                    Triple(testChild_1.id, monday.plusDays(5), shiftCareDay),
+                    Triple(testChild_1.id, monday.plusDays(6), shiftCareDay),
+                    Triple(testChild_2.id, monday.plusDays(2), shiftCareDay),
+                    Triple(testChild_2.id, monday.plusDays(3), null),
+                )
+            )
     }
 
     private fun createTransferApplication(
