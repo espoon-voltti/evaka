@@ -86,7 +86,8 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             mtp.folder_id, 
             count(mt.id) AS count
         FROM message_account acc
-            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
+            LEFT JOIN daycare_group dg ON dg.id = acc.daycare_group_id
+            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)} AND da.daycare_id = dg.daycare_id
             JOIN message_recipients mr ON mr.recipient_id = acc.id
             JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
             JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
