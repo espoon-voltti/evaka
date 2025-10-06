@@ -73,7 +73,8 @@ export default React.memo(function NonSsnChildren() {
               data={rows.map((row) => ({
                 ...row,
                 dateOfBirth: row.dateOfBirth.format(),
-                lastSentToVarda: row.lastSentToVarda?.format() ?? '-'
+                lastSentToVarda: row.lastSentToVarda?.format() ?? '-',
+                lastSentToKoski: row.lastSentToKoski?.format() ?? '-'
               }))}
               columns={[
                 {
@@ -95,6 +96,10 @@ export default React.memo(function NonSsnChildren() {
                 {
                   label: i18n.reports.nonSsnChildren.lastSentToVarda,
                   value: (row) => row.lastSentToVarda
+                },
+                {
+                  label: i18n.reports.nonSsnChildren.lastSentToKoski,
+                  value: (row) => row.lastSentToKoski
                 }
               ]}
               filename={`Hetuttomat lapset ${LocalDate.todayInHelsinkiTz().formatIso()}.csv`}
@@ -132,7 +137,7 @@ export default React.memo(function NonSsnChildren() {
                   <SortableTh
                     sorted={
                       isEqual(sortColumns, [
-                        'existingPersonOid',
+                        'ophPersonOid',
                         'lastName',
                         'firstName'
                       ])
@@ -148,7 +153,7 @@ export default React.memo(function NonSsnChildren() {
                   <SortableTh
                     sorted={
                       isEqual(sortColumns, [
-                        'vardaOid',
+                        'lastSentToVarda',
                         'lastName',
                         'firstName'
                       ])
@@ -160,6 +165,22 @@ export default React.memo(function NonSsnChildren() {
                     }
                   >
                     {i18n.reports.nonSsnChildren.lastSentToVarda}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      isEqual(sortColumns, [
+                        'lastSentToKoski',
+                        'lastName',
+                        'firstName'
+                      ])
+                        ? sortDirection
+                        : undefined
+                    }
+                    onClick={() =>
+                      sortBy(['lastSentToKoski', 'lastName', 'firstName'])
+                    }
+                  >
+                    {i18n.reports.nonSsnChildren.lastSentToKoski}
                   </SortableTh>
                 </Tr>
               </Thead>
@@ -175,6 +196,9 @@ export default React.memo(function NonSsnChildren() {
                     <Td data-qa="oph-person-oid">{row.ophPersonOid}</Td>
                     <Td data-qa="last-sent-to-varda">
                       {row.lastSentToVarda?.format() ?? '-'}
+                    </Td>
+                    <Td data-qa="last-sent-to-koski">
+                      {row.lastSentToKoski?.format() ?? '-'}
                     </Td>
                   </Tr>
                 ))}

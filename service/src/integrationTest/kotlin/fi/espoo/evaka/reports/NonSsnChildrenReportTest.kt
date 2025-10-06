@@ -114,6 +114,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     dateOfBirth = jackieNoSsn.dateOfBirth,
                     ophPersonOid = jackieNoSsn.ophPersonOid,
                     lastSentToVarda = now,
+                    lastSentToKoski = null,
                 ),
                 NonSsnChildrenReportRow(
                     childId = jimmyNoSsn.id,
@@ -122,6 +123,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     dateOfBirth = jimmyNoSsn.dateOfBirth,
                     ophPersonOid = null,
                     lastSentToVarda = null,
+                    lastSentToKoski = null,
                 ),
             )
         val result =

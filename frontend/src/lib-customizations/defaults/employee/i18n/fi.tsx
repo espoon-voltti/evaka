@@ -4476,6 +4476,7 @@ export const fi = {
       dateOfBirth: 'Syntymäpäivä',
       personOid: 'Lapsen tietojen OID',
       lastSentToVarda: 'Viety Vardaan viimeksi',
+      lastSentToKoski: 'Viety Koskeen viimeksi',
       total: 'Yhteensä'
     },
     placementCount: {
