@@ -2604,6 +2604,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
             created = feeDecision.created,
             documentContainsContactInfo = false,
+            archivedAt = null,
         )
 
     private fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary =

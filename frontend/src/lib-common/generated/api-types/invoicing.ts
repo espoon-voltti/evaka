@@ -138,6 +138,7 @@ export interface FeeAlterationWithPermittedActions {
 export interface FeeDecision {
   approvedAt: HelsinkiDateTime | null
   approvedById: EmployeeId | null
+  archivedAt: HelsinkiDateTime | null
   children: FeeDecisionChild[]
   created: HelsinkiDateTime
   decisionHandlerId: EmployeeId | null
@@ -201,6 +202,7 @@ export interface FeeDecisionChildDetailed {
 export interface FeeDecisionDetailed {
   approvedAt: HelsinkiDateTime | null
   approvedBy: EmployeeWithName | null
+  archivedAt: HelsinkiDateTime | null
   children: FeeDecisionChildDetailed[]
   created: HelsinkiDateTime
   decisionNumber: number | null
@@ -1001,6 +1003,7 @@ export interface UnitData {
 export interface VoucherValueDecisionDetailed {
   approvedAt: HelsinkiDateTime | null
   approvedBy: EmployeeWithName | null
+  archivedAt: HelsinkiDateTime | null
   assistanceNeedCoefficient: number
   baseCoPayment: number
   baseValue: number
@@ -1133,6 +1136,7 @@ export type VoucherValueDecisionStatus =
 export interface VoucherValueDecisionSummary {
   annullingDecision: boolean
   approvedAt: HelsinkiDateTime | null
+  archivedAt: HelsinkiDateTime | null
   child: PersonBasic
   created: HelsinkiDateTime
   decisionNumber: number | null
@@ -1202,6 +1206,7 @@ export function deserializeJsonFeeDecision(json: JsonOf<FeeDecision>): FeeDecisi
   return {
     ...json,
     approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     children: json.children.map(e => deserializeJsonFeeDecisionChild(e)),
     created: HelsinkiDateTime.parseIso(json.created),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
@@ -1232,6 +1237,7 @@ export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetai
   return {
     ...json,
     approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     children: json.children.map(e => deserializeJsonFeeDecisionChildDetailed(e)),
     created: HelsinkiDateTime.parseIso(json.created),
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
@@ -1536,6 +1542,7 @@ export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<Voucher
   return {
     ...json,
     approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     child: deserializeJsonPersonDetailed(json.child),
     created: HelsinkiDateTime.parseIso(json.created),
     headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
@@ -1559,6 +1566,7 @@ export function deserializeJsonVoucherValueDecisionSummary(json: JsonOf<VoucherV
   return {
     ...json,
     approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    archivedAt: (json.archivedAt != null) ? HelsinkiDateTime.parseIso(json.archivedAt) : null,
     child: deserializeJsonPersonBasic(json.child),
     created: HelsinkiDateTime.parseIso(json.created),
     headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),

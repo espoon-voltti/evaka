@@ -12,6 +12,7 @@ import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -19,7 +20,9 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faPlus } from 'lib-icons'
+import { faBoxArchive } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -27,7 +30,8 @@ import { renderResult } from '../async-rendering'
 
 import {
   generateRetroactiveVoucherValueDecisionsMutation,
-  headOfFamilyVoucherValueDecisionsQuery
+  headOfFamilyVoucherValueDecisionsQuery,
+  planArchiveVoucherValueDecisionMutation
 } from './queries'
 import { PersonContext } from './state'
 
@@ -72,6 +76,9 @@ export default React.memo(function PersonVoucherValueDecisions({ id }: Props) {
               <Th>{i18n.valueDecisions.table.createdAt}</Th>
               <Th>{i18n.valueDecisions.table.sentAt}</Th>
               <Th>{i18n.valueDecisions.table.status}</Th>
+              {featureFlags.archiveIntegration?.voucherValueDecisions && (
+                <Th>{i18n.personProfile.decision.archived}</Th>
+              )}
             </Tr>
           </Thead>
           <Tbody>
@@ -111,6 +118,22 @@ export default React.memo(function PersonVoucherValueDecisions({ id }: Props) {
                     {decision.sentAt?.toLocalDate().format() ?? ''}
                   </Td>
                   <Td>{i18n.valueDecision.status[decision.status]}</Td>
+                  {featureFlags.archiveIntegration?.voucherValueDecisions && (
+                    <Td>
+                      {decision.archivedAt !== null ? (
+                        decision.archivedAt.toLocalDate().format()
+                      ) : (
+                        <MutateButton
+                          icon={faBoxArchive}
+                          text={i18n.personProfile.decision.archive}
+                          mutation={planArchiveVoucherValueDecisionMutation}
+                          onClick={() => ({ id: decision.id })}
+                          data-qa="archive-button"
+                          disabled={decision.status !== 'SENT'}
+                        />
+                      )}
+                    </Td>
+                  )}
                 </Tr>
               )
             })}

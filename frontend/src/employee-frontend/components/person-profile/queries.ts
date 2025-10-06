@@ -36,6 +36,8 @@ import {
   getIncomeTypeOptions,
   getPersonIncomes,
   getPersonInvoiceCorrections,
+  planArchiveFeeDecision,
+  planArchiveVoucherValueDecision,
   updateIncome,
   updateInvoiceCorrectionNote
 } from '../../generated/api-clients/invoicing'
@@ -267,3 +269,7 @@ export const guardianApplicationSummariesQuery = q.query(
 export const decisionsByGuardianQuery = q.query(getDecisionsByGuardian)
 
 export const planArchiveDecisionMutation = q.mutation(planArchiveDecision)
+export const planArchiveFeeDecisionMutation = q.mutation(planArchiveFeeDecision)
+export const planArchiveVoucherValueDecisionMutation = q.mutation(
+  planArchiveVoucherValueDecision
+)

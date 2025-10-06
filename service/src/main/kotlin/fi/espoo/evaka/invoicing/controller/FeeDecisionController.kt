@@ -7,6 +7,8 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.document.archival.validateArchivability
 import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
@@ -79,6 +81,7 @@ class FeeDecisionController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val evakaEnv: EvakaEnv,
 ) {
     @PostMapping("/search")
     fun searchFeeDecisions(
@@ -374,6 +377,35 @@ class FeeDecisionController(
             }
         }
         Audit.FeeDecisionSetType.log(targetId = AuditId(id), meta = mapOf("type" to request.type))
+    }
+
+    @PostMapping("/{id}/archive")
+    fun planArchiveFeeDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: FeeDecisionId,
+        archivalEnabled: Boolean = evakaEnv.archivalEnabled,
+    ) {
+        if (!archivalEnabled) {
+            throw BadRequest("Archival is not enabled")
+        }
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.FeeDecision.ARCHIVE, id)
+
+                val decision = tx.getFeeDecision(id) ?: throw NotFound("Fee decision $id not found")
+                validateArchivability(decision)
+
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = listOf(AsyncJob.ArchiveFeeDecision(decision.id, user)),
+                    runAt = clock.now(),
+                    retryCount = 1,
+                )
+            }
+        }
     }
 }
 

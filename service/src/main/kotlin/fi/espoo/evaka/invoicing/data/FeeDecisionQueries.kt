@@ -60,6 +60,7 @@ SELECT
     decision.decision_handler_id,
     decision.sent_at,
     decision.difference,
+    decision.archived_at,
     COALESCE((
         SELECT jsonb_agg(jsonb_build_object(
             'child', jsonb_build_object(
@@ -114,6 +115,7 @@ SELECT
     decision.sent_at,
     decision.head_of_family_id AS head_id,
     decision.document_contains_contact_info,
+    decision.archived_at,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,
@@ -872,3 +874,9 @@ data class FeeDecisionCitizenInfoRow(
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?,
 )
+
+fun Database.Transaction.markFeeDecisionAsArchived(id: FeeDecisionId, now: HelsinkiDateTime) =
+    createUpdate {
+            sql("UPDATE fee_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}")
+        }
+        .updateExactlyOne()

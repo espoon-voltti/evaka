@@ -1728,7 +1728,8 @@ INSERT INTO fee_decision (
     sent_at,
     cancelled_at,
     total_fee,
-    difference
+    difference,
+    process_id
 ) VALUES (
     ${bind(decision.id)},
     ${bind(decision.status)},
@@ -1748,7 +1749,8 @@ INSERT INTO fee_decision (
     ${bind(decision.sentAt)},
     ${bind(decision.cancelledAt)},
     ${bind(decision.totalFee)},
-    ${bind(decision.difference)}
+    ${bind(decision.difference)},
+    ${bind(decision.processId)}
 )
 RETURNING id
 """
@@ -1852,7 +1854,8 @@ INSERT INTO voucher_value_decision (
     validity_updated_at,
     child_income,
     difference,
-    service_need_missing
+    service_need_missing,
+    process_id
 ) VALUES (
     ${bind(decision.id)},
     ${bind(decision.status)},
@@ -1894,7 +1897,8 @@ INSERT INTO voucher_value_decision (
     ${bind(decision.validityUpdatedAt)},
     ${bindJson(decision.childIncome)},
     ${bind(decision.difference)},
-    ${bind(decision.serviceNeedMissing)}
+    ${bind(decision.serviceNeedMissing)},
+    ${bind(decision.processId)}
 )
 RETURNING id
 """

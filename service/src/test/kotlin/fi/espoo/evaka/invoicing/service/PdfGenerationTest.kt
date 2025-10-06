@@ -115,6 +115,7 @@ class PdfGenerationTest {
             financeDecisionHandlerFirstName = null,
             financeDecisionHandlerLastName = null,
             documentContainsContactInfo = false,
+            archivedAt = null,
         )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
@@ -199,6 +200,7 @@ class PdfGenerationTest {
             finalCoPayment = 12000,
             siblingDiscount = 0,
             documentContainsContactInfo = false,
+            archivedAt = null,
         )
 
     @Test

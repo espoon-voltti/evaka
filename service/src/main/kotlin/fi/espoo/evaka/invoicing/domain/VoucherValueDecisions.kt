@@ -235,6 +235,7 @@ data class VoucherValueDecisionDetailed(
     val partnerIsCodebtor: Boolean? = false,
     // True if the document is a legacy document that may contain guardian name and address.
     val documentContainsContactInfo: Boolean,
+    val archivedAt: HelsinkiDateTime?,
 ) {
     val incomeEffect
         get() =
@@ -290,6 +291,7 @@ data class VoucherValueDecisionSummary(
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val difference: Set<VoucherValueDecisionDifference>,
+    val archivedAt: HelsinkiDateTime?,
 ) {
     val annullingDecision
         get() = this.voucherValue == 0

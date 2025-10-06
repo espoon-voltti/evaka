@@ -310,6 +310,8 @@ interface BaseFeatureFlags {
   archiveIntegration?: {
     decisions?: boolean
     childDocuments?: boolean
+    feeDecisions?: boolean
+    voucherValueDecisions?: boolean
   }
 
   /**

@@ -13,12 +13,15 @@ import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { cancelMutation, useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
+import { faBoxArchive } from 'lib-icons'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -28,7 +31,8 @@ import { renderResult } from '../async-rendering'
 import { DateTd, StatusTd } from './common'
 import {
   generateRetroactiveFeeDecisionsMutation,
-  headOfFamilyFeeDecisionsQuery
+  headOfFamilyFeeDecisionsQuery,
+  planArchiveFeeDecisionMutation
 } from './queries'
 import { PersonContext } from './state'
 
@@ -70,6 +74,9 @@ export default React.memo(function PersonFeeDecisions({ id }: Props) {
               <Th>{i18n.feeDecisions.table.createdAt}</Th>
               <Th>{i18n.feeDecisions.table.sentAt}</Th>
               <Th>{i18n.feeDecisions.table.status}</Th>
+              {featureFlags.archiveIntegration?.feeDecisions && (
+                <Th>{i18n.personProfile.decision.archived}</Th>
+              )}
             </Tr>
           </Thead>
           <Tbody>
@@ -93,6 +100,22 @@ export default React.memo(function PersonFeeDecisions({ id }: Props) {
                 <StatusTd>
                   {i18n.feeDecision.status[feeDecision.status]}
                 </StatusTd>
+                {featureFlags.archiveIntegration?.feeDecisions && (
+                  <Td>
+                    {feeDecision.archivedAt !== null ? (
+                      feeDecision.archivedAt.toLocalDate().format()
+                    ) : (
+                      <MutateButton
+                        icon={faBoxArchive}
+                        text={i18n.personProfile.decision.archive}
+                        mutation={planArchiveFeeDecisionMutation}
+                        onClick={() => ({ id: feeDecision.id })}
+                        data-qa="archive-button"
+                        disabled={feeDecision.status !== 'SENT'}
+                      />
+                    )}
+                  </Td>
+                )}
               </Tr>
             ))}
           </Tbody>

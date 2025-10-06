@@ -293,6 +293,7 @@ export type FeeAlteration =
   | 'UPLOAD_ATTACHMENT'
 
 export type FeeDecision =
+  | 'ARCHIVE'
   | 'IGNORE'
   | 'READ'
   | 'READ_METADATA'
@@ -519,6 +520,7 @@ export type Unit =
   | 'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
 
 export type VoucherValueDecision =
+  | 'ARCHIVE'
   | 'IGNORE'
   | 'READ'
   | 'READ_METADATA'
