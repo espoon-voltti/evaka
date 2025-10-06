@@ -11,12 +11,13 @@ import styled from 'styled-components'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faChevronUp } from 'lib-icons'
 import { faCheck, faChevronDown, faDash } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'
 import { IconOnlyButton } from '../buttons/IconOnlyButton'
+import InputField from '../form/InputField'
 
 const DropdownContainer = styled.div`
   border: 1px solid ${(p) => p.theme.colors.grayscale.g70};
@@ -152,6 +153,7 @@ export interface TreeNode {
   key: string
   checked: boolean
   children: TreeNode[]
+  hidden?: boolean
 }
 
 export const sortTreeByText = <N extends TreeNode>(tree: N[]): N[] =>
@@ -168,6 +170,7 @@ interface TreeDropdownProps<N extends TreeNode> {
   onChange: (node: N[]) => void
   'data-qa'?: string
   placeholder: string
+  searchable?: boolean
 }
 
 const updateNodeCheckedRecursively = <N extends TreeNode>(
@@ -215,7 +218,7 @@ function TreeLevel_<N extends TreeNode>({
   }
 
   return (
-    <div>
+    <div style={node.hidden ? { display: 'none' } : undefined}>
       <CheckboxRow alignItems="center">
         <Box data-qa={`tree-checkbox-${node.key}`}>
           <CheckboxInput
@@ -293,14 +296,38 @@ function TreeDropdown<N extends TreeNode>({
   tree,
   onChange,
   'data-qa': dataQa,
-  placeholder
+  placeholder,
+  searchable
 }: TreeDropdownProps<N>) {
-  const i18n = useTranslations().treeDropdown
+  const i18n = useTranslations()
   const [active, setActive] = useState(false)
+  const [textSearch, setTextSearch] = useState('')
+
+  const searchedTree = useMemo(() => {
+    if (textSearch === '') return tree
+
+    const hideNonMatchingChildren = (node: TreeNode): TreeNode => {
+      const children = node.children.map(hideNonMatchingChildren)
+
+      return {
+        ...node,
+        hidden:
+          !node.text.toLowerCase().includes(textSearch.toLowerCase()) &&
+          children.every(({ hidden }) => hidden),
+        children
+      }
+    }
+
+    return tree
+      .map(hideNonMatchingChildren)
+      .filter((child): child is N => child !== null)
+  }, [textSearch, tree])
 
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    setTextSearch('')
+
     if (active) {
       const listener = (ev: MouseEvent) => {
         if (
@@ -385,13 +412,27 @@ function TreeDropdown<N extends TreeNode>({
             treeValue
           )}
         </DropdownContainerContent>
-        <IconOnlyButton icon={faChevronDown} aria-label={i18n.expandDropdown} />
+        <IconOnlyButton
+          icon={faChevronDown}
+          aria-label={i18n.treeDropdown.expandDropdown}
+        />
       </DropdownContainer>
       {active && (
         <DropdownTreeListContainer
           data-qa={dataQa ? `${dataQa}-tree` : undefined}
         >
-          {tree.map((node, i) => (
+          {!searchable && (
+            <>
+              <InputField
+                value={textSearch}
+                onChange={setTextSearch}
+                placeholder={`${i18n.common.search}...`}
+                autoFocus
+              />
+              <Gap size="xs" />
+            </>
+          )}
+          {searchedTree.map((node, i) => (
             <TreeLevel<N>
               node={node}
               key={node.key}
@@ -403,7 +444,7 @@ function TreeDropdown<N extends TreeNode>({
                 )
               }
               defaultExpanded={tree.length === 1}
-              labels={i18n}
+              labels={i18n.treeDropdown}
             />
           ))}
         </DropdownTreeListContainer>
