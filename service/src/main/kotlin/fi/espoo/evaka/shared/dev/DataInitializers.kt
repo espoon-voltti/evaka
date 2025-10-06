@@ -129,7 +129,7 @@ fun Database.Transaction.resetDatabase() {
     }
 }
 
-const val INSERT_APPLICATION_PLACEMENT_TEST_DATA = true
+const val INSERT_APPLICATION_PLACEMENT_TEST_DATA = false
 
 fun Database.Transaction.ensureDevData() {
     if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
