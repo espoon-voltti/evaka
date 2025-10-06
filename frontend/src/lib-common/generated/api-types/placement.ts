@@ -91,6 +91,7 @@ export interface DaycareGroupPlacement {
 */
 export interface DaycarePlacementWithDetails {
   child: ChildBasics
+  createdBy: EvakaUser | null
   daycare: DaycareBasics
   defaultServiceNeedOption: ServiceNeedOption | null
   endDate: LocalDate
@@ -102,6 +103,7 @@ export interface DaycarePlacementWithDetails {
   modifiedBy: EvakaUser | null
   placeGuarantee: boolean
   serviceNeeds: ServiceNeed[]
+  source: PlacementSourceCreatedBy
   startDate: LocalDate
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
@@ -273,6 +275,16 @@ export interface PlacementResponse {
   permittedServiceNeedActions: Partial<Record<ServiceNeedId, Action.ServiceNeed[]>>
   placements: DaycarePlacementWithDetails[]
 }
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementSourceCreatedBy
+*/
+export type PlacementSourceCreatedBy =
+  | 'CITIZEN'
+  | 'EMPLOYEE_PAPER'
+  | 'EMPLOYEE_MANUAL'
+  | 'SYSTEM'
+  | 'UNKNOWN'
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementSummary
