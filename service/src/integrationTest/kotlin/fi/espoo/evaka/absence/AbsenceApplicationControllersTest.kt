@@ -921,52 +921,11 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
         }
 
         @Test
-        fun `unit supervisor`() {
+        fun `unit roles`() {
             val unitSupervisor = DevEmployee()
-            db.transaction { tx ->
-                tx.insert(unitSupervisor, unitRoles = mapOf(unit1.id to UserRole.UNIT_SUPERVISOR))
-            }
-
-            assertThrows<Forbidden> { getAbsenceApplications(unitSupervisor.user) }
-            assertThrows<Forbidden> {
-                getAbsenceApplications(
-                    unitSupervisor.user,
-                    status = AbsenceApplicationStatus.WAITING_DECISION,
-                )
-            }
-            assertEquals(
-                emptyList(),
-                getAbsenceApplications(unitSupervisor.user, unitId = unit1.id),
-            )
-            assertThrows<Forbidden> {
-                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id)
-            }
-            assertEquals(
-                emptyList(),
-                getAbsenceApplications(unitSupervisor.user, childId = child11.id),
-            )
-            assertThrows<Forbidden> {
-                getAbsenceApplications(unitSupervisor.user, childId = child2.id)
-            }
-            assertEquals(
-                emptyList(),
-                getAbsenceApplications(unitSupervisor.user, unitId = unit1.id, childId = child11.id),
-            )
-            assertThrows<Forbidden> {
-                getAbsenceApplications(unitSupervisor.user, unitId = unit1.id, childId = child2.id)
-            }
-            assertThrows<Forbidden> {
-                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id, childId = child11.id)
-            }
-            assertThrows<Forbidden> {
-                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id, childId = child2.id)
-            }
-        }
-
-        @Test
-        fun staff() {
             val staff = DevEmployee()
             db.transaction { tx ->
+                tx.insert(unitSupervisor, unitRoles = mapOf(unit1.id to UserRole.UNIT_SUPERVISOR))
                 tx.insert(
                     staff,
                     unitRoles = mapOf(unit1.id to UserRole.STAFF),
@@ -1016,7 +975,72 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                         )
                     )
                 }
+            val application4 =
+                db.transaction { tx ->
+                    tx.insert(
+                        base.copy(
+                            id = AbsenceApplicationId(UUID.randomUUID()),
+                            startDate = clock.today().plusYears(1).plusDays(1),
+                            endDate = clock.today().plusYears(1).plusDays(3),
+                        )
+                    )
+                }
 
+            // unit supervisor
+            assertThrows<Forbidden> { getAbsenceApplications(unitSupervisor.user) }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(
+                    unitSupervisor.user,
+                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                )
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id)
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, childId = child2.id)
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, unitId = unit1.id, childId = child2.id)
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id, childId = child11.id)
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id, childId = child2.id)
+            }
+            assertThat(getAbsenceApplications(unitSupervisor.user, unitId = unit1.id))
+                .extracting({ it.data.child.id }, { it.data.endDate })
+                .containsExactlyInAnyOrder(
+                    Tuple(child11.id, clock.today().plusWeeks(1).minusDays(1)),
+                    Tuple(child11.id, clock.today().plusWeeks(1)),
+                    Tuple(child12.id, clock.today()),
+                )
+            assertThat(getAbsenceApplications(unitSupervisor.user, childId = child11.id))
+                .extracting({ it.data.endDate }, { it.actions })
+                .containsExactlyInAnyOrder(
+                    Tuple(
+                        clock.today().plusWeeks(1).minusDays(1),
+                        setOf(
+                            Action.AbsenceApplication.READ,
+                            Action.AbsenceApplication.DECIDE,
+                            Action.AbsenceApplication.DECIDE_MAX_WEEK,
+                        ),
+                    ),
+                    Tuple(
+                        clock.today().plusWeeks(1),
+                        setOf(Action.AbsenceApplication.READ, Action.AbsenceApplication.DECIDE),
+                    ),
+                )
+            assertThrows<Forbidden> { acceptAbsenceApplication(unitSupervisor.user, application4) }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, unitId = unit2.id)
+            }
+            assertThrows<Forbidden> {
+                getAbsenceApplications(unitSupervisor.user, childId = child2.id)
+            }
+
+            // staff
             assertThat(getAbsenceApplications(staff.user, unitId = unit1.id))
                 .extracting({ it.data.child.id }, { it.data.endDate })
                 .containsExactlyInAnyOrder(
@@ -1035,11 +1059,16 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     ),
                     Tuple(clock.today().plusWeeks(1), setOf(Action.AbsenceApplication.READ)),
                 )
-            acceptAbsenceApplication(staff.user, application1)
             assertThrows<Forbidden> { acceptAbsenceApplication(staff.user, application2) }
             assertThrows<Forbidden> { acceptAbsenceApplication(staff.user, application3) }
+            assertThrows<Forbidden> { acceptAbsenceApplication(staff.user, application4) }
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, unitId = unit2.id) }
             assertThrows<Forbidden> { getAbsenceApplications(staff.user, childId = child2.id) }
+
+            // decide
+            acceptAbsenceApplication(staff.user, application1)
+            acceptAbsenceApplication(unitSupervisor.user, application2)
+            acceptAbsenceApplication(unitSupervisor.user, application3)
         }
 
         private fun getAbsenceApplications(
