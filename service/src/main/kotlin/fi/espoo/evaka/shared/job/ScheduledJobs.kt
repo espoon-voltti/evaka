@@ -299,7 +299,7 @@ enum class ScheduledJob(
      */
     RemoveInvalidatedShiftCareReservations(
         ScheduledJobs::removeInvalidatedShiftCareReservations,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 }
 

@@ -702,7 +702,7 @@ fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: L
                             WHERE (sn.shift_care IS NULL OR sn.shift_care = 'NONE') 
                             AND (ar.date = ANY (${bind(futureHolidays)})
                                 OR (ar.date >= ${bind(date)}
-                                    AND d.operation_days[extract(isodow FROM ar.date)] IS NULL
+                                    AND NOT (extract(isodow FROM ar.date) = ANY (d.operation_days))
                                 ))
                         )
                     """
