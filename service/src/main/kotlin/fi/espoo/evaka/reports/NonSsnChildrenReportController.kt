@@ -67,7 +67,7 @@ SELECT
     (
         SELECT max(ksr.updated)
         FROM koski_study_right ksr
-        WHERE ksr.child_id = pl.child_id
+        WHERE ksr.child_id = p.id
     ) AS last_sent_to_koski
 FROM person p
 LEFT JOIN varda_state v ON v.child_id = p.id
