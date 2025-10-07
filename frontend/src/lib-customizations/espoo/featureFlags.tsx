@@ -92,7 +92,7 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     discussionReservations: true,
-    jamixIntegration: true,
+    jamixIntegration: false,
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
     invoiceDisplayAccountNumber: true,
