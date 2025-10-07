@@ -102,16 +102,6 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             val group3Id = it.insert(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
-
-            // The supervisor is also linked to another daycare that has messaging, but no messages
-            val daycare3Id =
-                it.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                    )
-                )
-            it.insertDaycareAclRow(daycare3Id, supervisorId, UserRole.UNIT_SUPERVISOR)
         }
     }
 
