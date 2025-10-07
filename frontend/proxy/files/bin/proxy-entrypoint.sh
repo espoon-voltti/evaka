@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/bash
 
 # SPDX-FileCopyrightText: 2017-2021 City of Espoo
 #
@@ -63,8 +63,41 @@ if [ "${DEBUG:-false}" = "true" ]; then
   cat /etc/nginx/nginx.conf
 fi
 
-if [ "${BASIC_AUTH_ENABLED:-false}" = 'true' ]; then
+if [ "${BASIC_AUTH_ENABLED:-false}" = "true" ]; then
   echo "$BASIC_AUTH_CREDENTIALS" > /etc/nginx/.htpasswd
+fi
+
+if test -n "${WAIT_UPSTREAM_URLS:-}"; then
+  IFS=';' read -ra URLS <<< "$WAIT_UPSTREAM_URLS"
+  for URL in "${URLS[@]}"; do
+    HOST_PORT_PATH="${URL#*://}"      # host:port/path
+    HOST_PORT="${HOST_PORT_PATH%%/*}" # host:port
+    HOST="${HOST_PORT%%:*}"
+    PORT="${HOST_PORT##*:}"
+
+    ready="false"
+    for _try in $(seq "${MAX_RETRIES:-60}"); do
+      echo "Checking ${URL} ..."
+
+      output="$(bash -c "exec 3<>/dev/tcp/${HOST}/${PORT}; echo -e \"GET ${URL} HTTP/1.0\r\n\r\n\" >&3; timeout 5 cat <&3" 2> /dev/null || true)"
+
+      if echo "$output" | grep -q 'HTTP/1.1 200' ; then
+          echo "$URL is ready!"
+          ready="true"
+          break
+      else
+        echo -n "URL ${URL} not ready: "
+        echo "$output" | grep 'HTTP' || echo "Connection failed"
+      fi
+
+      sleep "${RETRY_DELAY:-5}"
+    done
+
+    if [ "$ready" = "false" ]; then
+      echo "ERROR: Waiting upstream ${URL} failed."
+      exit 1
+    fi
+  done
 fi
 
 exec "$@"
