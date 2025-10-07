@@ -69,12 +69,12 @@ SELECT
         FROM koski_study_right ksr
         WHERE ksr.child_id = pl.child_id
     ) AS last_sent_to_koski
-FROM placement pl
-JOIN person p ON p.id = pl.child_id
-LEFT JOIN varda_state v ON v.child_id = pl.child_id
-WHERE
-    p.social_security_number IS NULL AND
-    pl.end_date >= ${bind(examinationDate)}
+FROM person p
+LEFT JOIN varda_state v ON v.child_id = p.id
+WHERE p.social_security_number IS NULL AND EXISTS(
+    SELECT FROM placement pl
+    WHERE pl.child_id = p.id AND pl.end_date >= ${bind(examinationDate)}
+)
 """
             )
         }
