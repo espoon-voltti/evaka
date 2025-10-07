@@ -69,6 +69,7 @@ const TitleRowContainer = styled.div`
   position: sticky;
   top: 0;
   z-index: 3;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
 interface PaginationWrapperProps {
