@@ -86,9 +86,7 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             mtp.folder_id, 
             count(mt.id) AS count
         FROM message_account acc
-            LEFT JOIN limits l ON l.daycare_group_id = acc.daycare_group_id
-            LEFT JOIN daycare_group dg ON dg.id = acc.daycare_group_id
-            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)} AND da.daycare_id = dg.daycare_id
+            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
             JOIN message_recipients mr ON mr.recipient_id = acc.id
             JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
             JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
@@ -99,9 +97,9 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             (
                 mtp.folder_id IS NOT NULL OR
                 da.role = 'UNIT_SUPERVISOR' OR
-                mtp.last_message_timestamp >= l.access_limit OR
-                m.sent_at >= l.access_limit OR
-                NOT mt.is_copy
+                mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
+                mt.is_copy = false
             ) AND
             (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
             ${predicate(idFilter.forTable("acc"))}
