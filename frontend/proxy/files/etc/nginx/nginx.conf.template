@@ -19,7 +19,7 @@ events {
 http {
 {{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
     otel_exporter {
-        endpoint http://{{ .Env.DD_AGENT_HOST }}:4317;
+        endpoint {{ .Env.DD_AGENT_HOST }}:4317;
         interval 5s;
         batch_size 512;
         batch_count 4;
