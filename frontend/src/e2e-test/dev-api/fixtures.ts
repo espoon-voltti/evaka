@@ -3155,7 +3155,8 @@ export const feeDecisionsFixture = (
   decisionHandlerId: null,
   decisionNumber,
   documentKey,
-  created: HelsinkiDateTime.now()
+  created: HelsinkiDateTime.now(),
+  archivedAt: null
 })
 
 export const voucherValueDecisionsFixture = (

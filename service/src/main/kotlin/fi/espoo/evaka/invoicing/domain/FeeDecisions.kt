@@ -40,6 +40,7 @@ data class FeeDecision(
     val approvedAt: HelsinkiDateTime? = null,
     val decisionHandlerId: EmployeeId? = null,
     val sentAt: HelsinkiDateTime? = null,
+    val archivedAt: HelsinkiDateTime? = null,
     override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) : FinanceDecision<FeeDecision> {
     val totalFee
@@ -215,6 +216,7 @@ data class FeeDecisionDetailed(
     val partnerIsCodebtor: Boolean? = false,
     // True if the document is a legacy document that may contain guardian name and address.
     val documentContainsContactInfo: Boolean,
+    val archivedAt: HelsinkiDateTime?,
 ) {
     val totalFee
         get() = children.fold(0) { sum, part -> sum + part.finalFee }

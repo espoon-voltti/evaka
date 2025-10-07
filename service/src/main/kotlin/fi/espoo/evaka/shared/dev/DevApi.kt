@@ -2718,6 +2718,7 @@ data class DevFeeDecision(
     val cancelledAt: HelsinkiDateTime? = null,
     val totalFee: Int = 0,
     val difference: List<FeeDecisionDifference> = emptyList(),
+    val processId: CaseProcessId? = null,
 )
 
 data class DevFeeDecisionChild(
@@ -2752,7 +2753,7 @@ data class DevVoucherValueDecision(
     val headOfFamilyIncome: DecisionIncome? = null,
     val partnerIncome: DecisionIncome? = null,
     val familySize: Int = 2,
-    val feeThresholds: FeeThresholds = feeThresholds2020,
+    val feeThresholds: FeeDecisionThresholds = feeThresholds2020.getFeeDecisionThresholds(2),
     val documentKey: String? = null,
     val approvedBy: EvakaUserId? = null,
     val approvedAt: HelsinkiDateTime? = null,
@@ -2783,6 +2784,7 @@ data class DevVoucherValueDecision(
     val childIncome: DecisionIncome? = null,
     val difference: List<VoucherValueDecisionDifference> = emptyList(),
     val serviceNeedMissing: Boolean = false,
+    val processId: CaseProcessId? = null,
 )
 
 data class DevSfiMessageEvent(

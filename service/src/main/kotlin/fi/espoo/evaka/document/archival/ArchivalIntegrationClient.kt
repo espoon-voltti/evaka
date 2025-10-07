@@ -8,6 +8,8 @@ import fi.espoo.evaka.caseprocess.CaseProcess
 import fi.espoo.evaka.caseprocess.DocumentMetadata
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -18,6 +20,20 @@ interface ArchivalIntegrationClient {
         caseProcess: CaseProcess,
         child: PersonDTO,
         decision: Decision,
+        document: Document,
+        user: EvakaUser,
+    ): String?
+
+    fun uploadFeeDecisionToArchive(
+        caseProcess: CaseProcess,
+        decision: FeeDecisionDetailed,
+        document: Document,
+        user: EvakaUser,
+    ): String?
+
+    fun uploadVoucherValueDecisionToArchive(
+        caseProcess: CaseProcess,
+        decision: VoucherValueDecisionDetailed,
         document: Document,
         user: EvakaUser,
     ): String?
@@ -41,6 +57,24 @@ interface ArchivalIntegrationClient {
             user: EvakaUser,
         ): String {
             throw RuntimeException("Decision archival not in use")
+        }
+
+        override fun uploadFeeDecisionToArchive(
+            caseProcess: CaseProcess,
+            decision: FeeDecisionDetailed,
+            document: Document,
+            user: EvakaUser,
+        ): String {
+            throw RuntimeException("Fee decision archival not in use")
+        }
+
+        override fun uploadVoucherValueDecisionToArchive(
+            caseProcess: CaseProcess,
+            decision: VoucherValueDecisionDetailed,
+            document: Document,
+            user: EvakaUser,
+        ): String {
+            throw RuntimeException("Voucher value decision archival not in use")
         }
 
         override fun uploadChildDocumentToArchive(

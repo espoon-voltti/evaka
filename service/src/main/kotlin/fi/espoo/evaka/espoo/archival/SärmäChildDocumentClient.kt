@@ -9,6 +9,8 @@ import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.document.childdocument.*
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -27,6 +29,24 @@ class SärmäChildDocumentClient(private val uploadClient: ArchivalClient) :
         caseProcess: CaseProcess,
         child: PersonDTO,
         decision: Decision,
+        document: Document,
+        user: EvakaUser,
+    ): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun uploadFeeDecisionToArchive(
+        caseProcess: CaseProcess,
+        decision: FeeDecisionDetailed,
+        document: Document,
+        user: EvakaUser,
+    ): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun uploadVoucherValueDecisionToArchive(
+        caseProcess: CaseProcess,
+        decision: VoucherValueDecisionDetailed,
         document: Document,
         user: EvakaUser,
     ): String {

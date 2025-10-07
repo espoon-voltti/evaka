@@ -13,6 +13,7 @@ import fi.espoo.evaka.caseprocess.CaseProcessState
 import fi.espoo.evaka.caseprocess.getCaseProcessByVoucherValueDecisionId
 import fi.espoo.evaka.caseprocess.insertCaseProcess
 import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
+import fi.espoo.evaka.document.archival.validateArchivability
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
@@ -397,6 +398,43 @@ class VoucherValueDecisionController(
             }
         }
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
+    }
+
+    @PostMapping("/{id}/archive")
+    fun planArchiveVoucherValueDecision(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: VoucherValueDecisionId,
+        archivalEnabled: Boolean = evakaEnv.archivalEnabled,
+    ) {
+        if (!archivalEnabled) {
+            throw BadRequest("Archival is not enabled")
+        }
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.ARCHIVE,
+                    id,
+                )
+
+                val decision =
+                    tx.getVoucherValueDecision(id)
+                        ?: throw NotFound("Voucher value decision $id not found")
+                validateArchivability(decision)
+
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = listOf(AsyncJob.ArchiveVoucherValueDecision(decision.id, user)),
+                    runAt = clock.now(),
+                    retryCount = 1,
+                )
+            }
+        }
     }
 }
 

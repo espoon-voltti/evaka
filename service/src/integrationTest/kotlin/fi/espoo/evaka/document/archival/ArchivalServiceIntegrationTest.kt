@@ -21,6 +21,10 @@ import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.*
 import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
+import fi.espoo.evaka.invoicing.data.getFeeDecision
+import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentKey
@@ -30,10 +34,13 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.UiLanguage
@@ -68,6 +75,8 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     private val applicationId = ApplicationId(UUID.randomUUID())
     private val decisionId = DecisionId(UUID.randomUUID())
+    private val feeDecisionId = FeeDecisionId(UUID.randomUUID())
+    private val voucherValueDecisionId = VoucherValueDecisionId(UUID.randomUUID())
     private val templateId = DocumentTemplateId(UUID.randomUUID())
     private val documentId = ChildDocumentId(UUID.randomUUID())
     private val childId = PersonId(UUID.randomUUID())
@@ -255,6 +264,29 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     documentKey = "test-document-key",
                 )
             )
+            tx.insert(
+                DevFeeDecision(
+                    id = feeDecisionId,
+                    status = FeeDecisionStatus.SENT,
+                    validDuring = FiniteDateRange(LocalDate.now(), LocalDate.now()),
+                    headOfFamilyId = guardian.id,
+                    documentKey = "test-document-key",
+                    processId = process.id,
+                )
+            )
+            tx.insert(
+                DevVoucherValueDecision(
+                    id = voucherValueDecisionId,
+                    status = VoucherValueDecisionStatus.SENT,
+                    validFrom = LocalDate.now(),
+                    validTo = LocalDate.now(),
+                    headOfFamilyId = guardian.id,
+                    childId = childId,
+                    placementUnitId = unit.id,
+                    documentKey = "test-document-key",
+                    processId = process.id,
+                )
+            )
 
             val childDocument =
                 DevChildDocument(
@@ -311,13 +343,111 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             .uploadDecisionToArchive(any(), any(), any(), any(), any())
 
         // Execute the archive method and expect exception
-        assertThrows<RuntimeException> {
-            archivalService.uploadDecisionToArchive(db, clock, AsyncJob.ArchiveDecision(decisionId))
-        }
+        val exception =
+            assertThrows<RuntimeException> {
+                archivalService.uploadDecisionToArchive(
+                    db,
+                    clock,
+                    AsyncJob.ArchiveDecision(decisionId),
+                )
+            }
+        assertEquals("uploadDecisionToArchiveMock", exception.message)
 
         // Verify the document was NOT marked as archived in the database
         db.read { tx ->
             val decision = tx.getDecision(decisionId)
+            assertNotNull(decision)
+            assertNull(decision.archivedAt)
+        }
+    }
+
+    @Test
+    fun `uploadFeeDecisionToArchive marks document as archived in database when successful`() {
+        doReturn("uploadFeeDecisionToArchiveMock")
+            .whenever(clientSpy)
+            .uploadFeeDecisionToArchive(any(), any(), any(), any())
+
+        // Execute the archive method
+        archivalService.uploadFeeDecisionToArchive(
+            db,
+            clock,
+            AsyncJob.ArchiveFeeDecision(feeDecisionId),
+        )
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getFeeDecision(feeDecisionId)
+            assertNotNull(decision)
+            assertEquals(clock.now(), decision.archivedAt)
+        }
+    }
+
+    @Test
+    fun `uploadFeeDecisionToArchive does not mark document as archived when client throws`() {
+        doThrow(RuntimeException("uploadFeeDecisionToArchiveMock"))
+            .whenever(clientSpy)
+            .uploadFeeDecisionToArchive(any(), any(), any(), any())
+
+        // Execute the archive method and expect exception
+        val exception =
+            assertThrows<RuntimeException> {
+                archivalService.uploadFeeDecisionToArchive(
+                    db,
+                    clock,
+                    AsyncJob.ArchiveFeeDecision(feeDecisionId),
+                )
+            }
+        assertEquals("uploadFeeDecisionToArchiveMock", exception.message)
+
+        // Verify the document was NOT marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getFeeDecision(feeDecisionId)
+            assertNotNull(decision)
+            assertNull(decision.archivedAt)
+        }
+    }
+
+    @Test
+    fun `uploadVoucherValueDecisionToArchive marks document as archived in database when successful`() {
+        doReturn("uploadVoucherValueDecisionToArchiveMock")
+            .whenever(clientSpy)
+            .uploadVoucherValueDecisionToArchive(any(), any(), any(), any())
+
+        // Execute the archive method
+        archivalService.uploadVoucherValueDecisionToArchive(
+            db,
+            clock,
+            AsyncJob.ArchiveVoucherValueDecision(voucherValueDecisionId),
+        )
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getVoucherValueDecision(voucherValueDecisionId)
+            assertNotNull(decision)
+            assertEquals(clock.now(), decision.archivedAt)
+        }
+    }
+
+    @Test
+    fun `uploadVoucherValueDecisionToArchive does not mark document as archived when client throws`() {
+        doThrow(RuntimeException("uploadVoucherValueDecisionToArchiveMock"))
+            .whenever(clientSpy)
+            .uploadVoucherValueDecisionToArchive(any(), any(), any(), any())
+
+        // Execute the archive method and expect exception
+        val exception =
+            assertThrows<RuntimeException> {
+                archivalService.uploadVoucherValueDecisionToArchive(
+                    db,
+                    clock,
+                    AsyncJob.ArchiveVoucherValueDecision(voucherValueDecisionId),
+                )
+            }
+        assertEquals("uploadVoucherValueDecisionToArchiveMock", exception.message)
+
+        // Verify the document was NOT marked as archived in the database
+        db.read { tx ->
+            val decision = tx.getVoucherValueDecision(voucherValueDecisionId)
             assertNotNull(decision)
             assertNull(decision.archivedAt)
         }

@@ -253,6 +253,22 @@ export async function ignoreFeeDecisionDrafts(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.planArchiveFeeDecision
+*/
+export async function planArchiveFeeDecision(
+  request: {
+    id: FeeDecisionId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/fee-decisions/${request.id}/archive`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.searchFeeDecisions
 */
 export async function searchFeeDecisions(
@@ -1033,6 +1049,22 @@ export async function markVoucherValueDecisionSent(
     url: uri`/employee/value-decisions/mark-sent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<VoucherValueDecisionId[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.planArchiveVoucherValueDecision
+*/
+export async function planArchiveVoucherValueDecision(
+  request: {
+    id: VoucherValueDecisionId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/value-decisions/${request.id}/archive`.toString(),
+    method: 'POST'
   })
   return json
 }

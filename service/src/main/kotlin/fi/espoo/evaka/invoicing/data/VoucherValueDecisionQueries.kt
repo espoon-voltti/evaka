@@ -547,6 +547,7 @@ SELECT
     decision.sent_at,
     decision.created,
     decision.difference,
+    decision.archived_at,
     head.date_of_birth AS head_date_of_birth,
     head.first_name AS head_first_name,
     head.last_name AS head_last_name,
@@ -755,3 +756,14 @@ fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
         }
         .execute()
 }
+
+fun Database.Transaction.markVoucherValueDecisionAsArchived(
+    id: VoucherValueDecisionId,
+    now: HelsinkiDateTime,
+) =
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}"
+            )
+        }
+        .updateExactlyOne()
