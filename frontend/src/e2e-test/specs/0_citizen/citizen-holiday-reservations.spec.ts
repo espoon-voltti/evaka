@@ -4,7 +4,8 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
-import { evakaUserId } from 'lib-common/id-type'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
+import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import type { UUID } from 'lib-common/types'
@@ -17,6 +18,7 @@ import {
   testChild,
   testChild2,
   testAdult,
+  testDaycarePrivateVoucher,
   Fixture
 } from '../../dev-api/fixtures'
 import {
@@ -45,6 +47,7 @@ const period = new FiniteDateRange(
 const child = testChild
 const today = LocalDate.of(2035, 12, 1)
 let daycare: DevDaycare
+let daycarePrivateVoucher: DevDaycare
 let guardian: DevPerson
 let supervisor: DevEmployee
 
@@ -106,6 +109,16 @@ beforeEach(async () => {
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
+  }).save()
+
+  daycarePrivateVoucher = await Fixture.daycare({
+    ...testDaycarePrivateVoucher,
+    areaId: area.id
+  }).save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    id: fromUuid<GroupId>('2f998c23-0f90-4afd-829b-d09ecf2f6189'),
+    daycareId: daycarePrivateVoucher.id
   }).save()
 
   const child1 = await child.saveChild({ updateMockVtj: true })
@@ -430,6 +443,35 @@ describe('Holiday periods and questionnaires', () => {
         startDate: LocalDate.of(2035, 12, 1),
         endDate: LocalDate.of(2035, 12, 31),
         type: 'CLUB'
+      })
+
+      await holidayQuestionnaireFixture({
+        conditions: {
+          continuousPlacement: null
+        },
+        active: new FiniteDateRange(
+          LocalDate.todayInSystemTz(),
+          LocalDate.of(2035, 12, 6)
+        ),
+        periodOptions: [
+          new FiniteDateRange(
+            LocalDate.of(2035, 12, 18),
+            LocalDate.of(2035, 12, 25)
+          )
+        ]
+      }).save()
+
+      await enduserLogin(page, guardian)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaNotVisible()
+    })
+
+    test('The holiday reservations toast is not shown if no child is eligible: placement is in private voucher unit', async () => {
+      await setupFirstChildPlacement({
+        startDate: LocalDate.of(2035, 12, 1),
+        endDate: LocalDate.of(2035, 12, 31),
+        unitId: daycarePrivateVoucher.id
       })
 
       await holidayQuestionnaireFixture({
