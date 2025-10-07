@@ -83,7 +83,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
     final val area = DevCareArea()
     val daycare = DevDaycare(areaId = area.id)
-    val voucherDaycare = DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
+    val voucherDaycare =
+        DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
     val child1 = DevPerson(id = ChildId(UUID.randomUUID()))
     val child2 = DevPerson(id = ChildId(UUID.randomUUID()))
     val child3 = DevPerson(id = ChildId(UUID.randomUUID()))
@@ -197,7 +198,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             )
     }
 
-    @Test fun `active questionnaire is eligible for children that do not have active placement in private voucher value unit`() {
+    @Test
+    fun `active questionnaire is eligible for children that do not have active placement in private voucher value unit`() {
         val condition = FiniteDateRange(mockToday, mockToday.plusMonths(1))
 
         db.transaction { tx ->
