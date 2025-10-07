@@ -48,6 +48,7 @@ data class NonSsnChildrenReportRow(
     val dateOfBirth: LocalDate,
     val ophPersonOid: String?,
     val lastSentToVarda: HelsinkiDateTime?,
+    val lastSentToKoski: HelsinkiDateTime?,
 )
 
 private fun Database.Read.getNonSsnChildren(
@@ -62,13 +63,18 @@ SELECT
     p.id AS child_id,
     p.date_of_birth,
     p.oph_person_oid,
-    v.last_success_at AS last_sent_to_varda
-FROM placement pl
-JOIN person p ON p.id = pl.child_id
-LEFT JOIN varda_state v ON v.child_id = pl.child_id
-WHERE
-    p.social_security_number IS NULL AND
-    pl.end_date >= ${bind(examinationDate)}
+    v.last_success_at AS last_sent_to_varda,
+    (
+        SELECT max(ksr.updated)
+        FROM koski_study_right ksr
+        WHERE ksr.child_id = p.id
+    ) AS last_sent_to_koski
+FROM person p
+LEFT JOIN varda_state v ON v.child_id = p.id
+WHERE p.social_security_number IS NULL AND EXISTS(
+    SELECT FROM placement pl
+    WHERE pl.child_id = p.id AND pl.end_date >= ${bind(examinationDate)}
+)
 """
             )
         }
