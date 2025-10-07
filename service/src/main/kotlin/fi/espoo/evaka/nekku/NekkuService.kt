@@ -506,7 +506,7 @@ fun createAndSendNekkuOrder(
                 val parts =
                     listOfNotNull(
                         nekkuOrderResult.created?.let { "Luotu: $it" },
-                        nekkuOrderResult.cancelled?.let { "Peruttu: $it" },
+                        nekkuOrderResult.cancelled?.let { "Uusittu: $it" },
                     )
                 val orderString = parts.joinToString(", ")
 
@@ -998,4 +998,5 @@ data class NekkuOrdersReport(
     val mealType: NekkuProductMealType?,
     val mealsBySpecialDiet: List<String>?,
     val nekkuOrderInfo: String,
+    val nekkuOrderTime: String,
 )

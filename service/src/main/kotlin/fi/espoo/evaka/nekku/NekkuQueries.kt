@@ -787,7 +787,8 @@ SELECT
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info
+    nekku_order_info,
+    nekku_order_time
 FROM nekku_orders_report
 WHERE daycare_id = ${bind(daycareId)}
     AND group_id = (${bind(groupId)})
@@ -821,6 +822,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 product.mealType,
                 item.productOptions?.map { it.value },
                 nekkuOrderInfo,
+                HelsinkiDateTime.now().toLocalDate().toString(),
             )
         }
 
@@ -854,7 +856,8 @@ INSERT INTO nekku_orders_report (
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info
+    nekku_order_info,
+    nekku_order_time
 )
 VALUES (
     ${bind {it.deliveryDate}},
@@ -865,7 +868,8 @@ VALUES (
     ${bind {it.mealTime}},
     ${bind {it.mealType}},
     ${bind {it.mealsBySpecialDiet}},
-    ${bind {it.nekkuOrderInfo}}
+    ${bind {it.nekkuOrderInfo}},
+    ${bind {it.nekkuOrderTime}}
 )
             """
                 .trimIndent()
@@ -882,7 +886,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     val daycareId = getDaycareIdByGroup(groupId)
 
     val reportRow =
-        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError)
+        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError, HelsinkiDateTime.now().toLocalDate().toString())
 
     val deletedNekkuOrders = execute {
         sql(
@@ -913,7 +917,8 @@ INSERT INTO nekku_orders_report (
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info)
+    nekku_order_info,
+    nekku_order_time)
 VALUES (
     ${bind (reportRow.deliveryDate)},
     ${bind (reportRow.daycareId)},
@@ -923,7 +928,8 @@ VALUES (
     ${bind (reportRow.mealTime)},
     ${bind (reportRow.mealType)},
     ${bind (reportRow.mealsBySpecialDiet)},
-    ${bind (reportRow.nekkuOrderInfo)}
+    ${bind (reportRow.nekkuOrderInfo)},
+    ${bind (reportRow.nekkuOrderTime)}
 )
             """
                 .trimIndent()
