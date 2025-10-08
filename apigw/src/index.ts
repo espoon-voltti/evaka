@@ -20,6 +20,7 @@ import { fallbackErrorHandler } from './shared/middleware/error-handler.ts'
 import tracing from './shared/middleware/tracing.ts'
 import { assertRedisConnection } from './shared/redis-client.ts'
 import { trustReverseProxy } from './shared/reverse-proxy.ts'
+import { serviceHealthCheck } from './shared/service-client.ts'
 
 const config = configFromEnv()
 
@@ -53,6 +54,15 @@ app.use(
 )
 app.get('/health', (_, res) => {
   assertRedisConnection(redisClient)
+    .then(() => {
+      res.status(200).json({ status: 'UP' })
+    })
+    .catch(() => {
+      res.status(503).json({ status: 'DOWN' })
+    })
+})
+app.get('/ready', (_, res) => {
+  serviceHealthCheck()
     .then(() => {
       res.status(200).json({ status: 'UP' })
     })

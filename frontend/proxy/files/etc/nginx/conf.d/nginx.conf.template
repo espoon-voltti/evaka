@@ -310,6 +310,12 @@ server {
     }
   }
 
+  location = /ready {
+    access_log off;
+    include    proxy_params;
+    proxy_pass $enduserUrl;
+  }
+
   # Fox X-Accel-Redirect to S3
   location ~* ^/internal_redirect/(.*) {
     internal;
