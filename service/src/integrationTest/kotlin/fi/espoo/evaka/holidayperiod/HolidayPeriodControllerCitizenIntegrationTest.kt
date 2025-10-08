@@ -6,6 +6,7 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -82,6 +83,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
     final val area = DevCareArea()
     val daycare = DevDaycare(areaId = area.id)
+    val voucherDaycare =
+        DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
     val child1 = DevPerson(id = ChildId(UUID.randomUUID()))
     val child2 = DevPerson(id = ChildId(UUID.randomUUID()))
     val child3 = DevPerson(id = ChildId(UUID.randomUUID()))
@@ -185,6 +188,34 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     )
             )
         )
+
+        val response = getActiveQuestionnaires(mockToday)
+
+        assertEquals(1, response.size)
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+            )
+    }
+
+    @Test
+    fun `active questionnaire is eligible for children that do not have active placement in private voucher value unit`() {
+        val condition = FiniteDateRange(mockToday, mockToday.plusMonths(1))
+
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child4.id)
+            tx.insert(voucherDaycare)
+            tx.insert(
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = voucherDaycare.id,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+
+        createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
 
         val response = getActiveQuestionnaires(mockToday)
 
