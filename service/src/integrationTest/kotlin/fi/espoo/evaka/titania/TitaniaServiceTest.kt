@@ -262,6 +262,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 // vakiokoodit
                 "U, PRESENT",
                 "K, TRAINING",
+                "/, FLEX",
+                "Ä, PLANNING",
                 // muut koodit (aina PRESENT)
                 "X, PRESENT",
                 "a, PRESENT",

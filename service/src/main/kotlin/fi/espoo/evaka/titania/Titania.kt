@@ -28,7 +28,6 @@ internal val IGNORED_EVENT_CODES =
         "V",
         "L",
         ":",
-        "/",
         ")",
         "%",
         "T",
