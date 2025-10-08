@@ -9,7 +9,6 @@ import type {
   InvoiceStatus
 } from 'lib-common/generated/api-types/invoicing'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -98,14 +97,12 @@ export default React.memo(function InvoiceFilters({
   )
 
   const setStartDate = useCallback(
-    (startDate: LocalDate | null) =>
-      setSearchFilters((old) => ({ ...old, startDate })),
+    (startDate: string) => setSearchFilters((old) => ({ ...old, startDate })),
     [setSearchFilters]
   )
 
   const setEndDate = useCallback(
-    (endDate: LocalDate | null) =>
-      setSearchFilters((old) => ({ ...old, endDate })),
+    (endDate: string) => setSearchFilters((old) => ({ ...old, endDate })),
     [setSearchFilters]
   )
 

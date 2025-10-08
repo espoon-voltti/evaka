@@ -49,7 +49,6 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import DatePickerLowLevel from 'lib-components/molecules/date-picker/DatePickerLowLevel'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -500,10 +499,10 @@ export function FeeDecisionDistinctionsFilter({
 }
 
 interface FeeDecisionDateFilterProps {
-  startDate: LocalDate | null
-  setStartDate: (startDate: LocalDate | null) => void
-  endDate: LocalDate | null
-  setEndDate: (endDate: LocalDate | null) => void
+  startDate: string
+  setStartDate: (startDate: string) => void
+  endDate: string
+  setEndDate: (endDate: string) => void
   searchByStartDate: boolean
   setSearchByStartDate: (searchByStartDate: boolean) => void
 }
@@ -518,25 +517,31 @@ export function FeeDecisionDateFilter({
 }: FeeDecisionDateFilterProps) {
   const { i18n } = useTranslation()
 
+  const showWarning = useMemo(() => {
+    const start = LocalDate.parseFiOrNull(startDate)
+    const end = LocalDate.parseFiOrNull(endDate)
+    return start && end && start.isAfter(end)
+  }, [startDate, endDate])
+
   return (
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate}
+        <DatePickerLowLevel
+          value={startDate}
           onChange={setStartDate}
           locale="fi"
           data-qa="fee-decisions-start-date"
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate}
+        <DatePickerLowLevel
+          value={endDate}
           onChange={setEndDate}
           locale="fi"
           data-qa="fee-decisions-start-date"
         />
       </FlexRow>
-      {startDate && endDate && startDate.isAfter(endDate) ? (
+      {showWarning ? (
         <>
           <Gap size="xs" />
           <span>
@@ -600,10 +605,10 @@ export const ValueDecisionStatusFilter = React.memo(
 )
 
 interface ValueDecisionDateFilterProps {
-  startDate: LocalDate | null
-  setStartDate: (startDate: LocalDate | null) => void
-  endDate: LocalDate | null
-  setEndDate: (endDate: LocalDate | null) => void
+  startDate: string
+  setStartDate: (startDate: string) => void
+  endDate: string
+  setEndDate: (endDate: string) => void
   searchByStartDate: boolean
   setSearchByStartDate: (searchByStartDate: boolean) => void
 }
@@ -618,25 +623,31 @@ export function ValueDecisionDateFilter({
 }: ValueDecisionDateFilterProps) {
   const { i18n } = useTranslation()
 
+  const showWarning = useMemo(() => {
+    const start = LocalDate.parseFiOrNull(startDate)
+    const end = LocalDate.parseFiOrNull(endDate)
+    return start && end && start.isAfter(end)
+  }, [startDate, endDate])
+
   return (
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate}
+        <DatePickerLowLevel
+          value={startDate}
           onChange={setStartDate}
           locale="fi"
           data-qa="value-decisions-start-date"
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate}
+        <DatePickerLowLevel
+          value={endDate}
           onChange={setEndDate}
           locale="fi"
           data-qa="value-decisions-end-date"
         />
       </FlexRow>
-      {startDate && endDate && startDate.isAfter(endDate) ? (
+      {showWarning ? (
         <>
           <Gap size="xs" />
           <span>
@@ -744,10 +755,10 @@ export function InvoiceStatusFilter({
 }
 
 interface InvoiceDateFilterProps {
-  startDate: LocalDate | null
-  setStartDate: (startDate: LocalDate | null) => void
-  endDate: LocalDate | null
-  setEndDate: (endDate: LocalDate | null) => void
+  startDate: string
+  setStartDate: (startDate: string) => void
+  endDate: string
+  setEndDate: (endDate: string) => void
   searchByStartDate: boolean
   setUseCustomDatesForInvoiceSending: (
     useCustomDatesForInvoiceSending: boolean
@@ -764,25 +775,31 @@ export function InvoiceDateFilter({
 }: InvoiceDateFilterProps) {
   const { i18n } = useTranslation()
 
+  const showWarning = useMemo(() => {
+    const start = LocalDate.parseFiOrNull(startDate)
+    const end = LocalDate.parseFiOrNull(endDate)
+    return start && end && start.isAfter(end)
+  }, [startDate, endDate])
+
   return (
     <>
       <Label>{i18n.filters.invoiceDate}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate}
+        <DatePickerLowLevel
+          value={startDate}
           onChange={setStartDate}
           locale="fi"
           data-qa="invoices-start-date"
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate}
+        <DatePickerLowLevel
+          value={endDate}
           onChange={setEndDate}
           locale="fi"
           data-qa="invoices-end-date"
         />
       </FlexRow>
-      {startDate && endDate && startDate.isAfter(endDate) ? (
+      {showWarning ? (
         <>
           <Gap size="xs" />
           <span>
@@ -1276,10 +1293,10 @@ export function TransferApplicationsFilter({
 
 interface DateFilterProps {
   title: string
-  startDate: LocalDate | null
-  setStartDate: (startDate: LocalDate | null) => void
-  endDate: LocalDate | null
-  setEndDate: (endDate: LocalDate | null) => void
+  startDate: string
+  setStartDate: (startDate: string) => void
+  endDate: string
+  setEndDate: (endDate: string) => void
 }
 
 export function DateFilter({
@@ -1291,25 +1308,31 @@ export function DateFilter({
 }: DateFilterProps) {
   const { i18n } = useTranslation()
 
+  const showWarning = useMemo(() => {
+    const start = LocalDate.parseFiOrNull(startDate)
+    const end = LocalDate.parseFiOrNull(endDate)
+    return start && end && start.isAfter(end)
+  }, [startDate, endDate])
+
   return (
     <>
       <Label>{title}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate}
+        <DatePickerLowLevel
+          value={startDate}
           onChange={setStartDate}
           locale="fi"
           data-qa="start-date-filter-input"
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate}
+        <DatePickerLowLevel
+          value={endDate}
           onChange={setEndDate}
           locale="fi"
           data-qa="end-date-filter-input"
         />
       </FlexRow>
-      {startDate && endDate && startDate.isAfter(endDate) ? (
+      {showWarning ? (
         <>
           <Gap size="xs" />
           <span>
