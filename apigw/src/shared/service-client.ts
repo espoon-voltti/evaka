@@ -272,3 +272,7 @@ export async function employeePinLogin(
   )
   return data
 }
+
+export async function serviceHealthCheck(): Promise<void> {
+  await client.get('/health')
+}
