@@ -637,7 +637,7 @@ WITH missing_planned_departures AS (
     FROM staff_attendance_realtime realtime
           JOIN staff_attendance_plan plan ON realtime.employee_id = plan.employee_id
                 AND realtime.departed IS NULL
-                AND realtime.type IN ('OTHER_WORK', 'TRAINING')
+                AND realtime.type = ANY (${bind(StaffAttendanceType.AUTOMATICALLY_DEPART_TYPES)})
                 AND tstzrange(plan.start_time, plan.end_time, '[)') @> realtime.arrived
                 AND plan.end_time < ${bind(now)}
 )

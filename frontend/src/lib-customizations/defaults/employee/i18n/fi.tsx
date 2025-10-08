@@ -2980,7 +2980,9 @@ export const fi = {
         OVERTIME: 'Ylityö',
         JUSTIFIED_CHANGE: 'Perusteltu muutos',
         SICKNESS: 'Muu syy (oma)',
-        CHILD_SICKNESS: 'Muu syy (lapsi)'
+        CHILD_SICKNESS: 'Muu syy (lapsi)',
+        FLEX: 'Saldovapaa',
+        PLANNING: 'Suunnitteluaika'
       },
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',

@@ -553,6 +553,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.OTHER_WORK,
                 StaffAttendanceType.SICKNESS,
                 StaffAttendanceType.CHILD_SICKNESS,
+                StaffAttendanceType.FLEX,
+                StaffAttendanceType.PLANNING,
                 null -> {
                     if (ongoingAttendance != null && ongoingAttendance.type != arrival.type) {
                         throw BadRequest(
@@ -646,7 +648,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK,
                 StaffAttendanceType.SICKNESS,
-                StaffAttendanceType.CHILD_SICKNESS ->
+                StaffAttendanceType.CHILD_SICKNESS,
+                StaffAttendanceType.FLEX,
+                StaffAttendanceType.PLANNING ->
                     listOf(
                         ongoingAttendance.copy(departed = departureTime),
                         createNewAttendance(departureTime, null, departure.type),

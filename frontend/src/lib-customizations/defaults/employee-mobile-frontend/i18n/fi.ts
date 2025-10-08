@@ -168,7 +168,9 @@ export const fi = {
       OVERTIME: 'Ylityö',
       JUSTIFIED_CHANGE: 'Perusteltu muutos',
       SICKNESS: 'Muu syy (oma)',
-      CHILD_SICKNESS: 'Muu syy (lapsi)'
+      CHILD_SICKNESS: 'Muu syy (lapsi)',
+      FLEX: 'Saldovapaa',
+      PLANNING: 'Suunnitteluaika'
     },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {

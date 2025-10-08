@@ -36,7 +36,9 @@ fun splitOvernight(attendance: RawAttendance): Iterable<RawAttendance> {
 
 fun staffAttendanceTypeFromTitaniaEventCode(code: String): StaffAttendanceType =
     when (code) {
-        "U" -> StaffAttendanceType.PRESENT
         "K" -> StaffAttendanceType.TRAINING
+        "/" -> StaffAttendanceType.FLEX
+        "U" -> StaffAttendanceType.PLANNING
+        "Ä" -> StaffAttendanceType.PLANNING
         else -> StaffAttendanceType.PRESENT
     }
