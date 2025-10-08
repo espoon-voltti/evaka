@@ -127,8 +127,8 @@ export function Filters({
 
   return (
     <FiltersContainer
-      onKeyDown={() => {
-        if (onSearch) onSearch()
+      onKeyDown={(e) => {
+        if (onSearch && e.key === 'Enter') onSearch()
       }}
     >
       {setFreeText && (
