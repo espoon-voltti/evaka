@@ -1006,7 +1006,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `unread message count excludes messages beyond employee access limit`() {
-        val aclCreationDate = LocalDate.of(2022, 5, 14)
+        val aclCreationDate = placementStart
         val area = DevCareArea(shortName = "testArea")
         val unit =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
@@ -1059,12 +1059,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // Message thread beyond employee access limit (1 week before daycare group acl creation)
         postNewThread(
-            title = "Juhannus",
-            message = "Juhannus tulee pian",
-            messageType = MessageType.MESSAGE,
-            sender = groupAccount,
-            recipients = listOf(MessageRecipient.Child(child.id)),
-            user = employeeUser,
+            adultUser,
+            "Juhannus",
+            "Juhannus tulee pian",
+            listOf(groupAccount),
+            listOf(child.id),
             now = HelsinkiDateTime.of(aclCreationDate.minusDays(8), LocalTime.of(12, 11)),
         )
 
@@ -1089,11 +1088,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user = adminUser,
             now = HelsinkiDateTime.of(aclCreationDate.minusDays(7), LocalTime.of(12, 11)),
         )
+        assertEquals(EmployeeUnreadCounts(0, 1, 0), allUnreadMessagesCount(employeeUser))
 
-        assertEquals(1, allUnreadMessagesCount(employeeUser))
-
-        // Citizen replies to the message thread which makes it visible to the employee
-        // since the newest message is in the employee's access limit
+        // Citizen replies to the message thread which makes both of its messages visible to the
+        // employee since the newest message is in the employee's access limit
         replyToMessage(
             user = adultUser,
             messageId =
@@ -1106,7 +1104,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             content = "Kiitos tiedosta",
         )
 
-        assertEquals(2, allUnreadMessagesCount(employeeUser))
+        assertEquals(EmployeeUnreadCounts(2, 1, 0), allUnreadMessagesCount(employeeUser))
     }
 
     @Test
@@ -2484,18 +2482,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         } ?: throw Exception("No unread counts for account $accountId")
     }
 
+    data class EmployeeUnreadCounts(
+        val unreadCount: Int,
+        val unreadCopyCount: Int,
+        val unreadCountInFolders: Int,
+    )
+
     private fun allUnreadMessagesCount(
         user: AuthenticatedUser.Employee,
         now: HelsinkiDateTime = readTime,
-    ): Int {
-        var totalUnreadCount = 0
-        val messagesIterator =
-            messageController.getUnreadMessages(dbInstance(), user, MockEvakaClock(now)).iterator()
-        while (messagesIterator.hasNext()) {
-            val messageAccount = messagesIterator.next()
-            totalUnreadCount += messageAccount.totalUnreadCount
-        }
-        return totalUnreadCount
+    ): EmployeeUnreadCounts {
+        val unreadMessages =
+            messageController.getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
+        return EmployeeUnreadCounts(
+            unreadCount = unreadMessages.sumOf { it.unreadCount },
+            unreadCopyCount = unreadMessages.sumOf { it.unreadCopyCount },
+            unreadCountInFolders = unreadMessages.sumOf { it.unreadCountByFolder.values.sum() },
+        )
     }
 
     private fun getFolders(user: AuthenticatedUser.Employee, now: HelsinkiDateTime = readTime) =
