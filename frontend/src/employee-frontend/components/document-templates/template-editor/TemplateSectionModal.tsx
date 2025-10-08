@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { v4 as uuidv4 } from 'uuid'
 
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
@@ -33,7 +32,7 @@ export default React.memo(function TemplateSectionModal({
     templateSectionForm,
     () =>
       initialState ?? {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         label: '',
         questions: [],
         infoText: ''

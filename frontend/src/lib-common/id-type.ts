@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { validate, v4 as uuidv4 } from 'uuid'
-
 import type {
   EmployeeId,
   EvakaUserId,
@@ -12,6 +10,11 @@ import type {
 
 declare const id: unique symbol
 export type Id<B extends string> = string & { [id]: B }
+
+const regex =
+  /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/i
+
+const validate = (uuid: string) => regex.test(uuid)
 
 export function tryFromUuid<T extends Id<string>>(id: string): T | undefined {
   if (!validate(id)) {
@@ -35,7 +38,7 @@ export function fromNullableUuid<T extends Id<string>>(
 }
 
 export function randomId<T extends Id<string>>(): T {
-  return uuidv4() as T
+  return crypto.randomUUID() as T
 }
 
 export function evakaUserId(employeeId: EmployeeId): EvakaUserId

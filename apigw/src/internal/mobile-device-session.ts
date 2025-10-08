@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomUUID as uuid } from 'node:crypto'
+
 import type { CookieOptions } from 'express'
 import type express from 'express'
-import { v4 as uuid } from 'uuid'
 
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.ts'
 import {

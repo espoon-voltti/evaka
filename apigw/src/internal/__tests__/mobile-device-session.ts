@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomUUID as uuid } from 'node:crypto'
+
 import {
   describe,
   beforeAll,
@@ -10,7 +12,6 @@ import {
   expect,
   it
 } from '@jest/globals'
-import { v4 as uuid } from 'uuid'
 
 import { appCommit, configFromEnv } from '../../shared/config.ts'
 import type { UUID } from '../../shared/service-client.ts'

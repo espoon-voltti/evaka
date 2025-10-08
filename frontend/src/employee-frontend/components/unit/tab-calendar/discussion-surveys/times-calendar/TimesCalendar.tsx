@@ -7,7 +7,6 @@ import partition from 'lodash/partition'
 import type { MutableRefObject } from 'react'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { v4 as uuidv4 } from 'uuid'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { BoundForm } from 'lib-common/form/hooks'
@@ -551,7 +550,7 @@ export const TimesDay = React.memo(function TimesDay({
               appearance="inline"
               onClick={() =>
                 addAction({
-                  id: uuidv4(),
+                  id: crypto.randomUUID(),
                   date: day.date,
                   childId: null,
                   timeRange: { startTime: '', endTime: '' }
@@ -624,7 +623,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
   const createNewTime = useCallback(
     () =>
       addAction({
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         date: day.date,
         childId: null,
         timeRange: { startTime: '', endTime: '' }
