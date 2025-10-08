@@ -38,5 +38,7 @@ fun staffAttendanceTypeFromTitaniaEventCode(code: String): StaffAttendanceType =
     when (code) {
         "U" -> StaffAttendanceType.PRESENT
         "K" -> StaffAttendanceType.TRAINING
+        "/" -> StaffAttendanceType.FLEX
+        "Ä" -> StaffAttendanceType.PLANNING
         else -> StaffAttendanceType.PRESENT
     }

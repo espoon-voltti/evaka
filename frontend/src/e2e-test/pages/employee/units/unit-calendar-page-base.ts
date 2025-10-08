@@ -344,6 +344,14 @@ export class StaffAttendanceDetailsModal extends Element {
     ).selectOption(groupId)
   }
 
+  async typeSelect(row: number) {
+    const select = new Select(
+      this.findAllByDataQa('attendance-type-select').nth(row)
+    )
+    await select.waitUntilVisible()
+    return select
+  }
+
   async setType(row: number, type: StaffAttendanceType) {
     await new Select(
       this.findAllByDataQa('attendance-type-select').nth(row)

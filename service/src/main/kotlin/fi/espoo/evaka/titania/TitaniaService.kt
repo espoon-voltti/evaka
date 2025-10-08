@@ -261,6 +261,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                             else "PM"
                                                         StaffAttendanceType.SICKNESS -> "Z"
                                                         StaffAttendanceType.CHILD_SICKNESS -> "7"
+                                                        StaffAttendanceType.FLEX -> "/"
+                                                        StaffAttendanceType.PLANNING -> "Ä"
                                                     },
                                                 endTime =
                                                     when (departed?.toLocalTime()) {
@@ -302,6 +304,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                             else "PM"
                                                         StaffAttendanceType.SICKNESS -> null
                                                         StaffAttendanceType.CHILD_SICKNESS -> null
+                                                        StaffAttendanceType.FLEX -> null
+                                                        StaffAttendanceType.PLANNING -> null
                                                     },
                                             )
                                         }
