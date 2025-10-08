@@ -25,7 +25,7 @@ import type {
   AreaId,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 
 import type { PreschoolType } from '../components/applications/ApplicationsFilters'
@@ -43,8 +43,8 @@ type PlacementMode = 'list' | 'desktop'
 interface UIState {
   page: number
   setPage: (p: number) => void
-  searchFilters: ApplicationSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<ApplicationSearchFilters>>
+  searchFilters: RawApplicationSearchFilters
+  setSearchFilters: Dispatch<SetStateAction<RawApplicationSearchFilters>>
   confirmedSearchFilters: ApplicationSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
@@ -59,14 +59,14 @@ interface UIState {
   setPlacementMode: (mode: PlacementMode) => void
 }
 
-export interface ApplicationSearchFilters {
+interface RawApplicationSearchFilters {
   area: AreaId[]
   units: DaycareId[]
   basis: ApplicationBasis[]
   status: ApplicationSummaryStatusOptions
   type: ApplicationTypeToggle
-  startDate: LocalDate | null
-  endDate: LocalDate | null
+  startDate: string
+  endDate: string
   dateType: ApplicationDateType[]
   searchTerms: string
   transferApplications: TransferApplicationFilter
@@ -74,6 +74,12 @@ export interface ApplicationSearchFilters {
   preschoolType: PreschoolType[]
   allStatuses: ApplicationStatusOption[]
   distinctions: ApplicationDistinctions[]
+}
+
+export interface ApplicationSearchFilters
+  extends Omit<RawApplicationSearchFilters, 'startDate' | 'endDate'> {
+  startDate: LocalDate | null
+  endDate: LocalDate | null
 }
 
 export type VoucherApplicationFilter =
@@ -91,8 +97,8 @@ const defaultState: UIState = {
     basis: [],
     status: 'SENT',
     type: 'ALL',
-    startDate: null,
-    endDate: null,
+    startDate: '',
+    endDate: '',
     dateType: [],
     searchTerms: '',
     transferApplications: 'ALL',
@@ -131,18 +137,34 @@ export const ApplicationUIContextProvider = React.memo(
       ApplicationSearchFilters | undefined
     >(defaultState.confirmedSearchFilters)
     const [searchFilters, _setSearchFilters] =
-      useState<ApplicationSearchFilters>(defaultState.searchFilters)
+      useState<RawApplicationSearchFilters>(defaultState.searchFilters)
     const setSearchFilters = useCallback(
-      (value: React.SetStateAction<ApplicationSearchFilters>) => {
+      (value: React.SetStateAction<RawApplicationSearchFilters>) => {
         _setSearchFilters(value)
         setConfirmedSearchFilters(undefined)
       },
       []
     )
+
     const confirmSearchFilters = useCallback(() => {
-      setConfirmedSearchFilters(searchFilters)
+      const startDate = LocalDate.parseFiOrNull(searchFilters.startDate)
+      const endDate = LocalDate.parseFiOrNull(searchFilters.endDate)
+
+      // reformat / clear if invalid
+      _setSearchFilters((prev) => ({
+        ...prev,
+        startDate: startDate ? startDate.format() : '',
+        endDate: endDate ? endDate.format() : ''
+      }))
+
+      setConfirmedSearchFilters({
+        ...searchFilters,
+        startDate,
+        endDate
+      })
       setPage(defaultState.page)
     }, [searchFilters])
+
     const clearSearchFilters = useCallback(
       () => setSearchFilters(defaultState.searchFilters),
       [setSearchFilters]
