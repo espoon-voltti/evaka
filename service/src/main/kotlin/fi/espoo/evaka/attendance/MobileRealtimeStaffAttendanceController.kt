@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
 import fi.espoo.evaka.changes
+import fi.espoo.evaka.daycare.DaycareInfo
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -62,10 +63,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val unitOperationalDays =
-                        dateRange
-                            .dates()
-                            .filter { unit.operationDays.contains(it.dayOfWeek.value) }
-                            .toList()
+                        dateRange.dates().filter { date -> isOperationalDay(date, unit) }.toList()
 
                     CurrentDayStaffAttendanceResponse(
                         staff =
@@ -114,7 +112,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     val unitOperationalDays =
                         FiniteDateRange(from, to)
                             .dates()
-                            .filter { unit.operationDays.contains(it.dayOfWeek.value) }
+                            .filter { date -> isOperationalDay(date, unit) }
                             .toList()
 
                     val staffMember =
@@ -698,3 +696,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         return OpenGroupAttendanceResponse(openAttendance)
     }
 }
+
+private fun isOperationalDay(date: LocalDate, unit: DaycareInfo) =
+    unit.operationDays.contains(date.dayOfWeek.value) ||
+        unit.shiftCareOperationDays?.contains(date.dayOfWeek.value) == true
