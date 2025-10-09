@@ -50,6 +50,7 @@ fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<Day
     SELECT 
         d.id,
         d.name,
+        d.service_worker_note,
         coalesce((
             SELECT jsonb_agg(jsonb_build_object(
                 'applicationId', pd.application_id, 

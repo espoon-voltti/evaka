@@ -14,6 +14,8 @@ import type {
 } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import {
@@ -23,6 +25,7 @@ import {
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faEyeSlash } from 'lib-icons'
+import { fasExclamation } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
@@ -74,15 +77,30 @@ export default React.memo(function DaycareCard({
     <Card>
       <FixedSpaceColumn spacing="s">
         <FixedSpaceRow justifyContent="space-between">
-          <a
-            href={`/employee/units/${daycare.id}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <H4 noMargin style={{ color: colors.main.m1, fontWeight: 600 }}>
-              {daycare.name}
-            </H4>
-          </a>
+          <FixedSpaceRow>
+            <a
+              href={`/employee/units/${daycare.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <H4 noMargin style={{ color: colors.main.m1, fontWeight: 600 }}>
+                {daycare.name}
+              </H4>
+            </a>
+            {unitDetails.isSuccess && !!unitDetails.value.serviceWorkerNote && (
+              <Tooltip
+                tooltip={unitDetails.value.serviceWorkerNote}
+                width="large"
+              >
+                <RoundIcon
+                  content={fasExclamation}
+                  color={colors.status.warning}
+                  textColor={colors.grayscale.g0}
+                  size="m"
+                />
+              </Tooltip>
+            )}
+          </FixedSpaceRow>
           <IconOnlyButton
             icon={faEyeSlash}
             aria-label={i18n.applications.placementDesktop.hideUnit}

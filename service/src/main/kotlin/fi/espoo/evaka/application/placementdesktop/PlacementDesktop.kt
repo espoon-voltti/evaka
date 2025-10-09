@@ -21,6 +21,7 @@ import org.jdbi.v3.json.Json
 data class PlacementDesktopDaycare(
     val id: DaycareId,
     val name: String,
+    val serviceWorkerNote: String,
     @Json val placementDrafts: List<PlacementDraft>,
     val maxOccupancyConfirmed: Double? = null,
     val maxOccupancyPlanned: Double? = null,

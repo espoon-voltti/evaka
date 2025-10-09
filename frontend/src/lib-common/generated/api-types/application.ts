@@ -674,6 +674,7 @@ export interface PlacementDesktopDaycare {
   maxOccupancyPlanned: number | null
   name: string
   placementDrafts: PlacementDraft[]
+  serviceWorkerNote: string
 }
 
 /**
