@@ -109,6 +109,7 @@ type RoundIconProps = BaseProps & {
   content: IconDefinition | string
   color: string
   size: IconSize
+  textColor?: string
   onClick?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent> | React.KeyboardEvent
   ) => void
@@ -126,6 +127,7 @@ type RoundIconProps = BaseProps & {
 const RoundIcon = React.memo(function RoundIcon({
   content,
   color,
+  textColor,
   size,
   onClick,
   active = true,
@@ -192,7 +194,10 @@ const RoundIcon = React.memo(function RoundIcon({
       {typeof content === 'string' ? (
         <span className="text">{content}</span>
       ) : (
-        <FontAwesomeIcon icon={content} color={readableIconColor} />
+        <FontAwesomeIcon
+          icon={content}
+          color={textColor ?? readableIconColor}
+        />
       )}
     </IconContainer>
   )

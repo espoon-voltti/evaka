@@ -60,7 +60,8 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `service worker updates placement draft unit`() {
         val area = DevCareArea()
         val daycare1 = DevDaycare(areaId = area.id, name = "Daycare 1")
-        val daycare2 = DevDaycare(areaId = area.id, name = "Daycare 2")
+        val daycare2 =
+            DevDaycare(areaId = area.id, name = "Daycare 2", serviceWorkerNote = "Väistössä")
         val guardian = DevPerson()
         val child = DevPerson()
         val application =
@@ -130,11 +131,13 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 PlacementDesktopDaycare(
                     id = daycare1.id,
                     name = daycare1.name,
+                    serviceWorkerNote = daycare1.serviceWorkerNote,
                     placementDrafts = emptyList(),
                 ),
                 PlacementDesktopDaycare(
                     id = daycare2.id,
                     name = daycare2.name,
+                    serviceWorkerNote = daycare2.serviceWorkerNote,
                     placementDrafts =
                         listOf(
                             PlacementDraft(
