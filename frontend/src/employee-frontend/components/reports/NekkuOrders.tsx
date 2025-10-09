@@ -247,6 +247,10 @@ export default React.memo(function NekkuOrders() {
                 {
                   label: i18n.reports.nekkuOrders.nekkuOrderInfo,
                   value: (row) => row.nekkuOrderInfo
+                },
+                {
+                  label: i18n.reports.nekkuOrders.nekkuOrderTime,
+                  value: (row) => row.nekkuOrderTime
                 }
               ]}
               filename={`${i18n.reports.nekkuOrders.title}.csv`}
@@ -262,6 +266,7 @@ export default React.memo(function NekkuOrders() {
                   <Th>{i18n.reports.nekkuOrders.mealType}</Th>
                   <Th>{i18n.reports.nekkuOrders.specialDiets}</Th>
                   <Th>{i18n.reports.nekkuOrders.nekkuOrderInfo}</Th>
+                  <Th>{i18n.reports.nekkuOrders.nekkuOrderTime}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -289,6 +294,7 @@ export default React.memo(function NekkuOrders() {
                     </Td>
                     <Td>{row.specialDiets}</Td>
                     <Td>{row.nekkuOrderInfo}</Td>
+                    <Td>{row.nekkuOrderTime}</Td>
                   </Tr>
                 ))}
               </Tbody>

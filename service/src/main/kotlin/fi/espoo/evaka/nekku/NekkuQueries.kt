@@ -886,7 +886,18 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     val daycareId = getDaycareIdByGroup(groupId)
 
     val reportRow =
-        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError, HelsinkiDateTime.now().toLocalDate().toString())
+        NekkuOrdersReport(
+            date,
+            daycareId,
+            groupId,
+            "",
+            0,
+            null,
+            null,
+            null,
+            nekkuOrderError,
+            HelsinkiDateTime.now().toLocalDate().toString(),
+        )
 
     val deletedNekkuOrders = execute {
         sql(

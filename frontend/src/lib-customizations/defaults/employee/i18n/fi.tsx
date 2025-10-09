@@ -4433,7 +4433,8 @@ export const fi = {
         VEGETABLE: 'Kasvis'
       },
       specialDiets: 'Erikoisruokavaliot',
-      nekkuOrderInfo: 'Tilausinfo'
+      nekkuOrderInfo: 'Tilausinfo',
+      nekkuOrderTime: 'Tilauksen ajankohta'
     },
     startingPlacements: {
       title: 'Varhaiskasvatuksessa aloittavat lapset',

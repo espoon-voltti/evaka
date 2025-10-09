@@ -628,6 +628,7 @@ export interface NekkuOrderRow {
   mealTime: string[]
   mealType: string | null
   nekkuOrderInfo: string | null
+  nekkuOrderTime: string | null
   quantity: number
   sku: string
   specialDiets: string | null
