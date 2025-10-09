@@ -118,7 +118,7 @@ data class Attendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
-    val type: StaffAttendanceType,
+    val type: StaffAttendanceType?,
     val departedAutomatically: Boolean,
     val arrivedAddedAt: HelsinkiDateTime?,
     val arrivedAddedBy: EvakaUser?,

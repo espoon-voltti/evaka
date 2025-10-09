@@ -74,6 +74,11 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     staffForAttendanceCalendar.map { it.id },
                             )
                             .groupBy { it.employeeId }
+                    val staffWithoutAttendances =
+                        staffForAttendanceCalendar
+                            .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
+                            .map { emp -> emp.id }
+                            .toSet()
 
                     val allowedToEdit =
                         accessControl.checkPermissionFor(
@@ -81,7 +86,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             user,
                             clock,
                             Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                            attendancesByEmployee.entries.map { (employeeId) -> employeeId },
+                            attendancesByEmployee.entries.map { (employeeId) -> employeeId } +
+                                staffWithoutAttendances,
                         )
 
                     val staffWithAttendance =
@@ -102,7 +108,15 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.arrived,
                                                 att.departed,
                                                 att.occupancyCoefficient,
-                                                att.type,
+                                                type =
+                                                    if (
+                                                        allowedToEdit[employeeId]?.isPermitted() ==
+                                                            true
+                                                    )
+                                                        att.type
+                                                    else if (att.type.presentInGroup())
+                                                        StaffAttendanceType.PRESENT
+                                                    else null,
                                                 att.departedAutomatically,
                                                 att.arrivedAddedAt,
                                                 att.arrivedAddedBy,
@@ -150,7 +164,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             )
                                         },
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
-                                    allowedToEdit = true,
+                                    allowedToEdit = allowedToEdit[emp.id]?.isPermitted() ?: false,
                                 )
                             }
                     StaffAttendanceResponse(
