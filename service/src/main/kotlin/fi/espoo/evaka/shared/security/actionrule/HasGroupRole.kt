@@ -159,9 +159,11 @@ WHERE employee_id = ${bind(user.id)}
                 """
 SELECT absence_application.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM absence_application
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
+JOIN placement ON absence_application.child_id = placement.child_id
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON placement.child_id = acl.child_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+  AND absence_application.start_date BETWEEN placement.start_date AND placement.end_date
             """
                     .trimIndent()
             )
