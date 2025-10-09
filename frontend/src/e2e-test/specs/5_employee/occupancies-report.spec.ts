@@ -23,6 +23,43 @@ beforeEach(async () => {
 })
 
 describe('Occupancies report', () => {
+  test('unit filter', async () => {
+    const area = await Fixture.careArea().save()
+    const unit1 = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Yksikkö 1'
+    }).save()
+    await Fixture.daycareGroup({ daycareId: unit1.id }).save()
+    const unit2 = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Yksikkö 2'
+    }).save()
+    await Fixture.daycareGroup({ daycareId: unit2.id }).save()
+    const unit3 = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Yksikkö 3'
+    }).save()
+    await Fixture.daycareGroup({ daycareId: unit3.id }).save()
+
+    const mockedToday = LocalDate.of(2025, 10, 2)
+    const page = await Page.open({
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
+    })
+    const report = await navigateToReport(page, admin)
+    await report.unitsSelect.fillAndSelectFirst('Yksikkö 1')
+    await report.assertReportUnitNameRows(['Yksikkö 1'])
+    await report.unitsSelect.fillAndSelectFirst('Yksikkö 3')
+    await report.assertReportUnitNameRows(['Yksikkö 1', 'Yksikkö 3'])
+    await report.unitsSelect.fillAndSelectFirst('Yksikkö 3')
+    await report.assertReportUnitNameRows(['Yksikkö 1'])
+    await report.typeCombobox.fillAndSelectFirst(
+      'Vahvistettu täyttöaste ryhmissä'
+    )
+    await report.assertReportUnitNameRows(['Yksikkö 1'])
+    await report.unitsSelect.fillAndSelectFirst('Yksikkö 2')
+    await report.assertReportUnitNameRows(['Yksikkö 1', 'Yksikkö 2'])
+  })
+
   test('confirmed type shows date columns for whole month', async () => {
     const mockedToday = LocalDate.of(2025, 10, 2)
     const page = await Page.open({

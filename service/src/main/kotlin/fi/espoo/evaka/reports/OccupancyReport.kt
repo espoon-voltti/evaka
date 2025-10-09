@@ -36,6 +36,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId?,
+        @RequestParam unitIds: Set<DaycareId>?,
         @RequestParam providerType: ProviderType?,
         @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
@@ -57,6 +58,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                     tx.calculateUnitOccupancyReport(
                         clock.today(),
                         careAreaId,
+                        unitIds,
                         providerType,
                         unitTypes,
                         FiniteDateRange(from, to),
@@ -87,6 +89,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId?,
+        @RequestParam unitIds: Set<DaycareId>?,
         @RequestParam providerType: ProviderType?,
         @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
@@ -107,6 +110,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                     tx.calculateGroupOccupancyReport(
                         clock.today(),
                         careAreaId,
+                        unitIds,
                         providerType,
                         unitTypes,
                         FiniteDateRange(from, to),
@@ -152,6 +156,7 @@ data class OccupancyGroupReportResultRow(
 private fun Database.Read.calculateUnitOccupancyReport(
     today: LocalDate,
     areaId: AreaId?,
+    unitIds: Set<DaycareId>?,
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
@@ -164,6 +169,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
             type,
             unitFilter,
             areaId = areaId,
+            unitIds = unitIds,
             providerType = providerType,
             unitTypes = unitTypes,
         )
@@ -182,6 +188,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
 private fun Database.Read.calculateGroupOccupancyReport(
     today: LocalDate,
     areaId: AreaId?,
+    unitIds: Set<DaycareId>?,
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
@@ -197,6 +204,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
             type,
             unitFilter,
             areaId = areaId,
+            unitIds = unitIds,
             providerType = providerType,
             unitTypes = unitTypes,
         )
