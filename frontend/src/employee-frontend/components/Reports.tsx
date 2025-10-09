@@ -281,6 +281,7 @@ export default React.memo(function Reports() {
                       color={colors.main.m2}
                       icon={faPercentage}
                       i18n={i18n.reports.occupancies}
+                      data-qa="report-occupancies"
                     />
                   )
                 }
