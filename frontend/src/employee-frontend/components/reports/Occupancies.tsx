@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import mapValues from 'lodash/mapValues'
 import range from 'lodash/range'
 import uniq from 'lodash/uniq'
@@ -18,11 +17,9 @@ import type {
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow
 } from 'lib-common/generated/api-types/reports'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import type { Arg0 } from 'lib-common/types'
-import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -101,15 +98,17 @@ const yearOptions = range(
 )
 
 function getDisplayDates(year: number, month: number, type: OccupancyType) {
-  const fromDate = new Date(year, month - 1, 1)
-  const now = mockNow() ?? new Date()
-  let toDate = lastDayOfMonth(fromDate)
-  if (type === 'REALIZED' && isAfter(toDate, now)) toDate = now
-  const dates: Date[] = []
-  for (let date = fromDate; date <= toDate; date = addDays(date, 1)) {
-    if (!isWeekend(date)) dates.push(date)
+  const fromDate = LocalDate.of(year, month, 1)
+  const now = LocalDate.todayInHelsinkiTz()
+  if (type === 'REALIZED' && fromDate.isEqualOrAfter(now)) {
+    return []
   }
-  return dates
+  const lastDayOfMonth = fromDate.lastDayOfMonth()
+  const toDate =
+    type === 'REALIZED' && lastDayOfMonth.isEqualOrAfter(now)
+      ? now.subDays(1)
+      : lastDayOfMonth
+  return LocalDate.range(fromDate, toDate).filter((date) => !date.isWeekend())
 }
 
 function getFilename(
@@ -125,13 +124,13 @@ function getFilename(
   return `${prefix}-${time}-${careAreaName}.csv`.replace(/ /g, '_')
 }
 
-const toOccupancyKey = (d: Date) => LocalDate.fromSystemTzDate(d).formatIso()
+const toOccupancyKey = (d: LocalDate) => d.formatIso()
 
 type ValueOnReport = 'percentage' | 'headcount' | 'raw'
 
 function getOccupancyAverage(
   row: OccupancyReportRow,
-  dates: Date[]
+  dates: LocalDate[]
 ): number | null {
   const capacitySum = dates.reduce(
     (sum, date) =>
@@ -157,7 +156,7 @@ function getOccupancyAverage(
 
 function getHeadCountAverage(
   row: OccupancyReportRow,
-  dates: Date[]
+  dates: LocalDate[]
 ): number | null {
   const headCountSum = dates.reduce(
     (sum, date) =>
@@ -188,7 +187,7 @@ interface ReportRow {
 function getDisplayCells(
   i18n: Translations,
   reportRows: OccupancyReportRow[],
-  dates: Date[],
+  dates: LocalDate[],
   usedValues: ValueOnReport
 ): ReportRow[] {
   return reportRows.map((row) => {
@@ -285,7 +284,7 @@ interface Division {
 
 function calculateAverages(
   reportRows: OccupancyReportRow[],
-  dates: Date[],
+  dates: LocalDate[],
   usedValues: ValueOnReport
 ): Averages | null {
   if (usedValues === 'raw') {
@@ -372,10 +371,10 @@ type ReportMode = {
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const areas = useQueryResult(areasQuery())
-  const now = mockNow() ?? new Date()
+  const now = LocalDate.todayInHelsinkiTz()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
+    year: now.year,
+    month: now.month,
     careAreaId: null,
     display: 'UNITS',
     type: 'CONFIRMED',
@@ -406,7 +405,7 @@ export default React.memo(function Occupancies() {
       cols.push(date, date, date)
     }
     return cols
-  }, [] as Date[])
+  }, [] as LocalDate[])
 
   const careAreaAll = { id: undefined, name: i18n.common.all }
 
@@ -463,6 +462,7 @@ export default React.memo(function Occupancies() {
                   }
                   placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                   getItemLabel={(item) => item.name}
+                  data-qa="filter-area"
                 />
               </Wrapper>
             </FilterRow>
@@ -549,6 +549,7 @@ export default React.memo(function Occupancies() {
                   getItemLabel={({ display, type }) =>
                     i18n.reports.occupancies.filters.types[display][type]
                   }
+                  data-qa="filter-type"
                 />
               </Wrapper>
             </FilterRow>
@@ -626,9 +627,7 @@ export default React.memo(function Occupancies() {
                         const index = i + (usedValues !== 'raw' ? 1 : 0)
                         return {
                           value: (row: ReportRow) => row.cells[index].value,
-                          label: HelsinkiDateTime.fromSystemTzDate(date)
-                            .toLocalDate()
-                            .format('dd.MM.')
+                          label: date.format('dd.MM.')
                         }
                       })
                     ]}
@@ -661,12 +660,11 @@ export default React.memo(function Occupancies() {
                         {dates.map((date) => (
                           <Th
                             align="center"
-                            key={date.toDateString()}
+                            key={date.formatIso()}
                             colSpan={usedValues === 'raw' ? 4 : undefined}
+                            data-qa="table-header-date"
                           >
-                            {HelsinkiDateTime.fromSystemTzDate(date)
-                              .toLocalDate()
-                              .format('dd.MM.')}
+                            {date.format('dd.MM.')}
                           </Th>
                         ))}
                       </Tr>
@@ -717,7 +715,7 @@ export default React.memo(function Occupancies() {
                                     )}
                                   </StyledTd>
                                   {dateCols.map((dateCol) => (
-                                    <StyledTd key={dateCol.toDateString()}>
+                                    <StyledTd key={dateCol.formatIso()}>
                                       {formatAverage(
                                         averages?.byArea[areaName]?.byDate[
                                           toOccupancyKey(dateCol)

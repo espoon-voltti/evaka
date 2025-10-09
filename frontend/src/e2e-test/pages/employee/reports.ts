@@ -91,6 +91,11 @@ export default class ReportsPage {
     await this.page.findByDataQa('report-child-document-decisions').click()
     return new ChildDocumentDecisionsReport(this.page)
   }
+
+  async openOccupanciesReport() {
+    await this.page.findByDataQa('report-occupancies').click()
+    return new OccupanciesReport(this.page)
+  }
 }
 
 export class MissingHeadOfFamilyReport {
@@ -777,6 +782,23 @@ export class ChildDocumentDecisionsReport {
 
   constructor(page: Page) {
     this.rows = page.findByDataQa('report-table').findAll('tr')
+  }
+}
+
+export class OccupanciesReport {
+  areaCombobox: Combobox
+  typeCombobox: Combobox
+
+  constructor(private page: Page) {
+    this.areaCombobox = new Combobox(page.findByDataQa('filter-area'))
+    this.typeCombobox = new Combobox(page.findByDataQa('filter-type'))
+  }
+
+  async assertReportDateColumns(expected: LocalDate[]) {
+    const columns = this.page.findAllByDataQa('table-header-date')
+    await columns.assertTextsEqual(
+      expected.map((date) => date.format('dd.MM.'))
+    )
   }
 }
 
