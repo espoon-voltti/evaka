@@ -854,6 +854,7 @@ export async function getOccupancyGroupReport(
   request: {
     type: OccupancyType,
     careAreaId?: AreaId | null,
+    unitIds?: DaycareId[] | null,
     providerType?: ProviderType | null,
     unitTypes?: CareType[] | null,
     year: number,
@@ -863,6 +864,7 @@ export async function getOccupancyGroupReport(
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
     ['careAreaId', request.careAreaId],
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? []),
     ['providerType', request.providerType?.toString()],
     ...(request.unitTypes?.map((e): [string, string | null | undefined] => ['unitTypes', e.toString()]) ?? []),
     ['year', request.year.toString()],
@@ -884,6 +886,7 @@ export async function getOccupancyUnitReport(
   request: {
     type: OccupancyType,
     careAreaId?: AreaId | null,
+    unitIds?: DaycareId[] | null,
     providerType?: ProviderType | null,
     unitTypes?: CareType[] | null,
     year: number,
@@ -893,6 +896,7 @@ export async function getOccupancyUnitReport(
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
     ['careAreaId', request.careAreaId],
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? []),
     ['providerType', request.providerType?.toString()],
     ...(request.unitTypes?.map((e): [string, string | null | undefined] => ['unitTypes', e.toString()]) ?? []),
     ['year', request.year.toString()],

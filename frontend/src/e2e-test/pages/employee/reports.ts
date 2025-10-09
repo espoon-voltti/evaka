@@ -787,10 +787,12 @@ export class ChildDocumentDecisionsReport {
 
 export class OccupanciesReport {
   areaCombobox: Combobox
+  unitsSelect: MultiSelect
   typeCombobox: Combobox
 
   constructor(private page: Page) {
     this.areaCombobox = new Combobox(page.findByDataQa('filter-area'))
+    this.unitsSelect = new MultiSelect(page.findByDataQa('filter-units'))
     this.typeCombobox = new Combobox(page.findByDataQa('filter-type'))
   }
 
@@ -799,6 +801,12 @@ export class OccupanciesReport {
     await columns.assertTextsEqual(
       expected.map((date) => date.format('dd.MM.'))
     )
+  }
+
+  async assertReportUnitNameRows(expected: string[]) {
+    const rows = this.page.findAllByDataQa('table-body-row-unit')
+    const names = rows.findAllByDataQa('table-body-row-unit-name')
+    await names.assertTextsEqual(expected)
   }
 }
 

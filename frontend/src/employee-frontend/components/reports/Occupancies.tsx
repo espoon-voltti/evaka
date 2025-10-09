@@ -36,7 +36,7 @@ import {
   type getOccupancyGroupReport,
   type getOccupancyUnitReport
 } from '../../generated/api-clients/reports'
-import { areasQuery } from '../../queries'
+import { areasQuery, unitsQuery } from '../../queries'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -371,11 +371,13 @@ type ReportMode = {
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const areas = useQueryResult(areasQuery())
+  const units = useQueryResult(unitsQuery({}))
   const now = LocalDate.todayInHelsinkiTz()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: now.year,
     month: now.month,
     careAreaId: null,
+    unitIds: [],
     display: 'UNITS',
     type: 'CONFIRMED',
     providerType: unitProviderTypes.find((type) => type === 'MUNICIPAL'),
@@ -383,8 +385,10 @@ export default React.memo(function Occupancies() {
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
+  const showReport =
+    filters.careAreaId !== null || filters.unitIds?.length !== 0
   const rows = useQueryResult(
-    filters.careAreaId === null
+    !showReport
       ? constantQuery([])
       : filters.display === 'UNITS'
         ? occupancyUnitReportQuery(filters)
@@ -464,6 +468,31 @@ export default React.memo(function Occupancies() {
                   getItemLabel={(item) => item.name}
                   data-qa="filter-area"
                 />
+              </Wrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+              <Wrapper>
+                {renderResult(units, (units) => (
+                  <MultiSelect
+                    options={units}
+                    onChange={(selectedItems) =>
+                      setFilters({
+                        ...filters,
+                        unitIds: selectedItems.map(
+                          (selectedItem) => selectedItem.id
+                        )
+                      })
+                    }
+                    value={units.filter(
+                      (unit) => filters.unitIds?.includes(unit.id) ?? false
+                    )}
+                    getOptionId={(unit) => unit.id}
+                    getOptionLabel={(unit) => unit.name}
+                    placeholder=""
+                    data-qa="filter-units"
+                  />
+                ))}
               </Wrapper>
             </FilterRow>
             <FilterRow>
@@ -599,7 +628,7 @@ export default React.memo(function Occupancies() {
         {renderResult(combine(rows, areas), ([rows, areas]) => {
           return (
             <>
-              {filters.careAreaId !== null && (
+              {showReport && (
                 <>
                   <ReportDownload
                     data={reportRows}
@@ -737,8 +766,9 @@ export default React.memo(function Occupancies() {
                                   key={
                                     isGroupRow(row) ? row.groupId : row.unitId
                                   }
+                                  data-qa="table-body-row-unit"
                                 >
-                                  <StyledTd>
+                                  <StyledTd data-qa="table-body-row-unit-name">
                                     <Link to={`/units/${row.unitId}`}>
                                       {row.unitName}
                                     </Link>
