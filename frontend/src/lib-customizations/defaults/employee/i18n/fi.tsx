@@ -4363,11 +4363,13 @@ export const fi = {
           UNITS: {
             CONFIRMED: 'Vahvistettu täyttöaste yksikössä',
             PLANNED: 'Suunniteltu täyttöaste yksikössä',
+            DRAFT: 'Hahmoteltu täyttöaste yksikössä',
             REALIZED: 'Käyttöaste yksikössä'
           },
           GROUPS: {
             CONFIRMED: 'Vahvistettu täyttöaste ryhmissä',
             PLANNED: 'Suunniteltu täyttöaste ryhmissä',
+            DRAFT: 'Hahmoteltu täyttöaste ryhmissä',
             REALIZED: 'Käyttöaste ryhmissä'
           }
         },

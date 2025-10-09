@@ -325,7 +325,13 @@ fun Database.Read.calculateOccupancyPeriods(
 
     return if (groupId == null) {
         reduceDailyOccupancyValues(
-                calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+                calculateDailyUnitOccupancyValues(
+                    today,
+                    period,
+                    type,
+                    unitFilter,
+                    unitIds = setOf(unitId),
+                )
             )
             .flatMap { (_, values) -> values }
     } else {
@@ -336,7 +342,7 @@ fun Database.Read.calculateOccupancyPeriods(
                     period,
                     type,
                     unitFilter,
-                    unitId = unitId,
+                    unitIds = setOf(unitId),
                     groupId = groupId,
                 )
             )
@@ -359,7 +365,13 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+            calculateDailyGroupOccupancyValues(
+                today,
+                period,
+                type,
+                unitFilter,
+                unitIds = setOf(unitId),
+            )
         )
         .flatMap { (groupKey, values) ->
             values.map { value ->
@@ -399,7 +411,7 @@ private fun calculateSpeculatedMaxOccupancies(
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
             unitFilter = unitFilter,
-            unitId = unitId,
+            unitIds = setOf(unitId),
         )
     val speculatedOccupancies =
         tx.calculateDailyUnitOccupancyValues(
@@ -407,7 +419,7 @@ private fun calculateSpeculatedMaxOccupancies(
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
             unitFilter = unitFilter,
-            unitId = unitId,
+            unitIds = setOf(unitId),
             speculatedPlacements = speculatedPlacements,
         )
 
