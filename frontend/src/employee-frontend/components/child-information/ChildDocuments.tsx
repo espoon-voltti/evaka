@@ -485,6 +485,7 @@ const ChildDocumentTables = ({
           }
           templates={validTemplatesByCategory[creationModalState]}
           onClose={() => setCreationModalState(undefined)}
+          requireConfirmation={creationModalState === 'internal'}
         />
       )}
 
@@ -529,12 +530,14 @@ const CreationModal = React.memo(function CreationModal({
   childId,
   title,
   templates,
-  onClose
+  onClose,
+  requireConfirmation
 }: {
   childId: ChildId
   title: string
   templates: DocumentTemplateSummary[]
   onClose: () => void
+  requireConfirmation?: boolean
 }) {
   const { i18n } = useTranslation()
   const { mutateAsync: createChildDocument } = useMutationResult(
@@ -559,7 +562,7 @@ const CreationModal = React.memo(function CreationModal({
           label: t.name
         }))
       },
-      confirmation: false
+      confirmation: !requireConfirmation
     }),
     i18n.validationErrors
   )
@@ -592,11 +595,13 @@ const CreationModal = React.memo(function CreationModal({
       <FixedSpaceColumn>
         <Label>{i18n.childInformation.childDocuments.select}</Label>
         <SelectF bind={templateId} data-qa="template-select" />
-        <CheckboxF
-          bind={confirmation}
-          label={i18n.childInformation.childDocuments.confirmation}
-          data-qa="confirmation"
-        />
+        {requireConfirmation && (
+          <CheckboxF
+            bind={confirmation}
+            label={i18n.childInformation.childDocuments.confirmation}
+            data-qa="confirmation"
+          />
+        )}
       </FixedSpaceColumn>
     </AsyncFormModal>
   )
