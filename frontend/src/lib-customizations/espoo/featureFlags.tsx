@@ -155,7 +155,7 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
     showMetadataToCitizen: false,
-    placementDesktop: false
+    placementDesktop: true
   }
 }
 
