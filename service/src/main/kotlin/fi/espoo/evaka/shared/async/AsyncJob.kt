@@ -425,6 +425,12 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class CleanNekkuOrdersReport(
+        val cutOffDate: LocalDate
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAbsenceApplicationDecidedEmail(val absenceApplicationId: AbsenceApplicationId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -554,6 +560,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SyncNekkuCustomers::class,
                     SyncNekkuProducts::class,
                     SyncNekkuSpecialDiets::class,
+                    CleanNekkuOrdersReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
                     VTJRefresh::class,

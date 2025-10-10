@@ -1041,3 +1041,13 @@ GROUP BY child_id
             )
         }
         .toMap { columnPair("child_id", "reductions") }
+
+fun Database.Transaction.cleanNekkuOrderReportRows(cutOffDate: LocalDate) =
+    createUpdate {
+        sql(
+            """
+                DELETE FROM nekku_orders_report
+                WHERE delivery_date < ${bind(cutOffDate)}
+            """.trimIndent()
+        )
+    }.execute()

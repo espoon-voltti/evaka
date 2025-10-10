@@ -75,9 +75,7 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
 
         val effectiveGroupIds = groupIds ?: tx.getDaycareGroupIds(unitId)
 
-        val dateList = generateDateList(start, end)
-
-        val orderRows = tx.getNekkuReportRows(unitId, effectiveGroupIds, dateList)
+        val orderRows = tx.getNekkuReportRows(unitId, effectiveGroupIds, start, end)
 
         return orderRows
     }
@@ -86,7 +84,8 @@ class NekkuOrderReportController(private val accessControl: AccessControl) {
 fun Database.Read.getNekkuReportRows(
     daycareId: DaycareId,
     groupIds: List<GroupId>,
-    dates: List<LocalDate>,
+    start: LocalDate,
+    end: LocalDate,
 ): List<NekkuOrderRow> {
     return createQuery {
             sql(
@@ -105,7 +104,7 @@ fun Database.Read.getNekkuReportRows(
                 ON nor.group_id = dg.id
                 WHERE nor.daycare_id = ${bind(daycareId)}
                 AND nor.group_id =ANY(${bind ( groupIds)})
-                AND nor.delivery_date =ANY(${bind ( dates)})
+                AND nor.delivery_date BETWEEN ${bind(start)} AND ${bind(end)}
                 ORDER BY nor.delivery_date, nor.group_id, nor.meal_time, nor.meal_sku
             """
             )

@@ -6,6 +6,7 @@ package fi.espoo.evaka.nekku
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.calendarevent.CalendarEventType
+import fi.espoo.evaka.reports.getNekkuReportRows
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
