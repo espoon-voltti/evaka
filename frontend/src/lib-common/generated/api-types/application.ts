@@ -89,25 +89,31 @@ export type ApplicationAttachmentType =
 /**
 * Generated from fi.espoo.evaka.application.ApplicationBasis
 */
-export type ApplicationBasis =
-  | 'ADDITIONAL_INFO'
-  | 'SIBLING_BASIS'
-  | 'ASSISTANCE_NEED'
-  | 'CLUB_CARE'
-  | 'CONTINUATION'
-  | 'DAYCARE'
-  | 'EXTENDED_CARE'
-  | 'DUPLICATE_APPLICATION'
-  | 'URGENT'
-  | 'HAS_ATTACHMENTS'
+export const applicationBasisOptions = [
+  'ADDITIONAL_INFO',
+  'SIBLING_BASIS',
+  'ASSISTANCE_NEED',
+  'CLUB_CARE',
+  'CONTINUATION',
+  'DAYCARE',
+  'EXTENDED_CARE',
+  'DUPLICATE_APPLICATION',
+  'URGENT',
+  'HAS_ATTACHMENTS'
+] as const
+
+export type ApplicationBasis = typeof applicationBasisOptions[number]
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationDateType
 */
-export type ApplicationDateType =
-  | 'DUE'
-  | 'START'
-  | 'ARRIVAL'
+export const applicationDateTypeOptions = [
+  'DUE',
+  'START',
+  'ARRIVAL'
+] as const
+
+export type ApplicationDateType = typeof applicationDateTypeOptions[number]
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationDecisions

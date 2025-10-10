@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.DAYCARE_ONLY
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_ONLY
@@ -45,6 +46,7 @@ enum class ApplicationSortColumn {
     UNIT_NAME,
 }
 
+@ConstList("applicationBasisOptions")
 enum class ApplicationBasis {
     ADDITIONAL_INFO,
     SIBLING_BASIS,
