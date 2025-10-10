@@ -52,9 +52,7 @@ describe('Occupancies report', () => {
     await report.assertReportUnitNameRows(['Yksikkö 1', 'Yksikkö 3'])
     await report.unitsSelect.fillAndSelectFirst('Yksikkö 3')
     await report.assertReportUnitNameRows(['Yksikkö 1'])
-    await report.typeCombobox.fillAndSelectFirst(
-      'Vahvistettu täyttöaste ryhmissä'
-    )
+    await report.typeCombobox.selectItem('filter-type-GROUPS-CONFIRMED')
     await report.assertReportUnitNameRows(['Yksikkö 1'])
     await report.unitsSelect.fillAndSelectFirst('Yksikkö 2')
     await report.assertReportUnitNameRows(['Yksikkö 1', 'Yksikkö 2'])
@@ -83,10 +81,7 @@ describe('Occupancies report', () => {
     })
     const report = await navigateToReport(page, admin)
     await report.areaCombobox.fillAndSelectFirst('Kaikki')
-    await report.typeCombobox.fill('')
-    await report.typeCombobox.fillAndSelectFirst(
-      'Suunniteltu täyttöaste yksikössä'
-    )
+    await report.typeCombobox.selectItem('filter-type-UNITS-PLANNED')
     await report.assertReportDateColumns(
       LocalDate.range(
         LocalDate.of(2025, 10, 1),
@@ -102,8 +97,7 @@ describe('Occupancies report', () => {
     })
     const report = await navigateToReport(page, admin)
     await report.areaCombobox.fillAndSelectFirst('Kaikki')
-    await report.typeCombobox.fill('')
-    await report.typeCombobox.fillAndSelectFirst('Käyttöaste yksikössä')
+    await report.typeCombobox.selectItem('filter-type-UNITS-REALIZED')
     await report.assertReportDateColumns([
       LocalDate.of(2025, 10, 1),
       LocalDate.of(2025, 10, 2)
@@ -117,8 +111,7 @@ describe('Occupancies report', () => {
     })
     const report = await navigateToReport(page, admin)
     await report.areaCombobox.fillAndSelectFirst('Kaikki')
-    await report.typeCombobox.fill('')
-    await report.typeCombobox.fillAndSelectFirst('Käyttöaste yksikössä')
+    await report.typeCombobox.selectItem('filter-type-UNITS-REALIZED')
     await report.assertReportDateColumns([])
   })
 })

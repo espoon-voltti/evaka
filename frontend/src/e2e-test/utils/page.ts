@@ -553,6 +553,11 @@ export class Combobox extends Element {
     const options = this.findAllByDataQa('item')
     await options.assertTextsEqual(expected)
   }
+
+  async selectItem(dataQa: string) {
+    await this.click()
+    await this.findByDataQa(dataQa).click()
+  }
 }
 
 export class MultiSelect extends Element {

@@ -578,6 +578,9 @@ export default React.memo(function Occupancies() {
                   getItemLabel={({ display, type }) =>
                     i18n.reports.occupancies.filters.types[display][type]
                   }
+                  getItemDataQa={({ display, type }) =>
+                    `filter-type-${display}-${type}`
+                  }
                   data-qa="filter-type"
                 />
               </Wrapper>
