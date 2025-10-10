@@ -353,7 +353,7 @@ const VoucherApplicationsFilter = React.memo(
   }
 )
 
-const preschoolTypes = [
+export const preschoolTypes = [
   'PRESCHOOL_ONLY',
   'PRESCHOOL_DAYCARE',
   'PRESCHOOL_CLUB',

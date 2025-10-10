@@ -9,3 +9,11 @@ export const capitalizeFirstLetter = (
   if (str.length === 1) return str.toUpperCase()
   return str[0].toUpperCase() + str.slice(1)
 }
+
+export const toSimpleHash = (str: string) =>
+  str
+    .split('')
+    .reduce(
+      (hash, char) => char.charCodeAt(0) + (hash << 6) + (hash << 16) - hash,
+      0
+    ) >>> 0

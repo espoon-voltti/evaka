@@ -19,16 +19,24 @@ import type {
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
+import {
+  applicationBasisOptions,
+  applicationDateTypeOptions,
+  applicationStatusOptions
+} from 'lib-common/generated/api-types/application'
 import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import type {
   ApplicationId,
   AreaId,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
+import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { toSimpleHash } from 'lib-common/string'
 
 import type { PreschoolType } from '../components/applications/ApplicationsFilters'
+import { preschoolTypes } from '../components/applications/ApplicationsFilters'
 import type {
   ApplicationDateType,
   ApplicationSummaryStatusOptions,
@@ -75,6 +83,29 @@ interface RawApplicationSearchFilters {
   allStatuses: ApplicationStatusOption[]
   distinctions: ApplicationDistinctions[]
 }
+
+// This example data is used for creating a hash to detect changes in the typings and
+// invalidate local storage data when the structure changes.
+const constantUuid = '00000000-0000-0000-0000-000000000000'
+const exampleFilters: RawApplicationSearchFilters = {
+  area: [fromUuid(constantUuid)],
+  units: [fromUuid(constantUuid)],
+  basis: [...applicationBasisOptions],
+  status: 'SENT',
+  type: 'ALL',
+  startDate: '31.12.2000',
+  endDate: '31.12.2000',
+  dateType: [...applicationDateTypeOptions],
+  searchTerms: '',
+  transferApplications: 'ALL',
+  voucherApplications: 'VOUCHER_FIRST_CHOICE',
+  preschoolType: [...preschoolTypes],
+  allStatuses: [...applicationStatusOptions],
+  distinctions: ['SECONDARY']
+}
+const manualVersionNumber = 1 // override to force invalidation
+const versionHash = `${toSimpleHash(JSON.stringify(exampleFilters))}-${manualVersionNumber}`
+const localStorageKey = `application-search-filters:${versionHash}`
 
 export interface ApplicationSearchFilters
   extends Omit<RawApplicationSearchFilters, 'startDate' | 'endDate'> {
@@ -136,8 +167,16 @@ export const ApplicationUIContextProvider = React.memo(
     const [confirmedSearchFilters, setConfirmedSearchFilters] = useState<
       ApplicationSearchFilters | undefined
     >(defaultState.confirmedSearchFilters)
+    const storedFiltersJson = useMemo(
+      () => localStorage.getItem(localStorageKey),
+      []
+    )
     const [searchFilters, _setSearchFilters] =
-      useState<RawApplicationSearchFilters>(defaultState.searchFilters)
+      useState<RawApplicationSearchFilters>(
+        storedFiltersJson
+          ? (JSON.parse(storedFiltersJson) as RawApplicationSearchFilters)
+          : defaultState.searchFilters
+      )
     const setSearchFilters = useCallback(
       (value: React.SetStateAction<RawApplicationSearchFilters>) => {
         _setSearchFilters(value)
@@ -150,12 +189,15 @@ export const ApplicationUIContextProvider = React.memo(
       const startDate = LocalDate.parseFiOrNull(searchFilters.startDate)
       const endDate = LocalDate.parseFiOrNull(searchFilters.endDate)
 
-      // reformat / clear if invalid
-      _setSearchFilters((prev) => ({
-        ...prev,
+      // reformat / clear date strings if invalid
+      const newSearchFilters = {
+        ...searchFilters,
         startDate: startDate ? startDate.format() : '',
         endDate: endDate ? endDate.format() : ''
-      }))
+      }
+      _setSearchFilters(newSearchFilters)
+
+      localStorage.setItem(localStorageKey, JSON.stringify(newSearchFilters))
 
       setConfirmedSearchFilters({
         ...searchFilters,
@@ -165,10 +207,10 @@ export const ApplicationUIContextProvider = React.memo(
       setPage(defaultState.page)
     }, [searchFilters])
 
-    const clearSearchFilters = useCallback(
-      () => setSearchFilters(defaultState.searchFilters),
-      [setSearchFilters]
-    )
+    const clearSearchFilters = useCallback(() => {
+      localStorage.removeItem(localStorageKey)
+      setSearchFilters(defaultState.searchFilters)
+    }, [setSearchFilters])
 
     const availableAreas = useQueryResult(areasQuery(), { enabled: loggedIn })
 
