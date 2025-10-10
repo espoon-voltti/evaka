@@ -126,11 +126,7 @@ class MessageService(
             tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
         if (messageRecipients.isEmpty()) return null to 0
 
-        // Count unique recipient accounts: messageRecipients is List<Pair<MessageAccountId,
-        // ChildId?>>
-        // We extract the MessageAccountIds (.first), convert to Set to remove duplicates, then
-        // count
-        val recipientCount = messageRecipients.map { it.first }.toSet().size
+        val recipientCount = messageRecipients.map { pair -> pair.first }.toSet().size
 
         val staffCopyRecipients =
             if (type == MessageType.BULLETIN) {

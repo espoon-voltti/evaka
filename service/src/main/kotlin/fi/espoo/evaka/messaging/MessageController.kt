@@ -758,44 +758,44 @@ class MessageController(
                 // Add specific recipient IDs for areas, units, and groups
                 val areaRecipients = body.recipients.filterIsInstance<MessageRecipient.Area>()
                 if (areaRecipients.isNotEmpty()) {
-                    auditMeta["recipients.areas"] = areaRecipients.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_areas"] = areaRecipients.map { it.id.toString() }.sorted()
                 }
 
                 val unitRecipients = body.recipients.filterIsInstance<MessageRecipient.Unit>()
                 if (unitRecipients.isNotEmpty()) {
-                    auditMeta["recipients.units"] = unitRecipients.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_units"] = unitRecipients.map { it.id.toString() }.sorted()
                     val starterUnits = unitRecipients.filter { it.starter }
                     if (starterUnits.isNotEmpty()) {
-                        auditMeta["recipients.units.starters"] =
+                        auditMeta["recipients_units.starters"] =
                             starterUnits.map { it.id.toString() }.sorted()
                     }
                 }
 
                 val groupRecipients = body.recipients.filterIsInstance<MessageRecipient.Group>()
                 if (groupRecipients.isNotEmpty()) {
-                    auditMeta["recipients.groups"] =
+                    auditMeta["recipients_groups"] =
                         groupRecipients.map { it.id.toString() }.sorted()
                     val starterGroups = groupRecipients.filter { it.starter }
                     if (starterGroups.isNotEmpty()) {
-                        auditMeta["recipients.groups.starters"] =
+                        auditMeta["recipients_groups.starters"] =
                             starterGroups.map { it.id.toString() }.sorted()
                     }
                 }
 
                 val childRecipients = body.recipients.filterIsInstance<MessageRecipient.Child>()
                 if (childRecipients.isNotEmpty()) {
-                    auditMeta["recipients.children"] =
+                    auditMeta["recipients_children"] =
                         childRecipients.map { it.id.toString() }.sorted()
                     val starterChildren = childRecipients.filter { it.starter }
                     if (starterChildren.isNotEmpty()) {
-                        auditMeta["recipients.children.starters"] =
+                        auditMeta["recipients_children.starters"] =
                             starterChildren.map { it.id.toString() }.sorted()
                     }
                 }
 
                 val citizenRecipients = body.recipients.filterIsInstance<MessageRecipient.Citizen>()
                 if (citizenRecipients.isNotEmpty()) {
-                    auditMeta["recipients.citizens"] =
+                    auditMeta["recipients_citizens"] =
                         citizenRecipients.map { it.id.toString() }.sorted()
                 }
 
