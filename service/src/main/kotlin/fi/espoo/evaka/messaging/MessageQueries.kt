@@ -72,6 +72,9 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
     val data =
         createQuery {
                 sql(
+                    // NOTE:
+                    // This SQL is very fragile performance-wise. Always measure performance after
+                    // making changes!
                     """
         WITH limits AS (
             SELECT
@@ -79,14 +82,21 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
                 (created - interval '1 week')::date AS access_limit
             FROM daycare_group_acl 
             WHERE employee_id = ${bind(employeeId)}
+        ),
+        accounts AS (
+            SELECT id, daycare_group_id 
+            FROM message_account 
+            WHERE ${predicate(idFilter.forTable("message_account"))}
         )
         SELECT 
             acc.id as account_id, 
             mt.is_copy as is_copy, 
             mtp.folder_id, 
             count(mt.id) AS count
-        FROM message_account acc
-            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)}
+        FROM accounts acc
+            LEFT JOIN limits l ON l.daycare_group_id = acc.daycare_group_id
+            LEFT JOIN daycare_group dg ON dg.id = acc.daycare_group_id
+            LEFT JOIN daycare_acl da ON da.employee_id = ${bind(employeeId)} AND da.daycare_id = dg.daycare_id
             JOIN message_recipients mr ON mr.recipient_id = acc.id
             JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
             JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id 
@@ -97,12 +107,11 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
             (
                 mtp.folder_id IS NOT NULL OR
                 da.role = 'UNIT_SUPERVISOR' OR
-                mtp.last_message_timestamp >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
-                m.sent_at >= (SELECT access_limit FROM limits WHERE limits.daycare_group_id = acc.daycare_group_id) OR
-                mt.is_copy = false
+                mtp.last_message_timestamp >= l.access_limit OR
+                m.sent_at >= l.access_limit OR 
+                dg.id IS NULL
             ) AND
-            (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE') AND
-            ${predicate(idFilter.forTable("acc"))}
+            (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE')
         GROUP BY acc.id, mt.is_copy, mtp.folder_id
         """
                 )
