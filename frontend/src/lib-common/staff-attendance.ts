@@ -5,9 +5,10 @@
 import type { StaffAttendanceType } from './generated/api-types/attendance'
 
 export function presentInGroup(type: StaffAttendanceType) {
-  if (type === 'TRAINING' || type === 'OTHER_WORK') {
-    return false
-  }
-
-  return true
+  return !(
+    type === 'TRAINING' ||
+    type === 'OTHER_WORK' ||
+    type === 'SICKNESS' ||
+    type === 'CHILD_SICKNESS'
+  )
 }

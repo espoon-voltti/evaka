@@ -2173,7 +2173,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         groupId = groupId,
                         arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
                         departureTime = null,
-                        occupancyCoefficient = BigDecimal("7.0"),
+                        occupancyCoefficient = BigDecimal("0.0"),
                         type = StaffAttendanceType.SICKNESS,
                         modifiedAt = now,
                         modifiedBy = employee.evakaUserId,
@@ -2208,7 +2208,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         groupId = groupId,
                         arrivalTime = HelsinkiDateTime.of(date, LocalTime.of(10, 26)),
                         departureTime = null,
-                        occupancyCoefficient = BigDecimal("7.0"),
+                        occupancyCoefficient = BigDecimal("0.0"),
                         type = StaffAttendanceType.CHILD_SICKNESS,
                         modifiedAt = now,
                         modifiedBy = employee.evakaUserId,
@@ -2278,7 +2278,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = date,
                                                                 beginTime = "1026",
-                                                                beginReasonCode = "Z",
+                                                                beginReasonCode = "SA",
                                                                 endTime = null,
                                                                 endReasonCode = null,
                                                             ),
@@ -2312,15 +2312,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0630",
                                                                 beginReasonCode = null,
                                                                 endTime = "1026",
-                                                                endReasonCode = null,
-                                                            ),
-                                                            TitaniaStampedWorkingTimeEvent(
-                                                                date = date,
-                                                                beginTime = "1026",
-                                                                beginReasonCode = "7",
-                                                                endTime = null,
-                                                                endReasonCode = null,
-                                                            ),
+                                                                endReasonCode = "LS",
+                                                            )
                                                         )
                                                 ),
                                         )

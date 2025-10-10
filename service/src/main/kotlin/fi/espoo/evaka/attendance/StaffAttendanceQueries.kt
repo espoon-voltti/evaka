@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.asHelsinkiDateTimeRange
 import fi.espoo.evaka.user.EvakaUser
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.reflect.full.memberProperties
@@ -396,7 +397,17 @@ data class RawAttendance(
     @Nested("departed_added_by") val departedAddedBy: EvakaUser?,
     val departedModifiedAt: HelsinkiDateTime?,
     @Nested("departed_modified_by") val departedModifiedBy: EvakaUser?,
-)
+) {
+    fun isPrevious(other: RawAttendance) =
+        if (this.departed == null) false
+        else
+            this.departed.plusMinutes(1).durationSince(other.arrived).abs() <= Duration.ofMinutes(1)
+
+    fun isNext(other: RawAttendance) =
+        if (other.departed == null) false
+        else
+            other.departed.plusMinutes(1).durationSince(this.arrived).abs() <= Duration.ofMinutes(1)
+}
 
 fun Database.Read.getStaffAttendancesForDateRange(
     unitId: DaycareId,
