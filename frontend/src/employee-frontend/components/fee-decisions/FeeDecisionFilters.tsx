@@ -15,7 +15,6 @@ import type {
   DaycareId,
   EmployeeId
 } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { Gap } from 'lib-components/white-space'
@@ -144,14 +143,14 @@ function FeeDecisionFilters() {
     }
   }
 
-  const setStartDate = (startDate: LocalDate | null) => {
+  const setStartDate = (startDate: string) => {
     setSearchFilters({
       ...searchFilters,
       startDate: startDate
     })
   }
 
-  const setEndDate = (endDate: LocalDate | null) => {
+  const setEndDate = (endDate: string) => {
     setSearchFilters({
       ...searchFilters,
       endDate: endDate

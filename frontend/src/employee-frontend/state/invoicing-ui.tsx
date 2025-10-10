@@ -41,30 +41,36 @@ import { areasQuery, unitsQuery } from '../queries'
 
 import { UserContext } from './user'
 
-interface FeeDecisionSearchFilters {
+interface FeeDecisionSearchFiltersRaw {
   searchTerms: string
   area: string[]
   unit?: DaycareId
   statuses: FeeDecisionStatus[]
   distinctiveDetails: DistinctiveParams[]
-  startDate: LocalDate | null
-  endDate: LocalDate | null
+  startDate: string
+  endDate: string
   searchByStartDate: boolean
   financeDecisionHandlerId: EmployeeId | undefined
   difference: FeeDecisionDifference[]
 }
 
+interface FeeDecisionSearchFilters
+  extends Omit<FeeDecisionSearchFiltersRaw, 'startDate' | 'endDate'> {
+  startDate: LocalDate | null
+  endDate: LocalDate | null
+}
+
 interface FeeDecisionSearchFilterState {
   page: number
   setPage: (p: number) => void
-  searchFilters: FeeDecisionSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<FeeDecisionSearchFilters>>
+  searchFilters: FeeDecisionSearchFiltersRaw
+  setSearchFilters: Dispatch<SetStateAction<FeeDecisionSearchFiltersRaw>>
   confirmedSearchFilters: FeeDecisionSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
-interface ValueDecisionSearchFilters {
+interface ValueDecisionSearchFiltersRaw {
   searchTerms: string
   area: string[]
   unit?: DaycareId
@@ -72,48 +78,66 @@ interface ValueDecisionSearchFilters {
   distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: EmployeeId
   difference: VoucherValueDecisionDifference[]
+  startDate: string
+  endDate: string
+  searchByStartDate: boolean
+}
+
+interface ValueDecisionSearchFilters
+  extends Omit<ValueDecisionSearchFiltersRaw, 'startDate' | 'endDate'> {
   startDate: LocalDate | null
   endDate: LocalDate | null
-  searchByStartDate: boolean
 }
 
 interface ValueDecisionSearchFilterState {
   page: number
   setPage: (p: number) => void
-  searchFilters: ValueDecisionSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<ValueDecisionSearchFilters>>
+  searchFilters: ValueDecisionSearchFiltersRaw
+  setSearchFilters: Dispatch<SetStateAction<ValueDecisionSearchFiltersRaw>>
   confirmedSearchFilters: ValueDecisionSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
-export interface InvoiceSearchFilters {
+export interface InvoiceSearchFiltersRaw {
   searchTerms: string
   area: string[]
   unit?: DaycareId
   status: InvoiceStatus
   distinctiveDetails: InvoiceDistinctiveParams[]
+  startDate: string
+  endDate: string
+  useCustomDatesForInvoiceSending: boolean
+}
+
+export interface InvoiceSearchFilters
+  extends Omit<InvoiceSearchFiltersRaw, 'startDate' | 'endDate'> {
   startDate: LocalDate | null
   endDate: LocalDate | null
-  useCustomDatesForInvoiceSending: boolean
 }
 
 interface InvoiceSearchFilterState {
   page: number
   setPage: (p: number) => void
-  searchFilters: InvoiceSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<InvoiceSearchFilters>>
+  searchFilters: InvoiceSearchFiltersRaw
+  setSearchFilters: Dispatch<SetStateAction<InvoiceSearchFiltersRaw>>
   confirmedSearchFilters: InvoiceSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
-export interface PaymentSearchFilters {
+export interface PaymentSearchFiltersRaw {
   searchTerms: string
   area: string[]
   unit: DaycareId | null
   distinctions: PaymentDistinctiveParams[]
   status: PaymentStatus
+  paymentDateStart: string
+  paymentDateEnd: string
+}
+
+export interface PaymentSearchFilters
+  extends Omit<PaymentSearchFiltersRaw, 'paymentDateStart' | 'paymentDateEnd'> {
   paymentDateStart: LocalDate | null
   paymentDateEnd: LocalDate | null
 }
@@ -121,17 +145,27 @@ export interface PaymentSearchFilters {
 interface PaymentSearchFilterState {
   page: number
   setPage: (p: number) => void
-  searchFilters: PaymentSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<PaymentSearchFilters>>
+  searchFilters: PaymentSearchFiltersRaw
+  setSearchFilters: Dispatch<SetStateAction<PaymentSearchFiltersRaw>>
   confirmedSearchFilters: PaymentSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
 }
 
-export interface IncomeStatementSearchFilters {
+export interface IncomeStatementSearchFiltersRaw {
   area: string[]
   unit: DaycareId | undefined
   providerTypes: ProviderType[]
+  sentStartDate: string
+  sentEndDate: string
+  placementValidDate: string
+}
+
+export interface IncomeStatementSearchFilters
+  extends Omit<
+    IncomeStatementSearchFiltersRaw,
+    'sentStartDate' | 'sentEndDate' | 'placementValidDate'
+  > {
   sentStartDate: LocalDate | null
   sentEndDate: LocalDate | null
   placementValidDate: LocalDate | null
@@ -140,8 +174,8 @@ export interface IncomeStatementSearchFilters {
 interface IncomeStatementSearchFilterState {
   page: number
   setPage: (p: number) => void
-  searchFilters: IncomeStatementSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFilters>>
+  searchFilters: IncomeStatementSearchFiltersRaw
+  setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFiltersRaw>>
   confirmedSearchFilters: IncomeStatementSearchFilters | undefined
   confirmSearchFilters: () => void
   clearSearchFilters: () => void
@@ -175,8 +209,8 @@ const defaultState: UiState = {
       distinctiveDetails: [],
       statuses: ['DRAFT'],
       area: [],
-      startDate: null,
-      endDate: LocalDate.todayInSystemTz(),
+      startDate: '',
+      endDate: LocalDate.todayInSystemTz().format(),
       searchByStartDate: false,
       financeDecisionHandlerId: undefined,
       difference: []
@@ -195,8 +229,8 @@ const defaultState: UiState = {
       statuses: ['DRAFT'],
       area: [],
       difference: [],
-      startDate: null,
-      endDate: LocalDate.todayInSystemTz(),
+      startDate: '',
+      endDate: LocalDate.todayInSystemTz().format(),
       searchByStartDate: false
     },
     setSearchFilters: () => undefined,
@@ -212,8 +246,8 @@ const defaultState: UiState = {
       distinctiveDetails: [],
       area: [],
       status: 'DRAFT',
-      startDate: null,
-      endDate: null,
+      startDate: '',
+      endDate: '',
       useCustomDatesForInvoiceSending: false
     },
     setSearchFilters: () => undefined,
@@ -230,8 +264,8 @@ const defaultState: UiState = {
       unit: null,
       distinctions: [],
       status: 'DRAFT',
-      paymentDateStart: null,
-      paymentDateEnd: null
+      paymentDateStart: '',
+      paymentDateEnd: ''
     },
     setSearchFilters: () => undefined,
     confirmedSearchFilters: undefined,
@@ -245,9 +279,9 @@ const defaultState: UiState = {
       area: [],
       unit: undefined,
       providerTypes: [],
-      sentStartDate: null,
-      sentEndDate: null,
-      placementValidDate: null
+      sentStartDate: '',
+      sentEndDate: '',
+      placementValidDate: ''
     },
     setSearchFilters: () => undefined,
     confirmedSearchFilters: undefined,
@@ -280,18 +314,34 @@ export const InvoicingUIContextProvider = React.memo(
       defaultState.feeDecisions.confirmedSearchFilters
     )
     const [feeDecisionSearchFilters, _setFeeDecisionSearchFilters] =
-      useState<FeeDecisionSearchFilters>(
+      useState<FeeDecisionSearchFiltersRaw>(
         defaultState.feeDecisions.searchFilters
       )
     const setFeeDecisionSearchFilters = useCallback(
-      (value: React.SetStateAction<FeeDecisionSearchFilters>) => {
+      (value: React.SetStateAction<FeeDecisionSearchFiltersRaw>) => {
         _setFeeDecisionSearchFilters(value)
         setConfirmedFeeDecisionSearchFilters(undefined)
       },
       []
     )
     const confirmFeeDecisionSearchFilters = useCallback(() => {
-      setConfirmedFeeDecisionSearchFilters(feeDecisionSearchFilters)
+      const startDate = LocalDate.parseFiOrNull(
+        feeDecisionSearchFilters.startDate
+      )
+      const endDate = LocalDate.parseFiOrNull(feeDecisionSearchFilters.endDate)
+
+      // reformat / clear if invalid
+      _setFeeDecisionSearchFilters((prev) => ({
+        ...prev,
+        startDate: startDate ? startDate.format() : '',
+        endDate: endDate ? endDate.format() : ''
+      }))
+
+      setConfirmedFeeDecisionSearchFilters({
+        ...feeDecisionSearchFilters,
+        startDate,
+        endDate
+      })
       setFeeDecisionPage(defaultState.feeDecisions.page)
     }, [feeDecisionSearchFilters])
     const clearFeeDecisionSearchFilters = useCallback(
@@ -310,18 +360,36 @@ export const InvoicingUIContextProvider = React.memo(
       defaultState.valueDecisions.confirmedSearchFilters
     )
     const [valueDecisionSearchFilters, _setValueDecisionSearchFilters] =
-      useState<ValueDecisionSearchFilters>(
+      useState<ValueDecisionSearchFiltersRaw>(
         defaultState.valueDecisions.searchFilters
       )
     const setValueDecisionSearchFilters = useCallback(
-      (value: React.SetStateAction<ValueDecisionSearchFilters>) => {
+      (value: React.SetStateAction<ValueDecisionSearchFiltersRaw>) => {
         _setValueDecisionSearchFilters(value)
         setConfirmedValueDecisionSearchFilters(undefined)
       },
       []
     )
     const confirmValueDecisionSearchFilters = useCallback(() => {
-      setConfirmedValueDecisionSearchFilters(valueDecisionSearchFilters)
+      const startDate = LocalDate.parseFiOrNull(
+        valueDecisionSearchFilters.startDate
+      )
+      const endDate = LocalDate.parseFiOrNull(
+        valueDecisionSearchFilters.endDate
+      )
+
+      // reformat / clear if invalid
+      _setValueDecisionSearchFilters((prev) => ({
+        ...prev,
+        startDate: startDate ? startDate.format() : '',
+        endDate: endDate ? endDate.format() : ''
+      }))
+
+      setConfirmedValueDecisionSearchFilters({
+        ...valueDecisionSearchFilters,
+        startDate,
+        endDate
+      })
       setValueDecisionPage(defaultState.valueDecisions.page)
     }, [valueDecisionSearchFilters])
     const clearValueDecisionSearchFilters = useCallback(
@@ -340,16 +408,30 @@ export const InvoicingUIContextProvider = React.memo(
         defaultState.invoices.confirmedSearchFilters
       )
     const [invoiceSearchFilters, _setInvoiceSearchFilters] =
-      useState<InvoiceSearchFilters>(defaultState.invoices.searchFilters)
+      useState<InvoiceSearchFiltersRaw>(defaultState.invoices.searchFilters)
     const setInvoiceSearchFilters = useCallback(
-      (value: React.SetStateAction<InvoiceSearchFilters>) => {
+      (value: React.SetStateAction<InvoiceSearchFiltersRaw>) => {
         _setInvoiceSearchFilters(value)
         setConfirmedInvoiceSearchFilters(undefined)
       },
       []
     )
     const confirmInvoiceSearchFilters = useCallback(() => {
-      setConfirmedInvoiceSearchFilters(invoiceSearchFilters)
+      const startDate = LocalDate.parseFiOrNull(invoiceSearchFilters.startDate)
+      const endDate = LocalDate.parseFiOrNull(invoiceSearchFilters.endDate)
+
+      // reformat / clear if invalid
+      _setInvoiceSearchFilters((prev) => ({
+        ...prev,
+        startDate: startDate ? startDate.format() : '',
+        endDate: endDate ? endDate.format() : ''
+      }))
+
+      setConfirmedInvoiceSearchFilters({
+        ...invoiceSearchFilters,
+        startDate,
+        endDate
+      })
       setInvoicePage(defaultState.invoices.page)
     }, [invoiceSearchFilters])
     const clearInvoiceSearchFilters = useCallback(
@@ -365,16 +447,34 @@ export const InvoicingUIContextProvider = React.memo(
         defaultState.payments.confirmedSearchFilters
       )
     const [paymentSearchFilters, _setPaymentSearchFilters] =
-      useState<PaymentSearchFilters>(defaultState.payments.searchFilters)
+      useState<PaymentSearchFiltersRaw>(defaultState.payments.searchFilters)
     const setPaymentSearchFilters = useCallback(
-      (value: React.SetStateAction<PaymentSearchFilters>) => {
+      (value: React.SetStateAction<PaymentSearchFiltersRaw>) => {
         _setPaymentSearchFilters(value)
         setConfirmedPaymentSearchFilters(undefined)
       },
       []
     )
     const confirmPaymentSearchFilters = useCallback(() => {
-      setConfirmedPaymentSearchFilters(paymentSearchFilters)
+      const paymentDateStart = LocalDate.parseFiOrNull(
+        paymentSearchFilters.paymentDateStart
+      )
+      const paymentDateEnd = LocalDate.parseFiOrNull(
+        paymentSearchFilters.paymentDateEnd
+      )
+
+      // reformat / clear if invalid
+      _setPaymentSearchFilters((prev) => ({
+        ...prev,
+        paymentDateStart: paymentDateStart ? paymentDateStart.format() : '',
+        paymentDateEnd: paymentDateEnd ? paymentDateEnd.format() : ''
+      }))
+
+      setConfirmedPaymentSearchFilters({
+        ...paymentSearchFilters,
+        paymentDateStart,
+        paymentDateEnd
+      })
       setPaymentPage(defaultState.payments.page)
     }, [paymentSearchFilters])
     const clearPaymentSearchFilters = useCallback(
@@ -392,18 +492,43 @@ export const InvoicingUIContextProvider = React.memo(
       defaultState.incomeStatements.confirmedSearchFilters
     )
     const [incomeStatementSearchFilters, _setIncomeStatementSearchFilters] =
-      useState<IncomeStatementSearchFilters>(
+      useState<IncomeStatementSearchFiltersRaw>(
         defaultState.incomeStatements.searchFilters
       )
     const setIncomeStatementSearchFilters = useCallback(
-      (value: React.SetStateAction<IncomeStatementSearchFilters>) => {
+      (value: React.SetStateAction<IncomeStatementSearchFiltersRaw>) => {
         _setIncomeStatementSearchFilters(value)
         setConfirmedIncomeStatementSearchFilters(undefined)
       },
       []
     )
     const confirmIncomeStatementSearchFilters = useCallback(() => {
-      setConfirmedIncomeStatementSearchFilters(incomeStatementSearchFilters)
+      const sentStartDate = LocalDate.parseFiOrNull(
+        incomeStatementSearchFilters.sentStartDate
+      )
+      const sentEndDate = LocalDate.parseFiOrNull(
+        incomeStatementSearchFilters.sentEndDate
+      )
+      const placementValidDate = LocalDate.parseFiOrNull(
+        incomeStatementSearchFilters.placementValidDate
+      )
+
+      // reformat / clear if invalid
+      _setIncomeStatementSearchFilters((prev) => ({
+        ...prev,
+        sentStartDate: sentStartDate ? sentStartDate.format() : '',
+        sentEndDate: sentEndDate ? sentEndDate.format() : '',
+        placementValidDate: placementValidDate
+          ? placementValidDate.format()
+          : ''
+      }))
+
+      setConfirmedIncomeStatementSearchFilters({
+        ...incomeStatementSearchFilters,
+        sentStartDate,
+        sentEndDate,
+        placementValidDate
+      })
       setIncomeStatementPage(defaultState.incomeStatements.page)
     }, [incomeStatementSearchFilters])
     const clearIncomeStatementSearchFilters = useCallback(() => {

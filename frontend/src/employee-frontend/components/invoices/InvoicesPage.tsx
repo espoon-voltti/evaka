@@ -260,23 +260,25 @@ const SendModal = React.memo(function SendModal({
       sendType === 'DRAFT'
         ? sendInvoicesByDateMutation
         : resendInvoicesByDateMutation,
-      () => ({
-        body: {
-          dueDate,
-          invoiceDate,
-          areas: searchFilters.area,
-          from:
-            searchFilters.startDate &&
-            searchFilters.useCustomDatesForInvoiceSending
-              ? searchFilters.startDate
-              : LocalDate.todayInSystemTz().withDate(1),
-          to:
-            searchFilters.endDate &&
-            searchFilters.useCustomDatesForInvoiceSending
-              ? searchFilters.endDate
-              : LocalDate.todayInSystemTz().lastDayOfMonth()
+      () => {
+        const startDate = LocalDate.parseFiOrNull(searchFilters.startDate)
+        const endDate = LocalDate.parseFiOrNull(searchFilters.endDate)
+        return {
+          body: {
+            dueDate,
+            invoiceDate,
+            areas: searchFilters.area,
+            from:
+              startDate && searchFilters.useCustomDatesForInvoiceSending
+                ? startDate
+                : LocalDate.todayInSystemTz().withDate(1),
+            to:
+              endDate && searchFilters.useCustomDatesForInvoiceSending
+                ? endDate
+                : LocalDate.todayInSystemTz().lastDayOfMonth()
+          }
         }
-      })
+      }
     ],
     [
       sendType === 'DRAFT' ? sendInvoicesMutation : resendInvoicesMutation,

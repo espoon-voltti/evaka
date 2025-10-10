@@ -6,8 +6,7 @@ import React, { Fragment, useCallback, useContext } from 'react'
 
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DatePickerLowLevel from 'lib-components/molecules/date-picker/DatePickerLowLevel'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -59,19 +58,19 @@ export default React.memo(function IncomeStatementsFilters() {
   )
 
   const setSentStartDate = useCallback(
-    (sentStartDate: LocalDate | null) =>
+    (sentStartDate: string) =>
       setSearchFilters((old) => ({ ...old, sentStartDate })),
     [setSearchFilters]
   )
 
   const setSentEndDate = useCallback(
-    (sentEndDate: LocalDate | null) =>
+    (sentEndDate: string) =>
       setSearchFilters((old) => ({ ...old, sentEndDate })),
     [setSearchFilters]
   )
 
   const setPlacementValidDate = useCallback(
-    (placementValidDate: LocalDate | null) =>
+    (placementValidDate: string) =>
       setSearchFilters((old) => ({ ...old, placementValidDate })),
     [setSearchFilters]
   )
@@ -125,8 +124,8 @@ export default React.memo(function IncomeStatementsFilters() {
           />
           <Gap size="L" />
           <Label>{i18n.filters.incomeStatementPlacementValidDate}</Label>
-          <DatePicker
-            date={searchFilters.placementValidDate}
+          <DatePickerLowLevel
+            value={searchFilters.placementValidDate}
             onChange={setPlacementValidDate}
             locale="fi"
           />

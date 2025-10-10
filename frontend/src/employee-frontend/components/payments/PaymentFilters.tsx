@@ -3,18 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useContext, useEffect } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo
+} from 'react'
 
 import type {
   PaymentDistinctiveParams,
   PaymentStatus
 } from 'lib-common/generated/api-types/invoicing'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
-import type LocalDate from 'lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DatePickerLowLevel from 'lib-components/molecules/date-picker/DatePickerLowLevel'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -95,13 +101,13 @@ export default React.memo(function PaymentFilters() {
   )
 
   const setPaymentDateStart = useCallback(
-    (paymentDateStart: LocalDate | null) =>
+    (paymentDateStart: string) =>
       setSearchFilters((old) => ({ ...old, paymentDateStart })),
     [setSearchFilters]
   )
 
   const setPaymentDateEnd = useCallback(
-    (paymentDateEnd: LocalDate | null) =>
+    (paymentDateEnd: string) =>
       setSearchFilters((old) => ({ ...old, paymentDateEnd })),
     [setSearchFilters]
   )
@@ -193,10 +199,10 @@ export function PaymentStatusFilter({
 }
 
 interface PaymentDateFilterProps {
-  startDate: LocalDate | null
-  setStartDate: (startDate: LocalDate | null) => void
-  endDate: LocalDate | null
-  setEndDate: (endDate: LocalDate | null) => void
+  startDate: string
+  setStartDate: (startDate: string) => void
+  endDate: string
+  setEndDate: (endDate: string) => void
 }
 
 export function PaymentDateFilter({
@@ -207,15 +213,25 @@ export function PaymentDateFilter({
 }: PaymentDateFilterProps) {
   const { i18n } = useTranslation()
 
+  const showWarning = useMemo(() => {
+    const start = LocalDate.parseFiOrNull(startDate)
+    const end = LocalDate.parseFiOrNull(endDate)
+    return start && end && start.isAfter(end)
+  }, [startDate, endDate])
+
   return (
     <>
       <Label>{i18n.filters.paymentDate}</Label>
       <FlexRow>
-        <DatePicker date={startDate} onChange={setStartDate} locale="fi" />
+        <DatePickerLowLevel
+          value={startDate}
+          onChange={setStartDate}
+          locale="fi"
+        />
         <Gap horizontal size="xs" />
-        <DatePicker date={endDate} onChange={setEndDate} locale="fi" />
+        <DatePickerLowLevel value={endDate} onChange={setEndDate} locale="fi" />
       </FlexRow>
-      {startDate && endDate && startDate.isAfter(endDate) ? (
+      {showWarning ? (
         <>
           <Gap size="xs" />
           <span>
