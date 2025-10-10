@@ -4614,7 +4614,73 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 HelsinkiDateTime.now(),
             )
 
-            tx.getNekkuReportRows(daycare.id, listOf(group.id), listOf(LocalDate.now()))
+            tx.getNekkuReportRows(daycare.id, listOf(group.id), LocalDate.now(), LocalDate.now())
+        }
+    }
+
+    @Test
+    fun `cleaning Nekku order report rows should work`() {
+
+        val client =
+            TestNekkuClient(
+                customers = basicTestClientWithAnotherCustomerNumber,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        // products
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare.id)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+
+            val products = tx.getNekkuProducts()
+
+            val dates =
+                listOf(
+                    "2025-05-15",
+                    "2025-04-15",
+                    "2025-03-15",
+                    "2025-02-15",
+                    "2025-02-14",
+                    "2025-01-15",
+                )
+            dates.map { date ->
+                val order =
+                    NekkuClient.NekkuOrders(
+                        listOf(
+                            NekkuClient.NekkuOrder(
+                                date,
+                                "2501K6090",
+                                group.id.toString(),
+                                listOf(NekkuClient.Item("31000010", 42, setOf())),
+                                null,
+                            )
+                        ),
+                        false,
+                    )
+
+                tx.setNekkuReportOrderReport(order, group.id, products, "", now)
+            }
+
+            tx.cleanNekkuOrderReportRows(LocalDate.of(2025, 2, 15))
+
+            val rows =
+                tx.getNekkuReportRows(
+                    daycare.id,
+                    listOf(group.id),
+                    LocalDate.of(2025, 1, 1),
+                    LocalDate.of(2025, 5, 31),
+                )
+            assertEquals(4, rows.size)
         }
     }
 }
