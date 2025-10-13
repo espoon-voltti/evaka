@@ -2421,13 +2421,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@fortawesome/react-fontawesome@npm:3.0.2"
+"@fortawesome/react-fontawesome@npm:3.1.0":
+  version: 3.1.0
+  resolution: "@fortawesome/react-fontawesome@npm:3.1.0"
   peerDependencies:
     "@fortawesome/fontawesome-svg-core": ~6 || ~7
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/39f25b3814b5e8a26cb60028929158fa032b724388588b9c9e256cf657ea18a73db2560054058240e91efa6daf58398f60e25d9a5ccd97655b2472a992191968
+  checksum: 10/3f7f1f77210f5b677ee5c2b11f2eb9afc2974a7c923745ce409ee0785a6f459f341db8666043e499d8a01870c8e4d59befdce44e8adc953d2322f1612b38522e
   languageName: node
   linkType: hard
 
@@ -6352,7 +6352,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:6.7.2"
     "@fortawesome/free-regular-svg-icons": "npm:6.7.2"
     "@fortawesome/free-solid-svg-icons": "npm:6.7.2"
-    "@fortawesome/react-fontawesome": "npm:3.0.2"
+    "@fortawesome/react-fontawesome": "npm:3.1.0"
     "@playwright/test": "npm:1.56.0"
     "@react-spring/rafz": "npm:10.0.3"
     "@react-spring/web": "npm:10.0.3"
