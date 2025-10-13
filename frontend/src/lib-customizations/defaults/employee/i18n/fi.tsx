@@ -360,6 +360,7 @@ export const fi = {
         tooManyPrimaryUnitsMessage:
           'Tarkenna hakuehtoja niin, että hakemuksien ykköstoiveissa on enintään 10 eri yksikköä.'
       },
+      occupancyPeriod: 'Näytä täyttöasteiden maksimi aikaväliltä',
       shownUnitsCount: 'Näytettäviä yksiköitä',
       addShownUnit: 'Lisää näytettävä yksikkö...',
       applicationsCount: 'Hakemuksia',
