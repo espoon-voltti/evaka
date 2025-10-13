@@ -615,7 +615,9 @@ function StaffAttendanceDetailsModal<
                           departed,
                           type: value,
                           groupId: presentInGroup(value) ? groupId : null,
-                          hasStaffOccupancyEffect
+                          hasStaffOccupancyEffect: presentInGroup(value)
+                            ? hasStaffOccupancyEffect
+                            : false
                         })
                       }
                       getItemLabel={(item) =>
@@ -674,6 +676,7 @@ function StaffAttendanceDetailsModal<
                     <Checkbox
                       label={i18n.unit.staffAttendance.hasStaffOccupancyEffect}
                       checked={hasStaffOccupancyEffect}
+                      disabled={type === null || !presentInGroup(type)}
                       onChange={(value) =>
                         updateAttendance(index, {
                           arrived,
