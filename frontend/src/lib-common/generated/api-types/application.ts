@@ -686,6 +686,7 @@ export interface PlacementDraft {
   childName: string
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
+  serviceWorkerNote: string
   unitId: DaycareId
 }
 

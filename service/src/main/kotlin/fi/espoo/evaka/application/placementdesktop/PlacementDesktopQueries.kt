@@ -62,7 +62,8 @@ fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<Day
                     'id', eu.id, 
                     'name', eu.name,
                     'type', eu.type
-                )
+                ),
+                'serviceWorkerNote', a.service_worker_note
             ))
             FROM placement_draft pd
             JOIN application a ON a.id = pd.application_id

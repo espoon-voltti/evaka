@@ -35,6 +35,7 @@ data class PlacementDraft(
     val childName: String,
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUser,
+    val serviceWorkerNote: String,
 )
 
 fun getPlacementDesktopDaycaresWithOccupancies(
