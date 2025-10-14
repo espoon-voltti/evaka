@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Dispatch, SetStateAction } from 'react'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -36,7 +35,7 @@ const Container = styled.div`
 type Props = {
   unitId: DaycareId
   filters: UnitFilters
-  setFilters: Dispatch<SetStateAction<UnitFilters>>
+  setFilters: (filters: UnitFilters) => void
   realtimeStaffAttendanceEnabled: boolean
   shiftCareUnit: boolean
   groups: DaycareGroupResponse[]

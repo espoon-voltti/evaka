@@ -84,7 +84,7 @@ export default React.memo(function DaycareCard({
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
             <a
-              href={`/employee/units/${daycare.id}`}
+              href={`/employee/units/${daycare.id}?period=${encodeURIComponent('3 months')}&startDate=${occupancyPeriodStart.formatIso()}`}
               target="_blank"
               rel="noreferrer"
             >
