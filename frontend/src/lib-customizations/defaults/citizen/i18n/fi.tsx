@@ -599,7 +599,15 @@ export default {
       warningPlannedServiceExceeded:
         'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
     },
-    childSelectionMissingError: 'Valitse vähintään yksi lapsi'
+    childSelectionMissingError: 'Valitse vähintään yksi lapsi',
+    infoToast: {
+      childStartsInfo: (
+        firstName: string,
+        startDate: string,
+        unitName: string
+      ) =>
+        `${firstName} aloittaa ${startDate} yksikössä ${unitName}. Läsnäolojen ilmoittaminen aukeaa kuukautta etukäteen.`
+    }
   },
   messages: {
     inboxTitle: 'Viestit',

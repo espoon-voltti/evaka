@@ -12,6 +12,7 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import YearMonth from 'lib-common/year-month'
 import { client } from '../../api-client'
+import { deserializeJsonChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { deserializeJsonDailyServiceTimes } from 'lib-common/generated/api-types/dailyservicetimes'
 import { deserializeJsonServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
@@ -74,5 +75,5 @@ export async function getChildren(): Promise<ChildAndPermittedActions[]> {
     url: uri`/citizen/children`.toString(),
     method: 'GET'
   })
-  return json
+  return json.map(e => deserializeJsonChildAndPermittedActions(e))
 }

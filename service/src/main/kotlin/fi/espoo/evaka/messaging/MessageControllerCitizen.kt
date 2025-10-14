@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.children.getChildrenByParent
@@ -47,6 +48,7 @@ class MessageControllerCitizen(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
     private val messageService: MessageService,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
 
     data class MyAccountResponse(
@@ -318,7 +320,7 @@ class MessageControllerCitizen(
                         }
                     }
                 val selectedChildren =
-                    dbc.read { it.getChildrenByParent(user.id, today) }
+                    dbc.read { it.getChildrenByParent(user.id, today, citizenCalendarEnv.calendarOpenBeforePlacementDays) }
                         .filter { body.children.contains(it.id) }
                 val selectedChildrenInSameUnit =
                     selectedChildren.asSequence().map { it.unit?.id }.toSet().size == 1
