@@ -75,6 +75,7 @@ enum class ApplicationDistinctions {
     SECONDARY
 }
 
+@ConstList("applicationDateTypeOptions")
 enum class ApplicationDateType {
     DUE,
     START,
