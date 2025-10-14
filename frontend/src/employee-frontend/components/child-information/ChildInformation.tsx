@@ -13,7 +13,7 @@ import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-ty
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { getAge } from 'lib-common/utils/local-date'
 import Title from 'lib-components/atoms/Title'
@@ -381,7 +381,8 @@ const ChildInformation = React.memo(function ChildInformation({
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
   const { roles } = useContext(UserContext)
-  const { person, hasGuardian } = useContext<ChildState>(ChildContext)
+  const { person, hasGuardian, permittedActions } =
+    useContext<ChildState>(ChildContext)
 
   useTitle(
     person.map(
@@ -392,7 +393,12 @@ const ChildInformation = React.memo(function ChildInformation({
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
-  const parentships = useQueryResult(parentshipsQuery({ childId: id }))
+  const parentships = useQueryResult(
+    permittedActions.has('READ_PARENTSHIPS')
+      ? parentshipsQuery({ childId: id })
+      : constantQuery([])
+  )
+
   const currentHeadOfChildId = useMemo(
     () => parentships.map(getCurrentHeadOfChildId).getOrElse(undefined),
     [parentships]
