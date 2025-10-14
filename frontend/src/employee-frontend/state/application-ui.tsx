@@ -161,11 +161,10 @@ export const ApplicationUIContextProvider = React.memo(
         endDate: endDate ? endDate.format() : ''
       }))
 
-      if (
-        startDate &&
-        searchFilters.dateType.some((dt) => dt === 'START' || dt === 'DUE')
-      ) {
-        setOccupancyPeriodStart(startDate)
+      if (searchFilters.dateType.some((dt) => dt === 'START' || dt === 'DUE')) {
+        setOccupancyPeriodStart(
+          startDate ?? endDate ?? LocalDate.todayInHelsinkiTz()
+        )
       } else {
         setOccupancyPeriodStart(LocalDate.todayInHelsinkiTz())
       }
