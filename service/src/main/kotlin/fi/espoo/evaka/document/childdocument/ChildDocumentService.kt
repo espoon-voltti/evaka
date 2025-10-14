@@ -220,6 +220,7 @@ class ChildDocumentService(
                         ChildDocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
                     )})
                     AND cd.status <> 'COMPLETED'
+                    AND cd.published_at IS NOT NULL 
             """
                     )
                 }
