@@ -31,6 +31,7 @@ import { MessageContextProvider } from './messages/state'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
 import { mobileBottomNavHeight } from './navigation/const'
+import { useChildrenStartingNotification } from './navigation/utils'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { queryClient, QueryClientProvider } from './query'
@@ -102,6 +103,7 @@ const Content = React.memo(function Content({
       sessionKeepalive,
       user.map((usr) => !!usr).getOrElse(false)
     )
+  useChildrenStartingNotification()
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
