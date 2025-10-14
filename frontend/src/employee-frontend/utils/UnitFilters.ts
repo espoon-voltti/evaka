@@ -4,7 +4,12 @@
 
 import type LocalDate from 'lib-common/local-date'
 
-export type FilterTimePeriod = '1 day' | '3 months' | '6 months' | '1 year'
+const filterTimePeriods = ['1 day', '3 months', '6 months', '1 year'] as const
+
+export type FilterTimePeriod = (typeof filterTimePeriods)[number]
+
+export const isFilterTimePeriod = (s: string): s is FilterTimePeriod =>
+  filterTimePeriods.some((p) => p === s)
 
 export class UnitFilters {
   readonly endDate: LocalDate

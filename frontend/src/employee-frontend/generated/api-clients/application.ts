@@ -19,6 +19,7 @@ import type { DecisionDraftGroup } from 'lib-common/generated/api-types/applicat
 import type { DecisionDraftUpdate } from 'lib-common/generated/api-types/decision'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import type { NoteRequest } from 'lib-common/generated/api-types/application'
 import type { PagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import type { PaperApplicationCreateRequest } from 'lib-common/generated/api-types/application'
@@ -576,12 +577,17 @@ export async function updateServiceWorkerNote(
 */
 export async function getPlacementDesktopDaycare(
   request: {
-    unitId: DaycareId
+    unitId: DaycareId,
+    occupancyStart?: LocalDate | null
   }
 ): Promise<PlacementDesktopDaycare> {
+  const params = createUrlSearchParams(
+    ['occupancyStart', request.occupancyStart?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare>>({
     url: uri`/employee/placement-desktop/daycares/${request.unitId}`.toString(),
-    method: 'GET'
+    method: 'GET',
+    params
   })
   return deserializeJsonPlacementDesktopDaycare(json)
 }
@@ -592,11 +598,13 @@ export async function getPlacementDesktopDaycare(
 */
 export async function getPlacementDesktopDaycares(
   request: {
-    unitIds?: DaycareId[] | null
+    unitIds?: DaycareId[] | null,
+    occupancyStart?: LocalDate | null
   }
 ): Promise<PlacementDesktopDaycare[]> {
   const params = createUrlSearchParams(
-    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? []),
+    ['occupancyStart', request.occupancyStart?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<PlacementDesktopDaycare[]>>({
     url: uri`/employee/placement-desktop/daycares`.toString(),

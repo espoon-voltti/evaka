@@ -24,6 +24,7 @@ import type {
   ApplicationId,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -32,6 +33,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../../queries'
@@ -102,10 +104,14 @@ const PlacementDesktopValidated = React.memo(
     applications: ApplicationSummary[]
     allUnits: UnitStub[]
   }) {
-    const { i18n } = useTranslation()
+    const { i18n, lang } = useTranslation()
     const queryClient = useQueryClient()
 
-    const { confirmedSearchFilters } = useContext(ApplicationUIContext)
+    const {
+      confirmedSearchFilters,
+      occupancyPeriodStart,
+      setOccupancyPeriodStart
+    } = useContext(ApplicationUIContext)
     const searchedUnits = useMemo(
       () =>
         allUnits.filter((u1) =>
@@ -196,68 +202,82 @@ const PlacementDesktopValidated = React.memo(
     }, [])
 
     return (
-      <FixedSpaceRow>
-        <DaycaresColumn>
-          <div>
-            {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
-            {shownDaycares?.length}
-          </div>
-          <Gap size="xs" />
-          <Combobox
-            items={otherAvailableUnits}
-            selectedItem={null}
-            onChange={(unit) => unit && onAddToShownDaycares(unit)}
-            placeholder={i18n.applications.placementDesktop.addShownUnit}
-            getItemLabel={(unit) => unit.name}
-            fullWidth
+      <FixedSpaceColumn spacing="L">
+        <FixedSpaceRow alignItems="center">
+          <div>{i18n.applications.placementDesktop.occupancyPeriod}:</div>
+          <DatePicker
+            date={occupancyPeriodStart}
+            onChange={(date) =>
+              setOccupancyPeriodStart(date ?? LocalDate.todayInHelsinkiTz())
+            }
+            locale={lang}
           />
-          <Gap size="s" />
-          {shownDaycares !== undefined && (
-            <PrefetchedDaycares
-              shownDaycares={shownDaycares}
-              applications={applications}
-              onUpdateApplicationPlacementSuccess={
-                onUpdateApplicationPlacementSuccess
-              }
-              onUpdateApplicationPlacementFailure={
-                onUpdateApplicationPlacementFailure
-              }
-              onAddToShownDaycares={onAddToShownDaycares}
-              onRemoveFromShownDaycares={onRemoveFromShownDaycares}
+          <div>—</div>
+          <div>{occupancyPeriodStart.addMonths(3).format()}</div>
+        </FixedSpaceRow>
+        <FixedSpaceRow>
+          <DaycaresColumn>
+            <div>
+              {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
+              {shownDaycares?.length}
+            </div>
+            <Gap size="xs" />
+            <Combobox
+              items={otherAvailableUnits}
+              selectedItem={null}
+              onChange={(unit) => unit && onAddToShownDaycares(unit)}
+              placeholder={i18n.applications.placementDesktop.addShownUnit}
+              getItemLabel={(unit) => unit.name}
+              fullWidth
             />
-          )}
-        </DaycaresColumn>
+            <Gap size="s" />
+            {shownDaycares !== undefined && (
+              <PrefetchedDaycares
+                shownDaycares={shownDaycares}
+                applications={applications}
+                onUpdateApplicationPlacementSuccess={
+                  onUpdateApplicationPlacementSuccess
+                }
+                onUpdateApplicationPlacementFailure={
+                  onUpdateApplicationPlacementFailure
+                }
+                onAddToShownDaycares={onAddToShownDaycares}
+                onRemoveFromShownDaycares={onRemoveFromShownDaycares}
+              />
+            )}
+          </DaycaresColumn>
 
-        <ApplicationsColumn>
-          <div style={{ textAlign: 'right' }}>
-            {i18n.applications.placementDesktop.applicationsCount}:{' '}
-            {applications.length}
-          </div>
-          <Gap size="s" />
-          <FixedSpaceColumn alignItems="flex-end">
-            {shownDaycares !== undefined &&
-              applications.map((application) => (
-                <ApplicationCard
-                  key={application.id}
-                  application={{
-                    ...application,
-                    placementDraftUnit:
-                      placementDraftUnits[application.id] ?? null
-                  }}
-                  shownDaycares={shownDaycares}
-                  allUnits={allUnits}
-                  onUpdateApplicationPlacementSuccess={
-                    onUpdateApplicationPlacementSuccess
-                  }
-                  onUpdateApplicationPlacementFailure={
-                    onUpdateApplicationPlacementFailure
-                  }
-                  onAddToShownDaycares={onAddToShownDaycares}
-                />
-              ))}
-          </FixedSpaceColumn>
-        </ApplicationsColumn>
-      </FixedSpaceRow>
+          <ApplicationsColumn>
+            <div style={{ textAlign: 'right' }}>
+              {i18n.applications.placementDesktop.applicationsCount}:{' '}
+              {applications.length}
+            </div>
+            <Gap size="s" />
+            <FixedSpaceColumn alignItems="flex-end">
+              {shownDaycares !== undefined &&
+                applications.map((application) => (
+                  <ApplicationCard
+                    key={application.id}
+                    application={{
+                      ...application,
+                      placementDraftUnit:
+                        placementDraftUnits[application.id] ?? null
+                    }}
+                    shownDaycares={shownDaycares}
+                    allUnits={allUnits}
+                    onUpdateApplicationPlacementSuccess={
+                      onUpdateApplicationPlacementSuccess
+                    }
+                    onUpdateApplicationPlacementFailure={
+                      onUpdateApplicationPlacementFailure
+                    }
+                    onAddToShownDaycares={onAddToShownDaycares}
+                  />
+                ))}
+            </FixedSpaceColumn>
+          </ApplicationsColumn>
+        </FixedSpaceRow>
+      </FixedSpaceColumn>
     )
   }
 )
@@ -280,9 +300,11 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   onRemoveFromShownDaycares: (unitId: DaycareId) => void
 }) {
   const queryClient = useQueryClient()
+  const { occupancyPeriodStart } = useContext(ApplicationUIContext)
   const initialData = useQueryResult(
     getPlacementDesktopDaycaresQuery({
-      unitIds: shownDaycares.map((d) => d.id)
+      unitIds: shownDaycares.map((d) => d.id),
+      occupancyStart: occupancyPeriodStart
     })
   )
   const [initialDataInserted, setInitialDataInserted] = useState(false)

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Dispatch, SetStateAction } from 'react'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -27,7 +26,7 @@ const DatePickersContainer = styled.div`
 type Props = {
   canEdit: boolean
   filters: UnitFilters
-  setFilters: Dispatch<SetStateAction<UnitFilters>>
+  setFilters: (filters: UnitFilters) => void
 }
 
 export default React.memo(function UnitDataFilters({

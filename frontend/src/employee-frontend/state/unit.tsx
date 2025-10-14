@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Dispatch, SetStateAction } from 'react'
+import { useCallback } from 'react'
 import React, { createContext, useMemo, useState } from 'react'
+import { useSearchParams } from 'wouter'
 
 import LocalDate from 'lib-common/local-date'
 
-import { UnitFilters } from '../utils/UnitFilters'
+import { isFilterTimePeriod, UnitFilters } from '../utils/UnitFilters'
 
 export interface UnitState {
   filters: UnitFilters
-  setFilters: Dispatch<SetStateAction<UnitFilters>>
+  setFilters: (filters: UnitFilters) => void
 }
 
 const defaultState: UnitState = {
@@ -26,14 +27,34 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
 }: {
   children: React.JSX.Element
 }) {
-  const [filters, setFilters] = useState(defaultState.filters)
+  const [params, setParams] = useSearchParams()
+  const startDateParam = params.get('startDate')
+  const startDate = startDateParam
+    ? (LocalDate.tryParseIso(startDateParam) ?? LocalDate.todayInSystemTz())
+    : LocalDate.todayInSystemTz()
+  const periodParam = params.get('period')
+  const period =
+    periodParam && isFilterTimePeriod(periodParam) ? periodParam : '1 day'
+
+  const [filters, _setFilters] = useState(new UnitFilters(startDate, period))
+
+  const setFilters = useCallback(
+    (newFilters: UnitFilters) => {
+      _setFilters(newFilters)
+      setParams({
+        startDate: newFilters.startDate.formatIso(),
+        period: newFilters.period
+      })
+    },
+    [setParams]
+  )
 
   const value = useMemo(
     () => ({
       filters,
       setFilters
     }),
-    [filters]
+    [filters, setFilters]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

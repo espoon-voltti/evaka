@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -27,6 +27,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faEyeSlash } from 'lib-icons'
 import { fasExclamation } from 'lib-icons'
 
+import { ApplicationUIContext } from '../../../state/application-ui'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { getPlacementDesktopDaycareQuery } from '../queries'
@@ -51,8 +52,12 @@ export default React.memo(function DaycareCard({
 }) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
+  const { occupancyPeriodStart } = useContext(ApplicationUIContext)
   const unitDetails = useQueryResult(
-    getPlacementDesktopDaycareQuery({ unitId: daycare.id })
+    getPlacementDesktopDaycareQuery({
+      unitId: daycare.id,
+      occupancyStart: occupancyPeriodStart
+    })
   )
 
   const placementDraftsWithApplications = useMemo(
@@ -79,7 +84,7 @@ export default React.memo(function DaycareCard({
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
             <a
-              href={`/employee/units/${daycare.id}`}
+              href={`/employee/units/${daycare.id}?period=${encodeURIComponent('3 months')}&startDate=${occupancyPeriodStart.formatIso()}`}
               target="_blank"
               rel="noreferrer"
             >

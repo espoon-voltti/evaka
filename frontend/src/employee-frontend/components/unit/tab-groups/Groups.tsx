@@ -113,7 +113,7 @@ type Props = {
   unit: Daycare
   permittedActions: Action.Unit[]
   filters: UnitFilters
-  setFilters: Dispatch<SetStateAction<UnitFilters>>
+  setFilters: (filters: UnitFilters) => void
   groups: DaycareGroup[]
   placements: DaycarePlacementWithDetails[]
   backupCares: UnitBackupCare[]

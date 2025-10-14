@@ -65,6 +65,8 @@ interface UIState {
 
   placementMode: PlacementMode
   setPlacementMode: (mode: PlacementMode) => void
+  occupancyPeriodStart: LocalDate
+  setOccupancyPeriodStart: (date: LocalDate) => void
 }
 
 interface RawApplicationSearchFilters {
@@ -150,7 +152,9 @@ const defaultState: UIState = {
   showCheckboxes: false,
 
   placementMode: 'list',
-  setPlacementMode: () => undefined
+  setPlacementMode: () => undefined,
+  occupancyPeriodStart: LocalDate.todayInHelsinkiTz(),
+  setOccupancyPeriodStart: () => undefined
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -199,6 +203,14 @@ export const ApplicationUIContextProvider = React.memo(
 
       localStorage.setItem(localStorageKey, JSON.stringify(newSearchFilters))
 
+      if (searchFilters.dateType.some((dt) => dt === 'START' || dt === 'DUE')) {
+        setOccupancyPeriodStart(
+          startDate ?? endDate ?? LocalDate.todayInHelsinkiTz()
+        )
+      } else {
+        setOccupancyPeriodStart(LocalDate.todayInHelsinkiTz())
+      }
+
       setConfirmedSearchFilters({
         ...searchFilters,
         startDate,
@@ -227,7 +239,10 @@ export const ApplicationUIContextProvider = React.memo(
       : false
 
     const [placementMode, setPlacementMode] = useState<'list' | 'desktop'>(
-      'list'
+      defaultState.placementMode
+    )
+    const [occupancyPeriodStart, setOccupancyPeriodStart] = useState<LocalDate>(
+      defaultState.occupancyPeriodStart
     )
 
     const value = useMemo(
@@ -244,7 +259,9 @@ export const ApplicationUIContextProvider = React.memo(
         setCheckedIds,
         showCheckboxes,
         placementMode,
-        setPlacementMode
+        setPlacementMode,
+        occupancyPeriodStart,
+        setOccupancyPeriodStart
       }),
       [
         page,
@@ -257,7 +274,9 @@ export const ApplicationUIContextProvider = React.memo(
         checkedIds,
         showCheckboxes,
         placementMode,
-        setPlacementMode
+        setPlacementMode,
+        occupancyPeriodStart,
+        setOccupancyPeriodStart
       ]
     )
 

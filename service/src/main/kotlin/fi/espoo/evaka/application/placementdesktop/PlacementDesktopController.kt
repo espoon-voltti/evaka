@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -61,6 +62,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
+        @RequestParam occupancyStart: LocalDate? = null,
     ): PlacementDesktopDaycare {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -74,7 +76,8 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     getPlacementDesktopDaycareWithOccupancies(
                         tx = tx,
                         unitId = unitId,
-                        occupancyPeriod = FiniteDateRange(today, today.plusMonths(3)),
+                        occupancyPeriod =
+                            (occupancyStart ?: today).let { FiniteDateRange(it, it.plusMonths(3)) },
                         today = today,
                     )
                 }
@@ -88,6 +91,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @RequestParam unitIds: Set<DaycareId> = emptySet(),
+        @RequestParam occupancyStart: LocalDate? = null,
     ): List<PlacementDesktopDaycare> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -101,7 +105,8 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     getPlacementDesktopDaycaresWithOccupancies(
                         tx = tx,
                         unitIds = unitIds,
-                        occupancyPeriod = FiniteDateRange(today, today.plusMonths(3)),
+                        occupancyPeriod =
+                            (occupancyStart ?: today).let { FiniteDateRange(it, it.plusMonths(3)) },
                         today = today,
                     )
                 }
