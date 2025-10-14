@@ -32,6 +32,7 @@ interface NotificationsState {
   notifications: Record<string, Notification>
   addNotification: (n: Notification, customId?: string) => void
   removeNotification: (id: string) => void
+  removeNotifications: (idStartsWith: string) => void
   addTimedNotification: (n: TimedNotification) => void
   removeTimedNotification: (id: string) => void
 }
@@ -56,6 +57,7 @@ export const NotificationsContext = createContext<NotificationsState>({
   notifications: {},
   addNotification: () => undefined,
   removeNotification: () => undefined,
+  removeNotifications: () => undefined,
   addTimedNotification: () => undefined,
   removeTimedNotification: () => undefined
 })
@@ -82,6 +84,15 @@ export const NotificationsContextProvider = React.memo(
     const removeNotification = useCallback((id: string) => {
       setNotifications((notifications) => omit(notifications, id))
     }, [])
+    const removeNotifications = useCallback((idStartsWith: string) => {
+      setNotifications((notifications) =>
+        Object.fromEntries(
+          Object.entries(notifications).filter(
+            ([key]) => !key.startsWith(idStartsWith)
+          )
+        )
+      )
+    }, [])
 
     const addTimedNotification = useCallback(
       (timedNotification: TimedNotification) =>
@@ -104,6 +115,7 @@ export const NotificationsContextProvider = React.memo(
         notifications,
         addNotification,
         removeNotification,
+        removeNotifications,
         addTimedNotification,
         removeTimedNotification
       }),
@@ -111,6 +123,7 @@ export const NotificationsContextProvider = React.memo(
         addNotification,
         notifications,
         removeNotification,
+        removeNotifications,
         timedNotifications,
         addTimedNotification,
         removeTimedNotification

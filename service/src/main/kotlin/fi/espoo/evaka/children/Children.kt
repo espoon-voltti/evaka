@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import java.time.LocalDate
 
 data class Group(@PropagateNull val id: GroupId, val name: String)
 
@@ -28,6 +29,9 @@ data class Child(
     @Nested("group") val group: Group?,
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
+    val upcomingPlacementStartDate: LocalDate?,
+    val upcomingPlacementIsCalendarOpen: Boolean?,
+    @Nested("upcoming_unit") val upcomingPlacementUnit: Unit?,
 )
 
 data class ChildAndPermittedActions(
@@ -40,6 +44,9 @@ data class ChildAndPermittedActions(
     @Nested("group") val group: Group?,
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
+    val upcomingPlacementStartDate: LocalDate?,
+    val upcomingPlacementIsCalendarOpen: Boolean?,
+    @Nested("upcomingPlacementUnit") val upcomingPlacementUnit: Unit?,
     val permittedActions: Set<Action.Citizen.Child>,
     val serviceApplicationCreationPossible: Boolean,
     val absenceApplicationCreationPossible: Boolean,
@@ -61,6 +68,9 @@ data class ChildAndPermittedActions(
                 group = child.group,
                 unit = child.unit,
                 upcomingPlacementType = child.upcomingPlacementType,
+                upcomingPlacementStartDate = child.upcomingPlacementStartDate,
+                upcomingPlacementIsCalendarOpen = child.upcomingPlacementIsCalendarOpen,
+                upcomingPlacementUnit = child.upcomingPlacementUnit,
                 permittedActions = permittedActions,
                 serviceApplicationCreationPossible = serviceApplicationCreationPossible,
                 absenceApplicationCreationPossible = absenceApplicationCreationPossible,

@@ -8,6 +8,8 @@ import type { Action } from '../action'
 import type { ChildImageId } from './shared'
 import type { DaycareId } from './shared'
 import type { GroupId } from './shared'
+import type { JsonOf } from '../../json'
+import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 import type { PlacementType } from './placement'
 
@@ -33,7 +35,10 @@ export interface ChildAndPermittedActions {
   preferredName: string
   serviceApplicationCreationPossible: boolean
   unit: Unit | null
+  upcomingPlacementIsCalendarOpen: boolean | null
+  upcomingPlacementStartDate: LocalDate | null
   upcomingPlacementType: PlacementType | null
+  upcomingPlacementUnit: Unit | null
 }
 
 /**
@@ -50,4 +55,12 @@ export interface Group {
 export interface Unit {
   id: DaycareId
   name: string
+}
+
+
+export function deserializeJsonChildAndPermittedActions(json: JsonOf<ChildAndPermittedActions>): ChildAndPermittedActions {
+  return {
+    ...json,
+    upcomingPlacementStartDate: (json.upcomingPlacementStartDate != null) ? LocalDate.parseIso(json.upcomingPlacementStartDate) : null
+  }
 }
