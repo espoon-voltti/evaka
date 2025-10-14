@@ -2480,6 +2480,7 @@ export const fi = {
       subtitles: {
         confirmed: 'Vahvistettu täyttöaste',
         planned: 'Suunniteltu täyttöaste',
+        draft: 'Hahmoteltu täyttöaste',
         realized: 'Käyttöaste'
       },
       fail: 'Täyttöasteen lataaminen epäonnistui',

@@ -65,7 +65,7 @@ const Value = styled.div`
 `
 
 interface Props {
-  type: 'confirmed' | 'planned' | 'realized'
+  type: 'confirmed' | 'planned' | 'draft' | 'realized'
   data: OccupancyResponse
   active: boolean
   onClick: () => undefined | void
@@ -84,9 +84,11 @@ export default React.memo(function OccupancyCard({
       ? colors.main.m1
       : type === 'planned'
         ? colors.accents.a6turquoise
-        : type === 'realized'
-          ? colors.status.success
-          : colors.grayscale.g15
+        : type === 'draft'
+          ? colors.accents.a9pink
+          : type === 'realized'
+            ? colors.status.success
+            : colors.grayscale.g15
 
   return (
     <Card color={color} active={active} onClick={() => onClick()}>

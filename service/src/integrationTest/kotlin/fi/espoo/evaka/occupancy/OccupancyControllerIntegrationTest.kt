@@ -683,6 +683,50 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 percentage = 7.1,
                             ),
                     ),
+                draft =
+                    OccupancyResponse(
+                        occupancies =
+                            listOf(
+                                OccupancyPeriod(
+                                    period =
+                                        FiniteDateRange(today.minusDays(2), today.minusDays(2)),
+                                    sum = 2.0,
+                                    headcount = 2,
+                                    caretakers = 3.0,
+                                    percentage = 9.5,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                    sum = 2.5,
+                                    headcount = 3,
+                                    caretakers = 3.0,
+                                    percentage = 11.9,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
+                                    sum = 1.5,
+                                    headcount = 2,
+                                    caretakers = 3.0,
+                                    percentage = 7.1,
+                                ),
+                            ),
+                        max =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                sum = 2.5,
+                                headcount = 3,
+                                caretakers = 3.0,
+                                percentage = 11.9,
+                            ),
+                        min =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
+                                sum = 1.5,
+                                headcount = 2,
+                                caretakers = 3.0,
+                                percentage = 7.1,
+                            ),
+                    ),
                 realized =
                     OccupancyResponse(
                         occupancies =
@@ -761,6 +805,50 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             ),
                     ),
                 planned =
+                    OccupancyResponse(
+                        occupancies =
+                            listOf(
+                                OccupancyPeriod(
+                                    period =
+                                        FiniteDateRange(today.minusDays(2), today.minusDays(2)),
+                                    sum = 1.0,
+                                    headcount = 1,
+                                    caretakers = 2.0,
+                                    percentage = 7.1,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.minusDays(1), today),
+                                    sum = 1.5,
+                                    headcount = 2,
+                                    caretakers = 2.0,
+                                    percentage = 10.7,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
+                                    sum = 0.5,
+                                    headcount = 1,
+                                    caretakers = 2.0,
+                                    percentage = 3.6,
+                                ),
+                            ),
+                        max =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.minusDays(1), today),
+                                sum = 1.5,
+                                headcount = 2,
+                                caretakers = 2.0,
+                                percentage = 10.7,
+                            ),
+                        min =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
+                                sum = 0.5,
+                                headcount = 1,
+                                caretakers = 2.0,
+                                percentage = 3.6,
+                            ),
+                    ),
+                draft =
                     OccupancyResponse(
                         occupancies =
                             listOf(

@@ -146,12 +146,19 @@ class OccupancyController(
                         unitId,
                     )
                     getUnitOccupancies(
-                        tx,
-                        clock.now(),
-                        unitId,
-                        period,
-                        AccessControlFilter.PermitAll,
-                        groupId,
+                        tx = tx,
+                        now = clock.now(),
+                        unitId = unitId,
+                        period = period,
+                        unitFilter = AccessControlFilter.PermitAll,
+                        groupId = groupId,
+                        includeDraftOccupancies =
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Global.READ_DRAFT_OCCUPANCIES,
+                            ),
                     )
                 }
             }
@@ -228,6 +235,7 @@ class OccupancyController(
 }
 
 data class UnitOccupancies(
+    val draft: OccupancyResponse?,
     val planned: OccupancyResponse,
     val confirmed: OccupancyResponse,
     val realized: OccupancyResponse,
@@ -241,8 +249,22 @@ private fun getUnitOccupancies(
     period: FiniteDateRange,
     unitFilter: AccessControlFilter<DaycareId>,
     groupId: GroupId?,
+    includeDraftOccupancies: Boolean,
 ): UnitOccupancies {
     return UnitOccupancies(
+        draft =
+            if (includeDraftOccupancies)
+                getOccupancyResponse(
+                    tx.calculateOccupancyPeriods(
+                        now.toLocalDate(),
+                        unitId,
+                        period,
+                        OccupancyType.DRAFT,
+                        unitFilter,
+                        groupId,
+                    )
+                )
+            else null,
         planned =
             getOccupancyResponse(
                 tx.calculateOccupancyPeriods(
