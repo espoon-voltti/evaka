@@ -719,6 +719,26 @@ VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+data class DevPlacementDraft(
+    val applicationId: ApplicationId,
+    val unitId: DaycareId,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdBy: EvakaUserId,
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedBy: EvakaUserId,
+)
+
+fun Database.Transaction.insert(row: DevPlacementDraft) =
+    createUpdate {
+            sql(
+                """
+INSERT INTO placement_draft (application_id, unit_id, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.applicationId)}, ${bind(row.unitId)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+"""
+            )
+        }
+        .updateExactlyOne()
+
 data class TestDecision(
     val id: DecisionId? = DecisionId(UUID.randomUUID()),
     val createdBy: EvakaUserId,
