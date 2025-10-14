@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -72,13 +72,14 @@ export default React.memo(function ApplicationCard({
   const { mutateAsync: updateApplicationPlacementDraft, isPending } =
     useMutationResult(updateApplicationPlacementDraftMutation)
 
-  const [editingNote, setEditingNote] = React.useState(false)
+  const [editingNote, setEditingNote] = useState(false)
 
   return (
     <Card $placed={application.placementDraftUnit !== null}>
       {editingNote && (
         <ServiceWorkerNoteModal
-          application={application}
+          applicationId={application.id}
+          serviceWorkerNote={application.serviceWorkerNote}
           onClose={() => setEditingNote(false)}
         />
       )}

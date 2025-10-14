@@ -12,6 +12,7 @@ import type {
   ApplicationSummary,
   PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -543,7 +544,8 @@ const ApplicationsList = React.memo(function Applications({
 
       {!!editedNote && (
         <ServiceWorkerNoteModal
-          application={editedNote}
+          applicationId={editedNote.id}
+          serviceWorkerNote={editedNote.serviceWorkerNote}
           onClose={() => setEditedNote(null)}
         />
       )}
@@ -553,22 +555,22 @@ const ApplicationsList = React.memo(function Applications({
 
 export const ServiceWorkerNoteModal = React.memo(
   function ServiceWorkerNoteModal({
-    application,
+    applicationId,
+    serviceWorkerNote,
     onClose
   }: {
-    application: ApplicationSummary
+    applicationId: ApplicationId
+    serviceWorkerNote: string
     onClose: () => void
   }) {
     const { i18n } = useTranslation()
-    const [noteText, setNoteText] = useState<string>(
-      application.serviceWorkerNote
-    )
+    const [noteText, setNoteText] = useState<string>(serviceWorkerNote)
     return (
       <MutateFormModal
         title={i18n.applications.list.serviceWorkerNote}
         resolveMutation={updateServiceWorkerNoteMutation}
         resolveAction={() => ({
-          applicationId: application.id,
+          applicationId: applicationId,
           body: { text: noteText }
         })}
         resolveLabel={i18n.common.save}

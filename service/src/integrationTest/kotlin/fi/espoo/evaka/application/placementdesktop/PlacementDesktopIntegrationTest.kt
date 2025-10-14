@@ -100,6 +100,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childName = "${child.lastName} ${child.firstName}",
                     modifiedAt = clock.now(),
                     modifiedBy = serviceWorker.evakaUser,
+                    serviceWorkerNote = "",
                 )
             ),
             getPlacementDesktopDaycare(daycare1.id).placementDrafts,
@@ -122,6 +123,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childName = "${child.lastName} ${child.firstName}",
                     modifiedAt = clock.now(),
                     modifiedBy = serviceWorker.evakaUser,
+                    serviceWorkerNote = "",
                 )
             ),
             getPlacementDesktopDaycare(daycare2.id).placementDrafts,
@@ -147,6 +149,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 childName = "${child.lastName} ${child.firstName}",
                                 modifiedAt = clock.now(),
                                 modifiedBy = serviceWorker.evakaUser,
+                                serviceWorkerNote = "",
                             )
                         ),
                 ),

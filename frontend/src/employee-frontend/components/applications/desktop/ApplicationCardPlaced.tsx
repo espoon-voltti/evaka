@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import type {
@@ -20,10 +20,12 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { defaultMargins } from 'lib-components/white-space'
+import { faCommentAlt, fasCommentAltLines } from 'lib-icons'
 import { faUndo } from 'lib-icons'
 import { faFile } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
+import { ServiceWorkerNoteModal } from '../ApplicationsList'
 import { updateApplicationPlacementDraftMutation } from '../queries'
 
 export default React.memo(function ApplicationCardPlaced({
@@ -44,8 +46,17 @@ export default React.memo(function ApplicationCardPlaced({
 
   const applicationInSearchResults = application !== undefined
 
+  const [editingNote, setEditingNote] = useState(false)
+
   return (
     <SmallCard>
+      {editingNote && (
+        <ServiceWorkerNoteModal
+          applicationId={placementDraft.applicationId}
+          serviceWorkerNote={placementDraft.serviceWorkerNote}
+          onClose={() => setEditingNote(false)}
+        />
+      )}
       <FixedSpaceRow justifyContent="space-between">
         <Tooltip
           tooltip={
@@ -112,6 +123,30 @@ export default React.memo(function ApplicationCardPlaced({
               }
             />
           )}
+          <Tooltip
+            tooltip={
+              placementDraft.serviceWorkerNote ? (
+                <span>{placementDraft.serviceWorkerNote}</span>
+              ) : (
+                <i>{i18n.applications.list.addNote}</i>
+              )
+            }
+          >
+            <IconOnlyButton
+              icon={
+                placementDraft.serviceWorkerNote
+                  ? fasCommentAltLines
+                  : faCommentAlt
+              }
+              onClick={() => setEditingNote(true)}
+              aria-label={
+                placementDraft.serviceWorkerNote
+                  ? i18n.common.edit
+                  : i18n.applications.list.addNote
+              }
+              data-qa="service-worker-note"
+            />
+          </Tooltip>
           <a
             href={`/employee/applications/${placementDraft.applicationId}`}
             target="_blank"
