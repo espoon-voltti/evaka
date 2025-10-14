@@ -311,8 +311,8 @@ fun Database.Transaction.insert(row: DevEmployee) =
     createUpdate {
             sql(
                 """
-INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
-VALUES (${bind(row.id)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)})
+INSERT INTO employee (id, created, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
+VALUES (${bind(row.id)}, ${bind(row.created)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)})
 RETURNING id
 """
             )

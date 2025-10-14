@@ -634,12 +634,13 @@ export interface DevDocumentTemplate {
 */
 export interface DevEmployee {
   active: boolean
+  created: HelsinkiDateTime
   email: string | null
   employeeNumber: string | null
   externalId: string | null
   firstName: string
   id: EmployeeId
-  lastLogin: HelsinkiDateTime
+  lastLogin: HelsinkiDateTime | null
   lastName: string
   preferredFirstName: string | null
   roles: UserRole[]
@@ -1549,7 +1550,8 @@ export function deserializeJsonDevDocumentTemplate(json: JsonOf<DevDocumentTempl
 export function deserializeJsonDevEmployee(json: JsonOf<DevEmployee>): DevEmployee {
   return {
     ...json,
-    lastLogin: HelsinkiDateTime.parseIso(json.lastLogin)
+    created: HelsinkiDateTime.parseIso(json.created),
+    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null
   }
 }
 

@@ -279,6 +279,30 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         assertEquals(1, deactivated.size)
     }
 
+    @Test
+    fun `recently created employees who have not logged in are not deactivated`() {
+        db.transaction {
+            it.insert(
+                DevEmployee(
+                    lastLogin = null,
+                    created = firstOfAugust2021.minusDays(daysToDeactivation),
+                    roles = setOf(UserRole.ADMIN),
+                )
+            )
+
+            it.insert(
+                DevEmployee(
+                    lastLogin = null,
+                    created = firstOfAugust2021.minusDays(5),
+                    roles = setOf(UserRole.ADMIN),
+                )
+            )
+        }
+
+        val deactivated = db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
+        assertEquals(1, deactivated.size)
+    }
+
     private fun Database.Transaction.setDaycareAclUpdated(
         unitId: DaycareId,
         employeeId: EmployeeId,
