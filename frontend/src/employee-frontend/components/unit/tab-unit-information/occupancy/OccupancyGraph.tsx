@@ -11,6 +11,8 @@ import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import colors from 'lib-customizations/common'
 
+import { useTranslation } from '../../../../state/i18n'
+
 type DatePoint = { x: Date; y: number | null | undefined }
 
 function getGraphData({ occupancies }: OccupancyResponse) {
@@ -84,9 +86,11 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
 interface Props {
   occupancies: OccupancyResponse
   plannedOccupancies: OccupancyResponse
+  draftOccupancies: OccupancyResponse | null
   realizedOccupancies: OccupancyResponse
   confirmed: boolean
   planned: boolean
+  draft: boolean
   realized: boolean
   startDate: Date
   endDate: Date
@@ -95,17 +99,20 @@ interface Props {
 export default React.memo(function OccupancyGraph({
   occupancies,
   plannedOccupancies,
+  draftOccupancies,
   realizedOccupancies,
   confirmed,
   planned,
+  draft,
   realized,
   startDate,
   endDate
 }: Props) {
+  const { i18n } = useTranslation()
   const datasets: ChartDataset<'line', DatePoint[]>[] = []
   if (confirmed)
     datasets.push({
-      label: 'Vahvistettu täyttöaste',
+      label: i18n.unit.occupancy.subtitles.confirmed,
       data: getGraphData(occupancies),
       stepped: true,
       fill: false,
@@ -114,16 +121,25 @@ export default React.memo(function OccupancyGraph({
     })
   if (planned)
     datasets.push({
-      label: 'Suunniteltu täyttöaste',
+      label: i18n.unit.occupancy.subtitles.planned,
       data: getGraphData(plannedOccupancies),
       stepped: true,
       fill: false,
       pointBackgroundColor: colors.accents.a6turquoise,
       borderColor: colors.accents.a6turquoise
     })
+  if (draft && draftOccupancies)
+    datasets.push({
+      label: i18n.unit.occupancy.subtitles.draft,
+      data: getGraphData(draftOccupancies),
+      stepped: true,
+      fill: false,
+      pointBackgroundColor: colors.accents.a9pink,
+      borderColor: colors.accents.a9pink
+    })
   if (realized)
     datasets.push({
-      label: 'Käyttöaste',
+      label: i18n.unit.occupancy.subtitles.realized,
       data: getGraphData(realizedOccupancies),
       stepped: true,
       fill: false,

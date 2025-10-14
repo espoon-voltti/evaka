@@ -133,6 +133,7 @@ export interface StaffOccupancyAttendance {
 export interface UnitOccupancies {
   caretakers: Caretakers
   confirmed: OccupancyResponse
+  draft: OccupancyResponse | null
   planned: OccupancyResponse
   realized: OccupancyResponse
 }
@@ -222,6 +223,7 @@ export function deserializeJsonUnitOccupancies(json: JsonOf<UnitOccupancies>): U
   return {
     ...json,
     confirmed: deserializeJsonOccupancyResponse(json.confirmed),
+    draft: (json.draft != null) ? deserializeJsonOccupancyResponse(json.draft) : null,
     planned: deserializeJsonOccupancyResponse(json.planned),
     realized: deserializeJsonOccupancyResponse(json.realized)
   }

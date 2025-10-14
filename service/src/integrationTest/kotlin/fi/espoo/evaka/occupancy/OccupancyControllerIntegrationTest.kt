@@ -5,8 +5,17 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.Address
+import fi.espoo.evaka.application.ApplicationForm
+import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.ChildDetails
+import fi.espoo.evaka.application.Guardian
+import fi.espoo.evaka.application.PersonBasics
+import fi.espoo.evaka.application.Preferences
+import fi.espoo.evaka.application.PreferredUnit
+import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -20,15 +29,21 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevApplicationWithForm
 import fi.espoo.evaka.shared.dev.DevChildAttendance
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPlacementDraft
+import fi.espoo.evaka.shared.dev.DevPlacementPlan
 import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertApplication
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -44,6 +59,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -577,6 +593,41 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 endDate = end.minusDays(1),
             )
 
+        val plannedChild = DevPerson()
+        val application1 =
+            createTestApplication(
+                child = plannedChild,
+                guardian = testAdult_1,
+                preferredUnits = listOf(testDaycare),
+                status = ApplicationStatus.WAITING_DECISION,
+                preferredStart = start,
+            )
+        val placementPlan =
+            DevPlacementPlan(
+                applicationId = application1.id,
+                unitId = testDaycare.id,
+                startDate = start,
+                endDate = end,
+            )
+
+        val draftPlacedChild = DevPerson()
+        val application2 =
+            createTestApplication(
+                child = draftPlacedChild,
+                guardian = testAdult_1,
+                preferredUnits = listOf(testDaycare),
+                preferredStart = start,
+            )
+        val placementDraft =
+            DevPlacementDraft(
+                applicationId = application2.id,
+                unitId = testDaycare.id,
+                createdAt = mockClock.now(),
+                createdBy = testDecisionMaker_1.evakaUserId,
+                modifiedAt = mockClock.now(),
+                modifiedBy = testDecisionMaker_1.evakaUserId,
+            )
+
         db.transaction { tx ->
             tx.insert(group1)
             tx.insert(group2)
@@ -589,6 +640,12 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             tx.insert(groupPlacement2)
             tx.insert(placement3)
             tx.insert(groupPlacement3)
+            tx.insert(plannedChild, DevPersonType.CHILD)
+            tx.insertApplication(application1)
+            tx.insert(placementPlan)
+            tx.insert(draftPlacedChild, DevPersonType.CHILD)
+            tx.insertApplication(application2)
+            tx.insert(placementDraft)
         }
 
         val occupanciesForUnit = getUnitOccupancies(start, end, groupId = null)
@@ -646,41 +703,85 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 OccupancyPeriod(
                                     period =
                                         FiniteDateRange(today.minusDays(2), today.minusDays(2)),
-                                    sum = 2.0,
-                                    headcount = 2,
+                                    sum = 3.0,
+                                    headcount = 3,
                                     caretakers = 3.0,
-                                    percentage = 9.5,
+                                    percentage = 14.3,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                    sum = 3.5,
+                                    headcount = 4,
+                                    caretakers = 3.0,
+                                    percentage = 16.7,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
                                     sum = 2.5,
                                     headcount = 3,
                                     caretakers = 3.0,
                                     percentage = 11.9,
                                 ),
-                                OccupancyPeriod(
-                                    period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
-                                    sum = 1.5,
-                                    headcount = 2,
-                                    caretakers = 3.0,
-                                    percentage = 7.1,
-                                ),
                             ),
                         max =
                             OccupancyPeriod(
                                 period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                sum = 3.5,
+                                headcount = 4,
+                                caretakers = 3.0,
+                                percentage = 16.7,
+                            ),
+                        min =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
                                 sum = 2.5,
                                 headcount = 3,
                                 caretakers = 3.0,
                                 percentage = 11.9,
                             ),
+                    ),
+                draft =
+                    OccupancyResponse(
+                        occupancies =
+                            listOf(
+                                OccupancyPeriod(
+                                    period =
+                                        FiniteDateRange(today.minusDays(2), today.minusDays(2)),
+                                    sum = 4.0,
+                                    headcount = 4,
+                                    caretakers = 3.0,
+                                    percentage = 19.0,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                    sum = 4.5,
+                                    headcount = 5,
+                                    caretakers = 3.0,
+                                    percentage = 21.4,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
+                                    sum = 3.5,
+                                    headcount = 4,
+                                    caretakers = 3.0,
+                                    percentage = 16.7,
+                                ),
+                            ),
+                        max =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
+                                sum = 4.5,
+                                headcount = 5,
+                                caretakers = 3.0,
+                                percentage = 21.4,
+                            ),
                         min =
                             OccupancyPeriod(
                                 period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
-                                sum = 1.5,
-                                headcount = 2,
+                                sum = 3.5,
+                                headcount = 4,
                                 caretakers = 3.0,
-                                percentage = 7.1,
+                                percentage = 16.7,
                             ),
                     ),
                 realized =
@@ -804,6 +905,50 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 percentage = 3.6,
                             ),
                     ),
+                draft =
+                    OccupancyResponse(
+                        occupancies =
+                            listOf(
+                                OccupancyPeriod(
+                                    period =
+                                        FiniteDateRange(today.minusDays(2), today.minusDays(2)),
+                                    sum = 1.0,
+                                    headcount = 1,
+                                    caretakers = 2.0,
+                                    percentage = 7.1,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.minusDays(1), today),
+                                    sum = 1.5,
+                                    headcount = 2,
+                                    caretakers = 2.0,
+                                    percentage = 10.7,
+                                ),
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
+                                    sum = 0.5,
+                                    headcount = 1,
+                                    caretakers = 2.0,
+                                    percentage = 3.6,
+                                ),
+                            ),
+                        max =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.minusDays(1), today),
+                                sum = 1.5,
+                                headcount = 2,
+                                caretakers = 2.0,
+                                percentage = 10.7,
+                            ),
+                        min =
+                            OccupancyPeriod(
+                                period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
+                                sum = 0.5,
+                                headcount = 1,
+                                caretakers = 2.0,
+                                percentage = 3.6,
+                            ),
+                    ),
                 realized =
                     OccupancyResponse(
                         occupancies =
@@ -829,6 +974,96 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     ),
             ),
             occupanciesForGroup1,
+        )
+    }
+
+    @Test
+    fun `getUnitOccupancies does not show draft occupancies to unit supervisor`() {
+        val start = today.minusDays(2)
+        val end = today.plusDays(2)
+        val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "g1")
+        val caretakers1 =
+            DevDaycareCaretaker(groupId = group1.id, amount = BigDecimal("2.0"), startDate = start)
+        val unitSupervisor = DevEmployee()
+
+        val placement1 =
+            DevPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = start,
+                endDate = end,
+            )
+        val draftPlacedChild = DevPerson()
+        val application =
+            createTestApplication(
+                child = draftPlacedChild,
+                guardian = testAdult_1,
+                preferredUnits = listOf(testDaycare),
+                preferredStart = start,
+            )
+        val placementDraft =
+            DevPlacementDraft(
+                applicationId = application.id,
+                unitId = testDaycare.id,
+                createdAt = mockClock.now(),
+                createdBy = testDecisionMaker_1.evakaUserId,
+                modifiedAt = mockClock.now(),
+                modifiedBy = testDecisionMaker_1.evakaUserId,
+            )
+
+        db.transaction { tx ->
+            tx.insert(group1)
+            tx.insert(caretakers1)
+            tx.insert(unitSupervisor, mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(placement1)
+            tx.insert(draftPlacedChild, DevPersonType.CHILD)
+            tx.insertApplication(application)
+            tx.insert(placementDraft)
+        }
+
+        val occupanciesForUnit =
+            getUnitOccupancies(start, end, groupId = null, user = unitSupervisor.user)
+        val occupancyPeriod =
+            OccupancyPeriod(
+                period = FiniteDateRange(start, end),
+                sum = 1.0,
+                headcount = 1,
+                caretakers = 2.0,
+                percentage = 7.1,
+            )
+        assertEquals(
+            UnitOccupancies(
+                caretakers = Caretakers(minimum = 2.0, maximum = 2.0),
+                confirmed =
+                    OccupancyResponse(
+                        occupancies = listOf(occupancyPeriod),
+                        max = occupancyPeriod,
+                        min = occupancyPeriod,
+                    ),
+                planned =
+                    OccupancyResponse(
+                        occupancies = listOf(occupancyPeriod),
+                        max = occupancyPeriod,
+                        min = occupancyPeriod,
+                    ),
+                draft = null,
+                realized =
+                    OccupancyResponse(
+                        occupancies =
+                            listOf(
+                                OccupancyPeriod(
+                                    period = FiniteDateRange(start, mockClock.today()),
+                                    sum = 1.0,
+                                    headcount = 1,
+                                    caretakers = null,
+                                    percentage = null,
+                                )
+                            ),
+                        max = null,
+                        min = null,
+                    ),
+            ),
+            occupanciesForUnit,
         )
     }
 
@@ -1085,10 +1320,16 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
     }
 
-    private fun getUnitOccupancies(startDate: LocalDate, endDate: LocalDate, groupId: GroupId?) =
+    private fun getUnitOccupancies(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        groupId: GroupId?,
+        user: AuthenticatedUser.Employee =
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+    ) =
         occupancyController.getUnitOccupancies(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+            user,
             mockClock,
             testDaycare.id,
             startDate,
@@ -1117,4 +1358,90 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         ),
                 )
             }
+
+    private fun createTestApplication(
+        child: DevPerson,
+        guardian: DevPerson,
+        preferredUnits: List<DevDaycare>,
+        status: ApplicationStatus = ApplicationStatus.WAITING_PLACEMENT,
+        transferApplication: Boolean = false,
+        preferredStart: LocalDate,
+        partTime: Boolean = false,
+    ) =
+        DevApplicationWithForm(
+            id = ApplicationId(UUID.randomUUID()),
+            type = ApplicationType.DAYCARE,
+            createdAt = mockClock.now().minusDays(55),
+            createdBy = guardian.evakaUserId(),
+            modifiedAt = mockClock.now().minusDays(55),
+            modifiedBy = guardian.evakaUserId(),
+            sentDate = mockClock.today().minusDays(55),
+            dueDate = mockClock.today().plusDays(18),
+            status = status,
+            guardianId = guardian.id,
+            childId = child.id,
+            origin = ApplicationOrigin.ELECTRONIC,
+            checkedByAdmin = true,
+            confidential = true,
+            hideFromGuardian = false,
+            transferApplication = transferApplication,
+            otherGuardians = emptyList(),
+            form =
+                ApplicationForm(
+                    child =
+                        ChildDetails(
+                            person =
+                                PersonBasics(
+                                    child.firstName,
+                                    child.lastName,
+                                    socialSecurityNumber = null,
+                                ),
+                            dateOfBirth = child.dateOfBirth,
+                            address = Address("Testikatu 1", "00200", "Espoo"),
+                            futureAddress = null,
+                            nationality = "fi",
+                            language = "fi",
+                            allergies = "",
+                            diet = "",
+                            assistanceNeeded = false,
+                            assistanceDescription = "",
+                        ),
+                    guardian =
+                        Guardian(
+                            person =
+                                PersonBasics(
+                                    guardian.firstName,
+                                    guardian.lastName,
+                                    socialSecurityNumber = null,
+                                ),
+                            address = Address("Testikatu 1", "00200", "Espoo"),
+                            futureAddress = null,
+                            phoneNumber = "+358 50 1234567",
+                            email = "testitesti@gmail.com",
+                        ),
+                    secondGuardian = null,
+                    otherPartner = null,
+                    otherChildren = emptyList(),
+                    preferences =
+                        Preferences(
+                            preferredUnits = preferredUnits.map { PreferredUnit(it.id, it.name) },
+                            preferredStartDate = preferredStart,
+                            connectedDaycarePreferredStartDate = null,
+                            serviceNeed =
+                                ServiceNeed(
+                                    startTime = "08:00",
+                                    endTime = "16:00",
+                                    shiftCare = false,
+                                    partTime = partTime,
+                                    serviceNeedOption = null,
+                                ),
+                            siblingBasis = null,
+                            preparatory = false,
+                            urgent = false,
+                        ),
+                    maxFeeAccepted = true,
+                    otherInfo = "",
+                    clubDetails = null,
+                ),
+        )
 }

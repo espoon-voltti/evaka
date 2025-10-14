@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Caretakers } from 'lib-common/generated/api-types/daycare'
@@ -11,8 +11,10 @@ import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../../state/i18n'
+import { UserContext } from '../../../../state/user'
 import { renderResult } from '../../../async-rendering'
 import { DataList } from '../../../common/DataList'
 import { unitOccupanciesQuery } from '../../queries'
@@ -43,6 +45,7 @@ const CardsWrapper = styled.div`
 interface SelectionsState {
   confirmed: boolean
   planned: boolean
+  draft: boolean
   realized: boolean
 }
 
@@ -80,10 +83,12 @@ export default React.memo(function OccupanciesForDateRange({
   to: LocalDate
 }) {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   const [selections, setSelections] = useState<SelectionsState>({
     confirmed: true,
     planned: true,
+    draft: true,
     realized: true
   })
 
@@ -127,6 +132,23 @@ export default React.memo(function OccupanciesForDateRange({
                 })
               }
             />
+            {featureFlags.placementDesktop &&
+              user?.permittedGlobalActions?.includes(
+                'READ_DRAFT_OCCUPANCIES'
+              ) === true &&
+              occupancies.draft !== null && (
+                <OccupancyCard
+                  type="draft"
+                  data={occupancies.draft}
+                  active={selections.draft}
+                  onClick={() =>
+                    setSelections({
+                      ...selections,
+                      draft: !selections.draft
+                    })
+                  }
+                />
+              )}
             <OccupancyCard
               type="realized"
               data={occupancies.realized}
@@ -144,9 +166,17 @@ export default React.memo(function OccupanciesForDateRange({
           <OccupancyGraph
             occupancies={occupancies.confirmed}
             plannedOccupancies={occupancies.planned}
+            draftOccupancies={occupancies.draft}
             realizedOccupancies={occupancies.realized}
             confirmed={selections.confirmed}
             planned={selections.planned}
+            draft={
+              !!featureFlags.placementDesktop &&
+              user?.permittedGlobalActions?.includes(
+                'READ_DRAFT_OCCUPANCIES'
+              ) === true &&
+              selections.draft
+            }
             realized={selections.realized}
             startDate={from.toSystemTzDate()}
             endDate={to.toSystemTzDate()}
