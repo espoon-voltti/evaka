@@ -805,6 +805,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
     groupId: GroupId,
     nekkuProducts: List<NekkuProduct>,
     nekkuOrderInfo: String,
+    now: HelsinkiDateTime,
 ) {
 
     val daycareId = getDaycareIdByGroup(groupId)
@@ -822,7 +823,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 product.mealType,
                 item.productOptions?.map { it.value },
                 nekkuOrderInfo,
-                HelsinkiDateTime.now().toLocalDate().toString(),
+                now,
             )
         }
 
@@ -881,6 +882,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     groupId: GroupId,
     date: LocalDate,
     nekkuOrderError: String,
+    now: HelsinkiDateTime,
 ) {
 
     val daycareId = getDaycareIdByGroup(groupId)
@@ -896,7 +898,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
             null,
             null,
             nekkuOrderError,
-            HelsinkiDateTime.now().toLocalDate().toString(),
+            now,
         )
 
     val deletedNekkuOrders = execute {

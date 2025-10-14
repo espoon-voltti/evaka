@@ -716,7 +716,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         null,
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -728,7 +728,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         null,
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -740,7 +740,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         null,
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -854,7 +854,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         null,
                         "Could not find any customer with given date: MONDAY groupId=${group.id}",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     )
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4064,7 +4064,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4076,7 +4076,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4088,7 +4088,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4100,7 +4100,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4112,7 +4112,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4124,7 +4124,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4136,7 +4136,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4148,7 +4148,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4160,7 +4160,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4172,7 +4172,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4184,7 +4184,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4196,7 +4196,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4331,7 +4331,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4343,7 +4343,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4355,7 +4355,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4367,7 +4367,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4379,7 +4379,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4391,7 +4391,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4403,7 +4403,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4415,7 +4415,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4427,7 +4427,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4439,7 +4439,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4451,7 +4451,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4463,7 +4463,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4528,7 +4528,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4540,7 +4540,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4552,7 +4552,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4564,7 +4564,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4576,7 +4576,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4588,7 +4588,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
                         "Luotu: [12345], Uusittu: [65432]",
-                        HelsinkiDateTime.now().toLocalDate().toString(),
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4607,7 +4607,12 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(group)
-            tx.setNekkuReportOrderErrorReport(group.id, LocalDate.now(), "Test error")
+            tx.setNekkuReportOrderErrorReport(
+                group.id,
+                LocalDate.now(),
+                "Test error",
+                HelsinkiDateTime.now(),
+            )
 
             tx.getNekkuReportRows(daycare.id, listOf(group.id), listOf(LocalDate.now()))
         }

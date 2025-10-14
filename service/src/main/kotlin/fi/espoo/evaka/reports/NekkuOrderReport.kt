@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -123,7 +124,7 @@ data class NekkuOrderRow(
     val mealType: String?,
     val specialDiets: String?,
     val nekkuOrderInfo: String?,
-    val nekkuOrderTime: String?,
+    val nekkuOrderTime: String,
 )
 
 private fun generateDateList(start: LocalDate, end: LocalDate): List<LocalDate> =

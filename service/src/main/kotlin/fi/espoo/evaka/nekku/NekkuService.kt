@@ -46,6 +46,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import org.jdbi.v3.json.Json
@@ -511,7 +512,7 @@ fun createAndSendNekkuOrder(
                 val orderString = parts.joinToString(", ")
 
                 dbc.transaction { tx ->
-                    tx.setNekkuReportOrderReport(order, groupId, nekkuProducts, orderString)
+                    tx.setNekkuReportOrderReport(order, groupId, nekkuProducts, orderString, now)
                 }
             } else {
                 logger.info {
@@ -541,7 +542,7 @@ fun createAndSendNekkuOrder(
         }
 
         dbc.transaction { tx ->
-            tx.setNekkuReportOrderErrorReport(groupId, date, e.localizedMessage)
+            tx.setNekkuReportOrderErrorReport(groupId, date, e.localizedMessage, now)
 
             val daycareId = tx.getDaycareIdByGroup(groupId)
             val groupName = tx.getGroupName(groupId) ?: "Tuntematon ryhmä"
@@ -998,5 +999,5 @@ data class NekkuOrdersReport(
     val mealType: NekkuProductMealType?,
     val mealsBySpecialDiet: List<String>?,
     val nekkuOrderInfo: String,
-    val nekkuOrderTime: String,
+    val nekkuOrderTime: HelsinkiDateTime,
 )
