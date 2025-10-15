@@ -610,8 +610,12 @@ fun nekkuMealReportData(
                     .mapNotNull { mealTime ->
                         val sku =
                             getNekkuProductNumber(nekkuProducts, mealTime, childInfo, customerType)
-                        if (sku == null) null
-                        else
+                        if (sku == null) {
+                            logger.error {
+                                "No Nekku product found for child ${childInfo.childId} with customertype=$customerType optionsId=${childInfo.optionsId} mealtype=${childInfo.mealType} mealtime=${mealTime.name}"
+                            }
+                            null
+                        } else
                             NekkuMealInfo(
                                 sku = sku,
                                 options =
@@ -750,6 +754,7 @@ private fun getNekkuChildInfos(
                 ?: if (isUnderOneYearOld) defaultSpecialDiet else ""
 
         NekkuChildInfo(
+            childId = child.childId,
             placementType = child.placementType,
             reservations = child.reservations,
             absences = child.absences,
@@ -943,6 +948,7 @@ enum class NekkuProductMealType(val description: String) : DatabaseEnum {
 }
 
 data class NekkuChildInfo(
+    val childId: ChildId,
     val placementType: PlacementType,
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
