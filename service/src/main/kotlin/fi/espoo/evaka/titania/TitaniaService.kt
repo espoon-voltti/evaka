@@ -218,8 +218,6 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                     sortedAttendances.mapIndexedNotNull { i, attendance ->
                                         // CHILD_SICKNESS doesn't create own stamping but alters
                                         // previous/next PRESENT reason code
-                                        // from Titania Classic - eVaka Rajapintakuvaus 2025-09-12
-                                        // (Ratkausukuvaus_Titania_eVaka.pdf)
                                         if (attendance.type == StaffAttendanceType.CHILD_SICKNESS) {
                                             return@mapIndexedNotNull null
                                         }
