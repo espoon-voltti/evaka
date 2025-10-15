@@ -2335,7 +2335,7 @@ sealed interface Action {
         ),
         READ_CHILD_DOCUMENTS_REPORT(
             HasGlobalRole(ADMIN, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
         ),
         READ_PRESCHOOL_APPLICATION_REPORT,
         READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT(
