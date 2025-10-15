@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -26,15 +27,50 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/employee/placement-desktop")
 class PlacementDesktopController(private val accessControl: AccessControl) {
-    data class PlacementDraftUpdateRequest(val unitId: DaycareId?)
+
+    data class PlacementDraftUpdateRequest(val unitId: DaycareId, val startDate: LocalDate? = null)
+
+    data class PlacementDraftUpdateResponse(val startDate: LocalDate)
 
     @PutMapping("/applications/{applicationId}/placement-draft")
-    fun updateApplicationPlacementDraft(
+    fun upsertApplicationPlacementDraft(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementDraftUpdateRequest,
+    ): PlacementDraftUpdateResponse {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.UPDATE_PLACEMENT_DRAFT,
+                        applicationId,
+                    )
+
+                    val startDate =
+                        tx.upsertApplicationPlacementDraft(
+                            applicationId = applicationId,
+                            unitId = body.unitId,
+                            startDate = body.startDate,
+                            now = clock.now(),
+                            userId = user.evakaUserId,
+                        )
+
+                    PlacementDraftUpdateResponse(startDate)
+                }
+            }
+            .also { Audit.ApplicationPlacementDraftUpdate.log(targetId = AuditId(applicationId)) }
+    }
+
+    @DeleteMapping("/applications/{applicationId}/placement-draft")
+    fun deleteApplicationPlacementDraft(
+        db: Database,
+        clock: EvakaClock,
+        user: AuthenticatedUser.Employee,
+        @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -45,15 +81,10 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     Action.Application.UPDATE_PLACEMENT_DRAFT,
                     applicationId,
                 )
-                tx.updateApplicationPlacementDraft(
-                    applicationId = applicationId,
-                    unitId = body.unitId,
-                    now = clock.now(),
-                    userId = user.evakaUserId,
-                )
+                tx.deleteApplicationPlacementDraft(applicationId)
             }
         }
-        Audit.ApplicationPlacementDraftUpdate.log(targetId = AuditId(applicationId))
+        Audit.ApplicationPlacementDraftDelete.log(targetId = AuditId(applicationId))
     }
 
     @GetMapping("/daycares/{unitId}")
