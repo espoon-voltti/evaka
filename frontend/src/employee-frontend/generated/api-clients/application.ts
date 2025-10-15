@@ -27,6 +27,7 @@ import type { PersonApplicationSummary } from 'lib-common/generated/api-types/ap
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { PlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
 import type { PlacementDraftUpdateRequest } from 'lib-common/generated/api-types/application'
+import type { PlacementDraftUpdateResponse } from 'lib-common/generated/api-types/application'
 import type { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import type { PlacementProposalConfirmationUpdate } from 'lib-common/generated/api-types/application'
 import type { PlacementToolValidation } from 'lib-common/generated/api-types/application'
@@ -47,6 +48,7 @@ import { deserializeJsonDecisionDraftGroup } from 'lib-common/generated/api-type
 import { deserializeJsonPagedApplicationSummaries } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPlacementDesktopDaycare } from 'lib-common/generated/api-types/application'
+import { deserializeJsonPlacementDraftUpdateResponse } from 'lib-common/generated/api-types/application'
 import { deserializeJsonPlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitApplications } from 'lib-common/generated/api-types/application'
@@ -573,6 +575,22 @@ export async function updateServiceWorkerNote(
 
 
 /**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.deleteApplicationPlacementDraft
+*/
+export async function deleteApplicationPlacementDraft(
+  request: {
+    applicationId: ApplicationId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/placement-desktop/applications/${request.applicationId}/placement-draft`.toString(),
+    method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycare
 */
 export async function getPlacementDesktopDaycare(
@@ -616,18 +634,18 @@ export async function getPlacementDesktopDaycares(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.updateApplicationPlacementDraft
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.upsertApplicationPlacementDraft
 */
-export async function updateApplicationPlacementDraft(
+export async function upsertApplicationPlacementDraft(
   request: {
     applicationId: ApplicationId,
     body: PlacementDraftUpdateRequest
   }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
+): Promise<PlacementDraftUpdateResponse> {
+  const { data: json } = await client.request<JsonOf<PlacementDraftUpdateResponse>>({
     url: uri`/employee/placement-desktop/applications/${request.applicationId}/placement-draft`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PlacementDraftUpdateRequest>
   })
-  return json
+  return deserializeJsonPlacementDraftUpdateResponse(json)
 }

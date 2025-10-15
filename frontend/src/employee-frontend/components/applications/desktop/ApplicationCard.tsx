@@ -12,7 +12,8 @@ import type {
 } from 'lib-common/generated/api-types/application'
 import type { UnitStub } from 'lib-common/generated/api-types/daycare'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
-import { useMutationResult } from 'lib-common/query'
+import type LocalDate from 'lib-common/local-date'
+import { cancelMutation, useMutation } from 'lib-common/query'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -45,37 +46,49 @@ import {
   DateOfBirthInfo,
   ServiceWorkerNoteModal
 } from '../ApplicationsList'
-import { updateApplicationPlacementDraftMutation } from '../queries'
+import {
+  deleteApplicationPlacementDraftMutation,
+  upsertApplicationPlacementDraftMutation
+} from '../queries'
 
 export default React.memo(function ApplicationCard({
   application,
   shownDaycares,
   allUnits,
-  onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure,
+  onUpsertApplicationPlacementSuccess,
+  onDeleteApplicationPlacementSuccess,
+  onMutateApplicationPlacementFailure,
   onAddToShownDaycares
 }: {
   application: ApplicationSummary
   shownDaycares: PreferredUnit[]
   allUnits: UnitStub[]
-  onUpdateApplicationPlacementSuccess: (
+  onUpsertApplicationPlacementSuccess: (
     applicationId: ApplicationId,
-    unit: PreferredUnit | null
+    unit: PreferredUnit,
+    startDate: LocalDate
   ) => void
-  onUpdateApplicationPlacementFailure: () => void
+  onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
+  onMutateApplicationPlacementFailure: () => void
   onAddToShownDaycares: (unit: PreferredUnit) => void
 }) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
   const [, navigate] = useLocation()
 
-  const { mutateAsync: updateApplicationPlacementDraft, isPending } =
-    useMutationResult(updateApplicationPlacementDraftMutation)
+  const {
+    mutateAsync: upsertApplicationPlacementDraft,
+    isPending: updatePending
+  } = useMutation(upsertApplicationPlacementDraftMutation)
+
+  const { isPending: deletePending } = useMutation(
+    deleteApplicationPlacementDraftMutation
+  )
 
   const [editingNote, setEditingNote] = useState(false)
 
   return (
-    <Card $placed={application.placementDraftUnit !== null}>
+    <Card $placed={application.placementDraft !== null}>
       {editingNote && (
         <ServiceWorkerNoteModal
           applicationId={application.id}
@@ -185,39 +198,36 @@ export default React.memo(function ApplicationCard({
               >
                 <UnitListItem
                   $selection={
-                    application.placementDraftUnit === null
+                    application.placementDraft === null
                       ? 'none'
-                      : application.placementDraftUnit.id === unit.id
+                      : application.placementDraft.unit.id === unit.id
                         ? 'this'
                         : 'other'
                   }
                 >
                   {index + 1}. {unit.name}
                 </UnitListItem>
-                {application.placementDraftUnit?.id === unit.id && (
+                {application.placementDraft?.unit?.id === unit.id && (
                   <MutateButton
                     appearance="inline"
                     text={
                       i18n.applications.placementDesktop.cancelPlacementDraft
                     }
                     icon={faUndo}
-                    mutation={updateApplicationPlacementDraftMutation}
+                    mutation={deleteApplicationPlacementDraftMutation}
                     onClick={() => ({
                       applicationId: application.id,
-                      previousUnitId: unit.id,
-                      body: {
-                        unitId: null
-                      }
+                      previousUnitId: unit.id
                     })}
                     onSuccess={() =>
-                      onUpdateApplicationPlacementSuccess(application.id, null)
+                      onDeleteApplicationPlacementSuccess(application.id)
                     }
-                    onFailure={onUpdateApplicationPlacementFailure}
+                    onFailure={onMutateApplicationPlacementFailure}
                     successTimeout={0}
                   />
                 )}
                 {application.checkedByAdmin &&
-                  application.placementDraftUnit === null && (
+                  application.placementDraft === null && (
                     <>
                       {shownDaycares.some(({ id }) => id === unit.id) ? (
                         <MutateButton
@@ -227,21 +237,23 @@ export default React.memo(function ApplicationCard({
                               .createPlacementDraft
                           }
                           icon={faArrowLeft}
-                          mutation={updateApplicationPlacementDraftMutation}
+                          mutation={upsertApplicationPlacementDraftMutation}
                           onClick={() => ({
                             applicationId: application.id,
                             previousUnitId: null,
                             body: {
-                              unitId: unit.id
+                              unitId: unit.id,
+                              startDate: null
                             }
                           })}
-                          onSuccess={() =>
-                            onUpdateApplicationPlacementSuccess(
+                          onSuccess={({ startDate }) =>
+                            onUpsertApplicationPlacementSuccess(
                               application.id,
-                              unit
+                              unit,
+                              startDate
                             )
                           }
-                          onFailure={onUpdateApplicationPlacementFailure}
+                          onFailure={onMutateApplicationPlacementFailure}
                           successTimeout={0}
                         />
                       ) : (
@@ -256,9 +268,9 @@ export default React.memo(function ApplicationCard({
                   )}
               </FixedSpaceRow>
             ))}
-            {application.placementDraftUnit &&
+            {application.placementDraft &&
               !application.preferredUnits.some(
-                ({ id }) => id === application.placementDraftUnit?.id
+                ({ id }) => id === application.placementDraft?.unit?.id
               ) && (
                 <FixedSpaceRow
                   justifyContent="space-between"
@@ -266,10 +278,10 @@ export default React.memo(function ApplicationCard({
                 >
                   <UnitListItem $selection="this">
                     {i18n.applications.placementDesktop.other}:{' '}
-                    {application.placementDraftUnit.name}
+                    {application.placementDraft.unit.name}
                   </UnitListItem>
                   {shownDaycares.some(
-                    (d) => d.id === application.placementDraftUnit?.id
+                    (d) => d.id === application.placementDraft?.unit?.id
                   ) ? (
                     <MutateButton
                       appearance="inline"
@@ -277,20 +289,19 @@ export default React.memo(function ApplicationCard({
                         i18n.applications.placementDesktop.cancelPlacementDraft
                       }
                       icon={faUndo}
-                      mutation={updateApplicationPlacementDraftMutation}
-                      onClick={() => ({
-                        applicationId: application.id,
-                        previousUnitId:
-                          application.placementDraftUnit?.id ?? null,
-                        body: { unitId: null }
-                      })}
-                      onSuccess={() =>
-                        onUpdateApplicationPlacementSuccess(
-                          application.id,
-                          null
-                        )
+                      mutation={deleteApplicationPlacementDraftMutation}
+                      onClick={() =>
+                        application.placementDraft
+                          ? {
+                              applicationId: application.id,
+                              previousUnitId: application.placementDraft.unit.id
+                            }
+                          : cancelMutation
                       }
-                      onFailure={onUpdateApplicationPlacementFailure}
+                      onSuccess={() =>
+                        onDeleteApplicationPlacementSuccess(application.id)
+                      }
+                      onFailure={onMutateApplicationPlacementFailure}
                       successTimeout={0}
                     />
                   ) : (
@@ -298,9 +309,11 @@ export default React.memo(function ApplicationCard({
                       appearance="inline"
                       icon={faEye}
                       text={i18n.applications.placementDesktop.showUnit}
-                      onClick={() =>
-                        onAddToShownDaycares(application.placementDraftUnit!)
-                      }
+                      onClick={() => {
+                        if (application.placementDraft) {
+                          onAddToShownDaycares(application.placementDraft.unit)
+                        }
+                      }}
                     />
                   )}
                 </FixedSpaceRow>
@@ -317,19 +330,20 @@ export default React.memo(function ApplicationCard({
                 onChange={(unit) => {
                   if (unit) {
                     onAddToShownDaycares(unit)
-                    updateApplicationPlacementDraft({
+                    upsertApplicationPlacementDraft({
                       applicationId: application.id,
                       previousUnitId:
-                        application.placementDraftUnit?.id ?? null,
-                      body: { unitId: unit.id }
+                        application.placementDraft?.unit?.id ?? null,
+                      body: { unitId: unit.id, startDate: null }
                     })
-                      .then(() =>
-                        onUpdateApplicationPlacementSuccess(
+                      .then(({ startDate }) =>
+                        onUpsertApplicationPlacementSuccess(
                           application.id,
-                          unit
+                          unit,
+                          startDate
                         )
                       )
-                      .catch(onUpdateApplicationPlacementFailure)
+                      .catch(onMutateApplicationPlacementFailure)
                   }
                 }}
                 placeholder={
@@ -337,7 +351,7 @@ export default React.memo(function ApplicationCard({
                     .createPlacementDraftToOtherUnit
                 }
                 getItemLabel={(unit) => unit.name}
-                isLoading={isPending}
+                isLoading={updatePending || deletePending}
                 fullWidth
               />
             )}
@@ -349,7 +363,7 @@ export default React.memo(function ApplicationCard({
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
-              primary={application.placementDraftUnit !== null}
+              primary={application.placementDraft !== null}
             />
           ) : (
             <a

@@ -316,7 +316,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
-  placementDraftUnit: PreferredUnit | null
+  placementDraft: ApplicationSummaryPlacementDraft | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
@@ -335,6 +335,14 @@ export interface ApplicationSummary {
   urgent: boolean
   wasOnClubCare: boolean | null
   wasOnDaycare: boolean | null
+}
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationSummaryPlacementDraft
+*/
+export interface ApplicationSummaryPlacementDraft {
+  startDate: LocalDate
+  unit: PreferredUnit
 }
 
 /**
@@ -693,6 +701,7 @@ export interface PlacementDraft {
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   serviceWorkerNote: string
+  startDate: LocalDate
   unitId: DaycareId
 }
 
@@ -700,7 +709,15 @@ export interface PlacementDraft {
 * Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
 */
 export interface PlacementDraftUpdateRequest {
-  unitId: DaycareId | null
+  startDate: LocalDate | null
+  unitId: DaycareId
+}
+
+/**
+* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateResponse
+*/
+export interface PlacementDraftUpdateResponse {
+  startDate: LocalDate
 }
 
 /**
@@ -970,9 +987,18 @@ export function deserializeJsonApplicationSummary(json: JsonOf<ApplicationSummar
     ...json,
     dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null,
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    placementDraft: (json.placementDraft != null) ? deserializeJsonApplicationSummaryPlacementDraft(json.placementDraft) : null,
     placementPlanStartDate: (json.placementPlanStartDate != null) ? LocalDate.parseIso(json.placementPlanStartDate) : null,
     placementProposalStatus: (json.placementProposalStatus != null) ? deserializeJsonPlacementProposalStatus(json.placementProposalStatus) : null,
     startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonApplicationSummaryPlacementDraft(json: JsonOf<ApplicationSummaryPlacementDraft>): ApplicationSummaryPlacementDraft {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 
@@ -1152,7 +1178,24 @@ export function deserializeJsonPlacementDesktopDaycare(json: JsonOf<PlacementDes
 export function deserializeJsonPlacementDraft(json: JsonOf<PlacementDraft>): PlacementDraft {
   return {
     ...json,
-    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPlacementDraftUpdateRequest(json: JsonOf<PlacementDraftUpdateRequest>): PlacementDraftUpdateRequest {
+  return {
+    ...json,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonPlacementDraftUpdateResponse(json: JsonOf<PlacementDraftUpdateResponse>): PlacementDraftUpdateResponse {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

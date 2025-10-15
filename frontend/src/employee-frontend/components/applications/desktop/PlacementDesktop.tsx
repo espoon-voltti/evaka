@@ -16,6 +16,7 @@ import styled from 'styled-components'
 
 import type {
   ApplicationSummary,
+  ApplicationSummaryPlacementDraft,
   PagedApplicationSummaries,
   PreferredUnit
 } from 'lib-common/generated/api-types/application'
@@ -121,8 +122,8 @@ const PlacementDesktopValidated = React.memo(
     )
 
     // optimistic cache to avoid refetching all applications when updating placements drafts
-    const [placementDraftUnits, setPlacementDraftUnits] = useState<
-      Record<ApplicationId, PreferredUnit | null>
+    const [placementDraftCache, setPlacementDraftCache] = useState<
+      Record<ApplicationId, ApplicationSummaryPlacementDraft | undefined>
     >({})
 
     const [shownDaycares, setShownDaycares] = useState<PreferredUnit[]>()
@@ -136,11 +137,11 @@ const PlacementDesktopValidated = React.memo(
     )
 
     useEffect(() => {
-      setPlacementDraftUnits(
+      setPlacementDraftCache(
         applications.reduce(
           (acc, application) => ({
             ...acc,
-            [application.id]: application.placementDraftUnit
+            [application.id]: application.placementDraft
           }),
           {}
         )
@@ -157,7 +158,7 @@ const PlacementDesktopValidated = React.memo(
               ...searchedUnits,
               ...applications.map((a) => a.preferredUnits[0]),
               ...applications.flatMap((a) =>
-                a.placementDraftUnit ? [a.placementDraftUnit] : []
+                a.placementDraft ? [a.placementDraft.unit] : []
               )
             ],
             (u) => u.id
@@ -167,17 +168,31 @@ const PlacementDesktopValidated = React.memo(
       )
     }, [applications, searchedUnits])
 
-    const onUpdateApplicationPlacementSuccess = useCallback(
-      (applicationId: ApplicationId, unit: PreferredUnit | null) => {
-        setPlacementDraftUnits((prev) => ({
+    const onUpsertApplicationPlacementSuccess = useCallback(
+      (
+        applicationId: ApplicationId,
+        unit: PreferredUnit,
+        startDate: LocalDate
+      ) => {
+        setPlacementDraftCache((prev) => ({
           ...prev,
-          [applicationId]: unit
+          [applicationId]: { unit, startDate }
         }))
       },
       []
     )
 
-    const onUpdateApplicationPlacementFailure = useCallback(() => {
+    const onDeleteApplicationPlacementSuccess = useCallback(
+      (applicationId: ApplicationId) => {
+        setPlacementDraftCache((prev) => ({
+          ...prev,
+          [applicationId]: undefined
+        }))
+      },
+      []
+    )
+
+    const onMutateApplicationPlacementFailure = useCallback(() => {
       void queryClient.invalidateQueries({
         queryKey: getApplicationSummariesQuery.prefix,
         type: 'all'
@@ -235,11 +250,11 @@ const PlacementDesktopValidated = React.memo(
               <PrefetchedDaycares
                 shownDaycares={shownDaycares}
                 applications={applications}
-                onUpdateApplicationPlacementSuccess={
-                  onUpdateApplicationPlacementSuccess
+                onDeleteApplicationPlacementSuccess={
+                  onDeleteApplicationPlacementSuccess
                 }
-                onUpdateApplicationPlacementFailure={
-                  onUpdateApplicationPlacementFailure
+                onMutateApplicationPlacementFailure={
+                  onMutateApplicationPlacementFailure
                 }
                 onAddToShownDaycares={onAddToShownDaycares}
                 onRemoveFromShownDaycares={onRemoveFromShownDaycares}
@@ -260,16 +275,19 @@ const PlacementDesktopValidated = React.memo(
                     key={application.id}
                     application={{
                       ...application,
-                      placementDraftUnit:
-                        placementDraftUnits[application.id] ?? null
+                      placementDraft:
+                        placementDraftCache[application.id] ?? null
                     }}
                     shownDaycares={shownDaycares}
                     allUnits={allUnits}
-                    onUpdateApplicationPlacementSuccess={
-                      onUpdateApplicationPlacementSuccess
+                    onUpsertApplicationPlacementSuccess={
+                      onUpsertApplicationPlacementSuccess
                     }
-                    onUpdateApplicationPlacementFailure={
-                      onUpdateApplicationPlacementFailure
+                    onDeleteApplicationPlacementSuccess={
+                      onDeleteApplicationPlacementSuccess
+                    }
+                    onMutateApplicationPlacementFailure={
+                      onMutateApplicationPlacementFailure
                     }
                     onAddToShownDaycares={onAddToShownDaycares}
                   />
@@ -285,17 +303,14 @@ const PlacementDesktopValidated = React.memo(
 const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   shownDaycares,
   applications,
-  onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure,
+  onDeleteApplicationPlacementSuccess,
+  onMutateApplicationPlacementFailure,
   onRemoveFromShownDaycares
 }: {
   shownDaycares: PreferredUnit[]
   applications: ApplicationSummary[]
-  onUpdateApplicationPlacementSuccess: (
-    applicationId: ApplicationId,
-    unit: PreferredUnit | null
-  ) => void
-  onUpdateApplicationPlacementFailure: () => void
+  onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
+  onMutateApplicationPlacementFailure: () => void
   onAddToShownDaycares: (unit: PreferredUnit) => void
   onRemoveFromShownDaycares: (unitId: DaycareId) => void
 }) {
@@ -330,11 +345,11 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
           key={daycare.id}
           daycare={daycare}
           applications={applications}
-          onUpdateApplicationPlacementSuccess={
-            onUpdateApplicationPlacementSuccess
+          onDeleteApplicationPlacementSuccess={
+            onDeleteApplicationPlacementSuccess
           }
-          onUpdateApplicationPlacementFailure={
-            onUpdateApplicationPlacementFailure
+          onMutateApplicationPlacementFailure={
+            onMutateApplicationPlacementFailure
           }
           onRemoveFromShownDaycares={() =>
             onRemoveFromShownDaycares(daycare.id)
