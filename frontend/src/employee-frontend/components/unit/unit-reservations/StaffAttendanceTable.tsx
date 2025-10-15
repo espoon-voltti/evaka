@@ -185,7 +185,12 @@ export default React.memo(function StaffAttendanceTable({
                 setDetailsModalConfig({
                   date,
                   name: row.name,
-                  attendances: row.attendances,
+                  attendances: row.attendances
+                    .filter((a) => a.type !== null)
+                    .map((a) => ({
+                      ...a,
+                      type: a.type!
+                    })),
                   plannedAttendances: row.plannedAttendances,
                   target: {
                     type: 'employee',
@@ -479,7 +484,10 @@ function getUniqueAttendanceDates(
       .filter(
         ({ type, groupId }) =>
           !groupFilter ||
-          (groupId && groupFilter([groupId]) && presentInGroup(type))
+          (groupId &&
+            groupFilter([groupId]) &&
+            type != null &&
+            presentInGroup(type))
       )
       // TODO: What if arrived and departed are > 1 day apart?
       .flatMap(({ departed, arrived }) =>
@@ -504,7 +512,7 @@ interface AttendanceRowAttendance {
   departed: HelsinkiDateTime | null
   groupId: GroupId | null
   departedAutomatically: boolean
-  type: StaffAttendanceType
+  type: StaffAttendanceType | null
   arrivedAddedAt: HelsinkiDateTime | null
   arrivedAddedBy: EvakaUser | null
   arrivedModifiedAt: HelsinkiDateTime | null
@@ -761,7 +769,10 @@ function getAttendancesForGroupAndDate(
   const presentAttendances = attendancesForDate.filter(
     ({ groupId, type }) =>
       !groupFilter ||
-      (groupId && groupFilter([groupId]) && presentInGroup(type))
+      (groupId &&
+        groupFilter([groupId]) &&
+        type !== null &&
+        presentInGroup(type))
   )
   return {
     matchingAttendances: presentAttendances,
@@ -815,9 +826,14 @@ function computeModalAttendances(
         .flatMap((employee) => employee.attendances)
         .filter(
           (attendance) =>
+            attendance.type !== null &&
             attendance.arrived <= endOfDay &&
             (attendance.departed === null || startOfDay <= attendance.departed)
-        ),
+        )
+        .map((a) => ({
+          ...a,
+          type: a.type!
+        })),
       (attendance) => attendance.id
     )
     const plannedAttendances: ModalPlannedAttendance[] = uniq(
