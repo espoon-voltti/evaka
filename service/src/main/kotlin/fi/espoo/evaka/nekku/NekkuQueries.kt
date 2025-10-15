@@ -788,7 +788,7 @@ SELECT
     meal_type,
     meals_by_special_diet,
     nekku_order_info,
-    nekku_order_time
+    created_at
 FROM nekku_orders_report
 WHERE daycare_id = ${bind(daycareId)}
     AND group_id = (${bind(groupId)})
@@ -858,7 +858,7 @@ INSERT INTO nekku_orders_report (
     meal_type,
     meals_by_special_diet,
     nekku_order_info,
-    nekku_order_time
+    created_at
 )
 VALUES (
     ${bind {it.deliveryDate}},
@@ -870,7 +870,7 @@ VALUES (
     ${bind {it.mealType}},
     ${bind {it.mealsBySpecialDiet}},
     ${bind {it.nekkuOrderInfo}},
-    ${bind {it.nekkuOrderTime}}
+    ${bind {it.createdAt}}
 )
             """
                 .trimIndent()
@@ -888,18 +888,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     val daycareId = getDaycareIdByGroup(groupId)
 
     val reportRow =
-        NekkuOrdersReport(
-            date,
-            daycareId,
-            groupId,
-            "",
-            0,
-            null,
-            null,
-            null,
-            nekkuOrderError,
-            now,
-        )
+        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError, now)
 
     val deletedNekkuOrders = execute {
         sql(
@@ -931,7 +920,7 @@ INSERT INTO nekku_orders_report (
     meal_type,
     meals_by_special_diet,
     nekku_order_info,
-    nekku_order_time)
+    created_at)
 VALUES (
     ${bind (reportRow.deliveryDate)},
     ${bind (reportRow.daycareId)},
@@ -942,7 +931,7 @@ VALUES (
     ${bind (reportRow.mealType)},
     ${bind (reportRow.mealsBySpecialDiet)},
     ${bind (reportRow.nekkuOrderInfo)},
-    ${bind (reportRow.nekkuOrderTime)}
+    ${bind (reportRow.createdAt)}
 )
             """
                 .trimIndent()

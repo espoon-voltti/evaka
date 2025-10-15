@@ -250,7 +250,7 @@ export default React.memo(function NekkuOrders() {
                 },
                 {
                   label: i18n.reports.nekkuOrders.nekkuOrderTime,
-                  value: (row) => row.nekkuOrderTime
+                  value: (row) => row.createdAt.format('dd.MM.yyyy HH:mm:ss')
                 }
               ]}
               filename={`${i18n.reports.nekkuOrders.title}.csv`}
@@ -294,7 +294,7 @@ export default React.memo(function NekkuOrders() {
                     </Td>
                     <Td>{row.specialDiets}</Td>
                     <Td>{row.nekkuOrderInfo}</Td>
-                    <Td>{row.nekkuOrderTime}</Td>
+                    <Td>{row.createdAt.format('dd.MM.yyyy HH:mm:ss')}</Td>
                   </Tr>
                 ))}
               </Tbody>
