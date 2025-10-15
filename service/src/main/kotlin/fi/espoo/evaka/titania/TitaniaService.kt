@@ -203,6 +203,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                 .map { (employee, attendances) ->
                     val employeePlans = plans[employee.id]
                     val convertedEmployeeNumber = employeeIdToNumber[employee.id]!!
+                    val sortedAttendances =
+                        attendances.flatMap(::splitOvernight).sortedBy { it.arrived }
                     TitaniaStampedPersonResponse(
                         employeeId =
                             convertedEmployeeNumbers[convertedEmployeeNumber]
@@ -213,98 +215,118 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                         stampedWorkingTimeEvents =
                             TitaniaStampedWorkingTimeEvents(
                                 event =
-                                    attendances
-                                        .flatMap(::splitOvernight)
-                                        .sortedBy { it.arrived }
-                                        .mapNotNull { attendance ->
-                                            val (arrived, arrivedPlan) =
-                                                calculateFromPlans(
-                                                        employeePlans,
-                                                        attendance.arrived,
-                                                    )
-                                                    .minBy { it.first }
-                                            if (!period.includes(arrived.toLocalDate())) {
-                                                return@mapNotNull null
-                                            }
-                                            val (departed, departedPlan) =
-                                                calculateFromPlan(
-                                                        employeePlans,
-                                                        attendance.departed,
-                                                    )
-                                                    ?.maxBy { it.first } ?: Pair(null, null)
-                                            TitaniaStampedWorkingTimeEvent(
-                                                date = attendance.arrived.toLocalDate(),
-                                                beginTime =
-                                                    arrived
-                                                        .toLocalTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                TITANIA_TIME_FORMAT
+                                    sortedAttendances.mapIndexedNotNull { i, attendance ->
+                                        // CHILD_SICKNESS doesn't create own stamping but alters
+                                        // previous/next PRESENT reason code
+                                        if (attendance.type == StaffAttendanceType.CHILD_SICKNESS) {
+                                            return@mapIndexedNotNull null
+                                        }
+                                        val (arrived, arrivedPlan) =
+                                            calculateFromPlans(employeePlans, attendance.arrived)
+                                                .minBy { it.first }
+                                        if (!period.includes(arrived.toLocalDate())) {
+                                            return@mapIndexedNotNull null
+                                        }
+                                        val (departed, departedPlan) =
+                                            calculateFromPlan(employeePlans, attendance.departed)
+                                                ?.maxBy { it.first } ?: Pair(null, null)
+                                        val prev =
+                                            if (attendance == sortedAttendances.first()) null
+                                            else if (
+                                                !sortedAttendances[i - 1].isPrevious(attendance)
+                                            )
+                                                null
+                                            else sortedAttendances[i - 1]
+                                        val next =
+                                            if (attendance == sortedAttendances.last()) null
+                                            else if (!sortedAttendances[i + 1].isNext(attendance))
+                                                null
+                                            else sortedAttendances[i + 1]
+                                        TitaniaStampedWorkingTimeEvent(
+                                            date = attendance.arrived.toLocalDate(),
+                                            beginTime =
+                                                arrived
+                                                    .toLocalTime()
+                                                    .format(
+                                                        DateTimeFormatter.ofPattern(
+                                                            TITANIA_TIME_FORMAT
+                                                        )
+                                                    ),
+                                            beginReasonCode =
+                                                when (attendance.type) {
+                                                    StaffAttendanceType.PRESENT ->
+                                                        if (
+                                                            prev?.type ==
+                                                                StaffAttendanceType.CHILD_SICKNESS
+                                                        )
+                                                            "LS"
+                                                        else null
+                                                    StaffAttendanceType.OTHER_WORK -> "TA"
+                                                    StaffAttendanceType.TRAINING -> "KO"
+                                                    StaffAttendanceType.OVERTIME ->
+                                                        if (arrivedPlan != null) null else "YT"
+                                                    StaffAttendanceType.JUSTIFIED_CHANGE ->
+                                                        if (
+                                                            isNotFirstInPlan(
+                                                                arrived,
+                                                                arrivedPlan,
+                                                                attendances,
                                                             )
-                                                        ),
-                                                beginReasonCode =
-                                                    when (attendance.type) {
-                                                        StaffAttendanceType.PRESENT -> null
-                                                        StaffAttendanceType.OTHER_WORK -> "TA"
-                                                        StaffAttendanceType.TRAINING -> "KO"
-                                                        StaffAttendanceType.OVERTIME ->
-                                                            if (arrivedPlan != null) null else "YT"
-                                                        StaffAttendanceType.JUSTIFIED_CHANGE ->
-                                                            if (
-                                                                isNotFirstInPlan(
-                                                                    arrived,
-                                                                    arrivedPlan,
+                                                        )
+                                                            null
+                                                        else "PM"
+                                                    StaffAttendanceType.SICKNESS -> "SA"
+                                                    StaffAttendanceType.CHILD_SICKNESS -> null
+                                                },
+                                            endTime =
+                                                when (departed?.toLocalTime()) {
+                                                    null -> null
+                                                    LocalTime.MAX.truncatedTo(ChronoUnit.MICROS) ->
+                                                        "2400"
+                                                    else ->
+                                                        departed
+                                                            .toLocalTime()
+                                                            .format(
+                                                                DateTimeFormatter.ofPattern(
+                                                                    TITANIA_TIME_FORMAT
+                                                                )
+                                                            )
+                                                },
+                                            endReasonCode =
+                                                when (attendance.type) {
+                                                    StaffAttendanceType.PRESENT ->
+                                                        if (
+                                                            departed != null &&
+                                                                next?.type ==
+                                                                    StaffAttendanceType
+                                                                        .CHILD_SICKNESS
+                                                        )
+                                                            "LS"
+                                                        else null
+                                                    StaffAttendanceType.OTHER_WORK -> null
+                                                    StaffAttendanceType.TRAINING -> null
+                                                    StaffAttendanceType.OVERTIME ->
+                                                        if (
+                                                            departed == null || departedPlan != null
+                                                        )
+                                                            null
+                                                        else "YT"
+                                                    StaffAttendanceType.JUSTIFIED_CHANGE ->
+                                                        if (
+                                                            departed == null ||
+                                                                isNotLastInPlan(
+                                                                    departed,
+                                                                    departedPlan,
                                                                     attendances,
                                                                 )
-                                                            )
-                                                                null
-                                                            else "PM"
-                                                        StaffAttendanceType.SICKNESS -> "Z"
-                                                        StaffAttendanceType.CHILD_SICKNESS -> "7"
-                                                    },
-                                                endTime =
-                                                    when (departed?.toLocalTime()) {
-                                                        null -> null
-                                                        LocalTime.MAX.truncatedTo(
-                                                            ChronoUnit.MICROS
-                                                        ) -> "2400"
-                                                        else ->
-                                                            departed
-                                                                .toLocalTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        TITANIA_TIME_FORMAT
-                                                                    )
-                                                                )
-                                                    },
-                                                endReasonCode =
-                                                    when (attendance.type) {
-                                                        StaffAttendanceType.PRESENT -> null
-                                                        StaffAttendanceType.OTHER_WORK -> null
-                                                        StaffAttendanceType.TRAINING -> null
-                                                        StaffAttendanceType.OVERTIME ->
-                                                            if (
-                                                                departed == null ||
-                                                                    departedPlan != null
-                                                            )
-                                                                null
-                                                            else "YT"
-                                                        StaffAttendanceType.JUSTIFIED_CHANGE ->
-                                                            if (
-                                                                departed == null ||
-                                                                    isNotLastInPlan(
-                                                                        departed,
-                                                                        departedPlan,
-                                                                        attendances,
-                                                                    )
-                                                            )
-                                                                null
-                                                            else "PM"
-                                                        StaffAttendanceType.SICKNESS -> null
-                                                        StaffAttendanceType.CHILD_SICKNESS -> null
-                                                    },
-                                            )
-                                        }
+                                                        )
+                                                            null
+                                                        else "PM"
+                                                    StaffAttendanceType.SICKNESS -> null
+                                                    StaffAttendanceType.CHILD_SICKNESS -> null
+                                                },
+                                        )
+                                    }
                             ),
                     )
                 }
