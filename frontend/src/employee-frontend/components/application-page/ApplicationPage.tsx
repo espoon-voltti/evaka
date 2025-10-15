@@ -14,6 +14,7 @@ import type {
   ApplicationType
 } from 'lib-common/generated/api-types/application'
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
@@ -125,8 +126,12 @@ export default React.memo(function ApplicationPage() {
     )
   )
 
-  const messageThread = useQueryResult(
-    threadByApplicationIdQuery({ applicationId })
+  const messageThread = useChainedQuery(
+    application.map((a) =>
+      a.permittedActions.includes('READ_SERVICE_WORKER_ACCOUNT_MESSAGES')
+        ? threadByApplicationIdQuery({ applicationId })
+        : constantQuery<ThreadByApplicationResponse>({ thread: null })
+    )
   )
 
   const preschoolTerms = useChainedQuery(

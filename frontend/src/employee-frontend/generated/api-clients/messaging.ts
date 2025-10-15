@@ -293,6 +293,22 @@ export async function getSentMessages(
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.getServiceWorkerAccountThreadByApplicationId
+*/
+export async function getServiceWorkerAccountThreadByApplicationId(
+  request: {
+    applicationId: ApplicationId
+  }
+): Promise<ThreadByApplicationResponse> {
+  const { data: json } = await client.request<JsonOf<ThreadByApplicationResponse>>({
+    url: uri`/employee/messages/application/${request.applicationId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonThreadByApplicationResponse(json)
+}
+
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.getThread
 */
 export async function getThread(
@@ -306,22 +322,6 @@ export async function getThread(
     method: 'GET'
   })
   return deserializeJsonMessageThread(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.getThreadByApplicationId
-*/
-export async function getThreadByApplicationId(
-  request: {
-    applicationId: ApplicationId
-  }
-): Promise<ThreadByApplicationResponse> {
-  const { data: json } = await client.request<JsonOf<ThreadByApplicationResponse>>({
-    url: uri`/employee/messages/application/${request.applicationId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonThreadByApplicationResponse(json)
 }
 
 

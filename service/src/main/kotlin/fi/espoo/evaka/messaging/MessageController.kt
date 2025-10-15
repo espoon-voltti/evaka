@@ -404,7 +404,7 @@ class MessageController(
     data class ThreadByApplicationResponse(val thread: MessageThread?)
 
     @GetMapping("/employee/messages/application/{applicationId}")
-    fun getThreadByApplicationId(
+    fun getServiceWorkerAccountThreadByApplicationId(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
