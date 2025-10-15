@@ -8,6 +8,7 @@ import { useLocation } from 'wouter'
 
 import type {
   ApplicationSummary,
+  ApplicationSummaryPlacementDraft,
   PreferredUnit
 } from 'lib-common/generated/api-types/application'
 import type { UnitStub } from 'lib-common/generated/api-types/daycare'
@@ -20,11 +21,13 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H4, LabelLike, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEye } from 'lib-icons'
@@ -37,6 +40,7 @@ import {
   faSection
 } from 'lib-icons'
 import { faUndo } from 'lib-icons'
+import { faCheck, faPen, faTimes } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
@@ -86,6 +90,8 @@ export default React.memo(function ApplicationCard({
   )
 
   const [editingNote, setEditingNote] = useState(false)
+
+  const [editingDate, setEditingDate] = useState(false)
 
   return (
     <Card $placed={application.placementDraft !== null}>
@@ -191,11 +197,7 @@ export default React.memo(function ApplicationCard({
           </LabelLike>
           <FixedSpaceColumn spacing="xs">
             {application.preferredUnits.map((unit, index) => (
-              <FixedSpaceRow
-                key={index}
-                justifyContent="space-between"
-                alignItems="center"
-              >
+              <FixedSpaceRow key={index} alignItems="center">
                 <UnitListItem
                   $selection={
                     application.placementDraft === null
@@ -207,27 +209,51 @@ export default React.memo(function ApplicationCard({
                 >
                   {index + 1}. {unit.name}
                 </UnitListItem>
-                {application.placementDraft?.unit?.id === unit.id && (
-                  <MutateButton
-                    appearance="inline"
-                    text={
-                      i18n.applications.placementDesktop.cancelPlacementDraft
-                    }
-                    icon={faUndo}
-                    mutation={deleteApplicationPlacementDraftMutation}
-                    onClick={() => ({
-                      applicationId: application.id,
-                      previousUnitId: unit.id
-                    })}
-                    onSuccess={() =>
-                      onDeleteApplicationPlacementSuccess(application.id)
-                    }
-                    onFailure={onMutateApplicationPlacementFailure}
-                    successTimeout={0}
-                  />
-                )}
+                {application.placementDraft?.unit?.id === unit.id &&
+                  (editingDate ? (
+                    <DateEditor
+                      applicationId={application.id}
+                      placementDraft={application.placementDraft}
+                      onUpsertApplicationPlacementSuccess={
+                        onUpsertApplicationPlacementSuccess
+                      }
+                      onClose={() => setEditingDate(false)}
+                    />
+                  ) : (
+                    <FixedSpaceRow spacing="xs">
+                      <span>
+                        {application.placementDraft.startDate.format()}
+                      </span>
+                      <IconOnlyButton
+                        icon={faPen}
+                        onClick={() => setEditingDate(true)}
+                        aria-label={i18n.common.edit}
+                      />
+                    </FixedSpaceRow>
+                  ))}
+                {application.placementDraft?.unit?.id === unit.id &&
+                  !editingDate && (
+                    <MutateButton
+                      appearance="inline"
+                      text={
+                        i18n.applications.placementDesktop.cancelPlacementDraft
+                      }
+                      icon={faUndo}
+                      mutation={deleteApplicationPlacementDraftMutation}
+                      onClick={() => ({
+                        applicationId: application.id,
+                        previousUnitId: unit.id
+                      })}
+                      onSuccess={() =>
+                        onDeleteApplicationPlacementSuccess(application.id)
+                      }
+                      onFailure={onMutateApplicationPlacementFailure}
+                      successTimeout={0}
+                    />
+                  )}
                 {application.checkedByAdmin &&
-                  application.placementDraft === null && (
+                  application.placementDraft === null &&
+                  !editingDate && (
                     <>
                       {shownDaycares.some(({ id }) => id === unit.id) ? (
                         <MutateButton
@@ -383,6 +409,62 @@ export default React.memo(function ApplicationCard({
   )
 })
 
+const DateEditor = React.memo(function DateEditor({
+  applicationId,
+  placementDraft,
+  onUpsertApplicationPlacementSuccess,
+  onClose
+}: {
+  applicationId: ApplicationId
+  placementDraft: ApplicationSummaryPlacementDraft
+  onUpsertApplicationPlacementSuccess: (
+    applicationId: ApplicationId,
+    unit: PreferredUnit,
+    startDate: LocalDate
+  ) => void
+  onClose: () => void
+}) {
+  const { i18n, lang } = useTranslation()
+  const [date, setDate] = useState(placementDraft.startDate)
+
+  return (
+    <FixedSpaceRow alignItems="center">
+      <DatePicker
+        date={date}
+        onChange={(val) => {
+          if (val) setDate(val)
+        }}
+        locale={lang}
+      />
+      <FixedSpaceRow spacing="xs" alignItems="center">
+        <MutateIconOnlyButton
+          icon={faCheck}
+          mutation={upsertApplicationPlacementDraftMutation}
+          onClick={() => ({
+            applicationId: applicationId,
+            previousUnitId: placementDraft.unit.id,
+            body: { unitId: placementDraft.unit.id, startDate: date }
+          })}
+          onSuccess={({ startDate }) => {
+            onUpsertApplicationPlacementSuccess(
+              applicationId,
+              placementDraft.unit,
+              startDate
+            )
+            onClose()
+          }}
+          aria-label={i18n.common.edit}
+        />
+        <IconOnlyButton
+          icon={faTimes}
+          onClick={onClose}
+          aria-label={i18n.common.cancel}
+        />
+      </FixedSpaceRow>
+    </FixedSpaceRow>
+  )
+})
+
 const Card = styled.div<{ $placed: boolean }>`
   width: 580px;
   ${(p) =>
@@ -399,8 +481,7 @@ const Card = styled.div<{ $placed: boolean }>`
 `
 
 const UnitListItem = styled.span<{ $selection: 'this' | 'other' | 'none' }>`
-  flex-grow: 1;
-  max-width: 360px;
+  width: 210px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

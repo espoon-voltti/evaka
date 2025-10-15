@@ -63,7 +63,7 @@ export default React.memo(function ApplicationCardPlaced({
           }
         >
           <ChildName $applicationInSearchResults={applicationInSearchResults}>
-            {placementDraft.childName}
+            {placementDraft.childName} ({placementDraft.startDate.format()})
           </ChildName>
         </Tooltip>
 
