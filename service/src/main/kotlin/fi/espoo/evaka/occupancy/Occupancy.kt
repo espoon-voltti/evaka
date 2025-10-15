@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
@@ -493,7 +494,9 @@ private fun Database.Read.getPlacementDrafts(
 ): Iterable<SpeculatedPlacement> {
     data class QueryResult(
         val applicationId: ApplicationId,
+        val childId: PersonId,
         val unitId: DaycareId,
+        val startDate: LocalDate,
         val familyUnitPlacement: Boolean,
     )
     return createQuery {
@@ -501,7 +504,9 @@ private fun Database.Read.getPlacementDrafts(
                 """
         SELECT 
             a.id AS application_id,
+            a.child_id,
             u.id AS unit_id,
+            pd.start_date,
             u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement
         FROM placement_draft pd
         JOIN application a ON pd.application_id = a.id
@@ -512,17 +517,15 @@ private fun Database.Read.getPlacementDrafts(
         }
         .toList<QueryResult>()
         .mapNotNull { row ->
+            // todo: optimize to avoid fetching full application details just to get the derived
+            // placement type
             val application = fetchApplicationDetails(row.applicationId)!!
-            val estimatedStartDate =
-                application.form.preferences.preferredStartDate
-                    ?: application.dueDate
-                    ?: period.start
             val period =
-                DateRange(estimatedStartDate, null).intersection(period) ?: return@mapNotNull null
+                DateRange(row.startDate, null).intersection(period) ?: return@mapNotNull null
 
             SpeculatedPlacement(
                 type = application.derivePlacementType(),
-                childId = application.childId,
+                childId = row.childId,
                 unitId = row.unitId,
                 period = period,
                 familyUnitPlacement = row.familyUnitPlacement,

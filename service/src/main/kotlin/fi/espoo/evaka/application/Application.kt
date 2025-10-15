@@ -74,8 +74,10 @@ data class ApplicationSummary(
     val streetAddress: String?,
     val postalCode: String?,
     val postOffice: String?,
-    val placementDraftUnit: PreferredUnit? = null,
+    val placementDraft: ApplicationSummaryPlacementDraft? = null,
 )
+
+data class ApplicationSummaryPlacementDraft(val unit: PreferredUnit, val startDate: LocalDate)
 
 data class PlacementProposalStatus(
     val unitConfirmationStatus: PlacementPlanConfirmationStatus,

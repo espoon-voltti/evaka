@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationStatusOption
+import fi.espoo.evaka.application.ApplicationSummaryPlacementDraft
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.ApplicationTypeToggle
 import fi.espoo.evaka.application.ChildDetails
@@ -20,7 +21,6 @@ import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.SearchApplicationRequest
 import fi.espoo.evaka.application.ServiceNeed
-import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementDraftUnit
 import fi.espoo.evaka.placement.PlacementType
@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertApplication
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -81,21 +82,25 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         }
 
         // Verify initial state
-        assertNull(getSingleApplicationSummary().placementDraftUnit)
+        assertNull(getSingleApplicationSummary().placementDraft)
         assertEquals(0, getPlacementDesktopDaycare(daycare1.id).placementDrafts.size)
         assertEquals(0, getPlacementDesktopDaycare(daycare2.id).placementDrafts.size)
 
         // Set placement draft unit
-        updateApplicationPlacementDraft(application.id, daycare1.id)
+        upsertApplicationPlacementDraft(application.id, daycare1.id)
         assertEquals(
-            PreferredUnit(daycare1.id, daycare1.name),
-            getSingleApplicationSummary().placementDraftUnit,
+            ApplicationSummaryPlacementDraft(
+                PreferredUnit(id = daycare1.id, name = daycare1.name),
+                application.form.preferences.preferredStartDate!!,
+            ),
+            getSingleApplicationSummary().placementDraft,
         )
         assertEquals(
             listOf(
                 PlacementDraft(
                     applicationId = application.id,
                     unitId = daycare1.id,
+                    startDate = application.form.preferences.preferredStartDate!!,
                     childId = child.id,
                     childName = "${child.lastName} ${child.firstName}",
                     modifiedAt = clock.now(),
@@ -107,11 +112,19 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         assertEquals(0, getPlacementDesktopDaycare(daycare2.id).placementDrafts.size)
 
-        // Change placement draft unit
-        updateApplicationPlacementDraft(application.id, daycare2.id)
+        // Change placement draft unit and update placement draft start date
+        val newStartDate = clock.today().plusMonths(3)
+        upsertApplicationPlacementDraft(
+            applicationId = application.id,
+            daycareId = daycare2.id,
+            startDate = newStartDate,
+        )
         assertEquals(
-            PreferredUnit(daycare2.id, daycare2.name),
-            getSingleApplicationSummary().placementDraftUnit,
+            ApplicationSummaryPlacementDraft(
+                PreferredUnit(daycare2.id, daycare2.name),
+                newStartDate,
+            ),
+            getSingleApplicationSummary().placementDraft,
         )
         assertEquals(0, getPlacementDesktopDaycare(daycare1.id).placementDrafts.size)
         assertEquals(
@@ -119,6 +132,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 PlacementDraft(
                     applicationId = application.id,
                     unitId = daycare2.id,
+                    startDate = newStartDate,
                     childId = child.id,
                     childName = "${child.lastName} ${child.firstName}",
                     modifiedAt = clock.now(),
@@ -145,6 +159,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             PlacementDraft(
                                 applicationId = application.id,
                                 unitId = daycare2.id,
+                                startDate = newStartDate,
                                 childId = child.id,
                                 childName = "${child.lastName} ${child.firstName}",
                                 modifiedAt = clock.now(),
@@ -165,8 +180,8 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
         // Remove placement draft unit
-        updateApplicationPlacementDraft(application.id, null)
-        assertNull(getSingleApplicationSummary().placementDraftUnit)
+        deleteApplicationPlacementDraft(application.id)
+        assertNull(getSingleApplicationSummary().placementDraft)
         assertEquals(0, getPlacementDesktopDaycare(daycare1.id).placementDrafts.size)
         assertEquals(0, getPlacementDesktopDaycare(daycare2.id).placementDrafts.size)
     }
@@ -249,7 +264,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(draftPlacedChild, DevPersonType.RAW_ROW)
             tx.insertApplication(application2)
         }
-        updateApplicationPlacementDraft(applicationId = application2.id, daycareId = daycare1.id)
+        upsertApplicationPlacementDraft(applicationId = application2.id, daycareId = daycare1.id)
 
         val result1 = getPlacementDesktopDaycare(daycare1.id)
         assertEquals(4.8, result1.maxOccupancyConfirmed)
@@ -311,16 +326,29 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             daycareIds,
         )
 
-    private fun updateApplicationPlacementDraft(
+    private fun upsertApplicationPlacementDraft(
         applicationId: ApplicationId,
-        daycareId: DaycareId?,
+        daycareId: DaycareId,
+        startDate: LocalDate? = null,
     ) =
-        placementDesktopController.updateApplicationPlacementDraft(
+        placementDesktopController.upsertApplicationPlacementDraft(
             dbInstance(),
             clock,
             serviceWorker.user,
             applicationId = applicationId,
-            body = PlacementDesktopController.PlacementDraftUpdateRequest(unitId = daycareId),
+            body =
+                PlacementDesktopController.PlacementDraftUpdateRequest(
+                    unitId = daycareId,
+                    startDate = startDate,
+                ),
+        )
+
+    private fun deleteApplicationPlacementDraft(applicationId: ApplicationId) =
+        placementDesktopController.deleteApplicationPlacementDraft(
+            dbInstance(),
+            clock,
+            serviceWorker.user,
+            applicationId = applicationId,
         )
 
     private fun getPlacementPlanDraft(applicationId: ApplicationId) =

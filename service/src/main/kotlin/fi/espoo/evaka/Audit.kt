@@ -65,6 +65,7 @@ enum class Audit(
     ApplicationConfirmDecisionsMailed,
     ApplicationCreate,
     ApplicationDelete,
+    ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
     ApplicationReadMetadata,
     ApplicationReadNotifications,
