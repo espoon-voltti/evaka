@@ -519,6 +519,7 @@ export class Fixture {
       roles: [],
       active: true,
       employeeNumber: null,
+      created: HelsinkiDateTime.now(),
       lastLogin: HelsinkiDateTime.now(),
       preferredFirstName: null,
       ...initial
