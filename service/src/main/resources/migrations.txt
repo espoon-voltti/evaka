@@ -559,3 +559,4 @@ V560__new_staff_attendance_types.sql
 V561__finance_decision_archived_at.sql
 V562__calendar_event_nekku_unordered_meals.sql
 V563__staff_attendance_realtime_constraint_change.sql
+V564__add_nekku_order_time.sql
