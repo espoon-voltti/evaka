@@ -335,7 +335,7 @@ data class Section(
  * decision: if the document is a decision with accept/reject/annul functionality as the final step
  *
  * autoCompleteAtEndOfValidity: if the document is automatically completed and published when the
- * template validity ends
+ * template validity ends (only documents that have already been published at least once)
  */
 @ConstList("childDocumentTypes")
 enum class ChildDocumentType(
