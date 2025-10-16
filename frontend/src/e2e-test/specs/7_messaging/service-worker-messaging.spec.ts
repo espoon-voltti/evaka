@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -18,7 +19,8 @@ import {
   testAdult,
   testCareArea,
   testChild,
-  testDaycare
+  testDaycare,
+  uuidv4
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -71,6 +73,7 @@ async function openStaffPage(
   staffPage = await Page.open({ mockedTime })
   await employeeLogin(staffPage, employee)
   await staffPage.goto(config.employeeUrl)
+  return staffPage
 }
 
 describe('Service Worker Messaging', () => {
@@ -416,6 +419,48 @@ describe('Service Worker Messaging', () => {
       const messagesPageWithThread =
         await applReadView.clickMessageThreadLinkInNote(0)
       await messagesPageWithThread.assertMessageContent(0, content)
+    })
+  })
+
+  describe('Special education teacher', () => {
+    let specialEducationTeacher: DevEmployee
+    const applicationId: ApplicationId = uuidv4() as ApplicationId
+
+    beforeEach(async () => {
+      await createApplications({
+        body: [
+          {
+            ...applicationFixture(
+              testChild,
+              testAdult,
+              undefined,
+              'DAYCARE',
+              null,
+              [testDaycare.id],
+              false,
+              'SENT',
+              LocalDate.of(2021, 8, 16),
+              false,
+              true
+            ),
+            sentDate: mockedToday,
+            id: applicationId
+          }
+        ]
+      })
+      specialEducationTeacher = await Fixture.employee()
+        .specialEducationTeacher(testDaycare.id)
+        .save()
+    })
+
+    it('should not be possible for special education teacher to send messages relating to an application', async () => {
+      const staffPage = await openStaffPage(mockedTime, specialEducationTeacher)
+      const applReadView = new ApplicationReadView(staffPage)
+      await applReadView.navigateToApplication(applicationId)
+
+      // Currently VEO can write notes so use this to ensure page is loaded
+      await staffPage.findByDataQa('add-note').waitUntilVisible()
+      await staffPage.findByDataQa('send-message-button').waitUntilHidden()
     })
   })
 })

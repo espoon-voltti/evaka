@@ -262,15 +262,23 @@ export default React.memo(function ApplicationPage() {
                     )}
                   />
                   <Gap size="m" />
-                  <AddButton
-                    onClick={() =>
-                      window.open(getSendMessageUrl(applicationData), '_blank')
-                    }
-                    text={i18n.application.messaging.sendMessage}
-                    darker
-                    icon={faEnvelope}
-                    data-qa="send-message-button"
-                  />
+                  {application.isSuccess &&
+                    application.value.permittedActions.includes(
+                      'READ_SERVICE_WORKER_ACCOUNT_MESSAGES'
+                    ) && (
+                      <AddButton
+                        onClick={() =>
+                          window.open(
+                            getSendMessageUrl(applicationData),
+                            '_blank'
+                          )
+                        }
+                        text={i18n.application.messaging.sendMessage}
+                        darker
+                        icon={faEnvelope}
+                        data-qa="send-message-button"
+                      />
+                    )}
                 </SidebarArea>
               )}
             </FixedSpaceRow>
