@@ -130,26 +130,10 @@ licensed, they shouldn't be included in this repository at all.
 
 ### Automatically add licensing headers
 
-To **attempt** automatically adding licensing headers to all source files, run:
+To attempt automatically adding licensing headers to all source files, run:
 
 ```sh
 ./bin/add-license-headers.sh
-```
-
-**NOTE:** The script uses the [reuse CLI tool](https://git.fsfe.org/reuse/tool),
-which has limited capability in recognizing file types but will give some
-helpful output in those cases, like:
-
-```sh
-$ ./bin/add-license-headers.sh
-usage: reuse addheader [-h] [--copyright COPYRIGHT] [--license LICENSE]
-                       [--year YEAR]
-                       [--style {applescript,aspx,bibtex,c,css,haskell,html,jinja,jsx,lisp,m4,ml,python,tex}]
-                       [--template TEMPLATE] [--exclude-year] [--single-line]
-                       [--multi-line] [--explicit-license]
-                       [--skip-unrecognised]
-                       path [path ...]
-reuse addheader: error: 'frontend/packages/employee-frontend/src/components/voucher-value-decision/VoucherValueDecisionActionBar.tsx' does not have a recognised file extension, please use --style, --explicit-license or --skip-unrecognised
 ```
 
 ### Linting shell scripts
