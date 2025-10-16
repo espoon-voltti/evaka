@@ -39,13 +39,8 @@ if [ "${DD_PROFILING_ENABLED}" = "true" ]; then
     echo "ERROR: DD_AGENT_HOST missing"
     exit 1
   fi
-  if test -z "${DD_AGENT_PORT:-}"; then
-    echo "ERROR: DD_AGENT_PORT missing"
-    exit 1
-  fi
 else
   export DD_AGENT_HOST="localhost"
-  export DD_AGENT_PORT="8126"
 fi
 
 if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
