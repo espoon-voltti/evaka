@@ -787,7 +787,8 @@ SELECT
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info
+    nekku_order_info,
+    created_at
 FROM nekku_orders_report
 WHERE daycare_id = ${bind(daycareId)}
     AND group_id = (${bind(groupId)})
@@ -804,6 +805,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
     groupId: GroupId,
     nekkuProducts: List<NekkuProduct>,
     nekkuOrderInfo: String,
+    now: HelsinkiDateTime,
 ) {
 
     val daycareId = getDaycareIdByGroup(groupId)
@@ -821,6 +823,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
                 product.mealType,
                 item.productOptions?.map { it.value },
                 nekkuOrderInfo,
+                now,
             )
         }
 
@@ -854,7 +857,8 @@ INSERT INTO nekku_orders_report (
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info
+    nekku_order_info,
+    created_at
 )
 VALUES (
     ${bind {it.deliveryDate}},
@@ -865,7 +869,8 @@ VALUES (
     ${bind {it.mealTime}},
     ${bind {it.mealType}},
     ${bind {it.mealsBySpecialDiet}},
-    ${bind {it.nekkuOrderInfo}}
+    ${bind {it.nekkuOrderInfo}},
+    ${bind {it.createdAt}}
 )
             """
                 .trimIndent()
@@ -877,12 +882,13 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     groupId: GroupId,
     date: LocalDate,
     nekkuOrderError: String,
+    now: HelsinkiDateTime,
 ) {
 
     val daycareId = getDaycareIdByGroup(groupId)
 
     val reportRow =
-        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError)
+        NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError, now)
 
     val deletedNekkuOrders = execute {
         sql(
@@ -913,7 +919,8 @@ INSERT INTO nekku_orders_report (
     meal_time,
     meal_type,
     meals_by_special_diet,
-    nekku_order_info)
+    nekku_order_info,
+    created_at)
 VALUES (
     ${bind (reportRow.deliveryDate)},
     ${bind (reportRow.daycareId)},
@@ -923,7 +930,8 @@ VALUES (
     ${bind (reportRow.mealTime)},
     ${bind (reportRow.mealType)},
     ${bind (reportRow.mealsBySpecialDiet)},
-    ${bind (reportRow.nekkuOrderInfo)}
+    ${bind (reportRow.nekkuOrderInfo)},
+    ${bind (reportRow.createdAt)}
 )
             """
                 .trimIndent()

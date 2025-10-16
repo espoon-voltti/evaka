@@ -623,6 +623,7 @@ export interface MunicipalVoucherCount {
 * Generated from fi.espoo.evaka.reports.NekkuOrderRow
 */
 export interface NekkuOrderRow {
+  createdAt: HelsinkiDateTime
   date: LocalDate
   groupName: string
   mealTime: string[]
@@ -1358,6 +1359,7 @@ export function deserializeJsonMissingHeadOfFamilyReportRow(json: JsonOf<Missing
 export function deserializeJsonNekkuOrderRow(json: JsonOf<NekkuOrderRow>): NekkuOrderRow {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     date: LocalDate.parseIso(json.date)
   }
 }

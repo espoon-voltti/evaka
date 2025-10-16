@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -99,7 +100,8 @@ fun Database.Read.getNekkuReportRows(
                 coalesce(nor.meal_time, '{}') as mealtime,
                 nor.meal_type as mealtype,
                 nor.meals_by_special_diet as specialdiets,
-                nor.nekku_order_info as nekkuOrderInfo
+                nor.nekku_order_info as nekkuOrderInfo,
+                nor.created_at as createdAt
             FROM nekku_orders_report nor
                 JOIN daycare_group dg
                 ON nor.group_id = dg.id
@@ -122,6 +124,7 @@ data class NekkuOrderRow(
     val mealType: String?,
     val specialDiets: String?,
     val nekkuOrderInfo: String?,
+    val createdAt: HelsinkiDateTime,
 )
 
 private fun generateDateList(start: LocalDate, end: LocalDate): List<LocalDate> =

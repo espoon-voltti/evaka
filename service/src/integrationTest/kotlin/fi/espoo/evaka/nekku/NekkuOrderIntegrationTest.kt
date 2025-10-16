@@ -715,7 +715,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         null,
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -726,7 +727,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         null,
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -737,7 +739,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         null,
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -851,6 +854,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         null,
                         null,
                         "Could not find any customer with given date: MONDAY groupId=${group.id}",
+                        now,
                     )
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4059,7 +4063,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4070,7 +4075,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4081,7 +4087,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4092,7 +4099,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4103,7 +4111,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4114,7 +4123,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4125,7 +4135,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4136,7 +4147,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4147,7 +4159,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4158,7 +4171,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4169,7 +4183,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4180,7 +4195,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4314,7 +4330,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4325,7 +4342,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4336,7 +4354,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4347,7 +4366,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4358,7 +4378,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4369,7 +4390,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4380,7 +4402,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4391,7 +4414,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4402,7 +4426,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4413,7 +4438,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4424,7 +4450,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4435,7 +4462,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Pähkinätön, Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4499,7 +4527,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4510,7 +4539,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4521,7 +4551,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4532,7 +4563,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.BREAKFAST),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4543,7 +4575,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.LUNCH),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                     NekkuOrdersReport(
                         monday,
@@ -4554,7 +4587,8 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         listOf(NekkuProductMealTime.SNACK),
                         null,
                         listOf("Laktoositon ruokavalio", "Alle 1-vuotiaan ruokavalio"),
-                        "Luotu: [12345], Peruttu: [65432]",
+                        "Luotu: [12345], Uusittu: [65432]",
+                        now,
                     ),
                 ),
                 nekkuOrderReportResult.toSet(),
@@ -4573,7 +4607,12 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(group)
-            tx.setNekkuReportOrderErrorReport(group.id, LocalDate.now(), "Test error")
+            tx.setNekkuReportOrderErrorReport(
+                group.id,
+                LocalDate.now(),
+                "Test error",
+                HelsinkiDateTime.now(),
+            )
 
             tx.getNekkuReportRows(daycare.id, listOf(group.id), listOf(LocalDate.now()))
         }
