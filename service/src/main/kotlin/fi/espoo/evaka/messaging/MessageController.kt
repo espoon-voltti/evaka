@@ -763,34 +763,30 @@ class MessageController(
 
                 val unitRecipients = body.recipients.filterIsInstance<MessageRecipient.Unit>()
                 if (unitRecipients.isNotEmpty()) {
-                    auditMeta["recipients_units"] = unitRecipients.map { it.id.toString() }.sorted()
-                    val starterUnits = unitRecipients.filter { it.starter }
-                    if (starterUnits.isNotEmpty()) {
-                        auditMeta["recipients_units.starters"] =
-                            starterUnits.map { it.id.toString() }.sorted()
-                    }
+                    val (starterUnits, regularUnits) = unitRecipients.partition { it.starter }
+                    auditMeta["recipients_units_starters"] =
+                        starterUnits.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_units_regular"] =
+                        regularUnits.map { it.id.toString() }.sorted()
                 }
 
                 val groupRecipients = body.recipients.filterIsInstance<MessageRecipient.Group>()
                 if (groupRecipients.isNotEmpty()) {
-                    auditMeta["recipients_groups"] =
-                        groupRecipients.map { it.id.toString() }.sorted()
-                    val starterGroups = groupRecipients.filter { it.starter }
-                    if (starterGroups.isNotEmpty()) {
-                        auditMeta["recipients_groups.starters"] =
-                            starterGroups.map { it.id.toString() }.sorted()
-                    }
+                    val (starterGroups, regularGroups) = groupRecipients.partition { it.starter }
+                    auditMeta["recipients_groups_starters"] =
+                        starterGroups.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_groups_regular"] =
+                        regularGroups.map { it.id.toString() }.sorted()
                 }
 
                 val childRecipients = body.recipients.filterIsInstance<MessageRecipient.Child>()
                 if (childRecipients.isNotEmpty()) {
-                    auditMeta["recipients_children"] =
-                        childRecipients.map { it.id.toString() }.sorted()
-                    val starterChildren = childRecipients.filter { it.starter }
-                    if (starterChildren.isNotEmpty()) {
-                        auditMeta["recipients_children.starters"] =
-                            starterChildren.map { it.id.toString() }.sorted()
-                    }
+                    val (starterChildren, regularChildren) =
+                        childRecipients.partition { it.starter }
+                    auditMeta["recipients_children_starters"] =
+                        starterChildren.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_children_regular"] =
+                        regularChildren.map { it.id.toString() }.sorted()
                 }
 
                 val citizenRecipients = body.recipients.filterIsInstance<MessageRecipient.Citizen>()
@@ -801,22 +797,24 @@ class MessageController(
 
                 // Add filter information if filters are applied
                 body.filters?.let { filters ->
-                    if (filters.yearsOfBirth.isNotEmpty()) {
-                        auditMeta["appliedFilters.yearsOfBirth"] = filters.yearsOfBirth.sorted()
-                    }
-                    if (filters.shiftCare) {
-                        auditMeta["appliedFilters.shiftCare"] = true
-                    }
-                    if (filters.intermittentShiftCare) {
-                        auditMeta["appliedFilters.intermittentShiftCare"] = true
-                    }
-                    if (filters.familyDaycare) {
-                        auditMeta["appliedFilters.familyDaycare"] = true
-                    }
-                    if (filters.placementTypes.isNotEmpty()) {
-                        auditMeta["appliedFilters.placementTypes"] =
-                            filters.placementTypes.map { it.name }.sorted()
-                    }
+                    auditMeta.putAll(
+                        mapOf(
+                                "appliedFilters_yearsOfBirth" to filters.yearsOfBirth.sorted(),
+                                "appliedFilters_shiftCare" to filters.shiftCare,
+                                "appliedFilters_intermittentShiftCare" to
+                                    filters.intermittentShiftCare,
+                                "appliedFilters_familyDaycare" to filters.familyDaycare,
+                                "appliedFilters_placementTypes" to
+                                    filters.placementTypes.map { it.name }.sorted(),
+                            )
+                            .filterValues { value ->
+                                when (value) {
+                                    is List<*> -> value.isNotEmpty()
+                                    is Boolean -> value
+                                    else -> true
+                                }
+                            }
+                    )
                 }
 
                 Audit.MessagingNewMessageWrite.log(
