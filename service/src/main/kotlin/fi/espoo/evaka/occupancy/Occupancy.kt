@@ -6,6 +6,7 @@ package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -299,7 +300,7 @@ FROM staff_attendance_realtime
 WHERE departed IS NOT NULL
 AND group_id = ANY(${bind(groups)})
 AND tstzrange(arrived, departed) && ${bind(range)}
-AND type = ANY($presentStaffAttendanceTypes)
+AND type = ANY(${bind(StaffAttendanceType.PRESENT_IN_GROUP_TYPES)})
 
 UNION ALL
 

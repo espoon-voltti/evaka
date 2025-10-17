@@ -4,11 +4,15 @@
 
 import type { StaffAttendanceType } from './generated/api-types/attendance'
 
-export function presentInGroup(type: StaffAttendanceType) {
-  return !(
-    type === 'TRAINING' ||
-    type === 'OTHER_WORK' ||
-    type === 'SICKNESS' ||
-    type === 'CHILD_SICKNESS'
-  )
+const presentInGroupByType: Record<StaffAttendanceType, boolean> = {
+  PRESENT: true,
+  OTHER_WORK: false,
+  TRAINING: false,
+  OVERTIME: true,
+  JUSTIFIED_CHANGE: true,
+  SICKNESS: false,
+  CHILD_SICKNESS: false
 }
+
+export const presentInGroup = (type: StaffAttendanceType): boolean =>
+  presentInGroupByType[type]

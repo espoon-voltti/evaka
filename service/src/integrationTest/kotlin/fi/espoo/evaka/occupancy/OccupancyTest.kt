@@ -626,18 +626,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @ParameterizedTest(name = "Realized occupancy with realtime staff attendance type {0}")
-    @EnumSource(
-        names =
-            [
-                "PRESENT",
-                "OVERTIME",
-                "JUSTIFIED_CHANGE",
-                "TRAINING",
-                "OTHER_WORK",
-                "SICKNESS",
-                "CHILD_SICKNESS",
-            ]
-    )
+    @EnumSource(StaffAttendanceType::class)
     fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(
         type: StaffAttendanceType
     ) {

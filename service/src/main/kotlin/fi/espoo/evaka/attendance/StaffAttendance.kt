@@ -41,6 +41,10 @@ enum class StaffAttendanceType : DatabaseEnum {
             CHILD_SICKNESS -> false
             else -> true
         }
+
+    companion object {
+        val PRESENT_IN_GROUP_TYPES = entries.filter { it.presentInGroup() }
+    }
 }
 
 data class CurrentDayStaffAttendanceResponse(

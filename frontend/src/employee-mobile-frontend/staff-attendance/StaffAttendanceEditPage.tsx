@@ -40,6 +40,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
+import { presentInGroup } from 'lib-common/staff-attendance'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
@@ -73,7 +74,9 @@ import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-const typesWithoutGroup: StaffAttendanceType[] = ['TRAINING', 'OTHER_WORK']
+const typesWithoutGroup: StaffAttendanceType[] = staffAttendanceTypes.filter(
+  (type) => !presentInGroup(type)
+)
 const emptyGroupIdDomValue = ''
 
 const getDeparted = (
@@ -126,7 +129,7 @@ const staffAttendanceForm = mapped(
       output.arrivedTime,
       output.departedTime
     ),
-    hasStaffOccupancyEffect: ['TRAINING', 'OTHER_WORK'].includes(output.type)
+    hasStaffOccupancyEffect: typesWithoutGroup.includes(output.type)
       ? false
       : output.occupancyEffect
   })
@@ -680,7 +683,7 @@ const StaffAttendanceEditor = ({
       </FixedSpaceRow>
       <Gap size="s" />
       {featureFlags.staffAttendanceTypes &&
-      ['TRAINING', 'OTHER_WORK'].includes(type.value()) ? null : (
+      typesWithoutGroup.includes(type.value()) ? null : (
         <CheckboxF
           bind={occupancyEffect}
           label={i18n.staff.staffOccupancyEffect}
