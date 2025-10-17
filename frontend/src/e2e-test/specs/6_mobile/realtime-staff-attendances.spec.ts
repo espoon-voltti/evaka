@@ -5,9 +5,13 @@
 import type { GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import type { FeatureFlags } from 'lib-customizations/types'
+import type {
+  DeepPartial,
+  EmployeeMobileCustomizations
+} from 'lib-customizations/types'
 
 import { mobileViewport } from '../../browser'
 import {
@@ -110,12 +114,14 @@ beforeEach(async () => {
 
 const initPages = async (
   mockedTime: HelsinkiDateTime,
-  featureFlags: Partial<FeatureFlags> = {}
+  employeeMobileCustomizations?: DeepPartial<
+    JsonOf<EmployeeMobileCustomizations>
+  >
 ) => {
   page = await Page.open({
     viewport: mobileViewport,
     mockedTime,
-    employeeMobileCustomizations: { featureFlags }
+    employeeMobileCustomizations
   })
   nav = new MobileNav(page)
 
@@ -800,7 +806,9 @@ describe('Realtime staff attendance edit page', () => {
     }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
-      staffAttendanceTypes: false
+      featureFlags: {
+        staffAttendanceTypes: false
+      }
     })
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
@@ -1016,5 +1024,59 @@ describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.assertEmployeeAttendances([
       `Paikalla ${arrivalTime}–${newDepartureTime}`
     ])
+  })
+
+  test('staff attendances types can be customized with feature flags', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      type: 'TRAINING',
+      groupId: null,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(7, 0)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(15, 0))
+    }).save()
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
+      featureFlags: {
+        hideOvertimeSelection: true,
+        hideSicknessSelection: true,
+        hideChildSicknessSelection: false
+      },
+      staffAttendanceTypes: null // if this becomes required, test can be removed
+    })
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+    const editPage = new StaffAttendanceEditPage(page)
+    const typeSelect = await editPage.typeSelect(0)
+    await typeSelect.assertOptions([
+      'Paikalla',
+      'Työasia',
+      'Koulutus',
+      'Perusteltu muutos',
+      'Muu syy (lapsi)'
+    ])
+  })
+
+  test('staff attendance types can be customized', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      type: 'TRAINING',
+      groupId: null,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(7, 0)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(15, 0))
+    }).save()
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
+      featureFlags: {
+        hideOvertimeSelection: false,
+        hideSicknessSelection: false,
+        hideChildSicknessSelection: false
+      },
+      staffAttendanceTypes: ['PRESENT', 'TRAINING', 'SICKNESS']
+    })
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+    const editPage = new StaffAttendanceEditPage(page)
+    const typeSelect = await editPage.typeSelect(0)
+    await typeSelect.assertOptions(['Paikalla', 'Koulutus', 'Muu syy (oma)'])
   })
 })
