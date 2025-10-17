@@ -30,6 +30,8 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
 class RealtimeStaffAttendanceControllerIntegrationTest :
@@ -267,6 +269,32 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 ),
             )
         }
+    }
+
+    @ParameterizedTest
+    @EnumSource(StaffAttendanceType::class)
+    fun `Staff attendance type upsert works`(type: StaffAttendanceType) {
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.StaffAttendanceBody(
+                unitId = testDaycare.id,
+                date = now.toLocalDate(),
+                employeeId = testDecisionMaker_2.id,
+                entries =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = null,
+                            groupId = groupId1.takeIf { type.presentInGroup() },
+                            arrived = now.minusHours(3),
+                            departed = now.minusHours(2),
+                            type = type,
+                            hasStaffOccupancyEffect = false,
+                        )
+                    ),
+            ),
+        )
     }
 
     private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse {

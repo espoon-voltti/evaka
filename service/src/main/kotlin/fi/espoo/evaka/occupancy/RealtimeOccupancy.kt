@@ -175,9 +175,6 @@ WHERE
         .toList<ChildOccupancyAttendance>()
 }
 
-val presentStaffAttendanceTypes =
-    "'{${StaffAttendanceType.entries.filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
-
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange,
@@ -194,7 +191,7 @@ FROM staff_attendance_realtime sa
 JOIN daycare_group dg ON dg.id = sa.group_id
 WHERE
     dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(timeRange)} AND
-    type = ANY($presentStaffAttendanceTypes) AND
+    type = ANY(${bind(StaffAttendanceType.PRESENT_IN_GROUP_TYPES)}) AND
     ${predicate(groupFilter.forTable("sa"))}
 
 UNION ALL
