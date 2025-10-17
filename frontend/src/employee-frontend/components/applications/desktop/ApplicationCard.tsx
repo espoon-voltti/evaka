@@ -466,7 +466,9 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  width: 580px;
+  min-width: 500px;
+  max-width: 630px;
+  width: 100%;
   ${(p) =>
     p.$placed
       ? css`
@@ -481,7 +483,7 @@ const Card = styled.div<{ $placed: boolean }>`
 `
 
 const UnitListItem = styled.span<{ $selection: 'this' | 'other' | 'none' }>`
-  width: 210px;
+  width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

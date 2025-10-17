@@ -35,7 +35,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../../queries'
 import { ApplicationUIContext } from '../../../state/application-ui'
@@ -268,7 +268,7 @@ const PlacementDesktopValidated = React.memo(
               {applications.length}
             </div>
             <Gap size="s" />
-            <FixedSpaceColumn alignItems="flex-end">
+            <FixedSpaceColumn alignItems="flex-end" style={{ flexGrow: 1 }}>
               {shownDaycares !== undefined &&
                 applications.map((application) => (
                   <ApplicationCard
@@ -363,8 +363,14 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 const DaycaresColumn = styled.div`
   flex-grow: 1;
   max-width: 40%;
+  padding-right: ${defaultMargins.m};
+  max-height: 90vh;
+  overflow-y: auto;
 `
 
 const ApplicationsColumn = styled.div`
-  flex-grow: 2;
+  flex-grow: 1;
+  padding-right: ${defaultMargins.m};
+  max-height: 90vh;
+  overflow-y: auto;
 `
