@@ -24,7 +24,7 @@ import {
   getClubTerms,
   getPreschoolTerms
 } from '../../generated/api-clients/daycare'
-import { getThreadByApplicationId } from '../../generated/api-clients/messaging'
+import { getServiceWorkerAccountThreadByApplicationId } from '../../generated/api-clients/messaging'
 
 const q = new Queries()
 
@@ -74,7 +74,9 @@ export const rejectDecisionMutation = q.mutation(rejectDecision, [
 
 export const applicationUnitsQuery = q.query(getApplicationUnits)
 
-export const threadByApplicationIdQuery = q.query(getThreadByApplicationId)
+export const threadByApplicationIdQuery = q.query(
+  getServiceWorkerAccountThreadByApplicationId
+)
 
 export const applicationNotesQuery = q.query(getNotes)
 

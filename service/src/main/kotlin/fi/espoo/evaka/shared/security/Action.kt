@@ -665,6 +665,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
         ),
+        READ_SERVICE_WORKER_ACCOUNT_MESSAGES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_METADATA(HasGlobalRole(ADMIN)),
         READ_IF_HAS_ASSISTANCE_NEED(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
