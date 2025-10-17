@@ -11,6 +11,7 @@ import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
+import { resolveStaffAttendanceTypes } from './staffAttendanceTypes'
 import type { EmployeeMobileCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -31,8 +32,16 @@ const customizations: EmployeeMobileCustomizations = overrides
   ? mergeWith({}, defaults, overrides, mergeCustomizer)
   : defaults
 
-const { appConfig, featureFlags }: EmployeeMobileCustomizations = customizations
-export { appConfig, featureFlags }
+const {
+  appConfig,
+  featureFlags,
+  staffAttendanceTypes: customizedStaffAttendanceTypes
+}: EmployeeMobileCustomizations = customizations
+const staffAttendanceTypes = resolveStaffAttendanceTypes(
+  featureFlags,
+  customizedStaffAttendanceTypes
+)
+export { appConfig, featureFlags, staffAttendanceTypes }
 
 export type Lang = 'fi'
 export type Translations = typeof fi

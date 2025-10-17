@@ -12,6 +12,7 @@ import type {
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import type {
@@ -219,16 +220,22 @@ interface BaseFeatureFlags {
 
   /**
    * Hide overtime selection in real time staff attendance
+   *
+   * @deprecated set staffAttendanceTypes customization in employee(-mobile)
    */
   hideOvertimeSelection: boolean
 
   /**
    * Hide sickness selection in real time staff attendance
+   *
+   * @deprecated set staffAttendanceTypes customization in employee(-mobile)
    */
   hideSicknessSelection: boolean
 
   /**
    * Hide child sickness selection in real time staff attendance
+   *
+   * @deprecated set staffAttendanceTypes customization in employee(-mobile)
    */
   hideChildSicknessSelection: boolean
 
@@ -362,6 +369,7 @@ export interface EmployeeCustomizations {
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
+  staffAttendanceTypes?: StaffAttendanceType[] | null
   getPaymentsDueDate?: () => LocalDate
 }
 
@@ -372,4 +380,5 @@ export interface EmployeeMobileCustomizations {
     LangEmployeeMobile,
     DeepPartial<TranslationsEmployeeMobile>
   >
+  staffAttendanceTypes?: StaffAttendanceType[] | null
 }
