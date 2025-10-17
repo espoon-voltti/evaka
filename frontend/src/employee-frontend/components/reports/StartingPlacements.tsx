@@ -136,13 +136,12 @@ const StartingPlacements = React.memo(function StartingPlacements({
   filters: PlacementsReportFilters
 }) {
   const { i18n } = useTranslation()
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
   const result = useQueryResult(startingPlacementsReportQuery(filters))
   useEffect(() => {
     setDisplayFilters(emptyDisplayFilters)
   }, [filters])
-
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
   const areaFilter = (row: StartingPlacementsRow): boolean =>
     !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
   const displayFilter = (row: StartingPlacementsRow): boolean =>

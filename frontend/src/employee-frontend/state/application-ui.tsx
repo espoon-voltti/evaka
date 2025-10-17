@@ -171,6 +171,9 @@ export const ApplicationUIContextProvider = React.memo(
     const [confirmedSearchFilters, setConfirmedSearchFilters] = useState<
       ApplicationSearchFilters | undefined
     >(defaultState.confirmedSearchFilters)
+    const [occupancyPeriodStart, setOccupancyPeriodStart] = useState<LocalDate>(
+      defaultState.occupancyPeriodStart
+    )
     const storedFiltersJson = useMemo(
       () => localStorage.getItem(localStorageKey),
       []
@@ -240,9 +243,6 @@ export const ApplicationUIContextProvider = React.memo(
 
     const [placementMode, setPlacementMode] = useState<'list' | 'desktop'>(
       defaultState.placementMode
-    )
-    const [occupancyPeriodStart, setOccupancyPeriodStart] = useState<LocalDate>(
-      defaultState.occupancyPeriodStart
     )
 
     const value = useMemo(
