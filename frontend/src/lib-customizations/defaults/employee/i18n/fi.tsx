@@ -4033,6 +4033,7 @@ export const fi = {
       absence: 'Poissaolo',
       noReservation: 'Varaus puuttuu',
       filterByTime: 'Suodata ajan perusteella',
+      showOnlyShiftCare: 'Näytä vain vuorohoito',
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö',
       timeFilterError: 'Virhe'

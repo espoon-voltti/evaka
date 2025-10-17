@@ -179,6 +179,7 @@ export interface AttendanceReservationReportByChildItem {
   childLastName: string
   date: LocalDate
   fullDayAbsence: boolean
+  hasShiftCare: boolean
   reservation: TimeRange | null
 }
 

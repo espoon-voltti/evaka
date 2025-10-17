@@ -675,6 +675,7 @@ export class ChildAttendanceReservationByChildReport {
   unitSelector: Combobox
   groupSelector: MultiSelect
   filterByTime: Checkbox
+  filterByShiftCare: Checkbox
   startTimeInput: TextInput
   endTimeInput: TextInput
   searchButton: Element
@@ -685,6 +686,9 @@ export class ChildAttendanceReservationByChildReport {
     this.unitSelector = new Combobox(page.findByDataQa('unit-select'))
     this.groupSelector = new MultiSelect(page.findByDataQa('group-select'))
     this.filterByTime = new Checkbox(page.findByDataQa('filter-by-time'))
+    this.filterByShiftCare = new Checkbox(
+      page.findByDataQa('filter-by-shift-care')
+    )
     this.searchButton = page.findByDataQa('search-button')
     this.startTimeInput = new TextInput(page.findByDataQa('start-time-filter'))
     this.endTimeInput = new TextInput(page.findByDataQa('end-time-filter'))
@@ -716,8 +720,8 @@ export class ChildAttendanceReservationByChildReport {
   async assertRows(
     expected: {
       childName: string
-      attendanceReservationStart: string
-      attendanceReservationEnd: string
+      attendanceReservationStart: string | null
+      attendanceReservationEnd: string | null
     }[]
   ) {
     const rows = this.page.findAllByDataQa('child-attendance-reservation-row')
@@ -726,12 +730,18 @@ export class ChildAttendanceReservationByChildReport {
       expected.map(async (data, index) => {
         const row = rows.nth(index)
         await row.findByDataQa('child-name').assertTextEquals(data.childName)
-        await row
-          .findByDataQa('attendance-reservation-start')
-          .assertTextEquals(data.attendanceReservationStart)
-        await row
-          .findByDataQa('attendance-reservation-end')
-          .assertTextEquals(data.attendanceReservationEnd)
+        if (data.attendanceReservationStart && data.attendanceReservationEnd) {
+          await row
+            .findByDataQa('attendance-reservation-start')
+            .assertTextEquals(data.attendanceReservationStart)
+          await row
+            .findByDataQa('attendance-reservation-end')
+            .assertTextEquals(data.attendanceReservationEnd)
+        } else {
+          await row
+            .findByDataQa('missing-reservation-text')
+            .assertTextEquals('Varaus puuttuu')
+        }
       })
     )
   }
