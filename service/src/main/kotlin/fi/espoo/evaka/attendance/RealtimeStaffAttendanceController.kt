@@ -62,23 +62,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             unitId,
                             staffForAttendanceCalendar.map { emp -> emp.id }.toSet(),
                         )
+                    val attendingEmployeeIds =
+                        attendancesByEmployee.keys + staffForAttendanceCalendar.map { it.id }
                     val plannedAttendances =
-                        tx.getPlannedStaffAttendanceForDays(
-                            attendancesByEmployee.keys + staffForAttendanceCalendar.map { it.id },
-                            range,
-                        )
+                        tx.getPlannedStaffAttendanceForDays(attendingEmployeeIds, range)
                     val attendancesNotInGroups =
-                        tx.getStaffAttendancesWithoutGroup(
-                                range,
-                                attendancesByEmployee.keys +
-                                    staffForAttendanceCalendar.map { it.id },
-                            )
-                            .groupBy { it.employeeId }
-                    val staffWithoutAttendances =
-                        staffForAttendanceCalendar
-                            .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
-                            .map { emp -> emp.id }
-                            .toSet()
+                        tx.getStaffAttendancesWithoutGroup(range, attendingEmployeeIds).groupBy {
+                            it.employeeId
+                        }
 
                     val allowedToEdit =
                         accessControl.checkPermissionFor(
@@ -86,8 +77,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             user,
                             clock,
                             Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                            attendancesByEmployee.entries.map { (employeeId) -> employeeId } +
-                                staffWithoutAttendances,
+                            attendingEmployeeIds,
                         )
 
                     val staffWithAttendance =
