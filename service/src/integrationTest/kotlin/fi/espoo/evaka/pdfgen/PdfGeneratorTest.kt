@@ -52,6 +52,7 @@ import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.getValidPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testVoucherDaycare
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
@@ -68,6 +69,23 @@ val logger = KotlinLogging.logger {}
 
 private val application = getValidPreschoolApplication()
 private val transferApplication = application.copy(transferApplication = true)
+private val voucherApplication = getValidPreschoolApplication(testVoucherDaycare)
+
+private val voucherDecisionUnit =
+    DecisionUnit(
+        DaycareId(UUID.randomUUID()),
+        "PS päiväkoti",
+        "PS päiväkoti",
+        "PS päiväkodin esiopetus",
+        "Pirkko Päiväkodinjohtaja",
+        "PSpolku 123",
+        "02200",
+        "ESPOO",
+        "+35850 1234564",
+        "Varhaiskasvatuksen palveluohjaus",
+        "Kamreerintie 2, 02200 Espoo",
+        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    )
 
 private val daycareTransferDecision =
     createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
@@ -77,6 +95,12 @@ private val preschoolDaycareDecision =
     createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
 private val daycareDecisionPartTime =
     createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
+private val daycareDecisionPartTimeVoucher =
+    createValidDecision(
+        applicationId = voucherApplication.id,
+        type = DecisionType.DAYCARE_PART_TIME,
+        unit = voucherDecisionUnit,
+    )
 private val preschoolDecision =
     createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
 private val preparatoryDecision =
@@ -169,6 +193,7 @@ class PdfGeneratorTest {
         createPDF(daycareTransferDecision, true, OfficialLanguage.FI)
         createPDF(daycareDecision, false, OfficialLanguage.FI)
         createPDF(daycareDecisionPartTime, false, OfficialLanguage.FI)
+        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.FI)
         createPDF(preschoolDaycareDecision, false, OfficialLanguage.FI)
         createPDF(preschoolDecision, false, OfficialLanguage.FI)
         createPDF(preparatoryDecision, false, OfficialLanguage.FI)
@@ -181,6 +206,7 @@ class PdfGeneratorTest {
         createPDF(daycareTransferDecision, true, OfficialLanguage.SV)
         createPDF(daycareDecision, false, OfficialLanguage.SV)
         createPDF(daycareDecisionPartTime, false, OfficialLanguage.SV)
+        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.SV)
         createPDF(preschoolDaycareDecision, false, OfficialLanguage.SV)
         createPDF(preschoolDecision, false, OfficialLanguage.SV)
         createPDF(preparatoryDecision, false, OfficialLanguage.SV)
