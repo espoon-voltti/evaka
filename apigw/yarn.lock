@@ -1116,28 +1116,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@opentelemetry/api@npm:1.8.0"
-  checksum: 10/62f0c42711b9f0c56ea9527c2e6e609e371bfb47d0b78956c91fe27365b4744d7dcc407636ef5b19a24a1d5e2c3cfa79c1b715deca829074e24e3ffba1315ba2
+"@opentelemetry/api@npm:>=1.0.0 <1.10.0":
+  version: 1.9.0
+  resolution: "@opentelemetry/api@npm:1.9.0"
+  checksum: 10/a607f0eef971893c4f2ee2a4c2069aade6ec3e84e2a1f5c2aac19f65c5d9eeea41aa72db917c1029faafdd71789a1a040bdc18f40d63690e22ccae5d7070f194
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "@opentelemetry/core@npm:1.14.0"
+"@opentelemetry/core@npm:>=1.14.0 <1.31.0":
+  version: 1.30.1
+  resolution: "@opentelemetry/core@npm:1.30.1"
   dependencies:
-    "@opentelemetry/semantic-conventions": "npm:1.14.0"
+    "@opentelemetry/semantic-conventions": "npm:1.28.0"
   peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.5.0"
-  checksum: 10/80f06de582209e70fde7b62a238b38fcf5e6cc48ef460e6ed86294e43ea5cd442d796721387b3a14a455ed4c5f86656cad489dd29347302c25a62f3d538da2c9
+    "@opentelemetry/api": ">=1.0.0 <1.10.0"
+  checksum: 10/fa3df9619fdbf8f607132d72915849754b71c4c5f5f705b30c8c59b209abe97206decf25cb8ebafdbb6105a4baab2acddee47468cb9d0b67f1a8df96cebc3548
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:1.14.0":
-  version: 1.14.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.14.0"
-  checksum: 10/e66e08859a3099890e36a3bf65bac21ab3acfe4ef352f3c07bf51a37fc8148681babb786e0b1bb14d6d40e1cb7804eb0704c72baddb7796db470efacb20c11f1
+"@opentelemetry/semantic-conventions@npm:1.28.0":
+  version: 1.28.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.28.0"
+  checksum: 10/c182a3206769b5d5a8ab89a5c674d046fd789421cef27ea55af179990e314732433c98e5017aa23e99f15fd2b0e13cb129bb6c2282da6860ce9419adf32b2e87
   languageName: node
   linkType: hard
 
@@ -2807,9 +2807,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.67.0":
-  version: 5.67.0
-  resolution: "dd-trace@npm:5.67.0"
+"dd-trace@npm:5.71.0":
+  version: 5.71.0
+  resolution: "dd-trace@npm:5.71.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
     "@datadog/native-appsec": "npm:10.2.1"
@@ -2819,8 +2819,8 @@ __metadata:
     "@datadog/sketches-js": "npm:2.1.1"
     "@datadog/wasm-js-rewriter": "npm:4.0.1"
     "@isaacs/ttlcache": "npm:^1.4.1"
-    "@opentelemetry/api": "npm:1.8.0"
-    "@opentelemetry/core": "npm:^1.14.0"
+    "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
+    "@opentelemetry/core": "npm:>=1.14.0 <1.31.0"
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.10"
     ignore: "npm:^7.0.5"
@@ -2828,7 +2828,6 @@ __metadata:
     istanbul-lib-coverage: "npm:^3.2.2"
     jest-docblock: "npm:^29.7.0"
     jsonpath-plus: "npm:^10.3.0"
-    koalas: "npm:^1.0.2"
     limiter: "npm:^1.1.5"
     lodash.sortby: "npm:^4.7.0"
     lru-cache: "npm:^10.4.3"
@@ -2845,7 +2844,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/e7c83a9a1d7d21c299d8407cdab9d5c28f280f16e4c66f6347ebc44c11ea871d3ac4acbf370d930f2d988d99006927c3fa9e29355493071f88a7c8b8299ffbce
+  checksum: 10/ddcd0f6ef0e6e5080b60e97127554215242f558c7241ba2610317fc064097cf9ac5abf027a0192a8cdac116784aa6c2e5868928267ec042746cd2082ef5c39b6
   languageName: node
   linkType: hard
 
@@ -3488,7 +3487,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.67.0"
+    dd-trace: "npm:5.71.0"
     eslint: "npm:9.37.0"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
@@ -5373,13 +5372,6 @@ __metadata:
   dependencies:
     json-buffer: "npm:3.0.1"
   checksum: 10/167eb6ef64cc84b6fa0780ee50c9de456b422a1e18802209234f7c2cf7eae648c7741f32e50d7e24ccb22b24c13154070b01563d642755b156c357431a191e75
-  languageName: node
-  linkType: hard
-
-"koalas@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "koalas@npm:1.0.2"
-  checksum: 10/a252c98af00376e11ca4387a9cc2ec9772d3f0c821216dff31893e9bc11dfbafeacc5627227e53abc3af7751c5503b2bd895c0a0bbf0255e7fc0975b97499a8e
   languageName: node
   linkType: hard
 
