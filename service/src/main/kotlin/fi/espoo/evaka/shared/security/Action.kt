@@ -1496,8 +1496,8 @@ sealed interface Action {
         UPDATE_DAYCARE_ROLES(HasGlobalRole(ADMIN)),
         DELETE_DAYCARE_ROLES(HasGlobalRole(ADMIN)),
         UPDATE_STAFF_ATTENDANCES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
             IsEmployee.self(),
         ),
         ACTIVATE(HasGlobalRole(ADMIN)),

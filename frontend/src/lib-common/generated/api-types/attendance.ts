@@ -67,7 +67,7 @@ export interface Attendance {
   groupId: GroupId | null
   id: StaffAttendanceRealtimeId
   occupancyCoefficient: number
-  type: StaffAttendanceType
+  type: StaffAttendanceType | null
 }
 
 /**
