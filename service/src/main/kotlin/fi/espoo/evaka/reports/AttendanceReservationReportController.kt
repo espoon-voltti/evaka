@@ -147,6 +147,7 @@ private data class PlacementInfoRow(
     val occupancyCoefficientUnder: Double,
     val occupancyCoefficientOver: Double,
     val backupCare: Boolean,
+    val hasShiftCare: Boolean,
 )
 
 private fun Database.Read.getPlacementInfo(
@@ -170,9 +171,11 @@ SELECT
     pl.type AS placement_type,
     default_sno.occupancy_coefficient AS occupancy_coefficient_over, 
     default_sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under,
-    false AS backup_care
+    false AS backup_care,
+    (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care
 FROM dates
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date
+LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> dates.date
 LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> dates.date
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
@@ -191,10 +194,12 @@ SELECT
     pl.type AS placement_type,
     default_sno.occupancy_coefficient AS occupancy_coefficient_over, 
     default_sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under,
-    true AS backup_care
+    true AS backup_care,
+    (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care
 FROM dates
 JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> dates.date
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date AND pl.child_id = bc.child_id
+LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> dates.date
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = bc.group_id
 WHERE bc.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.id = ANY(${bind(groupIds)}));
@@ -356,6 +361,7 @@ data class DailyChildData(
     val serviceTimes: ServiceTimesPresenceStatus?,
     val reservations: List<HelsinkiDateTimeRange>,
     val fullDayAbsence: Boolean,
+    val hasShiftCare: Boolean,
 ) {
     fun isPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): PresenceStatus {
         if (fullDayAbsence) return PresenceStatus.ABSENT
@@ -477,6 +483,7 @@ fun getAttendanceReservationReport(
                 serviceTimes = serviceTimes,
                 reservations = reservations,
                 fullDayAbsence = fullDayAbsence,
+                hasShiftCare = placementInfo.hasShiftCare,
             )
         }
 
@@ -627,6 +634,7 @@ fun getAttendanceReservationReportByChild(
                     reservation = reservation,
                     fullDayAbsence = absent,
                     backupCare = placementInfo.backupCare,
+                    hasShiftCare = placementInfo.hasShiftCare,
                 )
             }
             if (fullDayAbsence) {
@@ -675,6 +683,7 @@ private data class AttendanceReservationByChildEntry(
     val reservation: TimeRange?,
     val fullDayAbsence: Boolean,
     val backupCare: Boolean,
+    val hasShiftCare: Boolean,
 )
 
 private fun toItems(
@@ -693,6 +702,7 @@ private fun toItems(
                 reservation = row.reservation,
                 fullDayAbsence = row.fullDayAbsence,
                 backupCare = row.backupCare,
+                hasShiftCare = row.hasShiftCare,
             )
         }
         .sortedWith(compareBy({ it.date }, { it.childLastName }, { it.childFirstName }))
@@ -713,6 +723,7 @@ data class AttendanceReservationReportByChildItem(
     val reservation: TimeRange?,
     val fullDayAbsence: Boolean,
     val backupCare: Boolean,
+    val hasShiftCare: Boolean,
 )
 
 enum class ReservationType {
