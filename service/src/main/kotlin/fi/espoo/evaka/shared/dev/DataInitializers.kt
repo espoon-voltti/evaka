@@ -722,6 +722,7 @@ VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind
 data class DevPlacementDraft(
     val applicationId: ApplicationId,
     val unitId: DaycareId,
+    val startDate: LocalDate,
     val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val createdBy: EvakaUserId,
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
@@ -732,8 +733,8 @@ fun Database.Transaction.insert(row: DevPlacementDraft) =
     createUpdate {
             sql(
                 """
-INSERT INTO placement_draft (application_id, unit_id, created_at, created_by, modified_at, modified_by)
-VALUES (${bind(row.applicationId)}, ${bind(row.unitId)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
+INSERT INTO placement_draft (application_id, unit_id, start_date, created_at, created_by, modified_at, modified_by)
+VALUES (${bind(row.applicationId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.createdAt)}, ${bind(row.createdBy)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 """
             )
         }

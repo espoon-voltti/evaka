@@ -2,7 +2,11 @@ ALTER TABLE placement_draft ADD COLUMN start_date date;
 
 UPDATE placement_draft pd
 SET start_date = coalesce(
-    (SELECT preferredstartdate FROM application_view a WHERE a.id = pd.application_id),
+    (
+        SELECT (a.document ->> 'preferredStartDate')::date
+        FROM application a
+        WHERE a.id = pd.application_id
+    ),
     current_date
 );
 
