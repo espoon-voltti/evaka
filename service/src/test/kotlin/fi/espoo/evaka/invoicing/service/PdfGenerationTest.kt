@@ -348,4 +348,23 @@ class PdfGenerationTest {
 
         assertNotNull(pdfBytes)
     }
+
+    private val reliefVoucherValueDecision =
+        normalVoucherValueDecision.copy(decisionType = VoucherValueDecisionType.RELIEF_ACCEPTED)
+
+    @Test
+    fun `generate relief VoucherValueDecisionPdf smoke test`() {
+        val reliefVoucherValueDecisionPdfData =
+            VoucherValueDecisionPdfData(
+                decision = reliefVoucherValueDecision,
+                settings = mapOf(),
+                lang = OfficialLanguage.FI,
+            )
+        val pdfBytes = service.generateVoucherValueDecisionPdf(reliefVoucherValueDecisionPdfData)
+
+        // TODO next line should be always commented out in master
+        // java.io.File("/tmp/voucher_value_relief_decision_test.pdf").writeBytes(pdfBytes)
+
+        assertNotNull(pdfBytes)
+    }
 }
