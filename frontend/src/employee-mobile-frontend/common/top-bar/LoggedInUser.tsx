@@ -68,12 +68,13 @@ export const LoggedInUser = React.memo(function LoggedInUser({
     [unitInfoResponse, user]
   )
 
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const onLogoutSuccess = useCallback(() => {
     setMenuOpen(false)
     refreshAuthStatus()
   }, [refreshAuthStatus])
 
-  const [menuOpen, setMenuOpen] = useState(false)
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
   const { i18n } = useTranslation()
