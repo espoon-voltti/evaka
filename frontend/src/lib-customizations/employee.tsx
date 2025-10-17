@@ -13,6 +13,7 @@ import type { JsonOf } from 'lib-common/json'
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'
 import { sv } from './defaults/employee/i18n/sv'
+import { resolveStaffAttendanceTypes } from './staffAttendanceTypes'
 import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -45,8 +46,13 @@ const {
   placementPlanRejectReasons,
   unitProviderTypes,
   voucherValueDecisionTypes,
+  staffAttendanceTypes: customizedStaffAttendanceTypes,
   getPaymentsDueDate
 }: EmployeeCustomizations = customizations
+const staffAttendanceTypes = resolveStaffAttendanceTypes(
+  featureFlags,
+  customizedStaffAttendanceTypes
+)
 export {
   appConfig,
   cityLogo,
@@ -59,6 +65,7 @@ export {
   preschoolAssistanceLevels,
   unitProviderTypes,
   voucherValueDecisionTypes,
+  staffAttendanceTypes,
   getPaymentsDueDate
 }
 

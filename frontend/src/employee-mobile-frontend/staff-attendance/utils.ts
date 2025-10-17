@@ -10,7 +10,7 @@ import type {
   StaffMember
 } from 'lib-common/generated/api-types/attendance'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import { staffAttendanceTypes } from 'lib-customizations/employeeMobile'
 
 export interface Staff {
   type: 'employee' | 'external'
@@ -61,11 +61,10 @@ export function getAttendanceArrivalDifferenceReasons(
   )
 
   if (arrivedBeforeMinThreshold) {
-    if (featureFlags.hideOvertimeSelection) return ['JUSTIFIED_CHANGE']
-    else return ['OVERTIME', 'JUSTIFIED_CHANGE']
+    return arrivedBeforeMinThresholdTypes
   }
   if (arrivedAfterMaxThreshold) {
-    return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
+    return arrivedAfterMaxThresholdTypes
   }
   return []
 }
@@ -86,20 +85,32 @@ export function getAttendanceDepartureDifferenceReasons(
   const departedAfterMaxThreshold = departure.isAfter(closestEnd.addMinutes(5))
 
   if (departedBeforeMinThreshold) {
-    let reasons: StaffAttendanceType[] = [
-      'OTHER_WORK',
-      'TRAINING',
-      'JUSTIFIED_CHANGE'
-    ]
-    if (!featureFlags.hideSicknessSelection)
-      reasons = reasons.concat('SICKNESS')
-    if (!featureFlags.hideChildSicknessSelection)
-      reasons = reasons.concat('CHILD_SICKNESS')
-    return reasons
+    return departedBeforeMinThresholdTypes
   }
   if (departedAfterMaxThreshold) {
-    if (featureFlags.hideOvertimeSelection) return ['JUSTIFIED_CHANGE']
-    else return ['OVERTIME', 'JUSTIFIED_CHANGE']
+    return departedAfterMaxThresholdTypes
   }
   return []
 }
+
+const arrivedBeforeMinThresholdTypes = (
+  ['OVERTIME', 'JUSTIFIED_CHANGE'] as const
+).filter((type) => staffAttendanceTypes.includes(type))
+
+const arrivedAfterMaxThresholdTypes: StaffAttendanceType[] = (
+  ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE'] as const
+).filter((type) => staffAttendanceTypes.includes(type))
+
+const departedBeforeMinThresholdTypes = (
+  [
+    'OTHER_WORK',
+    'TRAINING',
+    'JUSTIFIED_CHANGE',
+    'SICKNESS',
+    'CHILD_SICKNESS'
+  ] as const
+).filter((type) => staffAttendanceTypes.includes(type))
+
+const departedAfterMaxThresholdTypes = (
+  ['OVERTIME', 'JUSTIFIED_CHANGE'] as const
+).filter((type) => staffAttendanceTypes.includes(type))
