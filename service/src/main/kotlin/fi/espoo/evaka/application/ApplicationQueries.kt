@@ -470,7 +470,8 @@ fun Database.Read.fetchApplicationSummaries(
             e.name AS status_modified_by_name,
             e.type AS status_modified_by_type,
             pd.unit_id AS placement_draft_unit_id,
-            pd.unit_name AS placement_draft_unit_name
+            pd.unit_name AS placement_draft_unit_name,
+            pd.start_date AS placement_draft_start_date
         FROM application a
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id
@@ -527,7 +528,7 @@ fun Database.Read.fetchApplicationSummaries(
             WHERE u2.id = ANY(pu.preferredUnits)
         ) pua ON true
         LEFT JOIN LATERAL (
-            SELECT pd.unit_id, daycare.name as unit_name
+            SELECT pd.unit_id, daycare.name as unit_name, pd.start_date
             FROM placement_draft pd
             JOIN daycare ON pd.unit_id = daycare.id
             WHERE pd.application_id = a.id
@@ -611,9 +612,16 @@ fun Database.Read.fetchApplicationSummaries(
                         column<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, column("current_placement_unit_name"))
                         },
-                    placementDraftUnit =
-                        column<DaycareId?>("placement_draft_unit_id")?.let {
-                            PreferredUnit(it, column("placement_draft_unit_name"))
+                    placementDraft =
+                        column<DaycareId?>("placement_draft_unit_id")?.let { unitId ->
+                            ApplicationSummaryPlacementDraft(
+                                unit =
+                                    PreferredUnit(
+                                        id = unitId,
+                                        name = column("placement_draft_unit_name"),
+                                    ),
+                                startDate = column("placement_draft_start_date"),
+                            )
                         },
                 )
             }

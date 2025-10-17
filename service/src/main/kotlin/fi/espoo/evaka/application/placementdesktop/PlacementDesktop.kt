@@ -31,6 +31,7 @@ data class PlacementDesktopDaycare(
 data class PlacementDraft(
     val applicationId: ApplicationId,
     val unitId: DaycareId,
+    val startDate: LocalDate,
     val childId: ChildId,
     val childName: String,
     val modifiedAt: HelsinkiDateTime,
