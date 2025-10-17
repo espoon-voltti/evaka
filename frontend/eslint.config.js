@@ -101,6 +101,10 @@ export default [
         'warn',
         { additionalHooks: '(useApiState)' }
       ],
+      'react-hooks/refs': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/static-components': 'warn',
       'jsx-expressions/strict-logical-expressions': 'error',
       '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/consistent-type-exports': ['error'],
