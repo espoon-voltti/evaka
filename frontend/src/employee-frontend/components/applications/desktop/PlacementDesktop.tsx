@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
+import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import uniqBy from 'lodash/uniqBy'
 import React, {
@@ -10,6 +11,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 import styled from 'styled-components'
@@ -136,7 +138,9 @@ const PlacementDesktopValidated = React.memo(
       [allUnits, shownDaycares]
     )
 
-    useEffect(() => {
+    const prevApplications = useRef<ApplicationSummary[] | undefined>(undefined)
+    const prevSearchedUnits = useRef<UnitStub[] | undefined>(undefined)
+    if (!isEqual(applications, prevApplications.current)) {
       setPlacementDraftCache(
         applications.reduce(
           (acc, application) => ({
@@ -146,7 +150,11 @@ const PlacementDesktopValidated = React.memo(
           {}
         )
       )
-
+    }
+    if (
+      !isEqual(applications, prevApplications.current) ||
+      !isEqual(searchedUnits, prevSearchedUnits.current)
+    ) {
       // by default, show daycares that are
       // - one of the searched units, or
       // - a preferred unit of some result application, or
@@ -166,7 +174,9 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications, searchedUnits])
+    }
+    prevApplications.current = applications
+    prevSearchedUnits.current = searchedUnits
 
     const onUpsertApplicationPlacementSuccess = useCallback(
       (
