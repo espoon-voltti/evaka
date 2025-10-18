@@ -5099,12 +5099,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:4.5.0":
-  version: 4.5.0
-  resolution: "chart.js@npm:4.5.0"
+"chart.js@npm:4.5.1":
+  version: 4.5.1
+  resolution: "chart.js@npm:4.5.1"
   dependencies:
     "@kurkle/color": "npm:^0.3.0"
-  checksum: 10/3561fd996dbe20256f69d5e8b968f98b5bd0e3455e3a6336edba1d03c396fc9604e82dd48d92a87c04a187f7b7a0718a5512c9fc95ff755ca77bf571f88efe54
+  checksum: 10/a8dd3385371ad7e4c173d35176b7aed457ae27b45550248ecc854bf60a794541f56f3921850dc1f3c65985ef43beea37172b73899eb620d9cb4908de2ce93136
   languageName: node
   linkType: hard
 
@@ -6384,7 +6384,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:5.0.4"
     autosize: "npm:6.0.1"
     axios: "npm:1.12.2"
-    chart.js: "npm:4.5.0"
+    chart.js: "npm:4.5.1"
     chartjs-adapter-date-fns: "npm:3.0.0"
     chartjs-plugin-annotation: "npm:3.1.0"
     classnames: "npm:2.5.1"
