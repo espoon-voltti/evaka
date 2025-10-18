@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM library/postgres:17-alpine3.21
+FROM library/postgres:18-alpine
 
 COPY postgresql.conf /var/lib/postgresql/
 
