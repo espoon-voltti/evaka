@@ -85,7 +85,7 @@
     "@types/node": "22.18.10",
     "@types/punycode": "2.1.4",
     "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.1",
+    "@types/react-dom": "19.2.2",
     "@types/webpack": "5.28.5",
     "@vitejs/plugin-legacy": "7.2.1",
     "@vitejs/plugin-react": "5.0.4",
