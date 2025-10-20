@@ -142,10 +142,6 @@ log_format json_access escape=json
     '"type":"app-requests-received",'
     '"userIdHash":"",'
     '"awsTraceId":"$http_x_amzn_trace_id",'
-{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
-    '"dd.trace_id":"$otel_trace_id",'
-    '"dd.span_id":"$otel_span_id",'
-{{ end }}
     '"version":1'
   '}';
 
