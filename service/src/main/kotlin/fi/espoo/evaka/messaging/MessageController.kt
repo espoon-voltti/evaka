@@ -796,25 +796,8 @@ class MessageController(
                 }
 
                 // Add filter information if filters are applied
-                body.filters?.let { filters ->
-                    auditMeta.putAll(
-                        mapOf(
-                                "appliedFilters_yearsOfBirth" to filters.yearsOfBirth.sorted(),
-                                "appliedFilters_shiftCare" to filters.shiftCare,
-                                "appliedFilters_intermittentShiftCare" to
-                                    filters.intermittentShiftCare,
-                                "appliedFilters_familyDaycare" to filters.familyDaycare,
-                                "appliedFilters_placementTypes" to
-                                    filters.placementTypes.map { it.name }.sorted(),
-                            )
-                            .filterValues { value ->
-                                when (value) {
-                                    is List<*> -> value.isNotEmpty()
-                                    is Boolean -> value
-                                    else -> true
-                                }
-                            }
-                    )
+                if (body.filters != null) {
+                    auditMeta["filtersApplied"] = body.filters
                 }
 
                 Audit.MessagingNewMessageWrite.log(
