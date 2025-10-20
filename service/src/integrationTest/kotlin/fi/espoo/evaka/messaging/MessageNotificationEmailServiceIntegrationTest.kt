@@ -5,9 +5,16 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -24,6 +31,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
@@ -32,6 +40,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.toApplicationType
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -227,6 +236,76 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
     }
 
+    @Test
+    fun `notifications related to an application are sent to citizens`() {
+        val guardian = testPersons.first()
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    sentDate = clock.today(),
+                    dueDate = null,
+                    guardianId = guardian.id,
+                    childId = testChild_1.id,
+                    type = PlacementType.DAYCARE.toApplicationType(),
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            serviceStart = "08:00",
+                            serviceEnd = "16:00",
+                            child = Child(dateOfBirth = clock.today().minusYears(3)),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(testDaycare.id)),
+                            preferredStartDate = clock.today().plusMonths(5),
+                        ),
+                )
+            }
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .first()
+            }
+
+        postNewThread(
+            sender = employeeAccount,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee,
+            clock = clock,
+            relatedApplicationId = applicationId,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
+            getEmailFor(testPersonFi).content.subject,
+        )
+        assertTrue(
+            getEmailFor(testPersonFi)
+                .content
+                .text
+                .contains(
+                    "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä"
+                )
+        )
+
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress.address,
+        )
+
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress.address,
+        )
+    }
+
     private fun postNewThread(
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
@@ -234,6 +313,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         clock: EvakaClock,
         type: MessageType = MessageType.MESSAGE,
         initialFolder: MessageThreadFolderId? = null,
+        relatedApplicationId: ApplicationId? = null,
     ) =
         messageController.createMessage(
             dbInstance(),
@@ -249,6 +329,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                 recipientNames = listOf(),
                 urgent = false,
                 sensitive = false,
+                relatedApplicationId = relatedApplicationId,
             ),
         )
 
