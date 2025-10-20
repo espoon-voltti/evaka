@@ -37,17 +37,14 @@ import ApplicationCardPlaced from './ApplicationCardPlaced'
 export default React.memo(function DaycareCard({
   daycare,
   applications,
-  onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure,
+  onDeleteApplicationPlacementSuccess,
+  onMutateApplicationPlacementFailure,
   onRemoveFromShownDaycares
 }: {
   daycare: PreferredUnit
   applications: ApplicationSummary[]
-  onUpdateApplicationPlacementSuccess: (
-    applicationId: ApplicationId,
-    unit: PreferredUnit | null
-  ) => void
-  onUpdateApplicationPlacementFailure: () => void
+  onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
+  onMutateApplicationPlacementFailure: () => void
   onRemoveFromShownDaycares: () => void
 }) {
   const { i18n } = useTranslation()
@@ -162,11 +159,11 @@ export default React.memo(function DaycareCard({
                         key={placementDraft.applicationId}
                         placementDraft={placementDraft}
                         application={application}
-                        onUpdateApplicationPlacementSuccess={
-                          onUpdateApplicationPlacementSuccess
+                        onDeleteApplicationPlacementSuccess={
+                          onDeleteApplicationPlacementSuccess
                         }
-                        onUpdateApplicationPlacementFailure={
-                          onUpdateApplicationPlacementFailure
+                        onMutateApplicationPlacementFailure={
+                          onMutateApplicationPlacementFailure
                         }
                       />
                     ))}

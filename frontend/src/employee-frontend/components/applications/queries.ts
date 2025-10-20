@@ -12,8 +12,9 @@ import {
   getPlacementDesktopDaycares,
   simpleApplicationAction,
   simpleBatchAction,
-  updateApplicationPlacementDraft,
-  updateServiceWorkerNote
+  upsertApplicationPlacementDraft,
+  updateServiceWorkerNote,
+  deleteApplicationPlacementDraft
 } from '../../generated/api-clients/application'
 import { getServiceNeedOptionPublicInfos } from '../../generated/api-clients/serviceneed'
 
@@ -43,15 +44,22 @@ export const serviceNeedPublicInfosQuery = q.query(
   getServiceNeedOptionPublicInfos
 )
 
-export const updateApplicationPlacementDraftMutation = q.parametricMutation<{
+export const upsertApplicationPlacementDraftMutation = q.parametricMutation<{
   previousUnitId: DaycareId | null
-}>()(updateApplicationPlacementDraft, [
+}>()(upsertApplicationPlacementDraft, [
   ({ body: { unitId } }) =>
     unitId ? getPlacementDesktopDaycareQuery({ unitId }) : undefined,
   ({ previousUnitId }) =>
     previousUnitId
       ? getPlacementDesktopDaycareQuery({ unitId: previousUnitId })
       : undefined
+])
+
+export const deleteApplicationPlacementDraftMutation = q.parametricMutation<{
+  previousUnitId: DaycareId
+}>()(deleteApplicationPlacementDraft, [
+  ({ previousUnitId }) =>
+    getPlacementDesktopDaycareQuery({ unitId: previousUnitId })
 ])
 
 export const getPlacementDesktopDaycareQuery = q.prefixedQuery(

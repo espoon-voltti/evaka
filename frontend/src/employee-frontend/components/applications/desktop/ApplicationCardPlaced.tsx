@@ -7,8 +7,7 @@ import styled, { css } from 'styled-components'
 
 import type {
   ApplicationSummary,
-  PlacementDraft,
-  PreferredUnit
+  PlacementDraft
 } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -26,21 +25,18 @@ import { faFile } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { ServiceWorkerNoteModal } from '../ApplicationsList'
-import { updateApplicationPlacementDraftMutation } from '../queries'
+import { deleteApplicationPlacementDraftMutation } from '../queries'
 
 export default React.memo(function ApplicationCardPlaced({
   placementDraft,
   application,
-  onUpdateApplicationPlacementSuccess,
-  onUpdateApplicationPlacementFailure
+  onMutateApplicationPlacementFailure,
+  onDeleteApplicationPlacementSuccess
 }: {
   placementDraft: PlacementDraft
   application: ApplicationSummary | undefined
-  onUpdateApplicationPlacementSuccess: (
-    applicationId: ApplicationId,
-    unit: PreferredUnit | null
-  ) => void
-  onUpdateApplicationPlacementFailure: () => void
+  onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
+  onMutateApplicationPlacementFailure: () => void
 }) {
   const { i18n } = useTranslation()
 
@@ -67,7 +63,7 @@ export default React.memo(function ApplicationCardPlaced({
           }
         >
           <ChildName $applicationInSearchResults={applicationInSearchResults}>
-            {placementDraft.childName}
+            {placementDraft.childName} ({placementDraft.startDate.format()})
           </ChildName>
         </Tooltip>
 
@@ -79,19 +75,17 @@ export default React.memo(function ApplicationCardPlaced({
                 aria-label={
                   i18n.applications.placementDesktop.cancelPlacementDraft
                 }
-                mutation={updateApplicationPlacementDraftMutation}
+                mutation={deleteApplicationPlacementDraftMutation}
                 onClick={() => ({
                   applicationId: placementDraft.applicationId,
-                  previousUnitId: placementDraft.unitId,
-                  body: { unitId: null }
+                  previousUnitId: placementDraft.unitId
                 })}
                 onSuccess={() =>
-                  onUpdateApplicationPlacementSuccess(
-                    placementDraft.applicationId,
-                    null
+                  onDeleteApplicationPlacementSuccess(
+                    placementDraft.applicationId
                   )
                 }
-                onFailure={onUpdateApplicationPlacementFailure}
+                onFailure={onMutateApplicationPlacementFailure}
               />
             </div>
           ) : (
@@ -109,16 +103,14 @@ export default React.memo(function ApplicationCardPlaced({
                 i18n.applications.placementDesktop
                   .cancelPlacementDraftConfirmationMessage
               }
-              mutation={updateApplicationPlacementDraftMutation}
+              mutation={deleteApplicationPlacementDraftMutation}
               onClick={() => ({
                 applicationId: placementDraft.applicationId,
-                previousUnitId: placementDraft.unitId,
-                body: { unitId: null }
+                previousUnitId: placementDraft.unitId
               })}
               onSuccess={() =>
-                onUpdateApplicationPlacementSuccess(
-                  placementDraft.applicationId,
-                  null
+                onDeleteApplicationPlacementSuccess(
+                  placementDraft.applicationId
                 )
               }
             />

@@ -622,6 +622,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             DevPlacementDraft(
                 applicationId = application2.id,
                 unitId = testDaycare.id,
+                startDate = application2.form.preferences.preferredStartDate!!,
                 createdAt = mockClock.now(),
                 createdBy = testDecisionMaker_1.evakaUserId,
                 modifiedAt = mockClock.now(),
@@ -1005,6 +1006,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             DevPlacementDraft(
                 applicationId = application.id,
                 unitId = testDaycare.id,
+                startDate = application.form.preferences.preferredStartDate!!,
                 createdAt = mockClock.now(),
                 createdBy = testDecisionMaker_1.evakaUserId,
                 modifiedAt = mockClock.now(),
