@@ -25,11 +25,12 @@ http {
         batch_count 4;
     }
 
-    otel_service_name "evaka-proxy";
     otel_trace on;
-    otel_trace_context inject;
-    otel_span_attr "http.user_agent" $http_user_agent;
+    otel_trace_context propagate;
+    otel_service_name "evaka-proxy";
     otel_span_attr "version" "{{ .Env.APP_COMMIT }}";
+    otel_span_attr "http.user_agent" $http_user_agent;
+    otel_span_attr "http.route" "$uri";
 {{ end }}
 
     include       /etc/nginx/mime.types;
