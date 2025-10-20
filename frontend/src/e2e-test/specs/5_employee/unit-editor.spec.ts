@@ -295,7 +295,7 @@ describe('Employee - unit editor validations and warnings', () => {
     )
   })
 
-  test('Setting a reserved oph unit oid shows a validation error', async () => {
+  test('Setting a reserved oph unit oid shows a validation warning', async () => {
     const reservedOphUnitOID = 'reserved-oph-unit-oid'
     await Fixture.daycare({
       ...testDaycare,

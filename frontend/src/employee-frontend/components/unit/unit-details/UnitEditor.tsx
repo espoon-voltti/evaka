@@ -41,7 +41,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { fontWeights, H1, H3 } from 'lib-components/typography'
+import { fontWeights, H1, H3, InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
@@ -219,6 +219,7 @@ const AlertBoxContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
 `
+
 type EditableTimeRange = JsonOf<TimeRange>
 
 const emptyTimeRange: EditableTimeRange = {
@@ -367,7 +368,6 @@ function validateTimeRange({
 function validateForm(
   i18n: Translations,
   lastPlacementDate: LocalDate | null,
-  reservedOphUnitOIDs: string[],
   form: FormData
 ): [DaycareFields | undefined, UnitEditorErrors] {
   const errors: FormErrorItem[] = []
@@ -667,13 +667,6 @@ function validateForm(
     form.nekkuOrderReductionPercentage,
     10
   )
-
-  if (form.ophUnitOid !== '' && reservedOphUnitOIDs.includes(form.ophUnitOid)) {
-    errors.push({
-      text: i18n.unitEditor.error.reservedOphUnitOid,
-      key: 'reserved-oph-unit-oid'
-    })
-  }
 
   const {
     openingDate,
@@ -983,12 +976,7 @@ export default function UnitEditor(props: Props) {
   const updateForm = (updates: Partial<FormData>) => {
     const newForm = { ...form, ...updates }
     setForm(newForm)
-    const [, errors] = validateForm(
-      i18n,
-      props.lastPlacementDate,
-      props.reservedOphUnitOIDs,
-      newForm
-    )
+    const [, errors] = validateForm(i18n, props.lastPlacementDate, newForm)
     setValidationErrors(errors)
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
@@ -1049,12 +1037,7 @@ export default function UnitEditor(props: Props) {
   )
 
   const getFormData = () => {
-    const [fields, errors] = validateForm(
-      i18n,
-      props.lastPlacementDate,
-      props.reservedOphUnitOIDs,
-      form
-    )
+    const [fields, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
     if (fields && checkFormValidation()) {
       return fields
@@ -1064,12 +1047,7 @@ export default function UnitEditor(props: Props) {
   }
 
   const onClickEditHandler = () => {
-    const [, errors] = validateForm(
-      i18n,
-      props.lastPlacementDate,
-      props.reservedOphUnitOIDs,
-      form
-    )
+    const [, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
     if (props.onClickEdit) props.onClickEdit()
   }
@@ -1089,6 +1067,13 @@ export default function UnitEditor(props: Props) {
 
   const checkFormValidation = (): boolean =>
     validationErrors.formErrors.length === 0
+
+  const ophUnitOIDIsEmptyOrValid = useMemo(
+    (): boolean =>
+      form.ophUnitOid !== '' &&
+      !props.reservedOphUnitOIDs.includes(form.ophUnitOid),
+    [form.ophUnitOid, props.reservedOphUnitOIDs]
+  )
 
   return (
     <form action="#" data-qa="unit-editor-container">
@@ -1799,14 +1784,21 @@ export default function UnitEditor(props: Props) {
           {koskiIcon()}
         </div>
         {props.editable ? (
-          <InputField
-            id="oph-unit-oid"
-            placeholder={i18n.unitEditor.label.ophUnitOid}
-            value={form.ophUnitOid}
-            onChange={(value) => updateForm({ ophUnitOid: value.trim() })}
-            width="L"
-            data-qa="oph-unit-oid-input-field"
-          />
+          <FixedSpaceColumn>
+            <InputField
+              id="oph-unit-oid"
+              placeholder={i18n.unitEditor.label.ophUnitOid}
+              value={form.ophUnitOid}
+              onChange={(value) => updateForm({ ophUnitOid: value.trim() })}
+              width="L"
+              data-qa="oph-unit-oid-input-field"
+            />
+            {!ophUnitOIDIsEmptyOrValid && (
+              <InformationText data-qa="reserved-oph-unit-oid">
+                {i18n.unitEditor.error.reservedOphUnitOid}
+              </InformationText>
+            )}
+          </FixedSpaceColumn>
         ) : (
           form.ophUnitOid
         )}
