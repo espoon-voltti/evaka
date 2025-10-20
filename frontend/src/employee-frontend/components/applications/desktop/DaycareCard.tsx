@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
+import type { RefObject } from 'react'
 import React, { useContext, useMemo } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled, { css, keyframes, useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
@@ -36,16 +37,20 @@ import ApplicationCardPlaced from './ApplicationCardPlaced'
 
 export default React.memo(function DaycareCard({
   daycare,
+  highlighted,
   applications,
   onDeleteApplicationPlacementSuccess,
   onMutateApplicationPlacementFailure,
-  onRemoveFromShownDaycares
+  onRemoveFromShownDaycares,
+  ref
 }: {
   daycare: PreferredUnit
+  highlighted: boolean
   applications: ApplicationSummary[]
   onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
   onMutateApplicationPlacementFailure: () => void
   onRemoveFromShownDaycares: () => void
+  ref: RefObject<HTMLDivElement | null> | undefined
 }) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
@@ -76,7 +81,7 @@ export default React.memo(function DaycareCard({
     useBoolean(true)
 
   return (
-    <Card>
+    <Card ref={ref} $highlighted={highlighted}>
       <FixedSpaceColumn spacing="s">
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
@@ -178,14 +183,32 @@ export default React.memo(function DaycareCard({
   )
 })
 
-const Card = styled.div`
+const Card = styled.div<{ $highlighted: boolean }>`
   min-width: 450px;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
+  ${(p) =>
+    p.$highlighted
+      ? css`
+          animation: ${blinkShadow} 1s ease-in-out 1;
+        `
+      : ''}
 `
 
 const ApplicationsWrapper = styled.div`
   padding: 0 ${defaultMargins.s};
+`
+
+const blinkShadow = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(77, 127, 204, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 4px rgba(77, 127, 204, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(77, 127, 204, 0);
+  }
 `
