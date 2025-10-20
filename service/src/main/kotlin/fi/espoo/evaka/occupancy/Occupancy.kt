@@ -520,14 +520,14 @@ private fun Database.Read.getPlacementDrafts(
             // todo: optimize to avoid fetching full application details just to get the derived
             // placement type
             val application = fetchApplicationDetails(row.applicationId)!!
-            val period =
+            val placementPeriod =
                 DateRange(row.startDate, null).intersection(period) ?: return@mapNotNull null
 
             SpeculatedPlacement(
                 type = application.derivePlacementType(),
                 childId = row.childId,
                 unitId = row.unitId,
-                period = period,
+                period = placementPeriod,
                 familyUnitPlacement = row.familyUnitPlacement,
             )
         }
