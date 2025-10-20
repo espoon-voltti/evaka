@@ -30,7 +30,6 @@ import type {
   StaffMember,
   StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
-import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
 import type {
   EmployeeId,
   GroupId,
@@ -59,7 +58,10 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import {
+  isStaffAttendanceTypesEnabled,
+  staffAttendanceTypes
+} from 'lib-customizations/employeeMobile'
 import { faLockAlt, faTrash, faArrowLeft } from 'lib-icons'
 
 import { routes } from '../App'
@@ -184,23 +186,11 @@ const initialRowState = (
   id: attendance.id,
   type: {
     domValue: attendance.type,
-    options: staffAttendanceTypes
-      .map((type) => ({
-        domValue: type,
-        value: type,
-        label: i18n.attendances.staffTypes[type]
-      }))
-      .filter((type) =>
-        featureFlags?.hideOvertimeSelection ? type.value !== 'OVERTIME' : true
-      )
-      .filter((type) =>
-        featureFlags?.hideSicknessSelection ? type.value !== 'SICKNESS' : true
-      )
-      .filter((type) =>
-        featureFlags?.hideChildSicknessSelection
-          ? type.value !== 'CHILD_SICKNESS'
-          : true
-      )
+    options: staffAttendanceTypes.map((type) => ({
+      domValue: type,
+      value: type,
+      label: i18n.attendances.staffTypes[type]
+    }))
   },
   groupEditMode: false,
   groupId: {
@@ -640,7 +630,7 @@ const StaffAttendanceEditor = ({
       </FixedSpaceRow>
       <Gap size="s" />
       <FixedSpaceRow alignItems="end" flexWrap="wrap">
-        {featureFlags.staffAttendanceTypes && (
+        {isStaffAttendanceTypesEnabled && (
           <div>
             <SelectF bind={type} data-qa="type" />
           </div>
@@ -682,7 +672,7 @@ const StaffAttendanceEditor = ({
         </FixedSpaceRow>
       </FixedSpaceRow>
       <Gap size="s" />
-      {featureFlags.staffAttendanceTypes &&
+      {isStaffAttendanceTypesEnabled &&
       typesWithoutGroup.includes(type.value()) ? null : (
         <CheckboxF
           bind={occupancyEffect}

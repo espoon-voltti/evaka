@@ -407,6 +407,12 @@ export class StaffAttendanceEditPage {
     await select.selectOption({ value: groupId })
   }
 
+  async typeSelect(index: number) {
+    const select = new Select(this.page.findAllByDataQa('type').nth(index))
+    await select.waitUntilVisible()
+    return select
+  }
+
   async selectType(index: number, type: StaffAttendanceType) {
     const select = new Select(this.page.findAllByDataQa('type').nth(index))
     await select.selectOption({ value: type })

@@ -8,6 +8,7 @@ import defaultsUntyped from '@evaka/customizations/employee'
 import mergeWith from 'lodash/mergeWith'
 
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
@@ -45,8 +46,14 @@ const {
   placementPlanRejectReasons,
   unitProviderTypes,
   voucherValueDecisionTypes,
+  additionalStaffAttendanceTypes,
   getPaymentsDueDate
 }: EmployeeCustomizations = customizations
+const isStaffAttendanceTypesEnabled = additionalStaffAttendanceTypes.length > 0
+const staffAttendanceTypes: StaffAttendanceType[] = [
+  'PRESENT',
+  ...additionalStaffAttendanceTypes
+]
 export {
   appConfig,
   cityLogo,
@@ -59,6 +66,8 @@ export {
   preschoolAssistanceLevels,
   unitProviderTypes,
   voucherValueDecisionTypes,
+  isStaffAttendanceTypesEnabled,
+  staffAttendanceTypes,
   getPaymentsDueDate
 }
 

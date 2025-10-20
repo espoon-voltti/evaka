@@ -12,6 +12,7 @@ import type {
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import type {
@@ -208,29 +209,9 @@ interface BaseFeatureFlags {
   assistanceNeedDecisionsLanguageSelect: boolean
 
   /**
-   * Enable attendance types for realtime staff attendances, instead of just present/absent
-   */
-  staffAttendanceTypes: boolean
-
-  /**
    * Enable extended period start date -field when creating or editing preschool terms
    */
   extendedPreschoolTerm: boolean
-
-  /**
-   * Hide overtime selection in real time staff attendance
-   */
-  hideOvertimeSelection: boolean
-
-  /**
-   * Hide sickness selection in real time staff attendance
-   */
-  hideSicknessSelection: boolean
-
-  /**
-   * Hide child sickness selection in real time staff attendance
-   */
-  hideChildSicknessSelection: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet
@@ -349,6 +330,8 @@ export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 
 type CityLogo = React.JSX.Element | ImgProps
 
+type CustomizableStaffAttendanceType = Exclude<StaffAttendanceType, 'PRESENT'>
+
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
@@ -362,6 +345,7 @@ export interface EmployeeCustomizations {
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
+  additionalStaffAttendanceTypes: CustomizableStaffAttendanceType[]
   getPaymentsDueDate?: () => LocalDate
 }
 
@@ -372,4 +356,5 @@ export interface EmployeeMobileCustomizations {
     LangEmployeeMobile,
     DeepPartial<TranslationsEmployeeMobile>
   >
+  additionalStaffAttendanceTypes: CustomizableStaffAttendanceType[]
 }

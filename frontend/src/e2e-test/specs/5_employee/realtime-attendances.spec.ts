@@ -8,8 +8,13 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import type {
+  DeepPartial,
+  EmployeeCustomizations
+} from 'lib-customizations/types'
 
 import {
   testCareArea2,
@@ -36,7 +41,6 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
 let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
 let child1Fixture: DevPerson
@@ -121,22 +125,26 @@ beforeEach(async () => {
     .save()
 
   await Fixture.staffOccupancyCoefficient(daycare.id, groupStaff.id).save()
-
-  page = await Page.open({
-    viewport: { width: 1440, height: 720 },
-    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0))
-  })
-
-  await employeeLogin(page, unitSupervisor)
 })
 
-const openCalendar = async (): Promise<UnitCalendarPage> => {
-  unitPage = new UnitPage(page)
-  await unitPage.navigateToUnit(daycare.id)
-  return await unitPage.openCalendarPage()
-}
-
 describe('Realtime staff attendances', () => {
+  let page: Page
+
+  beforeEach(async () => {
+    page = await Page.open({
+      viewport: { width: 1440, height: 720 },
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0))
+    })
+
+    await employeeLogin(page, unitSupervisor)
+  })
+
+  const openCalendar = async (): Promise<UnitCalendarPage> => {
+    unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare.id)
+    return await unitPage.openCalendarPage()
+  }
+
   test('Occupancy graph', async () => {
     await Fixture.realtimeStaffAttendance({
       employeeId: groupStaff.id,
@@ -792,6 +800,34 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.timeErrorVisible()
       await addPersonModal.nameErrorVisible()
     })
+  })
+})
+
+describe('Realtime staff attendance customizations', () => {
+  const openStaffAttendanceDetailsModal = async (
+    employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
+  ) => {
+    const page = await Page.open({
+      viewport: { width: 1440, height: 720 },
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0)),
+      employeeCustomizations
+    })
+    await employeeLogin(page, unitSupervisor)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(daycare.id)
+    const calendarPage = await unitPage.openCalendarPage()
+    await calendarPage.selectGroup('staff')
+    const staffAttendances = calendarPage.staffAttendances
+    return await staffAttendances.openDetails(1, mockedToday)
+  }
+
+  test('staff attendance types can be customized', async () => {
+    const modal = await openStaffAttendanceDetailsModal({
+      additionalStaffAttendanceTypes: ['TRAINING', 'SICKNESS']
+    })
+    await modal.addNewAttendance()
+    const typeSelect = await modal.typeSelect(0)
+    await typeSelect.assertOptions(['Läsnä', 'Koulutus', 'Muu syy (oma)'])
   })
 })
 

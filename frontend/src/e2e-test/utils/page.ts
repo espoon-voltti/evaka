@@ -528,6 +528,10 @@ export class Select extends Element {
   get allOptions(): Promise<string[]> {
     return this.#input.findAll('option').allTexts()
   }
+
+  async assertOptions(expected: string[]) {
+    expect(await this.allOptions).toEqual(expected)
+  }
 }
 
 export class Combobox extends Element {

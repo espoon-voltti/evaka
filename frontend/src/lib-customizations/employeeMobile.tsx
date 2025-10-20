@@ -7,6 +7,7 @@
 import defaultsUntyped from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
@@ -31,8 +32,22 @@ const customizations: EmployeeMobileCustomizations = overrides
   ? mergeWith({}, defaults, overrides, mergeCustomizer)
   : defaults
 
-const { appConfig, featureFlags }: EmployeeMobileCustomizations = customizations
-export { appConfig, featureFlags }
+const {
+  appConfig,
+  featureFlags,
+  additionalStaffAttendanceTypes
+}: EmployeeMobileCustomizations = customizations
+const isStaffAttendanceTypesEnabled = additionalStaffAttendanceTypes.length > 0
+const staffAttendanceTypes: StaffAttendanceType[] = [
+  'PRESENT',
+  ...additionalStaffAttendanceTypes
+]
+export {
+  appConfig,
+  featureFlags,
+  isStaffAttendanceTypesEnabled,
+  staffAttendanceTypes
+}
 
 export type Lang = 'fi'
 export type Translations = typeof fi

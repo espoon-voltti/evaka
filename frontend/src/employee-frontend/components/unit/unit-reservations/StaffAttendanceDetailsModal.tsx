@@ -13,7 +13,6 @@ import { Link } from 'wouter'
 import DateRange from 'lib-common/date-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import type { EmployeeId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -44,7 +43,10 @@ import {
 import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
+import {
+  isStaffAttendanceTypesEnabled,
+  staffAttendanceTypes as allowedStaffAttendanceTypes
+} from 'lib-customizations/employee'
 import { faExclamationTriangle, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -361,17 +363,6 @@ function StaffAttendanceDetailsModal<
   const openAttendanceInAnotherUnit =
     !!openAttendance && openAttendance.unitId !== unitId
 
-  const allowedStaffAttendanceTypes = staffAttendanceTypes
-    .filter((type) =>
-      featureFlags.hideOvertimeSelection ? type !== 'OVERTIME' : true
-    )
-    .filter((type) =>
-      featureFlags.hideSicknessSelection ? type !== 'SICKNESS' : true
-    )
-    .filter((type) =>
-      featureFlags.hideChildSicknessSelection ? type !== 'CHILD_SICKNESS' : true
-    )
-
   return (
     <PlainModal
       margin="auto"
@@ -604,7 +595,7 @@ function StaffAttendanceDetailsModal<
                       />
                     )}
                   </GroupIndicator>
-                  {featureFlags.staffAttendanceTypes && !isExternal ? (
+                  {isStaffAttendanceTypesEnabled && !isExternal ? (
                     <Select
                       items={[...allowedStaffAttendanceTypes]}
                       selectedItem={type}
