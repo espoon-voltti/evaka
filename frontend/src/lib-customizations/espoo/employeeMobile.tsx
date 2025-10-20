@@ -6,7 +6,7 @@ import type { EmployeeMobileCustomizations } from 'lib-customizations/types'
 
 import { appConfig } from './appConfigs'
 import featureFlags from './featureFlags'
-import { staffAttendanceTypes } from './shared'
+import { additionalStaffAttendanceTypes } from './shared'
 
 const customizations: EmployeeMobileCustomizations = {
   appConfig,
@@ -14,7 +14,7 @@ const customizations: EmployeeMobileCustomizations = {
   translations: {
     fi: {}
   },
-  staffAttendanceTypes
+  additionalStaffAttendanceTypes
 }
 
 export default customizations

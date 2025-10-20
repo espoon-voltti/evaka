@@ -27,7 +27,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import { isStaffAttendanceTypesEnabled } from 'lib-customizations/employeeMobile'
 import { faCalendar } from 'lib-icons'
 
 import { routes } from '../App'
@@ -144,7 +144,7 @@ export default React.memo(function StaffMemberPage({
             <EmployeeCardBackground staff={toStaff(staffMember)} />
             <Gap size="s" />
             <FixedSpaceColumn>
-              {featureFlags.staffAttendanceTypes ? (
+              {isStaffAttendanceTypesEnabled ? (
                 <>
                   {spanningPlans.length > 0 && (
                     <TimeInfo data-qa="shift-time">

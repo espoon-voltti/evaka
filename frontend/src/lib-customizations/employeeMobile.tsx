@@ -7,11 +7,11 @@
 import defaultsUntyped from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
-import { resolveStaffAttendanceTypes } from './staffAttendanceTypes'
 import type { EmployeeMobileCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -35,13 +35,19 @@ const customizations: EmployeeMobileCustomizations = overrides
 const {
   appConfig,
   featureFlags,
-  staffAttendanceTypes: customizedStaffAttendanceTypes
+  additionalStaffAttendanceTypes
 }: EmployeeMobileCustomizations = customizations
-const staffAttendanceTypes = resolveStaffAttendanceTypes(
+const isStaffAttendanceTypesEnabled = additionalStaffAttendanceTypes.length > 0
+const staffAttendanceTypes: StaffAttendanceType[] = [
+  'PRESENT',
+  ...additionalStaffAttendanceTypes
+]
+export {
+  appConfig,
   featureFlags,
-  customizedStaffAttendanceTypes
-)
-export { appConfig, featureFlags, staffAttendanceTypes }
+  isStaffAttendanceTypesEnabled,
+  staffAttendanceTypes
+}
 
 export type Lang = 'fi'
 export type Translations = typeof fi

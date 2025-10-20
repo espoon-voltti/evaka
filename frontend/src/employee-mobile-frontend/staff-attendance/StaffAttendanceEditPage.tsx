@@ -59,7 +59,7 @@ import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
-  featureFlags,
+  isStaffAttendanceTypesEnabled,
   staffAttendanceTypes
 } from 'lib-customizations/employeeMobile'
 import { faLockAlt, faTrash, faArrowLeft } from 'lib-icons'
@@ -630,7 +630,7 @@ const StaffAttendanceEditor = ({
       </FixedSpaceRow>
       <Gap size="s" />
       <FixedSpaceRow alignItems="end" flexWrap="wrap">
-        {featureFlags.staffAttendanceTypes && (
+        {isStaffAttendanceTypesEnabled && (
           <div>
             <SelectF bind={type} data-qa="type" />
           </div>
@@ -672,7 +672,7 @@ const StaffAttendanceEditor = ({
         </FixedSpaceRow>
       </FixedSpaceRow>
       <Gap size="s" />
-      {featureFlags.staffAttendanceTypes &&
+      {isStaffAttendanceTypesEnabled &&
       typesWithoutGroup.includes(type.value()) ? null : (
         <CheckboxF
           bind={occupancyEffect}

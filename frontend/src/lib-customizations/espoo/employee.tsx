@@ -13,7 +13,7 @@ import type { EmployeeCustomizations } from 'lib-customizations/types'
 import { appConfig } from './appConfigs'
 import Logo from './assets/EspooLogoPrimary.svg'
 import featureFlags from './featureFlags'
-import { staffAttendanceTypes } from './shared'
+import { additionalStaffAttendanceTypes } from './shared'
 
 const customizations: EmployeeCustomizations = {
   appConfig,
@@ -101,7 +101,7 @@ const customizations: EmployeeCustomizations = {
     'RELIEF_PARTLY_ACCEPTED',
     'RELIEF_REJECTED'
   ],
-  staffAttendanceTypes
+  additionalStaffAttendanceTypes
 }
 
 export default customizations

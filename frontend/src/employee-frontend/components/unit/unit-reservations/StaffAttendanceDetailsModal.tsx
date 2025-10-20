@@ -44,7 +44,7 @@ import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
-  featureFlags,
+  isStaffAttendanceTypesEnabled,
   staffAttendanceTypes as allowedStaffAttendanceTypes
 } from 'lib-customizations/employee'
 import { faExclamationTriangle, faPlus, faTrash } from 'lib-icons'
@@ -595,7 +595,7 @@ function StaffAttendanceDetailsModal<
                       />
                     )}
                   </GroupIndicator>
-                  {featureFlags.staffAttendanceTypes && !isExternal ? (
+                  {isStaffAttendanceTypesEnabled && !isExternal ? (
                     <Select
                       items={[...allowedStaffAttendanceTypes]}
                       selectedItem={type}

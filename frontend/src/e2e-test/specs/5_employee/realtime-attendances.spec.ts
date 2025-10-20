@@ -821,34 +821,9 @@ describe('Realtime staff attendance customizations', () => {
     return await staffAttendances.openDetails(1, mockedToday)
   }
 
-  test('staff attendances types can be customized with feature flags', async () => {
-    const modal = await openStaffAttendanceDetailsModal({
-      featureFlags: {
-        hideOvertimeSelection: true,
-        hideSicknessSelection: true,
-        hideChildSicknessSelection: false
-      },
-      staffAttendanceTypes: null // if this becomes required, test can be removed
-    })
-    await modal.addNewAttendance()
-    const typeSelect = await modal.typeSelect(0)
-    await typeSelect.assertOptions([
-      'Läsnä',
-      'Työasia',
-      'Koulutus',
-      'Perusteltu muutos',
-      'Muu syy (lapsi)'
-    ])
-  })
-
   test('staff attendance types can be customized', async () => {
     const modal = await openStaffAttendanceDetailsModal({
-      featureFlags: {
-        hideOvertimeSelection: false,
-        hideSicknessSelection: false,
-        hideChildSicknessSelection: false
-      },
-      staffAttendanceTypes: ['PRESENT', 'TRAINING', 'SICKNESS']
+      additionalStaffAttendanceTypes: ['TRAINING', 'SICKNESS']
     })
     await modal.addNewAttendance()
     const typeSelect = await modal.typeSelect(0)

@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { CustomizableStaffAttendanceType } from '../types'
 
-export const staffAttendanceTypes: StaffAttendanceType[] = [
-  'PRESENT',
-  'OTHER_WORK',
-  'TRAINING',
-  'JUSTIFIED_CHANGE'
-]
+export const additionalStaffAttendanceTypes: CustomizableStaffAttendanceType[] =
+  ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']

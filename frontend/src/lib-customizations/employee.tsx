@@ -8,12 +8,12 @@ import defaultsUntyped from '@evaka/customizations/employee'
 import mergeWith from 'lodash/mergeWith'
 
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee/i18n/fi'
 import { sv } from './defaults/employee/i18n/sv'
-import { resolveStaffAttendanceTypes } from './staffAttendanceTypes'
 import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -46,13 +46,14 @@ const {
   placementPlanRejectReasons,
   unitProviderTypes,
   voucherValueDecisionTypes,
-  staffAttendanceTypes: customizedStaffAttendanceTypes,
+  additionalStaffAttendanceTypes,
   getPaymentsDueDate
 }: EmployeeCustomizations = customizations
-const staffAttendanceTypes = resolveStaffAttendanceTypes(
-  featureFlags,
-  customizedStaffAttendanceTypes
-)
+const isStaffAttendanceTypesEnabled = additionalStaffAttendanceTypes.length > 0
+const staffAttendanceTypes: StaffAttendanceType[] = [
+  'PRESENT',
+  ...additionalStaffAttendanceTypes
+]
 export {
   appConfig,
   cityLogo,
@@ -65,6 +66,7 @@ export {
   preschoolAssistanceLevels,
   unitProviderTypes,
   voucherValueDecisionTypes,
+  isStaffAttendanceTypesEnabled,
   staffAttendanceTypes,
   getPaymentsDueDate
 }

@@ -806,9 +806,7 @@ describe('Realtime staff attendance edit page', () => {
     }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
-      featureFlags: {
-        staffAttendanceTypes: false
-      }
+      additionalStaffAttendanceTypes: []
     })
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
@@ -1026,36 +1024,6 @@ describe('Realtime staff attendance edit page', () => {
     ])
   })
 
-  test('staff attendances types can be customized with feature flags', async () => {
-    const date = LocalDate.of(2022, 5, 5)
-    await Fixture.realtimeStaffAttendance({
-      employeeId: staffFixture.id,
-      type: 'TRAINING',
-      groupId: null,
-      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(7, 0)),
-      departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(15, 0))
-    }).save()
-    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
-      featureFlags: {
-        hideOvertimeSelection: true,
-        hideSicknessSelection: true,
-        hideChildSicknessSelection: false
-      },
-      staffAttendanceTypes: null // if this becomes required, test can be removed
-    })
-    await staffAttendancePage.openStaffPage(employeeName)
-    await staffAttendancePage.editButton.click()
-    const editPage = new StaffAttendanceEditPage(page)
-    const typeSelect = await editPage.typeSelect(0)
-    await typeSelect.assertOptions([
-      'Paikalla',
-      'Työasia',
-      'Koulutus',
-      'Perusteltu muutos',
-      'Muu syy (lapsi)'
-    ])
-  })
-
   test('staff attendance types can be customized', async () => {
     const date = LocalDate.of(2022, 5, 5)
     await Fixture.realtimeStaffAttendance({
@@ -1066,12 +1034,7 @@ describe('Realtime staff attendance edit page', () => {
       departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(15, 0))
     }).save()
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
-      featureFlags: {
-        hideOvertimeSelection: false,
-        hideSicknessSelection: false,
-        hideChildSicknessSelection: false
-      },
-      staffAttendanceTypes: ['PRESENT', 'TRAINING', 'SICKNESS']
+      additionalStaffAttendanceTypes: ['TRAINING', 'SICKNESS']
     })
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
