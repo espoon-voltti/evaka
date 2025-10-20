@@ -114,6 +114,7 @@ $unsubscribeEn
 <p>Hakiessanne lapsellenne <strong>siirtoa</strong> toiseen <strong>kunnalliseen varhaiskasvatusyksikköön</strong>, hakemuksella ei ole hakuaikaa. Hakemus on voimassa vuoden hakemuksen saapumispäivämäärästä. Mikäli lapsen nykyinen paikka irtisanotaan, myös siirtohakemus poistuu.</p>
 <p>Palvelusetelin hakeminen: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli">espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli</a></p>
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit</a></p>
+<p>Jos olet asioinut palveluohjauksen kanssa lapsesi hakemuksen käsittelyaikana, voit antaa palautetta vastaamalla lyhyeen kyselyyn: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Palautekysely</a></p>
 <hr>
 <p>Bästa vårdnadshavare,<br>Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.</p>
 <p>Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
@@ -127,6 +128,7 @@ $unsubscribeEn
 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/produktion-av-privat-smabarnspedagogik">www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/produktion-av-privat-smabarnspedagogik</a></p>
 <p>Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehandledning, PB 3125, 02070 Esbo stad eller som e-postbilaga till <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a> (observera att förbindelsen inte är krypterad).</p>
 <p>Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a></p>
+<p>Om du har varit i kontakt med servicehandledningen under behandlingstiden av ditt barns ansökan, kan du ge feedback genom att svara på en kort enkät: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedbackundersökning</a></p>
 <hr>
 <p>Dear guardian(s),<br>We have received your child’s application for early childhood education.</p>
 <p>The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
@@ -139,6 +141,7 @@ $unsubscribeEn
 <p>When applying for a <strong>transfer</strong> to a different <strong>municipal early childhood education unit</strong>, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.</p>
 <p>How to apply for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education">espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>.</p>
+<p>If you have contacted early childhood education service guidance during the processing of your child´s application, please give us feedback via this short feedback survey: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedback survey</a></p>
 """,
         )
 
@@ -162,6 +165,7 @@ $unsubscribeEn
 <p>Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.</p>
 <p>Palvelusetelin hakeminen: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli">Palveluseteli</a></p>
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
+<p>Jos olet asioinut palveluohjauksen kanssa lapsesi hakemuksen käsittelyaikana, voit antaa palautetta vastaamalla lyhyeen kyselyyn: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Palautekysely</a></p>
 <hr>
 <p>Bästa vårdnadshavare,</p>
 <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
@@ -172,6 +176,7 @@ $unsubscribeEn
 <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
 <p>Ansökan om servicesedel: <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/produktion-av-privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
+<p>Om du har varit i kontakt med servicehandledningen under behandlingstiden av ditt barns ansökan, kan du ge feedback genom att svara på en kort enkät: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedbackundersökning</a></p>
 <hr>
 <p>Dear guardian(s),</p>
 <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
@@ -182,6 +187,7 @@ $unsubscribeEn
 <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
 <p>Information about applying for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher">Service voucher</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
+<p>If you have contacted early childhood education service guidance during the processing of your child´s application, please give us feedback via this short feedback survey: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedback survey</a></p>
 """,
             )
         } else {
@@ -202,6 +208,7 @@ $unsubscribeEn
 <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen esiopetusyksikköön: Uusi esiopetuspäätös tehdään hakija- ja paikkatilanteen sen salliessa. Mikäli lapsen nykyinen esiopetuspaikka irtisanotaan, myös siirtohakemus poistuu.</p>
 <p>Palvelusetelin hakeminen: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-palveluseteli">Palveluseteli</a></p>
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
+<p>Jos olet asioinut palveluohjauksen kanssa lapsesi hakemuksen käsittelyaikana, voit antaa palautetta vastaamalla lyhyeen kyselyyn: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Palautekysely</a></p>
 <hr>
 <p>Bästa vårdnadshavare,</p>
 <p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
@@ -214,6 +221,7 @@ $unsubscribeEn
 <p>När du ansöker om överföring till en annan enhet för förskoleundervisning med en ny ansökan, fattas ett nytt beslut om förskoleundervisning om sökande- och platsläget tillåter det. Om barnets nuvarande förskoleplats sägs upp, slopas också ansökan om överföring.</p>
 <p>Ansökan om servicesedel: <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/produktion-av-privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
+<p>Om du har varit i kontakt med servicehandledningen under behandlingstiden av ditt barns ansökan, kan du ge feedback genom att svara på en kort enkät: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedbackundersökning</a></p>
 <hr>
 <p>Dear guardian(s),</p>
 <p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
@@ -226,6 +234,7 @@ $unsubscribeEn
 <p>When applying for a transfer to a different pre-primary education unit by submitting a new application; the new pre-primary education decision will be made when the situation with the applicants and the available places so permit. If your child’s current pre-primary education place is terminated, your transfer application will be deleted from the system.</p>
 <p>Information about applying for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher">Service Voucher</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
+<p>If you have contacted early childhood education service guidance during the processing of your child´s application, please give us feedback via this short feedback survey: <a href="https://link.webropolsurveys.com/S/7812189FC7A71B34">Feedback survey</a></p>
 """,
             )
         }
