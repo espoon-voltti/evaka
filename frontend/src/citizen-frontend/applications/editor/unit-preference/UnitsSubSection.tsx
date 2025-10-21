@@ -219,6 +219,11 @@ export default React.memo(function UnitsSubSection({
                               if (emptyPreferredUnitsLabel.current) {
                                 emptyPreferredUnitsLabel.current.focus()
                               }
+                              showTimedScreenReaderMessage(
+                                t.applications.editor.unitPreference.removePreferredUnitScreenReaderMessage(
+                                  unit.name
+                                )
+                              )
                             }}
                             moveUp={
                               i > 0
