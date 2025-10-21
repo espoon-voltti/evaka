@@ -54,14 +54,15 @@ fun Database.Transaction.upsertApplicationPlacementDraft(
     return startDateWithDefault
 }
 
-fun Database.Transaction.deleteApplicationPlacementDraft(applicationId: ApplicationId) = execute {
-    sql(
-        """
+fun Database.Transaction.deleteApplicationPlacementDraftIfExists(applicationId: ApplicationId) =
+    execute {
+        sql(
+            """
             DELETE FROM placement_draft
             WHERE application_id = ${bind(applicationId)}
         """
-    )
-}
+        )
+    }
 
 fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<DaycareId>) =
     createQuery {

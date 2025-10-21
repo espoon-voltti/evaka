@@ -81,7 +81,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     Action.Application.UPDATE_PLACEMENT_DRAFT,
                     applicationId,
                 )
-                tx.deleteApplicationPlacementDraft(applicationId)
+                tx.deleteApplicationPlacementDraftIfExists(applicationId)
             }
         }
         Audit.ApplicationPlacementDraftDelete.log(targetId = AuditId(applicationId))

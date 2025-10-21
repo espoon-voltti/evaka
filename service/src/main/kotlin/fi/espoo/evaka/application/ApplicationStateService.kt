@@ -20,6 +20,7 @@ import fi.espoo.evaka.application.notes.getServiceWorkerApplicationNote
 import fi.espoo.evaka.application.notes.updateServiceWorkerApplicationNote
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.application.placementdesktop.deleteApplicationPlacementDraftIfExists
 import fi.espoo.evaka.attachment.dissociateAttachmentsByApplicationAndType
 import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
 import fi.espoo.evaka.caseprocess.CaseProcessState
@@ -518,6 +519,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)
 
         Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
     }
@@ -561,6 +563,7 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)
 
         tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
             if (process.history.none { it.state == CaseProcessState.COMPLETED }) {
@@ -635,6 +638,7 @@ class ApplicationStateService(
         personService.getGuardians(tx, user, application.childId)
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)
         return placementPlanId
     }
 
