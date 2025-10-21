@@ -8,11 +8,14 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class ReservableDaysCalculationUnitTest {
     private val thresholdMondayAt1800 = 150L
+    private val timeJustBeforeThreshold = LocalTime.of(17, 59)
+    private val timeAtThreshold = LocalTime.of(18, 0)
 
     private val end2021 = LocalDate.of(2021, 8, 31)
     private val end2022 = LocalDate.of(2022, 8, 31)
@@ -70,6 +73,44 @@ class ReservableDaysCalculationUnitTest {
         assertReservableDays(
             FiniteDateRange(mondayNextWeekAfterThreshold.plusWeeks(1), end2022),
             justAtThreshold,
+        )
+    }
+
+    @Test
+    fun `reservable days query date is before autumn daylight saving time change`() {
+        val mondayBeforeDaylightSavingTimeChange = LocalDate.of(2025, 10, 20)
+        assertReservableDays(
+            FiniteDateRange(
+                mondayBeforeDaylightSavingTimeChange.plusWeeks(1),
+                LocalDate.of(2026, 8, 31),
+            ),
+            LocalDateTime.of(mondayBeforeDaylightSavingTimeChange, timeJustBeforeThreshold),
+        )
+        assertReservableDays(
+            FiniteDateRange(
+                mondayBeforeDaylightSavingTimeChange.plusWeeks(2),
+                LocalDate.of(2026, 8, 31),
+            ),
+            LocalDateTime.of(mondayBeforeDaylightSavingTimeChange, timeAtThreshold),
+        )
+    }
+
+    @Test
+    fun `reservable days query date is before spring daylight saving time change`() {
+        val mondayBeforeDaylightSavingTimeChange = LocalDate.of(2026, 3, 23)
+        assertReservableDays(
+            FiniteDateRange(
+                mondayBeforeDaylightSavingTimeChange.plusWeeks(1),
+                LocalDate.of(2026, 8, 31),
+            ),
+            LocalDateTime.of(mondayBeforeDaylightSavingTimeChange, timeJustBeforeThreshold),
+        )
+        assertReservableDays(
+            FiniteDateRange(
+                mondayBeforeDaylightSavingTimeChange.plusWeeks(2),
+                LocalDate.of(2026, 8, 31),
+            ),
+            LocalDateTime.of(mondayBeforeDaylightSavingTimeChange, timeAtThreshold),
         )
     }
 }
