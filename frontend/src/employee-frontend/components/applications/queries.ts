@@ -74,5 +74,8 @@ export const getPlacementDesktopDaycareQuery = q.prefixedQuery(
 )
 
 export const getPlacementDesktopDaycaresQuery = q.query(
-  getPlacementDesktopDaycares
+  getPlacementDesktopDaycares,
+  {
+    refetchOnWindowFocus: false
+  }
 )

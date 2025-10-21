@@ -17,6 +17,7 @@ import type {
   ApplicationBasis,
   ApplicationStatusOption,
   ApplicationTypeToggle,
+  PreferredUnit,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
 import {
@@ -65,6 +66,10 @@ interface UIState {
 
   placementMode: PlacementMode
   setPlacementMode: (mode: PlacementMode) => void
+  placementDesktopDaycares: PreferredUnit[] | undefined
+  setPlacementDesktopDaycares: Dispatch<
+    SetStateAction<PreferredUnit[] | undefined>
+  >
   occupancyPeriodStart: LocalDate
   setOccupancyPeriodStart: (date: LocalDate) => void
 }
@@ -153,6 +158,8 @@ const defaultState: UIState = {
 
   placementMode: 'list',
   setPlacementMode: () => undefined,
+  placementDesktopDaycares: undefined,
+  setPlacementDesktopDaycares: () => undefined,
   occupancyPeriodStart: LocalDate.todayInHelsinkiTz(),
   setOccupancyPeriodStart: () => undefined
 }
@@ -167,13 +174,19 @@ export const ApplicationUIContextProvider = React.memo(
   }) {
     const { loggedIn } = useContext(UserContext)
 
+    const [placementMode, setPlacementMode] = useState<'list' | 'desktop'>(
+      defaultState.placementMode
+    )
+    const [placementDesktopDaycares, setPlacementDesktopDaycares] =
+      useState<PreferredUnit[]>()
+    const [occupancyPeriodStart, setOccupancyPeriodStart] = useState<LocalDate>(
+      defaultState.occupancyPeriodStart
+    )
+
     const [page, setPage] = useState<number>(defaultState.page)
     const [confirmedSearchFilters, setConfirmedSearchFilters] = useState<
       ApplicationSearchFilters | undefined
     >(defaultState.confirmedSearchFilters)
-    const [occupancyPeriodStart, setOccupancyPeriodStart] = useState<LocalDate>(
-      defaultState.occupancyPeriodStart
-    )
     const storedFiltersJson = useMemo(
       () => localStorage.getItem(localStorageKey),
       []
@@ -206,6 +219,7 @@ export const ApplicationUIContextProvider = React.memo(
 
       localStorage.setItem(localStorageKey, JSON.stringify(newSearchFilters))
 
+      setPlacementDesktopDaycares(undefined)
       if (searchFilters.dateType.some((dt) => dt === 'START' || dt === 'DUE')) {
         setOccupancyPeriodStart(
           startDate ?? endDate ?? LocalDate.todayInHelsinkiTz()
@@ -241,10 +255,6 @@ export const ApplicationUIContextProvider = React.memo(
         ].includes(confirmedSearchFilters.status)
       : false
 
-    const [placementMode, setPlacementMode] = useState<'list' | 'desktop'>(
-      defaultState.placementMode
-    )
-
     const value = useMemo(
       () => ({
         page,
@@ -260,6 +270,8 @@ export const ApplicationUIContextProvider = React.memo(
         showCheckboxes,
         placementMode,
         setPlacementMode,
+        placementDesktopDaycares,
+        setPlacementDesktopDaycares,
         occupancyPeriodStart,
         setOccupancyPeriodStart
       }),
@@ -275,6 +287,8 @@ export const ApplicationUIContextProvider = React.memo(
         showCheckboxes,
         placementMode,
         setPlacementMode,
+        placementDesktopDaycares,
+        setPlacementDesktopDaycares,
         occupancyPeriodStart,
         setOccupancyPeriodStart
       ]

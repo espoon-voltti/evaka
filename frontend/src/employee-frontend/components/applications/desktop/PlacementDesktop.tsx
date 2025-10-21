@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
+import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import uniqBy from 'lodash/uniqBy'
 import React, {
@@ -28,6 +29,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import type { Arg0 } from 'lib-common/types'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import {
@@ -111,6 +113,8 @@ const PlacementDesktopValidated = React.memo(
 
     const {
       confirmedSearchFilters,
+      placementDesktopDaycares: shownDaycares,
+      setPlacementDesktopDaycares: _setShownDaycares,
       occupancyPeriodStart,
       setOccupancyPeriodStart
     } = useContext(ApplicationUIContext)
@@ -169,20 +173,23 @@ const PlacementDesktopValidated = React.memo(
       }
     }, [highlightedDaycare, daycareRefs])
 
-    const [shownDaycares, _setShownDaycares] = useState<PreferredUnit[]>()
-    const setShownDaycares = useCallback((units: PreferredUnit[]) => {
-      _setShownDaycares(units)
+    const setShownDaycares = useCallback(
+      (units: PreferredUnit[]) => {
+        _setShownDaycares(units)
 
-      setDaycareRefs((prev) =>
-        units.reduce(
-          (acc, daycare) => ({
-            ...acc,
-            [daycare.id]: prev[daycare.id] ?? React.createRef<HTMLDivElement>()
-          }),
-          {}
+        setDaycareRefs((prev) =>
+          units.reduce(
+            (acc, daycare) => ({
+              ...acc,
+              [daycare.id]:
+                prev[daycare.id] ?? React.createRef<HTMLDivElement>()
+            }),
+            {}
+          )
         )
-      )
-    }, [])
+      },
+      [_setShownDaycares]
+    )
 
     const otherAvailableUnits = useMemo(
       () =>
@@ -202,8 +209,12 @@ const PlacementDesktopValidated = React.memo(
           {}
         )
       )
+    }, [applications])
 
-      // by default, show daycares that are
+    useEffect(() => {
+      if (shownDaycares !== undefined) return
+
+      // By default, show daycares that are
       // - one of the searched units, or
       // - a preferred unit of some result application, or
       // - already have a placement draft from some result application
@@ -222,7 +233,7 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications, searchedUnits, setShownDaycares])
+    }, [applications, searchedUnits, shownDaycares, setShownDaycares])
 
     const onUpsertApplicationPlacementSuccess = useCallback(
       (
@@ -385,27 +396,41 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 }) {
   const queryClient = useQueryClient()
   const { occupancyPeriodStart } = useContext(ApplicationUIContext)
-  const initialData = useQueryResult(
-    getPlacementDesktopDaycaresQuery({
+
+  // do not refetch when shownDaycares change, unless applications also change
+  // to avoid refetching everything when adding/removing a single shown daycare
+  const queryArg: Arg0<typeof getPlacementDesktopDaycaresQuery> = useMemo(
+    () => ({
       unitIds: shownDaycares.map((d) => d.id),
       occupancyStart: occupancyPeriodStart
-    })
+    }),
+    [occupancyPeriodStart, applications] // eslint-disable-line react-hooks/exhaustive-deps
   )
-  const [initialDataInserted, setInitialDataInserted] = useState(false)
+
+  const initialData = useQueryResult(getPlacementDesktopDaycaresQuery(queryArg))
+
+  const [initialDataInsertedForArgs, setInitialDataInsertedForArgs] =
+    useState<Arg0<typeof getPlacementDesktopDaycaresQuery> | null>(null)
 
   useEffect(() => {
-    if (initialData.isSuccess) {
+    if (initialData.isSuccess && !initialData.isReloading) {
       initialData.value.forEach((unit) => {
         void queryClient.setQueryData(
-          getPlacementDesktopDaycareQuery({ unitId: unit.id }).queryKey,
+          getPlacementDesktopDaycareQuery({
+            unitId: unit.id,
+            occupancyStart: queryArg.occupancyStart
+          }).queryKey,
           unit
         )
       })
-      setInitialDataInserted(true)
+      setInitialDataInsertedForArgs(queryArg)
     }
-  }, [initialData, queryClient])
+  }, [initialData, queryArg, queryClient])
 
-  if (!initialDataInserted) return <Spinner />
+  const initialDataUpToDate = isEqual(queryArg, initialDataInsertedForArgs)
+
+  if (!initialDataUpToDate || !initialData.isSuccess || initialData.isReloading)
+    return <Spinner />
 
   return (
     <FixedSpaceColumn>
