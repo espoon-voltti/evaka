@@ -120,12 +120,7 @@ export default React.memo(function ApplicationCard({
             </H4>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
-            <FixedSpaceColumn spacing="xxs" alignItems="center">
-              <CareTypeChip type={application.placementType} />
-              {application.transferApplication && (
-                <Light>{i18n.applications.list.transfer}</Light>
-              )}
-            </FixedSpaceColumn>
+            <CareTypeChip type={application.placementType} />
             <FixedSpaceRow spacing="xs" alignItems="center">
               <Tooltip
                 tooltip={
@@ -186,7 +181,13 @@ export default React.memo(function ApplicationCard({
                   color={colors.main.m1}
                   size="m"
                 />
-                <div>{application.dueDate?.format() ?? '-'}</div>
+                <div>
+                  {application.transferApplication ? (
+                    <Light>{i18n.applications.placementDesktop.transfer}</Light>
+                  ) : (
+                    (application.dueDate?.format() ?? '-')
+                  )}
+                </div>
               </FixedSpaceRow>
             </Tooltip>
           </div>
