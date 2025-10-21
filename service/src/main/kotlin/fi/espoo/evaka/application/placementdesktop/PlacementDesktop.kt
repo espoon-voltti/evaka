@@ -4,8 +4,11 @@
 
 package fi.espoo.evaka.application.placementdesktop
 
+import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.calculateDailyUnitOccupancyValues
+import fi.espoo.evaka.occupancy.getOccupancyResponse
+import fi.espoo.evaka.occupancy.reduceDailyOccupancyValues
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -23,9 +26,9 @@ data class PlacementDesktopDaycare(
     val name: String,
     val serviceWorkerNote: String,
     @Json val placementDrafts: List<PlacementDraft>,
-    val maxOccupancyConfirmed: Double? = null,
-    val maxOccupancyPlanned: Double? = null,
-    val maxOccupancyDraft: Double? = null,
+    val occupancyConfirmed: OccupancyResponse?,
+    val occupancyPlanned: OccupancyResponse?,
+    val occupancyDraft: OccupancyResponse?,
 )
 
 data class PlacementDraft(
@@ -46,7 +49,7 @@ fun getPlacementDesktopDaycaresWithOccupancies(
     today: LocalDate,
 ): List<PlacementDesktopDaycare> {
     val daycares = tx.getPlacementDesktopDaycaresWithoutOccupancies(unitIds)
-    val maxOccupancies =
+    val occupancyResponses =
         listOf(OccupancyType.DRAFT, OccupancyType.PLANNED, OccupancyType.CONFIRMED).associateWith {
             type ->
             tx.calculateDailyUnitOccupancyValues(
@@ -60,16 +63,15 @@ fun getPlacementDesktopDaycaresWithOccupancies(
                     it.key.unitId to
                         it.occupancies
                             .filter { occupancyPeriod.includes(it.key) }
-                            .values
-                            .mapNotNull { it.percentage }
-                            .maxOrNull()
+                            .let { reduceDailyOccupancyValues(it) }
+                            .let { getOccupancyResponse(it) }
                 }
         }
     return daycares.map { daycare ->
         daycare.copy(
-            maxOccupancyDraft = maxOccupancies[OccupancyType.DRAFT]?.get(daycare.id),
-            maxOccupancyPlanned = maxOccupancies[OccupancyType.PLANNED]?.get(daycare.id),
-            maxOccupancyConfirmed = maxOccupancies[OccupancyType.CONFIRMED]?.get(daycare.id),
+            occupancyDraft = occupancyResponses[OccupancyType.DRAFT]?.get(daycare.id),
+            occupancyPlanned = occupancyResponses[OccupancyType.PLANNED]?.get(daycare.id),
+            occupancyConfirmed = occupancyResponses[OccupancyType.CONFIRMED]?.get(daycare.id),
         )
     }
 }

@@ -149,6 +149,7 @@ export { faMagnifyingGlassMinus } from '@fortawesome/free-solid-svg-icons/faMagn
 export { faTimeline as faListTimeline } from '@fortawesome/free-solid-svg-icons/faTimeline'
 export { faReply } from '@fortawesome/free-solid-svg-icons/faReply'
 export { faUtensils } from '@fortawesome/free-solid-svg-icons/faUtensils'
+export { faLineChart } from '@fortawesome/free-solid-svg-icons/faLineChart'
 
 import type * as FreeIconsSet from './free-icons'
 import { typeAssert } from './utils'

@@ -385,6 +385,7 @@ export const fi = {
       occupancyConfirmed: 'Vahvistettu',
       occupancyPlanned: 'Suunniteltu',
       occupancyDraft: 'Hahmoteltu',
+      openGraph: 'Avaa täyttöastegraafi',
       placementDrafts: 'Sijoitushahmotelmat'
     },
     actions: {

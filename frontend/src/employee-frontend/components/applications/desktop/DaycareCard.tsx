@@ -25,6 +25,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faLineChart } from 'lib-icons'
 import { faEyeSlash } from 'lib-icons'
 import { fasExclamation } from 'lib-icons'
 
@@ -34,6 +35,7 @@ import { renderResult } from '../../async-rendering'
 import { getPlacementDesktopDaycareQuery } from '../queries'
 
 import ApplicationCardPlaced from './ApplicationCardPlaced'
+import OccupancyModal from './OccupancyModal'
 
 export default React.memo(function DaycareCard({
   daycare,
@@ -77,11 +79,17 @@ export default React.memo(function DaycareCard({
       ),
     [unitDetails, applications]
   )
+
+  const [isGraphOpen, { on: openGraph, off: closeGraph }] = useBoolean(false)
+
   const [placementDraftsOpen, { toggle: togglePlacementDraftsOpen }] =
     useBoolean(true)
 
   return (
     <Card ref={ref} $highlighted={highlighted}>
+      {isGraphOpen && unitDetails.isSuccess && (
+        <OccupancyModal daycare={unitDetails.value} onClose={closeGraph} />
+      )}
       <FixedSpaceColumn spacing="s">
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
@@ -108,16 +116,29 @@ export default React.memo(function DaycareCard({
               </Tooltip>
             )}
           </FixedSpaceRow>
-          <Tooltip
-            tooltip={i18n.applications.placementDesktop.hideUnit}
-            delayed
-          >
-            <IconOnlyButton
-              icon={faEyeSlash}
-              aria-label={i18n.applications.placementDesktop.hideUnit}
-              onClick={onRemoveFromShownDaycares}
-            />
-          </Tooltip>
+          <FixedSpaceRow spacing="xs">
+            <Tooltip
+              tooltip={i18n.applications.placementDesktop.openGraph}
+              delayed
+            >
+              <IconOnlyButton
+                icon={faLineChart}
+                aria-label={i18n.applications.placementDesktop.openGraph}
+                onClick={openGraph}
+                disabled={!unitDetails.isSuccess || unitDetails.isReloading}
+              />
+            </Tooltip>
+            <Tooltip
+              tooltip={i18n.applications.placementDesktop.hideUnit}
+              delayed
+            >
+              <IconOnlyButton
+                icon={faEyeSlash}
+                aria-label={i18n.applications.placementDesktop.hideUnit}
+                onClick={onRemoveFromShownDaycares}
+              />
+            </Tooltip>
+          </FixedSpaceRow>
         </FixedSpaceRow>
 
         {renderResult(
@@ -129,19 +150,25 @@ export default React.memo(function DaycareCard({
                   <Label>
                     {i18n.applications.placementDesktop.occupancyConfirmed}
                   </Label>
-                  <span>{unitDetails.maxOccupancyConfirmed ?? '??'} %</span>
+                  <span>
+                    {unitDetails.occupancyConfirmed?.max?.percentage ?? '??'} %
+                  </span>
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xxs">
                   <Label>
                     {i18n.applications.placementDesktop.occupancyPlanned}
                   </Label>
-                  <span>{unitDetails.maxOccupancyPlanned ?? '??'} %</span>
+                  <span>
+                    {unitDetails.occupancyPlanned?.max?.percentage ?? '??'} %
+                  </span>
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xxs">
                   <Label>
                     {i18n.applications.placementDesktop.occupancyDraft}
                   </Label>
-                  <span>{unitDetails.maxOccupancyDraft ?? '??'} %</span>
+                  <span>
+                    {unitDetails.occupancyDraft?.max?.percentage ?? '??'} %
+                  </span>
                 </FixedSpaceColumn>
               </FixedSpaceRow>
               <Gap size="xs" />
