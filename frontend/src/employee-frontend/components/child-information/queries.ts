@@ -38,8 +38,10 @@ import {
   createAssistanceNeedPreschoolDecision,
   createAssistanceNeedVoucherCoefficient,
   decideAssistanceNeedPreschoolDecision,
+  deleteAssistanceNeedDecision,
   deleteAssistanceNeedPreschoolDecision,
   deleteAssistanceNeedVoucherCoefficient,
+  getAssistanceNeedDecisions,
   getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisions,
   getAssistanceNeedVoucherCoefficients,
@@ -415,6 +417,8 @@ export const deleteOtherAssistanceMeasureMutation = q.parametricMutation<{
   ({ childId }) => assistanceQuery({ child: childId })
 ])
 
+export const assistanceNeedDecisionsQuery = q.query(getAssistanceNeedDecisions)
+
 export const assistanceNeedDecisionMetadataQuery = q.query(
   getAssistanceNeedDecisionMetadata
 )
@@ -435,6 +439,12 @@ export const assistanceNeedPreschoolDecisionMakerOptionsQuery =
 export const assistanceNeedPreschoolDecisionMetadataQuery = q.query(
   getAssistanceNeedPreschoolDecisionMetadata
 )
+
+export const deleteAssistanceNeedDecisionMutation = q.parametricMutation<{
+  childId: ChildId
+}>()(deleteAssistanceNeedDecision, [
+  ({ childId }) => assistanceNeedDecisionsQuery({ childId })
+])
 
 export const createAssistanceNeedPreschoolDecisionMutation = q.mutation(
   createAssistanceNeedPreschoolDecision,

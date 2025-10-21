@@ -5,13 +5,11 @@
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   AssistanceNeedDecisionId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
-import type { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
@@ -19,19 +17,14 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
-import {
-  deleteAssistanceNeedDecision,
-  getAssistanceNeedDecisions
-} from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
-
-const getAssistanceNeedDecisionsResult = wrapResult(getAssistanceNeedDecisions)
-const deleteAssistanceNeedDecisionResult = wrapResult(
-  deleteAssistanceNeedDecision
-)
+import {
+  assistanceNeedDecisionsQuery,
+  deleteAssistanceNeedDecisionMutation
+} from './queries'
 
 export interface Props {
   id: ChildId
@@ -42,9 +35,10 @@ export default React.memo(function AssistanceNeedDecisionSection({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [assistanceNeedDecisions, reloadDecisions] = useApiState(
-    () => getAssistanceNeedDecisionsResult({ childId: id }),
-    [id]
+  const assistanceNeedDecisionsResult = useQueryResult(
+    assistanceNeedDecisionsQuery({
+      childId: id
+    })
   )
 
   const [removingDecision, setRemovingDecision] =
@@ -54,12 +48,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
     <div>
       {!!removingDecision && (
         <DeleteDecisionModal
-          onClose={(shouldRefresh) => {
-            setRemovingDecision(undefined)
-            if (shouldRefresh) {
-              void reloadDecisions()
-            }
-          }}
+          onClose={() => setRemovingDecision(undefined)}
           childId={id}
           decisionId={removingDecision}
         />
@@ -72,7 +61,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
       <InfoBox
         message={i18n.childInformation.assistanceNeedDecision.deprecated}
       />
-      {renderResult(assistanceNeedDecisions, (decisions) =>
+      {renderResult(assistanceNeedDecisionsResult, (decisions) =>
         decisions.length === 0 ? null : (
           <Table data-qa="table-of-assistance-need-decisions">
             <Thead>
@@ -124,14 +113,19 @@ export default React.memo(function AssistanceNeedDecisionSection({
 })
 
 const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
+  childId,
   decisionId,
   onClose
 }: {
-  childId: UUID
+  childId: ChildId
   decisionId: AssistanceNeedDecisionId
-  onClose: (shouldRefresh: boolean) => void
+  onClose: () => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: deleteAssistanceNeedDecision } = useMutation(
+    deleteAssistanceNeedDecisionMutation
+  )
+
   return (
     <InfoModal
       type="warning"
@@ -139,13 +133,13 @@ const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
       text={i18n.childInformation.assistanceNeedDecision.modal.description}
       icon={faQuestion}
       reject={{
-        action: () => onClose(false),
+        action: () => onClose(),
         label: i18n.common.doNotRemove
       }}
       resolve={{
         async action() {
-          await deleteAssistanceNeedDecisionResult({ id: decisionId })
-          onClose(true)
+          await deleteAssistanceNeedDecision({ id: decisionId, childId })
+          onClose()
         },
         label: i18n.childInformation.assistanceNeedDecision.modal.delete
       }}
