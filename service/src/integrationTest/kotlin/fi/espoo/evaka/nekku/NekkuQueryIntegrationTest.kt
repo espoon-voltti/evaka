@@ -546,6 +546,18 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 eventType = CalendarEventType.DAYCARE_EVENT,
                 nekkuUnorderedMeals = listOf(NekkuProductMealTime.BREAKFAST),
             )
+        val event4 =
+            DevCalendarEvent(
+                title = "Aiempi tapaus",
+                description = "Tätä ei mukaan vähennyksiin",
+                period = LocalDate.of(2025, 5, 12).toFiniteDateRange(),
+                modifiedAt =
+                    HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
+                modifiedBy = employee.evakaUserId,
+                eventType = CalendarEventType.DAYCARE_EVENT,
+                nekkuUnorderedMeals = listOf(NekkuProductMealTime.BREAKFAST),
+            )
+
         val eventAttendee1 =
             DevCalendarEventAttendee(
                 calendarEventId = event1.id,
@@ -567,6 +579,13 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 groupId = group.id,
                 childId = child2.id,
             )
+        val eventAttendee4 =
+            DevCalendarEventAttendee(
+                calendarEventId = event4.id,
+                unitId = daycare.id,
+                groupId = group.id,
+                childId = child1.id,
+            )
 
         db.transaction { tx ->
             tx.insert(area)
@@ -578,9 +597,11 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(event1)
             tx.insert(event2)
             tx.insert(event3)
+            tx.insert(event4)
             tx.insert(eventAttendee1)
             tx.insert(eventAttendee2)
             tx.insert(eventAttendee3)
+            tx.insert(eventAttendee4)
 
             val result =
                 tx.getChildSpecificEventOrderReductions(group.id, LocalDate.of(2025, 5, 14))
