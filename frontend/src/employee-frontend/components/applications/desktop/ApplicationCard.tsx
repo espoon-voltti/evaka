@@ -151,36 +151,56 @@ export default React.memo(function ApplicationCard({
                   data-qa="service-worker-note"
                 />
               </Tooltip>
-              <a
-                href={`/employee/applications/${application.id}`}
-                target="_blank"
-                rel="noreferrer"
+              <Tooltip
+                tooltip={i18n.applications.placementDesktop.openApplication}
+                delayed
               >
-                <IconOnlyButton icon={faFile} aria-label={i18n.common.open} />
-              </a>
+                <a
+                  href={`/employee/applications/${application.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <IconOnlyButton icon={faFile} aria-label={i18n.common.open} />
+                </a>
+              </Tooltip>
             </FixedSpaceRow>
           </FixedSpaceRow>
         </FixedSpaceRow>
         <FixedSpaceRow>
           <div style={{ width: '22%' }}>
-            <DateOfBirthInfo application={application} />
+            <Tooltip
+              tooltip={i18n.applications.placementDesktop.birthDate}
+              delayed
+            >
+              <DateOfBirthInfo application={application} />
+            </Tooltip>
           </div>
-          <FixedSpaceRow
-            spacing="xs"
-            alignItems="center"
-            style={{ width: '22%' }}
-          >
-            <RoundIcon content={faSection} color={colors.main.m1} size="m" />
-            <div>{application.dueDate?.format() ?? '-'}</div>
-          </FixedSpaceRow>
-          <FixedSpaceRow
-            spacing="xs"
-            alignItems="center"
-            style={{ width: '22%' }}
-          >
-            <RoundIcon content={faPlay} color={colors.main.m1} size="m" />
-            <div>{application.startDate?.format() ?? '-'}</div>
-          </FixedSpaceRow>
+          <div style={{ width: '22%' }}>
+            <Tooltip
+              tooltip={i18n.applications.placementDesktop.dueDate}
+              delayed
+            >
+              <FixedSpaceRow spacing="xs" alignItems="center">
+                <RoundIcon
+                  content={faSection}
+                  color={colors.main.m1}
+                  size="m"
+                />
+                <div>{application.dueDate?.format() ?? '-'}</div>
+              </FixedSpaceRow>
+            </Tooltip>
+          </div>
+          <div style={{ width: '22%' }}>
+            <Tooltip
+              tooltip={i18n.applications.placementDesktop.preferredStartDate}
+              delayed
+            >
+              <FixedSpaceRow spacing="xs" alignItems="center">
+                <RoundIcon content={faPlay} color={colors.main.m1} size="m" />
+                <div>{application.startDate?.format() ?? '-'}</div>
+              </FixedSpaceRow>
+            </Tooltip>
+          </div>
           <FixedSpaceRow
             spacing="xs"
             alignItems="center"

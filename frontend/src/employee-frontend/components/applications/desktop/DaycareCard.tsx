@@ -103,11 +103,16 @@ export default React.memo(function DaycareCard({
               </Tooltip>
             )}
           </FixedSpaceRow>
-          <IconOnlyButton
-            icon={faEyeSlash}
-            aria-label={i18n.applications.placementDesktop.hideUnit}
-            onClick={onRemoveFromShownDaycares}
-          />
+          <Tooltip
+            tooltip={i18n.applications.placementDesktop.hideUnit}
+            delayed
+          >
+            <IconOnlyButton
+              icon={faEyeSlash}
+              aria-label={i18n.applications.placementDesktop.hideUnit}
+              onClick={onRemoveFromShownDaycares}
+            />
+          </Tooltip>
         </FixedSpaceRow>
 
         {renderResult(
