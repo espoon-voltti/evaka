@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -23,12 +24,14 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.isWeekend
+import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -790,6 +793,88 @@ internal class AttendanceReservationReportByChildTest :
         )
     }
 
+    @Test
+    fun `shift care service need is recognized correctly`() {
+        val startDate = LocalDate.of(2022, 10, 24)
+        val endDate = LocalDate.of(2022, 10, 27)
+        db.transaction { tx ->
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = startDate,
+                    endDate = startDate,
+                    optionId = snDaycareFullDay35.id,
+                    confirmedBy = admin.evakaUserId,
+                    shiftCare = ShiftCareType.FULL,
+                )
+            )
+
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = startDate.plusDays(1),
+                    endDate = startDate.plusDays(1),
+                    optionId = snDaycareFullDay35.id,
+                    confirmedBy = admin.evakaUserId,
+                    shiftCare = ShiftCareType.NONE,
+                )
+            )
+
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = startDate.plusDays(2),
+                    endDate = startDate.plusDays(2),
+                    optionId = snDaycareFullDay35.id,
+                    confirmedBy = admin.evakaUserId,
+                    shiftCare = ShiftCareType.INTERMITTENT,
+                )
+            )
+        }
+
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                            reportItem(child, startDate, reservation = null, shiftCare = true),
+                            reportItem(
+                                child,
+                                startDate.plusDays(1),
+                                reservation = null,
+                                shiftCare = false,
+                            ),
+                            reportItem(
+                                child,
+                                startDate.plusDays(2),
+                                reservation = null,
+                                shiftCare = true,
+                            ),
+                            reportItem(
+                                child,
+                                startDate.plusDays(3),
+                                reservation = null,
+                                shiftCare = false,
+                            ),
+                        ),
+                )
+            ),
+            getReport(startDate, endDate),
+        )
+    }
+
     private fun getReport(
         startDate: LocalDate,
         endDate: LocalDate,
@@ -813,6 +898,7 @@ internal class AttendanceReservationReportByChildTest :
         reservation: TimeRange? = TimeRange(LocalTime.of(8, 15), LocalTime.of(15, 48)),
         fullDayAbsence: Boolean = false,
         backupCare: Boolean = false,
+        shiftCare: Boolean = false,
     ) =
         AttendanceReservationReportByChildItem(
             date,
@@ -823,5 +909,6 @@ internal class AttendanceReservationReportByChildTest :
             reservation,
             fullDayAbsence,
             backupCare,
+            shiftCare,
         )
 }

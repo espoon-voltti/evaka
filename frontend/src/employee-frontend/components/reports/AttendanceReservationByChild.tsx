@@ -34,6 +34,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { getMealOrders } from '../../generated/api-clients/aromi'
@@ -78,6 +79,7 @@ export default React.memo(function AttendanceReservationByChild() {
   const [filterByTime, setFilterByTime] = useState(false)
   const [startTime, setStartTime] = useState<string>('00:00')
   const [endTime, setEndTime] = useState<string>('23:59')
+  const [showOnlyShiftCare, setShowOnlyShiftCare] = useState(false)
 
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const groups = useQueryResult(
@@ -116,10 +118,15 @@ export default React.memo(function AttendanceReservationByChild() {
     () =>
       reportData.map((groups) =>
         groups.map((group) =>
-          toTableData(group, orderBy, activeParams?.timeFilter)
+          toTableData(
+            group,
+            orderBy,
+            activeParams?.timeFilter,
+            showOnlyShiftCare
+          )
         )
       ),
-    [activeParams?.timeFilter, orderBy, reportData]
+    [activeParams?.timeFilter, orderBy, reportData, showOnlyShiftCare]
   )
 
   const sortedUnits = units
@@ -270,31 +277,51 @@ export default React.memo(function AttendanceReservationByChild() {
           if (activeParams === null || report === null) return null
           return (
             <>
+              <Gap size="s" />
+              <FilterRow>
+                <Checkbox
+                  label={
+                    i18n.reports.attendanceReservationByChild.showOnlyShiftCare
+                  }
+                  checked={showOnlyShiftCare}
+                  onChange={setShowOnlyShiftCare}
+                  data-qa="filter-by-shift-care"
+                />
+              </FilterRow>
+
               <ReportDownload
                 data={report.flatMap(({ groupName, rows }) =>
                   transpose(rows).flatMap((row) =>
-                    row.flatMap((item) =>
-                      item
-                        ? {
-                            ...(groupName !== null ? { groupName } : {}),
-                            childName: formatPersonName(
-                              {
-                                lastName: item.childLastName,
-                                firstName: item.childFirstName
-                              },
-                              'Last First'
-                            ),
-                            date: item.date.format(),
-                            fullDayAbsence: item.fullDayAbsence ? 'Poissa' : '',
-                            reservationStartTime: item.fullDayAbsence
-                              ? ''
-                              : (item.reservation?.start.format() ?? '-'),
-                            reservationEndTime: item.fullDayAbsence
-                              ? ''
-                              : (item.reservation?.end.format() ?? '-')
-                          }
-                        : []
-                    )
+                    row
+                      .filter(
+                        (childRow) =>
+                          !showOnlyShiftCare ||
+                          (childRow && childRow.hasShiftCare)
+                      )
+                      .flatMap((item) =>
+                        item
+                          ? {
+                              ...(groupName !== null ? { groupName } : {}),
+                              childName: formatPersonName(
+                                {
+                                  lastName: item.childLastName,
+                                  firstName: item.childFirstName
+                                },
+                                'Last First'
+                              ),
+                              date: item.date.format(),
+                              fullDayAbsence: item.fullDayAbsence
+                                ? 'Poissa'
+                                : '',
+                              reservationStartTime: item.fullDayAbsence
+                                ? ''
+                                : (item.reservation?.start.format() ?? '-'),
+                              reservationEndTime: item.fullDayAbsence
+                                ? ''
+                                : (item.reservation?.end.format() ?? '-')
+                            }
+                          : []
+                      )
                   )
                 )}
                 columns={[
@@ -368,14 +395,15 @@ function validateTimeFilter(
 function toTableData(
   group: AttendanceReservationReportByChildGroup,
   orderBy: OrderBy,
-  timeFilter: TimeRange | undefined
+  timeFilter: TimeRange | undefined,
+  showOnlyShiftCare: boolean
 ): {
   groupId: string | null
   groupName: string | null
   headings: LocalDate[]
   rows: (AttendanceReservationReportByChildItem | undefined)[][]
 } {
-  const filtered =
+  const timeFiltered =
     timeFilter !== undefined
       ? group.items.filter(
           (item) =>
@@ -383,7 +411,11 @@ function toTableData(
             timeFilter.intersection(item.reservation) !== undefined
         )
       : group.items
-  const sorted = sortBy(filtered, [
+
+  const shiftCareFiltered = timeFiltered.filter(
+    (item) => !showOnlyShiftCare || item.hasShiftCare
+  )
+  const sorted = sortBy(shiftCareFiltered, [
     (item) => item.date.formatIso(),
     (item) => {
       if (item.fullDayAbsence) return 'z' // absences last
@@ -577,6 +609,7 @@ const Row = React.memo(function Row({
                 isToday={isToday}
                 isFuture={isFuture}
                 colSpan={2}
+                data-qa="missing-reservation-text"
               >
                 {i18n.reports.attendanceReservationByChild.noReservation}
               </AttendanceReservationReportTd>
