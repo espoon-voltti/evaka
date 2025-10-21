@@ -20,7 +20,9 @@ import { getServiceNeedOptionPublicInfos } from '../../generated/api-clients/ser
 
 const q = new Queries()
 
-export const getApplicationSummariesQuery = q.query(getApplicationSummaries)
+export const getApplicationSummariesQuery = q.query(getApplicationSummaries, {
+  refetchOnWindowFocus: false
+})
 
 export const simpleApplicationActionMutation = q.mutation(
   simpleApplicationAction,
