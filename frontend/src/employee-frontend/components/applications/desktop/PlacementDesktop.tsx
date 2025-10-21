@@ -10,7 +10,8 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
+  useRef
 } from 'react'
 import styled from 'styled-components'
 
@@ -169,23 +170,19 @@ const PlacementDesktopValidated = React.memo(
     }, [highlightedDaycare, daycareRefs])
 
     const [shownDaycares, _setShownDaycares] = useState<PreferredUnit[]>()
-    const setShownDaycares = useCallback(
-      (units: PreferredUnit[]) => {
-        _setShownDaycares(units)
+    const setShownDaycares = useCallback((units: PreferredUnit[]) => {
+      _setShownDaycares(units)
 
-        const newRefs = units.reduce(
+      setDaycareRefs((prev) =>
+        units.reduce(
           (acc, daycare) => ({
             ...acc,
-            [daycare.id]:
-              daycareRefs[daycare.id] ?? React.createRef<HTMLDivElement>()
+            [daycare.id]: prev[daycare.id] ?? React.createRef<HTMLDivElement>()
           }),
           {}
         )
-
-        setDaycareRefs(newRefs)
-      },
-      [daycareRefs]
-    )
+      )
+    }, [])
 
     const otherAvailableUnits = useMemo(
       () =>
@@ -225,7 +222,7 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications, searchedUnits])
+    }, [applications, searchedUnits, setShownDaycares])
 
     const onUpsertApplicationPlacementSuccess = useCallback(
       (
