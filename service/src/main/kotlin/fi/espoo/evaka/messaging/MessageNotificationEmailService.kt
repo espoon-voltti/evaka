@@ -53,7 +53,8 @@ SELECT DISTINCT
         WHEN lower(p.language) = 'en' THEN 'en'
         ELSE 'fi'
     END language,   
-    t.urgent
+    t.urgent,
+    t.application_id
 FROM message m
 JOIN message_recipients mr ON mr.message_id = m.id
 JOIN message_account ma ON ma.id = mr.recipient_id 
@@ -135,6 +136,7 @@ WHERE m.id = ANY(${bind(messageIds)})
                             senderType = sender.type,
                         ),
                         isSenderMunicipalAccount,
+                        msg.applicationId,
                     ),
                 traceId = msg.messageRecipientId.toString(),
             )

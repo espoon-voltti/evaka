@@ -78,6 +78,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val personId: PersonId,
         val language: Language,
         val urgent: Boolean = false,
+        val applicationId: ApplicationId? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }

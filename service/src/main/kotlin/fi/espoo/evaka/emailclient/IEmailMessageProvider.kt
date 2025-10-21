@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.AccountType
 import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HtmlSafe
@@ -88,6 +89,7 @@ interface IEmailMessageProvider {
         language: Language,
         thread: MessageThreadData,
         isSenderMunicipalAccount: Boolean,
+        applicationId: ApplicationId?,
     ): EmailContent = messageNotification(language, thread)
 
     fun childDocumentNotification(
