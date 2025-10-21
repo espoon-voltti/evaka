@@ -78,6 +78,7 @@ class KoskiClient(
                 ophEnv.municipalityCode,
                 msg.key,
                 today,
+                env.startDate,
             )
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }

@@ -1,7 +1,10 @@
 DROP FUNCTION IF EXISTS koski_active_preschool_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preschool_study_right(today date, koski_start_date date);
 DROP FUNCTION IF EXISTS koski_active_preparatory_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preparatory_study_right(today date, koski_start_date date);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
 DROP FUNCTION IF EXISTS koski_placement(today date);
+DROP FUNCTION IF EXISTS koski_placement(today date, koski_start_date date);
 DROP VIEW IF EXISTS koski_unit;
 DROP VIEW IF EXISTS koski_child;
 
@@ -26,7 +29,7 @@ FROM person
 WHERE nullif(social_security_number, '') IS NOT NULL
 OR nullif(oph_person_oid, '') IS NOT NULL;
 
-CREATE FUNCTION koski_placement(today date) RETURNS
+CREATE FUNCTION koski_placement(today date, koski_start_date date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     placements datemultirange, all_placements_in_past bool, last_of_child bool, last_of_type bool
@@ -35,7 +38,7 @@ LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
     SELECT
         child_id, unit_id, type,
-        range_agg(daterange(start_date, end_date, '[]')) AS placements,
+        range_agg(daterange(start_date, end_date, '[]') * daterange(koski_start_date, null, '[]')) AS placements,
         (max(end_date) < today) AS all_placements_in_past,
         bool_or(last_of_child) AS last_of_child,
         bool_or(last_of_type) AS last_of_type
@@ -48,6 +51,7 @@ BEGIN ATOMIC
         FROM placement
         WHERE start_date <= today
         AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
+        AND (koski_start_date IS NULL OR koski_start_date <= placement.end_date)
         WINDOW
             child AS (PARTITION BY child_id ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
             child_type AS (PARTITION BY child_id, placement.type::koski_study_right_type ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
@@ -56,7 +60,7 @@ BEGIN ATOMIC
     GROUP BY child_id, unit_id, type;
 END;
 
-CREATE FUNCTION koski_active_preschool_study_right(today date) RETURNS
+CREATE FUNCTION koski_active_preschool_study_right(today date, koski_start_date date) RETURNS
 TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preschool_input_data)
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
@@ -78,7 +82,7 @@ BEGIN ATOMIC
             coalesce(child_support_and_extended_compulsory_education, '{}'),
             coalesce(child_support_and_old_extended_compulsory_education, '{}')
         ) AS input_data
-    FROM koski_placement(today) p
+    FROM koski_placement(today, koski_start_date) p
     JOIN koski_unit d ON p.unit_id = d.id
     JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit
@@ -115,7 +119,7 @@ BEGIN ATOMIC
     AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
 END;
 
-CREATE FUNCTION koski_active_preparatory_study_right(today date) RETURNS
+CREATE FUNCTION koski_active_preparatory_study_right(today date, koski_start_date date) RETURNS
 TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preparatory_input_data)
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
@@ -132,7 +136,7 @@ BEGIN ATOMIC
             last_of_type,
             coalesce(absences, '{}')
         ) AS input_data
-    FROM koski_placement(today) p
+    FROM koski_placement(today, koski_start_date) p
     JOIN koski_unit d ON p.unit_id = d.id
     JOIN LATERAL (
         SELECT jsonb_object_agg(absence_type, dates) AS absences
@@ -171,7 +175,7 @@ BEGIN ATOMIC
     WHERE EXISTS (SELECT FROM koski_child WHERE koski_child.id = ksr.child_id)
     AND NOT EXISTS (
         SELECT 1
-        FROM koski_placement(today) kp
+        FROM koski_placement(today, null) kp
         WHERE (kp.child_id, kp.unit_id, kp.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
     AND ksr.study_right_oid IS NOT NULL;

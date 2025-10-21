@@ -40,14 +40,19 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var koskiEndpoint: MockKoskiEndpoint
     private lateinit var koskiTester: KoskiTester
+    private lateinit var koskiEnv: KoskiEnv
 
     private val childDuplicated =
         DevPerson(
@@ -77,15 +82,15 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeAll
     fun initDependencies() {
+        koskiEnv =
+            spy(
+                KoskiEnv.fromEnvironment(env)
+                    .copy(url = "http://localhost:$httpPort/public/mock-koski")
+            )
         koskiTester =
             KoskiTester(
                 db,
-                KoskiClient(
-                    KoskiEnv.fromEnvironment(env)
-                        .copy(url = "http://localhost:$httpPort/public/mock-koski"),
-                    OphEnv.fromEnvironment(env),
-                    asyncJobRunner = null,
-                ),
+                KoskiClient(koskiEnv, OphEnv.fromEnvironment(env), asyncJobRunner = null),
             )
     }
 
@@ -102,6 +107,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.setUnitOids()
         }
         koskiEndpoint.clearData()
+    }
+
+    @AfterEach
+    fun cleanup() {
+        if (this::koskiEnv.isInitialized) reset(koskiEnv)
     }
 
     @Test
@@ -147,11 +157,39 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `won't send data before koski start date`() {
+        insertPlacement()
+
+        val startDate = preschoolTerm2019.end.plusDays(1)
+        whenever(koskiEnv.startDate).thenReturn(startDate)
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1), koskiEnv)
+
+        assertEquals(emptyList(), db.read { it.getStoredResults() })
+    }
+
+    @Test
+    fun `koski start date is respected`() {
+        insertPlacement()
+
+        val startDate = preschoolTerm2019.start.plusDays(1)
+        whenever(koskiEnv.startDate).thenReturn(startDate)
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1), koskiEnv)
+
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(startDate),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2019.end),
+            ),
+            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot,
+        )
+    }
+
+    @Test
     fun `4xx errors don't fail the upload, and the study right remains in pending state until upload succeeds`() {
         val daycare = testDaycare
         val today = preschoolTerm2019.end.plusDays(1)
 
-        fun countPendingStudyRights() = db.read { it.getPendingStudyRights(today) }.size
+        fun countPendingStudyRights() = db.read { it.getPendingStudyRights(today, null) }.size
 
         db.transaction { it.setUnitOid(daycare.id, MockKoskiEndpoint.UNIT_OID_THAT_TRIGGERS_400) }
         insertPlacement(daycareId = daycare.id)
