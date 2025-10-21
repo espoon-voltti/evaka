@@ -1042,7 +1042,9 @@ FROM (
     SELECT cea.child_id as child_id, UNNEST(ce.nekku_unordered_meals) AS meal
     FROM calendar_event ce
     JOIN calendar_event_attendee cea ON ce.id = cea.calendar_event_id
-    WHERE cea.group_id = ${bind(groupId)} AND child_id IS NOT NULL
+    WHERE cea.group_id = ${bind(groupId)}
+    AND cea.child_id IS NOT NULL
+    AND ${bind(date)} <@ ce.period
 )
 GROUP BY child_id
         """
