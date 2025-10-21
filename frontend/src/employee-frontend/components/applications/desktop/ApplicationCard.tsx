@@ -218,7 +218,11 @@ export default React.memo(function ApplicationCard({
           </LabelLike>
           <FixedSpaceColumn spacing="xs">
             {application.preferredUnits.map((unit, index) => (
-              <FixedSpaceRow key={index} alignItems="center">
+              <FixedSpaceRow
+                key={index}
+                alignItems="center"
+                style={{ minHeight: '24px' }}
+              >
                 <UnitListItem
                   $selection={
                     application.placementDraft === null
@@ -499,14 +503,13 @@ const Card = styled.div<{ $placed: boolean }>`
   min-width: 500px;
   max-width: 630px;
   width: 100%;
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   ${(p) =>
     p.$placed
       ? css`
-          border: 2px solid ${p.theme.colors.status.success};
+          box-shadow: 0 0 4px 1px ${p.theme.colors.status.success};
         `
-      : css`
-          border: 1px solid ${p.theme.colors.grayscale.g35};
-        `}
+      : ''}
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
