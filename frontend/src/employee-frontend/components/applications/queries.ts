@@ -51,8 +51,8 @@ export const upsertApplicationPlacementDraftMutation = q.parametricMutation<{
 }>()(upsertApplicationPlacementDraft, [
   ({ body: { unitId } }) =>
     unitId ? getPlacementDesktopDaycareQuery({ unitId }) : undefined,
-  ({ previousUnitId }) =>
-    previousUnitId
+  ({ previousUnitId, body }) =>
+    previousUnitId && previousUnitId !== body.unitId
       ? getPlacementDesktopDaycareQuery({ unitId: previousUnitId })
       : undefined
 ])
@@ -74,5 +74,8 @@ export const getPlacementDesktopDaycareQuery = q.prefixedQuery(
 )
 
 export const getPlacementDesktopDaycaresQuery = q.query(
-  getPlacementDesktopDaycares
+  getPlacementDesktopDaycares,
+  {
+    refetchOnWindowFocus: false
+  }
 )
