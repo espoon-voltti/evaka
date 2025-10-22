@@ -431,7 +431,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `transition period preschool assistance info is converted to Koski extra information`() {
+    fun `transition period preschool assistance info (vammainen) is converted to Koski extra information`() {
         val assistance =
             DevPreschoolAssistance(
                 modifiedBy = testDecisionMaker_1.toEvakaUser(),
@@ -449,6 +449,36 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen = listOf(Aikajakso.from(assistance.validDuring)),
                 vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = Aikajakso.from(assistance.validDuring),
+                varhennetunOppivelvollisuudenJaksot = null,
+                kuljetusetu = null,
+                erityisenTuenPäätökset = null,
+                tuenPäätöksenJaksot = listOf(Tukijakso.from(assistance.validDuring)),
+            ),
+            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot,
+        )
+    }
+
+    @Test
+    fun `transition period preschool assistance info (vaikeasti vammainen) is converted to Koski extra information`() {
+        val assistance =
+            DevPreschoolAssistance(
+                modifiedBy = testDecisionMaker_1.toEvakaUser(),
+                childId = testChild_1.id,
+                validDuring = testPeriod(0L to 1L),
+                level =
+                    PreschoolAssistanceLevel.CHILD_SUPPORT_2_AND_OLD_EXTENDED_COMPULSORY_EDUCATION,
+            )
+
+        insertPlacement(testChild_1)
+        db.transaction { tx -> tx.insert(assistance) }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        assertEquals(
+            Lisätiedot(
+                vammainen = null,
+                vaikeastiVammainen = listOf(Aikajakso.from(assistance.validDuring)),
                 pidennettyOppivelvollisuus = Aikajakso.from(assistance.validDuring),
                 varhennetunOppivelvollisuudenJaksot = null,
                 kuljetusetu = null,
