@@ -133,6 +133,7 @@ export type TooltipProps = BaseProps & {
   position?: Position
   width?: Width
   className?: string
+  delayed?: boolean
 }
 
 const defaultPosition: Position = 'bottom'
@@ -140,9 +141,26 @@ const defaultPosition: Position = 'bottom'
 export default React.memo(function Tooltip({
   children,
   className,
+  delayed,
   ...props
 }: TooltipProps) {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, _setIsHovered] = useState(false)
+  const [isHoveredLong, setIsHoveredLong] = useState(false)
+  const active = delayed ? isHoveredLong : isHovered
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const setIsHovered = useCallback((hovered: boolean) => {
+    _setIsHovered(hovered)
+
+    if (timerRef.current) clearTimeout(timerRef.current)
+
+    if (hovered) {
+      timerRef.current = setTimeout(() => {
+        setIsHoveredLong(true)
+      }, 800)
+    } else {
+      setIsHoveredLong(false)
+    }
+  }, [])
   const wrapperRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
 
@@ -151,7 +169,7 @@ export default React.memo(function Tooltip({
   useFloatingPositioning({
     anchorRef: wrapperRef,
     floatingRef: tooltipRef,
-    active: isHovered,
+    active: active,
     position,
     width: props.width ?? 'small'
   })
@@ -164,7 +182,7 @@ export default React.memo(function Tooltip({
       onMouseLeave={() => setIsHovered(false)}
     >
       {children}
-      {isHovered &&
+      {active &&
         createPortal(
           <TooltipWithoutAnchor ref={tooltipRef} {...props} />,
           document.getElementById('tooltip-container') ?? document.body
