@@ -51,8 +51,8 @@ export const upsertApplicationPlacementDraftMutation = q.parametricMutation<{
 }>()(upsertApplicationPlacementDraft, [
   ({ body: { unitId } }) =>
     unitId ? getPlacementDesktopDaycareQuery({ unitId }) : undefined,
-  ({ previousUnitId }) =>
-    previousUnitId
+  ({ previousUnitId, body }) =>
+    previousUnitId && previousUnitId !== body.unitId
       ? getPlacementDesktopDaycareQuery({ unitId: previousUnitId })
       : undefined
 ])
