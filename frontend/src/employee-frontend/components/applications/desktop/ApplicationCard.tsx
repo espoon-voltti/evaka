@@ -62,7 +62,7 @@ export default React.memo(function ApplicationCard({
   onUpsertApplicationPlacementSuccess,
   onDeleteApplicationPlacementSuccess,
   onMutateApplicationPlacementFailure,
-  onAddToShownDaycares
+  onAddOrHighlightDaycare
 }: {
   application: ApplicationSummary
   shownDaycares: PreferredUnit[]
@@ -74,7 +74,7 @@ export default React.memo(function ApplicationCard({
   ) => void
   onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
   onMutateApplicationPlacementFailure: () => void
-  onAddToShownDaycares: (unit: PreferredUnit) => void
+  onAddOrHighlightDaycare: (unit: PreferredUnit) => void
 }) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
@@ -206,6 +206,7 @@ export default React.memo(function ApplicationCard({
                         ? 'this'
                         : 'other'
                   }
+                  onClick={() => onAddOrHighlightDaycare(unit)}
                 >
                   {index + 1}. {unit.name}
                 </UnitListItem>
@@ -287,7 +288,7 @@ export default React.memo(function ApplicationCard({
                           appearance="inline"
                           icon={faEye}
                           text={i18n.applications.placementDesktop.showUnit}
-                          onClick={() => onAddToShownDaycares(unit)}
+                          onClick={() => onAddOrHighlightDaycare(unit)}
                         />
                       )}
                     </>
@@ -302,7 +303,13 @@ export default React.memo(function ApplicationCard({
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <UnitListItem $selection="this">
+                  <UnitListItem
+                    $selection="this"
+                    onClick={() =>
+                      application.placementDraft &&
+                      onAddOrHighlightDaycare(application.placementDraft.unit)
+                    }
+                  >
                     {i18n.applications.placementDesktop.other}:{' '}
                     {application.placementDraft.unit.name}
                   </UnitListItem>
@@ -337,7 +344,9 @@ export default React.memo(function ApplicationCard({
                       text={i18n.applications.placementDesktop.showUnit}
                       onClick={() => {
                         if (application.placementDraft) {
-                          onAddToShownDaycares(application.placementDraft.unit)
+                          onAddOrHighlightDaycare(
+                            application.placementDraft.unit
+                          )
                         }
                       }}
                     />
@@ -355,7 +364,7 @@ export default React.memo(function ApplicationCard({
                 selectedItem={null}
                 onChange={(unit) => {
                   if (unit) {
-                    onAddToShownDaycares(unit)
+                    onAddOrHighlightDaycare(unit)
                     upsertApplicationPlacementDraft({
                       applicationId: application.id,
                       previousUnitId:
@@ -466,7 +475,9 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  width: 580px;
+  min-width: 500px;
+  max-width: 630px;
+  width: 100%;
   ${(p) =>
     p.$placed
       ? css`
@@ -480,12 +491,15 @@ const Card = styled.div<{ $placed: boolean }>`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-const UnitListItem = styled.span<{ $selection: 'this' | 'other' | 'none' }>`
-  width: 210px;
+const UnitListItem = styled.span<{
+  $selection: 'this' | 'other' | 'none'
+}>`
+  width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-left: ${defaultMargins.xs};
+  cursor: pointer;
 
   ${(p) =>
     p.$selection === 'this'

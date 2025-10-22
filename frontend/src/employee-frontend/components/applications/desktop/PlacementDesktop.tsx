@@ -10,7 +10,8 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
+  useRef
 } from 'react'
 import styled from 'styled-components'
 
@@ -35,7 +36,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { unitsQuery } from '../../../queries'
 import { ApplicationUIContext } from '../../../state/application-ui'
@@ -126,7 +127,62 @@ const PlacementDesktopValidated = React.memo(
       Record<ApplicationId, ApplicationSummaryPlacementDraft | undefined>
     >({})
 
-    const [shownDaycares, setShownDaycares] = useState<PreferredUnit[]>()
+    const daycareListRef = useRef<HTMLDivElement>(null)
+    const [daycareRefs, setDaycareRefs] = useState<
+      Record<DaycareId, React.RefObject<HTMLDivElement>>
+    >({})
+
+    // set this to scroll to a specific daycare and trigger an animation
+    // as soon as it's visible and a ref is available
+    const [highlightedDaycare, setHighlightedDaycareDaycare] =
+      useState<DaycareId | null>(null)
+    const resetHighlightRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    useEffect(() => {
+      // useEffect is needed to wait for the DOM to update
+      if (
+        highlightedDaycare &&
+        daycareRefs[highlightedDaycare]?.current &&
+        daycareListRef.current
+      ) {
+        const daycareElement = daycareRefs[highlightedDaycare].current
+        const daycareListElement = daycareListRef.current
+        daycareListElement.scrollTo({
+          top: daycareElement.offsetTop - daycareListElement.offsetTop,
+          behavior: 'smooth'
+        })
+      }
+
+      // reset the highlight after the animation has run, so that it can be retriggered
+      if (resetHighlightRef.current) {
+        clearTimeout(resetHighlightRef.current)
+      }
+      if (highlightedDaycare) {
+        resetHighlightRef.current = setTimeout(() => {
+          setHighlightedDaycareDaycare(null)
+        }, 1000)
+      }
+
+      return () => {
+        if (resetHighlightRef.current) {
+          clearTimeout(resetHighlightRef.current)
+        }
+      }
+    }, [highlightedDaycare, daycareRefs])
+
+    const [shownDaycares, _setShownDaycares] = useState<PreferredUnit[]>()
+    const setShownDaycares = useCallback((units: PreferredUnit[]) => {
+      _setShownDaycares(units)
+
+      setDaycareRefs((prev) =>
+        units.reduce(
+          (acc, daycare) => ({
+            ...acc,
+            [daycare.id]: prev[daycare.id] ?? React.createRef<HTMLDivElement>()
+          }),
+          {}
+        )
+      )
+    }, [])
 
     const otherAvailableUnits = useMemo(
       () =>
@@ -166,7 +222,7 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications, searchedUnits])
+    }, [applications, searchedUnits, setShownDaycares])
 
     const onUpsertApplicationPlacementSuccess = useCallback(
       (
@@ -199,22 +255,28 @@ const PlacementDesktopValidated = React.memo(
       })
     }, [queryClient])
 
-    const onAddToShownDaycares = useCallback((unit: PreferredUnit) => {
-      setShownDaycares((prev) =>
-        prev
-          ? orderBy(
-              [...prev.filter((u) => u.id !== unit.id), unit],
+    const onAddToShownDaycares = useCallback(
+      (unit: PreferredUnit) => {
+        if (shownDaycares) {
+          setShownDaycares(
+            orderBy(
+              [...shownDaycares.filter((u) => u.id !== unit.id), unit],
               (u) => u.name
             )
-          : prev
-      )
-    }, [])
+          )
+        }
+      },
+      [shownDaycares, setShownDaycares]
+    )
 
-    const onRemoveFromShownDaycares = useCallback((unitId: DaycareId) => {
-      setShownDaycares((prev) =>
-        prev ? [...prev.filter((u) => u.id !== unitId)] : prev
-      )
-    }, [])
+    const onRemoveFromShownDaycares = useCallback(
+      (unitId: DaycareId) => {
+        if (shownDaycares) {
+          setShownDaycares(shownDaycares.filter((u) => u.id !== unitId))
+        }
+      },
+      [shownDaycares, setShownDaycares]
+    )
 
     return (
       <FixedSpaceColumn spacing="L">
@@ -231,7 +293,7 @@ const PlacementDesktopValidated = React.memo(
           <div>{occupancyPeriodStart.addMonths(3).format()}</div>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <DaycaresColumn>
+          <DaycaresColumn ref={daycareListRef}>
             <div>
               {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
               {shownDaycares?.length}
@@ -249,6 +311,8 @@ const PlacementDesktopValidated = React.memo(
             {shownDaycares !== undefined && (
               <PrefetchedDaycares
                 shownDaycares={shownDaycares}
+                daycareRefs={daycareRefs}
+                highlightedDaycare={highlightedDaycare}
                 applications={applications}
                 onDeleteApplicationPlacementSuccess={
                   onDeleteApplicationPlacementSuccess
@@ -256,7 +320,6 @@ const PlacementDesktopValidated = React.memo(
                 onMutateApplicationPlacementFailure={
                   onMutateApplicationPlacementFailure
                 }
-                onAddToShownDaycares={onAddToShownDaycares}
                 onRemoveFromShownDaycares={onRemoveFromShownDaycares}
               />
             )}
@@ -268,7 +331,7 @@ const PlacementDesktopValidated = React.memo(
               {applications.length}
             </div>
             <Gap size="s" />
-            <FixedSpaceColumn alignItems="flex-end">
+            <FixedSpaceColumn alignItems="flex-end" style={{ flexGrow: 1 }}>
               {shownDaycares !== undefined &&
                 applications.map((application) => (
                   <ApplicationCard
@@ -289,7 +352,10 @@ const PlacementDesktopValidated = React.memo(
                     onMutateApplicationPlacementFailure={
                       onMutateApplicationPlacementFailure
                     }
-                    onAddToShownDaycares={onAddToShownDaycares}
+                    onAddOrHighlightDaycare={(unit) => {
+                      onAddToShownDaycares(unit)
+                      setHighlightedDaycareDaycare(unit.id)
+                    }}
                   />
                 ))}
             </FixedSpaceColumn>
@@ -302,16 +368,19 @@ const PlacementDesktopValidated = React.memo(
 
 const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   shownDaycares,
+  daycareRefs,
+  highlightedDaycare,
   applications,
   onDeleteApplicationPlacementSuccess,
   onMutateApplicationPlacementFailure,
   onRemoveFromShownDaycares
 }: {
   shownDaycares: PreferredUnit[]
+  daycareRefs: Record<DaycareId, React.RefObject<HTMLDivElement | null>>
+  highlightedDaycare: DaycareId | null
   applications: ApplicationSummary[]
   onDeleteApplicationPlacementSuccess: (applicationId: ApplicationId) => void
   onMutateApplicationPlacementFailure: () => void
-  onAddToShownDaycares: (unit: PreferredUnit) => void
   onRemoveFromShownDaycares: (unitId: DaycareId) => void
 }) {
   const queryClient = useQueryClient()
@@ -344,6 +413,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
         <DaycareCard
           key={daycare.id}
           daycare={daycare}
+          highlighted={daycare.id === highlightedDaycare}
           applications={applications}
           onDeleteApplicationPlacementSuccess={
             onDeleteApplicationPlacementSuccess
@@ -354,6 +424,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
           onRemoveFromShownDaycares={() =>
             onRemoveFromShownDaycares(daycare.id)
           }
+          ref={daycareRefs[daycare.id]}
         />
       ))}
     </FixedSpaceColumn>
@@ -363,8 +434,15 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 const DaycaresColumn = styled.div`
   flex-grow: 1;
   max-width: 40%;
+  padding-left: ${defaultMargins.xs};
+  padding-right: ${defaultMargins.m};
+  max-height: 90vh;
+  overflow-y: auto;
 `
 
 const ApplicationsColumn = styled.div`
-  flex-grow: 2;
+  flex-grow: 1;
+  padding-right: ${defaultMargins.m};
+  max-height: 90vh;
+  overflow-y: auto;
 `
