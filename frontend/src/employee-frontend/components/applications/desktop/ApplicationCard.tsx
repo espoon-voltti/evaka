@@ -162,15 +162,15 @@ export default React.memo(function ApplicationCard({
           </FixedSpaceRow>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <div style={{ width: '22%' }}>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.birthDate}
               delayed
             >
               <DateOfBirthInfo application={application} />
             </Tooltip>
-          </div>
-          <div style={{ width: '22%' }}>
+          </DateCol>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.dueDate}
               delayed
@@ -190,8 +190,8 @@ export default React.memo(function ApplicationCard({
                 </div>
               </FixedSpaceRow>
             </Tooltip>
-          </div>
-          <div style={{ width: '22%' }}>
+          </DateCol>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.preferredStartDate}
               delayed
@@ -201,7 +201,7 @@ export default React.memo(function ApplicationCard({
                 <div>{application.startDate?.format() ?? '-'}</div>
               </FixedSpaceRow>
             </Tooltip>
-          </div>
+          </DateCol>
           <FixedSpaceRow
             spacing="xs"
             alignItems="center"
@@ -411,7 +411,7 @@ export default React.memo(function ApplicationCard({
                     .createPlacementDraftToOtherUnit
                 }
                 getItemLabel={(unit) => unit.name}
-                isLoading={updatePending || deletePending}
+                disabled={updatePending || deletePending}
                 fullWidth
               />
             )}
@@ -500,9 +500,9 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  min-width: 500px;
-  max-width: 630px;
-  width: 100%;
+  min-width: 480px;
+  max-width: 600px;
+  flex-grow: 1;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   ${(p) =>
     p.$placed
@@ -513,6 +513,10 @@ const Card = styled.div<{ $placed: boolean }>`
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+  @media (max-width: 1407px) {
+    max-width: 480px;
+  }
 `
 
 const UnitListItem = styled.span<{
@@ -535,4 +539,8 @@ const UnitListItem = styled.span<{
             color: ${p.theme.colors.grayscale.g70};
           `
         : ''}
+`
+
+const DateCol = styled.div`
+  width: 120px;
 `

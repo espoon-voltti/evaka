@@ -189,7 +189,7 @@ export default React.memo(function DaycareCard({
 })
 
 const Card = styled.div<{ $highlighted: boolean }>`
-  min-width: 450px;
+  min-width: 400px;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   border-radius: 4px;
   padding: ${defaultMargins.s};

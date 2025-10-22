@@ -342,7 +342,10 @@ const PlacementDesktopValidated = React.memo(
               {applications.length}
             </div>
             <Gap size="s" />
-            <FixedSpaceColumn alignItems="flex-end" style={{ flexGrow: 1 }}>
+            <FixedSpaceColumn
+              alignItems="stretch"
+              style={{ flexGrow: 1, marginLeft: 'auto' }}
+            >
               {shownDaycares !== undefined &&
                 applications.map((application) => (
                   <ApplicationCard
@@ -457,16 +460,16 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 })
 
 const DaycaresColumn = styled.div`
-  flex-grow: 1;
-  max-width: 40%;
-  padding-left: ${defaultMargins.xs};
+  flex-grow: 4;
+  padding-left: ${defaultMargins.s};
   padding-right: ${defaultMargins.m};
   max-height: 90vh;
   overflow-y: auto;
 `
 
 const ApplicationsColumn = styled.div`
-  flex-grow: 1;
+  flex-grow: 5;
+  padding-left: ${defaultMargins.s};
   padding-right: ${defaultMargins.m};
   max-height: 90vh;
   overflow-y: auto;
