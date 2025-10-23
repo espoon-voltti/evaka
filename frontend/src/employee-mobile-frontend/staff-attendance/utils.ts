@@ -98,7 +98,7 @@ const arrivedBeforeMinThresholdTypes = (
 ).filter((type) => staffAttendanceTypes.includes(type))
 
 const arrivedAfterMaxThresholdTypes: StaffAttendanceType[] = (
-  ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE'] as const
+  ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE', 'FLEX'] as const
 ).filter((type) => staffAttendanceTypes.includes(type))
 
 const departedBeforeMinThresholdTypes = (
@@ -107,7 +107,8 @@ const departedBeforeMinThresholdTypes = (
     'TRAINING',
     'JUSTIFIED_CHANGE',
     'SICKNESS',
-    'CHILD_SICKNESS'
+    'CHILD_SICKNESS',
+    'FLEX'
   ] as const
 ).filter((type) => staffAttendanceTypes.includes(type))
 

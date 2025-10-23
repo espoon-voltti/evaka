@@ -184,6 +184,8 @@ private fun roundAttendancesToPlans(
                         StaffAttendanceType.OTHER_WORK -> StampingType.OTHER_WORK
                         StaffAttendanceType.SICKNESS -> StampingType.OTHER_WORK
                         StaffAttendanceType.CHILD_SICKNESS -> StampingType.OTHER_WORK
+                        StaffAttendanceType.FLEX -> StampingType.OTHER_WORK
+                        StaffAttendanceType.PLANNING -> StampingType.OTHER_WORK
                     },
             )
         }

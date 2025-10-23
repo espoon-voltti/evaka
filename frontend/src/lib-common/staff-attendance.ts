@@ -11,7 +11,9 @@ const presentInGroupByType: Record<StaffAttendanceType, boolean> = {
   OVERTIME: true,
   JUSTIFIED_CHANGE: true,
   SICKNESS: false,
-  CHILD_SICKNESS: false
+  CHILD_SICKNESS: false,
+  FLEX: false,
+  PLANNING: true
 }
 
 export const presentInGroup = (type: StaffAttendanceType): boolean =>
