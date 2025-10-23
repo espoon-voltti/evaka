@@ -15,7 +15,11 @@ fun getNextReservableMonday(
     thresholdHours: Long,
     nextMonday: LocalDate = getNextMonday(now.toLocalDate()),
 ): LocalDate =
-    if (nextMonday.isAfter(now.plusHours(thresholdHours).toLocalDate())) {
+    if (
+        nextMonday.isAfter(
+            now.plusDays(thresholdHours / 24).plusHours(thresholdHours % 24).toLocalDate()
+        )
+    ) {
         nextMonday
     } else {
         getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
