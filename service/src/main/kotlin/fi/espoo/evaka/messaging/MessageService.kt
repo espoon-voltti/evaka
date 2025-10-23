@@ -116,7 +116,7 @@ class MessageService(
         relatedApplication: ApplicationId?,
         filters: MessageController.PostMessageFilters?,
         initialFolder: MessageThreadFolderId? = null,
-    ): MessageContentId? {
+    ): Pair<MessageContentId?, Int> {
         if (initialFolder != null) {
             tx.getFolder(initialFolder)?.takeIf { it.ownerId == sender }
                 ?: throw NotFound("Folder not found")
@@ -124,7 +124,9 @@ class MessageService(
 
         val messageRecipients =
             tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
-        if (messageRecipients.isEmpty()) return null
+        if (messageRecipients.isEmpty()) return null to 0
+
+        val recipientCount = messageRecipients.map { pair -> pair.first }.toSet().size
 
         val staffCopyRecipients =
             if (type == MessageType.BULLETIN) {
@@ -236,7 +238,7 @@ class MessageService(
                 messageContentId = contentId,
             )
         }
-        return contentId
+        return contentId to recipientCount
     }
 
     data class ThreadReply(val threadId: MessageThreadId, val message: Message)

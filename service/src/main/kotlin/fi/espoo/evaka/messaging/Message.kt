@@ -245,7 +245,7 @@ sealed class MessageRecipient(val type: MessageRecipientType) {
 
     @JsonTypeName("UNIT")
     data class Unit(val id: DaycareId, val starter: Boolean = false) :
-        MessageRecipient(MessageRecipientType.AREA) {
+        MessageRecipient(MessageRecipientType.UNIT) {
         override fun isStarter(): Boolean = starter
     }
 

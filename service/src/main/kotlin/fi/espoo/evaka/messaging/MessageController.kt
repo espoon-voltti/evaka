@@ -719,7 +719,7 @@ class MessageController(
                         }
                     }
 
-                    val createdId =
+                    val (createdId, recipientCount) =
                         messageService.sendMessageAsEmployee(
                             tx,
                             user,
@@ -743,15 +743,70 @@ class MessageController(
                     if (body.draftId != null) {
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
                     }
-                    CreateMessageResponse(createdId)
+                    CreateMessageResponse(createdId) to recipientCount
                 }
             }
-            .also {
+            .also { (response, recipientCount) ->
+                // Create metadata for audit logging
+                val auditMeta =
+                    mutableMapOf<String, Any>(
+                        "recipientCount" to recipientCount,
+                        "originalRecipientTypes" to
+                            body.recipients.map { it.type.name }.toSet().sorted(),
+                    )
+
+                // Add specific recipient IDs for areas, units, and groups
+                val areaRecipients = body.recipients.filterIsInstance<MessageRecipient.Area>()
+                if (areaRecipients.isNotEmpty()) {
+                    auditMeta["recipients_areas"] = areaRecipients.map { it.id.toString() }.sorted()
+                }
+
+                val unitRecipients = body.recipients.filterIsInstance<MessageRecipient.Unit>()
+                if (unitRecipients.isNotEmpty()) {
+                    val (starterUnits, regularUnits) = unitRecipients.partition { it.starter }
+                    auditMeta["recipients_units_starters"] =
+                        starterUnits.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_units_regular"] =
+                        regularUnits.map { it.id.toString() }.sorted()
+                }
+
+                val groupRecipients = body.recipients.filterIsInstance<MessageRecipient.Group>()
+                if (groupRecipients.isNotEmpty()) {
+                    val (starterGroups, regularGroups) = groupRecipients.partition { it.starter }
+                    auditMeta["recipients_groups_starters"] =
+                        starterGroups.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_groups_regular"] =
+                        regularGroups.map { it.id.toString() }.sorted()
+                }
+
+                val childRecipients = body.recipients.filterIsInstance<MessageRecipient.Child>()
+                if (childRecipients.isNotEmpty()) {
+                    val (starterChildren, regularChildren) =
+                        childRecipients.partition { it.starter }
+                    auditMeta["recipients_children_starters"] =
+                        starterChildren.map { it.id.toString() }.sorted()
+                    auditMeta["recipients_children_regular"] =
+                        regularChildren.map { it.id.toString() }.sorted()
+                }
+
+                val citizenRecipients = body.recipients.filterIsInstance<MessageRecipient.Citizen>()
+                if (citizenRecipients.isNotEmpty()) {
+                    auditMeta["recipients_citizens"] =
+                        citizenRecipients.map { it.id.toString() }.sorted()
+                }
+
+                // Add filter information if filters are applied
+                if (body.filters != null) {
+                    auditMeta["filtersApplied"] = body.filters
+                }
+
                 Audit.MessagingNewMessageWrite.log(
                     targetId = AuditId(accountId),
-                    objectId = it.createdId?.let(AuditId::invoke),
+                    objectId = response.createdId?.let(AuditId::invoke),
+                    meta = auditMeta.toMap(),
                 )
             }
+            .first
     }
 
     @GetMapping("/employee/messages/{accountId}/drafts")
