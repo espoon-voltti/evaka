@@ -25,3 +25,66 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+
+  yarn-audit:
+    name: yarn audit (YARN 3+)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      matrix:
+        lockfile:
+          - ./apigw/yarn.lock
+          - ./frontend/yarn.lock
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+          # nothing to cache, but we need to set it to to avoid errors
+          cache-dependency-path: ${{ matrix.lockfile }}
+
+      - name: Run yarn audit (YARN 3+)
+        run: |
+          cd $(dirname ${{ matrix.lockfile }})
+          yarn npm audit --recursive --severity high
+
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      matrix:
+        lockfile:
+          - ./dummy-idp/package-lock.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+          # nothing to cache, but we need to set it to to avoid errors
+          cache-dependency-path: ${{ matrix.lockfile }}
+
+      - name: Run npm audit
+        run: |
+          cd $(dirname ${{ matrix.lockfile }})
+          npm audit --audit-level=high --package-lock-only
