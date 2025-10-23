@@ -20,7 +20,7 @@ data class KoskiStudyRightKey(
 
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
-    startDate: LocalDate?,
+    syncRangeStart: LocalDate?,
 ): List<KoskiStudyRightKey> {
     val dataVersionCheck = Predicate {
         // intentionally doesn't use bind
@@ -30,7 +30,7 @@ fun Database.Read.getPendingStudyRights(
             sql(
                 """
 SELECT kasr.child_id, kasr.unit_id, 'PRESCHOOL'::koski_study_right_type AS type
-FROM koski_active_preschool_study_right(${bind(today)}, ${bind(startDate)}) kasr
+FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, 'PRESCHOOL') = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
@@ -41,7 +41,7 @@ WHERE (
 UNION
 
 SELECT kasr.child_id, kasr.unit_id, 'PREPARATORY'::koski_study_right_type AS type
-FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(startDate)}) kasr
+FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, 'PREPARATORY') = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
@@ -63,7 +63,7 @@ WHERE kvsr.void_date IS NULL
 private fun Database.Transaction.refreshStudyRight(
     key: KoskiStudyRightKey,
     today: LocalDate,
-    startDate: LocalDate?,
+    syncRangeStart: LocalDate?,
 ): Pair<KoskiStudyRightId, Boolean> {
     val studyRightQuery = QuerySql {
         when (key.type) {
@@ -73,7 +73,7 @@ private fun Database.Transaction.refreshStudyRight(
 SELECT
     child_id, unit_id, type,
     input_data AS preschool_input_data, NULL::koski_preparatory_input_data AS preparatory_input_data
-FROM koski_active_preschool_study_right(${bind(today)}, ${bind(startDate)}) kasr
+FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 """
                 )
             OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
@@ -82,7 +82,7 @@ FROM koski_active_preschool_study_right(${bind(today)}, ${bind(startDate)}) kasr
 SELECT
     child_id, unit_id, type,
     NULL::koski_preschool_input_data AS preschool_input_data, input_data AS preparatory_input_data
-FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(startDate)}) kasr
+FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 """
                 )
         }
@@ -122,9 +122,9 @@ fun Database.Transaction.beginKoskiUpload(
     ophMunicipalityCode: String,
     key: KoskiStudyRightKey,
     today: LocalDate,
-    startDate: LocalDate?,
+    syncRangeStart: LocalDate?,
 ): KoskiData? {
-    val (id, voided) = refreshStudyRight(key, today, startDate)
+    val (id, voided) = refreshStudyRight(key, today, syncRangeStart)
     return if (voided) {
         createQuery {
                 sql(
@@ -157,7 +157,7 @@ fun Database.Transaction.beginKoskiUpload(
                 d.unit_language, d.provider_type, d.approver_name,
                 pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
             FROM koski_study_right ksr
-            JOIN koski_active_preschool_study_right(${bind(today)}, ${bind(startDate)}) kasr
+            JOIN koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
             USING (child_id, unit_id, type)
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
@@ -176,7 +176,7 @@ fun Database.Transaction.beginKoskiUpload(
                 d.unit_language, d.provider_type, d.approver_name,
                 pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
             FROM koski_study_right ksr
-            JOIN koski_active_preparatory_study_right(${bind(today)}, ${bind(startDate)}) kasr
+            JOIN koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
             USING (child_id, unit_id, type)
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id

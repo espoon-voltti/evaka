@@ -39,7 +39,7 @@ internal fun Database.Transaction.setUnitOids() {
 
 internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
     fun triggerUploads(today: LocalDate, koskiEnv: KoskiEnv? = null) {
-        db.read { it.getPendingStudyRights(today, koskiEnv?.startDate) }
+        db.read { it.getPendingStudyRights(today, koskiEnv?.syncRangeStart) }
             .forEach { request -> client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today) }
     }
 }

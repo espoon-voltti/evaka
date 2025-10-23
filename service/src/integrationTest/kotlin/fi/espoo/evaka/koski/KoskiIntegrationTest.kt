@@ -161,7 +161,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement()
 
         val startDate = preschoolTerm2019.end.plusDays(1)
-        whenever(koskiEnv.startDate).thenReturn(startDate)
+        whenever(koskiEnv.syncRangeStart).thenReturn(startDate)
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1), koskiEnv)
 
         assertEquals(emptyList(), db.read { it.getStoredResults() })
@@ -172,7 +172,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement()
 
         val startDate = preschoolTerm2019.start.plusDays(1)
-        whenever(koskiEnv.startDate).thenReturn(startDate)
+        whenever(koskiEnv.syncRangeStart).thenReturn(startDate)
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1), koskiEnv)
 
         assertEquals(

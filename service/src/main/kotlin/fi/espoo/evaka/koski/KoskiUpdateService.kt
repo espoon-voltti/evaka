@@ -24,7 +24,7 @@ class KoskiUpdateService(
         if (koskiEnv != null) {
             db.transaction { tx ->
                 tx.setStatementTimeout(Duration.ofMinutes(2))
-                val requests = tx.getPendingStudyRights(clock.today(), koskiEnv.startDate)
+                val requests = tx.getPendingStudyRights(clock.today(), koskiEnv.syncRangeStart)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(
                     tx,
