@@ -467,6 +467,8 @@ data class ReservationChild(
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
     val upcomingPlacementType: PlacementType?,
+    val upcomingPlacementStartDate: LocalDate?,
+    val upcomingPlacementUnitName: String?,
     val monthSummaries: List<MonthSummary>,
 ) {
     companion object {
@@ -478,6 +480,9 @@ data class ReservationChild(
         ): ReservationChild {
             val hasHourBasedServiceNeeds =
                 placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
+            val currentOrNextPlacement =
+                placements.find { it.range.includes(today) }
+                    ?: placements.minByOrNull { it.range.start }
             val monthSummaries =
                 if (hasHourBasedServiceNeeds) {
                     days
@@ -533,6 +538,8 @@ data class ReservationChild(
                 duplicateOf = child.duplicateOf,
                 imageId = child.imageId,
                 upcomingPlacementType = placements.find { it.range.end >= today }?.type,
+                upcomingPlacementStartDate = placements.find { it.range.end >= today }?.range?.start,
+                upcomingPlacementUnitName = placements.find { it.range.end >= today }?.unitName,
                 monthSummaries = monthSummaries,
             )
         }
