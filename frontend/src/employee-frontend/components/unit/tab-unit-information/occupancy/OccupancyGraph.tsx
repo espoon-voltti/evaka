@@ -69,6 +69,9 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
         callbacks: {
           title: function (tooltipItems) {
             const tooltipItem = tooltipItems[0]
+            if (tooltipItem.parsed.x === null) {
+              return ''
+            }
             const date = new Date(tooltipItem.parsed.x)
             return HelsinkiDateTime.fromSystemTzDate(date)
               .toLocalDate()
