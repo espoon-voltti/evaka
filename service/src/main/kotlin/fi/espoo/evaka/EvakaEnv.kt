@@ -232,6 +232,7 @@ data class KoskiEnv(
     val user: String,
     val secret: Sensitive<String>,
     val municipalityCallerId: String,
+    val syncRangeStart: LocalDate?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -242,6 +243,7 @@ data class KoskiEnv(
                 secret = Sensitive(env.lookup("evaka.integration.koski.secret")),
                 municipalityCallerId =
                     env.lookup("evaka.integration.koski.municipality_caller_id") ?: "espooevaka",
+                syncRangeStart = env.lookup("evaka.integration.koski.sync_range_start"),
             )
     }
 }

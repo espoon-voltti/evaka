@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.koski
 
-import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -18,13 +18,13 @@ private val logger = KotlinLogging.logger {}
 @Service
 class KoskiUpdateService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val env: EvakaEnv,
+    private val koskiEnv: KoskiEnv?,
 ) {
     fun scheduleKoskiUploads(db: Database.Connection, clock: EvakaClock) {
-        if (env.koskiEnabled) {
+        if (koskiEnv != null) {
             db.transaction { tx ->
                 tx.setStatementTimeout(Duration.ofMinutes(2))
-                val requests = tx.getPendingStudyRights(clock.today())
+                val requests = tx.getPendingStudyRights(clock.today(), koskiEnv.syncRangeStart)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(
                     tx,
