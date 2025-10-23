@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 
 import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
@@ -93,6 +93,8 @@ export default React.memo(
   ) {
     const t = useTranslation()
     const [editing, useEditing] = useBoolean(false)
+    const firstCheckboxRef = useRef<HTMLDivElement>(null)
+
     const form = useForm(
       notificationSettingsForm,
       () => getInitialState(initialData),
@@ -109,6 +111,13 @@ export default React.memo(
       attendanceReservation,
       discussionTime
     } = useFormFields(form)
+
+    useEffect(() => {
+      if (editing) {
+        const input = firstCheckboxRef.current?.querySelector('input')
+        input?.focus()
+      }
+    }, [editing])
 
     return (
       <div data-qa="notification-settings-section" ref={ref}>
@@ -127,12 +136,14 @@ export default React.memo(
         <P>
           <Strong>{t.personalDetails.notificationsSection.subtitle}</Strong>
         </P>
-        <CheckboxF
-          bind={message}
-          label={t.personalDetails.notificationsSection.message}
-          disabled={!editing}
-          data-qa="message"
-        />
+        <div ref={firstCheckboxRef}>
+          <CheckboxF
+            bind={message}
+            label={t.personalDetails.notificationsSection.message}
+            disabled={!editing}
+            data-qa="message"
+          />
+        </div>
         <Gap size="s" />
         <CheckboxF
           bind={bulletin}
