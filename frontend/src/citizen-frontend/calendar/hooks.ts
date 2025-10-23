@@ -7,7 +7,10 @@ import { useCallback, useState, useEffect } from 'react'
 import type { Result } from 'lib-common/api'
 import { Success } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { BoundForm } from 'lib-common/form/hooks'
+import type { Form } from 'lib-common/form/types'
 import type {
+  ReservationChild,
   ReservationResponseDay,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
@@ -172,4 +175,33 @@ export const useTimedScreenReaderMessage = (): [
     [isMessageTimerOn]
   )
   return [screenReaderMessage, showTimedScreenReaderMessage]
+}
+
+export const useRemovePlacementPendingChildSelections = (
+  selectedChildren: BoundForm<
+    Form<
+      ReservationChild[],
+      'required',
+      ReservationChild[],
+      Form<ReservationChild, never, ReservationChild, unknown>
+    >
+  >,
+  rangeEnd: LocalDate | undefined
+) => {
+  useEffect(() => {
+    if (!selectedChildren.isValid() || !rangeEnd) return
+
+    const currentSelectedChildren = selectedChildren.value()
+
+    const placementStartedChildren = currentSelectedChildren.filter((child) => {
+      return (
+        child.upcomingPlacementStartDate === null ||
+        !child.upcomingPlacementStartDate.isAfter(rangeEnd)
+      )
+    })
+
+    if (placementStartedChildren.length !== currentSelectedChildren.length) {
+      selectedChildren.set(placementStartedChildren)
+    }
+  }, [rangeEnd, selectedChildren])
 }
