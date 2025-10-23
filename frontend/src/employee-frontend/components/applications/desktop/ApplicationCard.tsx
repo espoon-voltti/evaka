@@ -120,12 +120,7 @@ export default React.memo(function ApplicationCard({
             </H4>
           </FixedSpaceRow>
           <FixedSpaceRow spacing="L" alignItems="center">
-            <FixedSpaceColumn spacing="xxs" alignItems="center">
-              <CareTypeChip type={application.placementType} />
-              {application.transferApplication && (
-                <Light>{i18n.applications.list.transfer}</Light>
-              )}
-            </FixedSpaceColumn>
+            <CareTypeChip type={application.placementType} />
             <FixedSpaceRow spacing="xs" alignItems="center">
               <Tooltip
                 tooltip={
@@ -167,15 +162,15 @@ export default React.memo(function ApplicationCard({
           </FixedSpaceRow>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <div style={{ width: '22%' }}>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.birthDate}
               delayed
             >
               <DateOfBirthInfo application={application} />
             </Tooltip>
-          </div>
-          <div style={{ width: '22%' }}>
+          </DateCol>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.dueDate}
               delayed
@@ -186,11 +181,17 @@ export default React.memo(function ApplicationCard({
                   color={colors.main.m1}
                   size="m"
                 />
-                <div>{application.dueDate?.format() ?? '-'}</div>
+                <div>
+                  {application.transferApplication ? (
+                    <Light>{i18n.applications.placementDesktop.transfer}</Light>
+                  ) : (
+                    (application.dueDate?.format() ?? '-')
+                  )}
+                </div>
               </FixedSpaceRow>
             </Tooltip>
-          </div>
-          <div style={{ width: '22%' }}>
+          </DateCol>
+          <DateCol>
             <Tooltip
               tooltip={i18n.applications.placementDesktop.preferredStartDate}
               delayed
@@ -200,7 +201,7 @@ export default React.memo(function ApplicationCard({
                 <div>{application.startDate?.format() ?? '-'}</div>
               </FixedSpaceRow>
             </Tooltip>
-          </div>
+          </DateCol>
           <FixedSpaceRow
             spacing="xs"
             alignItems="center"
@@ -217,7 +218,11 @@ export default React.memo(function ApplicationCard({
           </LabelLike>
           <FixedSpaceColumn spacing="xs">
             {application.preferredUnits.map((unit, index) => (
-              <FixedSpaceRow key={index} alignItems="center">
+              <FixedSpaceRow
+                key={index}
+                alignItems="center"
+                style={{ minHeight: '24px' }}
+              >
                 <UnitListItem
                   $selection={
                     application.placementDraft === null
@@ -406,7 +411,7 @@ export default React.memo(function ApplicationCard({
                     .createPlacementDraftToOtherUnit
                 }
                 getItemLabel={(unit) => unit.name}
-                isLoading={updatePending || deletePending}
+                disabled={updatePending || deletePending}
                 fullWidth
               />
             )}
@@ -495,20 +500,23 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  min-width: 500px;
-  max-width: 630px;
-  width: 100%;
+  min-width: 480px;
+  max-width: 600px;
+  flex-grow: 1;
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   ${(p) =>
     p.$placed
       ? css`
-          border: 2px solid ${p.theme.colors.status.success};
+          box-shadow: 0 0 4px 1px ${p.theme.colors.status.success};
         `
-      : css`
-          border: 1px solid ${p.theme.colors.grayscale.g35};
-        `}
+      : ''}
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+  @media (max-width: 1407px) {
+    max-width: 480px;
+  }
 `
 
 const UnitListItem = styled.span<{
@@ -531,4 +539,8 @@ const UnitListItem = styled.span<{
             color: ${p.theme.colors.grayscale.g70};
           `
         : ''}
+`
+
+const DateCol = styled.div`
+  width: 120px;
 `

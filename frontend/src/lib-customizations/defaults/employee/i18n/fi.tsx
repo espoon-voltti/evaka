@@ -379,6 +379,7 @@ export const fi = {
       birthDate: 'Syntymäaika',
       dueDate: 'Lakisääteisyys',
       preferredStartDate: 'Toivottu aloitus',
+      transfer: 'Siirto',
       toPlacementPlan: 'Sijoita',
       checkApplication: 'Tarkista hakemus',
       occupancyConfirmed: 'Vahvistettu',
