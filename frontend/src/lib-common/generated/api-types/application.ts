@@ -27,6 +27,7 @@ import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 import type { MessageContentId } from './shared'
 import type { MessageThreadId } from './shared'
+import type { OccupancyResponse } from './occupancy'
 import type { PersonId } from './shared'
 import type { PersonJSON } from './pis'
 import type { PlacementPlanConfirmationStatus } from './placement'
@@ -38,6 +39,7 @@ import type { UUID } from '../../types'
 import { deserializeJsonCreatePersonBody } from './pis'
 import { deserializeJsonDecision } from './decision'
 import { deserializeJsonDecisionDraft } from './decision'
+import { deserializeJsonOccupancyResponse } from './occupancy'
 import { deserializeJsonPersonJSON } from './pis'
 import { deserializeJsonPlacementPlanDetails } from './placement'
 
@@ -683,10 +685,10 @@ export interface PersonBasics {
 */
 export interface PlacementDesktopDaycare {
   id: DaycareId
-  maxOccupancyConfirmed: number | null
-  maxOccupancyDraft: number | null
-  maxOccupancyPlanned: number | null
   name: string
+  occupancyConfirmed: OccupancyResponse | null
+  occupancyDraft: OccupancyResponse | null
+  occupancyPlanned: OccupancyResponse | null
   placementDrafts: PlacementDraft[]
   serviceWorkerNote: string
 }
@@ -1170,6 +1172,9 @@ export function deserializeJsonPersonApplicationSummary(json: JsonOf<PersonAppli
 export function deserializeJsonPlacementDesktopDaycare(json: JsonOf<PlacementDesktopDaycare>): PlacementDesktopDaycare {
   return {
     ...json,
+    occupancyConfirmed: (json.occupancyConfirmed != null) ? deserializeJsonOccupancyResponse(json.occupancyConfirmed) : null,
+    occupancyDraft: (json.occupancyDraft != null) ? deserializeJsonOccupancyResponse(json.occupancyDraft) : null,
+    occupancyPlanned: (json.occupancyPlanned != null) ? deserializeJsonOccupancyResponse(json.occupancyPlanned) : null,
     placementDrafts: json.placementDrafts.map(e => deserializeJsonPlacementDraft(e))
   }
 }

@@ -153,4 +153,5 @@ declare module 'Icons' {
   const faListTimeline: IconDefinition
   const faReply: IconDefinition
   const faUtensils: IconDefinition
+  const faLineChart: IconDefinition
 }

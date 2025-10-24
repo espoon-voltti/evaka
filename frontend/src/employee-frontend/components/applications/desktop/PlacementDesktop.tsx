@@ -342,10 +342,7 @@ const PlacementDesktopValidated = React.memo(
               {applications.length}
             </div>
             <Gap size="s" />
-            <FixedSpaceColumn
-              alignItems="stretch"
-              style={{ flexGrow: 1, marginLeft: 'auto' }}
-            >
+            <ApplicationsList>
               {shownDaycares !== undefined &&
                 applications.map((application) => (
                   <ApplicationCard
@@ -372,7 +369,7 @@ const PlacementDesktopValidated = React.memo(
                     }}
                   />
                 ))}
-            </FixedSpaceColumn>
+            </ApplicationsList>
           </ApplicationsColumn>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -460,7 +457,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 })
 
 const DaycaresColumn = styled.div`
-  flex-grow: 4;
+  width: 47%;
   padding-left: ${defaultMargins.s};
   padding-right: ${defaultMargins.m};
   max-height: 90vh;
@@ -468,9 +465,22 @@ const DaycaresColumn = styled.div`
 `
 
 const ApplicationsColumn = styled.div`
-  flex-grow: 5;
+  width: 53%;
   padding-left: ${defaultMargins.s};
   padding-right: ${defaultMargins.m};
   max-height: 90vh;
   overflow-y: auto;
+`
+
+const ApplicationsList = styled(FixedSpaceColumn).attrs({
+  justifyContent: 'stretch'
+})`
+  flex-grow: 1;
+  margin-left: auto;
+  min-width: 480px;
+  max-width: 600px;
+
+  @media (max-width: 1407px) {
+    max-width: 480px;
+  }
 `

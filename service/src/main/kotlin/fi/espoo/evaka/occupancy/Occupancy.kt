@@ -197,7 +197,7 @@ fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
     )
 }
 
-private fun reduceDailyOccupancyValues(
+fun reduceDailyOccupancyValues(
     dailyOccupancies: Map<LocalDate, OccupancyValues>
 ): List<OccupancyPeriod> {
     return dailyOccupancies.entries

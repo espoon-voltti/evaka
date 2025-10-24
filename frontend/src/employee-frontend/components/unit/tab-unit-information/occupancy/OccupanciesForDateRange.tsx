@@ -29,7 +29,7 @@ const WrapBox = styled.div`
   align-items: center;
 `
 
-const GraphWrapper = styled.div`
+export const GraphWrapper = styled.div`
   min-width: 300px;
   max-width: 500px;
   flex-grow: 1;
