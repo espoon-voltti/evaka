@@ -190,6 +190,10 @@ enum class ScheduledJob(
             schedule = JobSchedule.cron("0 0 5 * * *"), // daily 5:00 am
         ),
     ),
+    CleanNekkuOrdersReport(
+        ScheduledJobs::cleanNekkuOrdersReport,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 0 1 * * *")),
+    ),
     SendAromiOrders(
         ScheduledJobs::sendAromiOrders,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
@@ -491,6 +495,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun sendNekkuSpecifyOrders(db: Database.Connection, clock: EvakaClock) {
         nekkuService.planNekkuSpecifyOrders(db, clock)
+    }
+
+    fun cleanNekkuOrdersReport(db: Database.Connection, clock: EvakaClock) {
+        nekkuService.planCleanNekkuOrdersReport(db, clock)
     }
 
     fun sendAromiOrders(db: Database.Connection, clock: EvakaClock) {

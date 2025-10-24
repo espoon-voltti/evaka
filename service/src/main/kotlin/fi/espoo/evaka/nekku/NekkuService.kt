@@ -71,6 +71,7 @@ class NekkuService(
         asyncJobRunner.registerHandler(::sendNekkuCustomerNumberNullificationWarningEmail)
         asyncJobRunner.registerHandler(::sendNekkuSpecialDietRemovalWarningEmail)
         asyncJobRunner.registerHandler(::sendNekkuOrderFailureWarningEmail)
+        asyncJobRunner.registerHandler(::cleanNekkuOrdersReport)
     }
 
     fun syncNekkuCustomers(
@@ -167,6 +168,26 @@ class NekkuService(
             }
             throw e
         }
+    }
+
+    fun planCleanNekkuOrdersReport(dbc: Database.Connection, clock: EvakaClock) {
+        dbc.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.CleanNekkuOrdersReport::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.CleanNekkuOrdersReport(clock.today().minusMonths(3))),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
+    fun cleanNekkuOrdersReport(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.CleanNekkuOrdersReport,
+    ) {
+        dbc.transaction { tx -> tx.cleanNekkuOrderReportRows(job.cutOffDate) }
     }
 
     fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
