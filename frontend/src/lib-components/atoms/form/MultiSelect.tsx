@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React from 'react'
+import React, { useState } from 'react'
 import type { Props } from 'react-select'
 import ReactSelect from 'react-select'
 import styled, { useTheme } from 'styled-components'
@@ -54,6 +54,7 @@ function MultiSelect<T>({
   ...props
 }: MultiSelectProps<T>) {
   const { colors } = useTheme()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // If MsEdge's translation feature is active and react-select uses aria live
   // messaging, the React app crashes when the dropdown menu is closed. Because
@@ -70,8 +71,18 @@ function MultiSelect<T>({
       }
     : undefined
 
+  function handleEscKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'Escape' && isMenuOpen) {
+      event.stopPropagation()
+    }
+  }
+
   return (
-    <div data-qa={props['data-qa']} className="multi-select">
+    <div
+      data-qa={props['data-qa']}
+      className="multi-select"
+      onKeyDown={handleEscKeyDown}
+    >
       <ReactSelect
         ariaLiveMessages={ariaLiveMessages}
         styles={{
@@ -119,6 +130,8 @@ function MultiSelect<T>({
           }
         }}
         onBlur={onBlur}
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
         options={[
           {
             options: value

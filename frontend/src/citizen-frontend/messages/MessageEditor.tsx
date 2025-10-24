@@ -52,6 +52,7 @@ import { deleteAttachmentMutation } from '../attachments/queries'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
+import { useOnEscape } from '../navigation/utils'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
@@ -87,6 +88,8 @@ export default React.memo(function MessageEditor({
 }: Props) {
   const i18n = useTranslation()
   const user = useUser()
+
+  const closeOnEscape = useOnEscape(onClose)
 
   const childIds = useMemo(
     () =>
@@ -198,7 +201,7 @@ export default React.memo(function MessageEditor({
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
-        <Container data-qa="message-editor">
+        <Container data-qa="message-editor" onKeyDown={closeOnEscape}>
           <TopBar>
             <Title>{title}</Title>
             <IconOnlyButton
