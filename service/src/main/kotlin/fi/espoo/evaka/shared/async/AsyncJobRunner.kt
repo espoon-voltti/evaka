@@ -129,7 +129,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             jobs.forEach { job ->
                 val jobType = AsyncJobType.ofPayload(job.payload)
                 val id = tx.insertJob(job)
-                logger.debug {
+                logger.info {
                     "$name planned job $jobType(id=$id, runAt=${job.runAt}, retryCount=${job.retryCount}, retryInterval=${job.retryInterval})"
                 }
                 afterCommitHooks[jobType]?.let { tx.afterCommit(it) }
