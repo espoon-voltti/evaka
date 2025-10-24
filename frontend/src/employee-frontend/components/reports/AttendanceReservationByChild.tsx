@@ -77,13 +77,16 @@ export default React.memo(function AttendanceReservationByChild() {
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
   const [filterByTime, setFilterByTime] = useState(false)
+  const [includeClosed, setIncludeClosed] = useState(true)
   const [startTime, setStartTime] = useState<string>('00:00')
   const [endTime, setEndTime] = useState<string>('23:59')
   const [showOnlyShiftCare, setShowOnlyShiftCare] = useState(false)
 
-  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
+  const units = useQueryResult(daycaresQuery({ includeClosed: includeClosed }))
   const groups = useQueryResult(
-    unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
+    unitId
+      ? unitGroupsQuery({ daycareId: unitId, includeClosed: includeClosed })
+      : constantQuery([])
   )
 
   const [activeParams, setActiveParams] = useState<{
@@ -252,6 +255,17 @@ export default React.memo(function AttendanceReservationByChild() {
               </>
             )}
           </FlexRow>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel />
+          <FilterRow>
+            <Checkbox
+              label={i18n.reports.attendanceReservationByChild.includeClosed}
+              checked={includeClosed}
+              onChange={setIncludeClosed}
+              data-qa="filter-by-closed"
+            />
+          </FilterRow>
         </FilterRow>
         <FilterRow>
           <Button

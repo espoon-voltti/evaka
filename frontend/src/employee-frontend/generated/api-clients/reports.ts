@@ -420,13 +420,15 @@ export async function getCitizenDocumentResponseReportGroupOptions(
   request: {
     unitId: DaycareId,
     from?: LocalDate | null,
-    to?: LocalDate | null
+    to?: LocalDate | null,
+    includeClosed?: boolean | null
   }
 ): Promise<DaycareGroup[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
     ['from', request.from?.formatIso()],
-    ['to', request.to?.formatIso()]
+    ['to', request.to?.formatIso()],
+    ['includeClosed', request.includeClosed?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
     url: uri`/employee/reports/citizen-document-response-report/group-options`.toString(),
