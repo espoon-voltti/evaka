@@ -11,6 +11,7 @@ import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import type {
   DevDaycare,
+  DevDaycareGroup,
   DevEmployee,
   DevPerson,
   DevPreschoolTerm
@@ -24,6 +25,10 @@ const mockedToday = LocalDate.of(2023, 12, 13)
 let term: DevPreschoolTerm
 let child: DevPerson
 let unit: DevDaycare
+let closedUnit: DevDaycare
+let group: DevDaycareGroup
+let closedGroup: DevDaycareGroup
+let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
@@ -35,6 +40,23 @@ beforeEach(async () => {
     type: ['PRESCHOOL'],
     language: 'fi',
     dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
+  }).save()
+  closedUnit = await Fixture.daycare({
+    areaId: area.id,
+    name: 'SuljettuEO',
+    type: ['PRESCHOOL'],
+    language: 'fi',
+    dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
+    closingDate: LocalDate.of(2023, 1, 1)
+  }).save()
+  group = await Fixture.daycareGroup({
+    daycareId: unit.id,
+    name: 'Avoin ryhmä'
+  }).save()
+  closedGroup = await Fixture.daycareGroup({
+    daycareId: unit.id,
+    name: 'Suljettu ryhmä',
+    endDate: LocalDate.of(2021, 1, 1)
   }).save()
   child = await Fixture.person({
     firstName: 'Esko',
@@ -75,12 +97,12 @@ beforeEach(async () => {
     departed: LocalTime.of(12, 30),
     unitId: unit.id
   }).save()
+
+  admin = await Fixture.employee().admin().save()
 })
 
 describe('Preschool absence report', () => {
   test('report data is shown', async () => {
-    const admin = await Fixture.employee().admin().save()
-
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
@@ -100,6 +122,35 @@ describe('Preschool absence report', () => {
     ]
 
     await report.assertRows(initialExpectation)
+  })
+
+  test('closed filtering works', async () => {
+    const page = await Page.open({
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
+    })
+
+    const report = await navigateToReport(page, admin)
+    await report.selectUnit(unit.name)
+    await report.selectTerm(term.finnishPreschool.format())
+
+    await report.unitSelector.click()
+    await report.unitSelector.assertOptions([closedUnit.name, unit.name])
+    await report.unitSelector.click()
+    await report.groupSelector.click()
+    await report.groupSelector.assertOptions([
+      'Kaikki',
+      group.name,
+      closedGroup.name
+    ])
+    await report.groupSelector.click()
+
+    await report.filterByClosed.click()
+    await report.unitSelector.click()
+    await report.unitSelector.assertOptions([unit.name])
+    await report.unitSelector.click()
+    await report.groupSelector.click()
+    await report.groupSelector.assertOptions(['Kaikki', group.name])
+    await report.groupSelector.click()
   })
 })
 

@@ -531,16 +531,24 @@ export class AssistanceNeedsAndActionsReport {
 }
 
 export class PreschoolAbsenceReport {
-  constructor(private page: Page) {}
+  unitSelector: Combobox
+  termSelector: Combobox
+  groupSelector: Combobox
+  filterByClosed: Checkbox
+
+  constructor(private page: Page) {
+    this.unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
+    this.termSelector = new Combobox(this.page.findByDataQa('term-select'))
+    this.groupSelector = new Combobox(this.page.findByDataQa('group-select'))
+    this.filterByClosed = new Checkbox(page.findByDataQa('filter-by-closed'))
+  }
 
   async selectUnit(unitName: string) {
-    const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
-    await unitSelector.fillAndSelectFirst(unitName)
+    await this.unitSelector.fillAndSelectFirst(unitName)
   }
 
   async selectTerm(termRange: string) {
-    const unitSelector = new Combobox(this.page.findByDataQa('term-select'))
-    await unitSelector.fillAndSelectFirst(termRange)
+    await this.termSelector.fillAndSelectFirst(termRange)
   }
 
   async assertRows(
@@ -676,6 +684,7 @@ export class ChildAttendanceReservationByChildReport {
   groupSelector: MultiSelect
   filterByTime: Checkbox
   filterByShiftCare: Checkbox
+  filterByClosed: Checkbox
   startTimeInput: TextInput
   endTimeInput: TextInput
   searchButton: Element
@@ -689,6 +698,7 @@ export class ChildAttendanceReservationByChildReport {
     this.filterByShiftCare = new Checkbox(
       page.findByDataQa('filter-by-shift-care')
     )
+    this.filterByClosed = new Checkbox(page.findByDataQa('filter-by-closed'))
     this.searchButton = page.findByDataQa('search-button')
     this.startTimeInput = new TextInput(page.findByDataQa('start-time-filter'))
     this.endTimeInput = new TextInput(page.findByDataQa('end-time-filter'))

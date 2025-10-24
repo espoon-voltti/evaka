@@ -20,6 +20,7 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   SortableTh,
@@ -54,10 +55,14 @@ export default React.memo(function PreschoolAbsenceReport() {
     DaycareGroup | null | { name: string; id: GroupId | null }
   >(allOption)
   const [selectedTerm, setSelectedTerm] = useState<PreschoolTerm | null>(null)
-  const units = useQueryResult(daycaresQuery({ includeClosed: true }))
+  const [includeClosed, setIncludeClosed] = useState(true)
+  const units = useQueryResult(daycaresQuery({ includeClosed: includeClosed }))
   const groups = useQueryResult(
     selectedUnit?.id
-      ? unitGroupsQuery({ daycareId: selectedUnit.id })
+      ? unitGroupsQuery({
+          daycareId: selectedUnit.id,
+          includeClosed: includeClosed
+        })
       : constantQuery([])
   )
   const terms = useQueryResult(preschoolTermsQuery())
@@ -167,6 +172,19 @@ export default React.memo(function PreschoolAbsenceReport() {
                       i18n.reports.preschoolAbsences.filters.groupSelection
                         .placeholder
                     }
+                    data-qa="group-select"
+                    getItemDataQa={({ id }) => `group-${id}`}
+                  />
+                </FlexRow>
+              </FilterRow>
+              <FilterRow>
+                <FilterLabel />
+                <FlexRow>
+                  <Checkbox
+                    label={i18n.reports.preschoolAbsences.filters.includeClosed}
+                    checked={includeClosed}
+                    onChange={setIncludeClosed}
+                    data-qa="filter-by-closed"
                   />
                 </FlexRow>
               </FilterRow>

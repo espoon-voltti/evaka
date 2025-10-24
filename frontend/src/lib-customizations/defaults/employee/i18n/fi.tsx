@@ -4041,6 +4041,7 @@ export const fi = {
       noReservation: 'Varaus puuttuu',
       filterByTime: 'Suodata ajan perusteella',
       showOnlyShiftCare: 'Näytä vain vuorohoito',
+      includeClosed: 'Näytä lopetetut yksiköt ja ryhmät',
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö',
       timeFilterError: 'Virhe'
@@ -4668,7 +4669,8 @@ export const fi = {
         preschoolTerm: {
           label: 'Esiopetuskausi:',
           placeholder: 'Valitse esiopetuskausi'
-        }
+        },
+        includeClosed: 'Näytä suljetut yksiköt ja ryhmät'
       }
     },
     preschoolApplications: {

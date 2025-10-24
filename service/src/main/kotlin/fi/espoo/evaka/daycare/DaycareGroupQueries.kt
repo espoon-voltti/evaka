@@ -16,6 +16,7 @@ private fun Database.Read.createDaycareGroupQuery(
     groupId: GroupId?,
     daycareId: DaycareId?,
     period: DateRange?,
+    includeClosed: Boolean,
     groupPredicate: Predicate = Predicate.alwaysTrue(),
 ) = createQuery {
     sql(
@@ -47,6 +48,7 @@ FROM daycare_group
 WHERE (${bind(groupId)}::uuid IS NULL OR id = ${bind(groupId)})
 AND (${bind(daycareId)}::uuid IS NULL OR daycare_id = ${bind(daycareId)})
 AND (${bind(period)}::daterange IS NULL OR daterange(start_date, end_date, '[]') && ${bind(period)})
+AND ($includeClosed = TRUE OR end_date IS NULL)
 AND ${predicate(groupPredicate.forTable("daycare_group"))}
 """
     )
@@ -92,19 +94,26 @@ WHERE id = ${bind(groupId)}
 }
 
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
-    createDaycareGroupQuery(groupId = groupId, daycareId = null, period = null)
+    createDaycareGroupQuery(
+            groupId = groupId,
+            daycareId = null,
+            period = null,
+            includeClosed = true,
+        )
         .exactlyOneOrNull<DaycareGroup>()
 
 fun Database.Read.getDaycareGroups(
     daycareId: DaycareId,
     startDate: LocalDate?,
     endDate: LocalDate?,
+    includeClosed: Boolean = true,
     groupPredicate: Predicate = Predicate.alwaysTrue(),
 ): List<DaycareGroup> =
     createDaycareGroupQuery(
             groupId = null,
             daycareId = daycareId,
             period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate),
+            includeClosed = includeClosed,
             groupPredicate = groupPredicate,
         )
         .toList<DaycareGroup>()

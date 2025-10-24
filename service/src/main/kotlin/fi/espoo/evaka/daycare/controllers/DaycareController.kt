@@ -274,6 +274,7 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
+        @RequestParam includeClosed: Boolean = true,
     ): List<DaycareGroup> {
         return db.connect { dbc ->
                 dbc.read {
@@ -284,7 +285,7 @@ class DaycareController(
                         Action.Unit.READ_GROUPS,
                         daycareId,
                     )
-                    daycareService.getDaycareGroups(it, daycareId, from, to)
+                    daycareService.getDaycareGroups(it, daycareId, from, to, includeClosed)
                 }
             }
             .also {
