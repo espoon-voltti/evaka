@@ -1421,13 +1421,23 @@ const sv: Translations = {
             en: 'Engelskspråkig',
             moveUp: 'Flytta uppåt',
             moveDown: 'Flytta neråt',
-            remove: 'Ta bort önskad enhet'
+            remove: 'Ta bort önskad enhet',
+            preferenceNameAndNumber: (n: number, unitName: string): string =>
+              n === 1
+                ? `Första önskemål ${unitName}`
+                : n === 2
+                  ? `Andra önskemål ${unitName}`
+                  : n === 3
+                    ? `Tredje önskemål ${unitName}`
+                    : `${unitName}`
           }
         },
         movePreferredUnitScreenReaderMessage: (
           unitName: string,
           position: number
-        ) => `Enhet ${unitName} flyttad till plats ${position}`
+        ) => `Önskemål ${unitName} flyttad till plats ${position}`,
+        removePreferredUnitScreenReaderMessage: (unitName: string) =>
+          `Önskemål ${unitName} har tagits bort`
       },
       fee: {
         title: 'Avgiften för småbarnspedagogik',

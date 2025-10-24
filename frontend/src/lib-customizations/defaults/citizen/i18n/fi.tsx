@@ -1429,13 +1429,23 @@ export default {
             en: 'englanninkielinen',
             moveUp: 'Siirrä ylöspäin',
             moveDown: 'Siirrä alaspäin',
-            remove: 'Poista hakutoive'
+            remove: 'Poista hakutoive',
+            preferenceNameAndNumber: (n: number, unitName: string): string =>
+              n === 1
+                ? `Ensimmäinen hakutoive ${unitName}`
+                : n === 2
+                  ? `Toinen hakutoive ${unitName}`
+                  : n === 3
+                    ? `Kolmas hakutoive ${unitName}`
+                    : `${unitName}`
           }
         },
         movePreferredUnitScreenReaderMessage: (
           unitName: string,
           position: number
-        ) => `Yksikkö ${unitName} siirretty sijalle ${position}`
+        ) => `Hakutoive ${unitName} siirretty sijalle ${position}`,
+        removePreferredUnitScreenReaderMessage: (unitName: string) =>
+          `Hakutoive ${unitName} poistettu`
       },
       fee: {
         title: 'Varhaiskasvatusmaksu',
