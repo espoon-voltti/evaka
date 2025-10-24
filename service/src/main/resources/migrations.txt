@@ -561,3 +561,4 @@ V562__calendar_event_nekku_unordered_meals.sql
 V563__staff_attendance_realtime_constraint_change.sql
 V564__add_nekku_order_time.sql
 V565__placement_draft_start_date.sql
+V566__new_preschool_assistance_levels_v3.sql

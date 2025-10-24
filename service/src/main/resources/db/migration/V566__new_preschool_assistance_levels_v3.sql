@@ -1,0 +1,3 @@
+ALTER TYPE preschool_assistance_level ADD VALUE 'CHILD_SUPPORT_2_AND_OLD_EXTENDED_COMPULSORY_EDUCATION';
+
+ALTER TYPE koski_preschool_input_data ADD ATTRIBUTE child_support_2_and_old_extended_compulsory_education datemultirange;
