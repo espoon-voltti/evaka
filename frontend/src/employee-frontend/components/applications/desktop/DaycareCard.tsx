@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import orderBy from 'lodash/orderBy'
 import type { RefObject } from 'react'
 import React, { useContext, useMemo } from 'react'
@@ -19,6 +20,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -28,13 +30,14 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 import { faLineChart } from 'lib-icons'
 import { fasExclamation } from 'lib-icons'
+import { fasExclamationTriangle } from 'lib-icons'
 
 import { ApplicationUIContext } from '../../../state/application-ui'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { getPlacementDesktopDaycareQuery } from '../queries'
 
-import ApplicationCardPlaced from './ApplicationCardPlaced'
+import DraftPlacementRow from './DraftPlacementRow'
 import OccupancyModal from './OccupancyModal'
 
 export default React.memo(function DaycareCard({
@@ -132,74 +135,104 @@ export default React.memo(function DaycareCard({
           combine(unitDetails, placementDraftsWithApplications),
           ([unitDetails, placementDraftsWithApplications]) => (
             <>
-              <FixedSpaceRow justifyContent="space-between">
-                <FixedSpaceRow>
-                  <FixedSpaceColumn spacing="xxs">
-                    <Label>
-                      {
-                        i18n.applications.placementDesktop.occupancyTypes
-                          .confirmed
-                      }
-                    </Label>
-                    <span>
-                      {unitDetails.occupancyConfirmed?.max?.percentage ?? '??'}{' '}
-                      %
-                    </span>
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn spacing="xxs">
-                    <Label>
-                      {
-                        i18n.applications.placementDesktop.occupancyTypes
-                          .planned
-                      }
-                    </Label>
-                    <span>
-                      {unitDetails.occupancyPlanned?.max?.percentage ?? '??'} %
-                    </span>
-                  </FixedSpaceColumn>
-                  <FixedSpaceColumn spacing="xxs">
-                    <Label>
-                      {i18n.applications.placementDesktop.occupancyTypes.draft}
-                    </Label>
-                    <span>
-                      {unitDetails.occupancyDraft?.max?.percentage ?? '??'} %
-                    </span>
-                  </FixedSpaceColumn>
+              <OccupanciesArea>
+                <FixedSpaceRow justifyContent="space-between">
+                  <FixedSpaceRow>
+                    <FixedSpaceColumn spacing="xs">
+                      <OccupancyLabel>
+                        {
+                          i18n.applications.placementDesktop.occupancyTypes
+                            .confirmed
+                        }
+                      </OccupancyLabel>
+                      <OccupancyPercentage>
+                        {unitDetails.occupancyConfirmed?.max?.percentage ??
+                          '??'}{' '}
+                        %
+                      </OccupancyPercentage>
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing="xs">
+                      <OccupancyLabel>
+                        {
+                          i18n.applications.placementDesktop.occupancyTypes
+                            .planned
+                        }
+                      </OccupancyLabel>
+                      <OccupancyPercentage>
+                        {unitDetails.occupancyPlanned?.max?.percentage ?? '??'}{' '}
+                        %
+                      </OccupancyPercentage>
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing="xs">
+                      <OccupancyLabel>
+                        {
+                          i18n.applications.placementDesktop.occupancyTypes
+                            .draft
+                        }
+                      </OccupancyLabel>
+                      {(unitDetails.occupancyDraft?.max?.percentage ?? 0) >=
+                      105 ? (
+                        <OccupancyWarning>
+                          <FixedSpaceRow alignItems="center" spacing="xs">
+                            <OccupancyPercentageDraft>
+                              {unitDetails.occupancyDraft?.max?.percentage ??
+                                '??'}{' '}
+                              %
+                            </OccupancyPercentageDraft>
+                            <FontAwesomeIcon
+                              icon={fasExclamationTriangle}
+                              color={colors.status.danger}
+                            />
+                          </FixedSpaceRow>
+                        </OccupancyWarning>
+                      ) : (
+                        <OccupancyPercentageDraft>
+                          {unitDetails.occupancyDraft?.max?.percentage ?? '??'}{' '}
+                          %
+                        </OccupancyPercentageDraft>
+                      )}
+                    </FixedSpaceColumn>
+                  </FixedSpaceRow>
+                  <Tooltip
+                    tooltip={i18n.applications.placementDesktop.openGraph}
+                    delayed
+                  >
+                    <IconOnlyButton
+                      icon={faLineChart}
+                      aria-label={i18n.applications.placementDesktop.openGraph}
+                      onClick={openGraph}
+                    />
+                  </Tooltip>
                 </FixedSpaceRow>
-                <Tooltip
-                  tooltip={i18n.applications.placementDesktop.openGraph}
-                  delayed
-                >
-                  <IconOnlyButton
-                    icon={faLineChart}
-                    aria-label={i18n.applications.placementDesktop.openGraph}
-                    onClick={openGraph}
-                  />
-                </Tooltip>
-              </FixedSpaceRow>
-              <Gap size="xs" />
+              </OccupanciesArea>
+              <Gap size="s" />
               <CollapsibleContentArea
                 opaque
                 open={placementDraftsOpen}
                 toggleOpen={togglePlacementDraftsOpen}
                 title={
-                  <Label>
-                    {i18n.applications.placementDesktop.placementDrafts}
-                  </Label>
+                  <PlacementDraftsLabel>
+                    {i18n.applications.placementDesktop.placementDrafts} (
+                    {placementDraftsWithApplications.length})
+                  </PlacementDraftsLabel>
                 }
-                smallChevron
-                countIndicator={placementDraftsWithApplications.length}
-                countIndicatorColor={colors.accents.a8lightBlue}
+                slim
                 paddingHorizontal="zero"
                 paddingVertical="zero"
               >
-                <ApplicationsWrapper>
-                  <FixedSpaceColumn>
+                <Table
+                  style={{
+                    width: '100%',
+                    maxWidth: '100%',
+                    tableLayout: 'fixed'
+                  }}
+                >
+                  <Tbody>
                     {orderBy(
                       placementDraftsWithApplications,
                       (pd) => pd.placementDraft.childName
                     ).map(({ placementDraft, application }) => (
-                      <ApplicationCardPlaced
+                      <DraftPlacementRow
                         key={placementDraft.applicationId}
                         placementDraft={placementDraft}
                         application={application}
@@ -211,8 +244,8 @@ export default React.memo(function DaycareCard({
                         }
                       />
                     ))}
-                  </FixedSpaceColumn>
-                </ApplicationsWrapper>
+                  </Tbody>
+                </Table>
               </CollapsibleContentArea>
             </>
           )
@@ -236,10 +269,6 @@ const Card = styled.div<{ $highlighted: boolean }>`
       : ''}
 `
 
-const ApplicationsWrapper = styled.div`
-  padding: 0 ${defaultMargins.s};
-`
-
 const blinkShadow = keyframes`
   0% {
     box-shadow: 0 0 0 0 rgba(77, 127, 204, 0);
@@ -250,4 +279,38 @@ const blinkShadow = keyframes`
   100% {
     box-shadow: 0 0 0 0 rgba(77, 127, 204, 0);
   }
+`
+
+const OccupanciesArea = styled.div`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  padding: ${defaultMargins.xs};
+`
+
+const OccupancyLabel = styled(Label)`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+`
+
+const OccupancyPercentage = styled.span`
+  font-size: 16px;
+  font-weight: 400;
+`
+
+const OccupancyPercentageDraft = styled(OccupancyPercentage)`
+  font-weight: 600;
+`
+
+const OccupancyWarning = styled.div`
+  background-color: #ffe5e6;
+  border: 1px solid ${(p) => p.theme.colors.status.danger};
+  border-radius: 4px;
+  padding: 2px ${defaultMargins.xs};
+  margin-top: -2px;
+`
+
+const PlacementDraftsLabel = styled(Label)`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `

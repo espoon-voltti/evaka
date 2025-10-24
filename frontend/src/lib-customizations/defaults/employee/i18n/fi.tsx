@@ -389,7 +389,9 @@ export const fi = {
         draft: 'Hahmoteltu'
       },
       openGraph: 'Avaa täyttöastegraafi',
-      placementDrafts: 'Sijoitushahmotelmat'
+      placementDrafts: 'Sijoitushahmotelmat',
+      notInSearchResults: 'Hakemus ei ole mukana hakutuloksissa',
+      draftedBy: 'Hahmotellut'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
