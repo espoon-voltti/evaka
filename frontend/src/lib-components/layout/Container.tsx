@@ -104,6 +104,7 @@ export type CollapsibleContentAreaProps = ContentAreaProps & {
       }
   countIndicatorColor?: string
   icon?: IconDefinition
+  smallChevron?: boolean
 }
 
 const IconContainer = styled.div`
@@ -119,6 +120,7 @@ export const CollapsibleContentArea = React.memo(
     countIndicator = 0,
     countIndicatorColor,
     icon,
+    smallChevron,
     ...props
   }: CollapsibleContentAreaProps) {
     const { colors } = useTheme()
@@ -162,6 +164,7 @@ export const CollapsibleContentArea = React.memo(
             <TitleIcon
               icon={open ? faChevronUp : faChevronDown}
               data-qa="collapsible-trigger"
+              $small={smallChevron}
             />
           </IconContainer>
         </TitleContainer>
@@ -201,12 +204,14 @@ export const TitleContainer = styled.button`
   }
 `
 
-export const TitleIcon = styled(FontAwesomeIcon)`
+export const TitleIcon = styled(FontAwesomeIcon)<{ $small?: boolean }>`
   cursor: pointer;
   color: ${(p) => p.theme.colors.main.m2};
-  height: 24px !important;
-  width: 24px !important;
+  height: ${(p) => (p.$small ? '20px' : '24px')} !important;
+  width: ${(p) => (p.$small ? '20px' : '24px')} !important;
+  font-size: ${(p) => (p.$small ? '16px' : '20px')};
 `
+
 const Collapsible = styled.div<{ open: boolean }>`
   display: ${(props) => (props.open ? 'block' : 'none')};
   margin-top: ${defaultMargins.s};

@@ -500,8 +500,6 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  min-width: 480px;
-  max-width: 600px;
   flex-grow: 1;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   ${(p) =>
@@ -513,10 +511,6 @@ const Card = styled.div<{ $placed: boolean }>`
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
-
-  @media (max-width: 1407px) {
-    max-width: 480px;
-  }
 `
 
 const UnitListItem = styled.span<{

@@ -86,6 +86,13 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
   }
 }
 
+export const occupancyGraphColors = {
+  confirmed: colors.main.m1,
+  planned: colors.accents.a6turquoise,
+  draft: colors.accents.a9pink,
+  realized: colors.status.success
+}
+
 interface Props {
   occupancies: OccupancyResponse
   plannedOccupancies: OccupancyResponse
@@ -119,8 +126,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(occupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.main.m1,
-      borderColor: colors.main.m1
+      pointBackgroundColor: occupancyGraphColors.confirmed,
+      borderColor: occupancyGraphColors.confirmed
     })
   if (planned)
     datasets.push({
@@ -128,8 +135,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(plannedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.a6turquoise,
-      borderColor: colors.accents.a6turquoise
+      pointBackgroundColor: occupancyGraphColors.planned,
+      borderColor: occupancyGraphColors.planned
     })
   if (draft && draftOccupancies)
     datasets.push({
@@ -137,8 +144,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(draftOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.accents.a9pink,
-      borderColor: colors.accents.a9pink
+      pointBackgroundColor: occupancyGraphColors.draft,
+      borderColor: occupancyGraphColors.draft
     })
   if (realized)
     datasets.push({
@@ -146,8 +153,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(realizedOccupancies),
       stepped: true,
       fill: false,
-      pointBackgroundColor: colors.status.success,
-      borderColor: colors.status.success
+      pointBackgroundColor: occupancyGraphColors.realized,
+      borderColor: occupancyGraphColors.realized
     })
 
   return (

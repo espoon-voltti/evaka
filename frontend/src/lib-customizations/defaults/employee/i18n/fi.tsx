@@ -382,9 +382,12 @@ export const fi = {
       transfer: 'Siirto',
       toPlacementPlan: 'Sijoita',
       checkApplication: 'Tarkista hakemus',
-      occupancyConfirmed: 'Vahvistettu',
-      occupancyPlanned: 'Suunniteltu',
-      occupancyDraft: 'Hahmoteltu',
+      occupancies: 'Täyttöasteet',
+      occupancyTypes: {
+        confirmed: 'Vahvistettu',
+        planned: 'Suunniteltu',
+        draft: 'Hahmoteltu'
+      },
       openGraph: 'Avaa täyttöastegraafi',
       placementDrafts: 'Sijoitushahmotelmat'
     },
