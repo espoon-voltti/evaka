@@ -185,18 +185,23 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
     return createQuery {
             sql(
                 """
+WITH target_accounts AS (
+    SELECT acc.id, acc.daycare_group_id
+    FROM message_account acc
+    JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+    WHERE acc.active = true
+      AND dg.daycare_id = ${bind(daycareId)}
+)
 SELECT
-    acc.id as account_id,
-    acc.daycare_group_id as group_id,
-    SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-    SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
-FROM message_account acc
-LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
-LEFT JOIN message m ON mr.message_id = m.id
+    ta.id as account_id,
+    ta.daycare_group_id as group_id,
+    COUNT(*) FILTER (WHERE mr.read_at IS NULL AND NOT mt.is_copy) as unread_count,
+    COUNT(*) FILTER (WHERE mr.read_at IS NULL AND mt.is_copy) as unread_copy_count
+FROM target_accounts ta
+LEFT JOIN message_recipients mr ON mr.recipient_id = ta.id AND mr.read_at IS NULL
+LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
 LEFT JOIN message_thread mt ON m.thread_id = mt.id
-JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = ${bind(daycareId)}
-WHERE acc.active = true AND m.sent_at IS NOT NULL
-GROUP BY acc.id, acc.daycare_group_id
+GROUP BY ta.id, ta.daycare_group_id
 """
             )
         }
