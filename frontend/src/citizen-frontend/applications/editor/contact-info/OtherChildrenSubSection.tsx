@@ -20,6 +20,7 @@ import { faTimes } from 'lib-icons'
 
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+import { focusElementAfterDelay } from '../../../utils/focus'
 
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
@@ -80,6 +81,9 @@ export default React.memo(function OtherChildrenSubSection({
               ]
             })
           }
+          if (checked) {
+            focusElementAfterDelay('extra-child-first-name-0')
+          }
         }}
       />
       {formData.otherChildrenExists && (
@@ -112,6 +116,7 @@ export default React.memo(function OtherChildrenSubSection({
                       t.applications.editor.contactInfo.firstNamePlaceholder
                     }
                     width="L"
+                    required
                   />
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xs">
@@ -138,6 +143,7 @@ export default React.memo(function OtherChildrenSubSection({
                       t.applications.editor.contactInfo.lastNamePlaceholder
                     }
                     width="m"
+                    required
                   />
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xs">
@@ -175,6 +181,7 @@ export default React.memo(function OtherChildrenSubSection({
                         t.applications.editor.contactInfo.ssnPlaceholder
                       }
                       width="m"
+                      required
                     />
                     <Button
                       appearance="inline"
