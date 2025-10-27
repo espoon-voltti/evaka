@@ -302,7 +302,7 @@ private fun getUnitOccupancies(
     )
 }
 
-private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
+fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
     return OccupancyResponse(
         occupancies = occupancies,
         max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },

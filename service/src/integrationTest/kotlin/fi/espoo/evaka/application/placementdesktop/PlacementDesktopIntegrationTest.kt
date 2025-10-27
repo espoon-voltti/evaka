@@ -149,6 +149,9 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     name = daycare1.name,
                     serviceWorkerNote = daycare1.serviceWorkerNote,
                     placementDrafts = emptyList(),
+                    occupancyConfirmed = null,
+                    occupancyPlanned = null,
+                    occupancyDraft = null,
                 ),
                 PlacementDesktopDaycare(
                     id = daycare2.id,
@@ -167,6 +170,9 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 serviceWorkerNote = "",
                             )
                         ),
+                    occupancyConfirmed = null,
+                    occupancyPlanned = null,
+                    occupancyDraft = null,
                 ),
             ),
             getPlacementDesktopDaycares(setOf(daycare1.id, daycare2.id)).toSet(),
@@ -267,14 +273,14 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         upsertApplicationPlacementDraft(applicationId = application2.id, daycareId = daycare1.id)
 
         val result1 = getPlacementDesktopDaycare(daycare1.id)
-        assertEquals(4.8, result1.maxOccupancyConfirmed)
-        assertEquals(9.5, result1.maxOccupancyPlanned)
-        assertEquals(14.3, result1.maxOccupancyDraft)
+        assertEquals(4.8, result1.occupancyConfirmed?.max?.percentage)
+        assertEquals(9.5, result1.occupancyPlanned?.max?.percentage)
+        assertEquals(14.3, result1.occupancyDraft?.max?.percentage)
 
         val result2 = getPlacementDesktopDaycare(daycare2.id)
-        assertEquals(2.6, result2.maxOccupancyConfirmed)
-        assertEquals(2.6, result2.maxOccupancyPlanned)
-        assertEquals(2.6, result2.maxOccupancyDraft)
+        assertEquals(2.6, result2.occupancyConfirmed?.max?.percentage)
+        assertEquals(2.6, result2.occupancyPlanned?.max?.percentage)
+        assertEquals(2.6, result2.occupancyDraft?.max?.percentage)
 
         getPlacementDesktopDaycares(setOf(daycare1.id, daycare2.id)).also {
             assertTrue(it.contains(result1))

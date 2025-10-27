@@ -25,7 +25,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faEyeSlash } from 'lib-icons'
+import { faTimes } from 'lib-icons'
+import { faLineChart } from 'lib-icons'
 import { fasExclamation } from 'lib-icons'
 
 import { ApplicationUIContext } from '../../../state/application-ui'
@@ -34,6 +35,7 @@ import { renderResult } from '../../async-rendering'
 import { getPlacementDesktopDaycareQuery } from '../queries'
 
 import ApplicationCardPlaced from './ApplicationCardPlaced'
+import OccupancyModal from './OccupancyModal'
 
 export default React.memo(function DaycareCard({
   daycare,
@@ -77,11 +79,17 @@ export default React.memo(function DaycareCard({
       ),
     [unitDetails, applications]
   )
+
+  const [isGraphOpen, { on: openGraph, off: closeGraph }] = useBoolean(false)
+
   const [placementDraftsOpen, { toggle: togglePlacementDraftsOpen }] =
     useBoolean(true)
 
   return (
     <Card ref={ref} $highlighted={highlighted}>
+      {isGraphOpen && unitDetails.isSuccess && (
+        <OccupancyModal daycare={unitDetails.value} onClose={closeGraph} />
+      )}
       <FixedSpaceColumn spacing="s">
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
@@ -113,7 +121,7 @@ export default React.memo(function DaycareCard({
             delayed
           >
             <IconOnlyButton
-              icon={faEyeSlash}
+              icon={faTimes}
               aria-label={i18n.applications.placementDesktop.hideUnit}
               onClick={onRemoveFromShownDaycares}
             />
@@ -124,25 +132,50 @@ export default React.memo(function DaycareCard({
           combine(unitDetails, placementDraftsWithApplications),
           ([unitDetails, placementDraftsWithApplications]) => (
             <>
-              <FixedSpaceRow>
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>
-                    {i18n.applications.placementDesktop.occupancyConfirmed}
-                  </Label>
-                  <span>{unitDetails.maxOccupancyConfirmed ?? '??'} %</span>
-                </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>
-                    {i18n.applications.placementDesktop.occupancyPlanned}
-                  </Label>
-                  <span>{unitDetails.maxOccupancyPlanned ?? '??'} %</span>
-                </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
-                  <Label>
-                    {i18n.applications.placementDesktop.occupancyDraft}
-                  </Label>
-                  <span>{unitDetails.maxOccupancyDraft ?? '??'} %</span>
-                </FixedSpaceColumn>
+              <FixedSpaceRow justifyContent="space-between">
+                <FixedSpaceRow>
+                  <FixedSpaceColumn spacing="xxs">
+                    <Label>
+                      {
+                        i18n.applications.placementDesktop.occupancyTypes
+                          .confirmed
+                      }
+                    </Label>
+                    <span>
+                      {unitDetails.occupancyConfirmed?.max?.percentage ?? '??'}{' '}
+                      %
+                    </span>
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing="xxs">
+                    <Label>
+                      {
+                        i18n.applications.placementDesktop.occupancyTypes
+                          .planned
+                      }
+                    </Label>
+                    <span>
+                      {unitDetails.occupancyPlanned?.max?.percentage ?? '??'} %
+                    </span>
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing="xxs">
+                    <Label>
+                      {i18n.applications.placementDesktop.occupancyTypes.draft}
+                    </Label>
+                    <span>
+                      {unitDetails.occupancyDraft?.max?.percentage ?? '??'} %
+                    </span>
+                  </FixedSpaceColumn>
+                </FixedSpaceRow>
+                <Tooltip
+                  tooltip={i18n.applications.placementDesktop.openGraph}
+                  delayed
+                >
+                  <IconOnlyButton
+                    icon={faLineChart}
+                    aria-label={i18n.applications.placementDesktop.openGraph}
+                    onClick={openGraph}
+                  />
+                </Tooltip>
               </FixedSpaceRow>
               <Gap size="xs" />
               <CollapsibleContentArea
@@ -154,6 +187,7 @@ export default React.memo(function DaycareCard({
                     {i18n.applications.placementDesktop.placementDrafts}
                   </Label>
                 }
+                smallChevron
                 countIndicator={placementDraftsWithApplications.length}
                 countIndicatorColor={colors.accents.a8lightBlue}
                 paddingHorizontal="zero"
