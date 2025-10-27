@@ -42,7 +42,7 @@ export default React.memo(function DraftPlacementRow({
   const [editingNote, setEditingNote] = useState(false)
 
   return (
-    <Tr style={{ width: '55%', maxWidth: '100%' }}>
+    <Tr>
       {editingNote && (
         <ServiceWorkerNoteModal
           applicationId={placementDraft.applicationId}
