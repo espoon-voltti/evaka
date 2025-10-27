@@ -66,7 +66,15 @@ export default React.memo(function PreferredUnitBox({
       <MainColCenter>
         <FixedSpaceColumn>
           <FixedSpaceColumn spacing="xxs">
-            <H4 noMargin>{unit.name}</H4>
+            <H4
+              aria-label={t.applications.editor.unitPreference.units.preferences.preferenceNameAndNumber(
+                n,
+                unit.name
+              )}
+              noMargin
+            >
+              {unit.name}
+            </H4>
             <span>{unit.streetAddress}</span>
             {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
               <ExternalLink

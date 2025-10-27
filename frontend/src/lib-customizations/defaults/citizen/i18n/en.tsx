@@ -1479,13 +1479,23 @@ const en: Translations = {
             en: 'english',
             moveUp: 'Move up',
             moveDown: 'Move down',
-            remove: 'Remove preference'
+            remove: 'Remove preference',
+            preferenceNameAndNumber: (n: number, unitName: string): string =>
+              n === 1
+                ? `First choice ${unitName}`
+                : n === 2
+                  ? `Second choice ${unitName}`
+                  : n === 3
+                    ? `Third choice ${unitName}`
+                    : `${unitName}`
           }
         },
         movePreferredUnitScreenReaderMessage: (
           unitName: string,
           position: number
-        ) => `Unit ${unitName} moved to position ${position}`
+        ) => `Choice ${unitName} moved to position ${position}`,
+        removePreferredUnitScreenReaderMessage: (unitName: string) =>
+          `Choice ${unitName} removed`
       },
       fee: {
         title: 'Early childhood education fee',
