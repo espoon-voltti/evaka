@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import styled from 'styled-components'
 
 import type { PreferredUnit } from 'lib-common/generated/api-types/application'
@@ -49,6 +49,66 @@ export default React.memo(function UnitsSubSection({
   const [screenReaderMessage, showTimedScreenReaderMessage] =
     useTimedScreenReaderMessage()
   const maxUnits = getMaxPreferredUnits(applicationType)
+
+  const removeChoice = useCallback(
+    (i: number, unit: PublicUnit) => {
+      updateFormData((prev) => ({
+        preferredUnits: [
+          ...prev.preferredUnits.slice(0, i),
+          ...prev.preferredUnits.slice(i + 1)
+        ]
+      }))
+      if (emptyPreferredUnitsLabel.current) {
+        emptyPreferredUnitsLabel.current.focus()
+      }
+      showTimedScreenReaderMessage(
+        t.applications.editor.unitPreference.removePreferredUnitScreenReaderMessage(
+          unit.name
+        )
+      )
+    },
+    [t, showTimedScreenReaderMessage, updateFormData]
+  )
+
+  const moveChoiceUp = useCallback(
+    (i: number, unit: PublicUnit) => {
+      updateFormData((prev) => ({
+        preferredUnits: [
+          ...prev.preferredUnits.slice(0, i - 1),
+          prev.preferredUnits[i],
+          prev.preferredUnits[i - 1],
+          ...prev.preferredUnits.slice(i + 1)
+        ]
+      }))
+      showTimedScreenReaderMessage(
+        t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
+          unit.name,
+          i
+        )
+      )
+    },
+    [t, showTimedScreenReaderMessage, updateFormData]
+  )
+
+  const moveChoiceDown = useCallback(
+    (i: number, unit: PublicUnit) => {
+      updateFormData((prev) => ({
+        preferredUnits: [
+          ...prev.preferredUnits.slice(0, i),
+          prev.preferredUnits[i + 1],
+          prev.preferredUnits[i],
+          ...prev.preferredUnits.slice(i + 2)
+        ]
+      }))
+      showTimedScreenReaderMessage(
+        t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
+          unit.name,
+          i + 2
+        )
+      )
+    },
+    [t, showTimedScreenReaderMessage, updateFormData]
+  )
 
   return (
     <>
@@ -209,60 +269,11 @@ export default React.memo(function UnitsSubSection({
                             key={unit.id}
                             unit={unit}
                             n={i + 1}
-                            remove={() => {
-                              updateFormData((prev) => ({
-                                preferredUnits: [
-                                  ...prev.preferredUnits.slice(0, i),
-                                  ...prev.preferredUnits.slice(i + 1)
-                                ]
-                              }))
-                              if (emptyPreferredUnitsLabel.current) {
-                                emptyPreferredUnitsLabel.current.focus()
-                              }
-                              showTimedScreenReaderMessage(
-                                t.applications.editor.unitPreference.removePreferredUnitScreenReaderMessage(
-                                  unit.name
-                                )
-                              )
-                            }}
-                            moveUp={
-                              i > 0
-                                ? () => {
-                                    updateFormData((prev) => ({
-                                      preferredUnits: [
-                                        ...prev.preferredUnits.slice(0, i - 1),
-                                        prev.preferredUnits[i],
-                                        prev.preferredUnits[i - 1],
-                                        ...prev.preferredUnits.slice(i + 1)
-                                      ]
-                                    }))
-                                    showTimedScreenReaderMessage(
-                                      t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
-                                        unit.name,
-                                        i
-                                      )
-                                    )
-                                  }
-                                : null
-                            }
+                            remove={() => removeChoice(i, unit)}
+                            moveUp={i > 0 ? () => moveChoiceUp(i, unit) : null}
                             moveDown={
                               i < formData.preferredUnits.length - 1
-                                ? () => {
-                                    updateFormData((prev) => ({
-                                      preferredUnits: [
-                                        ...prev.preferredUnits.slice(0, i),
-                                        prev.preferredUnits[i + 1],
-                                        prev.preferredUnits[i],
-                                        ...prev.preferredUnits.slice(i + 2)
-                                      ]
-                                    }))
-                                    showTimedScreenReaderMessage(
-                                      t.applications.editor.unitPreference.movePreferredUnitScreenReaderMessage(
-                                        unit.name,
-                                        i + 2
-                                      )
-                                    )
-                                  }
+                                ? () => moveChoiceDown(i, unit)
                                 : null
                             }
                           />
