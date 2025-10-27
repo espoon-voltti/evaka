@@ -4670,7 +4670,7 @@ export const fi = {
           label: 'Esiopetuskausi:',
           placeholder: 'Valitse esiopetuskausi'
         },
-        includeClosed: 'Näytä suljetut yksiköt ja ryhmät'
+        includeClosed: 'Näytä lopetetut yksiköt ja ryhmät'
       }
     },
     preschoolApplications: {
