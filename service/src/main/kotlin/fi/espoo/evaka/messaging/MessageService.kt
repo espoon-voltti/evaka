@@ -303,7 +303,13 @@ class MessageService(
             if (!isApplication && !allRecipientsValid)
                 throw Forbidden("Not authorized to send to all recipients")
             val selectedChildren =
-                db.read { it.getChildrenByParent(user.id, today, citizenCalendarEnv.calendarOpenBeforePlacementDays) }
+                db.read {
+                        it.getChildrenByParent(
+                            user.id,
+                            today,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+                    }
                     .filter { children.contains(it.id) }
             val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size <= 1
             if (!isApplication && !selectedChildrenInSameUnit)

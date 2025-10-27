@@ -35,7 +35,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/children")
-class ChildControllerCitizen(private val accessControl: AccessControl, private val citizenCalendarEnv: CitizenCalendarEnv) {
+class ChildControllerCitizen(
+    private val accessControl: AccessControl,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
+) {
     @GetMapping
     fun getChildren(
         db: Database,
@@ -51,7 +54,12 @@ class ChildControllerCitizen(private val accessControl: AccessControl, private v
                         Action.Citizen.Person.READ_CHILDREN,
                         user.id,
                     )
-                    val children = tx.getChildrenByParent(user.id, clock.today(), citizenCalendarEnv.calendarOpenBeforePlacementDays)
+                    val children =
+                        tx.getChildrenByParent(
+                            user.id,
+                            clock.today(),
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
                     val childIds = children.map { it.id }
                     val serviceApplicationPossible =
                         tx.getChildrenWithServiceApplicationPossibleOnSomeDate(
