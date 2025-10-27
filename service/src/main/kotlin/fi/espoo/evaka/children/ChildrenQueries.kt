@@ -10,7 +10,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
-fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate, calendarOpenBeforePlacementDays: Int): List<Child> =
+fun Database.Read.getChildrenByParent(
+    id: PersonId,
+    today: LocalDate,
+    calendarOpenBeforePlacementDays: Int,
+): List<Child> =
     createQuery {
             sql(
                 """

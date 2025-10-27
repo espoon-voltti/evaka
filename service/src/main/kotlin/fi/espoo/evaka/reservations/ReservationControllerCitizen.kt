@@ -538,7 +538,8 @@ data class ReservationChild(
                 duplicateOf = child.duplicateOf,
                 imageId = child.imageId,
                 upcomingPlacementType = placements.find { it.range.end >= today }?.type,
-                upcomingPlacementStartDate = placements.find { it.range.end >= today }?.range?.start,
+                upcomingPlacementStartDate =
+                    placements.find { it.range.end >= today }?.range?.start,
                 upcomingPlacementUnitName = placements.find { it.range.end >= today }?.unitName,
                 monthSummaries = monthSummaries,
             )

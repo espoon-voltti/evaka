@@ -11,9 +11,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
-import java.time.LocalDate
 
 data class Group(@PropagateNull val id: GroupId, val name: String)
 

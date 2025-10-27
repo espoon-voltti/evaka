@@ -320,7 +320,13 @@ class MessageControllerCitizen(
                         }
                     }
                 val selectedChildren =
-                    dbc.read { it.getChildrenByParent(user.id, today, citizenCalendarEnv.calendarOpenBeforePlacementDays) }
+                    dbc.read {
+                            it.getChildrenByParent(
+                                user.id,
+                                today,
+                                citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                            )
+                        }
                         .filter { body.children.contains(it.id) }
                 val selectedChildrenInSameUnit =
                     selectedChildren.asSequence().map { it.unit?.id }.toSet().size == 1
