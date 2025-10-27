@@ -150,6 +150,7 @@ export { faTimeline as faListTimeline } from '@fortawesome/free-solid-svg-icons/
 export { faReply } from '@fortawesome/free-solid-svg-icons/faReply'
 export { faUtensils } from '@fortawesome/free-solid-svg-icons/faUtensils'
 export { faLineChart } from '@fortawesome/free-solid-svg-icons/faLineChart'
+export { faHeart } from '@fortawesome/free-regular-svg-icons/faHeart'
 
 import type * as FreeIconsSet from './free-icons'
 import { typeAssert } from './utils'
