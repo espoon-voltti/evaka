@@ -75,23 +75,6 @@ export default React.memo(function PlacementDesktop({
     )
   }
 
-  const primaryUnits = [
-    ...new Set(applicationSummaries.data.map((a) => a.preferredUnits[0].id))
-  ]
-
-  if (primaryUnits.length > 10) {
-    return (
-      <AlertBox
-        title={i18n.applications.placementDesktop.warnings.tooManyPrimaryUnitsTitle(
-          primaryUnits.length
-        )}
-        message={
-          i18n.applications.placementDesktop.warnings.tooManyPrimaryUnitsMessage
-        }
-      />
-    )
-  }
-
   return renderResult(allUnits, (allUnits) => (
     <PlacementDesktopValidated
       applications={applicationSummaries.data}
