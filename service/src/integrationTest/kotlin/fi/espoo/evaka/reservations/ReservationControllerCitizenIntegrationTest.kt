@@ -802,6 +802,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = monday,
+                            upcomingPlacementUnitName = daycare.name,
                         ),
                         ReservationChild(
                             id = child2.id,
@@ -812,6 +814,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = fridayLastWeek,
+                            upcomingPlacementUnitName = daycare.name,
                         ),
                         ReservationChild(
                             id = child3.id,
@@ -822,6 +826,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = monday,
+                            upcomingPlacementUnitName = daycare.name,
                         ),
                         // child4 has no placements => not included
                     ),
@@ -986,6 +992,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = sundayLastWeek,
+                            upcomingPlacementUnitName = roundTheClockDaycare.name,
                         ),
                         ReservationChild(
                             id = child2.id,
@@ -996,6 +1004,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = sundayLastWeek,
+                            upcomingPlacementUnitName = daycare.name,
                         ),
                     ),
                 days =
@@ -1654,6 +1664,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
+                            upcomingPlacementStartDate = monday,
+                            upcomingPlacementUnitName = daycare.name,
                         )
                     ),
                 days =
@@ -1756,6 +1768,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     imageId = null,
                     upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                     monthSummaries = emptyList(),
+                    upcomingPlacementStartDate = monday,
+                    upcomingPlacementUnitName = daycare.name,
                 ),
                 ReservationChild(
                     id = child2.id,
@@ -1766,6 +1780,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     imageId = null,
                     upcomingPlacementType = PlacementType.DAYCARE,
                     monthSummaries = emptyList(),
+                    upcomingPlacementStartDate = fridayLastWeek,
+                    upcomingPlacementUnitName = daycare.name,
                 ),
             ),
             res.children,
