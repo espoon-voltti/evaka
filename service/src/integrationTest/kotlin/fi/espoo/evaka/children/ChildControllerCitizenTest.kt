@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.children
 
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var childControllerCitizen: ChildControllerCitizen
+    @Autowired private lateinit var citizenCalendarEnv: CitizenCalendarEnv
 
     @Test
     fun `getChildAttendanceSummary placement`() {
@@ -291,7 +293,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `getChildren contains child info and default permitted actions`() {
-        val (guardianId, childId) =
+        val (guardianId, childId, unitId) =
             db.transaction { tx ->
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
@@ -306,7 +308,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         endDate = LocalDate.of(2023, 9, 17),
                     )
                 )
-                Pair(guardianId, childId)
+                Triple(guardianId, childId, unitId)
             }
         val childAndPermittedActions =
             ChildAndPermittedActions(
@@ -319,6 +321,9 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 group = null,
                 unit = null,
                 upcomingPlacementType = PlacementType.DAYCARE,
+                upcomingPlacementStartDate = LocalDate.of(2023, 8, 1),
+                upcomingPlacementIsCalendarOpen = true,
+                upcomingPlacementUnit = Unit(id = unitId, name = "Test Daycare"),
                 permittedActions =
                     setOf(
                         Action.Citizen.Child.CREATE_ABSENCE,
@@ -357,7 +362,10 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         val espooChildControllerCitizen =
-            ChildControllerCitizen(AccessControl(EspooActionRuleMapping(), noopTracer()))
+            ChildControllerCitizen(
+                AccessControl(EspooActionRuleMapping(), noopTracer()),
+                citizenCalendarEnv = citizenCalendarEnv,
+            )
         val result =
             espooChildControllerCitizen.getChildren(
                 dbInstance(),
