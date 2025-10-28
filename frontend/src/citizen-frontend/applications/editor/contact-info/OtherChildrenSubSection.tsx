@@ -217,6 +217,7 @@ export default React.memo(function OtherChildrenSubSection({
             text={t.applications.editor.contactInfo.addChild}
             data-qa="add-other-child"
             onClick={() => {
+              const newIndex = formData.otherChildren.length
               updateFormData({
                 otherChildren: [
                   ...formData.otherChildren,
@@ -227,6 +228,7 @@ export default React.memo(function OtherChildrenSubSection({
                   }
                 ]
               })
+              focusElementAfterDelay(`extra-child-first-name-${newIndex}`)
             }}
           />
         </>
