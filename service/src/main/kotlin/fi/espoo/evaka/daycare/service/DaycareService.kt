@@ -64,11 +64,12 @@ class DaycareService {
         daycareId: DaycareId,
         startDate: LocalDate?,
         endDate: LocalDate?,
+        includeClosed: Boolean = true,
         groupPredicate: Predicate = Predicate.alwaysTrue(),
     ): List<DaycareGroup> {
         if (!tx.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
-        return tx.getDaycareGroups(daycareId, startDate, endDate, groupPredicate)
+        return tx.getDaycareGroups(daycareId, startDate, endDate, includeClosed, groupPredicate)
     }
 }
 

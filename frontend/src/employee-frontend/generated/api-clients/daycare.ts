@@ -249,12 +249,14 @@ export async function getGroups(
   request: {
     daycareId: DaycareId,
     from?: LocalDate | null,
-    to?: LocalDate | null
+    to?: LocalDate | null,
+    includeClosed?: boolean | null
   }
 ): Promise<DaycareGroup[]> {
   const params = createUrlSearchParams(
     ['from', request.from?.formatIso()],
-    ['to', request.to?.formatIso()]
+    ['to', request.to?.formatIso()],
+    ['includeClosed', request.includeClosed?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
     url: uri`/employee/daycares/${request.daycareId}/groups`.toString(),

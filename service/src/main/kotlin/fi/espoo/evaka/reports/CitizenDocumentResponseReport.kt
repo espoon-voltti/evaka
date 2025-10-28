@@ -126,6 +126,7 @@ class CitizenDocumentResponseReport(
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
+        @RequestParam includeClosed: Boolean = true,
     ): List<DaycareGroup> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -148,6 +149,7 @@ class CitizenDocumentResponseReport(
                         unitId,
                         from,
                         to,
+                        includeClosed,
                         groupFilter?.toPredicate() ?: Predicate.alwaysTrue(),
                     )
                 }

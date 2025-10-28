@@ -14,7 +14,8 @@ import {
   Fixture,
   familyWithTwoGuardians,
   testCareArea,
-  testDaycare
+  testDaycare,
+  testDaycare2
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -38,6 +39,11 @@ beforeEach(async () => {
   admin = await Fixture.employee().admin().save()
   await testCareArea.save()
   await testDaycare.save()
+  await Fixture.daycare({
+    ...testDaycare2,
+    areaId: testCareArea.id,
+    closingDate: LocalDate.of(2024, 1, 1)
+  }).save()
   await familyWithTwoGuardians.save()
   await createDefaultServiceNeedOptions()
   const fullTimeServiceNeedOption1 = await Fixture.serviceNeedOption({
@@ -46,7 +52,16 @@ beforeEach(async () => {
     validFrom: LocalDate.of(2020, 1, 1),
     validTo: null
   }).save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
+  await createDaycareGroups({
+    body: [
+      testDaycareGroup,
+      Fixture.daycareGroup({
+        daycareId: testDaycare.id,
+        name: 'Suljettu ryhmä',
+        endDate: LocalDate.of(2024, 1, 1)
+      })
+    ]
+  })
 
   unitId = testDaycare.id
   child = familyWithTwoGuardians.children[0]
@@ -182,5 +197,34 @@ describe('Child attendance reservation report', () => {
         attendanceReservationEnd: null
       }
     ])
+  })
+
+  test('Closed filtering works', async () => {
+    await page.goto(
+      `${config.employeeUrl}/reports/attendance-reservation-by-child`
+    )
+    const report = new ChildAttendanceReservationByChildReport(page)
+    await report.setDates(mockedTime, mockedTime)
+    await report.unitSelector.click()
+    await report.unitSelector.assertOptions([
+      testDaycare.name,
+      testDaycare2.name
+    ])
+    await report.unitSelector.click()
+    await report.selectUnit(testDaycare.name)
+    await report.groupSelector.click()
+    await report.groupSelector.assertOptions([
+      testDaycareGroup.name,
+      'Suljettu ryhmä'
+    ])
+    await report.groupSelector.click()
+
+    await report.filterByClosed.click()
+
+    await report.unitSelector.click()
+    await report.unitSelector.assertOptions([testDaycare.name])
+    await report.unitSelector.click()
+    await report.groupSelector.click()
+    await report.groupSelector.assertOptions([testDaycareGroup.name])
   })
 })
