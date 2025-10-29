@@ -151,7 +151,7 @@ const PlacementDesktopValidated = React.memo(
         const daycareElement = daycareRefs[highlightedDaycare].current
         const daycareListElement = daycareListRef.current
         daycareListElement.scrollTo({
-          top: daycareElement.offsetTop - daycareListElement.offsetTop,
+          top: daycareElement.offsetTop - daycareListElement.offsetTop - 10,
           behavior: 'smooth'
         })
       }
