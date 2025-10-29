@@ -210,9 +210,9 @@ class NekkuService(
     ) {
         val content =
             EmailContent.fromHtml(
-                subject = "Muutoksia Nekku-asiakasnumeroihin",
+                subject = "Muutoksia eVakassa Nekku-asiakasnumeroihin",
                 html =
-                    "<p>Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumisesta Nekusta:</p>\n" +
+                    "<p>Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nekku-tietojen muuttumisen takia. Tarkista ryhmät:</p>\n" +
                         job.groupNames.joinToString("\n", transform = { "<p>- $it</p>" }),
             )
 
