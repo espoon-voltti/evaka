@@ -42,7 +42,7 @@ export default React.memo(function DraftPlacementRow({
   const [editingNote, setEditingNote] = useState(false)
 
   return (
-    <Tr>
+    <Tr data-qa="draft-placement-row">
       {editingNote && (
         <ServiceWorkerNoteModal
           applicationId={placementDraft.applicationId}
@@ -72,12 +72,15 @@ export default React.memo(function DraftPlacementRow({
             href={`/employee/applications/${placementDraft.applicationId}`}
             target="_blank"
             rel="noreferrer"
+            data-qa="child-name"
           >
             {placementDraft.childName} {!applicationInSearchResults && '*'}
           </a>
         </Tooltip>
       </NameTd>
-      <DateTd>{placementDraft.startDate.format()} –</DateTd>
+      <DateTd data-qa="placement-date">
+        {placementDraft.startDate.format()} –
+      </DateTd>
       <ActionsTd>
         <FixedSpaceRow
           spacing="s"
@@ -115,6 +118,7 @@ export default React.memo(function DraftPlacementRow({
             {applicationInSearchResults ? (
               <div>
                 <MutateIconOnlyButton
+                  data-qa="cancel-placement-draft-button"
                   icon={faUndo}
                   aria-label={
                     i18n.applications.placementDesktop.cancelPlacementDraft
@@ -134,6 +138,7 @@ export default React.memo(function DraftPlacementRow({
               </div>
             ) : (
               <ConfirmedMutation
+                data-qa="cancel-placement-draft-button"
                 buttonStyle="ICON"
                 icon={faUndo}
                 buttonAltText={

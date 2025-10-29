@@ -104,7 +104,10 @@ export default React.memo(function ApplicationCard({
   )
 
   return (
-    <Card $placed={application.placementDraft !== null}>
+    <Card
+      $placed={application.placementDraft !== null}
+      data-qa="application-card"
+    >
       {editingNote && (
         <ServiceWorkerNoteModal
           applicationId={application.id}
@@ -130,7 +133,11 @@ export default React.memo(function ApplicationCard({
               target="_blank"
               rel="noreferrer"
             >
-              <H3 noMargin style={{ color: colors.main.m1 }}>
+              <H3
+                noMargin
+                style={{ color: colors.main.m1 }}
+                data-qa="child-name"
+              >
                 {application.lastName} {application.firstName}
               </H3>
             </a>
@@ -188,7 +195,7 @@ export default React.memo(function ApplicationCard({
                     textColor={colors.grayscale.g100}
                     size="m"
                   />
-                  <div>
+                  <div data-qa="due-date">
                     {application.transferApplication ? (
                       <Light>
                         {i18n.applications.placementDesktop.transfer}
@@ -212,7 +219,9 @@ export default React.memo(function ApplicationCard({
                     textColor={colors.grayscale.g100}
                     size="m"
                   />
-                  <div>{application.startDate?.format() ?? '-'}</div>
+                  <div data-qa="preferred-start-date">
+                    {application.startDate?.format() ?? '-'}
+                  </div>
                 </FixedSpaceRow>
               </Tooltip>
             </DateCol>
@@ -258,6 +267,7 @@ export default React.memo(function ApplicationCard({
           <div style={{ width: '360px' }}>
             {application.checkedByAdmin && (
               <Combobox
+                data-qa="draft-placement-combobox"
                 items={allUnits}
                 selectedItem={null}
                 onChange={(unit) => {
@@ -293,6 +303,7 @@ export default React.memo(function ApplicationCard({
             <Button
               appearance="button"
               text={i18n.applications.placementDesktop.toPlacementPlan}
+              data-qa="to-placement-plan-button"
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
@@ -352,9 +363,11 @@ const UnitRow = React.memo(function UnitRow({
       $last={lastRow}
       justifyContent="space-between"
       alignItems="center"
+      data-qa="unit-preference"
     >
       <UnitRowName alignItems="center" spacing="xs">
         <UnitRowLink
+          data-qa="unit-preference-title"
           onClick={
             unitVisible ? () => onAddOrHighlightDaycare(unit) : undefined
           }
@@ -392,8 +405,11 @@ const UnitRow = React.memo(function UnitRow({
           <FixedSpaceRow spacing="m">
             {/*minWidth attempts to keep the date from jumping between read and edit*/}
             <FixedSpaceRow spacing="s" style={{ minWidth: '178px' }}>
-              <span>{application.placementDraft.startDate.format()} –</span>
+              <span data-qa="placement-date">
+                {application.placementDraft.startDate.format()} –
+              </span>
               <IconOnlyButton
+                data-qa="edit-placement-date-button"
                 icon={faPen}
                 onClick={() => setEditingDate(true)}
                 aria-label={i18n.common.edit}
@@ -408,6 +424,7 @@ const UnitRow = React.memo(function UnitRow({
                 aria-label={
                   i18n.applications.placementDesktop.cancelPlacementDraft
                 }
+                data-qa="cancel-placement-draft-button"
                 mutation={deleteApplicationPlacementDraftMutation}
                 onClick={() =>
                   application.placementDraft
@@ -432,6 +449,7 @@ const UnitRow = React.memo(function UnitRow({
           <MutateButton
             appearance="inline"
             text={i18n.applications.placementDesktop.createPlacementDraft}
+            data-qa="create-placement-draft-button"
             icon={faArrowLeft}
             mutation={upsertApplicationPlacementDraftMutation}
             onClick={() => ({
@@ -458,6 +476,7 @@ const UnitRow = React.memo(function UnitRow({
             appearance="inline"
             icon={faEye}
             text={i18n.applications.placementDesktop.show}
+            data-qa="show-unit-button"
             onClick={() => onAddOrHighlightDaycare(unit)}
           />
         ))}
@@ -486,6 +505,7 @@ const DateEditor = React.memo(function DateEditor({
   return (
     <FixedSpaceRow alignItems="center">
       <DatePicker
+        data-qa="placement-date-picker"
         date={date}
         onChange={(val) => {
           if (val) setDate(val)
@@ -494,6 +514,7 @@ const DateEditor = React.memo(function DateEditor({
       />
       <FixedSpaceRow spacing="xs" alignItems="center">
         <MutateIconOnlyButton
+          data-qa="save-placement-date-button"
           icon={faCheck}
           mutation={upsertApplicationPlacementDraftMutation}
           onClick={() => ({

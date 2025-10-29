@@ -111,6 +111,7 @@ export default React.memo(function ApplicationsPage() {
                 checked={placementMode === 'desktop'}
                 onChange={() => setPlacementMode('desktop')}
                 label={i18n.applications.asDesktop}
+                data-qa="show-as-desktop"
               />
             </FixedSpaceRow>
           </ContentArea>
