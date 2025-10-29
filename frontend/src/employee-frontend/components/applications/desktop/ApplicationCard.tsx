@@ -442,13 +442,14 @@ const UnitRow = React.memo(function UnitRow({
                 startDate: null
               }
             })}
-            onSuccess={({ startDate }) =>
+            onSuccess={({ startDate }) => {
+              onAddOrHighlightDaycare(unit)
               onUpsertApplicationPlacementSuccess(
                 application.id,
                 unit,
                 startDate
               )
-            }
+            }}
             onFailure={onMutateApplicationPlacementFailure}
             successTimeout={0}
           />
