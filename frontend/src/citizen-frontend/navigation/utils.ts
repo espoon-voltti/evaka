@@ -169,7 +169,8 @@ const parseDismissedNotifications = (str: string): DismissedNotifications => {
   return {}
 }
 
-const reNotifyAgainAfterDismissal = 30 * 1000 // TODO dev 30 sec
+const reNotifyAgainAfterDismissal = 7 * 24 * 60 * 60 * 1000 // 7 days
+const notificationPrefix = 'child-not-started-toast'
 
 export const useChildrenStartingNotification = () => {
   const loggedIn = useUser() !== undefined
@@ -213,21 +214,16 @@ export const useChildrenStartingNotification = () => {
       upcomingChildren: ChildWithUpcomingPlacement[],
       _dismissedNotifications: DismissedNotifications
     ) => {
-      removeNotifications(
-        'child-starting-soon-cta-' // Remove all related notifications
-      )
+      removeNotifications(notificationPrefix)
       const upcomingChildIds: string[] = []
       upcomingChildren.forEach((child, index) => {
         upcomingChildIds.push(child.id.toString())
+
+        const dismissedAt = _dismissedNotifications[child.id]?.dismissedAt
         if (
-          _dismissedNotifications[child.id] &&
-          _dismissedNotifications[child.id].dismissedAt &&
-          Date.now() - _dismissedNotifications[child.id].dismissedAt <
-            reNotifyAgainAfterDismissal
+          dismissedAt &&
+          Date.now() - dismissedAt < reNotifyAgainAfterDismissal
         ) {
-          // console.log(
-          //   `   notification for child id ${child.id} dismissed ${Math.floor((Date.now() - _dismissedNotifications[child.id].dismissedAt) / 1000)} seconds ago`
-          // )
           return
         }
 
@@ -241,9 +237,9 @@ export const useChildrenStartingNotification = () => {
               child.upcomingPlacementUnit.name
             ),
             onClose: () => dismissNotification(child.id),
-            dataQa: `child-starting-soon-cta-${index}`
+            dataQa: `${notificationPrefix}-${index}`
           },
-          `child-starting-soon-cta-${index}`
+          `${notificationPrefix}-${index}`
         )
       })
       const storedNotificationChildIds = Object.keys(_dismissedNotifications)
@@ -275,7 +271,5 @@ export const useChildrenStartingNotification = () => {
       const upcomingChildren = childrenResult.value.filter(hasUpcomingPlacement)
       onNotificationDataLoaded(upcomingChildren, dismissedNotifications)
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenResult, dismissedNotifications])
 }

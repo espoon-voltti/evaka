@@ -11,6 +11,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { formatPersonName } from 'lib-common/names'
 import TimeRange from 'lib-common/time-range'
 import type { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
@@ -36,8 +37,8 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import type { EnvType } from '../../utils/page'
 import { envs, Page } from '../../utils/page'
+import type { Element, EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 5)
@@ -66,6 +67,21 @@ async function openCalendarPage(
   })
   await enduserLogin(page, testAdult)
   return new CitizenCalendarPage(page, envType)
+}
+
+const assertStartingInfoContent = async (
+  parentElement: Element,
+  child: DevPerson,
+  daycareName: string,
+  startDate: LocalDate
+) => {
+  await parentElement.waitUntilVisible()
+  const content = await parentElement.text
+
+  const name = formatPersonName(child, 'FirstFirst')
+  expect(content).toContain(name)
+  expect(content).toContain(startDate.format())
+  expect(content).toContain(daycareName)
 }
 
 describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
@@ -655,6 +671,174 @@ describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
     }
   })
 })
+
+describe.each(envs)(
+  'Citizen attendance reservation modal infoboxes (%s)',
+  (env) => {
+    let children: DevPerson[]
+    const infoboxElementPrefix = 'child-not-started-infobox'
+
+    beforeEach(async () => {
+      await resetServiceState()
+      await preschoolTerm2021.save()
+      await testCareArea.save()
+      await testDaycare.save()
+
+      children = [testChild, testChild2, testChildRestricted]
+      await Fixture.family({ guardian: testAdult, children }).save()
+    })
+
+    test('Citizen sees an info box about a child starting later than the selected range end date', async () => {
+      const child2StartDate = today.addDays(25)
+      await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: child2StartDate,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(env)
+
+      const firstReservationDay = today.addDays(14)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.waitUntilVisible()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChild.id)
+      await reservationsModal.selectChild(testChild2.id)
+      await reservationsModal.startDate.fill(firstReservationDay)
+      // Set end date earlier than child2 start date
+      await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+
+      await reservationsModal.assertChildrenChipDisabled(false, [testChild.id])
+      await reservationsModal.assertChildrenChipDisabled(true, [testChild2.id])
+
+      const infoBoxChild2 = reservationsModal.findByDataQa(
+        `${infoboxElementPrefix}-${testChild2.id}`
+      )
+      await assertStartingInfoContent(
+        infoBoxChild2,
+        testChild2,
+        testDaycare.name,
+        child2StartDate
+      )
+    })
+    test('Citizen sees an info box about more than one child starting later than the selected range end date', async () => {
+      const child2StartDate = today.addDays(25)
+      const child3StartDate = today.addDays(26)
+      await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: child2StartDate,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+      await Fixture.placement({
+        childId: testChildRestricted.id,
+        unitId: testDaycare.id,
+        startDate: child3StartDate,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(env)
+
+      const firstReservationDay = today.addDays(14)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.waitUntilVisible()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChild.id)
+      await reservationsModal.selectChild(testChild2.id)
+      await reservationsModal.selectChild(testChildRestricted.id)
+      await reservationsModal.startDate.fill(firstReservationDay)
+      await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+
+      await reservationsModal.assertChildrenChipDisabled(false, [testChild.id])
+      await reservationsModal.assertChildrenChipDisabled(true, [
+        testChild2.id,
+        testChildRestricted.id
+      ])
+
+      const infoBoxChild2 = reservationsModal.findByDataQa(
+        `${infoboxElementPrefix}-${testChild2.id}`
+      )
+      await assertStartingInfoContent(
+        infoBoxChild2,
+        testChild2,
+        testDaycare.name,
+        child2StartDate
+      )
+
+      const infoBoxChild3 = reservationsModal.findByDataQa(
+        `${infoboxElementPrefix}-${testChildRestricted.id}`
+      )
+      await assertStartingInfoContent(
+        infoBoxChild3,
+        testChildRestricted,
+        testDaycare.name,
+        child3StartDate
+      )
+    })
+
+    test('Absences - citizen sees an info box about a child starting later than the selected range end date', async () => {
+      const child2StartDate = today.addDays(25) // Less than 30 which is the limit for calendar being open for a child
+      const selectedAbsencesEndDate = child2StartDate.subDays(1)
+      await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: child2StartDate,
+        endDate: today.addYears(1),
+        type: 'DAYCARE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(env)
+
+      const absencesModal = await calendarPage.openAbsencesModal()
+      await absencesModal.toggleChildren([testChild, testChild2])
+
+      await absencesModal.selectDates(
+        new FiniteDateRange(today, selectedAbsencesEndDate)
+      )
+
+      await absencesModal.selectAbsenceType('SICKLEAVE')
+      await absencesModal.assertChildrenChipDisabled(false, [testChild.id])
+      await absencesModal.assertChildrenChipDisabled(true, [testChild2.id])
+
+      const infoBoxChild1 = absencesModal.getInfoBox(testChild.id)
+      await infoBoxChild1.waitUntilHidden()
+      const infoBoxChild2 = absencesModal.getInfoBox(testChild2.id)
+      await assertStartingInfoContent(
+        infoBoxChild2,
+        testChild2,
+        testDaycare.name,
+        child2StartDate
+      )
+    })
+  }
+)
 
 describe.each(envs)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
@@ -1450,18 +1634,14 @@ describe('Citizen calendar visibility', () => {
     daycareId = testDaycare.id
   })
 
-  test('Child is visible when placement starts within 2 weeks', async () => {
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          child.id,
-          daycareId,
-          today.addDays(13),
-          today.addYears(1)
-        )
-      ]
-    })
+  test('Child is visible when placement starts within 1 month (30 days)', async () => {
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycareId,
+      startDate: today.addDays(30),
+      endDate: today.addYears(1),
+      type: 'DAYCARE'
+    }).save()
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -1471,18 +1651,14 @@ describe('Citizen calendar visibility', () => {
     await page.findByDataQa('nav-calendar-desktop').waitUntilVisible()
   })
 
-  test('Child is not visible when placement starts later than 2 weeks', async () => {
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          child.id,
-          daycareId,
-          today.addDays(15),
-          today.addYears(1)
-        )
-      ]
-    })
+  test('Child is not visible when placement starts later than 1 month (30 + 1) days', async () => {
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycareId,
+      startDate: today.addDays(31),
+      endDate: today.addYears(1),
+      type: 'DAYCARE'
+    }).save()
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -1519,6 +1695,291 @@ describe('Citizen calendar visibility', () => {
     await page.findByDataQa('nav-children-desktop').waitUntilHidden()
   })
 })
+
+describe.each(envs)(
+  'Citizen notification toasts about children starting',
+  (env) => {
+    let page: Page
+    const today = LocalDate.todayInSystemTz()
+    let child1: DevPerson
+    let child2: DevPerson
+    let child3: DevPerson
+    let daycareId1: DaycareId
+    let daycareId2: DaycareId
+
+    beforeEach(async () => {
+      await resetServiceState()
+      await testCareArea.save()
+      await testCareArea2.save()
+      await testDaycare.save()
+      await testDaycare2.save()
+      child1 = Fixture.person({
+        ssn: '200818A952P',
+        firstName: 'Yrjö Ykkös',
+        lastName: 'Karhula',
+        email: '',
+        phone: '',
+        language: 'fi',
+        dateOfBirth: LocalDate.of(2018, 8, 20),
+        streetAddress: testAdult.streetAddress,
+        postalCode: testAdult.postalCode,
+        postOffice: testAdult.postOffice,
+        nationalities: ['FI'],
+        restrictedDetailsEnabled: false,
+        restrictedDetailsEndDate: null
+      })
+      child2 = Fixture.person({
+        ssn: '150619A966K',
+        firstName: 'Kaija Kakkos',
+        lastName: 'Karhula',
+        email: '',
+        phone: '',
+        language: 'fi',
+        dateOfBirth: LocalDate.of(2019, 6, 15),
+        streetAddress: testAdult.streetAddress,
+        postalCode: testAdult.postalCode,
+        postOffice: testAdult.postOffice,
+        nationalities: ['FI'],
+        restrictedDetailsEnabled: false,
+        restrictedDetailsEndDate: null
+      })
+      child3 = Fixture.person({
+        ssn: '010420A9633',
+        firstName: 'Koitto Kolmos',
+        lastName: 'Karhula',
+        email: '',
+        phone: '',
+        language: 'fi',
+        dateOfBirth: LocalDate.of(2020, 4, 1),
+        streetAddress: testAdult.streetAddress,
+        postalCode: testAdult.postalCode,
+        postOffice: testAdult.postOffice,
+        nationalities: ['FI'],
+        restrictedDetailsEnabled: false,
+        restrictedDetailsEndDate: null
+      })
+      await Fixture.family({
+        guardian: testAdult,
+        children: [child1, child2, child3]
+      }).save()
+      daycareId1 = testDaycare.id
+      daycareId2 = testDaycare2.id
+
+      const viewport =
+        env === 'mobile'
+          ? { width: 375, height: 812 }
+          : { width: 1920, height: 1080 }
+      page = await Page.open({
+        viewport,
+        screen: viewport,
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+    })
+
+    const addPlacement = async (
+      child: DevPerson,
+      daycareId: DaycareId,
+      startDaysFromToday: number,
+      type: 'DAYCARE' | 'PRESCHOOL'
+    ) => {
+      await Fixture.placement({
+        childId: child.id,
+        unitId: daycareId,
+        startDate: today.addDays(startDaysFromToday),
+        endDate: today.addYears(1),
+        type
+      }).save()
+    }
+
+    const notificationPrefix = 'child-not-started-toast'
+    const assertNotificationIndexHidden = async (index: number) => {
+      const cta = page.findByDataQa(`${notificationPrefix}-${index}`)
+      await cta.waitUntilHidden()
+    }
+
+    const startDateOffsetLimit = 30
+    const startDateOffsetAfterLimit = startDateOffsetLimit + 1
+    const startDateOffsetBeforeLimit = startDateOffsetLimit - 1
+
+    test(`Notifications are shown for all children starting over 30 days from now: ${env}`, async () => {
+      await addPlacement(
+        child1,
+        daycareId1,
+        startDateOffsetAfterLimit,
+        'PRESCHOOL'
+      )
+      await addPlacement(
+        child2,
+        daycareId2,
+        startDateOffsetAfterLimit,
+        'DAYCARE'
+      )
+      await addPlacement(
+        child3,
+        daycareId2,
+        startDateOffsetAfterLimit,
+        'DAYCARE'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      // Notifications are shown in child age order
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-0`),
+        child1,
+        testDaycare.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-1`),
+        child2,
+        testDaycare2.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-2`),
+        child3,
+        testDaycare2.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+    })
+
+    test('Notifications are shown for 2 children starting over 30 days from now', async () => {
+      await addPlacement(child1, daycareId1, startDateOffsetLimit, 'PRESCHOOL')
+      await addPlacement(
+        child2,
+        daycareId2,
+        startDateOffsetAfterLimit,
+        'DAYCARE'
+      )
+      await addPlacement(
+        child3,
+        daycareId2,
+        startDateOffsetAfterLimit,
+        'DAYCARE'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-0`),
+        child2,
+        testDaycare2.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-1`),
+        child3,
+        testDaycare2.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+      await assertNotificationIndexHidden(2)
+    })
+
+    test('Notification is shown for 1 child starting over 30 days from now', async () => {
+      await addPlacement(child1, daycareId1, startDateOffsetLimit, 'PRESCHOOL')
+      await addPlacement(
+        child2,
+        daycareId2,
+        startDateOffsetBeforeLimit,
+        'DAYCARE'
+      )
+      await addPlacement(
+        child3,
+        daycareId2,
+        startDateOffsetAfterLimit,
+        'DAYCARE'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      await assertStartingInfoContent(
+        page.findByDataQa(`${notificationPrefix}-0`),
+        child3,
+        testDaycare2.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+
+      await assertNotificationIndexHidden(1)
+      await assertNotificationIndexHidden(2)
+    })
+    test('No notifications are shown for children starting within 30 days from now', async () => {
+      await addPlacement(
+        child1,
+        daycareId1,
+        startDateOffsetBeforeLimit,
+        'PRESCHOOL'
+      )
+      await addPlacement(child2, daycareId2, startDateOffsetLimit, 'DAYCARE')
+      await addPlacement(
+        child3,
+        daycareId2,
+        startDateOffsetBeforeLimit,
+        'DAYCARE'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      await assertNotificationIndexHidden(0)
+      await assertNotificationIndexHidden(1)
+      await assertNotificationIndexHidden(2)
+    })
+    test('Notification shows after page reload if not dismissed', async () => {
+      await addPlacement(
+        child1,
+        daycareId1,
+        startDateOffsetAfterLimit,
+        'PRESCHOOL'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      const notification = page.findByDataQa(`${notificationPrefix}-0`)
+      await assertStartingInfoContent(
+        notification,
+        child1,
+        testDaycare.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+
+      await page.reload()
+
+      await assertStartingInfoContent(
+        notification,
+        child1,
+        testDaycare.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+    })
+    test('A dismissed notification does not appear after page reload', async () => {
+      await addPlacement(
+        child1,
+        daycareId1,
+        startDateOffsetAfterLimit,
+        'PRESCHOOL'
+      )
+
+      await enduserLogin(page, testAdult)
+
+      const notification = page.findByDataQa(`${notificationPrefix}-0`)
+      await assertStartingInfoContent(
+        notification,
+        child1,
+        testDaycare.name,
+        today.addDays(startDateOffsetAfterLimit)
+      )
+
+      const closeButton = notification.findByDataQa('toast-close-button')
+      await closeButton.click()
+
+      await assertNotificationIndexHidden(0)
+
+      await page.reload()
+
+      await assertNotificationIndexHidden(0)
+    })
+  }
+)
 
 describe.each(envs)('Citizen calendar shift care reservations', (env) => {
   let page: Page

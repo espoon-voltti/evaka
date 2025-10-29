@@ -108,7 +108,7 @@ export default React.memo(function ChildSelector({
         isPlacementNotStarted(child) ? (
           <InfoBoxWrapper
             key={child.id}
-            data-qa="child-not-started-info-box"
+            data-qa={`child-not-started-infobox-${child.id}`}
             className="child-selector-infobox"
           >
             <InfoBox
