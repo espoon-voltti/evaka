@@ -629,11 +629,62 @@ enum class Audit(
 
     class UseNamedArguments private constructor()
 
+    /**
+     * Logs an audit event with optional context information.
+     *
+     * Examples:
+     * ```
+     * // Simple read operation - only targetId
+     * Audit.UnitRead.log(targetId = AuditId(daycareId))
+     *
+     * // Creation operation - targetId is the context, objectId is the created resource
+     * Audit.PlacementCreate.log(
+     *     targetId = AuditId(listOf(childId, unitId)),
+     *     objectId = AuditId(placementIds)
+     * )
+     *
+     * // Update operation - targetId is what was updated, objectId provides related context
+     * Audit.ApplicationUpdate.log(
+     *     targetId = AuditId(applicationId),
+     *     objectId = AuditId(childId)
+     * )
+     *
+     * // Batch operations - meta provides count information
+     * Audit.UnitSearch.log(meta = mapOf("count" to units.size))
+     *
+     * // Complex operations - combining all parameters
+     * Audit.PlacementUpdate.log(
+     *     targetId = AuditId(placementId),
+     *     objectId = AuditId(listOf(childId, unitId)),
+     *     meta = mapOf("startDate" to startDate, "endDate" to endDate)
+     * )
+     *
+     * // Report generation - meta provides filter criteria
+     * Audit.PreschoolAbsenceReport.log(
+     *     meta = mapOf(
+     *         "unitId" to unitId,
+     *         "termStart" to termStart,
+     *         "termEnd" to termEnd
+     *     )
+     * )
+     *
+     * // Multiple IDs in targetId
+     * Audit.MessagingMarkMessagesReadWrite.log(
+     *     targetId = AuditId(listOf(accountId, threadId))
+     * )
+     * ```
+     */
     fun log(
         // This is a hack to force passing all real parameters by name
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        /** The primary resource or entity being acted upon by this audit event. */
         targetId: AuditId? = null,
+        /** Related or secondary entities affected by the action, or the result of the action. */
         objectId: AuditId? = null,
+        /**
+         * Additional contextual information such as counts, date ranges, or other metadata relevant
+         * to the audit event.
+         */
         meta: Map<String, Any?> = emptyMap(),
     ) {
         logger.audit(
@@ -661,12 +712,48 @@ enum class ChildAudit(
 
     class UseNamedArguments private constructor()
 
+    /**
+     * Logs an audit event that requires child ID(s) to be specified.
+     *
+     * The childId is automatically combined with objectId in the audit log to ensure child-related
+     * operations are always traceable.
+     *
+     * Examples:
+     * ```
+     * // Simple child-related read with single child
+     * ChildAudit.ApplicationRead.log(
+     *     targetId = AuditId(userId),
+     *     childId = AuditId(childId)
+     * )
+     *
+     * // Multiple children with count metadata
+     * ChildAudit.ApplicationRead.log(
+     *     targetId = AuditId(userId),
+     *     childId = AuditId(childIds),
+     *     meta = mapOf("count" to childIds.size)
+     * )
+     *
+     * // Child operation with additional context in objectId
+     * ChildAudit.ApplicationRead.log(
+     *     targetId = AuditId(applicationId),
+     *     childId = AuditId(childId),
+     *     objectId = AuditId(guardianId)
+     * )
+     * ```
+     */
     fun log(
         // This is a hack to force passing all real parameters by name
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: Array<out UseNamedArguments>,
+        /** The child ID that must be logged for this audit event. */
         childId: AuditId,
+        /** The primary resource or entity being acted upon by this audit event. */
         targetId: AuditId? = null,
+        /** Related or secondary entities affected by the action, or the result of the action. */
         objectId: AuditId? = null,
+        /**
+         * Additional contextual information such as counts, date ranges, or other metadata relevant
+         * to the audit event.
+         */
         meta: Map<String, Any?> = emptyMap(),
     ) {
         val combinedObjectIds = objectId?.let { childId + it } ?: childId
