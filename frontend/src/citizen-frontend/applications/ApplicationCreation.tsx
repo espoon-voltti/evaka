@@ -25,7 +25,7 @@ import ExpandingInfo, {
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
-import { fontWeights, H1, H2 } from 'lib-components/typography'
+import { fontWeights, H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -91,50 +91,60 @@ export default React.memo(function ApplicationCreation() {
                     <PersonName person={child} format="First Last" />
                   </H2>
                   <Gap size="XL" />
-                  <ExpandingInfo
-                    data-qa="daycare-expanding-info"
-                    info={t.applications.creation.daycareInfo}
-                  >
-                    <Radio
-                      checked={selectedType === 'DAYCARE'}
-                      onChange={() => setSelectedType('DAYCARE')}
-                      label={t.applications.creation.daycareLabel}
-                      data-qa="type-radio-DAYCARE"
-                    />
-                  </ExpandingInfo>
-                  <Gap size="s" />
-                  {featureFlags.preschool && (
-                    <>
-                      <Radio
-                        checked={selectedType === 'PRESCHOOL'}
-                        onChange={() => setSelectedType('PRESCHOOL')}
-                        label={t.applications.creation.preschoolLabel}
-                        data-qa="type-radio-PRESCHOOL"
-                      />
+                  <div role="group" aria-labelledby="application-type-label">
+                    <ApplicationTypeLabel id="application-type-label">
+                      {t.applications.creation.selectApplicationType}
+                    </ApplicationTypeLabel>
+                    <ApplicationTypeOptions>
                       <ExpandingInfo
-                        info={t.applications.creation.preschoolInfo}
+                        data-qa="daycare-expanding-info"
+                        info={t.applications.creation.daycareInfo}
                       >
-                        <PreschoolDaycareInfo>
-                          {t.applications.creation.preschoolDaycareInfo}
-                          <ExpandingInfoButtonSlot />
-                        </PreschoolDaycareInfo>
+                        <Radio
+                          checked={selectedType === 'DAYCARE'}
+                          onChange={() => setSelectedType('DAYCARE')}
+                          label={t.applications.creation.daycareLabel}
+                          name="application-type"
+                          data-qa="type-radio-DAYCARE"
+                        />
                       </ExpandingInfo>
                       <Gap size="s" />
-                    </>
-                  )}
-                  {!featureFlags.hideClubApplication && (
-                    <ExpandingInfo
-                      data-qa="club-expanding-info"
-                      info={t.applications.creation.clubInfo}
-                    >
-                      <Radio
-                        checked={selectedType === 'CLUB'}
-                        onChange={() => setSelectedType('CLUB')}
-                        label={t.applications.creation.clubLabel}
-                        data-qa="type-radio-CLUB"
-                      />
-                    </ExpandingInfo>
-                  )}
+                      {featureFlags.preschool && (
+                        <>
+                          <Radio
+                            checked={selectedType === 'PRESCHOOL'}
+                            onChange={() => setSelectedType('PRESCHOOL')}
+                            label={t.applications.creation.preschoolLabel}
+                            name="application-type"
+                            data-qa="type-radio-PRESCHOOL"
+                          />
+                          <ExpandingInfo
+                            info={t.applications.creation.preschoolInfo}
+                          >
+                            <PreschoolDaycareInfo>
+                              {t.applications.creation.preschoolDaycareInfo}
+                              <ExpandingInfoButtonSlot />
+                            </PreschoolDaycareInfo>
+                          </ExpandingInfo>
+                          <Gap size="s" />
+                        </>
+                      )}
+                      {!featureFlags.hideClubApplication && (
+                        <ExpandingInfo
+                          data-qa="club-expanding-info"
+                          info={t.applications.creation.clubInfo}
+                        >
+                          <Radio
+                            checked={selectedType === 'CLUB'}
+                            onChange={() => setSelectedType('CLUB')}
+                            label={t.applications.creation.clubLabel}
+                            name="application-type"
+                            data-qa="type-radio-CLUB"
+                          />
+                        </ExpandingInfo>
+                      )}
+                    </ApplicationTypeOptions>
+                  </div>
                   <Gap size="m" />
                   {duplicateExists ? (
                     <>
@@ -200,4 +210,14 @@ const PreschoolDaycareInfo = styled.p`
   ); // width of the radio input's icon + the margin on label
   font-weight: ${fontWeights.semibold};
   font-size: 0.875em;
+`
+
+const ApplicationTypeLabel = styled(Label)`
+  display: block;
+  margin: 0 0 ${defaultMargins.m} 0;
+`
+
+const ApplicationTypeOptions = styled.div`
+  display: flex;
+  flex-direction: column;
 `
