@@ -687,7 +687,7 @@ class NekkuSyncIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val expectedTestContent1 =
             """
-Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumisesta Nekusta:
+Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nekku-tietojen muuttumisen takia. Tarkista ryhmät:
 
 - Kotelot
 
@@ -697,7 +697,7 @@ Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumise
 
         val expectedTestContent2 =
             """
-Seuraavien ryhmien asiakasnumerot on poistettu johtuen asiakasnumeron poistumisesta Nekusta:
+Seuraavien ryhmien Nekku-asiakasnumerot on poistettu eVakasta asiakasnumeron Nekku-tietojen muuttumisen takia. Tarkista ryhmät:
 
 - Torjunta-aineet
         """
