@@ -1756,7 +1756,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `confirmPlacementProposalChanges - preschool decision is not sent to guardian if skip is enabled`() {
-        workflowForPreschoolDaycareDecisions(
+        workflowForPreschoolDecisions(
             config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
         )
 
@@ -1764,6 +1764,40 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+        }
+    }
+
+    @Test
+    fun `confirmPlacementProposalChanges - preparatory decision is not sent to guardian if skip is enabled`() {
+        workflowForPreschoolDecisions(
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+        )
+
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+        }
+    }
+
+    @Test
+    fun `confirmPlacementProposalChanges - preschool daycare decision is sent to guardian even if skip is enabled`() {
+        workflowForPreschoolDaycareDecisions(
+            config = testFeatureConfig.copy(skipGuardianPreschoolDecisionApproval = true)
+        )
+
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
@@ -2414,7 +2448,26 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             it.type == type
         }
 
+    private fun workflowForPreschoolDecisions(
+        preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
+        serviceNeedOption: ServiceNeedOption? = null,
+        config: FeatureConfig = testFeatureConfig,
+    ) = workflow(PlacementType.PRESCHOOL, preferredStartDate, serviceNeedOption, config)
+
+    private fun workflowForPreparatoryDecisions(
+        preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
+        serviceNeedOption: ServiceNeedOption? = null,
+        config: FeatureConfig = testFeatureConfig,
+    ) = workflow(PlacementType.PREPARATORY, preferredStartDate, serviceNeedOption, config)
+
     private fun workflowForPreschoolDaycareDecisions(
+        preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
+        serviceNeedOption: ServiceNeedOption? = null,
+        config: FeatureConfig = testFeatureConfig,
+    ) = workflow(PlacementType.PRESCHOOL_DAYCARE, preferredStartDate, serviceNeedOption, config)
+
+    private fun workflow(
+        appliedType: PlacementType,
         preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
         serviceNeedOption: ServiceNeedOption? = null,
         config: FeatureConfig = testFeatureConfig,
@@ -2423,7 +2476,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 guardian = testAdult_5,
                 maxFeeAccepted = true,
-                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                appliedType = appliedType,
                 applicationId = applicationId,
                 preferredStartDate = preferredStartDate,
                 serviceNeedOption = serviceNeedOption,
