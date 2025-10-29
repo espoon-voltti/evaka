@@ -104,7 +104,10 @@ export default React.memo(function ApplicationCard({
   )
 
   return (
-    <Card $placed={application.placementDraft !== null}>
+    <Card
+      $placed={application.placementDraft !== null}
+      data-qa="application-card"
+    >
       {editingNote && (
         <ServiceWorkerNoteModal
           applicationId={application.id}
@@ -130,7 +133,11 @@ export default React.memo(function ApplicationCard({
               target="_blank"
               rel="noreferrer"
             >
-              <H3 noMargin style={{ color: colors.main.m1 }}>
+              <H3
+                noMargin
+                style={{ color: colors.main.m1 }}
+                data-qa="child-name"
+              >
                 {application.lastName} {application.firstName}
               </H3>
             </a>
@@ -293,6 +300,7 @@ export default React.memo(function ApplicationCard({
             <Button
               appearance="button"
               text={i18n.applications.placementDesktop.toPlacementPlan}
+              data-qa="to-placement-plan-button"
               onClick={() =>
                 navigate(`/applications/${application.id}/placement`)
               }
@@ -352,9 +360,11 @@ const UnitRow = React.memo(function UnitRow({
       $last={lastRow}
       justifyContent="space-between"
       alignItems="center"
+      data-qa="unit-preference"
     >
       <UnitRowName alignItems="center" spacing="xs">
         <UnitRowLink
+          data-qa="unit-preference-title"
           onClick={
             unitVisible ? () => onAddOrHighlightDaycare(unit) : undefined
           }
@@ -408,6 +418,7 @@ const UnitRow = React.memo(function UnitRow({
                 aria-label={
                   i18n.applications.placementDesktop.cancelPlacementDraft
                 }
+                data-qa="cancel-placement-draft-button"
                 mutation={deleteApplicationPlacementDraftMutation}
                 onClick={() =>
                   application.placementDraft
@@ -432,6 +443,7 @@ const UnitRow = React.memo(function UnitRow({
           <MutateButton
             appearance="inline"
             text={i18n.applications.placementDesktop.createPlacementDraft}
+            data-qa="create-placement-draft-button"
             icon={faArrowLeft}
             mutation={upsertApplicationPlacementDraftMutation}
             onClick={() => ({
@@ -458,6 +470,7 @@ const UnitRow = React.memo(function UnitRow({
             appearance="inline"
             icon={faEye}
             text={i18n.applications.placementDesktop.show}
+            data-qa="show-unit-button"
             onClick={() => onAddOrHighlightDaycare(unit)}
           />
         ))}
