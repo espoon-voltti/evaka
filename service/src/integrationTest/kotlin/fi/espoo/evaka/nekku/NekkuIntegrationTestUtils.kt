@@ -233,7 +233,6 @@ class FailingNekkuClient(
     private val specialDiets: List<NekkuApiSpecialDiet> = emptyList(),
     private val nekkuProducts: List<NekkuApiProduct> = emptyList(),
 ) : NekkuClient {
-    val orders = mutableListOf<NekkuClient.NekkuOrders>()
 
     override fun getCustomers(): List<NekkuCustomer> {
         return customers.map { it.toEvaka() }
