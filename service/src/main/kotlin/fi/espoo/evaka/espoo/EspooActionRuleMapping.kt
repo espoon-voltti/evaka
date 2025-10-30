@@ -76,6 +76,18 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+            Action.Group.UPDATE -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf<ScopedActionRule<in T>>(
+                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
+                )
+            }
+            Action.Group.DELETE -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf<ScopedActionRule<in T>>(
+                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
+                )
+            }
             Action.Person.CREATE_PARTNERSHIP -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
