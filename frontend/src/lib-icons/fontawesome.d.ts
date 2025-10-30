@@ -154,4 +154,5 @@ declare module 'Icons' {
   const faReply: IconDefinition
   const faUtensils: IconDefinition
   const faLineChart: IconDefinition
+  const faHeart: IconDefinition
 }

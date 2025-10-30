@@ -25,7 +25,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H4, Label } from 'lib-components/typography'
+import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 import { faLineChart } from 'lib-icons'
@@ -97,13 +97,13 @@ export default React.memo(function DaycareCard({
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceRow>
             <a
-              href={`/employee/units/${daycare.id}?period=${encodeURIComponent('3 months')}&startDate=${occupancyPeriodStart.formatIso()}`}
+              href={`/employee/units/${daycare.id}/groups?period=${encodeURIComponent('3 months')}&startDate=${occupancyPeriodStart.formatIso()}`}
               target="_blank"
               rel="noreferrer"
             >
-              <H4 noMargin style={{ color: colors.main.m1, fontWeight: 600 }}>
+              <H3 noMargin style={{ color: colors.main.m1 }}>
                 {daycare.name}
-              </H4>
+              </H3>
             </a>
             {unitDetails.isSuccess && !!unitDetails.value.serviceWorkerNote && (
               <Tooltip
@@ -257,7 +257,7 @@ export default React.memo(function DaycareCard({
 
 const Card = styled.div<{ $highlighted: boolean }>`
   min-width: 400px;
-  border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   border-radius: 4px;
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};

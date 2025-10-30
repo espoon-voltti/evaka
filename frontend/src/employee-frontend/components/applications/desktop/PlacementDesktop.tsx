@@ -151,7 +151,7 @@ const PlacementDesktopValidated = React.memo(
         const daycareElement = daycareRefs[highlightedDaycare].current
         const daycareListElement = daycareListRef.current
         daycareListElement.scrollTo({
-          top: daycareElement.offsetTop - daycareListElement.offsetTop,
+          top: daycareElement.offsetTop - daycareListElement.offsetTop - 10,
           behavior: 'smooth'
         })
       }
@@ -458,16 +458,16 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
 
 const DaycaresColumn = styled.div`
   width: 47%;
-  padding-left: ${defaultMargins.s};
-  padding-right: ${defaultMargins.m};
+  padding: ${defaultMargins.xxs};
+  padding-right: ${defaultMargins.s};
   max-height: 90vh;
   overflow-y: auto;
 `
 
 const ApplicationsColumn = styled.div`
   width: 53%;
-  padding-left: ${defaultMargins.s};
-  padding-right: ${defaultMargins.m};
+  padding: ${defaultMargins.xxs};
+  padding-right: ${defaultMargins.s};
   max-height: 90vh;
   overflow-y: auto;
 `

@@ -372,10 +372,10 @@ export const fi = {
         'Haluatko varmasti perua sijoitushahmotelman?',
       cancelPlacementDraftConfirmationMessage:
         'Tähän liittyvä hakemus ei ole mukana nyt näytettävissä hakutuloksissa.',
+      show: 'Näytä',
       showUnit: 'Näytä yksikkö',
       hideUnit: 'Piilota yksikkö',
       other: 'Muu',
-      openApplication: 'Avaa hakemus',
       birthDate: 'Syntymäaika',
       dueDate: 'Lakisääteisyys',
       preferredStartDate: 'Toivottu aloitus',

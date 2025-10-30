@@ -96,37 +96,41 @@ export default React.memo(function ApplicationsPage() {
 
       <Gap size="XL" />
 
-      {searchFilters && (
-        <ContentArea opaque>
-          {featureFlags.placementDesktop &&
-            searchFilters?.status === 'WAITING_PLACEMENT' && (
-              <>
-                <FixedSpaceRow alignItems="center">
-                  <Label>{i18n.applications.show}:</Label>
-                  <Radio
-                    checked={placementMode === 'list'}
-                    onChange={() => setPlacementMode('list')}
-                    label={i18n.applications.asList}
-                  />
-                  <Radio
-                    checked={placementMode === 'desktop'}
-                    onChange={() => setPlacementMode('desktop')}
-                    label={i18n.applications.asDesktop}
-                  />
-                </FixedSpaceRow>
-                <Gap size="m" />
-              </>
-            )}
+      {searchFilters &&
+        featureFlags.placementDesktop &&
+        searchFilters?.status === 'WAITING_PLACEMENT' && (
+          <ContentArea opaque>
+            <FixedSpaceRow alignItems="center">
+              <Label>{i18n.applications.show}:</Label>
+              <Radio
+                checked={placementMode === 'list'}
+                onChange={() => setPlacementMode('list')}
+                label={i18n.applications.asList}
+              />
+              <Radio
+                checked={placementMode === 'desktop'}
+                onChange={() => setPlacementMode('desktop')}
+                label={i18n.applications.asDesktop}
+              />
+            </FixedSpaceRow>
+          </ContentArea>
+        )}
 
-          {renderResult(applications, (applications) => {
-            if (
-              placementMode === 'desktop' &&
-              featureFlags.placementDesktop &&
-              searchFilters?.status === 'WAITING_PLACEMENT'
-            ) {
-              return <PlacementDesktop applicationSummaries={applications} />
-            } else {
-              return (
+      {searchFilters &&
+        renderResult(applications, (applications) => {
+          if (
+            placementMode === 'desktop' &&
+            featureFlags.placementDesktop &&
+            searchFilters?.status === 'WAITING_PLACEMENT'
+          ) {
+            return (
+              <ContentArea opaque={false}>
+                <PlacementDesktop applicationSummaries={applications} />
+              </ContentArea>
+            )
+          } else {
+            return (
+              <ContentArea opaque paddingVertical="zero">
                 <ApplicationsList
                   applicationsResult={applications}
                   sortBy={sortBy}
@@ -134,11 +138,10 @@ export default React.memo(function ApplicationsPage() {
                   sortDirection={sortDirection}
                   setSortDirection={setSortDirection}
                 />
-              )
-            }
-          })}
-        </ContentArea>
-      )}
+              </ContentArea>
+            )
+          }
+        })}
     </Container>
   )
 })

@@ -147,6 +147,7 @@ export { faListTimeline } from '@fortawesome/pro-light-svg-icons/faListTimeline'
 export { faReply } from '@fortawesome/pro-light-svg-icons/faReply'
 export { faUtensils } from '@fortawesome/pro-light-svg-icons/faUtensils'
 export { faLineChart } from '@fortawesome/pro-light-svg-icons/faLineChart'
+export { faHeart } from '@fortawesome/pro-light-svg-icons/faHeart'
 
 import type * as ProIconsSet from './pro-icons'
 import { typeAssert } from './utils'
