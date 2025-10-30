@@ -184,6 +184,7 @@ data class ChildDocumentDecision(
     val validity: DateRange?,
     val decisionNumber: Int,
     val daycareName: String?,
+    val annulmentReason: String,
 )
 
 data class ChildDocumentSummary(

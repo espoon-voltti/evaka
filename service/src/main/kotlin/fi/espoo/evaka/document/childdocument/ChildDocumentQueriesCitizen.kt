@@ -44,7 +44,8 @@ SELECT
     cdd.status AS decision_status,
     cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
-    cdd.decision_number AS decision_decision_number
+    cdd.decision_number AS decision_decision_number,
+    cdd.annulment_reason AS decision_annulment_reason
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
 JOIN person child ON cd.child_id = child.id
@@ -111,7 +112,8 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     cdd.status AS decision_status,
                     cdd.created_at AS decision_created_at,
                     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
-                    cdd.decision_number AS decision_decision_number
+                    cdd.decision_number AS decision_decision_number,
+                    cdd.annulment_reason AS decision_annulment_reason
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id
