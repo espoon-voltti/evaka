@@ -917,10 +917,8 @@ class ApplicationStateService(
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
     ) {
-        val automatedDecision: Boolean
         if (user is AuthenticatedUser.SystemInternalUser) {
             // automated decision
-            automatedDecision = true
         } else {
             accessControl.requirePermissionFor(
                 tx,
@@ -929,7 +927,6 @@ class ApplicationStateService(
                 Action.Application.ACCEPT_DECISION,
                 applicationId,
             )
-            automatedDecision = false
         }
 
         val application = getApplication(tx, applicationId)
@@ -1017,11 +1014,10 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (
-            automatedDecision ||
-                (application.status == WAITING_CONFIRMATION &&
-                    decisions
-                        .filter { it.id != decision.id }
-                        .none { it.status == DecisionStatus.PENDING })
+            application.status == WAITING_CONFIRMATION &&
+                decisions
+                    .filter { it.id != decision.id }
+                    .none { it.status == DecisionStatus.PENDING }
         ) {
             tx.updateApplicationStatus(application.id, ACTIVE, user.evakaUserId, clock.now())
 
@@ -1568,7 +1564,10 @@ class ApplicationStateService(
             if (skipGuardian) {
                 decisionIds.forEach { decisionId ->
                     val decision = tx.getDecision(decisionId)!!
-                    if (decision.type == DecisionType.PRESCHOOL) {
+                    if (
+                        decision.type == DecisionType.PRESCHOOL ||
+                            decision.type == DecisionType.PREPARATORY_EDUCATION
+                    ) {
                         acceptDecision(
                             tx,
                             AuthenticatedUser.SystemInternalUser,
