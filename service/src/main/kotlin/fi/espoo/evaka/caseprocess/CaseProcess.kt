@@ -89,8 +89,13 @@ fun Database.Transaction.insertCaseProcess(
     organization: String,
     archiveDurationMonths: Int,
     migrated: Boolean = false,
-): CaseProcess =
-    createQuery {
+): CaseProcess {
+    execute {
+        sql(
+            "SELECT pg_advisory_xact_lock(hashtext(${bind(processDefinitionNumber)}), ${bind(year)})"
+        )
+    }
+    return createQuery {
             sql(
                 """
     INSERT INTO case_process (process_definition_number, year, number, organization, archive_duration_months, migrated)
@@ -111,6 +116,7 @@ fun Database.Transaction.insertCaseProcess(
             )
         }
         .exactlyOne()
+}
 
 fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? =
     createQuery {
