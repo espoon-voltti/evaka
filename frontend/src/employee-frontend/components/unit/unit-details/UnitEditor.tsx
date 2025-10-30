@@ -1070,7 +1070,7 @@ export default function UnitEditor(props: Props) {
 
   const ophUnitOIDIsEmptyOrValid = useMemo(
     (): boolean =>
-      form.ophUnitOid !== '' &&
+      form.ophUnitOid === '' ||
       !props.reservedOphUnitOIDs.includes(form.ophUnitOid),
     [form.ophUnitOid, props.reservedOphUnitOIDs]
   )
