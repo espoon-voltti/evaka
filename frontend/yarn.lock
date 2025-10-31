@@ -6405,7 +6405,6 @@ __metadata:
     globals: "npm:16.4.0"
     history: "npm:5.3.0"
     ical-generator: "npm:9.0.0"
-    intersection-observer: "npm:0.12.2"
     jest: "npm:30.2.0"
     jest-circus: "npm:30.2.0"
     jest-environment-jsdom: "npm:30.2.0"
@@ -7322,13 +7321,6 @@ __metadata:
     hasown: "npm:^2.0.2"
     side-channel: "npm:^1.1.0"
   checksum: 10/1d5219273a3dab61b165eddf358815eefc463207db33c20fcfca54717da02e3f492003757721f972fd0bf21e4b426cab389c5427b99ceea4b8b670dc88ee6d4a
-  languageName: node
-  linkType: hard
-
-"intersection-observer@npm:0.12.2":
-  version: 0.12.2
-  resolution: "intersection-observer@npm:0.12.2"
-  checksum: 10/cb1a6369bd1636b3f227d7cb7fec22f5a35b9d8ba9e26303b405d50c54c3ef02c5a547107b1d951e7eb421e192a564222faf4660a21fad69c34dcb9f926c159c
   languageName: node
   linkType: hard
 
