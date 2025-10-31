@@ -106,7 +106,8 @@ SELECT
     cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
     cdd.decision_number AS decision_decision_number,
-    d.name AS decision_daycare_name
+    d.name AS decision_daycare_name,
+    cdd.annulment_reason AS decision_annulment_reason
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person ch ON cd.child_id = ch.id
@@ -207,7 +208,8 @@ SELECT
     cdd.created_at AS decision_created_at,
     CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
     cdd.decision_number AS decision_decision_number,
-    d.name AS decision_daycare_name
+    d.name AS decision_daycare_name,
+    cdd.annulment_reason AS decision_annulment_reason
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
@@ -547,12 +549,13 @@ fun Database.Transaction.insertChildDocumentDecision(
     userId: EvakaUserId,
     validity: DateRange?,
     daycareId: DaycareId?,
+    annulmentReason: String = "",
 ): ChildDocumentDecisionId {
     return createUpdate {
             sql(
                 """
-                INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to, daycare_id) 
-                VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)}, ${bind(daycareId)})
+                INSERT INTO child_document_decision (created_by, modified_by, status, valid_from, valid_to, daycare_id, annulment_reason) 
+                VALUES (${bind(userId)}, ${bind(userId)}, ${bind(status)}, ${bind(validity?.start)}, ${bind(validity?.end)}, ${bind(daycareId)}, ${bind(annulmentReason)})
                 RETURNING id
             """
             )

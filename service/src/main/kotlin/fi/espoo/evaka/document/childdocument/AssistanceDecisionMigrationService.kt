@@ -128,6 +128,7 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                 decisionNumber = decisionNumber,
                 daycareId = decision.selectedUnit?.id,
                 processId = processId,
+                annulmentReason = decision.annulmentReason,
             )
         }
     }
@@ -217,6 +218,7 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                 decisionNumber = decisionNumber,
                 daycareId = decision.form.selectedUnit,
                 processId = processId,
+                annulmentReason = decision.annulmentReason,
             )
         }
     }
@@ -610,6 +612,7 @@ private fun Database.Transaction.insertMigratedDocument(
     decisionNumber: Long,
     daycareId: DaycareId?,
     processId: CaseProcessId?,
+    annulmentReason: String,
 ) {
     val userId = EvakaUserId(decisionMaker.raw)
     val systemUser = AuthenticatedUser.SystemInternalUser.evakaUserId
@@ -626,8 +629,8 @@ private fun Database.Transaction.insertMigratedDocument(
         createQuery {
                 sql(
                     """
-        INSERT INTO child_document_decision (created_at, created_by, modified_at, modified_by, status, valid_from, valid_to, decision_number, daycare_id) 
-        VALUES (${bind(decidedAt)}, ${bind(userId)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(decisionStatus)}, ${bind(validFrom)}, ${bind(decisionValidity.end)}, ${bind(decisionNumber)}, ${bind(daycareId)})
+        INSERT INTO child_document_decision (created_at, created_by, modified_at, modified_by, status, valid_from, valid_to, decision_number, daycare_id, annulment_reason) 
+        VALUES (${bind(decidedAt)}, ${bind(userId)}, ${bind(decidedAt)}, ${bind(userId)}, ${bind(decisionStatus)}, ${bind(validFrom)}, ${bind(decisionValidity.end)}, ${bind(decisionNumber)}, ${bind(daycareId)}, ${bind(annulmentReason)})
         RETURNING id
     """
                 )

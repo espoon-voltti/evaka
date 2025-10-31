@@ -179,6 +179,7 @@ export interface ChildDocumentCreateRequest {
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecision
 */
 export interface ChildDocumentDecision {
+  annulmentReason: string
   createdAt: HelsinkiDateTime
   daycareName: string | null
   decisionNumber: number
