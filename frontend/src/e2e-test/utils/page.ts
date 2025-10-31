@@ -7,6 +7,7 @@ import type {
   ElementHandle,
   Keyboard,
   Locator,
+  Request as PlaywrightRequest,
   Page as PlaywrightPage
 } from 'playwright'
 
@@ -74,6 +75,10 @@ export class Page {
 
   onPopup(fn: (popup: Page) => void) {
     this.page.on('popup', (popup) => fn(new Page(popup)))
+  }
+
+  onRequest(fn: (req: PlaywrightRequest) => void) {
+    this.page.on('request', fn)
   }
 
   async capturePopup(fn: () => Promise<void>): Promise<Page> {

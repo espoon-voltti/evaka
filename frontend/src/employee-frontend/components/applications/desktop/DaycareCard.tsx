@@ -89,7 +89,7 @@ export default React.memo(function DaycareCard({
     useBoolean(true)
 
   return (
-    <Card ref={ref} $highlighted={highlighted}>
+    <Card ref={ref} $highlighted={highlighted} data-qa="daycare-card">
       {isGraphOpen && unitDetails.isSuccess && (
         <OccupancyModal daycare={unitDetails.value} onClose={closeGraph} />
       )}
@@ -101,7 +101,11 @@ export default React.memo(function DaycareCard({
               target="_blank"
               rel="noreferrer"
             >
-              <H3 noMargin style={{ color: colors.main.m1 }}>
+              <H3
+                noMargin
+                style={{ color: colors.main.m1 }}
+                data-qa="unit-name"
+              >
                 {daycare.name}
               </H3>
             </a>
@@ -145,7 +149,7 @@ export default React.memo(function DaycareCard({
                             .confirmed
                         }
                       </OccupancyLabel>
-                      <OccupancyPercentage>
+                      <OccupancyPercentage data-qa="occupancy-confirmed">
                         {unitDetails.occupancyConfirmed?.max?.percentage ??
                           '??'}{' '}
                         %
@@ -158,7 +162,7 @@ export default React.memo(function DaycareCard({
                             .planned
                         }
                       </OccupancyLabel>
-                      <OccupancyPercentage>
+                      <OccupancyPercentage data-qa="occupancy-planned">
                         {unitDetails.occupancyPlanned?.max?.percentage ?? '??'}{' '}
                         %
                       </OccupancyPercentage>
@@ -174,7 +178,7 @@ export default React.memo(function DaycareCard({
                       105 ? (
                         <OccupancyWarning>
                           <FixedSpaceRow alignItems="center" spacing="xs">
-                            <OccupancyPercentageDraft>
+                            <OccupancyPercentageDraft data-qa="occupancy-draft">
                               {unitDetails.occupancyDraft?.max?.percentage ??
                                 '??'}{' '}
                               %
@@ -186,7 +190,7 @@ export default React.memo(function DaycareCard({
                           </FixedSpaceRow>
                         </OccupancyWarning>
                       ) : (
-                        <OccupancyPercentageDraft>
+                        <OccupancyPercentageDraft data-qa="occupancy-draft">
                           {unitDetails.occupancyDraft?.max?.percentage ?? '??'}{' '}
                           %
                         </OccupancyPercentageDraft>
