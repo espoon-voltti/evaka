@@ -676,7 +676,8 @@ const en: Translations = {
     deleteSentCancel: 'Go back',
     deleteUnprocessedApplicationError: 'Failed to remove the application',
     creation: {
-      title: 'Selection of application type',
+      title: 'Application type',
+      selectApplicationType: 'Select the application type',
       daycareLabel: 'Early childhood education and service voucher application',
       daycareInfo:
         'The application for early childhood education is used to apply for a municipal early childhood education place at an early childhood education unit, family daycare provider and group family daycare provider. You can also use the same application to apply for a service voucher for early childhood education. Under Preferred units, select the service voucher unit to which you want to apply.',

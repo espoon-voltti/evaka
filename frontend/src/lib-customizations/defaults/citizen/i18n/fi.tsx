@@ -680,7 +680,8 @@ export default {
     deleteSentCancel: 'Palaa takaisin',
     deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
-      title: 'Valitse hakemustyyppi',
+      title: 'Hakemustyyppi',
+      selectApplicationType: 'Valitse hakemustyyppi',
       daycareLabel: 'Varhaiskasvatus- ja palvelusetelihakemus',
       daycareInfo:
         'Varhaiskasvatushakemuksella haetaan kunnallista varhaiskasvatuspaikkaa päiväkotiin, perhepäivähoitoon tai ryhmäperhepäiväkotiin. Samalla hakemuksella voi hakea myös varhaiskasvatuksen palveluseteliä, valitsemalla Hakutoiveet-kohtaan palveluseteliyksikkö, johon halutaan hakea.',
