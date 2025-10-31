@@ -1607,6 +1607,7 @@ export default {
         municipalityPlaceholder: 'Postitoimipaikka',
         addChild: 'Lisää lapsi',
         remove: 'Poista',
+        removed: 'Rivi poistettu',
         areExtraChildren:
           'Samassa taloudessa asuu muita alle 18-vuotiaita lapsia (esim. puolison / avopuolison lapset)',
         choosePlaceholder: 'Valitse'

@@ -1664,6 +1664,7 @@ const en: Translations = {
         municipalityPlaceholder: 'Post office',
         addChild: 'Add child',
         remove: 'Remove',
+        removed: 'Row removed',
         areExtraChildren: 'Children under 18 living in the same address',
         choosePlaceholder: 'Choose'
       },

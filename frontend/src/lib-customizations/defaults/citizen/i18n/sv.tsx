@@ -1604,6 +1604,7 @@ const sv: Translations = {
         municipalityPlaceholder: 'Postanstalt',
         addChild: 'Lägg till ett barn',
         remove: 'Ta bort',
+        removed: 'Raden har tagits bort',
         areExtraChildren:
           'Övriga barn under 18 år som bor i samma hushåll (t.ex. makas/makes)',
         choosePlaceholder: 'Välj'

@@ -4,8 +4,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import type { ReactNode } from 'react'
-import React, { useRef } from 'react'
+import type { ReactNode, RefObject } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import type { BoundFormState } from 'lib-common/form/hooks'
@@ -130,6 +130,7 @@ export interface CheckboxProps extends CommonProps {
   onChange?: (checked: boolean) => void
   disabled?: boolean
   translate?: 'yes' | 'no'
+  inputRef?: RefObject<HTMLInputElement | null>
 }
 
 const Checkbox = React.memo(function Checkbox({
@@ -140,10 +141,9 @@ const Checkbox = React.memo(function Checkbox({
   disabled,
   className,
   translate,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  inputRef
 }: CheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
   const ariaId = useUniqueId('checkbox')
 
   return (
