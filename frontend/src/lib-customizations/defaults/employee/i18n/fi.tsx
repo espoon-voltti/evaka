@@ -354,11 +354,7 @@ export const fi = {
         tooManyApplicationsTitle: (count: number) =>
           `Liikaa hakemuksia (${count})`,
         tooManyApplicationsMessage:
-          'Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl.',
-        tooManyPrimaryUnitsTitle: (count: number) =>
-          `Liikaa ensisijaisia hakuyksiköitä (${count})`,
-        tooManyPrimaryUnitsMessage:
-          'Tarkenna hakuehtoja niin, että hakemuksien ykköstoiveissa on enintään 10 eri yksikköä.'
+          'Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl.'
       },
       occupancyPeriod: 'Näytä täyttöasteiden maksimi aikaväliltä',
       shownUnitsCount: 'Näytettäviä yksiköitä',
