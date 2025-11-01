@@ -391,6 +391,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@datadog/flagging-core@npm:0.1.0-preview.12":
+  version: 0.1.0-preview.12
+  resolution: "@datadog/flagging-core@npm:0.1.0-preview.12"
+  dependencies:
+    spark-md5: "npm:^3.0.2"
+  peerDependencies:
+    "@openfeature/core": ^1.8.1
+  checksum: 10/c50cdb4797bb46104a5f05276be402493eb45651f1cc5b4b0cead7d3431b5e0dd544d77296fc93d065424774f947ab35a95ddbdfb69ab81248792a8335a5334e
+  languageName: node
+  linkType: hard
+
 "@datadog/libdatadog@npm:0.7.0":
   version: 0.7.0
   resolution: "@datadog/libdatadog@npm:0.7.0"
@@ -398,13 +409,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:10.2.1":
-  version: 10.2.1
-  resolution: "@datadog/native-appsec@npm:10.2.1"
+"@datadog/native-appsec@npm:10.3.0":
+  version: 10.3.0
+  resolution: "@datadog/native-appsec@npm:10.3.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/e42a22482fa0a9091158680eabdcbc2eb4a6af5895a21e704381d6810bc7f60d7a4e4688a33cfeacdd81e25c42cdabf6d73b1c817823c4baa72ea0d7bac03874
+  checksum: 10/f0b27068eb503220872d9a91b44463268149c35d4c475da069c4b5046e4ae5991ab0bcbd06f5187a116a8133da48aec76731b4fc4340ee9b7e1ccfe414ebf8b7
   languageName: node
   linkType: hard
 
@@ -429,9 +440,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.10.0":
-  version: 5.10.0
-  resolution: "@datadog/pprof@npm:5.10.0"
+"@datadog/openfeature-node-server@npm:0.1.0-preview.12":
+  version: 0.1.0-preview.12
+  resolution: "@datadog/openfeature-node-server@npm:0.1.0-preview.12"
+  dependencies:
+    "@datadog/flagging-core": "npm:0.1.0-preview.12"
+    "@openfeature/server-sdk": "npm:~1.18.0"
+  peerDependencies:
+    "@openfeature/server-sdk": ~1.18.0
+  checksum: 10/3fdb15ab2a7b20d9ef158dcd90656f9709bffca7cd1c5414260c5588232bf6b3ae034fe591e47f2c3ae8becdcb2e3777e9e1010875a1d0af4e95ed1fc8b81ea3
+  languageName: node
+  linkType: hard
+
+"@datadog/pprof@npm:5.11.1":
+  version: 5.11.1
+  resolution: "@datadog/pprof@npm:5.11.1"
   dependencies:
     delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
@@ -439,7 +462,7 @@ __metadata:
     p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
-  checksum: 10/d8e4772f7ceee0c8b976914eea3cb51cc7d8f51afe6a0abce0697cb2dafeca84522991b98f94f9052c80a88ebe917610e779d28aead70ee055eb8f6e06b1698a
+  checksum: 10/b8e7568b48db39e4390ac13f00effee554cc1daa173edfc28af865d71c8294ec9d2b37b74fda3ed94a8d27fef599ea4c1a6bf1e269de17ae731fd0c5ef7ba98e
   languageName: node
   linkType: hard
 
@@ -1116,28 +1139,76 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@opentelemetry/api@npm:1.8.0"
-  checksum: 10/62f0c42711b9f0c56ea9527c2e6e609e371bfb47d0b78956c91fe27365b4744d7dcc407636ef5b19a24a1d5e2c3cfa79c1b715deca829074e24e3ffba1315ba2
+"@openfeature/server-sdk@npm:~1.18.0":
+  version: 1.18.0
+  resolution: "@openfeature/server-sdk@npm:1.18.0"
+  peerDependencies:
+    "@openfeature/core": ^1.7.0
+  checksum: 10/96d8a3726dc8ac99e400d88cc2678d36353ada6ed480164b2f604f78f9c09bfe07e57ee1f877b3b63f43ec7a394390b42c90ae3336c0d03c6b9a9d27741db96e
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "@opentelemetry/core@npm:1.14.0"
+"@opentelemetry/api-logs@npm:<1.0.0":
+  version: 0.207.0
+  resolution: "@opentelemetry/api-logs@npm:0.207.0"
   dependencies:
-    "@opentelemetry/semantic-conventions": "npm:1.14.0"
+    "@opentelemetry/api": "npm:^1.3.0"
+  checksum: 10/d50251e34f1cb8208d02870d3c25a0ba31eb2e33844a1ed5c0107d920bfbb52dbc3a1c5072586501a5096778f90e9ef1ce2fef63fa6ab5908bc1f94099121264
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/api@npm:>=1.0.0 <1.10.0, @opentelemetry/api@npm:^1.3.0":
+  version: 1.9.0
+  resolution: "@opentelemetry/api@npm:1.9.0"
+  checksum: 10/a607f0eef971893c4f2ee2a4c2069aade6ec3e84e2a1f5c2aac19f65c5d9eeea41aa72db917c1029faafdd71789a1a040bdc18f40d63690e22ccae5d7070f194
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/core@npm:1.9.1":
+  version: 1.9.1
+  resolution: "@opentelemetry/core@npm:1.9.1"
+  dependencies:
+    "@opentelemetry/semantic-conventions": "npm:1.9.1"
   peerDependencies:
     "@opentelemetry/api": ">=1.0.0 <1.5.0"
-  checksum: 10/80f06de582209e70fde7b62a238b38fcf5e6cc48ef460e6ed86294e43ea5cd442d796721387b3a14a455ed4c5f86656cad489dd29347302c25a62f3d538da2c9
+  checksum: 10/5fcb3a0f37ccb05643cbed2728727a5fdee33fa2df4ae8ac3f3e0f567a853c5d4288e78217c77175afc3de472e16e2808deb8e8ac1174a904910e2875876da59
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:1.14.0":
-  version: 1.14.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.14.0"
-  checksum: 10/e66e08859a3099890e36a3bf65bac21ab3acfe4ef352f3c07bf51a37fc8148681babb786e0b1bb14d6d40e1cb7804eb0704c72baddb7796db470efacb20c11f1
+"@opentelemetry/core@npm:>=1.14.0 <1.31.0":
+  version: 1.30.1
+  resolution: "@opentelemetry/core@npm:1.30.1"
+  dependencies:
+    "@opentelemetry/semantic-conventions": "npm:1.28.0"
+  peerDependencies:
+    "@opentelemetry/api": ">=1.0.0 <1.10.0"
+  checksum: 10/fa3df9619fdbf8f607132d72915849754b71c4c5f5f705b30c8c59b209abe97206decf25cb8ebafdbb6105a4baab2acddee47468cb9d0b67f1a8df96cebc3548
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/resources@npm:>=1.0.0 <1.10.0":
+  version: 1.9.1
+  resolution: "@opentelemetry/resources@npm:1.9.1"
+  dependencies:
+    "@opentelemetry/core": "npm:1.9.1"
+    "@opentelemetry/semantic-conventions": "npm:1.9.1"
+  peerDependencies:
+    "@opentelemetry/api": ">=1.0.0 <1.5.0"
+  checksum: 10/f400abdd1f18ff12f6996344a7f83b929dfd19e00576b493710f24a6946b01e5c2eba7985648e1e91bf039d7df9a35ec812ba52bac97670d1f3eaf51bda37347
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/semantic-conventions@npm:1.28.0":
+  version: 1.28.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.28.0"
+  checksum: 10/c182a3206769b5d5a8ab89a5c674d046fd789421cef27ea55af179990e314732433c98e5017aa23e99f15fd2b0e13cb129bb6c2282da6860ce9419adf32b2e87
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/semantic-conventions@npm:1.9.1":
+  version: 1.9.1
+  resolution: "@opentelemetry/semantic-conventions@npm:1.9.1"
+  checksum: 10/975555aa9a6d41cf773f3ac341a87007770003bd129284373ef41e9868d8a02a4b2d374e450bdab20b21488a9851690a9091c054f9e2103337ecddb049027085
   languageName: node
   linkType: hard
 
@@ -2814,20 +2885,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.67.0":
-  version: 5.67.0
-  resolution: "dd-trace@npm:5.67.0"
+"dd-trace@npm:5.74.0":
+  version: 5.74.0
+  resolution: "dd-trace@npm:5.74.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
-    "@datadog/native-appsec": "npm:10.2.1"
+    "@datadog/native-appsec": "npm:10.3.0"
     "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:3.1.1"
-    "@datadog/pprof": "npm:5.10.0"
+    "@datadog/openfeature-node-server": "npm:0.1.0-preview.12"
+    "@datadog/pprof": "npm:5.11.1"
     "@datadog/sketches-js": "npm:2.1.1"
     "@datadog/wasm-js-rewriter": "npm:4.0.1"
     "@isaacs/ttlcache": "npm:^1.4.1"
-    "@opentelemetry/api": "npm:1.8.0"
-    "@opentelemetry/core": "npm:^1.14.0"
+    "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
+    "@opentelemetry/api-logs": "npm:<1.0.0"
+    "@opentelemetry/core": "npm:>=1.14.0 <1.31.0"
+    "@opentelemetry/resources": "npm:>=1.0.0 <1.10.0"
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.10"
     ignore: "npm:^7.0.5"
@@ -2835,7 +2909,6 @@ __metadata:
     istanbul-lib-coverage: "npm:^3.2.2"
     jest-docblock: "npm:^29.7.0"
     jsonpath-plus: "npm:^10.3.0"
-    koalas: "npm:^1.0.2"
     limiter: "npm:^1.1.5"
     lodash.sortby: "npm:^4.7.0"
     lru-cache: "npm:^10.4.3"
@@ -2852,7 +2925,15 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/e7c83a9a1d7d21c299d8407cdab9d5c28f280f16e4c66f6347ebc44c11ea871d3ac4acbf370d930f2d988d99006927c3fa9e29355493071f88a7c8b8299ffbce
+  peerDependencies:
+    "@openfeature/core": ^1.9.0
+    "@openfeature/server-sdk": ~1.20.0
+  peerDependenciesMeta:
+    "@openfeature/core":
+      optional: true
+    "@openfeature/server-sdk":
+      optional: true
+  checksum: 10/a717a5f09d9557a375abea6018c51d6a16def258d738aca5357ad9d018c3568f8e87e486980ee7475b8524a52573e3536548cb669f7c2777f10672132183e242
   languageName: node
   linkType: hard
 
@@ -3494,7 +3575,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.67.0"
+    dd-trace: "npm:5.74.0"
     eslint: "npm:9.38.0"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
@@ -5382,13 +5463,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koalas@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "koalas@npm:1.0.2"
-  checksum: 10/a252c98af00376e11ca4387a9cc2ec9772d3f0c821216dff31893e9bc11dfbafeacc5627227e53abc3af7751c5503b2bd895c0a0bbf0255e7fc0975b97499a8e
-  languageName: node
-  linkType: hard
-
 "leven@npm:^3.1.0":
   version: 3.1.0
   resolution: "leven@npm:3.1.0"
@@ -7149,6 +7223,13 @@ __metadata:
   version: 0.7.4
   resolution: "source-map@npm:0.7.4"
   checksum: 10/a0f7c9b797eda93139842fd28648e868a9a03ea0ad0d9fa6602a0c1f17b7fb6a7dcca00c144476cccaeaae5042e99a285723b1a201e844ad67221bf5d428f1dc
+  languageName: node
+  linkType: hard
+
+"spark-md5@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "spark-md5@npm:3.0.2"
+  checksum: 10/60981e181a296b2d16064ef86607f78d7eb1e08a5f39366239bb9cdd6bc3838fb2f667f2506e81c8d5c71965cdd6f18a17fb1c9a8368eeb407b9dd8188e95473
   languageName: node
   linkType: hard
 
