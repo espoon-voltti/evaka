@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { formatPersonName } from 'lib-common/names'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -18,8 +19,10 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
+import { useTimedScreenReaderMessage } from '../../../calendar/hooks'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+import { focusElementAfterDelay } from '../../../utils/focus'
 
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
@@ -30,6 +33,9 @@ export default React.memo(function OtherChildrenSubSection({
   verificationRequested
 }: ContactInfoSectionProps) {
   const t = useTranslation()
+  const otherChildrenExistsRef = React.useRef<HTMLInputElement>(null)
+  const [screenReaderMessage, setScreenReaderMessage] =
+    useTimedScreenReaderMessage()
 
   return (
     <>
@@ -65,6 +71,7 @@ export default React.memo(function OtherChildrenSubSection({
         checked={formData.otherChildrenExists}
         data-qa="otherChildrenExists-input"
         label={t.applications.editor.contactInfo.areExtraChildren}
+        inputRef={otherChildrenExistsRef}
         onChange={(checked) => {
           updateFormData({
             otherChildrenExists: checked
@@ -79,6 +86,9 @@ export default React.memo(function OtherChildrenSubSection({
                 }
               ]
             })
+          }
+          if (checked) {
+            focusElementAfterDelay('extra-child-first-name-0')
           }
         }}
       />
@@ -112,6 +122,7 @@ export default React.memo(function OtherChildrenSubSection({
                       t.applications.editor.contactInfo.firstNamePlaceholder
                     }
                     width="L"
+                    required
                   />
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xs">
@@ -138,6 +149,7 @@ export default React.memo(function OtherChildrenSubSection({
                       t.applications.editor.contactInfo.lastNamePlaceholder
                     }
                     width="m"
+                    required
                   />
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xs">
@@ -175,6 +187,7 @@ export default React.memo(function OtherChildrenSubSection({
                         t.applications.editor.contactInfo.ssnPlaceholder
                       }
                       width="m"
+                      required
                     />
                     <Button
                       appearance="inline"
@@ -184,8 +197,13 @@ export default React.memo(function OtherChildrenSubSection({
                         updateFormData({
                           otherChildren: formData.otherChildren.filter(
                             (_, i) => i !== index
-                          )
+                          ),
+                          otherChildrenExists: formData.otherChildren.length > 1
                         })
+                        setScreenReaderMessage(
+                          t.applications.editor.contactInfo.removed
+                        )
+                        otherChildrenExistsRef.current?.focus()
                       }}
                     />
                   </FixedSpaceRow>
@@ -199,6 +217,7 @@ export default React.memo(function OtherChildrenSubSection({
             text={t.applications.editor.contactInfo.addChild}
             data-qa="add-other-child"
             onClick={() => {
+              const newIndex = formData.otherChildren.length
               updateFormData({
                 otherChildren: [
                   ...formData.otherChildren,
@@ -209,10 +228,14 @@ export default React.memo(function OtherChildrenSubSection({
                   }
                 ]
               })
+              focusElementAfterDelay(`extra-child-first-name-${newIndex}`)
             }}
           />
         </>
       )}
+      <ScreenReaderOnly aria-live="assertive" aria-atomic="true">
+        {screenReaderMessage}
+      </ScreenReaderOnly>
     </>
   )
 })
