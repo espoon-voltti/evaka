@@ -7,9 +7,10 @@ package fi.espoo.evaka.titania
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.networknt.schema.JsonSchema
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersionDetector
+import com.networknt.schema.InputFormat
+import com.networknt.schema.Schema
+import com.networknt.schema.SchemaRegistry
+import com.networknt.schema.SpecificationVersion
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -68,9 +69,9 @@ class TitaniaJsonSchemaTest {
     private fun getResponseJsonSchema() =
         getJsonSchema(ClassPathResource("titania/schema/titania-get-request-output.schema.json"))
 
-    private fun getJsonSchema(resource: Resource): JsonSchema {
-        val jsonNode = resource.inputStream.use { jsonMapper.readTree(it) }
-        val jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersionDetector.detect(jsonNode))
-        return jsonSchemaFactory.getSchema(jsonNode)
+    private fun getJsonSchema(resource: Resource): Schema {
+        val schemaData = resource.inputStream.use { it.readAllBytes().toString(Charsets.UTF_8) }
+        val schemaRegistry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12)
+        return schemaRegistry.getSchema(schemaData, InputFormat.JSON)
     }
 }
