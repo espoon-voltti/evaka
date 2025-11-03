@@ -107,10 +107,7 @@ class ServiceApplicationController(
             .also { Audit.UnitServiceApplicationsRead.log(targetId = AuditId(unitId)) }
     }
 
-    data class AcceptServiceApplicationBody(
-        val shiftCareType: ShiftCareType,
-        val partWeek: Boolean,
-    )
+    data class AcceptServiceApplicationBody(val shiftCareType: ShiftCareType, val partWeek: Boolean)
 
     @PutMapping("/{id}/accept")
     fun acceptServiceApplication(

@@ -509,7 +509,7 @@ private val perussanoma3Response =
             </HenkilonTunnusKyselyResponse>
         </s:Body>
     </s:Envelope>
-        """
+    """
         .trimIndent()
         .let(::StringSource)
 
@@ -724,7 +724,7 @@ private val huoltajaHuollettavatResponse =
             </HenkilonTunnusKyselyResponse>
         </s:Body>
     </s:Envelope>
-        """
+    """
         .trimIndent()
         .let(::StringSource)
 
@@ -909,7 +909,7 @@ private val huollettavaHuoltajaResponse =
             </HenkilonTunnusKyselyResponse>
         </s:Body>
     </s:Envelope>    
-        """
+    """
         .trimIndent()
         .let(::StringSource)
 
@@ -988,6 +988,6 @@ private val asukasMaaraResponse =
             </HenkilonTunnusKyselyResponse>
         </s:Body>
     </s:Envelope>
-        """
+    """
         .trimIndent()
         .let(::StringSource)

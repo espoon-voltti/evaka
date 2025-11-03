@@ -26,11 +26,7 @@ import org.jdbi.v3.json.Json
  */
 const val KOSKI_DATA_VERSION: Int = 3
 
-data class KoskiData(
-    val oppija: Oppija,
-    val operation: KoskiOperation,
-    val organizationOid: String,
-)
+data class KoskiData(val oppija: Oppija, val operation: KoskiOperation, val organizationOid: String)
 
 enum class KoskiOperation {
     CREATE,

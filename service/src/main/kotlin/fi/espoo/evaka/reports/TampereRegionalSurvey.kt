@@ -536,10 +536,7 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
 
     data class MonthlyAssistanceResult(val month: Int, val assistanceCount: Int = 0)
 
-    data class MonthlyMunicipalShiftCareResult(
-        val month: Int,
-        val municipalShiftCareCount: Int = 0,
-    )
+    data class MonthlyMunicipalShiftCareResult(val month: Int, val municipalShiftCareCount: Int = 0)
 
     data class MonthlyFamilyDaycareResult(
         val month: Int = 0,

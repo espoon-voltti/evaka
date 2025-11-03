@@ -207,9 +207,7 @@ data class TitaniaStampedPersonRequest(
     val name: String? = null,
 )
 
-data class GetStampedWorkingTimeEventsResponse(
-    val schedulingUnit: List<TitaniaStampedUnitResponse>
-)
+data class GetStampedWorkingTimeEventsResponse(val schedulingUnit: List<TitaniaStampedUnitResponse>)
 
 data class TitaniaStampedUnitResponse(
     val code: String,

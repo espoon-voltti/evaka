@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 
 data class FinanceNoteRequest(val personId: PersonId, val content: String)
 
-data class FinanceNoteResponse(
-    val note: FinanceNote,
-    val permittedActions: Set<Action.FinanceNote>,
-)
+data class FinanceNoteResponse(val note: FinanceNote, val permittedActions: Set<Action.FinanceNote>)
 
 @RestController
 @RequestMapping("/employee/finance-notes")

@@ -185,7 +185,4 @@ enum class ArchiveProcessType {
     }
 }
 
-data class ArchiveProcessConfig(
-    val processDefinitionNumber: String,
-    val archiveDurationMonths: Int,
-)
+data class ArchiveProcessConfig(val processDefinitionNumber: String, val archiveDurationMonths: Int)

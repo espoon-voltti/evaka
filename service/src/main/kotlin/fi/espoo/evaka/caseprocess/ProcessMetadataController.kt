@@ -42,11 +42,7 @@ enum class SfiMethod {
     PENDING,
 }
 
-data class SfiDelivery(
-    val time: HelsinkiDateTime,
-    val method: SfiMethod,
-    val recipientName: String,
-)
+data class SfiDelivery(val time: HelsinkiDateTime, val method: SfiMethod, val recipientName: String)
 
 data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val basis: String)
 
