@@ -49,6 +49,7 @@ export default class ApplicationListView {
     sendDecisionsWithoutProposal: Element
     withdrawPlacementProposal: Element
   }
+  #showAsDesktopButton: Element
   constructor(private page: Page) {
     this.applicationStatus = page.findByDataQa('application-status')
     this.allApplications = page.findByDataQa('application-status-filter-ALL')
@@ -81,6 +82,7 @@ export default class ApplicationListView {
         'action-bar-withdrawPlacementProposal'
       )
     }
+    this.#showAsDesktopButton = page.findByDataQa('show-as-desktop')
   }
 
   static url = `${config.employeeUrl}/applications`
@@ -114,6 +116,10 @@ export default class ApplicationListView {
 
   async assertApplicationCount(n: number) {
     await waitUntilEqual(() => this.#applications.count(), n)
+  }
+
+  async showAsDesktop() {
+    await this.#showAsDesktopButton.click()
   }
 }
 

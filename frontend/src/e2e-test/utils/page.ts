@@ -7,6 +7,7 @@ import type {
   ElementHandle,
   Keyboard,
   Locator,
+  Request as PlaywrightRequest,
   Page as PlaywrightPage
 } from 'playwright'
 
@@ -68,12 +69,22 @@ export class Page {
     return this.page.waitForURL(url)
   }
 
+  // avoid using this if possible!
+  async waitForTimeout(ms: number) {
+    if (ms > 500) throw new Error('aint nobody got time for that')
+    return this.page.waitForTimeout(ms)
+  }
+
   async pause() {
     return this.page.pause()
   }
 
   onPopup(fn: (popup: Page) => void) {
     this.page.on('popup', (popup) => fn(new Page(popup)))
+  }
+
+  onRequest(fn: (req: PlaywrightRequest) => void) {
+    this.page.on('request', fn)
   }
 
   async capturePopup(fn: () => Promise<void>): Promise<Page> {

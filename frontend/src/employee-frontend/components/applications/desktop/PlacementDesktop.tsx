@@ -277,6 +277,7 @@ const PlacementDesktopValidated = React.memo(
         <FixedSpaceRow alignItems="center">
           <div>{i18n.applications.placementDesktop.occupancyPeriod}:</div>
           <DatePicker
+            data-qa="occupancy-period-start-picker"
             date={occupancyPeriodStart}
             onChange={(date) =>
               setOccupancyPeriodStart(date ?? LocalDate.todayInHelsinkiTz())
@@ -284,7 +285,9 @@ const PlacementDesktopValidated = React.memo(
             locale={lang}
           />
           <div>—</div>
-          <div>{occupancyPeriodStart.addMonths(3).format()}</div>
+          <div data-qa="occupancy-period-end">
+            {occupancyPeriodStart.addMonths(3).format()}
+          </div>
         </FixedSpaceRow>
         <FixedSpaceRow>
           <DaycaresColumn ref={daycareListRef}>
