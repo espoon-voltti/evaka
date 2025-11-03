@@ -255,7 +255,7 @@ server {
     proxy_pass              $staticEndpoint$uri;
 
     proxy_intercept_errors  on;
-    error_page 404 = @indexPage;
+    error_page 403 404 = @indexPage;
   }
   {{ end }}
 
