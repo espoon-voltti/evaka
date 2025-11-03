@@ -667,7 +667,8 @@ const sv: Translations = {
     deleteSentCancel: 'Tillbaka',
     deleteUnprocessedApplicationError: 'Att radera ansökan misslyckades',
     creation: {
-      title: 'Val av ansökningsblankett',
+      title: 'Ansökningsblankett',
+      selectApplicationType: 'Välj ansökningsblankett',
       daycareLabel:
         'Ansökan till småbarnspedagogik och ansökan om servicesedel',
       daycareInfo:
