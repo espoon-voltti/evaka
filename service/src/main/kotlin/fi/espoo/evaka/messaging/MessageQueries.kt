@@ -1001,13 +1001,13 @@ fun Database.Read.getCitizenRecipients(
 WITH user_account AS (
     SELECT * FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
-    SELECT g.child_id, g.guardian_id AS parent_id, true AS guardian_relationship
+    SELECT g.child_id, g.guardian_id AS parent_id
     FROM user_account acc
     JOIN guardian g ON acc.person_id = g.guardian_id
 
     UNION ALL
 
-    SELECT fp.child_id, fp.parent_id, false AS guardian_relationship
+    SELECT fp.child_id, fp.parent_id
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
 ), backup_care_placements AS (
@@ -1080,7 +1080,7 @@ citizen_accounts AS (
     JOIN guardian g ON c.child_id = g.child_id
     JOIN message_account acc ON g.guardian_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
-    WHERE acc.id != ${bind(accountId)} AND c.guardian_relationship
+    WHERE acc.id != ${bind(accountId)}
 
     UNION ALL
 
@@ -1089,7 +1089,7 @@ citizen_accounts AS (
     JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> ${bind(today)}
     JOIN message_account acc ON fp.parent_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
-    WHERE acc.id != ${bind(accountId)} AND NOT c.guardian_relationship
+    WHERE acc.id != ${bind(accountId)}
 ),
 mixed_accounts AS (
     SELECT id, name, type, null::uuid as person_id, child_id, reply_only, ooo_period FROM personal_accounts

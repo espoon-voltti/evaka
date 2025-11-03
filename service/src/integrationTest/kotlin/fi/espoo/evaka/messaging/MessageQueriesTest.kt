@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.*
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -812,6 +813,115 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
             ),
             recipientsOf(accounts.person1),
+        )
+    }
+
+    @Test
+    fun `guardians and foster parents can message each other`() {
+        val today = LocalDate.now()
+        val startDate = today.minusDays(10)
+        val endDate = today.plusDays(20)
+        lateinit var childId: ChildId
+
+        db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        language = Language.fi,
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+                    )
+                )
+            tx.insertDaycareAclRow(
+                daycareId = daycareId,
+                employeeId = employee1.id,
+                role = UserRole.UNIT_SUPERVISOR,
+            )
+            val group = DevDaycareGroup(daycareId = daycareId, name = "Test Group")
+            tx.insert(group)
+
+            childId =
+                tx.insert(
+                    DevPerson(firstName = "Child", lastName = "TestChild"),
+                    DevPersonType.CHILD,
+                )
+
+            // person1 is the guardian
+            tx.insertGuardian(guardianId = person1.id, childId = childId)
+
+            // person2 is the foster parent
+            tx.insert(
+                DevFosterParent(
+                    childId = childId,
+                    parentId = person2.id,
+                    validDuring = DateRange(startDate, endDate),
+                    modifiedAt = HelsinkiDateTime.now(),
+                    modifiedBy = EvakaUserId(employee1.id.raw),
+                )
+            )
+
+            // Create a placement so messaging is enabled
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = PlacementType.DAYCARE,
+                        startDate = startDate,
+                        endDate = endDate,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+
+        // Get recipients for guardian (person1)
+        val guardianRecipients = db.read { it.getCitizenRecipients(today, accounts.person1.id) }
+
+        // Get recipients for foster parent (person2)
+        val fosterParentRecipients = db.read { it.getCitizenRecipients(today, accounts.person2.id) }
+
+        // Guardian should be able to message the foster parent
+        val guardianCanMessageFosterParent =
+            guardianRecipients[childId]?.newMessage?.any { it.account.id == accounts.person2.id }
+                ?: false
+        assertTrue(
+            guardianCanMessageFosterParent,
+            "Guardian should be able to message foster parent",
+        )
+
+        // Foster parent should be able to message the guardian
+        val fosterParentCanMessageGuardian =
+            fosterParentRecipients[childId]?.newMessage?.any {
+                it.account.id == accounts.person1.id
+            } ?: false
+        assertTrue(
+            fosterParentCanMessageGuardian,
+            "Foster parent should be able to message guardian",
+        )
+
+        // Verify both can reply to each other as well
+        val guardianCanReplyToFosterParent =
+            guardianRecipients[childId]?.reply?.any { it.account.id == accounts.person2.id }
+                ?: false
+        assertTrue(
+            guardianCanReplyToFosterParent,
+            "Guardian should be able to reply to foster parent",
+        )
+
+        val fosterParentCanReplyToGuardian =
+            fosterParentRecipients[childId]?.reply?.any { it.account.id == accounts.person1.id }
+                ?: false
+        assertTrue(
+            fosterParentCanReplyToGuardian,
+            "Foster parent should be able to reply to guardian",
         )
     }
 
