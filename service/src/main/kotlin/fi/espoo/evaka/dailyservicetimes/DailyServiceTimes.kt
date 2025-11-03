@@ -33,8 +33,7 @@ data class DailyServiceTimes(
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class ServiceTimesPresenceStatus {
-    @JsonTypeName("PRESENT")
-    data class Present(val times: TimeRange) : ServiceTimesPresenceStatus()
+    @JsonTypeName("PRESENT") data class Present(val times: TimeRange) : ServiceTimesPresenceStatus()
 
     @JsonTypeName("ABSENT") data object Absent : ServiceTimesPresenceStatus()
 

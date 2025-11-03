@@ -323,10 +323,7 @@ INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coeffi
         .executeAndReturnGeneratedKeys()
         .exactlyOne<StaffAttendanceExternalId>()
 
-data class ExternalStaffDeparture(
-    val id: StaffAttendanceExternalId,
-    val departed: HelsinkiDateTime,
-)
+data class ExternalStaffDeparture(val id: StaffAttendanceExternalId, val departed: HelsinkiDateTime)
 
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) =
     createUpdate {

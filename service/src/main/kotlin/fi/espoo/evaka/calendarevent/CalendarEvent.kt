@@ -102,10 +102,7 @@ data class CalendarEventTimeEmployeeReservationForm(
     val childId: ChildId?,
 )
 
-data class CalendarEventTimeClearingForm(
-    val calendarEventId: CalendarEventId,
-    val childId: ChildId,
-)
+data class CalendarEventTimeClearingForm(val calendarEventId: CalendarEventId, val childId: ChildId)
 
 data class CalendarEventTimeCitizenReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,

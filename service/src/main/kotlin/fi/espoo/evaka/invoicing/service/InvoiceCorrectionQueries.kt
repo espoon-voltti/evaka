@@ -134,10 +134,7 @@ data class InvoiceCorrectionUpdate(
     val unitPrice: Int,
 )
 
-data class InvoiceCorrectionModificationMetadata(
-    val userId: EvakaUserId,
-    val now: HelsinkiDateTime,
-)
+data class InvoiceCorrectionModificationMetadata(val userId: EvakaUserId, val now: HelsinkiDateTime)
 
 fun Database.Transaction.updateInvoiceCorrections(
     items: Iterable<InvoiceCorrectionUpdate>,

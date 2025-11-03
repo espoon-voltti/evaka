@@ -49,10 +49,7 @@ class WebPushController(private val accessControl: AccessControl) {
         )
     }
 
-    data class PushSettings(
-        val categories: Set<PushNotificationCategory>,
-        val groups: Set<GroupId>,
-    )
+    data class PushSettings(val categories: Set<PushNotificationCategory>, val groups: Set<GroupId>)
 
     @GetMapping("/employee-mobile/push-settings")
     fun getPushSettings(
