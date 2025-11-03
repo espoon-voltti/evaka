@@ -13,7 +13,8 @@ import {
   TreeDropdown,
   Element,
   Select,
-  FileUpload
+  FileUpload,
+  SecondaryRecipient
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -159,6 +160,14 @@ export default class MessagesPage {
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
     await this.#emptyInboxText.waitUntilVisible()
+  }
+
+  secondaryRecipient(name: string) {
+    return new SecondaryRecipient(
+      this.page.find(`[data-qa="secondary-recipient"]`, {
+        hasText: name
+      })
+    )
   }
 
   async close() {

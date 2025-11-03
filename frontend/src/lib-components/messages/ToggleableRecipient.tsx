@@ -41,7 +41,6 @@ const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
 `
 
 export function ToggleableRecipient({
-  'data-qa': dataQa,
   recipient: { id, name, selected, toggleable, type },
   labelAdd,
   onToggleRecipient
@@ -58,7 +57,7 @@ export function ToggleableRecipient({
       selected={selected}
       toggleable={toggleable}
       disabled={!toggleable}
-      data-qa={dataQa}
+      data-qa="secondary-recipient"
       aria-label={label}
       aria-pressed={selected}
     >

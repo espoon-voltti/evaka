@@ -23,9 +23,9 @@ import type {
 } from 'lib-common/generated/api-types/messaging'
 import type {
   DaycareId,
-  MessageAccountId,
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
+import type { TypedMessageAccount } from 'lib-common/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
 import { constantQuery, useChainedQuery } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -88,7 +88,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
           data-qa="messages-page-content-area"
         >
           <ReceivedThread
-            accountId={selectedAccount.account.id}
+            account={selectedAccount.account}
             thread={thread}
             onBack={() => history.go(-1)}
             unitId={unitOrGroup.unitId}
@@ -104,14 +104,14 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
 
 interface ReceivedThreadProps {
   unitId: DaycareId
-  accountId: MessageAccountId
+  account: TypedMessageAccount
   thread: MessageThread
   onBack: () => void
 }
 
 const ReceivedThread = React.memo(function ReceivedThread({
   unitId,
-  accountId,
+  account,
   thread: { id: threadId, messages, title, type, children },
   onBack
 }: ReceivedThreadProps) {
@@ -120,7 +120,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
 
   const { onToggleRecipient, recipients } = useRecipients(
     messages,
-    accountId,
+    account,
     null
   )
   const [replyEditorVisible, setReplyEditorVisible] = useState(
@@ -171,7 +171,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
           <MessageReplyEditor
             mutation={replyToThreadMutation}
             onSubmit={() => ({
-              accountId,
+              accountId: account.id,
               threadId,
               messageId: messages.slice(-1)[0].id,
               body: {

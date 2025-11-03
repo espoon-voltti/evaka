@@ -23,6 +23,7 @@ import type {
   MessageThreadFolderId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
+import type { TypedMessageAccount } from 'lib-common/messaging'
 import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
@@ -337,7 +338,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                     key={item.id}
                     id={id}
                     thread={item}
-                    financeAccountId={financeAccount!.account.id}
+                    financeAccount={financeAccount!.account}
                     setThread={setThread}
                     refreshMessages={refreshMessages}
                     uiMode={uiMode}
@@ -368,7 +369,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
 const SingleThread = React.memo(function SingleThread({
   id,
   thread,
-  financeAccountId,
+  financeAccount,
   setThread,
   refreshMessages,
   uiMode,
@@ -377,7 +378,7 @@ const SingleThread = React.memo(function SingleThread({
 }: {
   id: PersonId
   thread: MessageThread
-  financeAccountId: MessageAccountId
+  financeAccount: TypedMessageAccount
   setThread: (thread: MessageThread) => void
   refreshMessages: (id: MessageAccountId) => void
   uiMode: string
@@ -395,7 +396,7 @@ const SingleThread = React.memo(function SingleThread({
     [setReplyContent]
   )
 
-  const { recipients } = useRecipients(thread.messages, financeAccountId, null)
+  const { recipients } = useRecipients(thread.messages, financeAccount, null)
 
   return (
     <BorderedContentArea
@@ -415,7 +416,7 @@ const SingleThread = React.memo(function SingleThread({
             {thread.title} ({thread.messages.length}) (
             <UnderlinedLink
               data-qa="finance-message-thread-link"
-              href={`/employee/messages?accountId=${financeAccountId}&messageBox=thread&threadId=${thread.id}`}
+              href={`/employee/messages?accountId=${financeAccount.id}&messageBox=thread&threadId=${thread.id}`}
               target="_blank"
             >
               {i18n.personProfile.financeNotesAndMessages.link}
@@ -451,11 +452,11 @@ const SingleThread = React.memo(function SingleThread({
             mutation={archiveFinanceThreadMutation}
             onClick={() => ({
               id,
-              accountId: financeAccountId,
+              accountId: financeAccount.id,
               threadId: thread.id
             })}
             onSuccess={() => {
-              refreshMessages(financeAccountId)
+              refreshMessages(financeAccount.id)
             }}
           />
         </FixedSpaceRow>
@@ -474,7 +475,7 @@ const SingleThread = React.memo(function SingleThread({
             mutation={replyToFinanceThreadMutation}
             onSubmit={() => ({
               id,
-              accountId: financeAccountId,
+              accountId: financeAccount.id,
               messageId: thread.messages[0].id,
               body: {
                 content: replyContent,
@@ -482,7 +483,7 @@ const SingleThread = React.memo(function SingleThread({
               }
             })}
             onSuccess={() => {
-              refreshMessages(financeAccountId)
+              refreshMessages(financeAccount.id)
               clearUiMode()
             }}
             onDiscard={() => {

@@ -347,7 +347,6 @@ export default React.memo(function MessageEditor({
                           ),
                           outOfOffice: null
                         }}
-                        data-qa="secondary-recipient"
                         onToggleRecipient={(_, selected) =>
                           setMessage((message) => ({
                             ...message,

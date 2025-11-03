@@ -4,6 +4,7 @@
 
 import fs from 'fs'
 
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   DaycareId,
@@ -33,6 +34,7 @@ import {
 import {
   addAclRoleForDaycare,
   createDaycareGroups,
+  createFosterParent,
   createMessageAccounts,
   insertGuardians,
   resetServiceState,
@@ -1092,5 +1094,117 @@ describe('Sending and receiving messages', () => {
       await messageEditor.discardButton.click()
       await messagesPage.assertNoDrafts()
     })
+  })
+})
+
+describe('Foster parent messaging', () => {
+  test('Foster parent sends message to group with guardian as secondary recipient, employee reply has guardian selected by default', async () => {
+    const fosterParent = await Fixture.person().saveAdult({
+      updateMockVtjWithDependants: []
+    })
+
+    await createFosterParent({
+      body: [
+        {
+          id: randomId(),
+          childId,
+          parentId: fosterParent.id,
+          validDuring: new DateRange(mockedDate, mockedDate.addYears(1)),
+          modifiedAt: mockedDateAt10,
+          modifiedBy: evakaUserId(unitSupervisor.id)
+        }
+      ]
+    })
+
+    // Foster parent sends message
+    const fosterParentPage = await Page.open({
+      mockedTime: mockedDateAt10
+    })
+    await enduserLogin(fosterParentPage, fosterParent)
+    await fosterParentPage.goto(config.enduserMessagesUrl)
+    const fosterParentMessagesPage = new CitizenMessagesPage(
+      fosterParentPage,
+      'desktop'
+    )
+    const editor = await fosterParentMessagesPage.createNewMessage()
+    const recipients = ['Kosmiset vakiot (Henkilökunta)']
+    await editor.selectRecipients(recipients)
+
+    // Guardian should be visible as secondary recipient but unselected
+    const guardianRecipient = editor.secondaryRecipient(
+      `${testAdult.lastName} ${testAdult.firstName}`
+    )
+    await guardianRecipient.assertIsUnselected()
+
+    // Select guardian and send message
+    await guardianRecipient.click()
+    await guardianRecipient.assertIsSelected()
+    await editor.fillMessage(defaultTitle, defaultContent)
+    await editor.sendMessage()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    await fosterParentPage.close()
+
+    // Employee opens group mailbox
+    await openSupervisorPage(mockedDateAt11)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    await messagesPage.unitReceived.click()
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.openFirstThreadReplyEditor()
+
+    // Guardian should be selected by default in reply
+    const guardianButton = messagesPage.secondaryRecipient(
+      `${testAdult.lastName} ${testAdult.firstName}`
+    )
+    await guardianButton.assertIsSelected()
+  })
+
+  test('Employee sends message from group to child with foster parent and guardian, foster parent reply has guardian unselected by default', async () => {
+    const fosterParent = await Fixture.person().saveAdult({
+      updateMockVtjWithDependants: []
+    })
+
+    await createFosterParent({
+      body: [
+        {
+          id: randomId(),
+          childId,
+          parentId: fosterParent.id,
+          validDuring: new DateRange(mockedDate, mockedDate.addYears(1)),
+          modifiedAt: mockedDateAt10,
+          modifiedBy: evakaUserId(unitSupervisor.id)
+        }
+      ]
+    })
+
+    // Employee sends message to child from group account
+    await openSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      recipientKeys: [`${childId}+false`]
+    })
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Foster parent opens message and reply editor
+    const fosterParentPage = await Page.open({
+      mockedTime: mockedDateAt11
+    })
+    await enduserLogin(fosterParentPage, fosterParent)
+    await fosterParentPage.goto(config.enduserMessagesUrl)
+    const fosterParentMessagesPage = new CitizenMessagesPage(
+      fosterParentPage,
+      'desktop'
+    )
+    await fosterParentMessagesPage.startReplyToFirstThread()
+
+    // Guardian should be visible as secondary recipient but unselected by default
+    const guardianRecipient = fosterParentMessagesPage.secondaryRecipient(
+      `${testAdult.lastName} ${testAdult.firstName}`
+    )
+    await guardianRecipient.assertIsUnselected()
   })
 })

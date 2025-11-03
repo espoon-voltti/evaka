@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type {
+  AccountType,
   DraftContent,
   MessageAccount,
   MessageChild,
@@ -11,6 +12,13 @@ import type {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type { JsonOf } from 'lib-common/json'
 import { formatPersonName } from 'lib-common/names'
+
+import type { MessageAccountId } from './generated/api-types/shared'
+
+export interface TypedMessageAccount {
+  id: MessageAccountId
+  type: AccountType
+}
 
 export const deserializeDraftContent = ({
   createdAt,

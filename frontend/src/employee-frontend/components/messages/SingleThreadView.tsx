@@ -22,7 +22,7 @@ import type {
   MessageType,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
-import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { TypedMessageAccount } from 'lib-common/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
 import { useMutationResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -177,7 +177,7 @@ const AutoScrollPositionSpan = styled.span<{ top: string }>`
 `
 
 interface Props {
-  accountId: MessageAccountId
+  account: TypedMessageAccount
   goBack: () => void
   thread: MessageThread
   view: View
@@ -185,7 +185,7 @@ interface Props {
 }
 
 export function SingleThreadView({
-  accountId,
+  account,
   goBack,
   thread: {
     id: threadId,
@@ -223,7 +223,7 @@ export function SingleThreadView({
   )
   const { recipients, onToggleRecipient } = useRecipients(
     messages,
-    accountId,
+    account,
     null
   )
 
@@ -234,7 +234,7 @@ export function SingleThreadView({
 
   const onSubmitReply = useCallback(
     () => ({
-      accountId,
+      accountId: account.id,
       messageId: messages.slice(-1)[0].id,
       body: {
         content: replyContent,
@@ -243,7 +243,7 @@ export function SingleThreadView({
           .map((r) => r.id)
       }
     }),
-    [accountId, messages, recipients, replyContent]
+    [account.id, messages, recipients, replyContent]
   )
 
   const handleReplySent = useCallback(
@@ -267,14 +267,14 @@ export function SingleThreadView({
   )
   useEffect(() => {
     const hasUnreadMessages = messages.some(
-      (m) => !m.readAt && m.sender.id !== accountId
+      (m) => !m.readAt && m.sender.id !== account.id
     )
     if (hasUnreadMessages) {
-      void markThreadRead({ accountId, threadId }).then(() => {
-        refreshMessages(accountId)
+      void markThreadRead({ accountId: account.id, threadId }).then(() => {
+        refreshMessages(account.id)
       })
     }
-  }, [accountId, markThreadRead, messages, refreshMessages, threadId])
+  }, [account.id, markThreadRead, messages, refreshMessages, threadId])
 
   const singleCustomer = useMemo(() => {
     if (messages.length === 0) return null
@@ -402,7 +402,7 @@ export function SingleThreadView({
                     text={i18n.messages.markUnread}
                     data-qa="mark-unread-btn"
                     mutation={markLastReceivedMessageInThreadUnreadMutation}
-                    onClick={() => ({ accountId, threadId })}
+                    onClick={() => ({ accountId: account.id, threadId })}
                     onSuccess={() => {
                       navigate('/messages')
                     }}
@@ -415,7 +415,9 @@ export function SingleThreadView({
                     aria-label={i18n.common.archive}
                     data-qa="delete-thread-btn"
                     className="delete-btn"
-                    onClick={() => archiveThreadResult({ accountId, threadId })}
+                    onClick={() =>
+                      archiveThreadResult({ accountId: account.id, threadId })
+                    }
                     onSuccess={onArchived}
                     text={i18n.messages.archiveThread}
                     stopPropagation

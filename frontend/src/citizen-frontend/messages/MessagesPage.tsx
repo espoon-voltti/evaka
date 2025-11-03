@@ -144,7 +144,10 @@ export default React.memo(function MessagesPage() {
               {selectedThread ? (
                 isRegularThread(selectedThread) ? (
                   <ThreadView
-                    accountId={messageAccount.accountId}
+                    account={{
+                      id: messageAccount.accountId,
+                      type: 'CITIZEN'
+                    }}
                     closeThread={closeThread}
                     thread={selectedThread}
                     allowedAccounts={
