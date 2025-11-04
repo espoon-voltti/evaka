@@ -190,14 +190,6 @@ export default React.memo(function MessageEditor({
 
   const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
 
-  const ChipContainer = styled(FixedSpaceFlexWrap)`
-    margin-bottom: -${defaultMargins.xxs};
-
-    > * {
-      margin-bottom: ${defaultMargins.xxs};
-    }
-  `
-
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
@@ -464,6 +456,14 @@ export default React.memo(function MessageEditor({
     </ModalAccessibilityWrapper>
   )
 })
+
+const ChipContainer = styled(FixedSpaceFlexWrap)`
+  margin-bottom: -${defaultMargins.xxs};
+
+  > * {
+    margin-bottom: ${defaultMargins.xxs};
+  }
+`
 
 const Container = styled.div`
   width: 100%;
