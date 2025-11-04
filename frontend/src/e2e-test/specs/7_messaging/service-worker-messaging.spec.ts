@@ -350,6 +350,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.openFirstThread()
       await citizenMessagesPage.assertThreadContent({ title, content })
       await citizenMessagesPage.replyToFirstThread('This is a reply')
+      await runPendingAsyncJobs(mockedTime.addHours(1).addMinutes(1))
 
       await openStaffPage(mockedTime.addHours(2), serviceWorker)
       applReadView = new ApplicationReadView(staffPage)
@@ -359,6 +360,7 @@ describe('Service Worker Messaging', () => {
       const replyContent = 'Service worker reply'
       await messagesPage.fillReplyContent(replyContent)
       await messagesPage.sendReplyButton.click()
+      await runPendingAsyncJobs(mockedTime.addHours(2).addMinutes(1))
 
       await openStaffPage(mockedTime.addHours(3), serviceWorker)
       applReadView = new ApplicationReadView(staffPage)
