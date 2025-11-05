@@ -138,13 +138,13 @@ class DocumentTemplateController(
                             citizenCalendarEnv.calendarOpenBeforePlacementDays,
                         )
 
+                    if (timeRelevantPlacement == null && activePlacement == null)
+                        return@read emptyList()
                     val placement =
-                        when {
-                            timeRelevantPlacement != null && activePlacement != null ->
-                                activePlacement // Both exist, prefer active
-                            timeRelevantPlacement != null && activePlacement == null ->
-                                timeRelevantPlacement // Only non-started exists
-                            else -> return@read emptyList() // No placement at all
+                        if (activePlacement != null) {
+                            activePlacement // Both exist or only active exists, prefer active
+                        } else {
+                            timeRelevantPlacement!! // Only non-started exists
                         }
 
                     tx.getTemplateSummaries().filter {
