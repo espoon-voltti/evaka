@@ -267,11 +267,21 @@ class EspooConfig {
     fun espooScheduledJobs(
         patuReportingService: PatuReportingService,
         espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
         env: ScheduledJobsEnv<EspooScheduledJob>,
         linkityEnv: LinkityEnv?,
         jsonMapper: JsonMapper,
+        espooEnv: EspooEnv,
     ): EspooScheduledJobs =
-        EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env, linkityEnv, jsonMapper)
+        EspooScheduledJobs(
+            patuReportingService,
+            espooAsyncJobRunner,
+            asyncJobRunner,
+            env,
+            linkityEnv,
+            jsonMapper,
+            espooEnv,
+        )
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
@@ -312,6 +322,7 @@ data class EspooEnv(
     val patuIntegrationEnabled: Boolean,
     val biIntegrationEnabled: Boolean,
     val linkityEnabled: Boolean,
+    val childDocumentArchivalDelayDays: Int,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -324,6 +335,8 @@ data class EspooEnv(
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
                 linkityEnabled = env.lookup("espoo.integration.linkity.enabled") ?: false,
+                childDocumentArchivalDelayDays =
+                    env.lookup("espoo.child_document_archival_delay_days") ?: 30,
             )
     }
 }

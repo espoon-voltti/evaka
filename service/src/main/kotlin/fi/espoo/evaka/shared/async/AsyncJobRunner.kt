@@ -24,6 +24,13 @@ import kotlin.math.max
 import kotlin.reflect.KClass
 import org.jdbi.v3.core.Jdbi
 
+/**
+ * Default retry count for async jobs: 24h worth of retries when used with default 5 minute retry
+ * interval.
+ *
+ * Note: retryCount = 0 means the job will never run; retryCount = 1 means it runs once with no
+ * retries.
+ */
 private const val defaultRetryCount =
     24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
@@ -94,6 +101,12 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             handlers = handlers + mapOf(jobType to AsyncJobPool.Handler(handler))
         }
 
+    /**
+     * Plans async jobs to be executed.
+     *
+     * @param retryCount Number of attempts: 0 = never runs, 1 = runs once (no retries), 2+ = runs
+     *   with retries
+     */
     fun plan(
         tx: Database.Transaction,
         payloads: Iterable<T>,
@@ -102,6 +115,12 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         runAt: HelsinkiDateTime,
     ) = plan(tx, payloads.asSequence(), retryCount, retryInterval, runAt)
 
+    /**
+     * Plans async jobs to be executed.
+     *
+     * @param retryCount Number of attempts: 0 = never runs, 1 = runs once (no retries), 2+ = runs
+     *   with retries
+     */
     fun plan(
         tx: Database.Transaction,
         payloads: Sequence<T>,

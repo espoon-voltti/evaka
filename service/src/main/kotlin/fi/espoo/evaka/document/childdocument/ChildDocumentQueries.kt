@@ -703,3 +703,21 @@ fun Database.Transaction.setChildDocumentDecisionValidity(
         }
         .updateExactlyOne()
 }
+
+fun Database.Read.getChildDocumentsEligibleForArchival(
+    eligibleDate: LocalDate
+): List<ChildDocumentId> =
+    createQuery {
+            sql(
+                """
+                SELECT cd.id
+                FROM child_document cd
+                JOIN document_template dt ON cd.template_id = dt.id
+                WHERE upper(dt.validity) <= ${bind(eligibleDate)}
+                  AND dt.archive_externally = true
+                  AND cd.archived_at IS NULL
+                ORDER BY cd.created
+                """
+            )
+        }
+        .toList<ChildDocumentId>()

@@ -5,13 +5,16 @@
 package fi.espoo.evaka.espoo
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.EspooEnv
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.document.archival.planChildDocumentArchival
 import fi.espoo.evaka.espoo.bi.EspooBiTable
 import fi.espoo.evaka.linkity.LinkityHttpClient
 import fi.espoo.evaka.linkity.generateDateRangesForStaffAttendancePlanRequests
 import fi.espoo.evaka.linkity.sendStaffAttendancesToLinkity
 import fi.espoo.evaka.reports.patu.PatuReportingService
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
@@ -45,14 +48,20 @@ enum class EspooScheduledJob(
         EspooScheduledJobs::sendStaffAttendancesToLinkity,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
+    PlanChildDocumentArchival(
+        EspooScheduledJobs::planChildDocumentArchival,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
 }
 
 class EspooScheduledJobs(
     private val patuReportingService: PatuReportingService,
     private val espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<EspooScheduledJob>,
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
+    private val espooEnv: EspooEnv,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -112,5 +121,14 @@ class EspooScheduledJobs(
         val linkityClient = LinkityHttpClient(linkityEnv, jsonMapper)
         logger.info { "Sending staff attendances to Linkity for period $period" }
         sendStaffAttendancesToLinkity(period, db, linkityClient)
+    }
+
+    fun planChildDocumentArchival(db: Database.Connection, clock: EvakaClock) {
+        planChildDocumentArchival(
+            db,
+            clock,
+            asyncJobRunner,
+            espooEnv.childDocumentArchivalDelayDays,
+        )
     }
 }
