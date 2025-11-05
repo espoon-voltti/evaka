@@ -34,7 +34,7 @@ import {
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Dimmed, H1, H3 } from 'lib-components/typography'
+import { Dimmed, H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faFile } from 'lib-icons'
@@ -354,10 +354,9 @@ export default React.memo(function ChildrenIncomeStatements({
   return (
     <>
       <Container data-qa="children-income-statements">
-        <Gap size="L" />
         <ContentArea opaque paddingVertical="L">
           <>
-            <H1 noMargin>{t.income.children.title}</H1>
+            <H2 noMargin>{t.income.children.title}</H2>
             <Gap size="s" />
             <span>{t.income.children.description}</span>
           </>
