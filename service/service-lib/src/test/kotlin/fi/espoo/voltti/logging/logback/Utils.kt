@@ -8,17 +8,15 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.read.ListAppender
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.MappingJsonFactory
-import com.fasterxml.jackson.databind.json.JsonMapper
 import java.util.UUID
 import net.logstash.logback.encoder.CompositeJsonEncoder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.slf4j.LoggerFactory
+import tools.jackson.core.json.JsonWriteFeature
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.json.JsonMapper
 
 // DSL
 
@@ -213,7 +211,4 @@ fun Any.asMap(jsonMapper: JsonMapper = mapper): Map<String, Any> =
 private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): JsonNode =
     mapper.readTree(encoder.encode(this))
 
-@Suppress("DEPRECATION")
-private val factory =
-    MappingJsonFactory().enable(JsonGenerator.Feature.ESCAPE_NON_ASCII) as JsonFactory
-private val mapper = JsonMapper(factory)
+private val mapper = JsonMapper.builder().enable(JsonWriteFeature.ESCAPE_NON_ASCII).build()

@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.linkity
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.ensureTrailingSlash
@@ -16,6 +14,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 interface LinkityClient {
     fun getShifts(period: FiniteDateRange): List<Shift>

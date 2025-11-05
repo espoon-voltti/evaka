@@ -6,11 +6,11 @@ package fi.espoo.evaka.shared.config
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import kotlin.test.assertEquals
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 class SealedSubclassSimpleNameTest {
     private val jsonMapper = defaultJsonMapperBuilder().build()

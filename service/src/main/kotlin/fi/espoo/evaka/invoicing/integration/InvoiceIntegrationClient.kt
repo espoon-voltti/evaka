@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import io.github.oshai.kotlinlogging.KotlinLogging
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

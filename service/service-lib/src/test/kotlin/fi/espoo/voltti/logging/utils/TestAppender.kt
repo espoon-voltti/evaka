@@ -7,14 +7,14 @@ package fi.espoo.voltti.logging.utils
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.databind.json.JsonMapper
 import io.github.oshai.kotlinlogging.DelegatingKLogger
 import io.github.oshai.kotlinlogging.KLogger
 import java.io.PrintWriter
 import java.io.StringWriter
 import net.logstash.logback.argument.StructuredArgument
 import org.json.JSONObject
+import tools.jackson.core.ObjectWriteContext
+import tools.jackson.core.json.JsonFactory
 
 const val appenderName = "TestAppender"
 
@@ -50,9 +50,8 @@ class TestAppender : AppenderBase<ILoggingEvent>() {
             .let { args ->
                 StringWriter().use { sw ->
                     val pw = PrintWriter(sw, true)
-                    JsonFactory().createGenerator(pw).use { generator ->
+                    JsonFactory().createGenerator(ObjectWriteContext.empty(), pw).use { generator ->
                         generator.run {
-                            codec = JsonMapper()
                             writeStartObject()
                             args.writeTo(this)
                             writeEndObject()

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reports.patu
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.extensions.authentication
@@ -13,6 +12,7 @@ import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EspooPatuIntegrationEnv
 import fi.espoo.evaka.reports.RawReportRow
 import io.github.oshai.kotlinlogging.KotlinLogging
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

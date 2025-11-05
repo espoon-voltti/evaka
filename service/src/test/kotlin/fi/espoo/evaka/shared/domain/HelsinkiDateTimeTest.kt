@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.time.Clock
 import java.time.Duration
@@ -14,6 +13,7 @@ import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.databind.exc.InvalidFormatException
 
 class HelsinkiDateTimeTest {
     private val jsonMapper = defaultJsonMapperBuilder().build()

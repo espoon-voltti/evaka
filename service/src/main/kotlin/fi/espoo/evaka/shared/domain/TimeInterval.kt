@@ -4,15 +4,15 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.LocalTime
+import tools.jackson.core.JsonGenerator
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.JsonDeserializer
+import tools.jackson.databind.JsonSerializer
+import tools.jackson.databind.SerializerProvider
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 
 @JsonSerialize(using = TimeIntervalJsonSerializer::class)
 @JsonDeserialize(using = TimeIntervalJsonDeserializer::class)

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.JsonMappingException
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
@@ -16,6 +15,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
+import tools.jackson.databind.JsonMappingException
 
 private val logger = KotlinLogging.logger {}
 

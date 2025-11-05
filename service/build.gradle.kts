@@ -104,11 +104,9 @@ dependencies {
     implementation("com.github.mwiede:jsch")
 
     // Jackson
-    implementation("com.fasterxml.jackson.core:jackson-core")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
+    implementation("tools.jackson.core:jackson-core")
+    implementation("tools.jackson.core:jackson-databind")
+    implementation("tools.jackson.module:jackson-module-kotlin")
 
     // AWS SDK
     implementation("software.amazon.awssdk:s3")

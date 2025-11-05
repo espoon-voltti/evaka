@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -18,6 +17,7 @@ import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

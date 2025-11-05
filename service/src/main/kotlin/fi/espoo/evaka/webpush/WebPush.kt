@@ -5,7 +5,6 @@
 package fi.espoo.evaka.webpush
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
@@ -21,6 +20,7 @@ import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
 import org.springframework.http.HttpStatus
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,

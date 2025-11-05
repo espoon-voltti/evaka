@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.shared.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectWriter
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.ObjectWriter
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonTypeRef
 
 @JvmInline
 value class JsonWriter<T> private constructor(private val writer: ObjectWriter) {

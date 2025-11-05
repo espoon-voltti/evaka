@@ -5,8 +5,6 @@
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Request
@@ -23,6 +21,8 @@ import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 

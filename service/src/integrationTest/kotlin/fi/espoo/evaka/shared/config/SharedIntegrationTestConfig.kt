@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.config
 
 import com.auth0.jwt.algorithms.Algorithm
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
@@ -72,6 +71,7 @@ import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.utils.AttributeMap
+import tools.jackson.databind.json.JsonMapper
 
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
 class TestDataSource(pool: HikariDataSource) : DataSource by pool

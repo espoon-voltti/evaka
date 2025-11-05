@@ -4,15 +4,14 @@
 
 package fi.espoo.voltti.logging
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import net.logstash.logback.decorate.JsonFactoryDecorator
+import net.logstash.logback.decorate.MapperBuilderDecorator
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.cfg.MapperBuilder
 
-class JsonLoggingConfig : JsonFactoryDecorator {
-    override fun decorate(factory: JsonFactory): JsonFactory =
-        factory.apply {
-            val codec = factory.codec as? ObjectMapper
-            codec?.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        }
+class JsonLoggingConfig<M : ObjectMapper, B : MapperBuilder<M, B>> : MapperBuilderDecorator<M, B> {
+    override fun decorate(decoratable: B): B {
+        decoratable.disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        return decoratable
+    }
 }

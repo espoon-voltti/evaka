@@ -6,9 +6,6 @@ package fi.espoo.voltti.auth
 
 import com.auth0.jwt.interfaces.RSAKeyProvider
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.core.Base64Variants
-import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URI
@@ -16,6 +13,9 @@ import java.security.KeyFactory
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
+import tools.jackson.core.Base64Variants
+import tools.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.module.kotlin.readValue
 
 class JwtKeys(private val publicKeys: Map<String, RSAPublicKey>) : RSAKeyProvider {
     override fun getPrivateKeyId(): String? = null
