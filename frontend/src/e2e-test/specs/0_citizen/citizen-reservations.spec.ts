@@ -11,7 +11,6 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { formatPersonName } from 'lib-common/names'
 import TimeRange from 'lib-common/time-range'
 import type { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
@@ -36,9 +35,10 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
+import CitizenNotificationsPage from '../../pages/citizen/citizen-app-notifications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { envs, Page } from '../../utils/page'
-import type { Element, EnvType } from '../../utils/page'
+import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 5)
@@ -67,21 +67,6 @@ async function openCalendarPage(
   })
   await enduserLogin(page, testAdult)
   return new CitizenCalendarPage(page, envType)
-}
-
-const assertStartingInfoContent = async (
-  parentElement: Element,
-  child: DevPerson,
-  daycareName: string,
-  startDate: LocalDate
-) => {
-  await parentElement.waitUntilVisible()
-  const content = await parentElement.text
-
-  const name = formatPersonName(child, 'FirstFirst')
-  expect(content).toContain(name)
-  expect(content).toContain(startDate.format())
-  expect(content).toContain(daycareName)
 }
 
 describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
@@ -675,8 +660,8 @@ describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
 describe.each(envs)(
   'Citizen attendance reservation modal infoboxes (%s)',
   (env) => {
+    let notificationsPage: CitizenNotificationsPage
     let children: DevPerson[]
-    const infoboxElementPrefix = 'child-not-started-infobox'
 
     beforeEach(async () => {
       await resetServiceState()
@@ -686,6 +671,7 @@ describe.each(envs)(
 
       children = [testChild, testChild2, testChildRestricted]
       await Fixture.family({ guardian: testAdult, children }).save()
+      notificationsPage = new CitizenNotificationsPage(page)
     })
 
     test('Citizen sees an info box about a child starting later than the selected range end date', async () => {
@@ -721,10 +707,8 @@ describe.each(envs)(
       await reservationsModal.assertChildrenChipDisabled(false, [testChild.id])
       await reservationsModal.assertChildrenChipDisabled(true, [testChild2.id])
 
-      const infoBoxChild2 = reservationsModal.findByDataQa(
-        `${infoboxElementPrefix}-${testChild2.id}`
-      )
-      await assertStartingInfoContent(
+      const infoBoxChild2 = reservationsModal.getInfoBox(testChild2.id)
+      await notificationsPage.assertStartingInfoContent(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
@@ -775,20 +759,16 @@ describe.each(envs)(
         testChildRestricted.id
       ])
 
-      const infoBoxChild2 = reservationsModal.findByDataQa(
-        `${infoboxElementPrefix}-${testChild2.id}`
-      )
-      await assertStartingInfoContent(
+      const infoBoxChild2 = reservationsModal.getInfoBox(testChild2.id)
+      await notificationsPage.assertStartingInfoContent(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
         child2StartDate
       )
 
-      const infoBoxChild3 = reservationsModal.findByDataQa(
-        `${infoboxElementPrefix}-${testChildRestricted.id}`
-      )
-      await assertStartingInfoContent(
+      const infoBoxChild3 = reservationsModal.getInfoBox(testChildRestricted.id)
+      await notificationsPage.assertStartingInfoContent(
         infoBoxChild3,
         testChildRestricted,
         testDaycare.name,
@@ -830,7 +810,7 @@ describe.each(envs)(
       const infoBoxChild1 = absencesModal.getInfoBox(testChild.id)
       await infoBoxChild1.waitUntilHidden()
       const infoBoxChild2 = absencesModal.getInfoBox(testChild2.id)
-      await assertStartingInfoContent(
+      await notificationsPage.assertStartingInfoContent(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
@@ -1700,6 +1680,7 @@ describe.each(envs)(
   'Citizen notification toasts about children starting',
   (env) => {
     let page: Page
+    let notificationsPage: CitizenNotificationsPage
     const today = LocalDate.todayInSystemTz()
     let child1: DevPerson
     let child2: DevPerson
@@ -1774,6 +1755,7 @@ describe.each(envs)(
         screen: viewport,
         mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
+      notificationsPage = new CitizenNotificationsPage(page)
     })
 
     const addPlacement = async (
@@ -1789,12 +1771,6 @@ describe.each(envs)(
         endDate: today.addYears(1),
         type
       }).save()
-    }
-
-    const notificationPrefix = 'child-not-started-toast'
-    const assertNotificationIndexHidden = async (index: number) => {
-      const cta = page.findByDataQa(`${notificationPrefix}-${index}`)
-      await cta.waitUntilHidden()
     }
 
     const startDateOffsetLimit = 30
@@ -1824,20 +1800,20 @@ describe.each(envs)(
       await enduserLogin(page, testAdult)
 
       // Notifications are shown in child age order
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-0`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child1,
         testDaycare.name,
         today.addDays(startDateOffsetAfterLimit)
       )
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-1`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        1,
         child2,
         testDaycare2.name,
         today.addDays(startDateOffsetAfterLimit)
       )
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-2`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        2,
         child3,
         testDaycare2.name,
         today.addDays(startDateOffsetAfterLimit)
@@ -1861,19 +1837,19 @@ describe.each(envs)(
 
       await enduserLogin(page, testAdult)
 
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-0`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child2,
         testDaycare2.name,
         today.addDays(startDateOffsetAfterLimit)
       )
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-1`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        1,
         child3,
         testDaycare2.name,
         today.addDays(startDateOffsetAfterLimit)
       )
-      await assertNotificationIndexHidden(2)
+      await notificationsPage.assertNotificationIndexHidden(2)
     })
 
     test('Notification is shown for 1 child starting over 30 days from now', async () => {
@@ -1893,15 +1869,15 @@ describe.each(envs)(
 
       await enduserLogin(page, testAdult)
 
-      await assertStartingInfoContent(
-        page.findByDataQa(`${notificationPrefix}-0`),
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child3,
         testDaycare2.name,
         today.addDays(startDateOffsetAfterLimit)
       )
 
-      await assertNotificationIndexHidden(1)
-      await assertNotificationIndexHidden(2)
+      await notificationsPage.assertNotificationIndexHidden(1)
+      await notificationsPage.assertNotificationIndexHidden(2)
     })
     test('No notifications are shown for children starting within 30 days from now', async () => {
       await addPlacement(
@@ -1920,9 +1896,9 @@ describe.each(envs)(
 
       await enduserLogin(page, testAdult)
 
-      await assertNotificationIndexHidden(0)
-      await assertNotificationIndexHidden(1)
-      await assertNotificationIndexHidden(2)
+      await notificationsPage.assertNotificationIndexHidden(0)
+      await notificationsPage.assertNotificationIndexHidden(1)
+      await notificationsPage.assertNotificationIndexHidden(2)
     })
     test('Notification shows after page reload if not dismissed', async () => {
       await addPlacement(
@@ -1934,9 +1910,8 @@ describe.each(envs)(
 
       await enduserLogin(page, testAdult)
 
-      const notification = page.findByDataQa(`${notificationPrefix}-0`)
-      await assertStartingInfoContent(
-        notification,
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child1,
         testDaycare.name,
         today.addDays(startDateOffsetAfterLimit)
@@ -1944,8 +1919,8 @@ describe.each(envs)(
 
       await page.reload()
 
-      await assertStartingInfoContent(
-        notification,
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child1,
         testDaycare.name,
         today.addDays(startDateOffsetAfterLimit)
@@ -1961,22 +1936,21 @@ describe.each(envs)(
 
       await enduserLogin(page, testAdult)
 
-      const notification = page.findByDataQa(`${notificationPrefix}-0`)
-      await assertStartingInfoContent(
-        notification,
+      await notificationsPage.assertStartingInfoNotificationContent(
+        0,
         child1,
         testDaycare.name,
         today.addDays(startDateOffsetAfterLimit)
       )
 
-      const closeButton = notification.findByDataQa('toast-close-button')
+      const closeButton = notificationsPage.getNotificationCloseButton(0)
       await closeButton.click()
 
-      await assertNotificationIndexHidden(0)
+      await notificationsPage.assertNotificationIndexHidden(0)
 
       await page.reload()
 
-      await assertNotificationIndexHidden(0)
+      await notificationsPage.assertNotificationIndexHidden(0)
     })
   }
 )

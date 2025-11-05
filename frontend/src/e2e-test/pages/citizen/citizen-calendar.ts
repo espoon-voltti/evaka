@@ -734,6 +734,10 @@ class ReservationModal extends Element {
       'incompletely-answered-periods-info'
     ).waitUntilHidden()
   }
+
+  getInfoBox(childId: string) {
+    return this.findByDataQa(`child-not-started-infobox-${childId}`)
+  }
 }
 
 class AbsencesModal {
