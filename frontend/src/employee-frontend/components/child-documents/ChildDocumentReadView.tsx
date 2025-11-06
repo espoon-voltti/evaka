@@ -365,7 +365,11 @@ const ChildDocumentReadViewInner = React.memo(
           <ContentArea opaque>
             <DocumentBasics document={document} />
             <Gap size="XXL" />
-            <DocumentView bind={bind} readOnly={true} />
+            <DocumentView
+              bind={bind}
+              readOnly={true}
+              templateLanguage={document.template.language}
+            />
           </ContentArea>
           {permittedActions.includes('READ_METADATA') && (
             <>
