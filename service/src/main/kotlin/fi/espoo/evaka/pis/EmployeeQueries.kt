@@ -196,7 +196,7 @@ private fun Database.Read.searchEmployees(
     createQuery {
             sql(
                 """
-SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id, e.active, (social_security_number IS NOT NULL) AS has_ssn, last_login
+SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, employee_number, e.created, e.updated, roles, temporary_in_unit_id, e.active, (social_security_number IS NOT NULL) AS has_ssn, last_login
 FROM employee e
 WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)}) AND (${bind(externalId)}::text IS NULL OR e.external_id = ${bind(externalId)})
   AND (${bind(temporaryInUnitId)} IS NULL OR e.temporary_in_unit_id = ${bind(temporaryInUnitId)})
@@ -581,6 +581,7 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     updateEmployeeGlobalRoles(id = id, globalRoles = emptyList())
     deleteEmployeeDaycareRoles(id = id, daycareId = null)
     removePinCode(userId = id)
+    updateEmployeeNumber(userId = id, employeeNumber = null)
     listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
 
@@ -682,3 +683,10 @@ fun Database.Read.getEmployeeIdsByNumbersMapById(
 fun Database.Transaction.updateEmployeeEmail(employeeId: EmployeeId, email: String?) = execute {
     sql("UPDATE employee SET email = ${bind(email)} WHERE id = ${bind(employeeId)}")
 }
+
+fun Database.Transaction.updateEmployeeNumber(userId: EmployeeId, employeeNumber: String?) =
+    execute {
+        sql(
+            "UPDATE employee SET employee_number = ${bind(employeeNumber)} WHERE id = ${bind(userId)}"
+        )
+    }

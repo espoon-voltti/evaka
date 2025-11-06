@@ -384,6 +384,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             active = true,
             hasSsn = false,
             lastLogin = null,
+            employeeNumber = null,
         )
 
     val employee2 =
@@ -401,6 +402,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             active = true,
             hasSsn = false,
             lastLogin = null,
+            employeeNumber = null,
         )
 
     private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =
