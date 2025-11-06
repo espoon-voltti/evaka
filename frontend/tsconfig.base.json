@@ -4,9 +4,11 @@
     "module": "esnext",
     "lib": [
       "dom",
-      "es2021"
+      "es2022"
     ],
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
