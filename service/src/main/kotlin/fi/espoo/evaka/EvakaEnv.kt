@@ -601,7 +601,13 @@ data class NekkuEnv(val url: URI, val apikey: Sensitive<String>) {
     }
 }
 
-data class AromiEnv(val sftp: SftpEnv, val filePattern: String) {
+data class AromiEnv(
+    val sftp: SftpEnv,
+    val filePattern: String,
+    // window offsets control the extent of the prediction window
+    val windowStartOffset: Long,
+    val windowEndOffset: Long,
+) {
     companion object {
         fun fromEnvironment(env: Environment): AromiEnv {
             return AromiEnv(
@@ -614,6 +620,10 @@ data class AromiEnv(val sftp: SftpEnv, val filePattern: String) {
                         password = Sensitive(env.lookup("evaka.integration.aromi.sftp.password")),
                     ),
                 filePattern = env.lookup("evaka.integration.aromi.file_pattern"),
+                windowStartOffset =
+                    env.lookup<Long?>("evaka.integration.aromi.window_start_offset") ?: 3L,
+                windowEndOffset =
+                    env.lookup<Long?>("evaka.integration.aromi.window_end_offset") ?: 21L,
             )
         }
     }

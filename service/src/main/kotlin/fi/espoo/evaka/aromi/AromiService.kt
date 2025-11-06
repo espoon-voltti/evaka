@@ -42,22 +42,22 @@ class AromiService(private val aromiEnv: AromiEnv?) {
     private val startDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
     private val endTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
-    fun sendOrders(
-        db: Database.Connection,
-        clock: EvakaClock,
-        earliestStartDate: LocalDate = LocalDate.of(2025, 5, 19),
-    ) {
+    fun sendOrders(db: Database.Connection, clock: EvakaClock) {
         val today = clock.today()
         logger.info { "Scheduled sending of Aromi attendance CSV started ($today)" }
-        val sftpClient =
-            aromiEnv?.let { SftpClient(it.sftp) }
-                ?: error("Cannot send Aromi orders: AromiEnv is not configured")
+        if (aromiEnv == null) error("Cannot send Aromi orders: AromiEnv is not configured")
+        if (aromiEnv.windowStartOffset > aromiEnv.windowEndOffset)
+            error("Invalid Aromi window configuration")
+        val sftpClient = SftpClient(aromiEnv.sftp)
         val formatter = DateTimeFormatter.ofPattern(aromiEnv.filePattern)
-        val endDate = today.plusDays(21)
-        if (endDate.isBefore(earliestStartDate))
-            error("End date of meal order is before earliest start date, aborting")
-        val startDate = maxOf(earliestStartDate, today.plusDays(3))
-        val data = getMealOrdersCsv(db, FiniteDateRange(startDate, endDate))
+        val data =
+            getMealOrdersCsv(
+                db,
+                FiniteDateRange(
+                    today.plusDays(aromiEnv.windowStartOffset),
+                    today.plusDays(aromiEnv.windowEndOffset),
+                ),
+            )
         val fileName = today.format(formatter)
         logger.info { "Sending Aromi attendance CSV $fileName (${data.size})" }
         data.inputStream().use { sftpClient.put(it, fileName) }
