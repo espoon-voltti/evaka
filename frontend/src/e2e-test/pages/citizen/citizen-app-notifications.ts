@@ -47,7 +47,8 @@ export default class CitizenNotificationsPage {
     parentElement: Element,
     child: DevPerson,
     daycareName: string,
-    startDate: LocalDate
+    startDate: LocalDate,
+    calendarOpenDate?: LocalDate
   ) {
     await parentElement.waitUntilVisible()
     const content = await parentElement.text
@@ -56,5 +57,8 @@ export default class CitizenNotificationsPage {
     expect(content).toContain(name)
     expect(content).toContain(startDate.format())
     expect(content).toContain(daycareName)
+    if (calendarOpenDate) {
+      expect(content).toContain(calendarOpenDate.format())
+    }
   }
 }

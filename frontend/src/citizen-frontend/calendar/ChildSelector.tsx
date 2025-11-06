@@ -119,7 +119,10 @@ export default React.memo(function ChildSelector({
                 child.upcomingPlacementStartDate
                   ? child.upcomingPlacementStartDate.format()
                   : '',
-                child.upcomingPlacementUnitName ?? ''
+                child.upcomingPlacementUnitName ?? '',
+                child.upcomingPlacementCalendarOpenDate
+                  ? child.upcomingPlacementCalendarOpenDate.format()
+                  : ''
               )}
             />
           </InfoBoxWrapper>

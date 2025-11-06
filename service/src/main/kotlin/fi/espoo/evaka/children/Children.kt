@@ -31,6 +31,7 @@ data class Child(
     val upcomingPlacementType: PlacementType?,
     val upcomingPlacementStartDate: LocalDate?,
     val upcomingPlacementIsCalendarOpen: Boolean?,
+    val upcomingPlacementCalendarOpenDate: LocalDate?,
     @Nested("upcoming_unit") val upcomingPlacementUnit: Unit?,
 )
 
@@ -46,6 +47,7 @@ data class ChildAndPermittedActions(
     val upcomingPlacementType: PlacementType?,
     val upcomingPlacementStartDate: LocalDate?,
     val upcomingPlacementIsCalendarOpen: Boolean?,
+    val upcomingPlacementCalendarOpenDate: LocalDate?,
     @Nested("upcomingPlacementUnit") val upcomingPlacementUnit: Unit?,
     val permittedActions: Set<Action.Citizen.Child>,
     val serviceApplicationCreationPossible: Boolean,
@@ -70,6 +72,7 @@ data class ChildAndPermittedActions(
                 upcomingPlacementType = child.upcomingPlacementType,
                 upcomingPlacementStartDate = child.upcomingPlacementStartDate,
                 upcomingPlacementIsCalendarOpen = child.upcomingPlacementIsCalendarOpen,
+                upcomingPlacementCalendarOpenDate = child.upcomingPlacementCalendarOpenDate,
                 upcomingPlacementUnit = child.upcomingPlacementUnit,
                 permittedActions = permittedActions,
                 serviceApplicationCreationPossible = serviceApplicationCreationPossible,

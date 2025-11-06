@@ -341,6 +341,7 @@ export interface ReservationChild {
   lastName: string
   monthSummaries: MonthSummary[]
   preferredName: string
+  upcomingPlacementCalendarOpenDate: LocalDate | null
   upcomingPlacementStartDate: LocalDate | null
   upcomingPlacementType: PlacementType | null
   upcomingPlacementUnitName: string | null
@@ -678,6 +679,7 @@ export function deserializeJsonReservation(json: JsonOf<Reservation>): Reservati
 export function deserializeJsonReservationChild(json: JsonOf<ReservationChild>): ReservationChild {
   return {
     ...json,
+    upcomingPlacementCalendarOpenDate: (json.upcomingPlacementCalendarOpenDate != null) ? LocalDate.parseIso(json.upcomingPlacementCalendarOpenDate) : null,
     upcomingPlacementStartDate: (json.upcomingPlacementStartDate != null) ? LocalDate.parseIso(json.upcomingPlacementStartDate) : null
   }
 }

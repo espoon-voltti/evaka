@@ -307,6 +307,7 @@ data class ReservationPlacement(
     val type: PlacementType,
     val unitLanguage: Language,
     val unitName: String,
+    val calendarOpenDate: LocalDate,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
     val shiftCareOpenOnHolidays: Boolean,
@@ -328,6 +329,7 @@ data class ReservationPlacementRow(
     val type: PlacementType,
     val unitLanguage: Language,
     val unitName: String,
+    val calendarOpenDate: LocalDate,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
     val shiftCareOpenOnHolidays: Boolean,
@@ -341,6 +343,7 @@ data class ReservationPlacementRow(
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
     range: DateRange,
+    calendarOpenBeforePlacementDays: Int,
 ): Map<ChildId, List<ReservationPlacement>> =
     createQuery {
             sql(
@@ -352,6 +355,7 @@ SELECT
     pl.type,
     u.language AS unit_language,
     u.name AS unit_name,
+    (pl.start_date - (:calendarOpenBeforePlacementDays::int * INTERVAL '1 day'))::date AS calendar_open_date,
     u.operation_times,
     u.shift_care_operation_times,
     u.shift_care_open_on_holidays,
@@ -371,6 +375,7 @@ WHERE
 """
             )
         }
+        .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
         .toList<ReservationPlacementRow>()
         .groupBy { it.placementId }
         .map { (_, rows) ->
@@ -380,6 +385,7 @@ WHERE
                 type = rows[0].type,
                 unitLanguage = rows[0].unitLanguage,
                 unitName = rows[0].unitName,
+                calendarOpenDate = rows[0].calendarOpenDate,
                 operationTimes = rows[0].operationTimes,
                 shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
                 shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,
