@@ -13,6 +13,7 @@ import DateRange from 'lib-common/date-range'
 import { boolean, openEndedLocalDateRange } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import type { Action } from 'lib-common/generated/action'
 import type {
   ChildDocumentSummary,
   ChildDocumentSummaryWithPermittedActions,
@@ -157,13 +158,11 @@ const DecisionValidityModal = React.memo(function DecisionValidityModal({
   onClose,
   document,
   childId,
-  permittedActions: _permittedActions,
   onSuccess
 }: {
   onClose: () => void
   document: ChildDocumentSummary
   childId: ChildId
-  permittedActions: string[]
   onSuccess: () => void
 }) {
   const { i18n, lang } = useTranslation()
@@ -220,7 +219,7 @@ const DecisionValidityCell = React.memo(function DecisionValidityCell({
 }: {
   document: ChildDocumentSummary
   childId: ChildId
-  permittedActions: string[]
+  permittedActions: Action.ChildDocument[]
 }) {
   const { i18n } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
@@ -248,7 +247,6 @@ const DecisionValidityCell = React.memo(function DecisionValidityCell({
           onClose={() => setModalOpen(false)}
           document={document}
           childId={childId}
-          permittedActions={permittedActions}
           onSuccess={() => setModalOpen(false)}
         />
       )}
