@@ -280,7 +280,7 @@ class EspooConfig {
             env,
             linkityEnv,
             jsonMapper,
-            espooEnv,
+            espooEnv.childDocumentArchivalDelayDays,
         )
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper

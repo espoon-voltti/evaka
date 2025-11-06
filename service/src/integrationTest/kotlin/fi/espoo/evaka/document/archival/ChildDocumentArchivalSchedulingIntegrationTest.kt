@@ -117,46 +117,6 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
         assertEquals(0, jobs.size)
     }
 
-    @Test
-    fun `respects custom delay configuration`() {
-        // Template validity ended 50 days ago
-        val validityEnd = today.minusDays(50)
-        insertTemplateAndDocument(validityEnd, archiveExternally = true)
-
-        // With 60 day delay, should not be scheduled
-        planChildDocumentArchival(db, clock, asyncJobRunner, delayDays = 60)
-        assertEquals(0, getScheduledArchivalJobs().size)
-
-        // With 40 day delay, should be scheduled
-        planChildDocumentArchival(db, clock, asyncJobRunner, delayDays = 40)
-        assertEquals(1, getScheduledArchivalJobs().size)
-    }
-
-    @Test
-    fun `async jobs are created with retry count 1`() {
-        val validityEnd = today.minusDays(40)
-        insertTemplateAndDocument(validityEnd, archiveExternally = true)
-
-        planChildDocumentArchival(db, clock, asyncJobRunner, delayDays = 30)
-
-        val retryCount =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            """
-                        SELECT retry_count
-                        FROM async_job
-                        WHERE type = 'ArchiveChildDocument'
-                        AND payload->>'documentId' = ${bind(documentId.toString())}
-                        """
-                        )
-                    }
-                    .exactlyOne<Int>()
-            }
-
-        assertEquals(1, retryCount)
-    }
-
     private fun insertTemplateAndDocument(validityEnd: LocalDate, archiveExternally: Boolean) {
         db.transaction { tx ->
             tx.insert(

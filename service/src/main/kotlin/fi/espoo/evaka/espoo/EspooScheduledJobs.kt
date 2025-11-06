@@ -5,7 +5,6 @@
 package fi.espoo.evaka.espoo
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import fi.espoo.evaka.EspooEnv
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.document.archival.planChildDocumentArchival
@@ -61,7 +60,7 @@ class EspooScheduledJobs(
     env: ScheduledJobsEnv<EspooScheduledJob>,
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
-    private val espooEnv: EspooEnv,
+    private val childDocumentArchivalDelayDays: Int,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -124,11 +123,6 @@ class EspooScheduledJobs(
     }
 
     fun planChildDocumentArchival(db: Database.Connection, clock: EvakaClock) {
-        planChildDocumentArchival(
-            db,
-            clock,
-            asyncJobRunner,
-            espooEnv.childDocumentArchivalDelayDays,
-        )
+        planChildDocumentArchival(db, clock, asyncJobRunner, childDocumentArchivalDelayDays)
     }
 }
