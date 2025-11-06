@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -20,7 +21,7 @@ fun planChildDocumentArchival(
     delayDays: Int,
     limit: Int = 0,
 ) {
-    logger.info {
+    logger.info(mapOf("eventCode" to "CHILD_DOCUMENT_ARCHIVAL_PLANNING_STARTED")) {
         "Planning child document archival jobs (delay: $delayDays days, limit: ${if (limit > 0) limit else "none"})"
     }
 
@@ -28,18 +29,16 @@ fun planChildDocumentArchival(
     val allDocumentIds = db.read { it.getChildDocumentsEligibleForArchival(eligibleDate) }
 
     if (allDocumentIds.isEmpty()) {
-        logger.info { "No child documents found for archival" }
+        logger.info(mapOf("eventCode" to "CHILD_DOCUMENT_ARCHIVAL_NO_DOCUMENTS")) {
+            "No child documents found for archival"
+        }
         return
     }
 
     val documentIds = if (limit > 0) allDocumentIds.take(limit) else allDocumentIds
 
-    if (documentIds.size < allDocumentIds.size) {
-        logger.info {
-            "Found ${allDocumentIds.size} eligible documents, scheduling ${documentIds.size} (limited)"
-        }
-    } else {
-        logger.info { "Scheduling archival for ${documentIds.size} child documents" }
+    logger.info(mapOf("eventCode" to "CHILD_DOCUMENT_ARCHIVAL_SCHEDULING")) {
+        "Scheduling archival for ${documentIds.size} child documents (total eligible: ${allDocumentIds.size}, limit: ${if (limit > 0) limit else "none"})"
     }
 
     db.transaction { tx ->
@@ -53,5 +52,7 @@ fun planChildDocumentArchival(
         )
     }
 
-    logger.info { "Successfully scheduled ${documentIds.size} child document archival jobs" }
+    logger.info(mapOf("eventCode" to "CHILD_DOCUMENT_ARCHIVAL_JOBS_SCHEDULED")) {
+        "Successfully scheduled ${documentIds.size} child document archival jobs"
+    }
 }
