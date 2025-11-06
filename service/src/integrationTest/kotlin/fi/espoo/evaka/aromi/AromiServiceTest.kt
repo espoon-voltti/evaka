@@ -72,23 +72,22 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
 
             tx.insert(testPerson, DevPersonType.CHILD).also { childId ->
-                val placementId =
-                    tx.insert(
-                        DevPlacement(
-                            childId = childId,
-                            unitId = unitId,
-                            startDate = clock.today().plusDays(3),
-                            endDate = clock.today().plusDays(4),
-                            type = PlacementType.DAYCARE,
-                        )
+                val placement =
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(4),
+                        type = PlacementType.DAYCARE,
                     )
+                tx.insert(placement)
 
                 tx.insert(
                     DevDaycareGroupPlacement(
-                        startDate = clock.today().plusDays(3),
-                        endDate = clock.today().plusDays(4),
+                        startDate = placement.startDate,
+                        endDate = placement.endDate,
                         daycareGroupId = groupId,
-                        daycarePlacementId = placementId,
+                        daycarePlacementId = placement.id,
                     )
                 )
             }
@@ -96,23 +95,8 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `sendOrders uploads csv to sftp server`() {
-        val naturalWindowStart = clock.today().plusDays(3)
-        aromiService.sendOrders(db, clock, naturalWindowStart.minusYears(1))
-
-        val sftpClient = SftpClient(aromiEnv.sftp)
-        val data = sftpClient.getAsString("upload/EVAKA03032025.csv", StandardCharsets.ISO_8859_1)
-        assertEquals(
-            ClassPathResource("aromi/simple_case_full.csv")
-                .getContentAsString(StandardCharsets.ISO_8859_1),
-            data,
-        )
-    }
-
-    @Test
-    fun `sendOrders sets data pick up range based on earliest start date`() {
-        val naturalWindowStart = clock.today().plusDays(3)
-        aromiService.sendOrders(db, clock, naturalWindowStart.plusDays(1))
+    fun `sendOrders uploads correct prediction csv to sftp server with default offsets`() {
+        aromiService.sendOrders(db, clock)
 
         val sftpClient = SftpClient(aromiEnv.sftp)
         val data = sftpClient.getAsString("upload/EVAKA03032025.csv", StandardCharsets.ISO_8859_1)
@@ -124,10 +108,23 @@ class AromiServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `invalid order range results in error`() {
-        val naturalWindowEnd = clock.today().plusDays(21)
-        assertThrows<IllegalStateException> {
-            aromiService.sendOrders(db, clock, naturalWindowEnd.plusDays(1))
-        }
+    fun `sendOrders uploads correct prediction csv to sftp server with alternate offsets`() {
+        val alternateAromiService =
+            AromiService(aromiEnv.copy(windowStartOffset = 1, windowEndOffset = 21))
+        alternateAromiService.sendOrders(db, clock)
+
+        val sftpClient = SftpClient(aromiEnv.sftp)
+        val data = sftpClient.getAsString("upload/EVAKA03032025.csv", StandardCharsets.ISO_8859_1)
+        assertEquals(
+            ClassPathResource("aromi/simple_case_full.csv")
+                .getContentAsString(StandardCharsets.ISO_8859_1),
+            data,
+        )
+    }
+
+    @Test
+    fun `empty attendance result list leads to error`() {
+        val clockBeforePlacements = MockEvakaClock(2025, 1, 1, 10, 53, 22)
+        assertThrows<IllegalStateException> { aromiService.sendOrders(db, clockBeforePlacements) }
     }
 }
