@@ -117,6 +117,54 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
         assertEquals(0, jobs.size)
     }
 
+    @Test
+    fun `respects archival limit when specified`() {
+        val validityEnd = today.minusDays(40)
+
+        // Create 5 documents eligible for archival
+        val documentIds = (1..5).map { ChildDocumentId(UUID.randomUUID()) }
+        db.transaction { tx ->
+            tx.insert(
+                DevDocumentTemplate(
+                    id = templateId,
+                    name = "Test Template",
+                    type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                    language = UiLanguage.FI,
+                    validity = DateRange(LocalDate.of(2020, 1, 1), validityEnd),
+                    content = DocumentTemplateContent(sections = emptyList()),
+                    archiveExternally = true,
+                    processDefinitionNumber = "12.06.01",
+                    archiveDurationMonths = 120,
+                )
+            )
+
+            documentIds.forEach { docId ->
+                tx.insert(
+                    DevChildDocument(
+                        id = docId,
+                        childId = childId,
+                        templateId = templateId,
+                        status = DocumentStatus.COMPLETED,
+                        content = emptyContent,
+                        publishedContent = emptyContent,
+                        modifiedAt = now,
+                        modifiedBy = userId,
+                        contentLockedAt = now,
+                        contentLockedBy = null,
+                        publishedAt = now,
+                        publishedBy = userId,
+                    )
+                )
+            }
+        }
+
+        // Plan with limit of 3
+        planChildDocumentArchival(db, clock, asyncJobRunner, delayDays = 30, limit = 3)
+
+        val jobs = getScheduledArchivalJobs()
+        assertEquals(3, jobs.size)
+    }
+
     private fun insertTemplateAndDocument(validityEnd: LocalDate, archiveExternally: Boolean) {
         db.transaction { tx ->
             tx.insert(

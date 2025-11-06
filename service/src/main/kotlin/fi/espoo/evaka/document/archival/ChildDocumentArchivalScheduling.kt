@@ -18,18 +18,29 @@ fun planChildDocumentArchival(
     clock: EvakaClock,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     delayDays: Int,
+    limit: Int = 0,
 ) {
-    logger.info { "Planning child document archival jobs (delay: $delayDays days)" }
+    logger.info {
+        "Planning child document archival jobs (delay: $delayDays days, limit: ${if (limit > 0) limit else "none"})"
+    }
 
     val eligibleDate = clock.today().minusDays(delayDays.toLong())
-    val documentIds = db.read { it.getChildDocumentsEligibleForArchival(eligibleDate) }
+    val allDocumentIds = db.read { it.getChildDocumentsEligibleForArchival(eligibleDate) }
 
-    if (documentIds.isEmpty()) {
+    if (allDocumentIds.isEmpty()) {
         logger.info { "No child documents found for archival" }
         return
     }
 
-    logger.info { "Scheduling archival for ${documentIds.size} child documents" }
+    val documentIds = if (limit > 0) allDocumentIds.take(limit) else allDocumentIds
+
+    if (documentIds.size < allDocumentIds.size) {
+        logger.info {
+            "Found ${allDocumentIds.size} eligible documents, scheduling ${documentIds.size} (limited)"
+        }
+    } else {
+        logger.info { "Scheduling archival for ${documentIds.size} child documents" }
+    }
 
     db.transaction { tx ->
         asyncJobRunner.plan(

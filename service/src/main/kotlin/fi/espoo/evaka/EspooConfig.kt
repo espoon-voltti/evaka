@@ -186,6 +186,10 @@ class EspooConfig {
         }
 
     @Bean
+    fun childDocumentArchivalEnv(env: Environment): ChildDocumentArchivalEnv =
+        ChildDocumentArchivalEnv.fromEnvironment(env)
+
+    @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
@@ -271,7 +275,7 @@ class EspooConfig {
         env: ScheduledJobsEnv<EspooScheduledJob>,
         linkityEnv: LinkityEnv?,
         jsonMapper: JsonMapper,
-        espooEnv: EspooEnv,
+        childDocumentArchivalEnv: ChildDocumentArchivalEnv,
     ): EspooScheduledJobs =
         EspooScheduledJobs(
             patuReportingService,
@@ -280,7 +284,7 @@ class EspooConfig {
             env,
             linkityEnv,
             jsonMapper,
-            espooEnv.childDocumentArchivalDelayDays,
+            childDocumentArchivalEnv,
         )
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
@@ -322,7 +326,6 @@ data class EspooEnv(
     val patuIntegrationEnabled: Boolean,
     val biIntegrationEnabled: Boolean,
     val linkityEnabled: Boolean,
-    val childDocumentArchivalDelayDays: Int,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -335,8 +338,6 @@ data class EspooEnv(
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
                 linkityEnabled = env.lookup("espoo.integration.linkity.enabled") ?: false,
-                childDocumentArchivalDelayDays =
-                    env.lookup("espoo.child_document_archival_delay_days") ?: 30,
             )
     }
 }
@@ -401,6 +402,16 @@ data class LinkityEnv(val url: URI, val apikey: Sensitive<String>) {
             LinkityEnv(
                 url = URI.create(env.lookup("espoo.integration.linkity.url")),
                 apikey = Sensitive(env.lookup("espoo.integration.linkity.apikey")),
+            )
+    }
+}
+
+data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ChildDocumentArchivalEnv(
+                delayDays = env.lookup("espoo.child_document_archival_delay_days") ?: 30,
+                limit = env.lookup("espoo.child_document_archival_limit") ?: 0,
             )
     }
 }
