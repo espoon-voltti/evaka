@@ -23,7 +23,6 @@ interface Employee {
   lastName: string
   email: string | null
   externalId: string | null
-  employeeNumber: string | null
 }
 
 export async function getEmployees(): Promise<Employee[]> {

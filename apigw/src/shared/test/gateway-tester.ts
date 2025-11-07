@@ -109,8 +109,7 @@ export class GatewayTester {
                 externalId: 'dummy',
                 firstName: '',
                 lastName: '',
-                email: '',
-                employeeNumber: ''
+                email: ''
               })
             }
       this.nockScope.post('/system/employee-login').reply(200, user)

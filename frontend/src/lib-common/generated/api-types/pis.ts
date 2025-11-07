@@ -198,7 +198,6 @@ export interface Employee {
   active: boolean
   created: HelsinkiDateTime
   email: string | null
-  employeeNumber: string | null
   externalId: string | null
   firstName: string
   hasSsn: boolean

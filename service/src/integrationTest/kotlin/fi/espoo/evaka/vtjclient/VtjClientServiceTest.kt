@@ -209,7 +209,6 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             active = true,
             hasSsn = false,
             lastLogin = null,
-            employeeNumber = null,
         )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =

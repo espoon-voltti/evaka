@@ -18,7 +18,6 @@ data class Employee(
     val lastName: String,
     val email: String?,
     val externalId: ExternalId?,
-    val employeeNumber: String?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
     val temporaryInUnitId: DaycareId?,
