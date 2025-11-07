@@ -55,7 +55,7 @@ dependencies {
         api("ch.qos.logback:logback-core:1.5.20")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.20.0"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.20.1"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.2.1"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.55.0"))
     api(platform("io.netty:netty-bom:4.2.7.Final"))
