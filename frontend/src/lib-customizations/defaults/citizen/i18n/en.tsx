@@ -597,7 +597,15 @@ const en: Translations = {
       warningPlannedServiceExceeded:
         'Attendance planned in excess of the contract:'
     },
-    childSelectionMissingError: 'Choose at least one child'
+    childSelectionMissingError: 'Choose at least one child',
+    infoToast: {
+      childStartsInfo: (
+        firstName: string,
+        startDate: string,
+        unitName: string
+      ) =>
+        `${firstName} will start at the unit ${unitName} on ${startDate}. Registering the attendances begins a month before the start date.`
+    }
   },
   messages: {
     inboxTitle: 'Inbox',

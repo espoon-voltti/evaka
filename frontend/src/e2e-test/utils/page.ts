@@ -516,6 +516,16 @@ export class SelectionChip extends Element {
   async waitUntilChecked(checked = true) {
     await waitUntilEqual(() => this.checked, checked)
   }
+
+  get disabled(): Promise<boolean> {
+    return this.getAttribute('aria-disabled').then(
+      (ariaDisabled) => ariaDisabled === 'true'
+    )
+  }
+
+  async assertDisabled(disabled: boolean) {
+    await waitUntilEqual(() => this.disabled, disabled)
+  }
 }
 
 export class Select extends Element {

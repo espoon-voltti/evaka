@@ -103,8 +103,10 @@ export const SelectionChip = React.memo(function SelectionChip({
       onClick={(e) => (!disabled ? onClick(e) : undefined)}
       onKeyUp={(ev) => ev.key === 'Enter' && onClick(ev)}
       data-qa={dataQa}
-      tabIndex={0}
       onBlur={onBlur}
+      {...(disabled
+        ? { 'aria-disabled': 'true', tabIndex: -1 }
+        : { tabIndex: 0 })}
     >
       <SelectionChipInnerWrapper
         className={classNames({ checked: selected, disabled })}

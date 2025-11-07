@@ -586,7 +586,15 @@ const sv: Translations = {
       warningUsedServiceExceeded: 'Närvaro utöver vad som anges i avtalet:',
       warningPlannedServiceExceeded: 'Planerad närvaro utöver kontraktet:'
     },
-    childSelectionMissingError: 'Välj minst ett barn'
+    childSelectionMissingError: 'Välj minst ett barn',
+    infoToast: {
+      childStartsInfo: (
+        firstName: string,
+        startDate: string,
+        unitName: string
+      ) =>
+        `${firstName} kommer att börja på enheten ${unitName} den ${startDate}. Registreringen av närvaro börjar en månad före startdatumet.`
+    }
   },
   messages: {
     inboxTitle: 'Inkorg',

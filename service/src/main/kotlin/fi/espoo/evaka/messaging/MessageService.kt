@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.children.getChildrenByParent
@@ -33,6 +34,7 @@ class MessageService(
     private val notificationEmailService: MessageNotificationEmailService,
     private val messagePushNotifications: MessagePushNotifications,
     private val featureConfig: FeatureConfig,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
@@ -301,7 +303,13 @@ class MessageService(
             if (!isApplication && !allRecipientsValid)
                 throw Forbidden("Not authorized to send to all recipients")
             val selectedChildren =
-                db.read { it.getChildrenByParent(user.id, today) }
+                db.read {
+                        it.getChildrenByParent(
+                            user.id,
+                            today,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+                    }
                     .filter { children.contains(it.id) }
             val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size <= 1
             if (!isApplication && !selectedChildrenInSameUnit)

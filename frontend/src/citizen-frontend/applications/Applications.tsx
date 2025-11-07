@@ -21,7 +21,6 @@ import useTitle from '../useTitle'
 
 import ChildApplicationsBlock from './ChildApplicationsBlock'
 import { guardianApplicationsQuery } from './queries'
-
 export default React.memo(function Applications() {
   const t = useTranslation()
   const guardianApplications = useQueryResult(guardianApplicationsQuery())

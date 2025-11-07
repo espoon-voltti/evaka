@@ -6,6 +6,7 @@ package fi.espoo.evaka.document
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ForcePlainGet
 import fi.espoo.evaka.absence.getDaycareIdByGroup
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController
 class DocumentTemplateController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     @PostMapping
     fun createTemplate(
@@ -128,9 +130,22 @@ class DocumentTemplateController(
                         Action.Global.READ_DOCUMENT_TEMPLATE,
                     )
 
+                    val activePlacement = tx.getChildActivePlacementInfo(childId, clock.today())
+                    val timeRelevantPlacement =
+                        tx.getChildActivePlacementInfo(
+                            childId,
+                            clock.today(),
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+
+                    if (timeRelevantPlacement == null && activePlacement == null)
+                        return@read emptyList()
                     val placement =
-                        tx.getChildActivePlacementInfo(childId, clock.today())
-                            ?: return@read emptyList()
+                        if (activePlacement != null) {
+                            activePlacement // Both exist or only active exists, prefer active
+                        } else {
+                            timeRelevantPlacement!! // Only non-started exists
+                        }
 
                     tx.getTemplateSummaries().filter {
                         it.published &&
@@ -146,7 +161,10 @@ class DocumentTemplateController(
                                 it.type != ChildDocumentType.OTHER_DECISION) &&
                             (placement.enabledPilotFeatures.contains(
                                 PilotFeature.CITIZEN_BASIC_DOCUMENT
-                            ) || it.type != ChildDocumentType.CITIZEN_BASIC)
+                            ) || it.type != ChildDocumentType.CITIZEN_BASIC) &&
+                            // Allow not-yet-started placements only for CITIZEN_BASIC documents,
+                            // require an active placement for others
+                            (it.type == ChildDocumentType.CITIZEN_BASIC || activePlacement != null)
                     }
                 }
             }
@@ -467,14 +485,17 @@ private data class ActivePlacementInfo(
 private fun Database.Read.getChildActivePlacementInfo(
     childId: ChildId,
     date: LocalDate,
+    daysAllowedBeforePlacementStart: Int = 0,
 ): ActivePlacementInfo? =
     createQuery {
+            val startDateExpr =
+                "(pl.start_date - INTERVAL '$daysAllowedBeforePlacementStart days')::date"
             sql(
                 """
 SELECT pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
-WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+WHERE pl.child_id = ${bind(childId)} AND daterange($startDateExpr, pl.end_date, '[]') @> ${bind(date)}
 """
             )
         }

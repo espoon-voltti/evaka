@@ -6,6 +6,7 @@ package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.application.getChildrenWithAbsenceApplicationPossibleOnSomeDate
@@ -34,7 +35,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/children")
-class ChildControllerCitizen(private val accessControl: AccessControl) {
+class ChildControllerCitizen(
+    private val accessControl: AccessControl,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
+) {
     @GetMapping
     fun getChildren(
         db: Database,
@@ -50,7 +54,12 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_CHILDREN,
                         user.id,
                     )
-                    val children = tx.getChildrenByParent(user.id, clock.today())
+                    val children =
+                        tx.getChildrenByParent(
+                            user.id,
+                            clock.today(),
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
                     val childIds = children.map { it.id }
                     val serviceApplicationPossible =
                         tx.getChildrenWithServiceApplicationPossibleOnSomeDate(

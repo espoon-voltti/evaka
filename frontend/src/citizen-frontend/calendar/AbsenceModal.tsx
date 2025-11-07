@@ -57,6 +57,7 @@ import {
   CalendarModalSection
 } from './CalendarModal'
 import ChildSelector from './ChildSelector'
+import { useRemovePlacementPendingChildSelections } from './hooks'
 import { postAbsencesMutation, preschoolOperationalDatesQuery } from './queries'
 import { nonEmptyArray } from './reservation-modal/form'
 
@@ -135,6 +136,8 @@ export default React.memo(function AbsenceModal({
     i18n.validationErrors
   )
   const { selectedChildren, range, absenceType } = useFormFields(form)
+  const selectedRange = range.isValid() ? range.value() : undefined
+  useRemovePlacementPendingChildSelections(selectedChildren, selectedRange?.end)
 
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
@@ -217,6 +220,7 @@ export default React.memo(function AbsenceModal({
                   childItems={reservationsResponse.children.filter(
                     (child) => child.upcomingPlacementType !== null
                   )}
+                  rangeEnd={range.isValid() ? range.value().end : undefined}
                 />
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />

@@ -23,6 +23,7 @@ import { useKeepSessionAlive } from 'lib-components/useKeepSessionAlive'
 import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
+import { useChildrenStartingNotification } from './ChildStartingNotificationHook'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { sessionKeepalive } from './auth/utils'
@@ -102,6 +103,7 @@ const Content = React.memo(function Content({
       sessionKeepalive,
       user.map((usr) => !!usr).getOrElse(false)
     )
+  useChildrenStartingNotification()
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>

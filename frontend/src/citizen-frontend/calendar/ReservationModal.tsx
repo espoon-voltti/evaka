@@ -43,6 +43,7 @@ import {
   CalendarModalSection
 } from './CalendarModal'
 import ChildSelector from './ChildSelector'
+import { useRemovePlacementPendingChildSelections } from './hooks'
 import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
@@ -157,6 +158,8 @@ export default React.memo(function ReservationModal({
 
   const selectedRange = dateRange.isValid() ? dateRange.value() : undefined
 
+  useRemovePlacementPendingChildSelections(selectedChildren, selectedRange?.end)
+
   const [saveError, setSaveError] = useState<string | undefined>()
   const showSaveError = useCallback(
     (reason: Failure<unknown>) => {
@@ -270,6 +273,7 @@ export default React.memo(function ReservationModal({
                   childItems={reservationsResponse.children.filter(
                     (child) => child.upcomingPlacementType !== null
                   )}
+                  rangeEnd={selectedRange?.end}
                 />
               </CalendarModalSection>
 

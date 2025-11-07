@@ -17,7 +17,8 @@ import {
   Radio,
   Select,
   TextInput,
-  DatePicker
+  DatePicker,
+  SelectionChip
 } from '../../utils/page'
 
 import {
@@ -711,6 +712,13 @@ class ReservationModal extends Element {
     await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
   }
 
+  async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
+    for (const childId of childIds) {
+      const childChip = new SelectionChip(this.findByDataQa(`child-${childId}`))
+      await childChip.assertDisabled(disabled)
+    }
+  }
+
   async assertHolidayPeriodInfoContent(content: string) {
     await this.findByDataQa('holiday-period-info').assertTextEquals(content)
   }
@@ -725,6 +733,10 @@ class ReservationModal extends Element {
     await this.findByDataQa(
       'incompletely-answered-periods-info'
     ).waitUntilHidden()
+  }
+
+  getInfoBox(childId: string) {
+    return this.findByDataQa(`child-not-started-infobox-${childId}`)
   }
 }
 
@@ -749,6 +761,9 @@ class AbsencesModal {
   #absenceChip = (type: string) =>
     new Checkbox(this.page.findByDataQa(`absence-${type}`))
 
+  #notStartedChildInfoBox = (childId: string) =>
+    this.page.findByDataQa(`child-not-started-infobox-${childId}`)
+
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
       await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
@@ -757,6 +772,15 @@ class AbsencesModal {
     await this.page
       .findAllByDataQa('relevant-child')
       .assertCount(childIds.length)
+  }
+
+  async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
+    for (const childId of childIds) {
+      const childChip = new SelectionChip(
+        this.page.findByDataQa(`child-${childId}`)
+      )
+      await childChip.assertDisabled(disabled)
+    }
   }
 
   async markAbsence(
@@ -800,6 +824,10 @@ class AbsencesModal {
     absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
   ) {
     return this.#absenceChip(absenceType)
+  }
+
+  getInfoBox(childId: string) {
+    return this.#notStartedChildInfoBox(childId)
   }
 
   tooManyAbsencesError = (childId: ChildId) =>
