@@ -186,16 +186,19 @@ class AssistanceNeedPreschoolDecisionService(
                         messageProvider.getAssistanceNeedPreschoolDecisionContent(lang)
                     val uniqueId = "${decision.id}_${guardian.id}"
 
+                    // This decision has been replaced with generic document based solution
+                    // so these should not be sent anymore
+                    val sfiMessageId = SfiMessageId(UUID.randomUUID())
+                    logger.warn {
+                        "AssistanceNeedPreschoolDecisionService sent an SFI message with id: $sfiMessageId"
+                    }
+
                     asyncJobRunner.plan(
                         tx,
                         listOf(
                             AsyncJob.SendMessage(
                                 SfiMessage(
-                                    messageId =
-                                        SfiMessageId(
-                                            UUID.randomUUID()
-                                        ), // Will be replaced soon with generic document based
-                                    // solution
+                                    messageId = sfiMessageId,
                                     documentId = uniqueId,
                                     documentDisplayName =
                                         suomiFiDocumentFileName(decision.form.language),
