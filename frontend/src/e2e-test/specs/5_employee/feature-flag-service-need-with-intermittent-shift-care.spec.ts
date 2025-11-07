@@ -4,6 +4,7 @@
 
 import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
@@ -17,6 +18,9 @@ import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
+
+const mockedTime = HelsinkiDateTime.of(2025, 10, 31, 9, 47)
+const mockedDate = mockedTime.toLocalDate()
 
 let page: Page
 let admin: DevEmployee
@@ -34,7 +38,9 @@ beforeEach(async () => {
   await Fixture.employee({ roles: ['ADMIN'] }).save()
   placement = await Fixture.placement({
     childId,
-    unitId
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
   }).save()
   activeServiceNeedOption = await Fixture.serviceNeedOption({
     validPlacementType: placement.type
@@ -43,6 +49,7 @@ beforeEach(async () => {
   admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
+    mockedTime,
     employeeCustomizations: {
       featureFlags: { intermittentShiftCare: true }
     }
