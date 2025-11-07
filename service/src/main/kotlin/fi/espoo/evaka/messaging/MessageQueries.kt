@@ -1001,13 +1001,13 @@ fun Database.Read.getCitizenRecipients(
 WITH user_account AS (
     SELECT * FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
-    SELECT g.child_id, g.guardian_id AS parent_id
+    SELECT g.child_id
     FROM user_account acc
     JOIN guardian g ON acc.person_id = g.guardian_id
 
     UNION ALL
 
-    SELECT fp.child_id, fp.parent_id
+    SELECT fp.child_id
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
 ), backup_care_placements AS (
