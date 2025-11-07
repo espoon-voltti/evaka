@@ -2384,32 +2384,39 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(editable = true),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(editable = true),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildOfChildDocument(editable = true, denyForDecisions = true),
         ),
         PUBLISH(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(publishable = true),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(publishable = true),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildOfChildDocument(publishable = true, denyForDecisions = true),
         ),
         NEXT_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(denyForDecisions = true),
         ),
         PREV_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(canGoToPrevStatus = true),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(canGoToPrevStatus = true),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildOfChildDocument(
+                    canGoToPrevStatus = true,
+                    denyForDecisions = true,
+                ),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(deletable = true),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(deletable = true),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildOfChildDocument(deletable = true, denyForDecisions = true),
         ),
         PROPOSE_DECISION(
             HasGlobalRole(ADMIN),

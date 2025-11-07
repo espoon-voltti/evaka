@@ -174,8 +174,11 @@ WHERE employee_id = ${bind(user.id)}
         deletable: Boolean = false,
         publishable: Boolean = false,
         canGoToPrevStatus: Boolean = false,
-    ) =
-        rule<ChildDocumentId> { user, now ->
+        denyForDecisions: Boolean = false,
+    ): DatabaseActionRule.Scoped<ChildDocumentId, HasGroupRole> {
+        val denyDecisionSql =
+            if (denyForDecisions) " AND child_document.type <> 'OTHER_DECISION' " else ""
+        return rule { user, now ->
             sql(
                 """
 SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
@@ -187,10 +190,12 @@ ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.empl
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'" else ""}
+$denyDecisionSql
             """
                     .trimIndent()
             )
         }
+    }
 
     fun inPlacementGroupOfDuplicateChildOfHojksChildDocument() =
         rule<ChildDocumentId> { user, now ->
