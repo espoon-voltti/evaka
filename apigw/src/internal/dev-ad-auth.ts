@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { randomInt, randomUUID as uuidv4 } from 'node:crypto'
+import { randomUUID as uuidv4 } from 'node:crypto'
 
 import type { Router } from 'express'
 import _ from 'lodash'
@@ -18,8 +18,7 @@ const Employee = z.object({
   externalId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-  email: z.string(),
-  employeeNumber: z.string().optional()
+  email: z.string()
 })
 
 export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
@@ -53,7 +52,6 @@ export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
       const now = new Date()
       const time = `${now.getHours()}${now.getMinutes()}${now.getSeconds()}`
       const uuid = uuidv4()
-      const employeeNumber = randomInt(10000, 99999).toString()
 
       res.contentType('text/html').send(`
           <html>
@@ -66,7 +64,6 @@ export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
                 </div>
                 <h2>Uusi käyttäjä</h2>
                 <input id="aad-input" name="externalId" value="espoo-ad:${uuid}" type="hidden" />
-                <input id="employee-number-input" name="employeeNumber" value="${employeeNumber}" type="hidden" />
                 <div>
                   <label for="firstName">Etunimi: </label>
                   <input name="firstName" value="Seppo ${time}"/>
