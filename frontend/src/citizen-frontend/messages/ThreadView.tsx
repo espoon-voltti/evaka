@@ -23,7 +23,7 @@ import type {
   MessageAccount,
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
-import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { TypedMessageAccount } from 'lib-common/messaging'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -217,7 +217,7 @@ const SingleMessage = React.memo(
 )
 
 interface Props {
-  accountId: MessageAccountId
+  account: TypedMessageAccount
   thread: CitizenMessageThread.Regular
   allowedAccounts: ChildMessageAccountAccess[]
   accountDetails: MessageAccountWithPresence[]
@@ -232,7 +232,7 @@ export interface ThreadViewApi {
 export default React.memo(
   React.forwardRef<ThreadViewApi, Props>(function ThreadView(
     {
-      accountId,
+      account,
       thread: {
         id: threadId,
         messages,
@@ -257,7 +257,7 @@ export default React.memo(
 
     const { onToggleRecipient, recipients } = useRecipients(
       messages,
-      accountId,
+      account,
       accountDetails
     )
     const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)

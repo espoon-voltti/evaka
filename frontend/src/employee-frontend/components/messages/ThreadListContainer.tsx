@@ -240,7 +240,7 @@ export default React.memo(function ThreadListContainer({
         <SingleThreadView
           goBack={() => selectThread(undefined)}
           thread={selectedThread}
-          accountId={account.id}
+          account={account}
           view={view}
           onArchived={
             view === 'received' || isFolderView(view)

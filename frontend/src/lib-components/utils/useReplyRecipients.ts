@@ -10,7 +10,7 @@ import type {
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
 import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
-import type { UUID } from 'lib-common/types'
+import type { TypedMessageAccount } from 'lib-common/messaging'
 
 import type { SelectableAccount } from '../messages/MessageReplyEditor'
 
@@ -24,14 +24,14 @@ function getOutOfOfficeForAccount(
 
 function getInitialRecipients(
   threadMessages: Message[],
-  replierAccountId: UUID,
+  replierAccount: TypedMessageAccount,
   accountDetails: MessageAccountWithPresence[]
 ): SelectableAccount[] {
   const firstMessage = threadMessages[0]
   const lastMessage = threadMessages.slice(-1)[0]
   const lastRecipients = lastMessage.recipients.map(({ id }) => id)
   return [
-    ...(firstMessage.sender.id !== replierAccountId
+    ...(firstMessage.sender.id !== replierAccount.id
       ? [
           {
             ...firstMessage.sender,
@@ -45,12 +45,14 @@ function getInitialRecipients(
         ]
       : []),
     ...firstMessage.recipients
-      .filter((r) => r.id !== replierAccountId)
+      .filter((r) => r.id !== replierAccount.id)
       .map((acc) => ({
         ...acc,
         toggleable: true,
         selected:
-          lastMessage.sender.id === acc.id || lastRecipients.includes(acc.id),
+          lastMessage.sender.id === acc.id ||
+          ((replierAccount.type !== 'CITIZEN' || acc.type !== 'CITIZEN') &&
+            lastRecipients.includes(acc.id)),
         outOfOffice: getOutOfOfficeForAccount(acc.id, accountDetails)
       }))
   ]
@@ -58,20 +60,16 @@ function getInitialRecipients(
 
 export function useRecipients(
   threadMessages: Message[],
-  replierAccountId: MessageAccountId,
+  replierAccount: TypedMessageAccount,
   accountDetails: MessageAccountWithPresence[] | null
 ) {
   const [recipients, setRecipients] = useState<SelectableAccount[]>([])
 
   useEffect(() => {
     setRecipients(
-      getInitialRecipients(
-        threadMessages,
-        replierAccountId,
-        accountDetails ?? []
-      )
+      getInitialRecipients(threadMessages, replierAccount, accountDetails ?? [])
     )
-  }, [threadMessages, replierAccountId, accountDetails])
+  }, [threadMessages, replierAccount, accountDetails])
 
   const onToggleRecipient = useCallback(
     (id: MessageAccountId, selected: boolean) => {

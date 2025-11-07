@@ -713,3 +713,14 @@ export class StaticChip extends Element {
     await waitUntilEqual(() => this.status, status)
   }
 }
+
+export class SecondaryRecipient extends Element {
+  async assertIsSelected() {
+    await this.waitUntilVisible()
+    await this.assertAttributeEquals('aria-pressed', 'true')
+  }
+  async assertIsUnselected() {
+    await this.waitUntilVisible()
+    await this.assertAttributeEquals('aria-pressed', 'false')
+  }
+}

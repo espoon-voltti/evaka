@@ -5,7 +5,13 @@
 import type FiniteDateRange from 'lib-common/finite-date-range'
 
 import type { ElementCollection, EnvType, Page } from '../../utils/page'
-import { Element, FileUpload, MultiSelect, TextInput } from '../../utils/page'
+import {
+  Element,
+  FileUpload,
+  MultiSelect,
+  SecondaryRecipient,
+  TextInput
+} from '../../utils/page'
 
 export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}
@@ -182,6 +188,12 @@ export default class CitizenMessagesPage {
     await this.#sendReplyButton.waitUntilHidden()
   }
 
+  secondaryRecipient(name: string) {
+    return new SecondaryRecipient(
+      this.page.find(`[data-qa="secondary-recipient"]`, { hasText: name })
+    )
+  }
+
   async getSessionExpiry() {
     const cookies = await this.page.page.context().cookies()
     const sessionCookie = cookies.find((c) => c.name === 'evaka.eugw.session')
@@ -252,7 +264,9 @@ export class CitizenMessageEditor extends Element {
   readonly #outOfOfficeInfo = this.findByDataQa('out-of-office-info')
 
   secondaryRecipient(name: string) {
-    return this.find(`[data-qa="secondary-recipient"]`, { hasText: name })
+    return new SecondaryRecipient(
+      this.find(`[data-qa="secondary-recipient"]`, { hasText: name })
+    )
   }
 
   async selectChildren(childIds: string[]) {
