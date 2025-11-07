@@ -67,13 +67,10 @@ export class ChildDocumentPage {
   }
 
   getCheckboxGroupAnswer(sectionName: string, questionName: string) {
-    const section = this.page.find('[data-qa="document-section"]', {
-      hasText: sectionName
-    })
-    const question = section.find('[data-qa="document-question-preview"]', {
-      hasText: questionName
-    })
-    return question.findByDataQa('answer-preview')
+    return this.getTextAnswer(sectionName, questionName)
+  }
+  getCheckboxAnswer(sectionName: string, questionName: string) {
+    return this.getTextAnswer(sectionName, questionName)
   }
 
   async publish() {
