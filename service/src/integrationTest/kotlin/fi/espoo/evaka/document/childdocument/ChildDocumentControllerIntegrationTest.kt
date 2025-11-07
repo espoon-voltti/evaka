@@ -27,12 +27,15 @@ import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -40,6 +43,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevSfiMessageEvent
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -77,6 +81,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     lateinit var areaId: AreaId
     val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
     lateinit var unitSupervisorUser: AuthenticatedUser.Employee
+    lateinit var placementId: PlacementId
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
@@ -209,14 +214,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
-            tx.insert(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = clock.today(),
-                    endDate = clock.today().plusDays(5),
+            placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5),
+                    )
                 )
-            )
             tx.insert(devTemplatePed)
             tx.insert(devTemplatePedagogicalReport)
             tx.insert(devTemplateHojks)
@@ -1250,6 +1256,84 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             documentId2,
             archivalEnabled = true,
         )
+    }
+
+    @Test
+    fun `employee with STAFF permission can edit ordinary document but not decision document`() {
+        val groupId =
+            db.transaction { tx ->
+                val id = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = id,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(10),
+                    )
+                )
+                id
+            }
+
+        val staffEmployee = DevEmployee()
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Create an ordinary child document (PEDAGOGICAL_ASSESSMENT)
+        val ordinaryDocumentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
+            )
+
+        // Create a decision document (OTHER_DECISION)
+        val decisionDocumentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+            )
+
+        // Staff employee should be able to update the ordinary document
+        val laterClock = MockEvakaClock(clock.now().plusMinutes(6))
+        val ordinaryContent =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit")))
+        updateDocumentContent(
+            ordinaryDocumentId,
+            ordinaryContent,
+            now = laterClock,
+            user = staffUser,
+        )
+
+        // Verify the update succeeded
+        assertEquals(
+            ordinaryContent,
+            controller
+                .getDocument(dbInstance(), staffUser, laterClock, ordinaryDocumentId)
+                .data
+                .content,
+        )
+
+        // Staff employee should NOT be able to update the decision document
+        val decisionContent =
+            DocumentContent(
+                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision"))
+            )
+        assertThrows<Forbidden> {
+            updateDocumentContent(
+                decisionDocumentId,
+                decisionContent,
+                now = laterClock,
+                user = staffUser,
+            )
+        }
     }
 
     private fun getDocument(id: ChildDocumentId) =
