@@ -557,6 +557,60 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `active templates endpoint returns templates when placement is changing`() {
+
+        val childId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea(shortName = "area2"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            language = Language.fi,
+                            enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
+                        )
+                    )
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = now.today().minusMonths(2),
+                        endDate = now.today().plusDays(5),
+                        type = PlacementType.DAYCARE,
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = now.today().plusDays(6),
+                        endDate = now.today().plusMonths(3),
+                        type = PlacementType.DAYCARE,
+                    )
+                )
+                childId
+            }
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    placementTypes = setOf(PlacementType.DAYCARE),
+                    language = UiLanguage.FI,
+                    validity = DateRange(now.today().minusMonths(3), null),
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, childId)
+        assertEquals(1, active.size)
+        assertEquals(template.id, active.first().id)
+    }
+
+    @Test
     fun `section ids must be unique`() {
         val created =
             controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
