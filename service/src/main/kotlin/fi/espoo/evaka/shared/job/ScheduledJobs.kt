@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.job
 
+import fi.espoo.evaka.ChildDocumentArchivalEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
@@ -19,6 +20,7 @@ import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.caseprocess.migrateProcessMetadata
 import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
+import fi.espoo.evaka.document.archival.planChildDocumentArchival
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.document.childdocument.endExpiredChildDocumentDecisions
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
@@ -305,6 +307,10 @@ enum class ScheduledJob(
         ScheduledJobs::removeInvalidatedShiftCareReservations,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
+    ArchiveEligibleChildDocuments(
+        ScheduledJobs::archiveEligibleChildDocuments,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -334,6 +340,7 @@ class ScheduledJobs(
     private val passwordBlacklist: PasswordBlacklist,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tracer: Tracer,
+    private val childDocumentArchivalEnv: ChildDocumentArchivalEnv,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -656,5 +663,15 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             val removalCount = it.deleteInvalidatedShiftCareReservationsAfterDate(clock.today())
             logger.info { "Removed $removalCount invalidated shift care reservations." }
         }
+    }
+
+    fun archiveEligibleChildDocuments(db: Database.Connection, clock: EvakaClock) {
+        planChildDocumentArchival(
+            db,
+            clock,
+            asyncJobRunner,
+            childDocumentArchivalEnv.delayDays,
+            childDocumentArchivalEnv.limit,
+        )
     }
 }
