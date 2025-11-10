@@ -68,6 +68,7 @@ services:
     volumes:
       - ./sftp/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
       - ./sftp/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
+      - ./sftp/id_ed25519.pub:/home/foo/.ssh/keys/id_ed25519.pub
     command: foo:pass:::upload
 
   dummy-idp:

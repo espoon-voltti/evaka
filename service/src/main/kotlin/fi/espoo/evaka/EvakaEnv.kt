@@ -617,7 +617,14 @@ data class AromiEnv(
                         port = env.lookup("evaka.integration.aromi.sftp.port") ?: 22,
                         hostKeys = env.lookup("evaka.integration.aromi.sftp.host_keys"),
                         username = env.lookup("evaka.integration.aromi.sftp.username"),
-                        password = Sensitive(env.lookup("evaka.integration.aromi.sftp.password")),
+                        password =
+                            env.lookup<String?>("evaka.integration.aromi.sftp.password")?.let {
+                                Sensitive(it)
+                            },
+                        privateKey =
+                            env.lookup<String?>("evaka.integration.aromi.sftp.private_key")?.let {
+                                Sensitive(it)
+                            },
                     ),
                 filePattern = env.lookup("evaka.integration.aromi.file_pattern"),
                 windowStartOffset =
@@ -634,8 +641,15 @@ data class SftpEnv(
     val port: Int,
     val hostKeys: List<String>,
     val username: String,
-    val password: Sensitive<String>,
-)
+    val password: Sensitive<String>?,
+    val privateKey: Sensitive<String>?,
+) {
+    init {
+        check(listOfNotNull(password, privateKey).size == 1) {
+            "Either password or private key must be provided"
+        }
+    }
+}
 
 data class Sensitive<T>(@JsonValue val value: T) {
     override fun toString(): String = "**REDACTED**"
