@@ -488,18 +488,20 @@ private fun Database.Read.getChildActivePlacementInfo(
     daysAllowedBeforePlacementStart: Int = 0,
 ): ActivePlacementInfo? =
     createQuery {
-            val startDateExpr =
-                "(pl.start_date - INTERVAL '$daysAllowedBeforePlacementStart days')::date"
             sql(
                 """
 SELECT pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
-WHERE pl.child_id = ${bind(childId)} AND daterange($startDateExpr, pl.end_date, '[]') @> ${bind(date)}
+WHERE pl.child_id = ${bind(childId)} 
+    AND pl.start_date <= ${bind(date.plusDays(daysAllowedBeforePlacementStart.toLong()))} 
+    AND pl.end_date >= ${bind(date)}
+ORDER BY pl.start_date
 """
             )
         }
-        .exactlyOneOrNull<ActivePlacementInfo>()
+        .toList<ActivePlacementInfo>()
+        .firstOrNull()
 
 private val PEDAGOGICAL_DOCUMENT_TYPES =
     setOf(
