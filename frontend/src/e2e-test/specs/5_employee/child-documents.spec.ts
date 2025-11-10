@@ -919,6 +919,140 @@ describe('Employee - Child documents', () => {
     )
   })
 
+  test('checkbox answers are localized in the template language', async () => {
+    const childSv = await Fixture.person({
+      firstName: 'Sven',
+      lastName: 'Svensson',
+      language: 'sv',
+      ssn: '010617A123U'
+    }).saveChild()
+    const childFi = await Fixture.person({
+      firstName: 'Finn',
+      lastName: 'Finssonen',
+      language: 'fi',
+      ssn: '010316A1235'
+    }).saveChild()
+    const templateSv = await Fixture.documentTemplate({
+      name: 'Svenska dokument',
+      language: 'SV',
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'sektion 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'CHECKBOX',
+                label: 'fråga 1',
+                infoText: ''
+              },
+              {
+                id: 'q2',
+                type: 'CHECKBOX',
+                label: 'fråga 2',
+                infoText: ''
+              }
+            ]
+          }
+        ]
+      }
+    }).save()
+    const documentSv = await Fixture.childDocument({
+      templateId: templateSv.id,
+      childId: childSv.id,
+      content: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'CHECKBOX',
+            answer: true
+          },
+          {
+            questionId: 'q2',
+            type: 'CHECKBOX',
+            answer: false
+          }
+        ]
+      }
+    }).save()
+    const templateFi = await Fixture.documentTemplate({
+      name: 'Suomenkielinen dokumentti',
+      language: 'FI',
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'osio 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'CHECKBOX',
+                label: 'Kysymys 1',
+                infoText: ''
+              },
+              {
+                id: 'q2',
+                type: 'CHECKBOX',
+                label: 'Kysymys 2',
+                infoText: ''
+              }
+            ]
+          }
+        ]
+      }
+    }).save()
+    const documentFi = await Fixture.childDocument({
+      templateId: templateFi.id,
+      childId: childFi.id,
+      content: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'CHECKBOX',
+            answer: true
+          },
+          {
+            questionId: 'q2',
+            type: 'CHECKBOX',
+            answer: false
+          }
+        ]
+      }
+    }).save()
+    const page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${childSv.id}`)
+    const cipSv = new ChildInformationPage(page)
+    let childDocumentsSection = await cipSv.openCollapsible('childDocuments')
+    const childDocumentPageSv = await childDocumentsSection.openChildDocument(
+      documentSv.id
+    )
+    const answer1 = childDocumentPageSv.getCheckboxAnswer(
+      'sektion 1',
+      'fråga 1'
+    )
+    await answer1.assertTextEquals('Ja')
+    const answer2 = childDocumentPageSv.getCheckboxAnswer(
+      'sektion 1',
+      'fråga 2'
+    )
+    await answer2.assertTextEquals('Nej')
+
+    await page.goto(`${config.employeeUrl}/child-information/${childFi.id}`)
+    const cipFi = new ChildInformationPage(page)
+    childDocumentsSection = await cipFi.openCollapsible('childDocuments')
+    const childDocumentPageFi = await childDocumentsSection.openChildDocument(
+      documentFi.id
+    )
+    const answer3 = childDocumentPageFi.getCheckboxAnswer('osio 1', 'Kysymys 1')
+    await answer3.assertTextEquals('Kyllä')
+    const answer4 = childDocumentPageFi.getCheckboxAnswer('osio 1', 'Kysymys 2')
+    await answer4.assertTextEquals('Ei')
+  })
+
   test('Employee needs to decide if other decisions are ended when accepting a new decision', async () => {
     const template1 = await Fixture.documentTemplate({
       type: 'OTHER_DECISION',

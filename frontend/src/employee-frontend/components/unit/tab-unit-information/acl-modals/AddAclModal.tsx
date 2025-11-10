@@ -161,7 +161,7 @@ export default React.memo(function AddAclModal({
             placeholder={i18n.unit.accessControl.chooseRole}
             selectedItem={formData.role}
             onChange={(item) =>
-              setFormData({ ...formData, role: item ?? 'STAFF' })
+              setFormData((prev) => ({ ...prev, role: item ?? 'STAFF' }))
             }
             items={roles}
             menuEmptyLabel={i18n.common.noResults}
@@ -180,7 +180,7 @@ export default React.memo(function AddAclModal({
             placeholder={i18n.unit.accessControl.choosePerson}
             selectedItem={formData.selectedEmployee}
             onChange={(item) =>
-              setFormData({ ...formData, selectedEmployee: item })
+              setFormData((prev) => ({ ...prev, selectedEmployee: item }))
             }
             items={employeeOptions}
             menuEmptyLabel={i18n.common.noResults}
@@ -199,7 +199,7 @@ export default React.memo(function AddAclModal({
               getOptionId={(item) => item.id}
               getOptionLabel={(item) => item.name}
               onChange={(values) =>
-                setFormData({ ...formData, selectedGroups: values })
+                setFormData((prev) => ({ ...prev, selectedGroups: values }))
               }
               placeholder={`${i18n.common.select}...`}
             />
@@ -212,12 +212,12 @@ export default React.memo(function AddAclModal({
             checked={formData.hasStaffOccupancyEffect === true}
             disabled={false}
             label={i18n.unit.accessControl.hasOccupancyCoefficient}
-            onChange={(checked) => {
-              setFormData({
-                ...formData,
+            onChange={(checked) =>
+              setFormData((prev) => ({
+                ...prev,
                 hasStaffOccupancyEffect: checked
-              })
-            }}
+              }))
+            }
           />
         )}
 

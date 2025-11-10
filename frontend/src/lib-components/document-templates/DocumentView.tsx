@@ -6,9 +6,16 @@ import React from 'react'
 
 import type { BoundForm } from 'lib-common/form/hooks'
 import { useFormElems, useFormFields } from 'lib-common/form/hooks'
+import type { UiLanguage } from 'lib-common/generated/api-types/shared'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
+import EN from 'lib-customizations/defaults/components/i18n/en'
+import FI from 'lib-customizations/defaults/components/i18n/fi'
+import SV from 'lib-customizations/defaults/components/i18n/sv'
+
+import type { Translations } from '../i18n'
+import { ComponentLocalizationContextProvider } from '../i18n'
 
 import {
   type documentForm,
@@ -19,22 +26,38 @@ import {
 interface Props {
   bind: BoundForm<typeof documentForm>
   readOnly?: boolean
+  templateLanguage?: UiLanguage
 }
 
-export default React.memo(function DocumentView({ bind, readOnly }: Props) {
+const translationsByLang: Record<UiLanguage, Translations> = {
+  FI,
+  SV,
+  EN
+}
+
+export default React.memo(function DocumentView({
+  bind,
+  readOnly,
+  templateLanguage
+}: Props) {
   const sectionElems = useFormElems(bind)
+  const translations = translationsByLang[templateLanguage ?? 'FI']
 
   return (
     <div>
-      <FixedSpaceColumn spacing="XL">
-        {sectionElems.map((section) => (
-          <DocumentSectionView
-            key={section.state.id}
-            bind={section}
-            readOnly={readOnly ?? false}
-          />
-        ))}
-      </FixedSpaceColumn>
+      <ComponentLocalizationContextProvider
+        useTranslations={() => translations}
+      >
+        <FixedSpaceColumn spacing="XL">
+          {sectionElems.map((section) => (
+            <DocumentSectionView
+              key={section.state.id}
+              bind={section}
+              readOnly={readOnly ?? false}
+            />
+          ))}
+        </FixedSpaceColumn>
+      </ComponentLocalizationContextProvider>
     </div>
   )
 })

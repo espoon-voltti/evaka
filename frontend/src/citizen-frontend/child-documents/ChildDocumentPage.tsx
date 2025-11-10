@@ -217,7 +217,11 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <Gap />
-          <DocumentView bind={bind} readOnly={readOnly} />
+          <DocumentView
+            bind={bind}
+            readOnly={readOnly}
+            templateLanguage={document.template.language}
+          />
           {getDocumentCategory(document.template.type) === 'external' &&
             document.status === 'COMPLETED' && (
               <InfoBox message={i18n.children.childDocuments.sentInfo} />
