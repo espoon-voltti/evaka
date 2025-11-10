@@ -701,3 +701,13 @@ data class ArchiveEnv(
             )
     }
 }
+
+data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ChildDocumentArchivalEnv(
+                delayDays = env.lookup("evaka.child_document_archival_delay_days") ?: 30,
+                limit = env.lookup("evaka.child_document_archival_limit") ?: 0,
+            )
+    }
+}

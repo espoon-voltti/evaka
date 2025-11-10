@@ -186,10 +186,6 @@ class EspooConfig {
         }
 
     @Bean
-    fun childDocumentArchivalEnv(env: Environment): ChildDocumentArchivalEnv =
-        ChildDocumentArchivalEnv.fromEnvironment(env)
-
-    @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
@@ -394,16 +390,6 @@ data class LinkityEnv(val url: URI, val apikey: Sensitive<String>) {
             LinkityEnv(
                 url = URI.create(env.lookup("espoo.integration.linkity.url")),
                 apikey = Sensitive(env.lookup("espoo.integration.linkity.apikey")),
-            )
-    }
-}
-
-data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
-    companion object {
-        fun fromEnvironment(env: Environment) =
-            ChildDocumentArchivalEnv(
-                delayDays = env.lookup("espoo.child_document_archival_delay_days") ?: 30,
-                limit = env.lookup("espoo.child_document_archival_limit") ?: 0,
             )
     }
 }
