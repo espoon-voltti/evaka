@@ -6403,7 +6403,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.5"
     eslint-plugin-react-hooks: "npm:7.0.1"
     globals: "npm:16.5.0"
-    ical-generator: "npm:9.0.0"
+    ical-generator: "npm:10.0.0"
     jest: "npm:30.2.0"
     jest-circus: "npm:30.2.0"
     jest-environment-jsdom: "npm:30.2.0"
@@ -7185,9 +7185,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ical-generator@npm:9.0.0":
-  version: 9.0.0
-  resolution: "ical-generator@npm:9.0.0"
+"ical-generator@npm:10.0.0":
+  version: 10.0.0
+  resolution: "ical-generator@npm:10.0.0"
   peerDependencies:
     "@touch4it/ical-timezones": ">=1.6.0"
     "@types/luxon": ">= 1.26.0"
@@ -7216,7 +7216,7 @@ __metadata:
       optional: true
     rrule:
       optional: true
-  checksum: 10/382249cca062b887c607b3abcfa6c869e94270def437f47a7b3f5d69d1864d6ebb1d900a158a0d2c5cf1e6d266d0950ab75a8b9f7bac5d98a335d9ae5e544f9a
+  checksum: 10/ed2b01cb832d8e36848aae22c73334f15f645df364520ed4e3070f13778b033e8d48d7068464d239f002e06da12b9d22eee5eea2f5a170ac234bad1de92c851a
   languageName: node
   linkType: hard
 

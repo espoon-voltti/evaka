@@ -41,7 +41,7 @@
     "date-fns": "4.1.0",
     "date-fns-tz": "3.2.0",
     "downshift": "9.0.10",
-    "ical-generator": "9.0.0",
+    "ical-generator": "10.0.0",
     "leaflet": "1.9.4",
     "lib-common": "link:src/lib-common",
     "lib-components": "link:src/lib-components",
