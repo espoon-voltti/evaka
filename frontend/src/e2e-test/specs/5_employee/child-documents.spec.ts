@@ -25,7 +25,8 @@ import type {
   DevDaycareGroup,
   DevDocumentTemplate,
   DevEmployee,
-  DevPerson
+  DevPerson,
+  DevPlacement
 } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -49,6 +50,7 @@ describe('Employee - Child documents', () => {
   let unitSupervisor: DevEmployee
   let director: DevEmployee
   let page: Page
+  let placement: DevPlacement
 
   beforeEach(async () => {
     await testCareArea.save()
@@ -66,7 +68,7 @@ describe('Employee - Child documents', () => {
     })
       .director()
       .save()
-    await Fixture.placement({
+    placement = await Fixture.placement({
       childId: testChild2.id,
       unitId: testDaycare.id,
       startDate: now.toLocalDate().subYears(1),
@@ -318,6 +320,45 @@ describe('Employee - Child documents', () => {
     childDocument = new ChildDocumentPage(page)
     await childDocument.rejectDecision()
     await childDocument.status.assertTextEquals('Ei myönnetty')
+  })
+
+  test('Staff cannot create decision documents', async () => {
+    const group1: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+
+    const staffEmployee = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(group1.id)
+      .save()
+
+    await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
+      published: true
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: group1.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
+
+    const page = await Page.open({
+      mockedTime: now
+    })
+
+    // Staff employee opens child information page
+    await employeeLogin(page, staffEmployee)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+
+    // Verify the create decision document button is not present
+    await childDocumentsSection.decisionHeader.waitUntilVisible()
+    await childDocumentsSection.createDecisionDocumentButton.waitUntilHidden()
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {

@@ -315,6 +315,23 @@ export async function annulChildDocumentDecision(
 
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDecisionDocument
+*/
+export async function createDecisionDocument(
+  request: {
+    body: ChildDocumentCreateRequest
+  }
+): Promise<ChildDocumentId> {
+  const { data: json } = await client.request<JsonOf<ChildDocumentId>>({
+    url: uri`/employee/child-documents/decision`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocument
 */
 export async function createDocument(
@@ -323,7 +340,7 @@ export async function createDocument(
   }
 ): Promise<ChildDocumentId> {
   const { data: json } = await client.request<JsonOf<ChildDocumentId>>({
-    url: uri`/employee/child-documents`.toString(),
+    url: uri`/employee/child-documents/document`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
   })

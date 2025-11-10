@@ -57,6 +57,7 @@ import { activeDocumentTemplateSummariesQuery } from '../document-templates/quer
 
 import {
   childDocumentsQuery,
+  createChildDecisionDocumentMutation,
   createChildDocumentMutation,
   updateChildDocumentDecisionValidityMutation
 } from './queries'
@@ -405,12 +406,14 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
 
 const ChildDocumentTables = ({
   childId,
-  hasCreatePermission,
+  hasCreateDocumentPermission,
+  hasCreateDecisionDocumentPermission,
   documents,
   templates
 }: {
   childId: ChildId
-  hasCreatePermission: boolean
+  hasCreateDocumentPermission: boolean
+  hasCreateDecisionDocumentPermission: boolean
   documents: ChildDocumentSummaryWithPermittedActions[]
   templates: DocumentTemplateSummary[]
 }) => {
@@ -437,16 +440,26 @@ const ChildDocumentTables = ({
   > = useMemo(
     () => ({
       internal: creatableTemplates.filter(
-        (t) => getDocumentCategory(t.type) === 'internal'
+        (t) =>
+          hasCreateDocumentPermission &&
+          getDocumentCategory(t.type) === 'internal'
       ),
       decision: creatableTemplates.filter(
-        (t) => getDocumentCategory(t.type) === 'decision'
+        (t) =>
+          hasCreateDecisionDocumentPermission &&
+          getDocumentCategory(t.type) === 'decision'
       ),
       external: creatableTemplates.filter(
-        (t) => getDocumentCategory(t.type) === 'external'
+        (t) =>
+          hasCreateDocumentPermission &&
+          getDocumentCategory(t.type) === 'external'
       )
     }),
-    [creatableTemplates]
+    [
+      creatableTemplates,
+      hasCreateDocumentPermission,
+      hasCreateDecisionDocumentPermission
+    ]
   )
 
   const documentsByCategory: Record<
@@ -490,8 +503,12 @@ const ChildDocumentTables = ({
       {enabledCategories.map((category) => (
         <FixedSpaceColumn spacing="zero" key={category}>
           <FixedSpaceRow justifyContent="space-between">
-            <H3>{i18n.childInformation.childDocuments.title[category]}</H3>
-            {hasCreatePermission && (
+            <H3 data-qa={`child-documents-title-${category}`}>
+              {i18n.childInformation.childDocuments.title[category]}
+            </H3>
+            {((category === 'decision' &&
+              hasCreateDecisionDocumentPermission) ||
+              (category !== 'decision' && hasCreateDocumentPermission)) && (
               <AddButtonRow
                 text={i18n.childInformation.childDocuments.addNew[category]}
                 onClick={() => setCreationModalState(category)}
@@ -541,6 +558,9 @@ const CreationModal = React.memo(function CreationModal({
   const { mutateAsync: createChildDocument } = useMutationResult(
     createChildDocumentMutation
   )
+  const { mutateAsync: createChildDecisionDocument } = useMutationResult(
+    createChildDecisionDocumentMutation
+  )
   const [, navigate] = useLocation()
 
   const formModel = object({
@@ -568,7 +588,12 @@ const CreationModal = React.memo(function CreationModal({
   const { templateId, confirmation } = useFormFields(form)
 
   const submit = async () => {
-    const res = await createChildDocument({
+    const category = getDocumentCategory(templates[0].type) // all templates have the same category
+    const mutation =
+      category === 'decision'
+        ? createChildDecisionDocument
+        : createChildDocument
+    const res = await mutation({
       body: {
         childId,
         templateId: templateId.value()
@@ -607,14 +632,16 @@ const CreationModal = React.memo(function CreationModal({
 
 export default React.memo(function ChildDocumentsList({
   childId,
-  hasCreatePermission
+  hasCreateDocumentPermission,
+  hasCreateDecisionDocumentPermission
 }: {
   childId: ChildId
-  hasCreatePermission: boolean
+  hasCreateDocumentPermission: boolean
+  hasCreateDecisionDocumentPermission: boolean
 }) {
   const documentsResult = useQueryResult(childDocumentsQuery({ childId }))
   const documentTemplatesResult = useQueryResult(
-    hasCreatePermission
+    hasCreateDocumentPermission || hasCreateDecisionDocumentPermission
       ? activeDocumentTemplateSummariesQuery({ childId })
       : constantQuery([])
   )
@@ -624,7 +651,10 @@ export default React.memo(function ChildDocumentsList({
     ([documents, templates]) => (
       <ChildDocumentTables
         childId={childId}
-        hasCreatePermission={hasCreatePermission}
+        hasCreateDocumentPermission={hasCreateDocumentPermission}
+        hasCreateDecisionDocumentPermission={
+          hasCreateDecisionDocumentPermission
+        }
         documents={documents}
         templates={templates}
       />
