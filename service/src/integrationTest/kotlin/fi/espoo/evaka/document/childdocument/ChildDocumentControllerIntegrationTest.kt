@@ -812,10 +812,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         // cannot cancel decision
         assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
 
-        annulChildDocumentDecision(documentId, user = unitSupervisorUser)
+        annulChildDocumentDecision(
+            documentId,
+            user = unitSupervisorUser,
+            reason = "Perustelut mitätöinnille",
+        )
         getDocument(documentId).also { doc ->
             assertEquals(DocumentStatus.COMPLETED, doc.status)
             assertEquals(ChildDocumentDecisionStatus.ANNULLED, doc.decision?.status)
+            assertEquals("Perustelut mitätöinnille", doc.decision?.annulmentReason)
         }
 
         val metadata = getChildDocumentMetadata(documentId).data!!
@@ -887,7 +892,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // cannot annul rejected decision
         assertThrows<BadRequest> {
-            annulChildDocumentDecision(documentId, user = unitSupervisorUser)
+            annulChildDocumentDecision(
+                documentId,
+                user = unitSupervisorUser,
+                reason = "Perustelut mitätöinnille",
+            )
         }
     }
 
@@ -1411,7 +1420,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         id: ChildDocumentId,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
-    ) = controller.annulChildDocumentDecision(dbInstance(), user, clockOverride, id)
+        reason: String,
+    ) =
+        controller.annulChildDocumentDecision(
+            dbInstance(),
+            user,
+            clockOverride,
+            id,
+            body = ChildDocumentController.AnnulChildDocumentDecisionRequest(reason),
+        )
 
     private fun getChildDocumentMetadata(id: ChildDocumentId) =
         metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)

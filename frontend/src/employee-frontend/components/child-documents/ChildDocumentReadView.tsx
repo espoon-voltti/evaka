@@ -14,9 +14,22 @@ import {
   string,
   boolean
 } from 'lib-common/form/fields'
-import { object, required, mapped, array, value } from 'lib-common/form/form'
+import {
+  object,
+  required,
+  mapped,
+  array,
+  validated,
+  value
+} from 'lib-common/form/form'
 import type { BoundForm } from 'lib-common/form/hooks'
-import { useForm, useFormFields, useFormElems } from 'lib-common/form/hooks'
+import {
+  useForm,
+  useFormFields,
+  useFormElems,
+  useBoolean
+} from 'lib-common/form/hooks'
+import { nonBlank } from 'lib-common/form/validators'
 import type {
   AcceptedChildDecisions,
   ChildDocumentDetails,
@@ -25,7 +38,8 @@ import type {
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import type {
   ChildDocumentDecisionId,
-  ChildDocumentId
+  ChildDocumentId,
+  PersonId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
@@ -37,6 +51,7 @@ import {
 import type { UUID } from 'lib-common/types'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import OptionalLabelledValue from 'lib-components/atoms/OptionalLabelledValue'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
@@ -45,6 +60,7 @@ import {
 } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Radio from 'lib-components/atoms/form/Radio'
+import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
   documentForm,
@@ -57,6 +73,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, Label, P } from 'lib-components/typography'
@@ -261,6 +278,9 @@ const ChildDocumentReadViewInner = React.memo(
       i18n.validationErrors
     )
 
+    const [annulModalOpen, { on: openAnnulModal, off: closeAnnulModal }] =
+      useBoolean(false)
+
     const updateEndingDecisionsForm = (newValidity: DateRange | undefined) => {
       endingDecisionsForm.update(() => {
         const filteredDecisions = newValidity
@@ -297,6 +317,13 @@ const ChildDocumentReadViewInner = React.memo(
 
     return (
       <div>
+        {annulModalOpen && (
+          <AnnulDecisionModal
+            onClose={closeAnnulModal}
+            documentId={document.id}
+            childId={document.child.id}
+          />
+        )}
         {permittedActions.includes('DOWNLOAD') &&
           document.pdfAvailable &&
           publishedUpToDate && (
@@ -364,6 +391,13 @@ const ChildDocumentReadViewInner = React.memo(
         <Container>
           <ContentArea opaque>
             <DocumentBasics document={document} />
+            <OptionalLabelledValue
+              label={
+                i18n.childInformation.childDocuments.decisions.annulReasonLabel
+              }
+              value={document.decision?.annulmentReason}
+              data-qa="reason-for-annulment"
+            />
             <Gap size="XXL" />
             <DocumentView
               bind={bind}
@@ -610,19 +644,12 @@ const ChildDocumentReadViewInner = React.memo(
 
                     {permittedActions.includes('ANNUL_DECISION') &&
                       isAnnullable && (
-                        <ConfirmedMutation
-                          buttonText={
+                        <Button
+                          text={
                             i18n.childInformation.childDocuments.decisions.annul
                           }
-                          mutation={annulChildDocumentDecisionMutation}
-                          onClick={() => ({
-                            documentId: document.id,
-                            childId: document.child.id
-                          })}
-                          confirmationTitle={
-                            i18n.childInformation.childDocuments.decisions
-                              .annulConfirmTitle
-                          }
+                          primary
+                          onClick={openAnnulModal}
                           data-qa="annul-decision-button"
                         />
                       )}
@@ -962,5 +989,62 @@ export default React.memo(function ChildDocumentReadView() {
         />
       )
     }
+  )
+})
+
+const annulForm = object({
+  reason: validated(required(value<string>()), nonBlank)
+})
+
+const AnnulDecisionModal = React.memo(function AnnulDecisionModal({
+  documentId,
+  childId,
+  onClose
+}: {
+  documentId: ChildDocumentId
+  childId: PersonId
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+
+  const form = useForm(
+    annulForm,
+    () => ({
+      reason: ''
+    }),
+    i18n.validationErrors
+  )
+
+  const { reason } = useFormFields(form)
+
+  return (
+    <MutateFormModal
+      title={i18n.childInformation.childDocuments.decisions.annulConfirmTitle}
+      resolveMutation={annulChildDocumentDecisionMutation}
+      resolveAction={() => ({
+        documentId: documentId,
+        childId: childId,
+        body: { reason: reason.value() }
+      })}
+      resolveLabel={i18n.childInformation.childDocuments.decisions.annul}
+      resolveDisabled={!form.isValid()}
+      onSuccess={onClose}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+    >
+      <FixedSpaceColumn spacing="s">
+        <InfoBox
+          noMargin
+          message={
+            i18n.childInformation.childDocuments.decisions.annulInstructions
+          }
+        />
+        <Gap size="s" />
+        <Label>
+          {i18n.childInformation.childDocuments.decisions.annulReasonLabel}
+        </Label>
+        <TextAreaF bind={reason} data-qa="annul-reason-textarea" />
+      </FixedSpaceColumn>
+    </MutateFormModal>
   )
 })
