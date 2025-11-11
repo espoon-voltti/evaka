@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
@@ -25,21 +25,29 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
   const { refreshAuthStatus } = useContext(UserContext)
   const preferredFirstName = useQueryResult(employeePreferredFirstNameQuery())
 
-  const [selectedPreferredFirstName, setSelectedPreferredFirstName] = useState<
-    string | null
-  >(null)
+  const [selectedState, setSelectedState] = useState<{
+    selected: string | null
+    prevData: typeof preferredFirstName
+  }>({
+    selected: null,
+    prevData: preferredFirstName
+  })
 
-  useEffect(() => {
-    if (
-      preferredFirstName.isSuccess &&
-      preferredFirstName.value.preferredFirstNameOptions.length > 0
-    ) {
-      const initialPreferredFirstName =
-        preferredFirstName.value.preferredFirstName ||
-        preferredFirstName.value.preferredFirstNameOptions[0]
-      setSelectedPreferredFirstName(initialPreferredFirstName)
-    }
-  }, [preferredFirstName])
+  if (
+    preferredFirstName !== selectedState.prevData &&
+    preferredFirstName.isSuccess &&
+    preferredFirstName.value.preferredFirstNameOptions.length > 0
+  ) {
+    const initialPreferredFirstName =
+      preferredFirstName.value.preferredFirstName ||
+      preferredFirstName.value.preferredFirstNameOptions[0]
+    setSelectedState({
+      selected: initialPreferredFirstName,
+      prevData: preferredFirstName
+    })
+  }
+
+  const selectedPreferredFirstName = selectedState.selected
 
   const disableConfirm = () =>
     preferredFirstName.isSuccess
@@ -67,7 +75,9 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
                   preferredFirstName.value.preferredFirstName
                 : null
             }
-            onChange={(value) => setSelectedPreferredFirstName(value)}
+            onChange={(value) =>
+              setSelectedState((prev) => ({ ...prev, selected: value }))
+            }
             data-qa="select-preferred-first-name"
           />
           <MutateButton
