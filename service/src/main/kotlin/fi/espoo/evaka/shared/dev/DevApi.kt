@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.absence.AbsenceCategory
@@ -229,6 +230,7 @@ class DevApi(
     private val invoiceGenerator: InvoiceGenerator,
     private val featureConfig: FeatureConfig,
     private val passwordService: PasswordService,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     private val digitransit = MockDigitransit()
 
@@ -1049,6 +1051,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     body,
                     featureConfig.citizenReservationThresholdHours,
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
+                    calendarOpenBeforePlacementDays =
+                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
                 )
             }
         }

@@ -101,6 +101,7 @@ class ReservationControllerCitizen(
                             childIds,
                             // Include all future placements for upcomingPlacementType computation
                             DateRange(minOf(today, requestedRange.start), null),
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
                         )
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
@@ -291,6 +292,7 @@ class ReservationControllerCitizen(
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
                     )
                 }
             }
@@ -468,6 +470,7 @@ data class ReservationChild(
     val imageId: ChildImageId?,
     val upcomingPlacementType: PlacementType?,
     val upcomingPlacementStartDate: LocalDate?,
+    val upcomingPlacementCalendarOpenDate: LocalDate?,
     val upcomingPlacementUnitName: String?,
     val monthSummaries: List<MonthSummary>,
 ) {
@@ -480,9 +483,6 @@ data class ReservationChild(
         ): ReservationChild {
             val hasHourBasedServiceNeeds =
                 placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
-            val currentOrNextPlacement =
-                placements.find { it.range.includes(today) }
-                    ?: placements.minByOrNull { it.range.start }
             val monthSummaries =
                 if (hasHourBasedServiceNeeds) {
                     days
@@ -530,6 +530,7 @@ data class ReservationChild(
                     emptyList()
                 }
 
+            val upcomingPlacement = placements.find { it.range.end >= today }
             return ReservationChild(
                 id = child.id,
                 firstName = child.firstName,
@@ -537,10 +538,10 @@ data class ReservationChild(
                 preferredName = child.preferredName,
                 duplicateOf = child.duplicateOf,
                 imageId = child.imageId,
-                upcomingPlacementType = placements.find { it.range.end >= today }?.type,
-                upcomingPlacementStartDate =
-                    placements.find { it.range.end >= today }?.range?.start,
-                upcomingPlacementUnitName = placements.find { it.range.end >= today }?.unitName,
+                upcomingPlacementType = upcomingPlacement?.type,
+                upcomingPlacementStartDate = upcomingPlacement?.range?.start,
+                upcomingPlacementCalendarOpenDate = upcomingPlacement?.calendarOpenDate,
+                upcomingPlacementUnitName = upcomingPlacement?.unitName,
                 monthSummaries = monthSummaries,
             )
         }

@@ -39,7 +39,8 @@ SELECT
     upcoming_pl.start_date AS upcoming_placement_start_date,
     upcoming_unit.id AS upcoming_unit_id,
     upcoming_unit.name AS upcoming_unit_name,
-    upcoming_pl.is_calendar_open AS upcoming_placement_is_calendar_open
+    upcoming_pl.is_calendar_open AS upcoming_placement_is_calendar_open,
+    upcoming_pl.calendar_open_date AS upcoming_placement_calendar_open_date
 FROM children c
 INNER JOIN person p ON c.child_id = p.id
 LEFT JOIN child_images img ON p.id = img.child_id
@@ -49,7 +50,8 @@ LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
 LEFT JOIN daycare u ON u.id = dg.daycare_id
 LEFT JOIN LATERAL (
   SELECT child_id, type, start_date, unit_id,
-  (start_date <= (:today + (:calendarOpenBeforePlacementDays::int * INTERVAL '1 day'))) AS is_calendar_open
+  (start_date <= (:today + (:calendarOpenBeforePlacementDays::int * INTERVAL '1 day'))) AS is_calendar_open,
+  (start_date - (:calendarOpenBeforePlacementDays::int * INTERVAL '1 day'))::date AS calendar_open_date
   FROM placement
   WHERE child_id = p.id AND :today <= end_date
   ORDER BY start_date
