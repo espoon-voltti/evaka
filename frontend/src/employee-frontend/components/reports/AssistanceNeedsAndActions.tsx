@@ -100,7 +100,7 @@ const emptyRowFilters: RowFilters = {
   providerType: '',
   careArea: '',
   unit: null,
-  showZeroRows: true
+  showZeroRows: false
 }
 
 interface ColumnFilters {
