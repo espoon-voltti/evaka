@@ -32,10 +32,10 @@ Continued work on Rule 2 (react-hooks/set-state-in-effect). Discovered that actu
 
 ### Rule 2: react-hooks/set-state-in-effect
 - **Rule Status:** Still OFF in eslint.config.js (line 105)
-- **Progress:** 27/46 files fixed (59%)
-- **Remaining:** 19 files with ~22 violations
+- **Progress:** 32/46 files fixed (70%)
+- **Remaining:** 14 files with ~18 violations
 
-### Files Remaining (19 files)
+### Files Remaining (14 files)
 ```
 employee-frontend/components/application-page/ApplicationPage.tsx
 employee-frontend/components/applications/desktop/PlacementDesktop.tsx
@@ -44,13 +44,8 @@ employee-frontend/components/child-information/assistance-need/voucher-coefficie
 employee-frontend/components/child-information/assistance/AssistanceActionForm.tsx
 employee-frontend/components/child-information/fee-alteration/FeeAlterationEditor.tsx
 employee-frontend/components/decision-draft/DecisionDraft.tsx
-employee-frontend/components/employee-preferred-first-name/EmployeePreferredFirstNamePage.tsx
 employee-frontend/components/fee-decision-details/FeeDecisionDetailsPage.tsx
 employee-frontend/components/messages/MessageEditor.tsx (also has Prettier errors)
-employee-frontend/components/messages/SingleThreadView.tsx
-employee-frontend/components/person-search/AddVTJPersonModal.tsx
-employee-frontend/components/person-shared/person-details/AddSsnModal.tsx
-employee-frontend/components/unit/tab-groups/groups/GroupModal.tsx
 employee-frontend/components/unit/unit-details/CreateUnitPage.tsx
 employee-frontend/components/unit/unit-details/UnitDetailsPage.tsx
 employee-frontend/components/unit/unit-details/UnitEditor.tsx
@@ -105,8 +100,8 @@ lib-components/Notifications.tsx (already has justified comment)
 - `CURRENT-SESSION-PROGRESS.md` - This file
 
 ## Estimated Remaining Effort
-- **19 files remaining** at ~15-20 min per file = **5-6 hours**
-- Plus testing: **1-2 hours**
-- **Total: 6-8 hours remaining for Rule 2**
+- **14 files remaining** at ~15-20 min per file = **3.5-4.5 hours**
+- Plus testing: **1 hour**
+- **Total: 4.5-5.5 hours remaining for Rule 2**
 
 After Rule 2 completes, Rules 3 & 4 remain (estimated 8-10 hours each).

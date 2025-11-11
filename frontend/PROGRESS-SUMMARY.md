@@ -14,13 +14,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 - **E2e tests:** citizen-calendar (6/6 passed), child-information-placements (6/8 passed, 2 pre-existing)
 - **Quality:** Production-ready
 
-### Rule 2: react-hooks/set-state-in-effect ⚠️ 59% COMPLETED  
-- **Status:** Rule still OFF in config, 27/46 files fixed
-- **Files fixed:** 27 (59% complete)
+### Rule 2: react-hooks/set-state-in-effect ⚡ 70% COMPLETED  
+- **Status:** Rule still OFF in config, 32/46 files fixed
+- **Files fixed:** 32 (70% complete)
 - **Category A:** ✅ 8/8 files (100%)
 - **Category B:** ✅ 5/5 files (100%)
-- **Category C:** ⏸️ 7/24 files (29%)
-- **E2e tests:** Categories A & B tested (118/118 passed), Category C pending
+- **Category C:** ⚡ 12/24 files (50%)
+- **E2e tests:** Categories A & B tested (118/118 passed), Category C Batch 1 tested (9/9 passed)
 
 #### Files Fixed This Session (Rule 2)
 1. ✅ DatePicker.tsx - getDerivedStateFromProps pattern
@@ -41,6 +41,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 16. ✅ citizen-frontend/messages/MessagesPage.tsx - derived from URL params
 17. ✅ employee-frontend/components/messages/MessagesPage.tsx - getDerivedStateFromProps
 18. ✅ employee-mobile-frontend/messages/MessagesPage.tsx - getDerivedStateFromProps
+19. ✅ employee-frontend/components/messages/SingleThreadView.tsx - justified eslint-disable (DOM measurement)
+20. ✅ employee-frontend/components/person-search/AddVTJPersonModal.tsx - justified eslint-disable (async loading)
+21. ✅ employee-frontend/components/person-shared/person-details/AddSsnModal.tsx - justified eslint-disable (error clearing)
+22. ✅ employee-frontend/components/employee-preferred-first-name/EmployeePreferredFirstNamePage.tsx - getDerivedStateFromProps
+23. ✅ employee-frontend/components/unit/tab-groups/groups/GroupModal.tsx - useMemo for validation
 
 ## Approach & Patterns Used
 
@@ -102,8 +107,8 @@ All form/editor components in employee-frontend
 
 1. ✅ ~~Immediate: Continue fixing Category A files (simple pattern application)~~
 2. ✅ ~~Tackle Category B with proper async patterns~~
-3. **CURRENT:** Work through Category C form components (7/24 done, 17 remaining)
-4. **CRITICAL:** After each batch: Run relevant e2e tests (see e2e-tests-mapping.md)
+3. **CURRENT:** Work through Category C form components (12/24 done, 12 remaining)
+4. **CRITICAL:** Run E2E smoke tests after each 5-file batch (Batch 1 tested ✅, Batch 2 pending)
 5. After Rule 2 complete: Enable rule in config and run full regression suite
 6. Then: Move to Rules 3 and 4
 

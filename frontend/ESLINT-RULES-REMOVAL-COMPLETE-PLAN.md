@@ -72,20 +72,20 @@ Total files fixed: 5
 
 ### Status: IN PROGRESS
 **Rule removed:** ❌ No (rule still OFF in config)  
-**All violations fixed:** ❌ No (27/46 files completed - 59%)  
-**E2e tests run:** ✅ Yes (Categories A & B completed)  
-**Tests passed:** ✅ Yes (118/118 tests passed)
+**All violations fixed:** ❌ No (32/46 files completed - 70%)  
+**E2e tests run:** ✅ Yes (Categories A & B + Batch 1 of Category C)  
+**Tests passed:** ✅ Yes (118/118 + 9/9 smoke tests passed)
 
 ### Summary
 - **Total violations:** 54+ across 46 files  
-- **Files fixed:** 27 (59% complete)
-- **Files remaining:** 19
-- **Violations remaining:** ~22
+- **Files fixed:** 32 (70% complete)
+- **Files remaining:** 14
+- **Violations remaining:** ~18
 
 ### Category Progress
 - **Category A (Simple Prop-to-State):** ✅ 8/8 files (100%) - E2e tested (85/85 passed)
 - **Category B (Async Operations):** ✅ 5/5 files (100%) - E2e tested (33/33 passed)
-- **Category C (Complex Forms & Editors):** ⏸️ 7/24 files (29%) - 17 remaining
+- **Category C (Complex Forms & Editors):** ⚡ 12/24 files (50%) - 12 remaining
 
 ### Strategy
 The `set-state-in-effect` rule flags setState calls inside useEffect. The proper React pattern is:
@@ -169,13 +169,18 @@ Need to refactor to use proper async patterns (not suppressions):
 - [x] `src/lib-components/Notifications.tsx` - Added justified comment for flag reset
 - [x] `src/employee-mobile-frontend/child-attendance/AttendanceList.tsx` - Refactored with getDerivedStateFromProps
 
-#### Category C: Form/Editor Components (24 files) - ⏸️ 7/24 COMPLETED (29%)
+#### Category C: Form/Editor Components (24 files) - ⚡ 12/24 COMPLETED (50%)
 Complex components that may need refactoring:
 - [x] `src/citizen-frontend/decisions/decision-response-page/DecisionResponse.tsx`
 - [x] `src/citizen-frontend/income-statements/IncomeStatementEditor.tsx`
 - [x] `src/citizen-frontend/messages/MessagesPage.tsx`
 - [x] `src/employee-frontend/components/messages/MessagesPage.tsx`
 - [x] `src/employee-mobile-frontend/messages/MessagesPage.tsx`
+- [x] `src/employee-frontend/components/messages/SingleThreadView.tsx`
+- [x] `src/employee-frontend/components/person-search/AddVTJPersonModal.tsx`
+- [x] `src/employee-frontend/components/person-shared/person-details/AddSsnModal.tsx`
+- [x] `src/employee-frontend/components/employee-preferred-first-name/EmployeePreferredFirstNamePage.tsx`
+- [x] `src/employee-frontend/components/unit/tab-groups/groups/GroupModal.tsx`
 - [ ] `src/employee-frontend/components/application-page/ApplicationPage.tsx`
 - [ ] `src/employee-frontend/components/applications/desktop/PlacementDesktop.tsx`
 - [ ] `src/employee-frontend/components/child-documents/ChildDocumentEditView.tsx`
@@ -183,17 +188,12 @@ Complex components that may need refactoring:
 - [ ] `src/employee-frontend/components/child-information/assistance/AssistanceActionForm.tsx`
 - [ ] `src/employee-frontend/components/child-information/fee-alteration/FeeAlterationEditor.tsx`
 - [ ] `src/employee-frontend/components/decision-draft/DecisionDraft.tsx`
-- [ ] `src/employee-frontend/components/employee-preferred-first-name/EmployeePreferredFirstNamePage.tsx`
 - [ ] `src/employee-frontend/components/fee-decision-details/FeeDecisionDetailsPage.tsx`
-- [ ] `src/employee-frontend/components/messages/SingleThreadView.tsx`
-- [ ] `src/employee-frontend/components/person-search/AddVTJPersonModal.tsx`
-- [ ] `src/employee-frontend/components/person-shared/person-details/AddSsnModal.tsx`
-- [ ] `src/employee-frontend/components/unit/tab-groups/groups/GroupModal.tsx`
+- [ ] `src/employee-frontend/components/messages/MessageEditor.tsx` (has Prettier/TypeScript errors to fix)
 - [ ] `src/employee-frontend/components/unit/unit-details/CreateUnitPage.tsx`
 - [ ] `src/employee-frontend/components/unit/unit-details/UnitDetailsPage.tsx`
 - [ ] `src/employee-frontend/components/unit/unit-details/UnitEditor.tsx`
 - [ ] `src/employee-frontend/components/voucher-value-decision/VoucherValueDecisionPage.tsx`
-- [ ] `src/employee-frontend/components/messages/MessageEditor.tsx` (has Prettier/TypeScript errors to fix)
 - [ ] `src/lib-components/Notifications.tsx` (already has justified eslint-disable, ready when rule enabled)
 
 ### E2e Tests to Run
@@ -447,10 +447,13 @@ npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
 See `e2e-tests-mapping.md` for detailed test execution plan.
 
 ### Next Immediate Actions
-1. **Run E2E tests** for the 5 files fixed this session
-2. Continue with remaining 17 Category C files
-3. **After each 3-5 file batch:** Run relevant E2E tests
-4. Enable rule in eslint.config.js after all fixes complete
+1. **Continue with remaining 14 Category C files** - Target 5 files per batch
+2. **After each batch:** Consider running targeted smoke tests
+3. When all files fixed:
+   - Enable rule in eslint.config.js
+   - Run full lint to verify
+   - Run comprehensive regression suite
+4. Move to Rules 3 & 4
 
 See CURRENT-SESSION-PROGRESS.md for detailed session notes.
 
