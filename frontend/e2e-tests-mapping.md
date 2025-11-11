@@ -31,49 +31,49 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 ## Test Execution Plan
 
-### IMPORTANT: Use npm run e2e-ci
+### IMPORTANT: Use npm run e2e-ci with -t flag
 ```bash
 # ⚠️ Use e2e-ci NOT e2e-test (e2e-test runs full suite and ignores args!)
 npm run e2e-ci -- <test-file>
 
-# To run specific tests within a file:
-npm run e2e-ci -- <test-file> -g "test name pattern"
+# To run specific tests within a file (use -t NOT -g):
+npm run e2e-ci -- <test-file> -t "test name pattern"
 ```
 
 ### Priority 1: Critical Smoke Tests (Run Now)
 
 #### 1. Decision Acceptance/Rejection (DecisionResponse.tsx)
 ```bash
-# Run specific critical tests - decision acceptance flow with date validation
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
+# Run specific critical test - decision acceptance flow with date validation
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -t "accepts preschool"
 ```
 **Validates:** Date validation state management, decision response flows
 
 #### 2. Income Statement Editor (IncomeStatementEditor.tsx)
 ```bash
-# Run form validation and error scrolling tests
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "can submit|validation"
+# Run form submission tests (includes validation and error scrolling)
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -t "Highest fee"
 ```
 **Validates:** Form validation, scroll-to-error functionality (our DOM side-effect fix)
 
 #### 3. Citizen Messaging (citizen-frontend/messages/MessagesPage.tsx)
 ```bash
-# Run editor visibility and message sending tests
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Citizen can send a message|Citizen can view messages"
+# Run citizen message sending test
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "Citizen can send a message"
 ```
 **Validates:** Editor visibility derived from URL params, message list/editor switching
 
 #### 4. Employee Messaging (employee-frontend/messages/MessagesPage.tsx)
 ```bash
-# Run employee message editor and draft tests
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Staff can send a message|draft"
+# Run employee message editor test
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "Staff can send a message"
 ```
 **Validates:** Editor visibility synced with draft selection, message sending
 
 #### 5. Mobile Messaging (employee-mobile-frontend/messages/MessagesPage.tsx)
 ```bash
-# Run mobile message navigation tests
-npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send|can navigate"
+# Run mobile message sending test
+npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
 ```
 **Validates:** UI state reset on unit/group change, message navigation
 

@@ -207,17 +207,17 @@ Complex components that may need refactoring:
 
 **Testing Guidelines:**
 - Use `npm run e2e-ci -- <test-file>` (NOT `e2e-test` which runs full suite!)
-- For large test files (>5 tests), run specific smoke tests with `-g "pattern"`
+- For large test files (>5 tests), run specific smoke tests with `-t "pattern"` (NOT -g)
 - See `e2e-tests-mapping.md` for detailed test execution commands
 
 **Current Session Fixes (5 files) - Smoke Tests Required:**
 ```bash
-# Targeted smoke tests (~3-5 min total)
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Citizen can send a message"
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Staff can send a message"
-npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+# Targeted smoke tests (~3-5 min total) - use -t flag for test name patterns
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -t "accepts preschool"
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -t "Highest fee"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "Citizen can send a message"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "Staff can send a message"
+npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
 ```
 
 **After All Category C Fixes:**
@@ -437,11 +437,11 @@ Fixed 5 files in Category C:
 
 **E2E Smoke Tests Required (Not Yet Run):**
 ```bash
-# Use npm run e2e-ci (NOT e2e-test!) - see e2e-tests-mapping.md
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "send a message"
-npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+# Use npm run e2e-ci with -t flag (NOT -g!) - see e2e-tests-mapping.md
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -t "accepts preschool"
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -t "Highest fee"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "send a message"
+npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
 ```
 
 See `e2e-tests-mapping.md` for detailed test execution plan.

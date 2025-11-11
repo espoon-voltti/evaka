@@ -64,11 +64,12 @@ lib-components/Notifications.tsx (already has justified comment)
 1. **RUN E2E TESTS FIRST** - Validate the 5 files fixed this session:
    ```bash
    # ⚠️ Use e2e-ci NOT e2e-test (e2e-test runs full suite!)
+   # ⚠️ Use -t flag NOT -g for test name patterns (Jest syntax)
    # Targeted smoke tests (~3-5 min total)
-   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
-   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
-   npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "send a message"
-   npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -t "accepts preschool"
+   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -t "Highest fee"
+   npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "send a message"
+   npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
    ```
    See `e2e-tests-mapping.md` for full details.
    
@@ -93,7 +94,8 @@ lib-components/Notifications.tsx (already has justified comment)
 3. **getDerivedStateFromProps pattern** is the primary solution for prop-to-state sync
 4. **Justified eslint-disable comments** are appropriate for legitimate DOM side-effects
 5. **Use `npm run e2e-ci`** for targeted test runs - `npm run e2e-test` runs the full suite and ignores args!
-6. **Run smoke tests** for large test files - use `-g "pattern"` to target specific critical tests
+6. **Run smoke tests** for large test files - use `-t "pattern"` (NOT -g) to target specific critical tests
+7. **Jest uses -t flag** for test name patterns, not -g (that's Mocha/Playwright syntax)
 
 ## Files Created This Session
 - `eslint-full-output-20251111-141700.txt` - Full lint output with rule OFF
