@@ -109,16 +109,16 @@ The `set-state-in-effect` rule flags setState calls inside useEffect. The proper
 
 ### Remaining Files - Categorized
 
-#### Category A: Simple Prop-to-State Sync (8 files)
+#### Category A: Simple Prop-to-State Sync (8 files) ✅ COMPLETED
 These can be fixed with getDerivedStateFromProps pattern:
-- [ ] `src/lib-components/utils/useReplyRecipients.ts`
-- [ ] `src/citizen-frontend/messages/MessageEditor.tsx`
-- [ ] `src/citizen-frontend/map/UnitList.tsx`
-- [ ] `src/employee-frontend/components/messages/MessageEditor.tsx`
-- [ ] `src/employee-frontend/components/person-shared/PersonDetails.tsx`
-- [ ] `src/employee-frontend/components/reports/AssistanceNeedDecisionsReport.tsx`
-- [ ] `src/employee-frontend/components/reports/MissingServiceNeed.tsx`
-- [ ] `src/employee-frontend/components/reports/StartingPlacements.tsx`
+- [x] `src/lib-components/utils/useReplyRecipients.ts`
+- [x] `src/citizen-frontend/messages/MessageEditor.tsx`
+- [x] `src/citizen-frontend/map/UnitList.tsx`
+- [x] `src/employee-frontend/components/messages/MessageEditor.tsx`
+- [x] `src/employee-frontend/components/person-shared/PersonDetails.tsx`
+- [x] `src/employee-frontend/components/reports/AssistanceNeedDecisionsReport.tsx`
+- [x] `src/employee-frontend/components/reports/MissingServiceNeed.tsx`
+- [x] `src/employee-frontend/components/reports/StartingPlacements.tsx`
 
 #### Category B: Async Data Loading (5 files)  
 Need to refactor to use proper async patterns (not suppressions):
