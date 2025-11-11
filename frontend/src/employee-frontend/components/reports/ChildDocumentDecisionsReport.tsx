@@ -104,7 +104,7 @@ export default React.memo(function ChildDocumentDecisionsReport() {
 
   const [shownStatuses, setShownStatuses] = useState<
     (DocumentStatus | ChildDocumentDecisionStatus)[]
-  >(['DRAFT', 'DECISION_PROPOSAL'])
+  >(['DECISION_PROPOSAL'])
 
   const [includeEnded, setIncludeEnded] = useState(false)
 
