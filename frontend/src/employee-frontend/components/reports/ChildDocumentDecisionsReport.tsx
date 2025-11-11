@@ -5,7 +5,6 @@
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type {
@@ -99,7 +98,6 @@ const getStatusIndex = (
 
 export default React.memo(function ChildDocumentDecisionsReport() {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
   const { user } = useContext(UserContext)
 
   const [shownStatuses, setShownStatuses] = useState<
@@ -291,7 +289,13 @@ export default React.memo(function ChildDocumentDecisionsReport() {
               {rows.map((row) => (
                 <RelativeTr
                   key={row.id}
-                  onClick={() => navigate(`/child-documents/${row.id}`)}
+                  onClick={() =>
+                    window.open(
+                      `/employee/child-documents/${row.id}`,
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  }
                 >
                   <Td>
                     {row.highlighted && <Highlight />}

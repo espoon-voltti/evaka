@@ -24,6 +24,8 @@ import {
   TreeDropdown
 } from '../../utils/page'
 
+import { ChildDocumentPage } from './documents/child-document'
+
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
@@ -804,8 +806,17 @@ export class ChildDocumentsReport {
 export class ChildDocumentDecisionsReport {
   rows: ElementCollection
 
-  constructor(page: Page) {
+  constructor(private page: Page) {
     this.rows = page.findByDataQa('report-table').findAll('tr')
+  }
+
+  async clickDocument(nth: number): Promise<ChildDocumentPage> {
+    const childDocument = new Promise<ChildDocumentPage>((res) => {
+      this.page.onPopup((page) => res(new ChildDocumentPage(page)))
+    })
+
+    await this.rows.nth(nth).click()
+    return childDocument
   }
 }
 
