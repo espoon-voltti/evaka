@@ -48,8 +48,30 @@ export default React.memo(function AttendanceList({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [multiselectChildren, setMultiselectChildren] = useState<UUID[] | null>(
-    null
+  const [multiselectState, setMultiselectState] = useState<{
+    children: UUID[] | null
+    prevActiveStatus: AttendanceStatus
+  }>({
+    children: null,
+    prevActiveStatus: activeStatus
+  })
+
+  // getDerivedStateFromProps: reset multiselect when tab changes
+  if (multiselectState.prevActiveStatus !== activeStatus) {
+    setMultiselectState({
+      children: null,
+      prevActiveStatus: activeStatus
+    })
+  }
+
+  const multiselectChildren = multiselectState.children
+  const setMultiselectChildren = useCallback(
+    (children: UUID[] | null) =>
+      setMultiselectState((prev) => ({
+        ...prev,
+        children
+      })),
+    []
   )
 
   const groupChildren = useMemo(
@@ -144,12 +166,6 @@ export default React.memo(function AttendanceList({
       ),
     [activeStatus, childrenWithStatus, sortType]
   )
-
-  // this resetting should be done as a tab change side effect but
-  // that would require changing tabs from NavLinks to buttons
-  useEffect(() => {
-    setMultiselectChildren(null)
-  }, [activeStatus])
 
   return (
     <>
