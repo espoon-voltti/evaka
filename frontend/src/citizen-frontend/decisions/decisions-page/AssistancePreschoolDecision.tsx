@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-import { Link } from 'wouter'
 
 import type { AssistanceNeedPreschoolDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
@@ -89,17 +88,12 @@ export default React.memo(function AssistancePreschoolDecision({
         ) : null}
       </ListGrid>
       <Gap size="m" />
-      <Link
+      <InlineInternalLinkButton
         to={`/decisions/assistance-preschool/${id}`}
         data-qa="open-decision"
-      >
-        <Button
-          appearance="inline"
-          icon={faFileAlt}
-          text={t.decisions.assistanceDecisions.openDecision}
-          onClick={() => undefined}
-        />
-      </Link>
+        icon={faFileAlt}
+        text={t.decisions.assistanceDecisions.openDecision}
+      />
     </CollapsibleContentArea>
   )
 })

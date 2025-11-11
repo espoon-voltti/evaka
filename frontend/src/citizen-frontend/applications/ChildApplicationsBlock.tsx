@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import noop from 'lodash/noop'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
@@ -17,6 +16,7 @@ import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
@@ -325,25 +325,19 @@ export default React.memo(function ChildApplicationsBlock({
                 {applicationStatus === 'CREATED' ||
                 (applicationStatus === 'SENT' &&
                   permittedActions[applicationId]?.includes('UPDATE')) ? (
-                  <Link to={`/applications/${applicationId}/edit`}>
-                    <Button
-                      appearance="inline"
-                      icon={faPen}
-                      text={t.applicationsList.editApplicationLink}
-                      onClick={noop}
-                      data-qa={`button-open-application-${applicationId}`}
-                    />
-                  </Link>
+                  <InlineInternalLinkButton
+                    to={`/applications/${applicationId}/edit`}
+                    icon={faPen}
+                    text={t.applicationsList.editApplicationLink}
+                    data-qa={`button-open-application-${applicationId}`}
+                  />
                 ) : permittedActions[applicationId]?.includes('READ') ? (
-                  <Link to={`/applications/${applicationId}`}>
-                    <Button
-                      appearance="inline"
-                      icon={faFileAlt}
-                      text={t.applicationsList.openApplicationLink}
-                      onClick={noop}
-                      data-qa={`button-open-application-${applicationId}`}
-                    />
-                  </Link>
+                  <InlineInternalLinkButton
+                    to={`/applications/${applicationId}`}
+                    icon={faFileAlt}
+                    text={t.applicationsList.openApplicationLink}
+                    data-qa={`button-open-application-${applicationId}`}
+                  />
                 ) : undefined}
                 {(applicationStatus === 'CREATED' ||
                   applicationStatus === 'SENT') &&

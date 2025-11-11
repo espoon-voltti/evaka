@@ -11,7 +11,7 @@ import { Link } from 'wouter'
 import type { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
-import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { InlineExternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -150,19 +150,14 @@ export default React.memo(function TabWaitingConfirmation({
                 </Td>
                 <Td data-qa="application-link">
                   <CenteredDiv>
-                    <a
+                    <InlineExternalLinkButton
                       href={`${getEmployeeUrlPrefix()}/employee/applications/${
                         p.applicationId
                       }`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <IconOnlyButton
-                        onClick={() => undefined}
-                        icon={faFileAlt}
-                        aria-label={i18n.personProfile.application.open}
-                      />
-                    </a>
+                      newTab
+                      icon={faFileAlt}
+                      aria-label={i18n.personProfile.application.open}
+                    />
                   </CenteredDiv>
                 </Td>
               </Tr>

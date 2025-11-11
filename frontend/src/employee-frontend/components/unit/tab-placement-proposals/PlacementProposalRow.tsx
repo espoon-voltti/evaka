@@ -13,7 +13,7 @@ import type {
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
-import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { InlineExternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -79,20 +79,15 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>
-            <a
+            <InlineExternalLinkButton
               href={`${getEmployeeUrlPrefix()}/employee/applications/${
                 placementPlan.applicationId
               }`}
-              target="_blank"
-              rel="noreferrer"
+              newTab
               data-qa="open-application"
-            >
-              <IconOnlyButton
-                onClick={() => undefined}
-                icon={faFileAlt}
-                aria-label={i18n.personProfile.application.open}
-              />
-            </a>
+              icon={faFileAlt}
+              aria-label={i18n.personProfile.application.open}
+            />
           </CenteredDiv>
         </Td>
         <Td>

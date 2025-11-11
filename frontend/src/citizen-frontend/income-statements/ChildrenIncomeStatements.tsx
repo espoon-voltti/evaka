@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import noop from 'lodash/noop'
 import React, { Fragment, useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
@@ -20,6 +19,7 @@ import { useMutation, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -111,19 +111,16 @@ const ChildIncomeStatementsTable = React.memo(
                     <Dimmed>{t.income.table.handled}</Dimmed>
                   ) : (
                     <>
-                      <Link to={getLink(childId, item)}>
-                        <Button
-                          appearance="inline"
-                          icon={faPen}
-                          text={
-                            item.status === 'DRAFT'
-                              ? t.common.edit
-                              : t.income.table.actions.addDetails
-                          }
-                          onClick={noop}
-                          data-qa={`edit-income-statement-${item.status}`}
-                        />
-                      </Link>
+                      <InlineInternalLinkButton
+                        to={getLink(childId, item)}
+                        icon={faPen}
+                        text={
+                          item.status === 'DRAFT'
+                            ? t.common.edit
+                            : t.income.table.actions.addDetails
+                        }
+                        data-qa={`edit-income-statement-${item.status}`}
+                      />
                       <Button
                         appearance="inline"
                         icon={faTrash}
@@ -179,29 +176,24 @@ const ChildIncomeStatementsList = React.memo(
                 {t.income.table.sentAt}:{' '}
                 {item.sentAt?.toLocalDate()?.format() ?? '-'}
               </div>
-              <Link to={getLink(childId, item)} data-qa="view-income-statement">
-                <Button
-                  appearance="inline"
-                  icon={faFile}
-                  text={t.income.table.actions.view}
-                  onClick={noop}
-                />
-              </Link>
+              <InlineInternalLinkButton
+                to={getLink(childId, item)}
+                icon={faFile}
+                text={t.income.table.actions.view}
+                data-qa="view-income-statement"
+              />
               {item.status !== 'HANDLED' && (
                 <>
-                  <Link to={getLink(childId, item)}>
-                    <Button
-                      appearance="inline"
-                      icon={faPen}
-                      text={
-                        item.status === 'DRAFT'
-                          ? t.common.edit
-                          : t.income.table.actions.addDetails
-                      }
-                      onClick={noop}
-                      data-qa={`edit-income-statement-${item.status}`}
-                    />
-                  </Link>
+                  <InlineInternalLinkButton
+                    to={getLink(childId, item)}
+                    icon={faPen}
+                    text={
+                      item.status === 'DRAFT'
+                        ? t.common.edit
+                        : t.income.table.actions.addDetails
+                    }
+                    data-qa={`edit-income-statement-${item.status}`}
+                  />
                   <Button
                     appearance="inline"
                     icon={faTrash}

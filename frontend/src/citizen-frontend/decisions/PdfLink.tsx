@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import noop from 'lodash/noop'
 import React from 'react'
 
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineExternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { faFileAlt } from 'lib-icons'
 
 import { downloadDecisionPdf } from '../generated/api-clients/application'
@@ -20,18 +19,12 @@ export const PdfLink = React.memo(function PdfLink({
   const t = useTranslation()
 
   return (
-    <a
+    <InlineExternalLinkButton
       href={downloadDecisionPdf({ id: decisionId }).url.toString()}
-      target="_blank"
-      rel="noreferrer"
-    >
-      <Button
-        appearance="inline"
-        icon={faFileAlt}
-        text={t.decisions.applicationDecisions.openPdf}
-        onClick={noop}
-        data-qa="button-open-pdf"
-      />
-    </a>
+      icon={faFileAlt}
+      text={t.decisions.applicationDecisions.openPdf}
+      newTab={true}
+      data-qa="button-open-pdf"
+    />
   )
 })

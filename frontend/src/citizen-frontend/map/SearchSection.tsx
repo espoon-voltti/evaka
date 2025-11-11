@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type {
@@ -14,6 +13,7 @@ import type {
 } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -71,14 +71,11 @@ export default React.memo(function SearchSection({
   return (
     <Wrapper opaque>
       {!!navigateBack && (
-        <Link to={navigateBack}>
-          <Button
-            appearance="inline"
-            text={t.common.return}
-            icon={faArrowLeft}
-            onClick={() => undefined}
-          />
-        </Link>
+        <InlineInternalLinkButton
+          to={navigateBack}
+          text={t.common.return}
+          icon={faArrowLeft}
+        />
       )}
       <Gap size="s" />
       <H1 noMargin>{t.map.title}</H1>

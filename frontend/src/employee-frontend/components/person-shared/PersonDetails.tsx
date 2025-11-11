@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import noop from 'lodash/noop'
 import React, {
   useCallback,
   useContext,
@@ -11,7 +10,6 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
@@ -20,6 +18,10 @@ import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
 import { useMutation } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import {
+  InlineExternalLinkButton,
+  InlineInternalLinkButton
+} from 'lib-components/atoms/buttons/InlineLinkButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -195,14 +197,11 @@ export default React.memo(function PersonDetails({
         permittedActions.has('READ_ATTENDANCE_REPORT') &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            <Link to={`/reports/child-attendance/${person.id}`}>
-              <Button
-                appearance="inline"
-                icon={faCalendar}
-                onClick={() => undefined}
-                text={i18n.childInformation.personDetails.attendanceReport}
-              />
-            </Link>
+            <InlineInternalLinkButton
+              to={`/reports/child-attendance/${person.id}`}
+              icon={faCalendar}
+              text={i18n.childInformation.personDetails.attendanceReport}
+            />
           </ButtonSpacer>
         ) : null}
         {permittedActions.has('UPDATE_FROM_VTJ') &&
@@ -223,19 +222,13 @@ export default React.memo(function PersonDetails({
         !isChild &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            <a
+            <InlineExternalLinkButton
               href={getAddressPagePdf({ guardianId: person.id }).url.toString()}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Button
-                appearance="inline"
-                icon={faFileAlt}
-                text={i18n.personProfile.downloadAddressPage}
-                onClick={noop}
-                data-qa="button-open-address-page"
-              />
-            </a>
+              icon={faFileAlt}
+              text={i18n.personProfile.downloadAddressPage}
+              newTab={true}
+              data-qa="button-open-address-page"
+            />
           </ButtonSpacer>
         ) : null}
         {(!isChild && permittedActions.has('UPDATE')) ||
