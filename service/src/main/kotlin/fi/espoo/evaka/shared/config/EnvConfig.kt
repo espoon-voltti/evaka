@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.config
 import fi.espoo.evaka.ArchiveEnv
 import fi.espoo.evaka.AromiEnv
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.ChildDocumentArchivalEnv
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.DvvModificationsEnv
@@ -116,4 +117,8 @@ class EnvConfig {
             true -> NekkuEnv.fromEnvironment(env)
             false -> null
         }
+
+    @Bean
+    fun childDocumentArchivalEnv(env: Environment): ChildDocumentArchivalEnv =
+        ChildDocumentArchivalEnv.fromEnvironment(env)
 }

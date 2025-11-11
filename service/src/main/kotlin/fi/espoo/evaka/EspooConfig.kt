@@ -267,9 +267,11 @@ class EspooConfig {
     fun espooScheduledJobs(
         patuReportingService: PatuReportingService,
         espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
         env: ScheduledJobsEnv<EspooScheduledJob>,
         linkityEnv: LinkityEnv?,
         jsonMapper: JsonMapper,
+        childDocumentArchivalEnv: ChildDocumentArchivalEnv,
     ): EspooScheduledJobs =
         EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env, linkityEnv, jsonMapper)
 
