@@ -99,7 +99,7 @@ export default React.memo(function MessageEditor({
     [recipientOptions]
   )
 
-  const [message, setMessage] = useState<CitizenMessageBody>(
+  const [baseMessage, setBaseMessage] = useState<CitizenMessageBody>(
     childIds.length === 1
       ? {
           ...emptyMessage,
@@ -107,7 +107,6 @@ export default React.memo(function MessageEditor({
         }
       : emptyMessage
   )
-  const title = message.title || i18n.messages.messageEditor.newMessage
 
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [uploadStatus, setUploadStatus] =
@@ -115,14 +114,14 @@ export default React.memo(function MessageEditor({
 
   const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
 
-  useEffect(
-    () =>
-      setMessage((prev) => ({
-        ...prev,
-        attachmentIds: attachments.map((a) => a.id)
-      })),
-    [attachments]
+  const message = useMemo(
+    () => ({
+      ...baseMessage,
+      attachmentIds: attachments.map((a) => a.id)
+    }),
+    [baseMessage, attachments]
   )
+  const title = message.title || i18n.messages.messageEditor.newMessage
 
   const { mutateAsync: deleteAttachment } = useMutationResult(
     deleteAttachmentMutation
@@ -256,7 +255,7 @@ export default React.memo(function MessageEditor({
                                         false
                                     )
                                 )
-                                setMessage((message) => ({
+                                setBaseMessage((message) => ({
                                   ...message,
                                   children,
                                   recipients
@@ -298,7 +297,7 @@ export default React.memo(function MessageEditor({
                 value={recipients.primary}
                 options={validAccounts.primary}
                 onChange={(primary) =>
-                  setMessage((message) => ({
+                  setBaseMessage((message) => ({
                     ...message,
                     recipients: [...primary, ...recipients.secondary].map(
                       ({ id }) => id
@@ -348,7 +347,7 @@ export default React.memo(function MessageEditor({
                           outOfOffice: null
                         }}
                         onToggleRecipient={(_, selected) =>
-                          setMessage((message) => ({
+                          setBaseMessage((message) => ({
                             ...message,
                             recipients: selected
                               ? [...message.recipients, recipient.id]
@@ -378,7 +377,7 @@ export default React.memo(function MessageEditor({
               <InputField
                 value={message.title ?? ''}
                 onChange={(updated) =>
-                  setMessage((message) => ({ ...message, title: updated }))
+                  setBaseMessage((message) => ({ ...message, title: updated }))
                 }
                 data-qa="input-title"
                 required
@@ -393,7 +392,7 @@ export default React.memo(function MessageEditor({
               <StyledTextArea
                 value={message.content}
                 onChange={(updated) =>
-                  setMessage((message) => ({
+                  setBaseMessage((message) => ({
                     ...message,
                     content: updated.target.value
                   }))

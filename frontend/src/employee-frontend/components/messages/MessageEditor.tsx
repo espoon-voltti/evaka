@@ -256,8 +256,61 @@ export default React.memo(function MessageEditor({
     }))
   )
 
-  const [message, setMessage] = useState<Message>(() =>
-    getInitialMessage(draftContent, defaultSender, defaultTitle)
+  const [messageState, setMessageState] = useState<{
+    message: Message
+    prevSenderAccountType: string | undefined
+  }>(() => {
+    const initialMessage = getInitialMessage(
+      draftContent,
+      defaultSender,
+      defaultTitle
+    )
+    const initialSenderAccountType = accounts.find(
+      (a) => a.account.id === initialMessage.sender.value
+    )?.account.type
+    return {
+      message: initialMessage,
+      prevSenderAccountType: initialSenderAccountType
+    }
+  })
+
+  const getSenderAccount = useCallback(
+    (senderId: MessageAccountId) =>
+      accounts.find((x) => x.account.id === senderId),
+    [accounts]
+  )
+  const currentSenderAccountType = useMemo(
+    () => getSenderAccount(messageState.message.sender.value)?.account.type,
+    [getSenderAccount, messageState.message]
+  )
+
+  // getDerivedStateFromProps: update message type when sender account type changes
+  if (
+    currentSenderAccountType !== messageState.prevSenderAccountType &&
+    currentSenderAccountType === 'MUNICIPAL' &&
+    messageState.message.type !== 'BULLETIN'
+  ) {
+    setMessageState({
+      message: { ...messageState.message, type: 'BULLETIN' },
+      prevSenderAccountType: currentSenderAccountType
+    })
+  } else if (
+    currentSenderAccountType !== messageState.prevSenderAccountType
+  ) {
+    setMessageState({
+      ...messageState,
+      prevSenderAccountType: currentSenderAccountType
+    })
+  }
+
+  const message = messageState.message
+  const setMessage = useCallback(
+    (msg: Message) =>
+      setMessageState((prev) => ({
+        ...prev,
+        message: msg
+      })),
+    []
   )
   const [initialFolder, setInitialFolder] =
     useState<MessageThreadFolder | null>(null)
@@ -287,15 +340,8 @@ export default React.memo(function MessageEditor({
     },
     [message, recipientTree, setDraft]
   )
-  const getSenderAccount = useCallback(
-    (senderId: string) =>
-      accounts.find(({ account }) => account.id === senderId),
-    [accounts]
-  )
-  const senderAccountType = useMemo(
-    () => getSenderAccount(message.sender.value)?.account.type,
-    [getSenderAccount, message]
-  )
+
+  const senderAccountType = currentSenderAccountType
   const simpleMode = useMemo(
     () =>
       senderAccountType === 'SERVICE_WORKER' || senderAccountType === 'FINANCE',
@@ -479,12 +525,6 @@ export default React.memo(function MessageEditor({
       })),
     [accounts]
   )
-
-  useEffect(() => {
-    if (senderAccountType === 'MUNICIPAL' && message.type !== 'BULLETIN') {
-      updateMessage({ type: 'BULLETIN' })
-    }
-  }, [senderAccountType, message.type, updateMessage])
 
   const sendEnabled =
     !sending &&

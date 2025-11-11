@@ -60,15 +60,39 @@ const RelativeTr = styled(Tr)`
 export default React.memo(function AssistanceNeedDecisionsReport() {
   const { i18n } = useTranslation()
   const report = useQueryResult(assistanceNeedDecisionsReportQuery())
-  const [careAreaFilter, setCareAreaFilter] = useState<string>()
   const [searchParams, setSearchParams] = useSearchParams()
-
-  useEffect(() => {
+  const [careAreaFilterState, setCareAreaFilterState] = useState<{
+    filter: string | undefined
+    prevSearchParamsCareArea: string | null
+  }>(() => {
     const selectedCareArea = searchParams.get('careArea')
-    if (selectedCareArea) {
-      setCareAreaFilter(selectedCareArea)
+    return {
+      filter: selectedCareArea ?? undefined,
+      prevSearchParamsCareArea: selectedCareArea
     }
-  }, [searchParams])
+  })
+
+  // getDerivedStateFromProps: sync from URL params
+  const currentSearchParamsCareArea = searchParams.get('careArea')
+  if (
+    currentSearchParamsCareArea !==
+    careAreaFilterState.prevSearchParamsCareArea
+  ) {
+    setCareAreaFilterState({
+      filter: currentSearchParamsCareArea ?? undefined,
+      prevSearchParamsCareArea: currentSearchParamsCareArea
+    })
+  }
+
+  const careAreaFilter = careAreaFilterState.filter
+  const setCareAreaFilter = useCallback(
+    (filter: string | undefined) =>
+      setCareAreaFilterState((prev) => ({
+        ...prev,
+        filter
+      })),
+    []
+  )
 
   const [sortColumn, setSortColumn] =
     useState<keyof AssistanceNeedDecisionsReportRow>('sentForDecision')
