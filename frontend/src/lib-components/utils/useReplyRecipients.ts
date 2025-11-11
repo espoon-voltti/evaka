@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type {
@@ -63,23 +63,49 @@ export function useRecipients(
   replierAccount: TypedMessageAccount,
   accountDetails: MessageAccountWithPresence[] | null
 ) {
-  const [recipients, setRecipients] = useState<SelectableAccount[]>([])
+  const [state, setState] = useState<{
+    recipients: SelectableAccount[]
+    prevThreadMessages: Message[]
+    prevReplierAccount: TypedMessageAccount
+    prevAccountDetails: MessageAccountWithPresence[] | null
+  }>(() => ({
+    recipients: getInitialRecipients(
+      threadMessages,
+      replierAccount,
+      accountDetails ?? []
+    ),
+    prevThreadMessages: threadMessages,
+    prevReplierAccount: replierAccount,
+    prevAccountDetails: accountDetails
+  }))
 
-  useEffect(() => {
-    setRecipients(
-      getInitialRecipients(threadMessages, replierAccount, accountDetails ?? [])
-    )
-  }, [threadMessages, replierAccount, accountDetails])
+  if (
+    state.prevThreadMessages !== threadMessages ||
+    state.prevReplierAccount !== replierAccount ||
+    state.prevAccountDetails !== accountDetails
+  ) {
+    setState({
+      recipients: getInitialRecipients(
+        threadMessages,
+        replierAccount,
+        accountDetails ?? []
+      ),
+      prevThreadMessages: threadMessages,
+      prevReplierAccount: replierAccount,
+      prevAccountDetails: accountDetails
+    })
+  }
 
   const onToggleRecipient = useCallback(
     (id: MessageAccountId, selected: boolean) => {
-      setRecipients((prev) =>
-        prev.map((acc) =>
+      setState((prev) => ({
+        ...prev,
+        recipients: prev.recipients.map((acc) =>
           acc.id === id && acc.toggleable ? { ...acc, selected } : acc
         )
-      )
+      }))
     },
     []
   )
-  return { recipients, onToggleRecipient }
+  return { recipients: state.recipients, onToggleRecipient }
 }
