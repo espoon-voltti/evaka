@@ -205,11 +205,20 @@ Complex components that may need refactoring:
 #### Required After Each Chunk of Work
 **Important:** After fixing 3-5 files in Category C, run relevant E2E tests before continuing.
 
-**Current Session Fixes (5 files) - Tests Required:**
-- [ ] `citizen-decisions.spec.ts` - validates DecisionResponse.tsx
-- [ ] `citizen-income-statement.spec.ts` - validates IncomeStatementEditor.tsx  
-- [ ] `messaging.spec.ts` - validates MessagesPage.tsx (citizen + employee)
-- [ ] `messages.spec.ts` (mobile) - validates mobile MessagesPage.tsx
+**Testing Guidelines:**
+- Use `npm run e2e-ci -- <test-file>` (NOT `e2e-test` which runs full suite!)
+- For large test files (>5 tests), run specific smoke tests with `-g "pattern"`
+- See `e2e-tests-mapping.md` for detailed test execution commands
+
+**Current Session Fixes (5 files) - Smoke Tests Required:**
+```bash
+# Targeted smoke tests (~3-5 min total)
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Citizen can send a message"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "Staff can send a message"
+npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+```
 
 **After All Category C Fixes:**
 - [ ] Full regression suite for all affected areas
@@ -426,13 +435,16 @@ Fixed 5 files in Category C:
 - [x] `employee-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
 - [x] `employee-mobile-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
 
-**E2E Tests Required (Not Yet Run):**
-- [ ] `citizen-decisions.spec.ts`
-- [ ] `citizen-income-statement.spec.ts`
-- [ ] `messaging.spec.ts` 
-- [ ] `messages.spec.ts` (mobile)
+**E2E Smoke Tests Required (Not Yet Run):**
+```bash
+# Use npm run e2e-ci (NOT e2e-test!) - see e2e-tests-mapping.md
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
+npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
+npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "send a message"
+npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+```
 
-See `e2e-tests-mapping.md` for test execution plan.
+See `e2e-tests-mapping.md` for detailed test execution plan.
 
 ### Next Immediate Actions
 1. **Run E2E tests** for the 5 files fixed this session

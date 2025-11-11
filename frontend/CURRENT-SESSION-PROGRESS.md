@@ -62,13 +62,18 @@ lib-components/Notifications.tsx (already has justified comment)
 
 ### Immediate (Next Session)
 1. **RUN E2E TESTS FIRST** - Validate the 5 files fixed this session:
-   - `citizen-decisions.spec.ts` (~2-3 min)
-   - `citizen-income-statement.spec.ts` (~2-3 min)
-   - `messaging.spec.ts` (~3-5 min)
-   - `messages.spec.ts` (mobile) (~2 min)
+   ```bash
+   # ⚠️ Use e2e-ci NOT e2e-test (e2e-test runs full suite!)
+   # Targeted smoke tests (~3-5 min total)
+   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -g "accept decision"
+   npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -g "validation"
+   npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -g "send a message"
+   npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -g "can send"
+   ```
+   See `e2e-tests-mapping.md` for full details.
    
 2. Continue fixing remaining 17 files systematically
-3. **IMPORTANT:** After each batch of 3-5 fixes, run relevant E2E tests
+3. **IMPORTANT:** After each batch of 3-5 fixes, run relevant E2E smoke tests
 4. Suggested batches:
    - **Batch 1:** Form/modal editors (5 files)
    - **Batch 2:** Unit/decision editors (6 files)
@@ -87,6 +92,8 @@ lib-components/Notifications.tsx (already has justified comment)
 2. **Save lint output to files** - saves significant time on re-runs (lint takes ~2 minutes)
 3. **getDerivedStateFromProps pattern** is the primary solution for prop-to-state sync
 4. **Justified eslint-disable comments** are appropriate for legitimate DOM side-effects
+5. **Use `npm run e2e-ci`** for targeted test runs - `npm run e2e-test` runs the full suite and ignores args!
+6. **Run smoke tests** for large test files - use `-g "pattern"` to target specific critical tests
 
 ## Files Created This Session
 - `eslint-full-output-20251111-141700.txt` - Full lint output with rule OFF
