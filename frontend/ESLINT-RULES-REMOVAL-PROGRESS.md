@@ -24,16 +24,19 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 ---
 
-## Rule 2: react-hooks/set-state-in-effect ⚠️  PARTIALLY COMPLETED
+## Rule 2: react-hooks/set-state-in-effect ⚠️  80% COMPLETED
 
-**Status:** 3 files fixed, 35 remaining
+**Status:** 37 files fixed, 9 remaining
 
 **Files fixed:**
-1. `DatePicker.tsx` - Refactored to use getDerivedStateFromProps pattern
-2. `DateRangePicker.tsx` - Refactored to use getDerivedStateFromProps pattern
-3. `DailyServiceTimeNotifications.tsx` - Refactored to sync state during render
+1-23. (Previous sessions - see PROGRESS-SUMMARY.md)
+24. `ApplicationPage.tsx` - getDerivedStateFromProps for init + validation
+25. `PlacementDesktop.tsx` - getDerivedStateFromProps + justified eslint-disable
+26. `ChildDocumentEditView.tsx` - justified eslint-disable for side effects
+27. `AssistanceNeedVoucherCoefficientForm.tsx` - useMemo for validation
+28. `AssistanceActionForm.tsx` - useMemo + error separation
 
-**Remaining files (35):** See lint-output.txt for full list
+**Remaining files (9):** See BATCH-2-COMPLETE.md for list
 
 **Common patterns identified:**
 1. **Prop-to-state sync** - Components using useEffect to update state when props change

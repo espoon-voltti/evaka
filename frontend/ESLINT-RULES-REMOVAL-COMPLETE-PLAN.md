@@ -72,20 +72,20 @@ Total files fixed: 5
 
 ### Status: IN PROGRESS
 **Rule removed:** ❌ No (rule still OFF in config)  
-**All violations fixed:** ❌ No (32/46 files completed - 70%)  
+**All violations fixed:** ❌ No (37/46 files completed - 80%)  
 **E2e tests run:** ✅ Yes (Categories A & B + Batch 1 of Category C)  
 **Tests passed:** ✅ Yes (118/118 + 9/9 smoke tests passed)
 
 ### Summary
 - **Total violations:** 54+ across 46 files  
-- **Files fixed:** 32 (70% complete)
-- **Files remaining:** 14
-- **Violations remaining:** ~18
+- **Files fixed:** 37 (80% complete)
+- **Files remaining:** 9
+- **Violations remaining:** ~12
 
 ### Category Progress
 - **Category A (Simple Prop-to-State):** ✅ 8/8 files (100%) - E2e tested (85/85 passed)
 - **Category B (Async Operations):** ✅ 5/5 files (100%) - E2e tested (33/33 passed)
-- **Category C (Complex Forms & Editors):** ⚡ 12/24 files (50%) - 12 remaining
+- **Category C (Complex Forms & Editors):** ⚡ 17/24 files (71%) - 7 remaining
 
 ### Strategy
 The `set-state-in-effect` rule flags setState calls inside useEffect. The proper React pattern is:
@@ -428,32 +428,31 @@ src/e2e-test/specs/
 - **Rule 4:** Not started
 
 ### Latest Session
-Fixed 5 files in Category C:
-- [x] `DecisionResponse.tsx` - getDerivedStateFromProps pattern
-- [x] `IncomeStatementEditor.tsx` - justified eslint-disable for DOM side-effect
-- [x] `citizen-frontend/messages/MessagesPage.tsx` - derived from URL params
-- [x] `employee-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
-- [x] `employee-mobile-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
+Fixed 5 files in Category C (Batch 2):
+- [x] `ApplicationPage.tsx` - getDerivedStateFromProps for initialization & validation
+- [x] `PlacementDesktop.tsx` - getDerivedStateFromProps for cache & daycares; eslint-disable for query cache
+- [x] `ChildDocumentEditView.tsx` - justified eslint-disable for side effects (cleanup, auto-save, timers)
+- [x] `AssistanceNeedVoucherCoefficientForm.tsx` - useMemo for validation
+- [x] `AssistanceActionForm.tsx` - useMemo for validation, separated API errors
 
-**E2E Smoke Tests Required (Not Yet Run):**
+**E2E Tests Required for Batch 2 (Not Yet Run):**
 ```bash
-# Use npm run e2e-ci with -t flag (NOT -g!) - see e2e-tests-mapping.md
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-decisions.spec.ts -t "accepts preschool"
-npm run e2e-ci -- src/e2e-test/specs/0_citizen/citizen-income-statement.spec.ts -t "Highest fee"
-npm run e2e-ci -- src/e2e-test/specs/7_messaging/messaging.spec.ts -t "send a message"
-npm run e2e-ci -- src/e2e-test/specs/6_mobile/messages.spec.ts -t "can send"
+# Use npm run e2e-ci with -t flag
+npm run e2e-ci -- src/e2e-test/specs/5_employee/applications.spec.ts -t "edit"
+npm run e2e-ci -- src/e2e-test/specs/5_employee/child-documents.spec.ts -t "edit"
+npm run e2e-ci -- src/e2e-test/specs/5_employee/assistance-needs.spec.ts
 ```
 
-See `e2e-tests-mapping.md` for detailed test execution plan.
+See `BATCH-2-COMPLETE.md` and `e2e-tests-mapping.md` for detailed test execution plan.
 
 ### Next Immediate Actions
-1. **Continue with remaining 14 Category C files** - Target 5 files per batch
-2. **After each batch:** Consider running targeted smoke tests
+1. **Continue with remaining 7 Category C files** - Target 5 files per batch
+2. **After each batch:** Run targeted smoke tests (Batch 2 tests pending)
 3. When all files fixed:
    - Enable rule in eslint.config.js
    - Run full lint to verify
    - Run comprehensive regression suite
 4. Move to Rules 3 & 4
 
-See CURRENT-SESSION-PROGRESS.md for detailed session notes.
+See BATCH-2-COMPLETE.md for latest session details.
 

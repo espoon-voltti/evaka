@@ -14,13 +14,20 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 - **E2e tests:** citizen-calendar (6/6 passed), child-information-placements (6/8 passed, 2 pre-existing)
 - **Quality:** Production-ready
 
-### Rule 2: react-hooks/set-state-in-effect ⚡ 70% COMPLETED  
-- **Status:** Rule still OFF in config, 32/46 files fixed
-- **Files fixed:** 32 (70% complete)
+### Rule 2: react-hooks/set-state-in-effect ⚡ 80% COMPLETED  
+- **Status:** Rule still OFF in config, 37/46 files fixed
+- **Files fixed:** 37 (80% complete)
 - **Category A:** ✅ 8/8 files (100%)
 - **Category B:** ✅ 5/5 files (100%)
-- **Category C:** ⚡ 12/24 files (50%)
-- **E2e tests:** Categories A & B tested (118/118 passed), Category C Batch 1 tested (9/9 passed)
+- **Category C:** ⚡ 17/24 files (71%)
+- **E2e tests:** Categories A & B tested (118/118 passed), Category C Batch 1 tested (9/9 passed), Batch 2 pending
+
+#### Files Fixed This Session (Rule 2) - Batch 2
+24. ✅ employee-frontend/components/application-page/ApplicationPage.tsx - getDerivedStateFromProps (2x)
+25. ✅ employee-frontend/components/applications/desktop/PlacementDesktop.tsx - getDerivedStateFromProps + justified eslint-disable
+26. ✅ employee-frontend/components/child-documents/ChildDocumentEditView.tsx - justified eslint-disable (3x side effects)
+27. ✅ employee-frontend/components/child-information/assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientForm.tsx - useMemo
+28. ✅ employee-frontend/components/child-information/assistance/AssistanceActionForm.tsx - useMemo + error separation
 
 #### Files Fixed This Session (Rule 2)
 1. ✅ DatePicker.tsx - getDerivedStateFromProps pattern
@@ -84,20 +91,22 @@ For cases like:
 
 ## Remaining Work
 
-### Rule 2: set-state-in-effect (15 files remaining)
+### Rule 2: set-state-in-effect (9 files remaining)
 
 **Category A - Simple Sync:** ✅ COMPLETED (8/8)
 
 **Category B - Async Operations:** ✅ COMPLETED (5/5)
-- 1 file refactored (AttendanceList.tsx)
-- 4 files documented with justified eslint-disable comments
 
-**Category C - Complex Forms (15 files):**
-All form/editor components in employee-frontend
+**Category C - Complex Forms (7 files remaining):**
+1. employee-frontend/components/child-information/fee-alteration/FeeAlterationEditor.tsx
+2. employee-frontend/components/decision-draft/DecisionDraft.tsx
+3. employee-frontend/components/fee-decision-details/FeeDecisionDetailsPage.tsx
+4. lib-components/Notifications.tsx
+5-9. (Files with existing eslint-disable - need review)
 
 ### Estimated Effort  
-- Category C: ~6-8 hours (complex components, need thorough testing)
-- **Total:** ~6-8 hours remaining for Rule 2
+- Category C: ~2-3 hours (7 files remaining, patterns established)
+- **Total:** ~2-3 hours remaining for Rule 2
 
 ### Rule 3 & 4
 - Not started
@@ -107,7 +116,7 @@ All form/editor components in employee-frontend
 
 1. ✅ ~~Immediate: Continue fixing Category A files (simple pattern application)~~
 2. ✅ ~~Tackle Category B with proper async patterns~~
-3. **CURRENT:** Work through Category C form components (12/24 done, 12 remaining)
+3. **CURRENT:** Work through Category C form components (17/24 done, 7 remaining)
 4. **CRITICAL:** Run E2E smoke tests after each 5-file batch (Batch 1 tested ✅, Batch 2 pending)
 5. After Rule 2 complete: Enable rule in config and run full regression suite
 6. Then: Move to Rules 3 and 4
@@ -149,4 +158,4 @@ All form/editor components in employee-frontend
 
 ---
 
-*Last updated: (after latest Category C session - 5 files fixed, E2E tests pending)*
+*Last updated: 2025-11-11 (after Batch 2 - 5 more files fixed, 80% complete)*
