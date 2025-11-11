@@ -567,13 +567,14 @@ fun Database.Transaction.insertChildDocumentDecision(
 fun Database.Transaction.annulChildDocumentDecision(
     decisionId: ChildDocumentDecisionId,
     userId: EvakaUserId,
+    annulmentReason: String,
     now: HelsinkiDateTime,
 ): ChildDocumentDecisionId {
     return createUpdate {
             sql(
                 """
             UPDATE child_document_decision
-            SET status = 'ANNULLED', modified_by = ${bind(userId)}, modified_at = ${bind(now)}
+            SET status = 'ANNULLED', modified_by = ${bind(userId)}, modified_at = ${bind(now)}, annulment_reason = ${bind(annulmentReason)}
             WHERE id = ${bind(decisionId)} AND status = 'ACCEPTED'
         """
             )

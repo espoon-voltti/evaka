@@ -887,12 +887,15 @@ class ChildDocumentController(
             .also { Audit.ChildDocumentRejectDecision.log(targetId = AuditId(documentId)) }
     }
 
+    data class AnnulChildDocumentDecisionRequest(val reason: String)
+
     @PostMapping("/{documentId}/annul")
     fun annulChildDocumentDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: AnnulChildDocumentDecisionRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -919,6 +922,7 @@ class ChildDocumentController(
                     tx.annulChildDocumentDecision(
                         decisionId = document.decision.id,
                         userId = user.evakaUserId,
+                        annulmentReason = body.reason,
                         now = clock.now(),
                     )
                 }

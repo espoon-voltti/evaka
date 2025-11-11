@@ -962,6 +962,9 @@ export const fi = {
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
         annul: 'Mitätöi päätös',
         annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?',
+        annulInstructions:
+          'Mitätöi päätös vain perustellusta syystä, esim. jos päätös on tehty vahingossa väärään yksikköön. Ilmoita mitätöinnistä aina myös huoltajille.',
+        annulReasonLabel: 'Päätöksen mitätöinnin perustelu',
         decisionNumber: 'Päätösnumero',
         updateValidity: 'Korjaa päätöksen voimassaoloaikaa',
         otherValidDecisions: {
