@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2017-2025 City of Espoo
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# ESLint output for analysis - temporary file
+
+
+> evaka-frontend@1.0.0 lint
+> eslint --max-warnings 0 .
+
+
+/Volumes/Evaka/evaka/frontend/src/citizen-frontend/calendar/hooks.ts
+  157:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Volumes/Evaka/evaka/frontend/src/citizen-frontend/messages/MessageEditor.tsx
+  6:30  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/messages/MessageEditor.tsx
+  297:14  error    Replace `⏎····currentSenderAccountType·!==·messageState.prevSenderAccountType⏎··` with `currentSenderAccountType·!==·messageState.prevSenderAccountType`  prettier/prettier
+  341:5   warning  React Hook useCallback has a missing dependency: 'setMessage'. Either include it or remove the dependency array                                           react-hooks/exhaustive-deps
+  428:5   warning  React Hook useCallback has a missing dependency: 'setMessage'. Either include it or remove the dependency array                                           react-hooks/exhaustive-deps
+  927:21  error    Unsafe assignment of an `any` value                                                                                                                       @typescript-eslint/no-unsafe-assignment
+  927:34  error    Unsafe call of a(n) `any` typed value                                                                                                                     @typescript-eslint/no-unsafe-call
+  927:46  error    Unsafe member access .filter on an `any` value                                                                                                            @typescript-eslint/no-unsafe-member-access
+  927:62  error    Unsafe member access .id on an `any` value                                                                                                                @typescript-eslint/no-unsafe-member-access
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/messages/useDraft.ts
+  51:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/person-shared/PersonDetails.tsx
+  108:44  error  Insert `·`                                                                                                                                                                            prettier/prettier
+  113:19  error  'PersonId' is an 'error' type that acts as 'any' and overrides all other types in this union type                                                                                     @typescript-eslint/no-redundant-type-constituents
+  138:7   error  Replace `editing·&&·(!formState.prevEditing·||·formState.prevPersonId·!==·person.id)` with `⏎····editing·&&⏎····(!formState.prevEditing·||·formState.prevPersonId·!==·person.id)⏎··`  prettier/prettier
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/reports/AssistanceNeedDecisionsReport.tsx
+    6:30  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   78:36  error    Delete `⏎···`                                                                                                           prettier/prettier
+  151:5   warning  React Hook useCallback has a missing dependency: 'setCareAreaFilter'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/reports/MissingServiceNeed.tsx
+  5:30  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/components/reports/StartingPlacements.tsx
+  9:30  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Volumes/Evaka/evaka/frontend/src/employee-frontend/utils/use-autosave.ts
+   74:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  152:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Volumes/Evaka/evaka/frontend/src/employee-mobile-frontend/child-attendance/AttendanceList.tsx
+  9:3  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Volumes/Evaka/evaka/frontend/src/lib-components/Notifications.tsx
+  326:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Volumes/Evaka/evaka/frontend/src/lib-components/atoms/dropdowns/Combobox.tsx
+  350:15  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/refs')
+
+✖ 23 problems (9 errors, 14 warnings)
+  4 errors and 6 warnings potentially fixable with the `--fix` option.
+

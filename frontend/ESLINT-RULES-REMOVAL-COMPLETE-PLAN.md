@@ -25,7 +25,7 @@ This document tracks the complete removal of four eslint rule ignores from the e
 
 
 ## tools:
-When running eslint for the whole project, write the output into a file inside the front-end directory. Then you can grep or otherwise analyze the output without running lint for the whole project again. We can cleanup the temporary output files in the end of this task. Name the temop files in a meaningful way so we can identify which can be removed
+When running eslint for the whole project, write the WHOLE raw output into a file inside the front-end directory. Then you can grep or otherwise analyze the output without running lint for the whole project again. Running lint for the whole frontend project takes a significant amount of time, so we must avoid running it for the whole project as much as possible. We can cleanup the temporary output files in the end of this task. Name the temp files in a meaningful way so we can identify which can be removed
 
 ---
 
@@ -71,21 +71,21 @@ Total files fixed: 5
 ## Rule 2: react-hooks/set-state-in-effect ⚠️ IN PROGRESS
 
 ### Status: IN PROGRESS
-**Rule removed:** ✅ Yes  
-**All violations fixed:** ❌ No (20/35 files completed - 57%)  
+**Rule removed:** ❌ No (rule still OFF in config)  
+**All violations fixed:** ❌ No (27/46 files completed - 59%)  
 **E2e tests run:** ✅ Yes (Categories A & B completed)  
 **Tests passed:** ✅ Yes (118/118 tests passed)
 
 ### Summary
-- **Total violations:** 41 across 35 files
-- **Files fixed:** 20
-- **Files remaining:** 15
-- **Violations remaining:** 21
+- **Total violations:** 54+ across 46 files  
+- **Files fixed:** 27 (59% complete)
+- **Files remaining:** 19
+- **Violations remaining:** ~22
 
 ### Category Progress
 - **Category A (Simple Prop-to-State):** ✅ 8/8 files (100%) - E2e tested (85/85 passed)
 - **Category B (Async Operations):** ✅ 5/5 files (100%) - E2e tested (33/33 passed)
-- **Category C (Complex Forms):** ⏸️ 0/15 files (0%)
+- **Category C (Complex Forms & Editors):** ⏸️ 7/24 files (29%) - 17 remaining
 
 ### Strategy
 The `set-state-in-effect` rule flags setState calls inside useEffect. The proper React pattern is:
@@ -169,11 +169,13 @@ Need to refactor to use proper async patterns (not suppressions):
 - [x] `src/lib-components/Notifications.tsx` - Added justified comment for flag reset
 - [x] `src/employee-mobile-frontend/child-attendance/AttendanceList.tsx` - Refactored with getDerivedStateFromProps
 
-#### Category C: Form/Editor Components (17 files)
+#### Category C: Form/Editor Components (24 files) - ⏸️ 7/24 COMPLETED (29%)
 Complex components that may need refactoring:
-- [ ] `src/citizen-frontend/decisions/decision-response-page/DecisionResponse.tsx`
-- [ ] `src/citizen-frontend/income-statements/IncomeStatementEditor.tsx`
-- [ ] `src/citizen-frontend/messages/MessagesPage.tsx`
+- [x] `src/citizen-frontend/decisions/decision-response-page/DecisionResponse.tsx`
+- [x] `src/citizen-frontend/income-statements/IncomeStatementEditor.tsx`
+- [x] `src/citizen-frontend/messages/MessagesPage.tsx`
+- [x] `src/employee-frontend/components/messages/MessagesPage.tsx`
+- [x] `src/employee-mobile-frontend/messages/MessagesPage.tsx`
 - [ ] `src/employee-frontend/components/application-page/ApplicationPage.tsx`
 - [ ] `src/employee-frontend/components/applications/desktop/PlacementDesktop.tsx`
 - [ ] `src/employee-frontend/components/child-documents/ChildDocumentEditView.tsx`
@@ -183,7 +185,6 @@ Complex components that may need refactoring:
 - [ ] `src/employee-frontend/components/decision-draft/DecisionDraft.tsx`
 - [ ] `src/employee-frontend/components/employee-preferred-first-name/EmployeePreferredFirstNamePage.tsx`
 - [ ] `src/employee-frontend/components/fee-decision-details/FeeDecisionDetailsPage.tsx`
-- [ ] `src/employee-frontend/components/messages/MessagesPage.tsx`
 - [ ] `src/employee-frontend/components/messages/SingleThreadView.tsx`
 - [ ] `src/employee-frontend/components/person-search/AddVTJPersonModal.tsx`
 - [ ] `src/employee-frontend/components/person-shared/person-details/AddSsnModal.tsx`
@@ -192,13 +193,27 @@ Complex components that may need refactoring:
 - [ ] `src/employee-frontend/components/unit/unit-details/UnitDetailsPage.tsx`
 - [ ] `src/employee-frontend/components/unit/unit-details/UnitEditor.tsx`
 - [ ] `src/employee-frontend/components/voucher-value-decision/VoucherValueDecisionPage.tsx`
-- [ ] `src/employee-mobile-frontend/messages/MessagesPage.tsx`
+- [ ] `src/employee-frontend/components/messages/MessageEditor.tsx` (has Prettier/TypeScript errors to fix)
+- [ ] `src/lib-components/Notifications.tsx` (already has justified eslint-disable, ready when rule enabled)
 
-### E2e Tests to Run After Completion
+### E2e Tests to Run
+
+#### Already Completed
 - [x] Category A: Message-related tests ✅ (85/85 passed)
 - [x] Category B: Child attendance tests ✅ (33/33 passed)
-- [ ] Category C: Form/editor tests for fixed components
-- [ ] Full regression suite after Rule 2 completion
+
+#### Required After Each Chunk of Work
+**Important:** After fixing 3-5 files in Category C, run relevant E2E tests before continuing.
+
+**Current Session Fixes (5 files) - Tests Required:**
+- [ ] `citizen-decisions.spec.ts` - validates DecisionResponse.tsx
+- [ ] `citizen-income-statement.spec.ts` - validates IncomeStatementEditor.tsx  
+- [ ] `messaging.spec.ts` - validates MessagesPage.tsx (citizen + employee)
+- [ ] `messages.spec.ts` (mobile) - validates mobile MessagesPage.tsx
+
+**After All Category C Fixes:**
+- [ ] Full regression suite for all affected areas
+- [ ] Re-run Categories A & B tests to ensure no regressions
 
 ---
 
@@ -296,7 +311,7 @@ src/e2e-test/specs/
 
 ## E2e Test Results
 
-### Rule 1 (react-hooks/refs) - Tested 2025-11-11
+### Rule 1 (react-hooks/refs) - Tested
 
 #### Test: citizen-calendar.spec.ts
 **Status:** ✅ PASSED (6/6 tests)
@@ -315,7 +330,7 @@ src/e2e-test/specs/
 
 ---
 
-### Rule 2 (react-hooks/set-state-in-effect) - Category A - Tested 2025-11-11
+### Rule 2 (react-hooks/set-state-in-effect) - Category A - Tested
 
 #### Test Results Summary
 **Total tests:** 85 tests across 6 test files  
@@ -357,7 +372,7 @@ src/e2e-test/specs/
 
 ---
 
-### Rule 2 (react-hooks/set-state-in-effect) - Category B - Tested 2025-11-11
+### Rule 2 (react-hooks/set-state-in-effect) - Category B - Tested
 
 #### Test Results Summary
 **Total tests:** 33 tests in 1 test file  
@@ -395,33 +410,35 @@ src/e2e-test/specs/
 
 ---
 
-## Current Status Update - 2025-11-11
+## Current Status Update
 
 ### Progress Summary
 - **Rule 1 (refs):** ✅ 100% complete, e2e tested
-- **Rule 2 (set-state):** 20% complete (7/35 files)
+- **Rule 2 (set-state):** 59% complete (27/46 files)
 - **Rule 3:** Not started
 - **Rule 4:** Not started
 
-### Files Fixed Since Last Update
-- [x] `useReplyRecipients.ts` - Category A
-- [x] `UnitList.tsx` - Category A
+### Latest Session
+Fixed 5 files in Category C:
+- [x] `DecisionResponse.tsx` - getDerivedStateFromProps pattern
+- [x] `IncomeStatementEditor.tsx` - justified eslint-disable for DOM side-effect
+- [x] `citizen-frontend/messages/MessagesPage.tsx` - derived from URL params
+- [x] `employee-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
+- [x] `employee-mobile-frontend/messages/MessagesPage.tsx` - getDerivedStateFromProps
 
-### Category A Progress: 2/8 completed
-- [x] `useReplyRecipients.ts`  
-- [x] `UnitList.tsx`
-- [ ] `citizen-frontend/messages/MessageEditor.tsx`
-- [ ] `employee-frontend/components/messages/MessageEditor.tsx`
-- [ ] `employee-frontend/components/person-shared/PersonDetails.tsx`
-- [ ] `employee-frontend/components/reports/AssistanceNeedDecisionsReport.tsx`
-- [ ] `employee-frontend/components/reports/MissingServiceNeed.tsx`
-- [ ] `employee-frontend/components/reports/StartingPlacements.tsx`
+**E2E Tests Required (Not Yet Run):**
+- [ ] `citizen-decisions.spec.ts`
+- [ ] `citizen-income-statement.spec.ts`
+- [ ] `messaging.spec.ts` 
+- [ ] `messages.spec.ts` (mobile)
+
+See `e2e-tests-mapping.md` for test execution plan.
 
 ### Next Immediate Actions
-1. Continue with remaining Category A files
-2. Run message-related e2e tests after message editors are fixed
-3. Move to Category B (async operations)
-4. Document any new patterns discovered
+1. **Run E2E tests** for the 5 files fixed this session
+2. Continue with remaining 17 Category C files
+3. **After each 3-5 file batch:** Run relevant E2E tests
+4. Enable rule in eslint.config.js after all fixes complete
 
-See PROGRESS-SUMMARY.md for detailed patterns and learnings.
+See CURRENT-SESSION-PROGRESS.md for detailed session notes.
 

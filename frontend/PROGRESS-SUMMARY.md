@@ -14,13 +14,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 - **E2e tests:** citizen-calendar (6/6 passed), child-information-placements (6/8 passed, 2 pre-existing)
 - **Quality:** Production-ready
 
-### Rule 2: react-hooks/set-state-in-effect ⚠️ 57% COMPLETED  
-- **Status:** Rule removed, 20/35 files fixed
-- **Files fixed:** 20 (57% complete)
+### Rule 2: react-hooks/set-state-in-effect ⚠️ 59% COMPLETED  
+- **Status:** Rule still OFF in config, 27/46 files fixed
+- **Files fixed:** 27 (59% complete)
 - **Category A:** ✅ 8/8 files (100%)
 - **Category B:** ✅ 5/5 files (100%)
-- **Category C:** ⏸️ 0/15 files (0%)
-- **E2e tests:** Categories A & B tested - 118/118 passed ✅
+- **Category C:** ⏸️ 7/24 files (29%)
+- **E2e tests:** Categories A & B tested (118/118 passed), Category C pending
 
 #### Files Fixed This Session (Rule 2)
 1. ✅ DatePicker.tsx - getDerivedStateFromProps pattern
@@ -36,6 +36,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 11. ✅ employee-frontend/components/reports/MissingServiceNeed.tsx - getDerivedStateFromProps
 12. ✅ employee-frontend/components/reports/StartingPlacements.tsx - getDerivedStateFromProps
 13. ✅ employee-mobile-frontend/child-attendance/AttendanceList.tsx - getDerivedStateFromProps (Category B)
+14. ✅ citizen-frontend/decisions/decision-response-page/DecisionResponse.tsx - getDerivedStateFromProps
+15. ✅ citizen-frontend/income-statements/IncomeStatementEditor.tsx - justified eslint-disable
+16. ✅ citizen-frontend/messages/MessagesPage.tsx - derived from URL params
+17. ✅ employee-frontend/components/messages/MessagesPage.tsx - getDerivedStateFromProps
+18. ✅ employee-mobile-frontend/messages/MessagesPage.tsx - getDerivedStateFromProps
 
 ## Approach & Patterns Used
 
@@ -96,10 +101,10 @@ All form/editor components in employee-frontend
 ## Next Steps
 
 1. ✅ ~~Immediate: Continue fixing Category A files (simple pattern application)~~
-2. **CURRENT:** Tackle Category B with proper async patterns
-3. Work through Category C form components
-4. After each category: Run relevant e2e tests
-5. After Rule 2 complete: Run full regression suite
+2. ✅ ~~Tackle Category B with proper async patterns~~
+3. **CURRENT:** Work through Category C form components (7/24 done, 17 remaining)
+4. **CRITICAL:** After each batch: Run relevant e2e tests (see e2e-tests-mapping.md)
+5. After Rule 2 complete: Enable rule in config and run full regression suite
 6. Then: Move to Rules 3 and 4
 
 ## Key Learnings
@@ -130,13 +135,13 @@ All form/editor components in employee-frontend
 
 ## Recommendations for Continuation
 
-1. **Fix in batches:** Complete 3-5 files, then run relevant e2e tests ✅ (Applied for Category A)
-2. **Document patterns:** As new patterns emerge, add them to this document
-3. **Test incrementally:** Don't wait until all files are fixed ✅ (Category A tested)
-4. **Prioritize high-traffic components:** Messages, forms, calendar features ✅ (Messages tested)
-5. **Consider component refactoring:** Some complex components may benefit from architectural improvements
-6. **Category B approach:** Evaluate if async operations are legitimate or can be refactored to avoid useEffect
+1. **Fix in batches:** Complete 3-5 files, then run relevant e2e tests ✅ (Applied for Categories A & B)
+2. **Test incrementally:** Don't wait until all files are fixed ✅ (Categories A & B tested)
+3. **CRITICAL: Run E2E tests after each batch** - Added requirement to plan documents
+4. **Document patterns:** As new patterns emerge, add them to this document ✅
+5. **Prioritize high-traffic components:** Messages, forms, calendar features ✅ (Messages tested)
+6. **Category C approach:** Apply established patterns, use justified eslint-disable only when legitimate
 
 ---
 
-*Last updated: 2025-11-11 (after Category B completion)*
+*Last updated: (after latest Category C session - 5 files fixed, E2E tests pending)*
