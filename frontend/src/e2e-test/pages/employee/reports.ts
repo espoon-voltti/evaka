@@ -492,6 +492,7 @@ export class AssistanceNeedsAndActionsReport {
   preschoolAssistanceLevelSelect: MultiSelect
   assistanceActionOptionSelect: MultiSelect
   placementTypeSelect: MultiSelect
+  zeroRowsCheckbox: Checkbox
 
   constructor(private page: Page) {
     this.needsAndActionsHeader = page.findByDataQa(
@@ -518,6 +519,9 @@ export class AssistanceNeedsAndActionsReport {
     )
     this.placementTypeSelect = new MultiSelect(
       this.page.findByDataQa('placement-type-filter')
+    )
+    this.zeroRowsCheckbox = new Checkbox(
+      this.page.findByDataQa('zero-rows-checkbox')
     )
   }
 

@@ -225,6 +225,7 @@ describe('Assistance need and actions report', () => {
     )
     const report = new AssistanceNeedsAndActionsReport(page)
 
+    await report.zeroRowsCheckbox.check()
     await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
     await report.needsAndActionsRows
       .nth(0)
@@ -305,6 +306,7 @@ describe('Assistance need and actions report', () => {
       `${config.employeeUrl}/reports/assistance-needs-and-actions`
     )
     const report = new AssistanceNeedsAndActionsReport(page)
+    await report.zeroRowsCheckbox.check()
     await report.selectCareAreaFilter('Superkeskus')
     await report.unitSelect.fillAndSelectFirst('Alkuräjähdyksen päiväkoti')
 
@@ -486,10 +488,10 @@ describe('Assistance need and actions report', () => {
       .nth(0)
       .assertTextEquals(municipalAndTotalGroupRowExpectation)
 
+    await report.zeroRowsCheckbox.check()
     await report.providerTypeSelect.fillAndSelectFirst('Palveluseteli')
     await report.unitSelect.click()
     await report.unitSelect.assertOptions(['Kaikki', voucherDaycare.name])
-
     await report.needsAndActionsRows
       .nth(0)
       .assertTextEquals(voucherGroupRowExpectation)

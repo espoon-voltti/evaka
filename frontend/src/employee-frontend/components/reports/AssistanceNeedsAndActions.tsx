@@ -732,6 +732,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
               onChange={(showZeroRows) =>
                 setRowFilters({ ...rowFilters, showZeroRows })
               }
+              data-qa="zero-rows-checkbox"
             />
           </Wrapper>
         </FilterRow>
