@@ -100,7 +100,7 @@ const emptyRowFilters: RowFilters = {
   providerType: '',
   careArea: '',
   unit: null,
-  showZeroRows: true
+  showZeroRows: false
 }
 
 interface ColumnFilters {
@@ -732,6 +732,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
               onChange={(showZeroRows) =>
                 setRowFilters({ ...rowFilters, showZeroRows })
               }
+              data-qa="zero-rows-checkbox"
             />
           </Wrapper>
         </FilterRow>
