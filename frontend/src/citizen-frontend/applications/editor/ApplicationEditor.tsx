@@ -78,6 +78,7 @@ export type ApplicationFormProps = {
   ) => void
   errors: ApplicationFormDataErrors
   verificationRequested: boolean
+  alertTrigger: number
   isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
   minDate: LocalDate
   maxDate: LocalDate
@@ -161,6 +162,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     useState<boolean>(false)
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
+  const [verificationCount, setVerificationCount] = useState<number>(0)
   const [allowOtherGuardianAccess, setAllowOtherGuardianAccess] =
     useState<boolean>(application.allowOtherGuardianAccess)
 
@@ -216,6 +218,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const onVerify = () => {
     setErrors(validateApplication(application, formData, terms))
     setVerificationRequested(true)
+    setVerificationCount((prev) => prev + 1)
 
     if (!applicationHasErrors(errors)) {
       setVerified(false)
@@ -328,6 +331,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            alertTrigger={verificationCount}
             isInvalidDate={isInvalidDate}
             minDate={minDate}
             maxDate={maxDate}
@@ -341,6 +345,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            alertTrigger={verificationCount}
             terms={terms}
             isInvalidDate={isInvalidDate}
             minDate={minDate}
@@ -355,6 +360,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            alertTrigger={verificationCount}
             terms={terms}
             isInvalidDate={isInvalidDate}
             minDate={minDate}

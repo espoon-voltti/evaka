@@ -19,6 +19,7 @@ export default React.memo(function ApplicationFormClub({
   setFormData,
   errors,
   verificationRequested,
+  alertTrigger,
   isInvalidDate,
   minDate,
   maxDate,
@@ -34,6 +35,7 @@ export default React.memo(function ApplicationFormClub({
         firstName={application.form.child.person.firstName}
         lastName={application.form.child.person.lastName}
         errors={verificationRequested ? errors : undefined}
+        alertTrigger={alertTrigger}
       />
 
       <ServiceNeedSection
