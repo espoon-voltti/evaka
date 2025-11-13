@@ -18,7 +18,7 @@ import { fasChevronDown, fasChevronUp } from 'lib-icons'
 import type { Lang } from '../localization'
 import { langs, useLang, useTranslation } from '../localization'
 
-import { useOnEscape } from './utils'
+import { useDropdownMenuKeyboardNavigation } from './utils'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
@@ -91,8 +91,13 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnEscape = useOnEscape(close)
   const containerRef = useCloseOnOutsideEvent(open, close)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const handleDropdownKeyDown = useDropdownMenuKeyboardNavigation(
+    containerRef,
+    open,
+    close
+  )
 
   const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
@@ -102,35 +107,43 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyDown={handleDropdownKeyDown}>
       <DropDownButton
+        ref={buttonRef}
         $alignRight={alignRight}
         onClick={toggleOpen}
         data-qa="button-select-language"
         aria-expanded={open}
         aria-haspopup="true"
+        role="menuitem"
       >
         {useShortLanguageLabel ? lang.toUpperCase() : t.header.lang[lang]}
         <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown $align="right" data-qa="select-lang">
+        <DropDown
+          $align="right"
+          data-qa="select-lang"
+          role="menu"
+          aria-label="Select language"
+        >
           {langs.map((l: Lang, index) => (
-            <DropDownButton
-              ref={index === 0 ? firstButtonRef : null}
-              key={l}
-              className={classNames({ active: lang === l })}
-              onClick={() => {
-                setLang(l)
-                close()
-              }}
-              data-qa={`lang-${l}`}
-              lang={l}
-              role="menuitemradio"
-              aria-checked={lang === l}
-            >
-              <span>{t.header.lang[l]}</span>
-            </DropDownButton>
+            <li key={l} role="none">
+              <DropDownButton
+                ref={index === 0 ? firstButtonRef : null}
+                className={classNames({ active: lang === l })}
+                onClick={() => {
+                  setLang(l)
+                  close()
+                }}
+                data-qa={`lang-${l}`}
+                lang={l}
+                role="menuitemradio"
+                aria-checked={lang === l}
+              >
+                <span>{t.header.lang[l]}</span>
+              </DropDownButton>
+            </li>
           ))}
         </DropDown>
       ) : null}
