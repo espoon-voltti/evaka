@@ -241,7 +241,6 @@ describe('Employee - Child documents', () => {
 
     // only the assigned decision maker can accept the decision
     await childDocument.acceptDecisionButton.waitUntilHidden()
-    const documentUrl = page.url
     await page.close()
 
     // Director makes a decision
@@ -253,18 +252,21 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(directorPage)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
-    await reportPage.rows.nth(0).click()
-    await waitUntilEqual(() => Promise.resolve(directorPage.url), documentUrl)
+    await reportPage.childDocumentDetails.assertCount(1)
 
-    childDocument = new ChildDocumentPage(directorPage)
+    childDocument = await reportPage.clickDocument(0)
     const validity = new DateRange(
       now.toLocalDate().addDays(2),
       now.toLocalDate().addDays(7)
     )
     await childDocument.acceptDecision(validity)
     await childDocument.status.assertTextEquals('Myönnetty')
-    await nav.assertTabNotificationsCount('reports', 0)
+
+    await directorPage.goto(config.employeeUrl)
+    await new EmployeeNav(directorPage).assertTabNotificationsCount(
+      'reports',
+      0
+    )
 
     // Admin edits the validity date range
     const editTime = now.withDate(now.toLocalDate().addDays(1))
@@ -1145,7 +1147,6 @@ describe('Employee - Child documents', () => {
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
     await childDocumentPage.acceptDecisionButton.waitUntilHidden()
-    const documentUrl = page.url
     await page.close()
 
     // Director opens the decision proposal
@@ -1157,12 +1158,11 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
-    await reportPage.rows.nth(0).click()
-    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+    await reportPage.childDocumentDetails.assertCount(1)
+
+    const childDocument = await reportPage.clickDocument(0)
 
     // Director gives validity dates for the decision
-    const childDocument = new ChildDocumentPage(page)
     const validity = new DateRange(
       now.toLocalDate().addDays(1),
       now.toLocalDate().addDays(7)
@@ -1248,7 +1248,6 @@ describe('Employee - Child documents', () => {
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
     await childDocumentPage.acceptDecisionButton.waitUntilHidden()
-    const documentUrl = page.url
     await page.close()
 
     // Director opens the decision proposal
@@ -1260,16 +1259,14 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
-    await reportPage.rows.nth(0).click()
-    await waitUntilEqual(() => Promise.resolve(page.url), documentUrl)
+    await reportPage.childDocumentDetails.assertCount(1)
+    const childDocument = await reportPage.clickDocument(0)
 
     /*
       Director gives validity dates for the decision. Because all other decisions
       were made with the same template, they are ended automatically and the dialog
       for confirming other decisions is not shown.
     */
-    const childDocument = new ChildDocumentPage(page)
     const validity = new DateRange(
       now.toLocalDate().addDays(1),
       now.toLocalDate().addDays(7)

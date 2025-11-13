@@ -5,7 +5,6 @@
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type {
@@ -18,6 +17,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -99,12 +99,11 @@ const getStatusIndex = (
 
 export default React.memo(function ChildDocumentDecisionsReport() {
   const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
   const { user } = useContext(UserContext)
 
   const [shownStatuses, setShownStatuses] = useState<
     (DocumentStatus | ChildDocumentDecisionStatus)[]
-  >(['DRAFT', 'DECISION_PROPOSAL'])
+  >(['DECISION_PROPOSAL'])
 
   const [includeEnded, setIncludeEnded] = useState(false)
 
@@ -289,13 +288,15 @@ export default React.memo(function ChildDocumentDecisionsReport() {
             </Thead>
             <Tbody data-qa="report-table">
               {rows.map((row) => (
-                <RelativeTr
-                  key={row.id}
-                  onClick={() => navigate(`/child-documents/${row.id}`)}
-                >
+                <RelativeTr key={row.id}>
                   <Td>
                     {row.highlighted && <Highlight />}
-                    {row.templateName}
+                    <ExternalLink
+                      href={`/employee/child-documents/${row.id}`}
+                      text={row.templateName}
+                      newTab={true}
+                      data-qa="child-document-details"
+                    />
                   </Td>
                   <Td>{row.childName}</Td>
                   <Td>{row.modifiedAt.toLocalDate().format()}</Td>
