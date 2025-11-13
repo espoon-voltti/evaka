@@ -28,7 +28,8 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import {
   featureFlags,
-  placementTypes as placementTypeValues
+  placementTypes as placementTypeValues,
+  additionalPlacementTypesForDocumentTemplates
 } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -245,7 +246,10 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
       <MultiSelect
         value={placementTypes.state}
-        options={placementTypeValues}
+        options={[
+          ...placementTypeValues,
+          ...(additionalPlacementTypesForDocumentTemplates ?? [])
+        ]}
         onChange={placementTypes.set}
         getOptionId={(pt) => pt}
         getOptionLabel={(pt) => i18n.placement.type[pt]}
