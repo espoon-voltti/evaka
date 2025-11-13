@@ -6,7 +6,6 @@ import sortBy from 'lodash/sortBy'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
 
 import type { Action } from 'lib-common/generated/action'
 import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
@@ -21,8 +20,8 @@ import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -191,14 +190,11 @@ export default React.memo(function Groups({
         </TitleContainer>
         <FixedSpaceRow spacing="L" alignItems="center">
           {canSeeFamilyContactsReport && (
-            <Link to={`/units/${unit.id}/family-contacts`}>
-              <Button
-                appearance="inline"
-                text={i18n.unit.groups.familyContacts}
-                onClick={() => undefined}
-                data-qa="open-family-contacts-button"
-              />
-            </Link>
+            <InlineInternalLinkButton
+              to={`/units/${unit.id}/family-contacts`}
+              text={i18n.unit.groups.familyContacts}
+              data-qa="open-family-contacts-button"
+            />
           )}
           {permittedActions.includes('CREATE_GROUP') ? (
             <AddButton

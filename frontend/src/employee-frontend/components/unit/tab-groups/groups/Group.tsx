@@ -41,6 +41,7 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import {
   MutateButton,
   cancelMutation
@@ -352,15 +353,12 @@ export default React.memo(function Group({
           )}
           {permittedActions.includes('READ_ABSENCES') && (
             <>
-              <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
-                <Button
-                  appearance="inline"
-                  icon={faCalendarAlt}
-                  text={i18n.unit.groups.diaryButton}
-                  onClick={() => undefined}
-                  data-qa="open-month-calendar-button"
-                />
-              </Link>
+              <InlineInternalLinkButton
+                to={`/units/${unit.id}/calendar?group=${group.id}`}
+                icon={faCalendarAlt}
+                text={i18n.unit.groups.diaryButton}
+                data-qa="open-month-calendar-button"
+              />
               <Gap size="s" horizontal />
             </>
           )}
@@ -399,14 +397,11 @@ export default React.memo(function Group({
               <FixedSpaceRow>
                 {renderCaretakerCount()}
                 {canManageCaretakers ? (
-                  <Link to={`/units/${unit.id}/groups/${group.id}/caretakers`}>
-                    <Button
-                      appearance="inline"
-                      icon={faPen}
-                      text={i18n.common.edit}
-                      onClick={() => undefined}
-                    />
-                  </Link>
+                  <InlineInternalLinkButton
+                    to={`/units/${unit.id}/groups/${group.id}/caretakers`}
+                    icon={faPen}
+                    text={i18n.common.edit}
+                  />
                 ) : null}
               </FixedSpaceRow>
             </div>

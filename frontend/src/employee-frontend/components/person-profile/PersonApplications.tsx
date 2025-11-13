@@ -9,7 +9,7 @@ import { Link } from 'wouter'
 import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { faFileAlt } from 'lib-icons'
 
@@ -78,13 +78,11 @@ export default React.memo(function PersonApplications({ id }: Props) {
                 application.status}
             </StatusTd>
             <Td>
-              <Link to={`/applications/${application.applicationId}`}>
-                <IconOnlyButton
-                  onClick={() => undefined}
-                  icon={faFileAlt}
-                  aria-label={i18n.personProfile.application.open}
-                />
-              </Link>
+              <InlineInternalLinkButton
+                to={`/applications/${application.applicationId}`}
+                icon={faFileAlt}
+                aria-label={i18n.personProfile.application.open}
+              />
             </Td>
           </Tr>
         ))}

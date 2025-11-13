@@ -4,7 +4,6 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useState } from 'react'
-import { Link } from 'wouter'
 
 import type DateRange from 'lib-common/date-range'
 import type {
@@ -15,7 +14,7 @@ import type {
 import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
@@ -112,14 +111,12 @@ export default React.memo(function AssistanceDecision({
         ) : null}
       </ListGrid>
       <Gap size="m" />
-      <Link to={`/decisions/assistance/${id}`} data-qa="open-decision">
-        <Button
-          appearance="inline"
-          icon={faFileAlt}
-          text={t.decisions.assistanceDecisions.openDecision}
-          onClick={() => undefined}
-        />
-      </Link>
+      <InlineInternalLinkButton
+        to={`/decisions/assistance/${id}`}
+        icon={faFileAlt}
+        text={t.decisions.assistanceDecisions.openDecision}
+        data-qa="open-decision"
+      />
     </CollapsibleContentArea>
   )
 })
