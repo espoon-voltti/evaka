@@ -804,10 +804,10 @@ export class ChildDocumentsReport {
 }
 
 export class ChildDocumentDecisionsReport {
-  rows: ElementCollection
+  childDocumentDetails: ElementCollection
 
   constructor(private page: Page) {
-    this.rows = page.findByDataQa('report-table').findAll('tr')
+    this.childDocumentDetails = page.findAllByDataQa('child-document-details')
   }
 
   async clickDocument(nth: number): Promise<ChildDocumentPage> {
@@ -815,7 +815,7 @@ export class ChildDocumentDecisionsReport {
       this.page.onPopup((page) => res(new ChildDocumentPage(page)))
     })
 
-    await this.rows.nth(nth).click()
+    await this.childDocumentDetails.nth(nth).click()
     return childDocument
   }
 }

@@ -252,7 +252,7 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(directorPage)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
+    await reportPage.childDocumentDetails.assertCount(1)
 
     childDocument = await reportPage.clickDocument(0)
     const validity = new DateRange(
@@ -1158,7 +1158,7 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
+    await reportPage.childDocumentDetails.assertCount(1)
 
     const childDocument = await reportPage.clickDocument(0)
 
@@ -1259,7 +1259,7 @@ describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.rows.assertCount(1)
+    await reportPage.childDocumentDetails.assertCount(1)
     const childDocument = await reportPage.clickDocument(0)
 
     /*

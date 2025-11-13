@@ -17,6 +17,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -287,19 +288,15 @@ export default React.memo(function ChildDocumentDecisionsReport() {
             </Thead>
             <Tbody data-qa="report-table">
               {rows.map((row) => (
-                <RelativeTr
-                  key={row.id}
-                  onClick={() =>
-                    window.open(
-                      `/employee/child-documents/${row.id}`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  }
-                >
+                <RelativeTr key={row.id}>
                   <Td>
                     {row.highlighted && <Highlight />}
-                    {row.templateName}
+                    <ExternalLink
+                      href={`/employee/child-documents/${row.id}`}
+                      text={row.templateName}
+                      newTab={true}
+                      data-qa="child-document-details"
+                    />
                   </Td>
                   <Td>{row.childName}</Td>
                   <Td>{row.modifiedAt.toLocalDate().format()}</Td>
