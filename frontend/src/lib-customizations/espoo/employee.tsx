@@ -71,6 +71,10 @@ const customizations: EmployeeCustomizations = {
     'TEMPORARY_DAYCARE',
     'TEMPORARY_DAYCARE_PART_DAY'
   ],
+  additionalPlacementTypesForDocumentTemplates: [
+    'DAYCARE_FIVE_YEAR_OLDS',
+    'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
+  ],
   absenceTypes: [
     'OTHER_ABSENCE',
     'SICKLEAVE',

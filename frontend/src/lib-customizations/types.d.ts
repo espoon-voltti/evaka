@@ -346,6 +346,7 @@ export interface EmployeeCustomizations {
   unitProviderTypes: ProviderType[]
   voucherValueDecisionTypes: VoucherValueDecisionType[]
   additionalStaffAttendanceTypes: CustomizableStaffAttendanceType[]
+  additionalPlacementTypesForDocumentTemplates?: PlacementType[]
   getPaymentsDueDate?: () => LocalDate
 }
 

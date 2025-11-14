@@ -46,7 +46,8 @@ import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import {
   featureFlags,
-  placementTypes as placementTypeValues
+  placementTypes as placementTypeValues,
+  additionalPlacementTypesForDocumentTemplates
 } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
@@ -438,7 +439,10 @@ const BasicsEditor = React.memo(function BasicsEditor({
         <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
         <MultiSelect
           value={placementTypes.state}
-          options={placementTypeValues}
+          options={[
+            ...placementTypeValues,
+            ...(additionalPlacementTypesForDocumentTemplates ?? [])
+          ]}
           onChange={placementTypes.set}
           getOptionId={(pt) => pt}
           getOptionLabel={(pt) => i18n.placement.type[pt]}
