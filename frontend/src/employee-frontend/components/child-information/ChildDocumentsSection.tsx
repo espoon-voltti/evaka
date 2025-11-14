@@ -17,15 +17,22 @@ interface Props {
 export default React.memo(function ChildDocumentsSection({ childId }: Props) {
   const { permittedActions } = useContext(ChildContext)
 
-  const hasChildDocumentsCreatePermission = useMemo(
+  const hasChildDocumentCreatePermission = useMemo(
     () => permittedActions.has('CREATE_CHILD_DOCUMENT'),
+    [permittedActions]
+  )
+  const hasChildDecisionDocumentCreatePermission = useMemo(
+    () => permittedActions.has('CREATE_CHILD_DECISION_DOCUMENT'),
     [permittedActions]
   )
 
   return (
     <div>
       <ChildDocuments
-        hasCreatePermission={hasChildDocumentsCreatePermission}
+        hasCreateDocumentPermission={hasChildDocumentCreatePermission}
+        hasCreateDecisionDocumentPermission={
+          hasChildDecisionDocumentCreatePermission
+        }
         childId={childId}
       />
     </div>

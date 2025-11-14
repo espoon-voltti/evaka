@@ -1302,6 +1302,10 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
             HasGroupRole(STAFF).inPlacementGroupOfChild(),
         ),
+        CREATE_CHILD_DECISION_DOCUMENT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+        ),
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),

@@ -97,7 +97,8 @@ import {
   rejectChildDocumentDecision,
   proposeChildDocumentDecision,
   getAcceptedChildDocumentDecisions,
-  updateChildDocumentDecisionValidity
+  updateChildDocumentDecisionValidity,
+  createDecisionDocument
 } from '../../generated/api-clients/document'
 import {
   createFeeAlteration,
@@ -224,6 +225,11 @@ export const childDocumentWriteLockQuery = q.query(takeDocumentWriteLock, {
 export const createChildDocumentMutation = q.mutation(createDocument, [
   ({ body: { childId } }) => childDocumentsQuery({ childId })
 ])
+
+export const createChildDecisionDocumentMutation = q.mutation(
+  createDecisionDocument,
+  [({ body: { childId } }) => childDocumentsQuery({ childId })]
+)
 
 export const updateChildDocumentContentMutation = q.mutation(
   updateDocumentContent

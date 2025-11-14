@@ -58,7 +58,7 @@ class ChildDocumentController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val evakaEnv: EvakaEnv,
 ) {
-    @PostMapping
+    @PostMapping("/document")
     fun createDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -75,20 +75,41 @@ class ChildDocumentController(
                         body.childId,
                     )
 
-                    val template =
-                        tx.getTemplate(body.templateId)?.also {
-                            if (!it.published || !it.validity.includes(clock.today())) {
-                                throw BadRequest("Invalid template")
-                            }
-                        } ?: throw NotFound()
-
-                    val sameTemplateAlreadyStarted =
-                        tx.getNonCompletedChildDocumentChildIds(template.id, setOf(body.childId))
-                            .contains(body.childId)
-                    if (sameTemplateAlreadyStarted) {
-                        throw Conflict("Child already has incomplete document of the same template")
+                    val template = getTemplate(tx, body, clock)
+                    if (template.type.decision) {
+                        throw BadRequest(
+                            "Cannot create document. Template ${body.templateId} is for decision"
+                        )
                     }
+                    createChildDocument(tx, user, clock, body.childId, template)
+                }
+            }
+            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+    }
 
+    @PostMapping("/decision")
+    fun createDecisionDocument(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: ChildDocumentCreateRequest,
+    ): ChildDocumentId {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_CHILD_DECISION_DOCUMENT,
+                        body.childId,
+                    )
+
+                    val template = getTemplate(tx, body, clock)
+                    if (!template.type.decision) {
+                        throw BadRequest(
+                            "Cannot create decision. Template ${body.templateId} is not for decision"
+                        )
+                    }
                     createChildDocument(tx, user, clock, body.childId, template)
                 }
             }
@@ -965,6 +986,27 @@ class ChildDocumentController(
             }
             .also { Audit.ChildDocumentUpdateDecisionValidity.log(targetId = AuditId(documentId)) }
     }
+}
+
+private fun getTemplate(
+    tx: Database.Transaction,
+    body: ChildDocumentCreateRequest,
+    clock: EvakaClock,
+): DocumentTemplate {
+    val template =
+        tx.getTemplate(body.templateId)?.also {
+            if (!it.published || !it.validity.includes(clock.today())) {
+                throw BadRequest("Invalid template")
+            }
+        } ?: throw NotFound()
+
+    val sameTemplateAlreadyStarted =
+        tx.getNonCompletedChildDocumentChildIds(template.id, setOf(body.childId))
+            .contains(body.childId)
+    if (sameTemplateAlreadyStarted) {
+        throw Conflict("Child already has incomplete document of the same template")
+    }
+    return template
 }
 
 fun validateContentAgainstTemplate(

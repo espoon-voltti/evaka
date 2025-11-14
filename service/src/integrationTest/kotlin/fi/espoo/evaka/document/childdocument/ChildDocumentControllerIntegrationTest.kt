@@ -768,7 +768,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `decision status flow - accept and annul`() {
         val documentId =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -852,7 +852,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `decision status flow - reject`() {
         val documentId =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -894,7 +894,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `Only the decision maker can get other accepted decisions for child`() {
         val documentId1 =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -910,7 +910,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val document1 = getDocument(documentId1)
 
         val documentId2 =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -944,7 +944,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `Substitutive decision can end other accepted decisions for child`() {
         // Create and accept the first decision
         val documentId1 =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -959,7 +959,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // Create and accept the second decision
         val documentId2 =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,
@@ -1294,7 +1294,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // Create a decision document (OTHER_DECISION)
         val decisionDocumentId =
-            controller.createDocument(
+            controller.createDecisionDocument(
                 dbInstance(),
                 employeeUser.user,
                 clock,

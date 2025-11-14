@@ -376,6 +376,9 @@ export class ChildDocumentsSection extends Section {
   createInternalDocumentButton: Element
   createDecisionDocumentButton: Element
   createExternalDocumentButton: Element
+  internalHeader: Element
+  decisionHeader: Element
+  externalHeader: Element
   createModalTemplateSelect: Select
   modalOk: Element
   modalConfirm: Checkbox
@@ -391,6 +394,9 @@ export class ChildDocumentsSection extends Section {
     this.createExternalDocumentButton = page.findByDataQa(
       'create-external-document'
     )
+    this.internalHeader = page.findByDataQa('child-documents-title-internal')
+    this.decisionHeader = page.findByDataQa('child-documents-title-decision')
+    this.externalHeader = page.findByDataQa('child-documents-title-external')
     this.createModalTemplateSelect = new Select(
       page.findByDataQa('template-select')
     )
