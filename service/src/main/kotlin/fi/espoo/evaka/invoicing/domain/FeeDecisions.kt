@@ -102,7 +102,7 @@ data class FeeDecisionServiceNeed(
 
 data class FeeAlterationWithEffect(
     val type: FeeAlterationType,
-    val amount: Int,
+    val amount: BigDecimal,
     @get:JsonProperty("isAbsolute") val isAbsolute: Boolean,
     val effect: Int,
 )
@@ -416,7 +416,12 @@ fun toFeeAlterationsWithEffects(
     return alterations
 }
 
-fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute: Boolean): Int {
+fun feeAlterationEffect(
+    fee: Int,
+    type: FeeAlterationType,
+    amount: BigDecimal,
+    absolute: Boolean,
+): Int {
     val multiplier =
         when (type) {
             FeeAlterationType.RELIEF,
@@ -426,11 +431,10 @@ fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute
 
     val effect =
         if (absolute) {
-            val amountInCents = amount * 100
+            val amountInCents = (amount * BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).toInt()
             (multiplier * amountInCents)
         } else {
-            val percentageMultiplier =
-                BigDecimal(amount).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
+            val percentageMultiplier = amount.divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
             (BigDecimal(fee) * (BigDecimal(multiplier) * percentageMultiplier))
                 .setScale(0, RoundingMode.HALF_UP)
                 .toInt()
@@ -447,7 +451,7 @@ fun getECHAIncrease(childId: ChildId, period: DateRange) =
     FeeAlteration(
         personId = childId,
         type = FeeAlterationType.INCREASE,
-        amount = ECHAIncrease,
+        amount = BigDecimal(ECHAIncrease),
         isAbsolute = true,
         notes = "ECHA",
         validFrom = period.start,

@@ -90,7 +90,7 @@ class PdfGenerator(
 
     private data class FeeAlterationPdfPart(
         val type: FeeAlterationType,
-        val amount: Int,
+        val amount: BigDecimal,
         val isAbsolute: Boolean,
         val effectFormatted: String,
     )
