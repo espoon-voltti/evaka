@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Redirect, useLocation } from 'wouter'
 
@@ -89,11 +83,28 @@ export default function MessagesPage({
     [i18n]
   )
   const [activeTab, setActiveTab] = useState<Tab>('received')
-  const [uiState, setUiState] = useState<UiState>({ type: 'list' })
+  const [uiStateData, setUiStateData] = useState<{
+    state: UiState
+    prevUnitOrGroup: UnitOrGroup
+  }>({
+    state: { type: 'list' },
+    prevUnitOrGroup: unitOrGroup
+  })
 
-  useEffect(() => {
-    setUiState({ type: 'list' })
-  }, [unitOrGroup])
+  if (uiStateData.prevUnitOrGroup !== unitOrGroup) {
+    setUiStateData({
+      state: { type: 'list' },
+      prevUnitOrGroup: unitOrGroup
+    })
+  }
+
+  const uiState = uiStateData.state
+
+  const setUiState = useCallback(
+    (newState: UiState) =>
+      setUiStateData((prev) => ({ ...prev, state: newState })),
+    []
+  )
 
   const onSelectThread = (threadId: UUID) => {
     navigate(routes.receivedThread(unitOrGroup, threadId).value)
@@ -105,12 +116,12 @@ export default function MessagesPage({
 
   const selectSentMessage = useCallback(
     (message: SentMessage) => setUiState({ type: 'sentMessage', message }),
-    []
+    [setUiState]
   )
 
   const selectDraftMessage = useCallback(
     (draft: DraftContent) => setUiState({ type: 'continueDraft', draft }),
-    []
+    [setUiState]
   )
 
   const changeGroup = useCallback(
@@ -120,7 +131,7 @@ export default function MessagesPage({
     },
     [navigate, unitId]
   )
-  const onBack = useCallback(() => setUiState({ type: 'list' }), [])
+  const onBack = useCallback(() => setUiState({ type: 'list' }), [setUiState])
   if (unitOrGroup.type === 'unit') {
     return renderResult(
       combine(unitInfoResponse, groupAccounts),

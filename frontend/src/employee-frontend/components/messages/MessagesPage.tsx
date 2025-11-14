@@ -87,8 +87,25 @@ export default React.memo(function MessagesPage({
 
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
-  const [showEditor, setShowEditor] = useState<boolean>(
-    initialShowEditor ?? false
+  const [showEditorState, setShowEditorState] = useState<{
+    show: boolean
+    prevSelectedDraft: unknown
+  }>({
+    show: initialShowEditor ?? false,
+    prevSelectedDraft: selectedDraft
+  })
+
+  if (showEditorState.prevSelectedDraft !== selectedDraft) {
+    setShowEditorState({
+      show: selectedDraft !== undefined ? true : showEditorState.show,
+      prevSelectedDraft: selectedDraft
+    })
+  }
+
+  const showEditor = showEditorState.show
+  const setShowEditor = useCallback(
+    (show: boolean) => setShowEditorState((prev) => ({ ...prev, show })),
+    []
   )
 
   // Select first account if no account is selected. This modifies MessageContextProvider state and so has
@@ -100,19 +117,12 @@ export default React.memo(function MessagesPage({
     }
   }, [accounts, selectedAccount, selectDefaultAccount])
 
-  // open editor when draft is selected
-  useEffect(() => {
-    if (selectedDraft) {
-      setShowEditor(true)
-    }
-  }, [selectedDraft])
-
   const [recipients, setRecipients] = useState<SelectableRecipientsResponse[]>()
 
   const hideEditor = useCallback(() => {
     setShowEditor(false)
     setSelectedDraft(undefined)
-  }, [setSelectedDraft])
+  }, [setSelectedDraft, setShowEditor])
 
   const onSend = useCallback(
     (

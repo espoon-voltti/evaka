@@ -71,6 +71,7 @@ export function useAutosave<T, F extends ApiFunction>({
 
   useEffect(
     function loadItem() {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate: loading async data from external source
       setStatus({ state: 'loading' })
       void load().then(handleLoaded)
     },
@@ -148,6 +149,7 @@ export function useAutosave<T, F extends ApiFunction>({
               })
         )
       )
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate: coordinating async save completion callbacks
       setWaitingForceSaves([])
     }
   }, [status.state, waitingForceSaves])

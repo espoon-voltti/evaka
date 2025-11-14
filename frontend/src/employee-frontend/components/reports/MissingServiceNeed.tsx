@@ -55,8 +55,35 @@ export default React.memo(function MissingServiceNeed() {
       : constantQuery([])
   )
 
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
+  const [displayFiltersState, setDisplayFiltersState] = useState<{
+    filters: DisplayFilters
+    prevReportFilters: MissingServiceNeedReportFilters
+  }>({
+    filters: emptyDisplayFilters,
+    prevReportFilters: filters
+  })
+
+  // getDerivedStateFromProps: reset display filters when report filters change
+  if (
+    displayFiltersState.prevReportFilters.from !== filters.from ||
+    displayFiltersState.prevReportFilters.to !== filters.to
+  ) {
+    setDisplayFiltersState({
+      filters: emptyDisplayFilters,
+      prevReportFilters: filters
+    })
+  }
+
+  const displayFilters = displayFiltersState.filters
+  const setDisplayFilters = useCallback(
+    (filters: DisplayFilters) =>
+      setDisplayFiltersState((prev) => ({
+        ...prev,
+        filters
+      })),
+    []
+  )
+
   const displayFilter = useCallback(
     (row: MissingServiceNeedReportResultRow): boolean =>
       !(
@@ -64,10 +91,6 @@ export default React.memo(function MissingServiceNeed() {
       ),
     [displayFilters.careArea]
   )
-
-  useEffect(() => {
-    setDisplayFilters(emptyDisplayFilters)
-  }, [filters])
 
   const filteredRows = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)),

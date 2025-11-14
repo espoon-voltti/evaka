@@ -63,17 +63,13 @@ export default React.memo(function MessagesPage() {
   const { messageAccount, selectedThread, setSelectedThread } =
     useContext(MessageContext)
   const { addTimedNotification } = useContext(NotificationsContext)
-  const [editorVisible, setEditorVisible] = useState<boolean>(false)
+  const editorVisible = searchParams.get('editorVisible') === 'true'
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
 
   const children = useQueryResult(childrenQuery())
   const recipients = useQueryResult(recipientsQuery())
 
   const user = useUser()
-
-  useEffect(() => {
-    setEditorVisible(searchParams.get('editorVisible') === 'true')
-  }, [setEditorVisible, searchParams])
 
   const changeEditorVisibility = useCallback(
     (setEditorVisible: boolean) => {

@@ -136,12 +136,36 @@ const StartingPlacements = React.memo(function StartingPlacements({
   filters: PlacementsReportFilters
 }) {
   const { i18n } = useTranslation()
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
+  const [displayFiltersState, setDisplayFiltersState] = useState<{
+    filters: DisplayFilters
+    prevReportFilters: PlacementsReportFilters
+  }>({
+    filters: emptyDisplayFilters,
+    prevReportFilters: filters
+  })
+
+  // getDerivedStateFromProps: reset display filters when report filters change
+  if (
+    displayFiltersState.prevReportFilters.month !== filters.month ||
+    displayFiltersState.prevReportFilters.year !== filters.year
+  ) {
+    setDisplayFiltersState({
+      filters: emptyDisplayFilters,
+      prevReportFilters: filters
+    })
+  }
+
+  const displayFilters = displayFiltersState.filters
+  const setDisplayFilters = useCallback(
+    (filters: DisplayFilters) =>
+      setDisplayFiltersState((prev) => ({
+        ...prev,
+        filters
+      })),
+    []
+  )
+
   const result = useQueryResult(startingPlacementsReportQuery(filters))
-  useEffect(() => {
-    setDisplayFilters(emptyDisplayFilters)
-  }, [filters])
   const areaFilter = (row: StartingPlacementsRow): boolean =>
     !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
   const displayFilter = (row: StartingPlacementsRow): boolean =>
