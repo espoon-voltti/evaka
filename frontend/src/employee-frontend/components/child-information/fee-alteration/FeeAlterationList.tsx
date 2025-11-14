@@ -12,6 +12,7 @@ import type {
   FeeAlteration,
   FeeAlterationWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
+import { formatCents } from 'lib-common/money'
 import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -78,9 +79,11 @@ export default React.memo(function FeeAlterationList({
           <Fragment key={feeAlteration.id}>
             <Label data-qa="fee-alteration-amount">{`${
               i18n.childInformation.feeAlteration.types[feeAlteration.type]
-            } ${feeAlteration.amount}${
-              feeAlteration.isAbsolute ? '€' : '%'
-            }`}</Label>
+            } ${
+              feeAlteration.isAbsolute
+                ? formatCents(Math.round(feeAlteration.amount * 100), true)
+                : feeAlteration.amount
+            }${feeAlteration.isAbsolute ? ' €' : ' %'}`}</Label>
             <FixedSpaceRow justifyContent="space-between">
               <FixedSpaceRow spacing="L">
                 <Dates data-qa="fee-alteration-dates">{`${feeAlteration.validFrom.format()} - ${

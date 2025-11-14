@@ -13,6 +13,7 @@ import type {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { formatCents, parseCents } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -46,12 +47,26 @@ const newFeeAlteration = (
   id: feeAlterationId ?? null,
   personId,
   type: 'DISCOUNT',
-  amount: 0,
+  amount: '',
   isAbsolute: false,
   notes: '',
   validFrom: LocalDate.todayInSystemTz(),
   validTo: null,
   attachments: []
+})
+
+const feeAlterationToForm = (
+  feeAlteration: FeeAlteration
+): FeeAlterationForm => ({
+  id: feeAlteration.id,
+  personId: feeAlteration.personId,
+  type: feeAlteration.type,
+  amount: formatCents(Math.round(feeAlteration.amount * 100)) ?? '',
+  isAbsolute: feeAlteration.isAbsolute,
+  notes: feeAlteration.notes,
+  validFrom: feeAlteration.validFrom,
+  validTo: feeAlteration.validTo,
+  attachments: feeAlteration.attachments
 })
 
 interface Props {
@@ -75,7 +90,9 @@ export default React.memo(function FeeAlterationEditor({
 }: Props) {
   const { i18n } = useTranslation()
   const [edited, setEdited] = useState(
-    baseFeeAlteration || newFeeAlteration(personId)
+    baseFeeAlteration
+      ? feeAlterationToForm(baseFeeAlteration)
+      : newFeeAlteration(personId)
   )
 
   const [validationErrors, setValidationErrors] = useState<
@@ -85,6 +102,7 @@ export default React.memo(function FeeAlterationEditor({
   useEffect(() => {
     setValidationErrors((prev) => ({
       ...prev,
+      amount: !edited.amount || parseCents(edited.amount) === undefined,
       validFrom: edited.validFrom === null,
       validTo:
         edited.validFrom !== null &&
@@ -97,7 +115,15 @@ export default React.memo(function FeeAlterationEditor({
     if (!edited.validFrom || Object.values(validationErrors).some(Boolean)) {
       return
     }
-    const valid = { ...edited, validFrom: edited.validFrom }
+    const amountInCents = parseCents(edited.amount)
+    if (amountInCents === undefined) {
+      return
+    }
+    const valid = {
+      ...edited,
+      validFrom: edited.validFrom,
+      amount: amountInCents / 100 // Convert cents to euros
+    }
     return !baseFeeAlteration
       ? create(valid)
       : update({ ...baseFeeAlteration, ...valid })

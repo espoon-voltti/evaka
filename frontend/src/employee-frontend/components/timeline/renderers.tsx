@@ -495,7 +495,10 @@ export const feeAlterationRenderer: EventRenderer<TimelineFeeAlteration> = {
       <FixedSpaceColumn spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>
-          {i18n.feeAlteration[elem.type]} {elem.amount}{' '}
+          {i18n.feeAlteration[elem.type]}{' '}
+          {elem.absolute
+            ? formatCents(Math.round(elem.amount * 100), true)
+            : elem.amount}{' '}
           {elem.absolute ? '€' : '%'}
         </span>
         <span>{elem.notes}</span>

@@ -19,7 +19,7 @@ export type PartialFeeAlteration = Omit<
 >
 
 export interface FeeAlterationForm {
-  amount: number
+  amount: string
   attachments: Attachment[]
   id: FeeAlterationId | null
   isAbsolute: boolean

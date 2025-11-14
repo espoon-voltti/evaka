@@ -50,8 +50,10 @@ export default React.memo(function VoucherValueDecisionCoPaymentSection({
           <Fragment key={index}>
             <PartRow>
               <span>{`${i18n.feeAlteration[feeAlteration.type]} ${
-                feeAlteration.amount
-              }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
+                feeAlteration.isAbsolute
+                  ? formatCents(Math.round(feeAlteration.amount * 100), true)
+                  : feeAlteration.amount
+              } ${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
               <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
             </PartRow>
             <Gap size="xs" />

@@ -123,7 +123,9 @@ val testDecisionChild1 =
         siblingDiscount = 0,
         fee = 28900,
         feeAlterations =
-            listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
+            listOf(
+                FeeAlterationWithEffect(FeeAlterationType.RELIEF, BigDecimal("50"), false, -10800)
+            ),
         finalFee = 28900,
         childIncome = null,
     )
@@ -144,7 +146,9 @@ val testDecisionChild2 =
         siblingDiscount = 0,
         fee = 28900,
         feeAlterations =
-            listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
+            listOf(
+                FeeAlterationWithEffect(FeeAlterationType.RELIEF, BigDecimal("50"), false, -10800)
+            ),
         finalFee = 28900,
         childIncome = null,
     )
@@ -183,7 +187,7 @@ val testDecisionIncome =
 
 fun createFeeDecisionAlterationFixture(
     type: FeeAlterationType = FeeAlterationType.DISCOUNT,
-    amount: Int = 100,
+    amount: BigDecimal = BigDecimal("100"),
     isAbsolute: Boolean = false,
     effect: Int = 10000,
 ) = FeeAlterationWithEffect(type, amount, isAbsolute, effect)
