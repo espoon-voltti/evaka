@@ -153,6 +153,7 @@ export default {
       calendar: 'Kalenteri',
       children: 'Lapset',
       subNavigationMenu: 'Valikko',
+      mainMenu: 'Päävalikko',
       messageCount: (n: number) =>
         n > 1 ? `${n} uutta viestiä` : `${n} uusi viesti`
     },

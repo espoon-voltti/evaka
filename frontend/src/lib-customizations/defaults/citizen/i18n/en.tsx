@@ -155,6 +155,7 @@ const en: Translations = {
       calendar: 'Calendar',
       children: 'Children',
       subNavigationMenu: 'Menu',
+      mainMenu: 'Main menu',
       messageCount: (n: number) =>
         n > 1 ? `${n} new messages` : `${n} new message`
     },
