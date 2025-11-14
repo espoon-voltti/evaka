@@ -289,8 +289,9 @@ describe('Employee - Child documents', () => {
     await page.close()
 
     // Director annuls the decision
-    await childDocument.annulDecision()
+    await childDocument.annulDecision('Perustelut mitätöinnille')
     await childDocument.status.assertTextEquals('Mitätöity')
+    await childDocument.annulReason.assertTextEquals('Perustelut mitätöinnille')
   })
 
   test('Rejecting decision', async () => {

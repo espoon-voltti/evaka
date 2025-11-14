@@ -38,6 +38,13 @@ export interface AcceptedChildDecisions {
   validity: DateRange
 }
 
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AnnulChildDocumentDecisionRequest
+*/
+export interface AnnulChildDocumentDecisionRequest {
+  reason: string
+}
+
 
 export namespace AnsweredQuestion {
   /**

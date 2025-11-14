@@ -28,6 +28,7 @@ export class ChildDocumentPage {
   sendingConfirmationModal: Modal
   confirmOtherDecisionsButton: Element
   documentSection: Element
+  annulReason: Element
 
   constructor(private readonly page: Page) {
     this.status = page.findByDataQa('document-state-chip')
@@ -44,6 +45,7 @@ export class ChildDocumentPage {
       'confirm-other-decisions-button'
     )
     this.documentSection = page.findByDataQa('document-section')
+    this.annulReason = page.findByDataQa('labelled-value-reason-for-annulment')
   }
 
   getTextQuestion(sectionName: string, questionName: string) {
@@ -133,8 +135,12 @@ export class ChildDocumentPage {
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
-  async annulDecision() {
+  async annulDecision(reason: string) {
     await this.page.findByDataQa('annul-decision-button').click()
+    const reasonTextarea = new TextInput(
+      this.page.findByDataQa('annul-reason-textarea')
+    )
+    await reasonTextarea.fill(reason)
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
