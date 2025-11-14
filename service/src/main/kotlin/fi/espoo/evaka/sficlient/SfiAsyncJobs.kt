@@ -53,7 +53,7 @@ class SfiAsyncJobs(
                         )
                     logger.info { "SfiAsyncJobs: successfully processed event $event with id $id" }
                 } catch (e: Exception) {
-                    logger.error(e) { "SfiAsyncJobs: failed to process event $event" }
+                    logger.warn(e) { "SfiAsyncJobs: failed to process event $event" }
                 }
             }
 
