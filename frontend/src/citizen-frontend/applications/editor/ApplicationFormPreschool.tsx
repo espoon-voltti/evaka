@@ -25,6 +25,7 @@ export default React.memo(function ApplicationFormPreschool({
   setFormData,
   errors,
   verificationRequested,
+  alertTrigger,
   isInvalidDate,
   minDate,
   maxDate,
@@ -66,6 +67,7 @@ export default React.memo(function ApplicationFormPreschool({
         firstName={application.form.child.person.firstName}
         lastName={application.form.child.person.lastName}
         errors={verificationRequested ? errors : undefined}
+        alertTrigger={alertTrigger}
       />
 
       <ServiceNeedSection

@@ -24,11 +24,16 @@ type HeadingProps = {
   lastName: string
   errors?: ApplicationFormDataErrors
   transferApplication: boolean
+  /**
+   * Update this value to force re-rendering of the error box, causing screenreader to re-read the error summary.
+   */
+  alertTrigger: number
 }
 export default React.memo(function Heading({
   type,
   errors,
   transferApplication,
+  alertTrigger,
   ...name
 }: HeadingProps) {
   const t = useTranslation()
@@ -49,6 +54,7 @@ export default React.memo(function Heading({
         <>
           <Gap size="s" />
           <AlertBox
+            key={alertTrigger}
             message={
               <div>
                 <span data-qa="application-has-errors-title">
