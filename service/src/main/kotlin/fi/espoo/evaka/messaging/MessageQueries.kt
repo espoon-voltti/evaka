@@ -877,6 +877,88 @@ data class MessageCopy(
 
 data class PagedMessageCopies(val data: List<MessageCopy>, val total: Int, val pages: Int)
 
+/**
+ * For bulletin staff copies, replace individual recipient names with group names based on the
+ * actual message recipients and the viewer's access rights.
+ *
+ * This function:
+ * 1. Gets all recipient accounts for the message
+ * 2. For each CITIZEN recipient, finds their children via guardian/foster_parent tables
+ * 3. For each child, finds their active placement and daycare_group on the message sent date
+ * 4. Gets the viewer's accessible groups (via daycare_acl and daycare_group_acl)
+ * 5. Filters groups to only include those accessible to the viewer
+ * 6. Returns distinct list of group names (with unit name: "Unit Name - Group Name")
+ */
+fun Database.Read.getGroupedRecipientNamesForStaffCopy(
+    messageId: MessageId,
+    viewerAccountId: MessageAccountId,
+    sentDate: LocalDate,
+): List<String> {
+    return createQuery {
+            sql(
+                """
+WITH viewer_employee AS (
+    SELECT person_id AS employee_id
+    FROM message_account
+    WHERE id = ${bind(viewerAccountId)} AND type = 'PERSONAL'
+),
+viewer_accessible_groups AS (
+    SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
+    FROM viewer_employee ve
+    JOIN daycare_group_acl dga ON dga.employee_id = ve.employee_id
+    JOIN daycare_group dg ON dg.id = dga.daycare_group_id
+    JOIN daycare d ON d.id = dg.daycare_id
+    WHERE dg.end_date IS NULL OR dg.end_date >= ${bind(sentDate)}
+    
+    UNION
+    
+    SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
+    FROM viewer_employee ve
+    JOIN daycare_acl da ON da.employee_id = ve.employee_id
+    JOIN daycare d ON d.id = da.daycare_id
+    JOIN daycare_group dg ON dg.daycare_id = d.id
+    WHERE dg.end_date IS NULL OR dg.end_date >= ${bind(sentDate)}
+),
+recipient_groups AS (
+    SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
+    FROM message_recipients mr
+    JOIN message_account ma ON ma.id = mr.recipient_id
+    JOIN guardian g ON g.guardian_id = ma.person_id
+    JOIN placement p ON p.child_id = g.child_id
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    JOIN daycare d ON d.id = dg.daycare_id
+    WHERE mr.message_id = ${bind(messageId)}
+        AND ma.type = 'CITIZEN'
+        AND daterange(p.start_date, p.end_date, '[]') @> ${bind(sentDate)}
+        AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(sentDate)}
+    
+    UNION
+    
+    SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
+    FROM message_recipients mr
+    JOIN message_account ma ON ma.id = mr.recipient_id
+    JOIN foster_parent fp ON fp.parent_id = ma.person_id
+    JOIN placement p ON p.child_id = fp.child_id
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    JOIN daycare d ON d.id = dg.daycare_id
+    WHERE mr.message_id = ${bind(messageId)}
+        AND ma.type = 'CITIZEN'
+        AND daterange(p.start_date, p.end_date, '[]') @> ${bind(sentDate)}
+        AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(sentDate)}
+        AND daterange(fp.valid_during) @> ${bind(sentDate)}
+)
+SELECT rg.unit_name || ' - ' || rg.group_name AS group_name
+FROM recipient_groups rg
+JOIN viewer_accessible_groups vag ON vag.group_id = rg.group_id
+ORDER BY rg.unit_name, rg.group_name
+                """
+            )
+        }
+        .toList<String>()
+}
+
 fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
@@ -888,9 +970,10 @@ fun Database.Read.getMessageCopiesByAccount(
             Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
         else Predicate.alwaysTrue()
 
-    return createQuery {
-            sql(
-                """
+    val rawResults =
+        createQuery {
+                sql(
+                    """
 SELECT
     COUNT(*) OVER () AS count,
     t.id AS thread_id,
@@ -930,9 +1013,30 @@ WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT N
 ORDER BY m.sent_at DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
-            )
+                )
+            }
+            .toList { WithCount(column("count"), row<MessageCopy>()) }
+
+    // For bulletin staff copies, replace individual recipient names with group names
+    val processedResults =
+        rawResults.map { withCount ->
+            val copy = withCount.data
+            if (copy.type == MessageType.BULLETIN) {
+                val groupedNames =
+                    getGroupedRecipientNamesForStaffCopy(
+                        messageId = copy.messageId,
+                        viewerAccountId = accountId,
+                        sentDate = copy.sentAt.toLocalDate(),
+                    )
+                withCount.copy(
+                    data = copy.copy(recipientNames = groupedNames.ifEmpty { emptyList() })
+                )
+            } else {
+                withCount
+            }
         }
-        .mapToPaged(::PagedMessageCopies, pageSize)
+
+    return processedResults.mapToPaged(::PagedMessageCopies, pageSize)
 }
 
 fun Database.Read.getSentMessage(

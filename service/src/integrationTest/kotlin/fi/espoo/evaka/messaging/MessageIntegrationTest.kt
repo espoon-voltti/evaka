@@ -2543,6 +2543,298 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             asyncJobRunningEnabled = true
         }
     }
+
+    @Test
+    fun `bulletin staff copy shows group names instead of individual recipient names`() {
+        // given: a child in group1 with a guardian
+        val child = DevPerson()
+        val guardian = testAdult_1
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            insertGuardian(tx, guardian.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = ChildId(child.id.raw),
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.createQuery {
+                                sql(
+                                    "SELECT id FROM placement WHERE child_id = ${bind(child.id)} AND unit_id = ${bind(testDaycare.id)}"
+                                )
+                            }
+                            .exactlyOne(),
+                    daycareGroupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val guardianAccountId = db.transaction { it.upsertCitizenMessageAccount(guardian.id) }
+
+        // when: employee1 sends a bulletin to the child's group with individual names (simulating
+        // frontend behavior)
+        val individualRecipientNames =
+            listOf(
+                "${guardian.firstName} ${guardian.lastName}",
+                "${child.firstName} ${child.lastName}",
+            )
+        val messageThreadId =
+            postNewThread(
+                "Test Bulletin",
+                "Test content",
+                MessageType.BULLETIN,
+                employee1Account,
+                listOf(MessageRecipient.Group(groupId1)),
+                recipientNames = individualRecipientNames, // This is what frontend sends
+                user = employee1,
+                now = sendTime,
+            )
+
+        // then: staff copy shows group name instead of individual recipient name
+        val copies = getMessageCopies(employee1, group1Account, readTime)
+        assertEquals(1, copies.size)
+        val copy = copies.first()
+
+        // Verify that recipientNames contains group name, not individual names
+        assertTrue(copy.recipientNames.isNotEmpty(), "recipientNames should not be empty")
+        assertTrue(
+            copy.recipientNames.any { it.contains(testDaycare.name) && it.contains("Group 1") },
+            "recipientNames should contain unit and group name",
+        )
+        assertTrue(
+            copy.recipientNames.none {
+                it.contains(guardian.firstName) ||
+                    it.contains(guardian.lastName) ||
+                    it.contains(child.firstName) ||
+                    it.contains(child.lastName)
+            },
+            "recipientNames should not contain individual guardian or child names",
+        )
+    }
+
+    @Test
+    fun `bulletin staff copy filters recipient groups by viewer access rights`() {
+        // given: two children in different groups with different guardians
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val guardian1 = testAdult_1
+        val guardian2 = testAdult_2
+        val employee3 = DevEmployee()
+        var employee3Account: MessageAccountId? = null
+
+        db.transaction { tx ->
+            // Child 1 in group1
+            tx.insert(child1, DevPersonType.CHILD)
+            insertGuardian(tx, guardian1.id, child1.id)
+            tx.insert(
+                DevPlacement(
+                    childId = ChildId(child1.id.raw),
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.createQuery {
+                                sql(
+                                    "SELECT id FROM placement WHERE child_id = ${bind(child1.id)} AND unit_id = ${bind(testDaycare.id)}"
+                                )
+                            }
+                            .exactlyOne(),
+                    daycareGroupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            // Child 2 in group2
+            tx.insert(child2, DevPersonType.CHILD)
+            insertGuardian(tx, guardian2.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = ChildId(child2.id.raw),
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.createQuery {
+                                sql(
+                                    "SELECT id FROM placement WHERE child_id = ${bind(child2.id)} AND unit_id = ${bind(testDaycare.id)}"
+                                )
+                            }
+                            .exactlyOne(),
+                    daycareGroupId = groupId2,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            // Employee3 has access only to group1, not group2
+            tx.insert(employee3)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee3.id, listOf(groupId1))
+            employee3Account = tx.upsertEmployeeMessageAccount(employee3.id)
+        }
+
+        // when: employee1 sends a bulletin to both groups with individual names
+        val individualRecipientNames =
+            listOf(
+                "${guardian1.firstName} ${guardian1.lastName}",
+                "${child1.firstName} ${child1.lastName}",
+                "${guardian2.firstName} ${guardian2.lastName}",
+                "${child2.firstName} ${child2.lastName}",
+            )
+        postNewThread(
+            "Test Bulletin",
+            "Test content",
+            MessageType.BULLETIN,
+            employee1Account,
+            listOf(MessageRecipient.Group(groupId1), MessageRecipient.Group(groupId2)),
+            recipientNames = individualRecipientNames,
+            user = employee1,
+            now = sendTime,
+        )
+
+        // then: employee3 sees only group1 in recipient names (has access to group1 only)
+        val copies = getMessageCopies(employee3.user, employee3Account!!, readTime)
+        assertEquals(1, copies.size)
+        val copy = copies.first()
+
+        // Should see group1 but not group2
+        assertTrue(
+            copy.recipientNames.any { it.contains("Group 1") },
+            "Should see Group 1 in recipient names",
+        )
+        assertTrue(
+            copy.recipientNames.none { it.contains("Group 2") },
+            "Should not see Group 2 in recipient names (no access)",
+        )
+    }
+
+    @Test
+    fun `bulletin staff copy shows group names for historical messages`() {
+        // given: a child who had placement in the past
+        val child = DevPerson()
+        val guardian = testAdult_1
+        val historicalDate = LocalDate.of(2020, 1, 15)
+        val historicalSendTime = HelsinkiDateTime.of(historicalDate, LocalTime.of(10, 0))
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            insertGuardian(tx, guardian.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = ChildId(child.id.raw),
+                    unitId = testDaycare.id,
+                    startDate = historicalDate.minusMonths(1),
+                    endDate = historicalDate.plusMonths(1),
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.createQuery {
+                                sql(
+                                    "SELECT id FROM placement WHERE child_id = ${bind(child.id)} AND unit_id = ${bind(testDaycare.id)}"
+                                )
+                            }
+                            .exactlyOne(),
+                    daycareGroupId = groupId1,
+                    startDate = historicalDate.minusMonths(1),
+                    endDate = historicalDate.plusMonths(1),
+                )
+            )
+        }
+
+        // when: a bulletin was sent in the past with individual names
+        val individualRecipientNames =
+            listOf(
+                "${guardian.firstName} ${guardian.lastName}",
+                "${child.firstName} ${child.lastName}",
+            )
+        postNewThread(
+            "Historical Bulletin",
+            "Historical content",
+            MessageType.BULLETIN,
+            employee1Account,
+            listOf(MessageRecipient.Group(groupId1)),
+            recipientNames = individualRecipientNames,
+            user = employee1,
+            now = historicalSendTime,
+        )
+
+        // then: when viewing today, group names are still correctly shown
+        val copies = getMessageCopies(employee1, group1Account, readTime)
+        assertEquals(1, copies.size)
+        val copy = copies.first()
+
+        // Should show group name based on historical placement
+        assertTrue(copy.recipientNames.isNotEmpty())
+        assertTrue(
+            copy.recipientNames.any { it.contains("Group 1") },
+            "Should show group name for historical message",
+        )
+    }
+
+    @Test
+    fun `non-bulletin messages retain original recipient names`() {
+        // given: a child with a guardian
+        val child = DevPerson()
+        val guardian = testAdult_1
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            insertGuardian(tx, guardian.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = ChildId(child.id.raw),
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.createQuery {
+                                sql(
+                                    "SELECT id FROM placement WHERE child_id = ${bind(child.id)} AND unit_id = ${bind(testDaycare.id)}"
+                                )
+                            }
+                            .exactlyOne(),
+                    daycareGroupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        // when: employee sends a regular (non-bulletin) message
+        postNewThread(
+            "Regular Message",
+            "Regular content",
+            MessageType.MESSAGE,
+            employee1Account,
+            listOf(MessageRecipient.Child(ChildId(child.id.raw))),
+            user = employee1,
+            now = sendTime,
+        )
+
+        // then: regular messages are not affected (no staff copies for non-bulletins anyway)
+        val copies = getMessageCopies(employee1, group1Account, readTime)
+        assertEquals(0, copies.size, "Non-bulletin messages should not create staff copies")
+    }
 }
 
 fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
