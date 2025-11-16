@@ -3752,12 +3752,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:19.2.2":
-  version: 19.2.2
-  resolution: "@types/react@npm:19.2.2"
+"@types/react@npm:*, @types/react@npm:19.2.3":
+  version: 19.2.3
+  resolution: "@types/react@npm:19.2.3"
   dependencies:
     csstype: "npm:^3.0.2"
-  checksum: 10/d6adf8fd4bb23a7e04da5700d96b15dc0f59653727a9c6e940c151d7232fa1dbbab98417d5ac830dcfb6cba3f206efbd4cd83647e6f9a688d7363a90e607f6bf
+  checksum: 10/b75aa49a8fdaf4ffd14050e8bca2b31f7ed6634880f1a0dd90511060fe052b0418688191980c7baeda2572fb993930a13090fcbc05f6d6f8981d03f372dd30ec
   languageName: node
   linkType: hard
 
@@ -6376,7 +6376,7 @@ __metadata:
     "@types/lodash": "npm:4.17.20"
     "@types/node": "npm:24.10.0"
     "@types/punycode": "npm:2.1.4"
-    "@types/react": "npm:19.2.2"
+    "@types/react": "npm:19.2.3"
     "@types/react-dom": "npm:19.2.2"
     "@types/webpack": "npm:5.28.5"
     "@vitejs/plugin-legacy": "npm:7.2.1"
