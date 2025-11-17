@@ -8,11 +8,11 @@ import styled from 'styled-components'
 
 import { feeAlterationTypes } from 'lib-common/generated/api-types/invoicing'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import InputField from 'lib-components/atoms/form/InputField'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
 import type { FeeAlterationForm } from '../../../types/fee-alteration'
+import EuroInput from '../../common/EuroInput'
 
 interface Props {
   edited: FeeAlterationForm
@@ -32,17 +32,14 @@ export default React.memo(function FeeAlterationRowInput({
         getItemLabel={(type) => i18n.childInformation.feeAlteration.types[type]}
         onChange={(type) => type && setEdited({ ...edited, type })}
       />
-      <AmountInput
-        data-qa="fee-alteration-amount-input"
-        type="number"
-        value={edited.amount !== undefined ? edited.amount.toString() : ''}
-        onChange={(value) =>
-          setEdited({
-            ...edited,
-            amount: Math.max(0, Math.min(99999, Number(value)))
-          })
-        }
-      />
+      <AmountInputContainer>
+        <EuroInput
+          data-qa="fee-alteration-amount-input"
+          value={edited.amount}
+          onChange={(amount: string) => setEdited({ ...edited, amount })}
+          allowEmpty={false}
+        />
+      </AmountInputContainer>
       <IsAbsoluteRadio
         value={edited.isAbsolute}
         onChange={(isAbsolute) => setEdited({ ...edited, isAbsolute })}
@@ -51,9 +48,8 @@ export default React.memo(function FeeAlterationRowInput({
   )
 })
 
-const AmountInput = styled(InputField)`
+const AmountInputContainer = styled.div`
   width: 5rem;
-  text-align: right;
 `
 
 function IsAbsoluteRadio({

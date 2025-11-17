@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -24,7 +25,7 @@ data class FeeAlteration(
     val id: FeeAlterationId? = null,
     val personId: ChildId,
     val type: FeeAlterationType,
-    val amount: Int,
+    val amount: BigDecimal,
     @get:JsonProperty("isAbsolute") val isAbsolute: Boolean,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
