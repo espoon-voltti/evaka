@@ -955,64 +955,42 @@ SELECT
     END AS recipient_names,
     ml.attachments
 FROM message_list ml
-LEFT JOIN LATERAL (
-    SELECT array_agg(DISTINCT rg.unit_name || ' - ' || rg.group_name ORDER BY rg.unit_name || ' - ' || rg.group_name) AS grouped_names
-    FROM (
-        SELECT content_id FROM message WHERE id = ml.message_id
-    ) scm
-    CROSS JOIN LATERAL (
-        -- Find the original messages (non-copy threads) that share the same content
-        SELECT m.id AS message_id
-        FROM message m
-        JOIN message_thread t ON t.id = m.thread_id
-        WHERE m.content_id = scm.content_id AND NOT t.is_copy
-    ) om
-    CROSS JOIN LATERAL (
-        -- Get viewer's accessible groups
-        SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
-        FROM message_account ma
-        LEFT JOIN daycare_group_acl dga ON dga.employee_id = ma.person_id AND ma.type = 'PERSONAL'
-        LEFT JOIN daycare_acl da ON da.employee_id = ma.person_id AND ma.type = 'PERSONAL'
-        LEFT JOIN daycare_group dg ON (dg.id = dga.daycare_group_id OR dg.daycare_id = da.daycare_id OR dg.id = ma.daycare_group_id)
-        JOIN daycare d ON d.id = dg.daycare_id
-        WHERE ma.id = ${bind(accountId)}
-            AND (dg.end_date IS NULL OR dg.end_date >= ml.sent_at::date)
-    ) vag
-    CROSS JOIN LATERAL (
-        -- Get recipient groups from guardian relationships
-        SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
-        FROM message_recipients mr
-        JOIN message_account ma ON ma.id = mr.recipient_id
-        JOIN guardian g ON g.guardian_id = ma.person_id
-        JOIN placement p ON p.child_id = g.child_id
-        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-        JOIN daycare d ON d.id = dg.daycare_id
-        WHERE mr.message_id = om.message_id
-            AND ma.type = 'CITIZEN'
-            AND daterange(p.start_date, p.end_date, '[]') @> ml.sent_at::date
-            AND daterange(dgp.start_date, dgp.end_date, '[]') @> ml.sent_at::date
-            AND dg.id = vag.group_id
-        
-        UNION
-        
-        -- Get recipient groups from foster parent relationships
-        SELECT DISTINCT dg.id AS group_id, d.name AS unit_name, dg.name AS group_name
-        FROM message_recipients mr
-        JOIN message_account ma ON ma.id = mr.recipient_id
-        JOIN foster_parent fp ON fp.parent_id = ma.person_id
-        JOIN placement p ON p.child_id = fp.child_id
-        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-        JOIN daycare d ON d.id = dg.daycare_id
-        WHERE mr.message_id = om.message_id
-            AND ma.type = 'CITIZEN'
-            AND daterange(p.start_date, p.end_date, '[]') @> ml.sent_at::date
-            AND daterange(dgp.start_date, dgp.end_date, '[]') @> ml.sent_at::date
-            AND daterange(fp.valid_during) @> ml.sent_at::date
-            AND dg.id = vag.group_id
-    ) rg
-) grn ON ml.type = 'BULLETIN'
+LEFT JOIN (
+    SELECT 
+        ml2.message_id,
+        array_agg(DISTINCT d.name || ' - ' || dg.name ORDER BY d.name || ' - ' || dg.name) AS grouped_names
+    FROM message_list ml2
+    -- Find the original messages (non-copy threads) that share the same content
+    JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
+    JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
+    -- Get recipients of the original message
+    JOIN message_recipients mr ON mr.message_id = m2.id
+    JOIN message_account rma ON rma.id = mr.recipient_id AND rma.type = 'CITIZEN'
+    -- Get recipient groups via guardian relationships
+    LEFT JOIN guardian g ON g.guardian_id = rma.person_id
+    LEFT JOIN foster_parent fp ON fp.parent_id = rma.person_id
+    JOIN placement p ON (p.child_id = g.child_id OR p.child_id = fp.child_id)
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+    JOIN daycare d ON d.id = dg.daycare_id
+    -- Get viewer's accessible groups and filter
+    JOIN message_account ma ON ma.id = ${bind(accountId)}
+    LEFT JOIN daycare_group_acl dga ON dga.employee_id = ma.person_id AND ma.type = 'PERSONAL'
+    LEFT JOIN daycare_acl da ON da.employee_id = ma.person_id AND ma.type = 'PERSONAL'
+    WHERE 
+        -- Only include groups accessible to the viewer
+        (dg.id = dga.daycare_group_id OR dg.daycare_id = da.daycare_id OR dg.id = ma.daycare_group_id)
+        -- Check placement and group placement validity at message sent time
+        AND daterange(p.start_date, p.end_date, '[]') @> ml2.sent_at::date
+        AND daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
+        -- Check group is not ended or ended after message sent
+        AND (dg.end_date IS NULL OR dg.end_date >= ml2.sent_at::date)
+        -- For foster parents, check validity period
+        AND (g.child_id IS NOT NULL OR (fp.child_id IS NOT NULL AND daterange(fp.valid_during) @> ml2.sent_at::date))
+        -- Only process bulletin messages
+        AND ml2.type = 'BULLETIN'
+    GROUP BY ml2.message_id
+) grn ON grn.message_id = ml.message_id
 """
             )
         }
