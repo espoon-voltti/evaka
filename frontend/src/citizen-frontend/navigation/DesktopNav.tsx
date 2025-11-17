@@ -83,7 +83,7 @@ export default React.memo(function DesktopNav({
     menuItems.forEach((item, index) => {
       item.tabIndex = index === 0 ? 0 : -1
     })
-  }, [user]) // TODO: Re-run when new submenus appear (such as children)
+  }, [user])
 
   return (
     <Container data-qa="desktop-nav">
@@ -316,6 +316,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
         aria-haspopup="true"
         data-qa="nav-children-desktop"
         role="menuitem"
+        tabIndex={-1}
       >
         {t.header.nav.children}
         {totalUnreadChildNotifications > 0 && (
