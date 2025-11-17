@@ -6,6 +6,7 @@
 
 import type { AcceptChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import type { AcceptedChildDecisions } from 'lib-common/generated/api-types/document'
+import type { AnnulChildDocumentDecisionRequest } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
@@ -303,12 +304,14 @@ export async function acceptChildDocumentDecision(
 */
 export async function annulChildDocumentDecision(
   request: {
-    documentId: ChildDocumentId
+    documentId: ChildDocumentId,
+    body: AnnulChildDocumentDecisionRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/child-documents/${request.documentId}/annul`.toString(),
-    method: 'POST'
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AnnulChildDocumentDecisionRequest>
   })
   return json
 }
