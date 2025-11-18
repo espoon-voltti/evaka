@@ -9,6 +9,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { combine } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type {
+  AreaJSON,
   Daycare,
   DaycareGroup,
   PreschoolTerm
@@ -31,8 +32,10 @@ import {
   Tr
 } from 'lib-components/layout/Table'
 
+import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { hasRole } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { preschoolTermsQuery } from '../holiday-term-periods/queries'
@@ -50,12 +53,14 @@ export default React.memo(function PreschoolAbsenceReport() {
     () => ({ name: i18n.common.all, id: null }),
     [i18n.common.all]
   )
+  const [selectedArea, setSelectedArea] = useState<AreaJSON | null>(null)
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<
     DaycareGroup | null | { name: string; id: GroupId | null }
   >(allOption)
   const [selectedTerm, setSelectedTerm] = useState<PreschoolTerm | null>(null)
   const [includeClosed, setIncludeClosed] = useState(true)
+  const areas = useQueryResult(areasQuery())
   const units = useQueryResult(daycaresQuery({ includeClosed: includeClosed }))
   const groups = useQueryResult(
     selectedUnit?.id
@@ -66,6 +71,17 @@ export default React.memo(function PreschoolAbsenceReport() {
       : constantQuery([])
   )
   const terms = useQueryResult(preschoolTermsQuery())
+
+  const setAreaAndClearUnit = (area: AreaJSON | null) => {
+    setSelectedUnit(null)
+    setSelectedGroup(allOption)
+    setSelectedArea(area)
+  }
+
+  const setUnitAndClearArea = (unit: Daycare | null) => {
+    setSelectedArea(null)
+    setSelectedUnit(unit)
+  }
 
   const termOptions = useMemo(
     () =>
@@ -103,9 +119,31 @@ export default React.memo(function PreschoolAbsenceReport() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.preschoolAbsences.title}</Title>
         {renderResult(
-          combine(daycareOptions, termOptions, groupOptions),
-          ([unitResult, termResult, groupResult]) => (
+          combine(areas, daycareOptions, termOptions, groupOptions),
+          ([areaResult, unitResult, termResult, groupResult]) => (
             <>
+              {hasRole(roles, 'ADMIN') && (
+                <FilterRow>
+                  <FilterLabel>
+                    {i18n.reports.preschoolAbsences.filters.areaSelection.label}
+                  </FilterLabel>
+
+                  <FlexRow>
+                    <Combobox
+                      items={areaResult}
+                      onChange={setAreaAndClearUnit}
+                      selectedItem={selectedArea}
+                      getItemLabel={(item) => item.name}
+                      placeholder={
+                        i18n.reports.preschoolAbsences.filters.areaSelection
+                          .placeHolder
+                      }
+                      data-qa="area-select"
+                      getItemDataQa={({ id }) => `area-${id}`}
+                    />
+                  </FlexRow>
+                </FilterRow>
+              )}
               <FilterRow>
                 <FilterLabel>
                   {
@@ -116,7 +154,7 @@ export default React.memo(function PreschoolAbsenceReport() {
                 <FlexRow>
                   <Combobox
                     items={unitResult}
-                    onChange={setSelectedUnit}
+                    onChange={setUnitAndClearArea}
                     selectedItem={selectedUnit}
                     getItemLabel={(item) => item.name}
                     placeholder={i18n.filters.unitPlaceholder}
@@ -133,7 +171,6 @@ export default React.memo(function PreschoolAbsenceReport() {
                   <Combobox
                     items={termResult}
                     onChange={setSelectedTerm}
-                    disabled={!selectedUnit}
                     selectedItem={selectedTerm}
                     getItemLabel={(item) => item.finnishPreschool.format()}
                     placeholder={
@@ -175,9 +212,10 @@ export default React.memo(function PreschoolAbsenceReport() {
                   />
                 </FlexRow>
               </FilterRow>
-              {selectedTerm && selectedUnit && (
+              {selectedTerm && (selectedUnit || selectedArea) && (
                 <PreschoolAbsenceGrid
                   term={selectedTerm.finnishPreschool}
+                  area={selectedArea}
                   daycare={selectedUnit}
                   groupId={selectedGroup?.id}
                 />
@@ -194,6 +232,8 @@ type ReportDisplayRow = {
   childId: string
   firstName: string
   lastName: string
+  daycareName: string
+  groupName: string
   TOTAL: number
   OTHER_ABSENCE: number
   SICKLEAVE: number
@@ -203,11 +243,13 @@ type ReportColumnKey = keyof ReportDisplayRow
 
 const PreschoolAbsenceGrid = ({
   term,
+  area,
   daycare,
   groupId
 }: {
   term: FiniteDateRange
-  daycare: Daycare
+  area: AreaJSON | null
+  daycare: Daycare | null
   groupId?: GroupId | null
 }) => {
   const { i18n } = useTranslation()
@@ -217,7 +259,8 @@ const PreschoolAbsenceGrid = ({
     preschoolAbsenceReportQuery({
       termStart: term.start,
       termEnd: term.end.isAfter(today) ? today : term.end,
-      unitId: daycare.id,
+      areaId: area?.id ?? null,
+      unitId: daycare?.id ?? null,
       groupId: groupId ?? null
     })
   )
@@ -248,6 +291,8 @@ const PreschoolAbsenceGrid = ({
           childId: row.childId,
           firstName: row.firstName,
           lastName: row.lastName,
+          daycareName: row.daycareName,
+          groupName: row.groupName,
           TOTAL:
             (row.hourlyTypeResults.OTHER_ABSENCE ?? 0) +
             (row.hourlyTypeResults.SICKLEAVE ?? 0) +
@@ -277,6 +322,14 @@ const PreschoolAbsenceGrid = ({
             value: (row) => row.lastName
           },
           {
+            label: i18n.reports.preschoolAbsences.daycareName,
+            value: (row) => row.daycareName
+          },
+          {
+            label: i18n.reports.preschoolAbsences.groupName,
+            value: (row) => row.groupName
+          },
+          {
             label: i18n.reports.preschoolAbsences.total,
             value: (row) => row.TOTAL
           },
@@ -293,7 +346,7 @@ const PreschoolAbsenceGrid = ({
             value: (row) => row.UNKNOWN_ABSENCE
           }
         ]}
-        filename={`${i18n.reports.preschoolAbsences.title} ${daycare.name} ${term.format()}.csv`}
+        filename={`${i18n.reports.preschoolAbsences.title} ${daycare?.name ?? area?.name} ${term.format()}.csv`}
       />
       <TableScrollable>
         <Thead>
@@ -308,6 +361,40 @@ const PreschoolAbsenceGrid = ({
               onClick={() => sortBy(['lastName', 'firstName', 'childId'])}
             >
               {i18n.reports.preschoolAbsences.lastName}
+            </SortableTh>
+            <SortableTh
+              sorted={
+                isEqual(sortColumns, [
+                  'daycareName',
+                  'lastName',
+                  'firstName',
+                  'childId'
+                ])
+                  ? sortDirection
+                  : undefined
+              }
+              onClick={() =>
+                sortBy(['daycareName', 'lastName', 'firstName', 'childId'])
+              }
+            >
+              {i18n.reports.preschoolAbsences.daycareName}
+            </SortableTh>
+            <SortableTh
+              sorted={
+                isEqual(sortColumns, [
+                  'groupName',
+                  'lastName',
+                  'firstName',
+                  'childId'
+                ])
+                  ? sortDirection
+                  : undefined
+              }
+              onClick={() =>
+                sortBy(['groupName', 'lastName', 'firstName', 'childId'])
+              }
+            >
+              {i18n.reports.preschoolAbsences.groupName}
             </SortableTh>
             <SortableTh
               sorted={
@@ -377,6 +464,8 @@ const PreschoolAbsenceGrid = ({
               <Tr key={`${rowIndex}`} data-qa="preschool-absence-row">
                 <Td data-qa="first-name-column">{row.firstName}</Td>
                 <Td data-qa="last-name-column">{row.lastName}</Td>
+                <Td data-qa="daycare-name-column">{row.daycareName}</Td>
+                <Td data-qa="group-name-column">{row.groupName}</Td>
                 <Td data-qa="total-column">
                   {row.UNKNOWN_ABSENCE + row.OTHER_ABSENCE + row.SICKLEAVE}
                 </Td>

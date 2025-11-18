@@ -7,7 +7,9 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycaresForArea
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -34,21 +36,34 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
-        @RequestParam unitId: DaycareId,
+        @RequestParam areaId: AreaId?,
+        @RequestParam unitId: DaycareId?,
         @RequestParam groupId: GroupId?,
         @RequestParam termStart: LocalDate,
         @RequestParam termEnd: LocalDate,
-    ): List<ChildPreschoolAbsenceRow> {
+    ): List<ChildPreschoolAbsenceRowWithUnitAndGroup> {
+        if (areaId == null && unitId == null)
+            throw BadRequest("Must give either area ID or unit ID")
+        if (areaId != null && unitId != null)
+            throw BadRequest("Must give only one of area ID or unit ID")
         return db.connect { dbc ->
             dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT,
-                        unitId,
-                    )
-                    val daycare = tx.getDaycare(unitId) ?: throw BadRequest("No such unit")
+                    if (areaId != null)
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Global.READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA,
+                        )
+                    else if (unitId != null)
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT,
+                            unitId,
+                        )
+
                     val termRange = FiniteDateRange(termStart, termEnd)
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
 
@@ -63,52 +78,83 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                                 else -> false
                             }
                         }
-                    val dailyPreschoolTime =
-                        daycare.dailyPreschoolTime
-                            ?: TimeRange(LocalTime.of(9, 0, 0, 0), LocalTime.of(13, 0, 0, 0))
 
-                    val dailyPreparatoryTime =
-                        daycare.dailyPreparatoryTime
-                            ?: TimeRange(LocalTime.of(9, 0, 0, 0), LocalTime.of(14, 0, 0, 0))
+                    if (unitId != null && groupId != null) {
 
-                    if (groupId == null)
-                        calculateHourlyResults(
-                            getPreschoolAbsenceReportRowsForUnit(
-                                tx,
-                                daycare.id,
-                                termRange,
-                                preschoolAbsenceTypes,
-                            ),
-                            calculateDailyPreschoolAttendanceDeviationForUnit(
-                                tx,
-                                unitId,
-                                termRange,
+                        val daycare = tx.getDaycare(unitId) ?: throw BadRequest("No such unit")
+
+                        val dailyPreschoolTime =
+                            daycare.dailyPreschoolTime
+                                ?: TimeRange(LocalTime.of(9, 0, 0, 0), LocalTime.of(13, 0, 0, 0))
+
+                        val dailyPreparatoryTime =
+                            daycare.dailyPreparatoryTime
+                                ?: TimeRange(LocalTime.of(9, 0, 0, 0), LocalTime.of(14, 0, 0, 0))
+
+                        addDaycareAndGroupToReportRows(
+                            calculateHourlyResults(
+                                getPreschoolAbsenceReportRowsForGroup(
+                                    tx,
+                                    daycare.id,
+                                    groupId,
+                                    termRange,
+                                    preschoolAbsenceTypes,
+                                ),
+                                calculateDailyPreschoolAttendanceDeviationForGroup(
+                                    tx,
+                                    daycare.id,
+                                    groupId,
+                                    termRange,
+                                    dailyPreschoolTime,
+                                    dailyPreparatoryTime,
+                                ),
                                 dailyPreschoolTime,
                                 dailyPreparatoryTime,
                             ),
-                            dailyPreschoolTime,
-                            dailyPreparatoryTime,
+                            tx,
                         )
-                    else
-                        calculateHourlyResults(
-                            getPreschoolAbsenceReportRowsForGroup(
-                                tx,
-                                daycare.id,
-                                groupId,
-                                termRange,
-                                preschoolAbsenceTypes,
-                            ),
-                            calculateDailyPreschoolAttendanceDeviationForGroup(
-                                tx,
-                                unitId,
-                                groupId,
-                                termRange,
-                                dailyPreschoolTime,
-                                dailyPreparatoryTime,
-                            ),
-                            dailyPreschoolTime,
-                            dailyPreparatoryTime,
+                    } else {
+                        val daycares =
+                            if (unitId != null)
+                                listOf(tx.getDaycare(unitId) ?: throw BadRequest("No such unit"))
+                            else tx.getDaycaresForArea(areaId ?: throw BadRequest("Can't happen"))
+                        addDaycareAndGroupToReportRows(
+                            daycares.flatMap { daycare ->
+                                val dailyPreschoolTime =
+                                    daycare.dailyPreschoolTime
+                                        ?: TimeRange(
+                                            LocalTime.of(9, 0, 0, 0),
+                                            LocalTime.of(13, 0, 0, 0),
+                                        )
+
+                                val dailyPreparatoryTime =
+                                    daycare.dailyPreparatoryTime
+                                        ?: TimeRange(
+                                            LocalTime.of(9, 0, 0, 0),
+                                            LocalTime.of(14, 0, 0, 0),
+                                        )
+
+                                calculateHourlyResults(
+                                    getPreschoolAbsenceReportRowsForUnit(
+                                        tx,
+                                        daycare.id,
+                                        termRange,
+                                        preschoolAbsenceTypes,
+                                    ),
+                                    calculateDailyPreschoolAttendanceDeviationForUnit(
+                                        tx,
+                                        daycare.id,
+                                        termRange,
+                                        dailyPreschoolTime,
+                                        dailyPreparatoryTime,
+                                    ),
+                                    dailyPreschoolTime,
+                                    dailyPreparatoryTime,
+                                )
+                            },
+                            tx,
                         )
+                    }
                 }
                 .also {
                     Audit.PreschoolAbsenceReport.log(
@@ -121,6 +167,23 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                             )
                     )
                 }
+        }
+    }
+
+    private fun addDaycareAndGroupToReportRows(
+        rows: List<ChildPreschoolAbsenceRow>,
+        tx: Database.Read,
+    ): List<ChildPreschoolAbsenceRowWithUnitAndGroup> {
+        val daycareMap = getDaycareAndGroupForChildren(tx, rows.map { it.childId })
+        return rows.map { row ->
+            ChildPreschoolAbsenceRowWithUnitAndGroup(
+                row.childId,
+                row.firstName,
+                row.lastName,
+                daycareMap[row.childId]?.daycareName ?: "???",
+                daycareMap[row.childId]?.groupName ?: "???",
+                row.hourlyTypeResults,
+            )
         }
     }
 
@@ -190,10 +253,29 @@ data class PreschoolAbsenceReportRow(
     val absenceHours: Int,
 )
 
+data class PreschoolAbsenceReportRowWithUnitAndGroup(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val daycareName: String,
+    val groupName: String,
+    val absenceType: AbsenceType,
+    val absenceHours: Int,
+)
+
 data class ChildPreschoolAbsenceRow(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val hourlyTypeResults: Map<AbsenceType, Int>,
+)
+
+data class ChildPreschoolAbsenceRowWithUnitAndGroup(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val daycareName: String,
+    val groupName: String,
     val hourlyTypeResults: Map<AbsenceType, Int>,
 )
 
@@ -202,6 +284,35 @@ data class ChildDailyAttendanceDeviation(
     val childId: ChildId,
     val date: LocalDate,
 )
+
+data class DaycareAndGroupNames(val daycareName: String, val groupName: String)
+
+fun getDaycareAndGroupForChildren(
+    tx: Database.Read,
+    children: List<ChildId>,
+): Map<ChildId, DaycareAndGroupNames> =
+    tx.createQuery {
+            sql(
+                """
+SELECT group_placements.child_id, d.name as daycare_name, dg.name as group_name
+FROM (
+    SELECT DISTINCT ON (p.child_id) p.child_id, dgp.daycare_group_id
+    FROM placement p
+     JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+     WHERE p.child_id = ANY (${bind(children)})
+     AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
+     ORDER BY p.child_id, dgp.start_date DESC
+ ) group_placements
+JOIN daycare_group dg ON group_placements.daycare_group_id = dg.id
+JOIN daycare d ON dg.daycare_id = d.id;
+            """
+                    .trimIndent()
+            )
+        }
+        .toMap {
+            column<ChildId>("child_id") to
+                DaycareAndGroupNames(column<String>("daycare_name"), column<String>("group_name"))
+        }
 
 fun getPreschoolAbsenceReportRowsForUnit(
     tx: Database.Read,
@@ -281,7 +392,8 @@ WITH preschool_group_placement_children AS (
         AND p.type = ANY ('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}'::placement_type[])
         AND p.unit_id = ${bind(daycareId)}
 )
-SELECT pgpc.id AS child_id,
+SELECT
+    pgpc.id AS child_id,
     pgpc.first_name,
     pgpc.last_name,
     CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END AS absence_type,

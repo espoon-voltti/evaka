@@ -340,7 +340,8 @@ sealed interface Action {
         ),
         READ_AROMI_ORDERS(HasGlobalRole(ADMIN)),
         READ_PLACEMENT_DESKTOP_DAYCARES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
-        READ_DRAFT_OCCUPANCIES(HasGlobalRole(ADMIN, SERVICE_WORKER));
+        READ_DRAFT_OCCUPANCIES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -2339,7 +2340,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
-        READ_PRESCHOOL_ABSENCE_REPORT(
+        READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
         ),

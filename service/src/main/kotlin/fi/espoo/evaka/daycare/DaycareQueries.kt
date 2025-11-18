@@ -231,6 +231,9 @@ fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery { daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }) }
         .exactlyOneOrNull<Daycare>()
 
+fun Database.Read.getDaycaresForArea(id: AreaId): List<Daycare> =
+    createQuery { daycaresQuery(Predicate { where("$it.care_area_id = ${bind(id)}") }) }.toList()
+
 fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> =
     createQuery {
             sql(
