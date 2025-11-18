@@ -151,7 +151,7 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   )
 })
 
-export const DropDownContainer = styled.nav`
+export const DropDownContainer = styled.div`
   position: relative;
 `
 
