@@ -67,29 +67,20 @@ export default React.memo(function PreschoolAbsenceReport() {
   )
   const terms = useQueryResult(preschoolTermsQuery())
 
-  const isSvUnit = useMemo(
-    () => selectedUnit?.language === 'sv',
-    [selectedUnit]
-  )
   const termOptions = useMemo(
     () =>
       terms.map((t) => {
         const today = LocalDate.todayInHelsinkiTz()
         const visibleTerms = t.filter((pt) => {
           if (roles.includes('ADMIN')) return true
-          const termStart = isSvUnit
-            ? pt.swedishPreschool.start
-            : pt.finnishPreschool.start
           return (
-            termStart.isEqualOrBefore(today) &&
-            termStart.isAfter(today.subYears(2))
+            pt.finnishPreschool.start.isEqualOrBefore(today) &&
+            pt.finnishPreschool.start.isAfter(today.subYears(2))
           )
         })
-        return orderBy(visibleTerms, (term) =>
-          isSvUnit ? term.swedishPreschool.start : term.finnishPreschool.start
-        )
+        return orderBy(visibleTerms, (term) => term.finnishPreschool.start)
       }),
-    [terms, isSvUnit, roles]
+    [terms, roles]
   )
 
   const groupOptions = useMemo(
@@ -144,11 +135,7 @@ export default React.memo(function PreschoolAbsenceReport() {
                     onChange={setSelectedTerm}
                     disabled={!selectedUnit}
                     selectedItem={selectedTerm}
-                    getItemLabel={(item) =>
-                      isSvUnit
-                        ? item.swedishPreschool.format()
-                        : item.finnishPreschool.format()
-                    }
+                    getItemLabel={(item) => item.finnishPreschool.format()}
                     placeholder={
                       i18n.reports.preschoolAbsences.filters.preschoolTerm
                         .placeholder
@@ -190,11 +177,7 @@ export default React.memo(function PreschoolAbsenceReport() {
               </FilterRow>
               {selectedTerm && selectedUnit && (
                 <PreschoolAbsenceGrid
-                  term={
-                    isSvUnit
-                      ? selectedTerm.swedishPreschool
-                      : selectedTerm.finnishPreschool
-                  }
+                  term={selectedTerm.finnishPreschool}
                   daycare={selectedUnit}
                   groupId={selectedGroup?.id}
                 />
