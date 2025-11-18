@@ -153,6 +153,7 @@ const sv: Translations = {
       calendar: 'Kalender',
       children: 'Barn',
       subNavigationMenu: 'Meny',
+      mainMenu: 'Huvudmeny',
       messageCount: (n: number) =>
         n > 1 ? `${n} nya meddelanden` : `${n} nytt meddelande`
     },

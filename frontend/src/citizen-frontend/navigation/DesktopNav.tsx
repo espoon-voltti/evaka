@@ -12,7 +12,6 @@ import { useBoolean } from 'lib-common/form/hooks'
 import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -48,8 +47,9 @@ import {
 import {
   isPersonalDetailsIncomplete,
   useChildrenWithOwnPage,
-  useOnEscape,
-  useUnreadChildNotifications
+  useUnreadChildNotifications,
+  useDropdownMenuKeyboardNavigation,
+  useMenubarKeyboardNavigation
 } from './utils'
 
 interface Props {
@@ -66,45 +66,83 @@ export default React.memo(function DesktopNav({
   const t = useTranslation()
   const { user: userResult } = useContext(AuthContext)
   const user = userResult.getOrElse(undefined)
+  const menubarRef = useRef<HTMLUListElement>(null)
+  const handleMenubarKeyDown = useMenubarKeyboardNavigation(menubarRef)
+
+  useEffect(() => {
+    if (!menubarRef.current) return
+
+    const menuItems = Array.from(
+      menubarRef.current.querySelectorAll<HTMLElement>('[role="menuitem"]')
+    ).filter((item) => {
+      // Only get top-level menuitems, not items inside dropdown menus
+      const parentMenu = item.closest('[role="menu"]')
+      return !parentMenu
+    })
+
+    menuItems.forEach((item, index) => {
+      item.tabIndex = index === 0 ? 0 : -1
+    })
+  }, [user])
 
   return (
     <Container data-qa="desktop-nav">
-      <Nav>
-        {user ? (
-          <>
-            {user.accessibleFeatures.reservations && (
-              <HeaderNavLink
-                to="/calendar"
-                data-qa="nav-calendar-desktop"
-                text={t.header.nav.calendar}
+      <MenuBar
+        ref={menubarRef}
+        role="menubar"
+        aria-label={t.header.nav.mainMenu}
+        onKeyDown={handleMenubarKeyDown}
+      >
+        <MenuGroup>
+          {user ? (
+            <>
+              {user.accessibleFeatures.reservations && (
+                <MenuBarItem role="none">
+                  <HeaderNavLink
+                    to="/calendar"
+                    data-qa="nav-calendar-desktop"
+                    text={t.header.nav.calendar}
+                  />
+                </MenuBarItem>
+              )}
+              {user.accessibleFeatures.messages && (
+                <MenuBarItem role="none">
+                  <HeaderNavLink
+                    to="/messages"
+                    data-qa="nav-messages-desktop"
+                    text={t.header.nav.messages}
+                    notificationCount={unreadMessagesCount}
+                  />
+                </MenuBarItem>
+              )}
+              <MenuBarItem role="none">
+                <ChildrenMenu />
+              </MenuBarItem>
+            </>
+          ) : null}
+        </MenuGroup>
+        <MenuGroup>
+          <MenuBarItem role="none">
+            <LanguageMenu />
+          </MenuBarItem>
+          {user ? (
+            <MenuBarItem role="none">
+              <SubNavigationMenu
+                user={user}
+                unreadDecisions={unreadDecisions}
               />
-            )}
-            {user.accessibleFeatures.messages && (
-              <HeaderNavLink
-                to="/messages"
-                data-qa="nav-messages-desktop"
-                text={t.header.nav.messages}
-                notificationCount={unreadMessagesCount}
-              />
-            )}
-            <ChildrenMenu />
-          </>
-        ) : null}
-      </Nav>
-      <FixedSpaceRow spacing="zero">
-        <LanguageMenu />
-        {user ? (
-          <SubNavigationMenu user={user} unreadDecisions={unreadDecisions} />
-        ) : hideLoginButton ? null : (
-          <nav>
-            <Login to="/login" data-qa="login-btn">
-              <Icon icon={faSignIn} />
-              <Gap size="xs" horizontal />
-              {t.header.login}
-            </Login>
-          </nav>
-        )}
-      </FixedSpaceRow>
+            </MenuBarItem>
+          ) : hideLoginButton ? null : (
+            <MenuBarItem role="none">
+              <Login to="/login" data-qa="login-btn">
+                <Icon icon={faSignIn} />
+                <Gap size="xs" horizontal />
+                {t.header.login}
+              </Login>
+            </MenuBarItem>
+          )}
+        </MenuGroup>
+      </MenuBar>
     </Container>
   )
 })
@@ -133,11 +171,25 @@ const Container = styled.div`
   }
 `
 
-const Nav = styled.nav`
+const MenuBar = styled.ul`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
   margin-left: ${defaultMargins.X3L};
+`
+
+const MenuGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
+const MenuBarItem = styled.li`
+  list-style: none;
 `
 
 const StyledNavLink = styled(NavLink)`
@@ -211,10 +263,16 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useUnreadChildNotifications()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnEscape = useOnEscape(close)
   const containerRef = useCloseOnOutsideEvent(open, close)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const handleDropdownKeyDown = useDropdownMenuKeyboardNavigation(
+    containerRef,
+    open,
+    close
+  )
 
   const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
+
   useEffect(() => {
     if (open && firstAnchorRef.current) {
       firstAnchorRef.current.focus()
@@ -244,8 +302,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   )
 
   return (
-    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyDown={handleDropdownKeyDown}>
       <DropDownButton
+        ref={buttonRef}
         className={classNames({ active })}
         onClick={toggleOpen}
         aria-label={`${t.header.nav.children}${
@@ -257,6 +316,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
         aria-haspopup="true"
         data-qa="nav-children-desktop"
         role="menuitem"
+        tabIndex={-1}
       >
         {t.header.nav.children}
         {totalUnreadChildNotifications > 0 && (
@@ -273,30 +333,37 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
         />
       </DropDownButton>
       {open ? (
-        <DropDown $align="left" data-qa="select-child">
+        <DropDown
+          $align="left"
+          data-qa="select-child"
+          role="menu"
+          aria-label={t.header.nav.children}
+        >
           {childrenWithOwnPage.map((child, index) => (
-            <DropDownLink
-              ref={index === 0 ? firstAnchorRef : null}
-              key={child.id}
-              to={`/children/${child.id}`}
-              onClick={close}
-              data-qa={`children-menu-${child.id}`}
-            >
-              <PersonName person={child} format="FirstFirst Last" />
-              {unreadChildNotifications[child.id] ? (
-                <CircledChar
-                  aria-label={`${unreadChildNotifications[child.id]} ${
-                    t.header.notifications
-                  }`}
-                  data-qa={`children-menu-${child.id}-notification-count`}
-                >
-                  {unreadChildNotifications[child.id]}
-                </CircledChar>
-              ) : null}
-              {duplicateChildInfo[child.id] !== undefined && (
-                <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
-              )}
-            </DropDownLink>
+            <MenuBarItem key={child.id} role="none">
+              <DropDownLink
+                ref={index === 0 ? firstAnchorRef : null}
+                to={`/children/${child.id}`}
+                onClick={close}
+                data-qa={`children-menu-${child.id}`}
+                role="menuitem"
+              >
+                <PersonName person={child} format="FirstFirst Last" />
+                {unreadChildNotifications[child.id] ? (
+                  <CircledChar
+                    aria-label={`${unreadChildNotifications[child.id]} ${
+                      t.header.notifications
+                    }`}
+                    data-qa={`children-menu-${child.id}-notification-count`}
+                  >
+                    {unreadChildNotifications[child.id]}
+                  </CircledChar>
+                ) : null}
+                {duplicateChildInfo[child.id] !== undefined && (
+                  <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
+                )}
+              </DropDownLink>
+            </MenuBarItem>
           ))}
         </DropDown>
       ) : null}
@@ -313,8 +380,14 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
 }) {
   const t = useTranslation()
   const [open, { toggle: toggleOpen, off: close }] = useBoolean(false)
-  const closeOnEscape = useOnEscape(close)
   const containerRef = useCloseOnOutsideEvent(open, close)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const handleDropdownKeyDown = useDropdownMenuKeyboardNavigation(
+    containerRef,
+    open,
+    close
+  )
+
   const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
@@ -329,12 +402,14 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   }, [open])
 
   return (
-    <DropDownContainer ref={containerRef} onKeyUp={closeOnEscape}>
+    <DropDownContainer ref={containerRef} onKeyDown={handleDropdownKeyDown}>
       <DropDownButton
+        ref={buttonRef}
         onClick={toggleOpen}
         data-qa="sub-nav-menu-desktop"
         aria-expanded={open}
         aria-haspopup="true"
+        role="menuitem"
       >
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
@@ -346,81 +421,104 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         </AttentionIndicator>
       </DropDownButton>
       {open ? (
-        <DropDown $align="right" data-qa="user-menu">
-          <DropDownLink
-            ref={firstAnchorRef}
-            data-qa="sub-nav-menu-applications"
-            to="/applications"
-            onClick={close}
-            aria-label={
-              t.header.nav.applications +
-              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
-            }
-          >
-            {t.header.nav.applications} {maybeLockElem}
-          </DropDownLink>
-          <DropDownLink
-            data-qa="sub-nav-menu-decisions"
-            to="/decisions"
-            onClick={close}
-            aria-label={
-              t.header.nav.decisions +
-              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
-              (unreadDecisions
-                ? ` ${unreadDecisions} ${t.header.notifications}`
-                : '')
-            }
-          >
-            {t.header.nav.decisions} {maybeLockElem}
-            {unreadDecisions ? (
-              <CircledChar data-qa="sub-nav-menu-decisions-notification-count">
-                {unreadDecisions}
-              </CircledChar>
-            ) : null}
-          </DropDownLink>
-          <DropDownLink
-            data-qa="sub-nav-menu-income"
-            to="/income"
-            matchRoutes={['/income', '/child-income']}
-            onClick={close}
-            aria-label={
-              t.header.nav.income +
-              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
-            }
-          >
-            {t.header.nav.income} {maybeLockElem}
-          </DropDownLink>
-          <Separator />
-          <DropDownLink
-            data-qa="sub-nav-menu-personal-details"
-            to="/personal-details"
-            onClick={close}
-            aria-label={
-              t.header.nav.personalDetails +
-              (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
-            }
-          >
-            {t.header.nav.personalDetails}
-            {showUserAttentionIndicator && (
-              <CircledChar
-                aria-label={t.header.attention}
-                data-qa="personal-details-notification"
-              >
-                !
-              </CircledChar>
-            )}
-          </DropDownLink>
-          <DropDownLocalLink data-qa="sub-nav-menu-logout" href={logoutUrl}>
-            {t.header.logout}
-            <FontAwesomeIcon icon={farSignOut} />
-          </DropDownLocalLink>
+        <DropDown
+          $align="right"
+          data-qa="user-menu"
+          role="menu"
+          aria-label={t.header.nav.subNavigationMenu}
+        >
+          <MenuBarItem role="none">
+            <DropDownLink
+              ref={firstAnchorRef}
+              data-qa="sub-nav-menu-applications"
+              to="/applications"
+              onClick={close}
+              aria-label={
+                t.header.nav.applications +
+                (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+              }
+              role="menuitem"
+            >
+              {t.header.nav.applications} {maybeLockElem}
+            </DropDownLink>
+          </MenuBarItem>
+          <MenuBarItem role="none">
+            <DropDownLink
+              data-qa="sub-nav-menu-decisions"
+              to="/decisions"
+              onClick={close}
+              aria-label={
+                t.header.nav.decisions +
+                (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
+                (unreadDecisions
+                  ? ` ${unreadDecisions} ${t.header.notifications}`
+                  : '')
+              }
+              role="menuitem"
+            >
+              {t.header.nav.decisions} {maybeLockElem}
+              {unreadDecisions ? (
+                <CircledChar data-qa="sub-nav-menu-decisions-notification-count">
+                  {unreadDecisions}
+                </CircledChar>
+              ) : null}
+            </DropDownLink>
+          </MenuBarItem>
+          <MenuBarItem role="none">
+            <DropDownLink
+              data-qa="sub-nav-menu-income"
+              to="/income"
+              matchRoutes={['/income', '/child-income']}
+              onClick={close}
+              aria-label={
+                t.header.nav.income +
+                (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+              }
+              role="menuitem"
+            >
+              {t.header.nav.income} {maybeLockElem}
+            </DropDownLink>
+          </MenuBarItem>
+          <Separator role="separator" />
+          <MenuBarItem role="none">
+            <DropDownLink
+              data-qa="sub-nav-menu-personal-details"
+              to="/personal-details"
+              onClick={close}
+              aria-label={
+                t.header.nav.personalDetails +
+                (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
+              }
+              role="menuitem"
+            >
+              {t.header.nav.personalDetails}
+              {showUserAttentionIndicator && (
+                <CircledChar
+                  aria-label={t.header.attention}
+                  data-qa="personal-details-notification"
+                >
+                  !
+                </CircledChar>
+              )}
+            </DropDownLink>
+          </MenuBarItem>
+          <MenuBarItem role="none">
+            <DropDownLocalLink
+              data-qa="sub-nav-menu-logout"
+              href={logoutUrl}
+              role="menuitem"
+            >
+              {t.header.logout}
+              <FontAwesomeIcon icon={farSignOut} />
+            </DropDownLocalLink>
+          </MenuBarItem>
         </DropDown>
       ) : null}
     </DropDownContainer>
   )
 })
 
-const Separator = styled.div`
+const Separator = styled(MenuBarItem)`
   border-top: 1px solid ${colors.grayscale.g15};
   margin: ${defaultMargins.s} -${defaultMargins.m};
   width: calc(100% + ${defaultMargins.m} + ${defaultMargins.m});
