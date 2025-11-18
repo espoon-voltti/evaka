@@ -4662,9 +4662,15 @@ export const fi = {
         'Raportti listaa esiopetuskauden lapsikohtaiset poissaolomäärät valitulle yksikölle ja ryhmälle',
       firstName: 'Etunimi',
       lastName: 'Sukunimi',
+      daycareName: 'Yksikkö',
+      groupName: 'Ryhmä',
       hours: '(tuntia)',
       total: 'Yhteensä',
       filters: {
+        areaSelection: {
+          label: 'Alue:',
+          placeHolder: 'Valitse alue'
+        },
         daycareSelection: {
           label: 'Esiopetusyksikkö:',
           placeholder: 'Valitse yksikkö'

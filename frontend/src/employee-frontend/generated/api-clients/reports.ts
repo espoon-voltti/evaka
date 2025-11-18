@@ -20,7 +20,7 @@ import type { ChildAttendanceReportRow } from 'lib-common/generated/api-types/re
 import type { ChildDocumentOrDecisionStatus } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentSummary } from 'lib-common/generated/api-types/document'
 import type { ChildDocumentsReportTemplate } from 'lib-common/generated/api-types/reports'
-import type { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
+import type { ChildPreschoolAbsenceRowWithUnitAndGroup } from 'lib-common/generated/api-types/reports'
 import type { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import type { CitizenDocumentResponseReportRow } from 'lib-common/generated/api-types/reports'
 import type { CitizenDocumentResponseReportTemplate } from 'lib-common/generated/api-types/reports'
@@ -1004,19 +1004,21 @@ export async function getPlacementSketchingReport(
 */
 export async function getPreschoolAbsenceReport(
   request: {
-    unitId: DaycareId,
+    areaId?: AreaId | null,
+    unitId?: DaycareId | null,
     groupId?: GroupId | null,
     termStart: LocalDate,
     termEnd: LocalDate
   }
-): Promise<ChildPreschoolAbsenceRow[]> {
+): Promise<ChildPreschoolAbsenceRowWithUnitAndGroup[]> {
   const params = createUrlSearchParams(
+    ['areaId', request.areaId],
     ['unitId', request.unitId],
     ['groupId', request.groupId],
     ['termStart', request.termStart.formatIso()],
     ['termEnd', request.termEnd.formatIso()]
   )
-  const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRow[]>>({
+  const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRowWithUnitAndGroup[]>>({
     url: uri`/employee/reports/preschool-absence`.toString(),
     method: 'GET',
     params

@@ -561,6 +561,8 @@ export class PreschoolAbsenceReport {
     expected: {
       firstName: string
       lastName: string
+      daycareName: string
+      groupName: string
       TOTAL: string
       OTHER_ABSENCE: string
       SICKLEAVE: string
@@ -578,6 +580,12 @@ export class PreschoolAbsenceReport {
         await row
           .findByDataQa('last-name-column')
           .assertTextEquals(data.lastName)
+        await row
+          .findByDataQa('daycare-name-column')
+          .assertTextEquals(data.daycareName)
+        await row
+          .findByDataQa('group-name-column')
+          .assertTextEquals(data.groupName)
         await row.findByDataQa('total-column').assertTextEquals(data.TOTAL)
         await row
           .findByDataQa('other-absence-column')

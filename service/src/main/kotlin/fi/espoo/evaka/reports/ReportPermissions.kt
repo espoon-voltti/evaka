@@ -240,7 +240,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.PRESCHOOL_ABSENCES.takeIf {
                         permittedActionsForSomeUnit.contains(
-                            Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT
+                            Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT
                         )
                     },
                     Report.PRESCHOOL_APPLICATIONS.takeIf {

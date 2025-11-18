@@ -14,6 +14,7 @@ import type {
   DevDaycareGroup,
   DevEmployee,
   DevPerson,
+  DevPlacement,
   DevPreschoolTerm
 } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -24,6 +25,7 @@ import { employeeLogin } from '../../utils/user'
 const mockedToday = LocalDate.of(2023, 12, 13)
 let term: DevPreschoolTerm
 let child: DevPerson
+let placement: DevPlacement
 let unit: DevDaycare
 let closedUnit: DevDaycare
 let group: DevDaycareGroup
@@ -63,10 +65,16 @@ beforeEach(async () => {
     lastName: 'Beck'
   }).saveChild()
 
-  await Fixture.placement({
+  placement = await Fixture.placement({
     type: 'PRESCHOOL',
     childId: child.id,
     unitId: unit.id,
+    startDate: mockedToday.subDays(4),
+    endDate: mockedToday.addDays(4)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: placement.id,
+    daycareGroupId: group.id,
     startDate: mockedToday.subDays(4),
     endDate: mockedToday.addDays(4)
   }).save()
@@ -114,6 +122,8 @@ describe('Preschool absence report', () => {
       {
         firstName: child.firstName,
         lastName: child.lastName,
+        daycareName: 'TestiEO',
+        groupName: 'Avoin ryhmä',
         TOTAL: '6',
         OTHER_ABSENCE: '1',
         SICKLEAVE: '5',

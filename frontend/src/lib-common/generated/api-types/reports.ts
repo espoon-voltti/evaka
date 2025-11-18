@@ -255,11 +255,13 @@ export interface ChildDocumentsReportTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildPreschoolAbsenceRow
+* Generated from fi.espoo.evaka.reports.ChildPreschoolAbsenceRowWithUnitAndGroup
 */
-export interface ChildPreschoolAbsenceRow {
+export interface ChildPreschoolAbsenceRowWithUnitAndGroup {
   childId: PersonId
+  daycareName: string
   firstName: string
+  groupName: string
   hourlyTypeResults: Partial<Record<AbsenceType, number>>
   lastName: string
 }
