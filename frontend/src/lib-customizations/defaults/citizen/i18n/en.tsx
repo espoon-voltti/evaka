@@ -311,11 +311,11 @@ const en: Translations = {
       <div>
         The staff has requested you to fill in a document concerning your child:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
-        <br />
-        <br />
-        <span style={{ color: colors.status.info }}>Fill in the document</span>
       </div>
-    )
+    ),
+    unansweredChildDocumentFillIn: 'Fill in the document',
+    unansweredChildDocumentWeakAuthInfo:
+      'Filling in the document requires strong authentication.'
   },
   errorPage: {
     reload: 'Reload page',

@@ -301,11 +301,11 @@ const sv: Translations = {
       <div>
         Personalen har begärt att du fyller i ett dokument om ditt barn:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
-        <br />
-        <br />
-        <span style={{ color: colors.status.info }}>Fyll i dokumentet</span>
       </div>
-    )
+    ),
+    unansweredChildDocumentFillIn: 'Fyll i dokumentet',
+    unansweredChildDocumentWeakAuthInfo:
+      'För att kunna fylla i dokumentet krävs stark autentisering.'
   },
   errorPage: {
     reload: 'Ladda om sidan',
