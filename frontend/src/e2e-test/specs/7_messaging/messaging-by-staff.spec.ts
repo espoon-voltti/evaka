@@ -422,7 +422,7 @@ describe('Sending and receiving sensitive messages', () => {
     const authPage = await citizenMessagesPage.openStrongAuthPage()
     const strongAuthCitizenMessagePage = await authPage.login(
       testAdult.ssn!,
-      'desktop'
+      (page) => new CitizenMessagesPage(page, 'desktop')
     )
 
     await strongAuthCitizenMessagePage.assertThreadContent(sensitiveMessage)

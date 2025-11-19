@@ -13,17 +13,8 @@ import {
   TextInput
 } from '../../utils/page'
 
-export class MockStrongAuthPage {
-  constructor(private readonly page: Page) {}
+import { MockStrongAuthPage } from './citizen-strong-auth'
 
-  async login(ssn: string, env: EnvType) {
-    await this.page.find(`[id="${ssn}"]`).locator.check()
-    await this.page.find('[type=submit]').findText('Kirjaudu').click()
-    await this.page.find('[type=submit]').findText('Jatka').click()
-    await this.page.findByDataQa('header-city-logo').waitUntilVisible()
-    return new CitizenMessagesPage(this.page, env)
-  }
-}
 export default class CitizenMessagesPage {
   messageReplyContent: TextInput
   #threadListItem: Element
