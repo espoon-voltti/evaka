@@ -661,7 +661,7 @@ describe('Staff copies', () => {
     await messagesPage.assertCopyContent(message.title, message.content)
     const copyPage1 = await messagesPage.openCopyThread()
 
-    const expectedGroupName1 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä, Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä`
+    const expectedGroupName1 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
     await copyPage1.assertMessageRecipients(expectedGroupName1)
 
     // Verify: Staff from second unit sees unit names only
@@ -673,7 +673,7 @@ describe('Staff copies', () => {
     await messagesPage2.assertCopyContent(message.title, message.content)
     const copyPage2 = await messagesPage2.openCopyThread()
 
-    const expectedGroupName2 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä, Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä`
+    const expectedGroupName2 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
     await copyPage2.assertMessageRecipients(expectedGroupName2)
   })
 })

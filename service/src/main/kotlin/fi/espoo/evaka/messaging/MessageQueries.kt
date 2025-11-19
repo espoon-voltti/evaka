@@ -957,25 +957,60 @@ SELECT
 FROM message_list ml
 LEFT JOIN (
     SELECT 
-        ml2.message_id,
-        array_agg(DISTINCT d.name || ' - ' || dg.name ORDER BY d.name || ' - ' || dg.name) AS grouped_names
-    FROM message_list ml2
-    -- Find the original (non-copy) threads that share the same content
-    JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
-    JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
-    -- Get the actual recipient children from message_thread_children
-    JOIN message_thread_children mtc ON mtc.thread_id = t2.id
-    -- Look up the child's group placement at message sent time
-    JOIN placement p ON p.child_id = mtc.child_id
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-    JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-    JOIN daycare d ON d.id = dg.daycare_id
-    WHERE 
-        -- Check group placement validity at message sent time
-        daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
-        -- Only process bulletin messages
-        AND ml2.type = 'BULLETIN'
-    GROUP BY ml2.message_id
+        distinct_groups.message_id,
+        array_agg(DISTINCT group_name) AS grouped_names
+    FROM (
+        SELECT DISTINCT
+            ml2.message_id,
+            d.name || ' - ' || dg.name || 
+            CASE 
+                WHEN recipient_count < total_children THEN ' (osa)'
+                ELSE ''
+            END as group_name
+        FROM message_list ml2
+        -- Find the original (non-copy) threads that share the same content
+        JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
+        JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
+        -- Get the actual recipient children from message_thread_children
+        JOIN message_thread_children mtc ON mtc.thread_id = t2.id
+        -- Look up the child's group placement at message sent time
+        JOIN placement p ON p.child_id = mtc.child_id
+        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+        JOIN daycare d ON d.id = dg.daycare_id
+        -- Count recipients per group
+        JOIN (
+        SELECT 
+            ml3.message_id,
+            ml3.sent_at,
+            dg3.id as group_id,
+            COUNT(DISTINCT mtc3.child_id) as recipient_count,
+            (
+                SELECT COUNT(DISTINCT p3.child_id)
+                FROM daycare_group_placement dgp3
+                JOIN placement p3 ON p3.id = dgp3.daycare_placement_id
+                WHERE dgp3.daycare_group_id = dg3.id
+                    AND daterange(dgp3.start_date, dgp3.end_date, '[]') @> ml3.sent_at::date
+                    AND daterange(p3.start_date, p3.end_date, '[]') @> ml3.sent_at::date
+            ) as total_children
+        FROM message_list ml3
+        JOIN message m3 ON m3.content_id = (SELECT content_id FROM message WHERE id = ml3.message_id)
+        JOIN message_thread t3 ON t3.id = m3.thread_id AND NOT t3.is_copy
+        JOIN message_thread_children mtc3 ON mtc3.thread_id = t3.id
+        JOIN placement p3 ON p3.child_id = mtc3.child_id
+        JOIN daycare_group_placement dgp3 ON dgp3.daycare_placement_id = p3.id
+        JOIN daycare_group dg3 ON dg3.id = dgp3.daycare_group_id
+        WHERE daterange(dgp3.start_date, dgp3.end_date, '[]') @> ml3.sent_at::date
+            AND ml3.type = 'BULLETIN'
+        GROUP BY ml3.message_id, ml3.sent_at, dg3.id
+        ) group_counts ON group_counts.message_id = ml2.message_id AND group_counts.group_id = dg.id
+        WHERE 
+            -- Check group placement validity at message sent time
+            daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
+            -- Only process bulletin messages
+            AND ml2.type = 'BULLETIN'
+    ) distinct_groups
+    GROUP BY message_id
 ) grn ON grn.message_id = ml.message_id
 """
             )
