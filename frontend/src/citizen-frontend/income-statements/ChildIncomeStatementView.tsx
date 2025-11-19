@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type {
@@ -16,6 +16,7 @@ import {
 } from 'lib-common/income-statements/attachments'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import { NotificationsContext } from 'lib-components/Notifications'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -81,6 +82,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
 }) {
   const t = useTranslation()
   const [, navigate] = useLocation()
+  const { addTimedNotification } = useContext(NotificationsContext)
 
   const editable = incomeStatement.status !== 'HANDLED'
 
@@ -145,7 +147,13 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
                   )
                 }
               })}
-              onSuccess={() => navigate('/income')}
+              onSuccess={() => {
+                navigate('/income')
+                addTimedNotification({
+                  children: t.income.sent,
+                  dataQa: 'income-statement-sent-notification'
+                })
+              }}
               data-qa="save-btn"
             />
           </FixedSpaceRow>

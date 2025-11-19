@@ -2421,6 +2421,7 @@ const sv: Translations = {
     send: 'Skicka',
     updateSent: 'Spara ändringar',
     saveAsDraft: 'Spara och fortsätt senare',
+    sent: 'Inkomstutredning skickad',
     incomeInfo: 'Inkomstuppgifter',
     incomeInstructions:
       'Lämnä in en inkomstutredning eftersom din barn har fått platsen inom småbarnspedagogik.',

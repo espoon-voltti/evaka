@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -24,6 +24,7 @@ import {
 } from 'lib-common/income-statements/form'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import { NotificationsContext } from 'lib-components/Notifications'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -102,6 +103,7 @@ const IncomeInfo = React.memo(function IncomeInfo({
 }) {
   const t = useTranslation()
   const [, navigate] = useLocation()
+  const { addTimedNotification } = useContext(NotificationsContext)
 
   const requiredAttachments = useMemo(
     () => computeRequiredAttachments(fromIncomeStatement(incomeStatement)),
@@ -149,6 +151,7 @@ const IncomeInfo = React.memo(function IncomeInfo({
           value={otherInfo}
           onChange={setOtherInfo}
           placeholder={t.common.write}
+          data-qa="income-other-info-input"
         />
       )}
 
@@ -188,7 +191,13 @@ const IncomeInfo = React.memo(function IncomeInfo({
                   )
                 }
               })}
-              onSuccess={() => navigate('/income')}
+              onSuccess={() => {
+                navigate('/income')
+                addTimedNotification({
+                  children: t.income.sent,
+                  dataQa: 'income-statement-sent-notification'
+                })
+              }}
             />
           </FixedSpaceRow>
         </>

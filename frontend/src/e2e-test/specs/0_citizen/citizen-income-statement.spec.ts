@@ -108,7 +108,15 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
       await incomeStatementsPage.submit()
+      await incomeStatementsPage.assertAriaLiveExistsAndIncludesNotification()
       await assertIncomeStatementCreated(startDate, now, env)
+
+      // Add info to sent statement
+      await incomeStatementsPage.closeNotification()
+      await incomeStatementsPage.editIncomeStatement(0)
+      await incomeStatementsPage.editOtherInfo('Lisätiedot tuloihin liittyen')
+      await incomeStatementsPage.saveEditedIncomeStatement()
+      await incomeStatementsPage.assertAriaLiveExistsAndIncludesNotification()
     })
   })
 

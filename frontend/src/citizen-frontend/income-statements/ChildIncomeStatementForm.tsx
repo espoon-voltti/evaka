@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useImperativeHandle,
+  useMemo,
+  useRef
+} from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -12,6 +18,7 @@ import { numAttachments } from 'lib-common/income-statements/attachments'
 import type * as Form from 'lib-common/income-statements/form'
 import type LocalDate from 'lib-common/local-date'
 import { scrollToRef } from 'lib-common/utils/scrolling'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -250,6 +257,7 @@ export default React.memo(
     const t = useTranslation()
     useTitle(t, t.income.childFormTitle)
     const scrollTarget = useRef<HTMLDivElement>(null)
+    const { addTimedNotification } = useContext(NotificationsContext)
 
     const isValidStartDate = useCallback(
       (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -334,7 +342,13 @@ export default React.memo(
                   primary
                   onClick={() => onSave(false)}
                   disabled={!sendButtonEnabled}
-                  onSuccess={onSuccess}
+                  onSuccess={() => {
+                    onSuccess()
+                    addTimedNotification({
+                      children: t.income.sent,
+                      dataQa: 'income-statement-sent-notification'
+                    })
+                  }}
                   data-qa="save-btn"
                 />
               </FixedSpaceRow>
