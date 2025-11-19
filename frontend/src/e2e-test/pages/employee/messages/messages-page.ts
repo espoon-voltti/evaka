@@ -299,6 +299,7 @@ export class MessageEditor extends Element {
     if (message.recipientKeys) {
       await this.recipientSelection.open()
       await this.recipientSelection.expandAll()
+      await this.recipientSelection.expandAll()
       for (const recipient of message.recipientKeys) {
         await this.recipientSelection.option(recipient).check()
       }

@@ -511,26 +511,26 @@ describe('Staff copies', () => {
     // 3. The bulletin is sent to only ONE group per unit (not all groups)
     // 4. Staff from each unit only see recipient names from their own accessible unit
 
-    // Helper function to create a family with children and place them in a group
-    async function createFamilyInGroup(
-      childCount: number,
-      unitId: DaycareId,
-      groupId: GroupId,
-      ssnSeed: number
+    // Helper function to create a family where each child is placed in a different group
+    // Creates one child per group ID provided and returns the children
+    async function createFamilyWithChildrenInGroups(
+      guardianSsnSeed: number,
+      daycareId: DaycareId,
+      daycareGroupIds: GroupId[]
     ) {
       const guardian = Fixture.person({
-        ssn: `${String(ssnSeed).padStart(6, '0')}-${String(1000 + ssnSeed).slice(-3)}A`,
+        ssn: `${String(guardianSsnSeed).padStart(6, '0')}-${String(1000 + guardianSsnSeed).slice(-3)}A`,
         firstName: 'Guardian',
-        lastName: `Family${ssnSeed}`,
+        lastName: `Family${guardianSsnSeed}`,
         dateOfBirth: LocalDate.of(1980, 1, 1)
       })
 
-      const children = Array.from({ length: childCount }, (_, i) =>
+      const children = daycareGroupIds.map((_, childIndex) =>
         Fixture.person({
-          ssn: `${String(ssnSeed + i + 1).padStart(6, '0')}-${String(2000 + ssnSeed + i).slice(-3)}B`,
-          firstName: `Child${i + 1}`,
-          lastName: `Family${ssnSeed}`,
-          dateOfBirth: LocalDate.of(2017, (i % 12) + 1, 1)
+          ssn: `${String(guardianSsnSeed + childIndex + 1).padStart(6, '0')}-${String(2000 + guardianSsnSeed + childIndex).slice(-3)}B`,
+          firstName: `Child${childIndex + 1}`,
+          lastName: `Family${guardianSsnSeed}`,
+          dateOfBirth: LocalDate.of(2017, (childIndex % 12) + 1, 1)
         })
       )
 
@@ -546,20 +546,22 @@ describe('Staff copies', () => {
         }))
       })
 
-      for (const child of children) {
+      for (const [childIndex, child] of children.entries()) {
         const placement = await Fixture.placement({
           childId: child.id,
-          unitId: unitId,
+          unitId: daycareId,
           startDate: mockedDate,
           endDate: mockedDate.addYears(1)
         }).save()
         await Fixture.groupPlacement({
           daycarePlacementId: placement.id,
-          daycareGroupId: groupId,
+          daycareGroupId: daycareGroupIds[childIndex],
           startDate: mockedDate,
           endDate: mockedDate.addYears(1)
         }).save()
       }
+
+      return children
     }
 
     // Setup second daycare with messaging enabled
@@ -592,18 +594,30 @@ describe('Staff copies', () => {
       daycareId: testDaycare.id
     }).save()
 
-    // Add 2 more children to first daycare's testDaycareGroup (making 4 total - will receive bulletin)
-    await createFamilyInGroup(2, testDaycare.id, testDaycareGroup.id, 100)
+    // Add 2 more children to first daycare - each in a different group
+    const family1Children = await createFamilyWithChildrenInGroups(
+      100,
+      testDaycare.id,
+      [testDaycareGroup.id, daycareGroupB.id]
+    )
 
-    // Add 2 children to the SECOND group of first daycare (daycareGroupB - won't receive bulletin)
-    await createFamilyInGroup(2, testDaycare.id, daycareGroupB.id, 200)
+    // Add 2 children to first daycare - each in a different group
+    await createFamilyWithChildrenInGroups(200, testDaycare.id, [
+      testDaycareGroup.id,
+      daycareGroupB.id
+    ])
+    // Create 2 children for second daycare - each in a different group
+    const family3Children = await createFamilyWithChildrenInGroups(
+      300,
+      testDaycare2.id,
+      [daycare2Group.id, daycare2GroupB.id]
+    )
 
-    // Create 2 children for second daycare's FIRST group (daycare2Group - will receive bulletin)
-    await createFamilyInGroup(2, testDaycare2.id, daycare2Group.id, 300)
-
-    // Add 2 children to the SECOND group of second daycare (daycare2GroupB - won't receive bulletin)
-    await createFamilyInGroup(2, testDaycare2.id, daycare2GroupB.id, 400)
-
+    // Add 2 children to second daycare - each in a different group
+    await createFamilyWithChildrenInGroups(400, testDaycare2.id, [
+      daycare2Group.id,
+      daycare2GroupB.id
+    ])
     // Create staff member with access ONLY to second daycare
     const staff2 = await Fixture.employee()
       .staff(testDaycare2.id)
@@ -619,12 +633,15 @@ describe('Staff copies', () => {
     await employeeLogin(multiUnitSupervisorPage, multiUnitSupervisor)
     await multiUnitSupervisorPage.goto(`${config.employeeUrl}/messages`)
 
+    // Select a combination of whole groups and single children
     const message = {
       title: 'Multi-Unit Bulletin',
-      content: 'Important announcement for selected groups only',
+      content: 'Important announcement for selected children',
       recipientKeys: [
-        `${testDaycareGroup.id}+false`, // First unit: testDaycareGroup
-        `${daycare2Group.id}+false` // Second unit: daycare2Group
+        `${testDaycareGroup.id}+false`, // Whole group from first unit
+        `${daycare2Group.id}+false`, // Whole group from second unit
+        `${family1Children[1].id}+false`, // Single child from another group of first unit
+        `${family3Children[1].id}+false` // Single child from another group of second unit
       ],
       type: 'BULLETIN' as const,
       confirmManyRecipients: true
@@ -636,7 +653,7 @@ describe('Staff copies', () => {
     await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    // Verify: Staff from first unit sees ONLY first unit's group name
+    // Verify: Staff from first unit sees group names from their accessible unit
     await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(staffPage)
@@ -644,10 +661,10 @@ describe('Staff copies', () => {
     await messagesPage.assertCopyContent(message.title, message.content)
     const copyPage1 = await messagesPage.openCopyThread()
 
-    const expectedGroupName1 = `${testDaycare.name} - ${testDaycareGroup.name}`
+    const expectedGroupName1 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä, Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä`
     await copyPage1.assertMessageRecipients(expectedGroupName1)
 
-    // Verify: Staff from second unit sees ONLY second unit's group name
+    // Verify: Staff from second unit sees unit names only
     const staff2Page = await Page.open({ mockedTime: mockedDateAt11 })
     await employeeLogin(staff2Page, staff2)
     await staff2Page.goto(`${config.employeeUrl}/messages`)
@@ -656,7 +673,7 @@ describe('Staff copies', () => {
     await messagesPage2.assertCopyContent(message.title, message.content)
     const copyPage2 = await messagesPage2.openCopyThread()
 
-    const expectedGroupName2 = `${testDaycare2.name} - ${daycare2Group.name}`
+    const expectedGroupName2 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä, Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä`
     await copyPage2.assertMessageRecipients(expectedGroupName2)
   })
 })

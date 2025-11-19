@@ -960,33 +960,19 @@ LEFT JOIN (
         ml2.message_id,
         array_agg(DISTINCT d.name || ' - ' || dg.name ORDER BY d.name || ' - ' || dg.name) AS grouped_names
     FROM message_list ml2
-    -- Find the original messages (non-copy threads) that share the same content
+    -- Find the original (non-copy) threads that share the same content
     JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
     JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
-    -- Get recipients of the original message
-    JOIN message_recipients mr ON mr.message_id = m2.id
-    JOIN message_account rma ON rma.id = mr.recipient_id AND rma.type = 'CITIZEN'
-    -- Get recipient groups via guardian relationships
-    LEFT JOIN guardian g ON g.guardian_id = rma.person_id
-    LEFT JOIN foster_parent fp ON fp.parent_id = rma.person_id
-    JOIN placement p ON (p.child_id = g.child_id OR p.child_id = fp.child_id)
+    -- Get the actual recipient children from message_thread_children
+    JOIN message_thread_children mtc ON mtc.thread_id = t2.id
+    -- Look up the child's group placement at message sent time
+    JOIN placement p ON p.child_id = mtc.child_id
     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
     JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
     JOIN daycare d ON d.id = dg.daycare_id
-    -- Get viewer's accessible groups and filter
-    JOIN message_account ma ON ma.id = ${bind(accountId)}
-    LEFT JOIN daycare_group_acl dga ON dga.employee_id = ma.person_id AND ma.type = 'PERSONAL'
-    LEFT JOIN daycare_acl da ON da.employee_id = ma.person_id AND ma.type = 'PERSONAL'
     WHERE 
-        -- Only include groups accessible to the viewer
-        (dg.id = dga.daycare_group_id OR dg.daycare_id = da.daycare_id OR dg.id = ma.daycare_group_id)
-        -- Check placement and group placement validity at message sent time
-        AND daterange(p.start_date, p.end_date, '[]') @> ml2.sent_at::date
-        AND daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
-        -- Check group is not ended or ended after message sent
-        AND (dg.end_date IS NULL OR dg.end_date >= ml2.sent_at::date)
-        -- For foster parents, check validity period
-        AND (g.child_id IS NOT NULL OR (fp.child_id IS NOT NULL AND daterange(fp.valid_during) @> ml2.sent_at::date))
+        -- Check group placement validity at message sent time
+        daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
         -- Only process bulletin messages
         AND ml2.type = 'BULLETIN'
     GROUP BY ml2.message_id
