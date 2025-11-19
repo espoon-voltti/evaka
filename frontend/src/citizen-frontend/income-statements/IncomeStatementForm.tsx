@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -20,6 +20,7 @@ import { otherIncomes } from 'lib-common/generated/api-types/incomestatement'
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import * as Form from 'lib-common/income-statements/form'
 import LocalDate from 'lib-common/local-date'
+import { NotificationsContext } from 'lib-components/Notifications'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -128,6 +129,7 @@ export default React.memo(function IncomeStatementForm({
   const onGrossChange = useFieldSetState(onChange, 'gross')
   const onEntrepreneurChange = useFieldSetState(onChange, 'entrepreneur')
   const scrollTarget = useRef<HTMLElement>(null)
+  const { addTimedNotification } = useContext(NotificationsContext)
 
   const isValidStartDate = useCallback(
     (date: LocalDate) => otherStartDates.every((d) => !d.isEqual(date)),
@@ -331,7 +333,13 @@ export default React.memo(function IncomeStatementForm({
                 text={status === 'DRAFT' ? t.income.send : t.income.updateSent}
                 primary
                 onClick={() => onSave(false)}
-                onSuccess={onSuccess}
+                onSuccess={() => {
+                  onSuccess()
+                  addTimedNotification({
+                    children: t.income.sent,
+                    dataQa: 'income-statement-sent-notification'
+                  })
+                }}
               />
             </ResponsiveFixedSpace>
           </StyledActionContainer>

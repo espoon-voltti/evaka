@@ -74,6 +74,25 @@ export class CitizenChildIncomeStatementEditPage {
     await this.startDateInput.fill(date)
     await this.startDateInput.press('Enter')
   }
+
+  async assertAriaLiveExistsAndIncludesNotification() {
+    await this.page
+      .findByDataQa('notification-container')
+      .assertAttributeEquals('aria-live', 'polite')
+    await this.page
+      .find(
+        '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
+      )
+      .assertTextEquals('Tuloselvitys lähetetty')
+  }
+
+  async closeNotification() {
+    await this.page
+      .find(
+        '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification] [data-qa="timed-toast-close-button"]'
+      )
+      .click()
+  }
 }
 
 export class CitizenChildIncomeStatementListPage {

@@ -2188,6 +2188,7 @@ const en: Translations = {
     send: 'Send',
     updateSent: 'Save changes',
     saveAsDraft: 'Save and continue later',
+    sent: 'Income statement sent',
     incomeInfo: 'Income information',
     incomeInstructions:
       'Please submit an income statement after your child has got the place in early childhood education.',

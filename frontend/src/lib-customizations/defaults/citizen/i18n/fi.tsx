@@ -2430,6 +2430,7 @@ export default {
     send: 'Lähetä',
     updateSent: 'Tallenna muutokset',
     saveAsDraft: 'Tallenna ja jatka myöhemmin',
+    sent: 'Tuloselvitys lähetetty',
     incomeInfo: 'Tulotiedot',
     incomeInstructions:
       'Toimita tulotiedot vasta, kun lapsesi on saanut varhaiskasvatuspaikkapäätöksen.',

@@ -95,12 +95,15 @@ describe.each(envs)('Child Income statements (%s)', (env) => {
     await editPage.assure.evaluate((e) => e.scrollIntoView({ block: 'center' }))
     await editPage.assure.check()
     await editPage.sendButton.click()
+    await editPage.assertAriaLiveExistsAndIncludesNotification()
     await listPage.assertChildIncomeStatementRowCount(1)
 
     // Edit sent
+    await editPage.closeNotification()
     const editSentPage = await listPage.editChildSentIncomeStatement(0)
     await editSentPage.otherInfoInput.fill('foo bar baz and more')
     await editPage.sendButton.click()
+    await editPage.assertAriaLiveExistsAndIncludesNotification()
     await listPage.assertChildIncomeStatementRowCount(1)
 
     // Delete

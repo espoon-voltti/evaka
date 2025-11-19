@@ -192,4 +192,33 @@ export default class CitizenIncomePage {
     const option = value ? 'yes' : 'no'
     await new Radio(this.page.findByDataQa(`entrepreneur-${option}`)).check()
   }
+
+  async assertAriaLiveExistsAndIncludesNotification() {
+    await this.page
+      .findByDataQa('notification-container')
+      .assertAttributeEquals('aria-live', 'polite')
+    await this.page
+      .find(
+        '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
+      )
+      .assertTextEquals('Tuloselvitys lähetetty')
+  }
+
+  async closeNotification() {
+    await this.page
+      .find(
+        '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification] [data-qa="timed-toast-close-button"]'
+      )
+      .click()
+  }
+
+  async editOtherInfo(text: string) {
+    await new TextInput(this.page.findByDataQa('income-other-info-input')).fill(
+      text
+    )
+  }
+
+  async saveEditedIncomeStatement() {
+    await this.page.find('button.primary').click()
+  }
 }
