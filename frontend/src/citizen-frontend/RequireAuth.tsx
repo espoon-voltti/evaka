@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect, useLocation } from 'wouter'
+import { Redirect, useLocation, useSearch } from 'wouter'
 
 import type { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 
@@ -19,7 +19,8 @@ export default React.memo(function RequireAuth({
   strength = 'STRONG',
   children
 }: Props) {
-  const [returnUrl] = useLocation()
+  const [returnUrlPath] = useLocation()
+  const params = useSearch()
   const { user } = useContext(AuthContext)
 
   const isStrong = user
@@ -27,6 +28,7 @@ export default React.memo(function RequireAuth({
     .getOrElse(false)
   const isWeak = user.map((usr) => usr?.authLevel === 'WEAK').getOrElse(false)
   const isLoggedIn = isStrong || isWeak
+  const returnUrl = params ? `${returnUrlPath}?${params}` : returnUrlPath
 
   return isLoggedIn ? (
     strength === 'STRONG' && !isStrong ? (
