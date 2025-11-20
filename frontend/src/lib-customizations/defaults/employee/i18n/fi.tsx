@@ -686,6 +686,8 @@ export const fi = {
       participatesInBreakfastNo: 'Ei',
       nekkuDiet: 'Nekku-ruokatilauksen ruokavalio',
       nekkuSpecialDiet: 'Nekku-erityisruokavalio',
+      nekkuSpecialDietInfo:
+        'Nekku-erityisruokavalio -kenttään kirjataan vain sellaiset allergiat, joita ei voi valita Nekku-erityisruokavalio kohdan rasteilla. Tähän ei kirjata lapsen ruokajuomia, vaan ne kirjataan ylempänä olevaan Lisätiedot-kohtaan.',
       noGuardian:
         'Huoltajatiedot puuttuvat. Lapsen huoltajat eivät pysty asioimaan eVakassa',
       placeholder: {
