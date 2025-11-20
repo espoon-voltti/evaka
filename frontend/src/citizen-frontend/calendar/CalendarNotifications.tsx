@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useLocation } from 'wouter'
 
@@ -17,9 +18,10 @@ import { Gap } from 'lib-components/white-space'
 import type { Translations } from 'lib-customizations/citizen'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
-import { faInfo } from 'lib-icons'
+import { faInfo, faLockAlt } from 'lib-icons'
 import { faTreePalm } from 'lib-icons'
 
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import { showSurveyReservationToast } from './discussion-reservation-modal/discussion-survey'
@@ -47,7 +49,8 @@ export default React.memo(function CalendarNotifications({
   events
 }: Props) {
   const [, navigate] = useLocation()
-
+  const user = useUser()
+  const userAuthLevel = user?.authLevel || 'WEAK'
   const { addNotification, removeNotification } =
     useContext(NotificationsContext)
   const i18n = useTranslation()
@@ -239,9 +242,23 @@ export default React.memo(function CalendarNotifications({
             )
             close()
           },
-          children: i18n.ctaToast.unansweredChildDocumentCta(
-            childDocument.child
-          ),
+          children: [
+            i18n.ctaToast.unansweredChildDocumentCta(childDocument.child),
+            <>
+              <Gap size="s" />
+              <span style={{ color: colors.status.info }}>
+                {i18n.ctaToast.unansweredChildDocumentFillIn}
+              </span>
+              {userAuthLevel === 'WEAK' && (
+                <>
+                  <Gap size="xs" horizontal />
+                  <FontAwesomeIcon icon={faLockAlt} />
+                  <Gap size="s" />
+                  <div>{i18n.ctaToast.unansweredChildDocumentWeakAuthInfo}</div>
+                </>
+              )}
+            </>
+          ],
           dataQa: `toast-child-document-${childDocument.id}`
         },
         `child-document-${childDocument.id}`
@@ -252,7 +269,8 @@ export default React.memo(function CalendarNotifications({
     i18n.ctaToast,
     navigate,
     unansweredChildDocuments,
-    unansweredChildDocumentsIsRefetching
+    unansweredChildDocumentsIsRefetching,
+    userAuthLevel
   ])
 
   return (

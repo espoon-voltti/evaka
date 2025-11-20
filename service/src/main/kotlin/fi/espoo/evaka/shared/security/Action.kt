@@ -519,6 +519,12 @@ sealed interface Action {
                     .guardianOfChildOfPublishedChildDocument(editable = true),
                 IsCitizen(allowWeakLogin = false)
                     .fosterParentOfChildOfPublishedChildDocument(editable = true),
+            ),
+            NOTIFY_UPDATE(
+                IsCitizen(allowWeakLogin = true)
+                    .guardianOfChildOfPublishedChildDocument(editable = true),
+                IsCitizen(allowWeakLogin = true)
+                    .fosterParentOfChildOfPublishedChildDocument(editable = true),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"

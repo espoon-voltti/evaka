@@ -312,11 +312,11 @@ export default {
         Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee
         lastasi:{' '}
         <span translate="no">{formatPersonName(child, 'FirstFirst Last')}</span>
-        <br />
-        <br />
-        <span style={{ color: colors.status.info }}>Täytä asiakirja</span>
       </div>
-    )
+    ),
+    unansweredChildDocumentFillIn: 'Täytä asiakirja',
+    unansweredChildDocumentWeakAuthInfo:
+      'Asiakirjan täyttäminen vaatii vahvan tunnistautumisen.'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',

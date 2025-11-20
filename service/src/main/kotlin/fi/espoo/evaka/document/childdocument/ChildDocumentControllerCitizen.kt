@@ -176,7 +176,7 @@ class ChildDocumentControllerCitizen(
                         tx,
                         user,
                         clock,
-                        Action.Citizen.ChildDocument.UPDATE,
+                        Action.Citizen.ChildDocument.NOTIFY_UPDATE,
                     )
                 filter?.let { tx.getUnansweredChildDocuments(user, it) } ?: emptyList()
             }
