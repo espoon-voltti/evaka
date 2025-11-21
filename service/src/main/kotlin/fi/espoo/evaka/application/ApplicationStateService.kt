@@ -916,7 +916,7 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
-        skipGuardian: Boolean = false,
+        allowUnmailedDecisions: Boolean = false,
     ) {
         if (user is AuthenticatedUser.SystemInternalUser) {
             // automated decision
@@ -931,7 +931,7 @@ class ApplicationStateService(
         }
 
         val application = getApplication(tx, applicationId)
-        if (skipGuardian) {
+        if (allowUnmailedDecisions) {
             verifyStatus(application, setOf(WAITING_MAILING, WAITING_CONFIRMATION, ACTIVE))
         } else {
             verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
