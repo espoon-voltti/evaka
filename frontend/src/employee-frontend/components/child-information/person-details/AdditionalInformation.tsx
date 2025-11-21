@@ -23,6 +23,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import LabelValueList from 'lib-components/molecules/LabelValueList'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H4 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
@@ -507,20 +508,32 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
             ]}
           />
           {editing && (
-            <RightAlignedRow>
-              <FixedSpaceRow>
-                <LegacyButton onClick={clearUiMode} text={i18n.common.cancel} />
-                <MutateButton
-                  primary
-                  disabled={false}
-                  mutation={updateAdditionalInfoMutation}
-                  onClick={() => ({ childId, body: form })}
-                  onSuccess={clearUiMode}
-                  data-qa="confirm-edited-child-button"
-                  text={i18n.common.confirm}
+            <>
+              {featureFlags.nekkuIntegration && (
+                <InfoBox
+                  message={
+                    i18n.childInformation.personDetails.nekkuSpecialDietInfo
+                  }
                 />
-              </FixedSpaceRow>
-            </RightAlignedRow>
+              )}
+              <RightAlignedRow>
+                <FixedSpaceRow>
+                  <LegacyButton
+                    onClick={clearUiMode}
+                    text={i18n.common.cancel}
+                  />
+                  <MutateButton
+                    primary
+                    disabled={false}
+                    mutation={updateAdditionalInfoMutation}
+                    onClick={() => ({ childId, body: form })}
+                    onSuccess={clearUiMode}
+                    data-qa="confirm-edited-child-button"
+                    text={i18n.common.confirm}
+                  />
+                </FixedSpaceRow>
+              </RightAlignedRow>
+            </>
           )}
         </>
       ))}
