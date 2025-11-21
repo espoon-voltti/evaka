@@ -232,7 +232,7 @@ export default React.memo(function OtherChildrenSubSection({
           />
         </>
       )}
-      <ScreenReaderOnly aria-live="assertive" aria-atomic="true">
+      <ScreenReaderOnly aria-live="polite" aria-atomic="true">
         {screenReaderMessage}
       </ScreenReaderOnly>
     </>
