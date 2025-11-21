@@ -1259,6 +1259,14 @@ fun legacyMockVtjDataset() =
                     PersonAddress("Raivaajantie 13", "02100", "Espoo"),
                     NativeLanguage.FI,
                 ),
+                MockVtjPerson(
+                    "Hemmo Hugo Johannes",
+                    "Huoltajaton",
+                    "180321A957A",
+                    RestrictedDetails(enabled = false),
+                    PersonAddress("Haravakuja 1", "02760", "Espoo"),
+                    NativeLanguage.FI,
+                ),
             ),
         guardianDependants =
             mapOf(

@@ -916,6 +916,7 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
+        allowUnmailedDecisions: Boolean = false,
     ) {
         if (user is AuthenticatedUser.SystemInternalUser) {
             // automated decision
@@ -930,7 +931,11 @@ class ApplicationStateService(
         }
 
         val application = getApplication(tx, applicationId)
-        verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
+        if (allowUnmailedDecisions) {
+            verifyStatus(application, setOf(WAITING_MAILING, WAITING_CONFIRMATION, ACTIVE))
+        } else {
+            verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
+        }
 
         val decisions = tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
 
@@ -1575,6 +1580,7 @@ class ApplicationStateService(
                             application.id,
                             decisionId,
                             decision.startDate,
+                            true,
                         )
                     }
                 }
