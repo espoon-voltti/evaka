@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type {
+  DaycareId,
+  GroupId,
+  PersonId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -18,6 +22,7 @@ import {
   testChild,
   testChild2,
   testDaycare,
+  testDaycare2,
   testDaycareGroup,
   testPreschool
 } from '../../dev-api/fixtures'
@@ -497,6 +502,179 @@ describe('Staff copies', () => {
     await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     await new MessagesPage(staffPage).assertNoCopies()
+  })
+
+  test('Bulletin staff copy shows only accessible group names as recipients', async () => {
+    // This test verifies the real production scenario where:
+    // 1. A bulletin is sent to cherry-picked groups from TWO different units
+    // 2. Each unit has MULTIPLE groups with MULTIPLE children (realistic scenario)
+    // 3. The bulletin is sent to only ONE group per unit (not all groups)
+    // 4. Staff from each unit only see recipient names from their own accessible unit
+
+    // Helper function to create a family where each child is placed in a different group
+    // Creates one child per group ID provided and returns the children
+    async function createFamilyWithChildrenInGroups(
+      guardianSsnSeed: number,
+      daycareId: DaycareId,
+      daycareGroupIds: GroupId[]
+    ) {
+      const guardian = Fixture.person({
+        ssn: `${String(guardianSsnSeed).padStart(6, '0')}-${String(1000 + guardianSsnSeed).slice(-3)}A`,
+        firstName: 'Guardian',
+        lastName: `Family${guardianSsnSeed}`,
+        dateOfBirth: LocalDate.of(1980, 1, 1)
+      })
+
+      const children = daycareGroupIds.map((_, childIndex) =>
+        Fixture.person({
+          ssn: `${String(guardianSsnSeed + childIndex + 1).padStart(6, '0')}-${String(2000 + guardianSsnSeed + childIndex).slice(-3)}B`,
+          firstName: `Child${childIndex + 1}`,
+          lastName: `Family${guardianSsnSeed}`,
+          dateOfBirth: LocalDate.of(2017, (childIndex % 12) + 1, 1)
+        })
+      )
+
+      await Fixture.family({
+        guardian,
+        children
+      }).save()
+
+      await insertGuardians({
+        body: children.map((child) => ({
+          childId: child.id,
+          guardianId: guardian.id
+        }))
+      })
+
+      for (const [childIndex, child] of children.entries()) {
+        const placement = await Fixture.placement({
+          childId: child.id,
+          unitId: daycareId,
+          startDate: mockedDate,
+          endDate: mockedDate.addYears(1)
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: placement.id,
+          daycareGroupId: daycareGroupIds[childIndex],
+          startDate: mockedDate,
+          endDate: mockedDate.addYears(1)
+        }).save()
+      }
+
+      return children
+    }
+
+    // Setup second daycare with messaging enabled
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: testCareArea.id,
+      enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+    }).save()
+
+    // Create TWO groups for the second daycare (only one will receive the bulletin)
+    const daycare2Group = await Fixture.daycareGroup({
+      name: 'Korholan ryhmä',
+      daycareId: testDaycare2.id
+    }).save()
+
+    const daycare2GroupB = await Fixture.daycareGroup({
+      name: 'Korholan toinen ryhmä',
+      daycareId: testDaycare2.id
+    }).save()
+
+    // Create multi-unit supervisor with access to BOTH daycares
+    const multiUnitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .unitSupervisor(testDaycare2.id)
+      .save()
+
+    // Create a SECOND group for the first daycare (this one won't receive the bulletin)
+    const daycareGroupB = await Fixture.daycareGroup({
+      name: 'Alkuryhmän toinen ryhmä',
+      daycareId: testDaycare.id
+    }).save()
+
+    // Add 2 more children to first daycare - each in a different group
+    const family1Children = await createFamilyWithChildrenInGroups(
+      100,
+      testDaycare.id,
+      [testDaycareGroup.id, daycareGroupB.id]
+    )
+
+    // Add 2 children to first daycare - each in a different group
+    await createFamilyWithChildrenInGroups(200, testDaycare.id, [
+      testDaycareGroup.id,
+      daycareGroupB.id
+    ])
+    // Create 2 children for second daycare - each in a different group
+    const family3Children = await createFamilyWithChildrenInGroups(
+      300,
+      testDaycare2.id,
+      [daycare2Group.id, daycare2GroupB.id]
+    )
+
+    // Add 2 children to second daycare - each in a different group
+    await createFamilyWithChildrenInGroups(400, testDaycare2.id, [
+      daycare2Group.id,
+      daycare2GroupB.id
+    ])
+    // Create staff member with access ONLY to second daycare
+    const staff2 = await Fixture.employee()
+      .staff(testDaycare2.id)
+      .groupAcl(daycare2Group.id, mockedDateAt10, mockedDateAt10)
+      .save()
+
+    await createMessageAccounts()
+
+    // Multi-unit supervisor sends bulletin to ONE cherry-picked group from EACH unit
+    const multiUnitSupervisorPage = await Page.open({
+      mockedTime: mockedDateAt10
+    })
+    await employeeLogin(multiUnitSupervisorPage, multiUnitSupervisor)
+    await multiUnitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+
+    // Select a combination of whole groups and single children
+    const message = {
+      title: 'Multi-Unit Bulletin',
+      content: 'Important announcement for selected children',
+      recipientKeys: [
+        `${testDaycareGroup.id}+false`, // Whole group from first unit
+        `${daycare2Group.id}+false`, // Whole group from second unit
+        `${family1Children[1].id}+false`, // Single child from another group of first unit
+        `${family3Children[1].id}+false` // Single child from another group of second unit
+      ],
+      type: 'BULLETIN' as const,
+      confirmManyRecipients: true
+    }
+
+    const messageEditor = await new MessagesPage(
+      multiUnitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage(message)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    // Verify: Staff from first unit sees group names from their accessible unit
+    await initStaffPage(mockedDateAt11)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(staffPage)
+
+    await messagesPage.assertCopyContent(message.title, message.content)
+    const copyPage1 = await messagesPage.openCopyThread()
+
+    const expectedGroupName1 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
+    await copyPage1.assertMessageRecipients(expectedGroupName1)
+
+    // Verify: Staff from second unit sees unit names only
+    const staff2Page = await Page.open({ mockedTime: mockedDateAt11 })
+    await employeeLogin(staff2Page, staff2)
+    await staff2Page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage2 = new MessagesPage(staff2Page)
+
+    await messagesPage2.assertCopyContent(message.title, message.content)
+    const copyPage2 = await messagesPage2.openCopyThread()
+
+    const expectedGroupName2 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
+    await copyPage2.assertMessageRecipients(expectedGroupName2)
   })
 })
 

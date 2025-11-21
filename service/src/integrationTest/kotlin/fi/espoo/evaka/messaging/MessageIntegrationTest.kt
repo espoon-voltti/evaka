@@ -2543,6 +2543,74 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             asyncJobRunningEnabled = true
         }
     }
+
+    @Test
+    fun `bulletin staff copy shows group names instead of individual recipient names`() {
+        // given: a child in group1 with a guardian
+        val child = DevPerson(firstName = "Alice", lastName = "Anderson")
+        val guardian = testAdult_1
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(guardian.id, child.id)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = ChildId(child.id.raw),
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        // when: employee1 sends a bulletin to the child's group with individual names (simulating
+        // frontend behavior)
+        val individualRecipientNames =
+            listOf(
+                "${guardian.firstName} ${guardian.lastName}",
+                "${child.firstName} ${child.lastName}",
+            )
+        val messageThreadId =
+            postNewThread(
+                "Test Bulletin",
+                "Test content",
+                MessageType.BULLETIN,
+                employee1Account,
+                listOf(MessageRecipient.Group(groupId1)),
+                recipientNames = individualRecipientNames, // This is what frontend sends
+                user = employee1,
+                now = sendTime,
+            )
+
+        // then: staff copy shows group name instead of individual recipient name
+        val copies = getMessageCopies(employee1, group1Account, readTime)
+        assertEquals(1, copies.size)
+        val copy = copies.first()
+
+        // Verify that recipientNames contains group name, not individual names
+        assertTrue(copy.recipientNames.isNotEmpty(), "recipientNames should not be empty")
+        assertTrue(
+            copy.recipientNames.any { it.contains(testDaycare.name) && it.contains("Testiläiset") },
+            "recipientNames should contain unit and group name but got: ${copy.recipientNames}",
+        )
+        assertTrue(
+            copy.recipientNames.none {
+                it.contains(guardian.firstName) ||
+                    it.contains(guardian.lastName) ||
+                    it.contains(child.firstName) ||
+                    it.contains(child.lastName)
+            },
+            "recipientNames should not contain individual guardian or child names but got: ${copy.recipientNames}",
+        )
+    }
 }
 
 fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =

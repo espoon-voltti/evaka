@@ -891,47 +891,108 @@ fun Database.Read.getMessageCopiesByAccount(
     return createQuery {
             sql(
                 """
+WITH message_list AS (
+    SELECT
+        COUNT(*) OVER () AS count,
+        t.id AS thread_id,
+        m.id AS message_id,
+        t.title,
+        t.message_type AS type,
+        t.urgent,
+        t.sensitive,
+        m.sent_at,
+        m.sender_name,
+        m.sender_id,
+        sender_acc.type AS sender_account_type,
+        m.content_id,
+        c.content,
+        rec.read_at,
+        rec.recipient_id,
+        acc.name recipient_name,
+        recipient_acc.type AS recipient_account_type,
+        m.recipient_names,
+        (
+            SELECT coalesce(jsonb_agg(jsonb_build_object(
+               'id', att.id,
+               'name', att.name,
+               'contentType', att.content_type
+            )), '[]'::jsonb)
+            FROM attachment att WHERE att.message_content_id = m.content_id
+        ) AS attachments
+    FROM message_recipients rec
+    JOIN message m ON rec.message_id = m.id
+    JOIN message_content c ON m.content_id = c.id
+    JOIN message_account_view acc ON rec.recipient_id = acc.id
+    JOIN message_account sender_acc ON sender_acc.id = m.sender_id
+    JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
+    JOIN message_thread t ON m.thread_id = t.id
+    WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL AND
+        ${predicate(accountAccessPredicate.forTable("m"))}
+    ORDER BY m.sent_at DESC
+    LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
+)
 SELECT
-    COUNT(*) OVER () AS count,
-    t.id AS thread_id,
-    m.id AS message_id,
-    t.title,
-    t.message_type AS type,
-    t.urgent,
-    t.sensitive,
-    m.sent_at,
-    m.sender_name,
-    m.sender_id,
-    sender_acc.type AS sender_account_type,
-    m.content_id,
-    c.content,
-    rec.read_at,
-    rec.recipient_id,
-    acc.name recipient_name,
-    recipient_acc.type AS recipient_account_type,
-    m.recipient_names,
-    (
-        SELECT coalesce(jsonb_agg(jsonb_build_object(
-           'id', att.id,
-           'name', att.name,
-           'contentType', att.content_type
-        )), '[]'::jsonb)
-        FROM attachment att WHERE att.message_content_id = m.content_id
-    ) AS attachments
-FROM message_recipients rec
-JOIN message m ON rec.message_id = m.id
-JOIN message_content c ON m.content_id = c.id
-JOIN message_account_view acc ON rec.recipient_id = acc.id
-JOIN message_account sender_acc ON sender_acc.id = m.sender_id
-JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
-JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL AND
-    ${predicate(accountAccessPredicate.forTable("m"))}
-ORDER BY m.sent_at DESC
-LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
+    ml.count,
+    ml.thread_id,
+    ml.message_id,
+    ml.title,
+    ml.type,
+    ml.urgent,
+    ml.sensitive,
+    ml.sent_at,
+    ml.sender_name,
+    ml.sender_id,
+    ml.sender_account_type,
+    ml.content_id,
+    ml.content,
+    ml.read_at,
+    ml.recipient_id,
+    ml.recipient_name,
+    ml.recipient_account_type,
+    CASE 
+        WHEN ml.type = 'BULLETIN' THEN COALESCE(grn.grouped_names, ARRAY[]::text[])
+        ELSE ml.recipient_names
+    END AS recipient_names,
+    ml.attachments
+FROM message_list ml
+LEFT JOIN (
+    SELECT 
+        message_id,
+        array_agg(DISTINCT group_name) AS grouped_names
+    FROM (
+        SELECT DISTINCT
+            ml2.message_id,
+            d.name || ' - ' || dg.name || 
+            CASE 
+                WHEN COUNT(DISTINCT mtc.child_id) < (
+                    SELECT COUNT(DISTINCT p2.child_id)
+                    FROM daycare_group_placement dgp2
+                    JOIN placement p2 ON p2.id = dgp2.daycare_placement_id
+                    WHERE dgp2.daycare_group_id = dg.id
+                        AND daterange(dgp2.start_date, dgp2.end_date, '[]') @> ml2.sent_at::date
+                        AND daterange(p2.start_date, p2.end_date, '[]') @> ml2.sent_at::date
+                ) THEN ' (osa)'
+                ELSE ''
+            END as group_name
+        FROM message_list ml2
+        JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
+        JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
+        JOIN message_thread_children mtc ON mtc.thread_id = t2.id
+        JOIN placement p ON p.child_id = mtc.child_id
+        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
+        JOIN daycare d ON d.id = dg.daycare_id
+        WHERE 
+            daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
+            AND ml2.type = 'BULLETIN'
+        GROUP BY ml2.message_id, ml2.sent_at, dg.id, d.name, dg.name
+    ) distinct_groups
+    GROUP BY message_id
+) grn ON grn.message_id = ml.message_id
 """
             )
         }
+        .toList { WithCount(column("count"), row<MessageCopy>()) }
         .mapToPaged(::PagedMessageCopies, pageSize)
 }
 

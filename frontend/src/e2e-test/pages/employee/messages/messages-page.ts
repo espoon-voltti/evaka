@@ -157,6 +157,11 @@ export default class MessagesPage {
       .assertTextEquals(content)
   }
 
+  async openCopyThread() {
+    await this.page.findByDataQa('thread-list-item-title').click()
+    return new MessageCopyPage(this.page)
+  }
+
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
     await this.#emptyInboxText.waitUntilVisible()
@@ -229,6 +234,14 @@ export class SentMessagePage {
   }
 }
 
+export class MessageCopyPage {
+  constructor(private readonly page: Page) {}
+
+  async assertMessageRecipients(recipients: string) {
+    await this.page.findByDataQa('recipient-names').assertTextEquals(recipients)
+  }
+}
+
 export class MessageEditor extends Element {
   closeButton = this.findByDataQa('close-message-editor-btn')
 
@@ -285,6 +298,7 @@ export class MessageEditor extends Element {
 
     if (message.recipientKeys) {
       await this.recipientSelection.open()
+      await this.recipientSelection.expandAll()
       await this.recipientSelection.expandAll()
       for (const recipient of message.recipientKeys) {
         await this.recipientSelection.option(recipient).check()
