@@ -25,7 +25,7 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 import { useTranslation } from '../../localization'
 import { focusElementOnNextFrame } from '../../utils/focus'
 import TimeRangeInput from '../TimeRangeInput'
-import { useTimedScreenReaderMessage } from '../hooks'
+import { useScreenReaderMessage } from '../hooks'
 
 import type { LimitedLocalTimeRangeField, ReadOnlyState } from './form'
 import {
@@ -348,7 +348,7 @@ const TimeRanges = React.memo(function TimeRanges({
   const firstTimeRange = useFormElem(bind, 0)
   const secondTimeRange = useFormElem(bind, 1)
   const [screenReaderMessage, showTimedScreenReaderMessage] =
-    useTimedScreenReaderMessage()
+    useScreenReaderMessage()
 
   if (firstTimeRange === undefined) {
     throw new Error('BUG: at least one time range expected')

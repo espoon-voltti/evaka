@@ -7,7 +7,7 @@ import { useCallback, useState, useEffect } from 'react'
 import type { Result } from 'lib-common/api'
 import { Success } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
-import type { BoundForm } from 'lib-common/form/hooks'
+import { useBoolean, type BoundForm } from 'lib-common/form/hooks'
 import type { Form } from 'lib-common/form/types'
 import type {
   ReservationChild,
@@ -153,28 +153,22 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
   return { reservations, loading: fetchedReservations.isLoading }
 }
 
-export const useTimedScreenReaderMessage = (): [
+export const useScreenReaderMessage = (): [
   string | null,
   (message: string) => void
 ] => {
   const [screenReaderMessage, setScreenReaderMessage] = useState<string | null>(
     null
   )
-  const [isMessageTimerOn, setIsMessageTimerOn] = useState(false)
-  const showTimedScreenReaderMessage = useCallback(
+  const [ariaLiveBustingValue, { toggle }] = useBoolean(false)
+  const showScreenReaderMessage = useCallback(
     (message: string) => {
-      setScreenReaderMessage(message)
-      if (!isMessageTimerOn) {
-        setIsMessageTimerOn(true)
-        setTimeout(() => {
-          setScreenReaderMessage(null)
-          setIsMessageTimerOn(false)
-        }, 5000)
-      }
+      toggle()
+      setScreenReaderMessage(message + (ariaLiveBustingValue ? '\u200B' : ''))
     },
-    [isMessageTimerOn]
+    [ariaLiveBustingValue, toggle]
   )
-  return [screenReaderMessage, showTimedScreenReaderMessage]
+  return [screenReaderMessage, showScreenReaderMessage]
 }
 
 export const useRemovePlacementPendingChildSelections = (
