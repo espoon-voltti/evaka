@@ -391,14 +391,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/flagging-core@npm:0.1.0-preview.13":
-  version: 0.1.0-preview.13
-  resolution: "@datadog/flagging-core@npm:0.1.0-preview.13"
+"@datadog/flagging-core@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@datadog/flagging-core@npm:0.2.0"
   dependencies:
     spark-md5: "npm:^3.0.2"
   peerDependencies:
     "@openfeature/core": ^1.8.1
-  checksum: 10/28d3abdc4e25f00fd79c9068e1d3776674a444bd090a315f78173064a45189a75cbbbd345b5616446a82f2af006fc82276d9da6847b4b00ab0aa08fb02b478ec
+  checksum: 10/8e1ae6c926e402613c65fd515bd58e789da357e9fa07d07e26a6de9580da4524059b071020f1bfa6a5f843bf8edc1b3049ff321193f7251b4472b3d68e515f07
   languageName: node
   linkType: hard
 
@@ -440,15 +440,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/openfeature-node-server@npm:0.1.0-preview.13":
-  version: 0.1.0-preview.13
-  resolution: "@datadog/openfeature-node-server@npm:0.1.0-preview.13"
+"@datadog/openfeature-node-server@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@datadog/openfeature-node-server@npm:0.2.0"
   dependencies:
-    "@datadog/flagging-core": "npm:0.1.0-preview.13"
+    "@datadog/flagging-core": "npm:0.2.0"
     "@openfeature/server-sdk": "npm:~1.18.0"
   peerDependencies:
     "@openfeature/server-sdk": ~1.18.0
-  checksum: 10/d602c3ad55e7cff02db64b76a190233b78b3199a1bb59dd88d3e257ffed7229868de9a15807deab687a11d512a4a705a4703a0e061eb37e4b83e136cc16f7de8
+  checksum: 10/536df820c66e8649279de472b8ab34792565e534f01ee88fca6f268a9380089f715c68352e8d5fea073140aaa9d61529b10769982ee9e2e9a2191607c9689acb
   languageName: node
   linkType: hard
 
@@ -473,15 +473,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/wasm-js-rewriter@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@datadog/wasm-js-rewriter@npm:4.0.1"
+"@datadog/wasm-js-rewriter@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@datadog/wasm-js-rewriter@npm:5.0.1"
   dependencies:
     js-yaml: "npm:^4.1.0"
     lru-cache: "npm:^7.14.0"
     module-details-from-path: "npm:^1.0.3"
     node-gyp-build: "npm:^4.5.0"
-  checksum: 10/8d0620e86a4ca1ed9268306db0b200c08cf2e9d483d97f8bf11bad61ae6aa205eebc097bc3ba2b67161c3c3d3584431319cff48e7919cbc559a1c25948cb3528
+  checksum: 10/7f59c5e5731a3b671f4a91accab1e334ee3aeacb6a33b66a66179ab933b889a06265b37ee18c9dd44e99048f0ac0818d23d666fd1af82aeef63374b5f218f3be
   languageName: node
   linkType: hard
 
@@ -660,10 +660,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@isaacs/ttlcache@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "@isaacs/ttlcache@npm:1.4.1"
-  checksum: 10/57f2b00b58845d48a173c7668c58c27c3e6f91a56c17d6d4c58b38780a475a858ce3b4fc2cd4304469eee9f49818b79a187f0e13120b3617c4f67e4abc475698
+"@isaacs/ttlcache@npm:^2.0.1":
+  version: 2.1.2
+  resolution: "@isaacs/ttlcache@npm:2.1.2"
+  checksum: 10/2039e983b1e0526b415d17c63b18424553fd52c8c934bb13cce4c4e5ed0c33a1f341f3c543ff08ca39c5c240e2c1596a723f0cc989cd0a57f774917baae3315d
   languageName: node
   linkType: hard
 
@@ -1164,18 +1164,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:1.9.1":
-  version: 1.9.1
-  resolution: "@opentelemetry/core@npm:1.9.1"
-  dependencies:
-    "@opentelemetry/semantic-conventions": "npm:1.9.1"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.5.0"
-  checksum: 10/5fcb3a0f37ccb05643cbed2728727a5fdee33fa2df4ae8ac3f3e0f567a853c5d4288e78217c77175afc3de472e16e2808deb8e8ac1174a904910e2875876da59
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/core@npm:>=1.14.0 <1.31.0":
+"@opentelemetry/core@npm:1.30.1, @opentelemetry/core@npm:>=1.14.0 <1.31.0":
   version: 1.30.1
   resolution: "@opentelemetry/core@npm:1.30.1"
   dependencies:
@@ -1186,15 +1175,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:>=1.0.0 <1.10.0":
-  version: 1.9.1
-  resolution: "@opentelemetry/resources@npm:1.9.1"
+"@opentelemetry/resources@npm:>=1.0.0 <1.31.0":
+  version: 1.30.1
+  resolution: "@opentelemetry/resources@npm:1.30.1"
   dependencies:
-    "@opentelemetry/core": "npm:1.9.1"
-    "@opentelemetry/semantic-conventions": "npm:1.9.1"
+    "@opentelemetry/core": "npm:1.30.1"
+    "@opentelemetry/semantic-conventions": "npm:1.28.0"
   peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.5.0"
-  checksum: 10/f400abdd1f18ff12f6996344a7f83b929dfd19e00576b493710f24a6946b01e5c2eba7985648e1e91bf039d7df9a35ec812ba52bac97670d1f3eaf51bda37347
+    "@opentelemetry/api": ">=1.0.0 <1.10.0"
+  checksum: 10/9b7544b639e8fee41315e2646615676ffb1020dba0f6c81e6ec1dd2daf5409fc6ce3d2b629bbd9cd32f85decc3a8bfa5dc8cc52bb72bd84c1777ca25b4301aa0
   languageName: node
   linkType: hard
 
@@ -1202,13 +1191,6 @@ __metadata:
   version: 1.28.0
   resolution: "@opentelemetry/semantic-conventions@npm:1.28.0"
   checksum: 10/c182a3206769b5d5a8ab89a5c674d046fd789421cef27ea55af179990e314732433c98e5017aa23e99f15fd2b0e13cb129bb6c2282da6860ce9419adf32b2e87
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:1.9.1":
-  version: 1.9.1
-  resolution: "@opentelemetry/semantic-conventions@npm:1.9.1"
-  checksum: 10/975555aa9a6d41cf773f3ac341a87007770003bd129284373ef41e9868d8a02a4b2d374e450bdab20b21488a9851690a9091c054f9e2103337ecddb049027085
   languageName: node
   linkType: hard
 
@@ -2885,23 +2867,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.76.0":
-  version: 5.76.0
-  resolution: "dd-trace@npm:5.76.0"
+"dd-trace@npm:5.79.0":
+  version: 5.79.0
+  resolution: "dd-trace@npm:5.79.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
     "@datadog/native-appsec": "npm:10.3.0"
     "@datadog/native-iast-taint-tracking": "npm:4.0.0"
     "@datadog/native-metrics": "npm:3.1.1"
-    "@datadog/openfeature-node-server": "npm:0.1.0-preview.13"
+    "@datadog/openfeature-node-server": "npm:^0.2.0"
     "@datadog/pprof": "npm:5.12.0"
     "@datadog/sketches-js": "npm:2.1.1"
-    "@datadog/wasm-js-rewriter": "npm:4.0.1"
-    "@isaacs/ttlcache": "npm:^1.4.1"
+    "@datadog/wasm-js-rewriter": "npm:5.0.1"
+    "@isaacs/ttlcache": "npm:^2.0.1"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     "@opentelemetry/core": "npm:>=1.14.0 <1.31.0"
-    "@opentelemetry/resources": "npm:>=1.0.0 <1.10.0"
+    "@opentelemetry/resources": "npm:>=1.0.0 <1.31.0"
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.10"
     escape-string-regexp: "npm:^5.0.0"
@@ -2926,7 +2908,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/ba53c935a0aea5881802569bd1be7e44048348a72eaa079503ef8dd596778bc851eaf7ee9cfba74a1a2a8e95ed347f04a5d80277304e7135367f26208b0fdea6
+  checksum: 10/66213fd911ccb04e31448d723c2452d450e6f29799e2c13b1414d38fb0e1b615da8aef7276a9a24cd24ae4065019dcd01e23d3cc54bce29f380a90c2318a2968
   languageName: node
   linkType: hard
 
@@ -3575,7 +3557,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.76.0"
+    dd-trace: "npm:5.79.0"
     eslint: "npm:9.39.1"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
