@@ -104,7 +104,10 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                                 .associateWith { Deferred(ctx.user.authLevel) }
                         }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -112,13 +115,17 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             params: IsMobile,
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.MobileDevice ->
+                is AuthenticatedUser.MobileDevice -> {
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
                         QuerySql { filter(ctx.user, ctx.now) }
                     } else {
                         null
                     }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
     }
 

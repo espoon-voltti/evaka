@@ -151,7 +151,10 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
                         }
                         .mapValues { (_, queryResult) -> Deferred(queryResult) }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -159,7 +162,7 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
             params: HasUnitRole,
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
                     QuerySql {
                         sql(
                             """
@@ -172,7 +175,11 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
                         """
                         )
                     }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
     }
 
@@ -204,7 +211,7 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<HasUnitRole> =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee ->
+                        is AuthenticatedUser.Employee -> {
                             Deferred(
                                 ctx.tx
                                     .createQuery {
@@ -219,7 +226,11 @@ WHERE employee_id = ${bind(ctx.user.id)}
                                     }
                                     .toSet<RoleAndFeatures>()
                             )
-                        else -> DatabaseActionRule.Deferred.None
+                        }
+
+                        else -> {
+                            DatabaseActionRule.Deferred.None
+                        }
                     }
             },
         )

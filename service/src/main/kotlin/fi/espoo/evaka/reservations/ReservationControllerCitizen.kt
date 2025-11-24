@@ -388,15 +388,19 @@ private fun placementDay(
     val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
     val operationTimes =
         when (shiftCareType) {
-            ShiftCareType.NONE -> backupPlacementForDate?.operationTimes ?: placement.operationTimes
+            ShiftCareType.NONE -> {
+                backupPlacementForDate?.operationTimes ?: placement.operationTimes
+            }
+
             ShiftCareType.INTERMITTENT,
-            ShiftCareType.FULL ->
+            ShiftCareType.FULL -> {
                 if (backupPlacementForDate != null) {
                     backupPlacementForDate.shiftCareOperationTimes
                         ?: backupPlacementForDate.operationTimes
                 } else {
                     placement.shiftCareOperationTimes ?: placement.operationTimes
                 }
+            }
         }
 
     val shiftCare = shiftCareType != ShiftCareType.NONE
@@ -417,10 +421,17 @@ private fun placementDay(
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =
                 when (shiftCareType) {
-                    ShiftCareType.NONE -> ReservableTimeRange.Normal(operationTime!!)
-                    ShiftCareType.FULL -> ReservableTimeRange.ShiftCare(operationTime!!)
-                    ShiftCareType.INTERMITTENT ->
+                    ShiftCareType.NONE -> {
+                        ReservableTimeRange.Normal(operationTime!!)
+                    }
+
+                    ShiftCareType.FULL -> {
+                        ReservableTimeRange.ShiftCare(operationTime!!)
+                    }
+
+                    ShiftCareType.INTERMITTENT -> {
                         ReservableTimeRange.IntermittentShiftCare(operationTime)
+                    }
                 },
             preschoolTime = placement.dailyPreschoolTime,
             preparatoryTime = placement.dailyPreparatoryTime,

@@ -29,17 +29,19 @@ sealed interface AuditId {
 
     operator fun plus(other: AuditId): AuditId {
         return when (this) {
-            is One ->
+            is One -> {
                 when (other) {
                     is One -> Many(listOf(value, other.value))
                     is Many -> Many(listOf(value) + other.value)
                 }
+            }
 
-            is Many ->
+            is Many -> {
                 when (other) {
                     is One -> Many(value + other.value)
                     is Many -> Many(value + other.value)
                 }
+            }
         }
     }
 }

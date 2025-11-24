@@ -342,10 +342,13 @@ fun getTotalIncomeEffect(
     when {
         headIncomeEffect == IncomeEffect.INCOME &&
             (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) -> IncomeEffect.INCOME
+
         headIncomeEffect == IncomeEffect.MAX_FEE_ACCEPTED ||
             partnerIncomeEffect == IncomeEffect.MAX_FEE_ACCEPTED -> IncomeEffect.MAX_FEE_ACCEPTED
+
         headIncomeEffect == IncomeEffect.INCOMPLETE ||
             partnerIncomeEffect == IncomeEffect.INCOMPLETE -> IncomeEffect.INCOMPLETE
+
         else -> IncomeEffect.NOT_AVAILABLE
     }
 
@@ -358,9 +361,13 @@ fun getTotalIncome(
 ): Int? =
     when {
         headIncomeEffect == IncomeEffect.INCOME &&
-            (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) ->
+            (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) -> {
             (headIncomeTotal ?: 0) + (partnerIncomeTotal ?: 0)
-        else -> null
+        }
+
+        else -> {
+            null
+        }
     }
 
 fun calculateFeeBeforeFeeAlterations(
@@ -421,6 +428,7 @@ fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute
         when (type) {
             FeeAlterationType.RELIEF,
             FeeAlterationType.DISCOUNT -> -1
+
             FeeAlterationType.INCREASE -> 1
         }
 

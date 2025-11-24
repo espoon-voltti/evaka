@@ -137,12 +137,16 @@ WHERE id = ${bind(id)}
                     }
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
-                        PSQLState.FOREIGN_KEY_VIOLATION.state ->
+                        PSQLState.FOREIGN_KEY_VIOLATION.state -> {
                             throw BadRequest(
                                 "Cannot delete an already invoiced correction",
                                 cause = e,
                             )
-                        else -> throw e
+                        }
+
+                        else -> {
+                            throw e
+                        }
                     }
                 }
             }

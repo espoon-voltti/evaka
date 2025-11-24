@@ -25,8 +25,14 @@ inline fun <reified T : Enum<T>> generateEnum(name: String = T::class.simpleName
 
 fun <T : Enum<T>> generateEnum(name: String, vararg values: T): Generator = {
     when (values.size) {
-        0 -> "export type $name = never\n"
-        1 -> "export type $name = ${values[0].tsLiteral()}\n"
+        0 -> {
+            "export type $name = never\n"
+        }
+
+        1 -> {
+            "export type $name = ${values[0].tsLiteral()}\n"
+        }
+
         else -> {
             val literals =
                 values

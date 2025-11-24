@@ -31,14 +31,16 @@ fun Database.Read.applicationFlags(
     connectedDaycare: Boolean,
 ): ApplicationFlags {
     return when (formType) {
-        ApplicationType.CLUB ->
+        ApplicationType.CLUB -> {
             ApplicationFlags(
                 isTransferApplication =
                     getPlacementsForChildDuring(childId, startDate, null).any {
                         it.type == PlacementType.CLUB
                     }
             )
-        ApplicationType.DAYCARE ->
+        }
+
+        ApplicationType.DAYCARE -> {
             ApplicationFlags(
                 isTransferApplication =
                     getPlacementsForChildDuring(childId, startDate, null).any {
@@ -51,6 +53,8 @@ fun Database.Read.applicationFlags(
                             .contains(it.type)
                     }
             )
+        }
+
         ApplicationType.PRESCHOOL -> {
             val existingPlacements =
                 getPlacementsForChildDuring(childId, startDate, null).filter {
@@ -71,8 +75,8 @@ fun Database.Read.applicationFlags(
                 connectedDaycare &&
                     existingPlacements.isNotEmpty() &&
                     existingPlacements.all {
-                        !preparatory && it.type == PlacementType.PRESCHOOL ||
-                            preparatory && it.type == PlacementType.PREPARATORY
+                        (!preparatory && it.type == PlacementType.PRESCHOOL) ||
+                            (preparatory && it.type == PlacementType.PREPARATORY)
                     }
 
             val isTransferApplication =

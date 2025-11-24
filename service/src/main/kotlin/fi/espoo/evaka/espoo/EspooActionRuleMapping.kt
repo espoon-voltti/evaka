@@ -17,11 +17,21 @@ class EspooActionRuleMapping : ActionRuleMapping {
     override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
         when (action) {
             Action.Global.SEND_PATU_REPORT,
-            Action.Global.SUBMIT_PATU_REPORT -> sequenceOf(HasGlobalRole(UserRole.ADMIN))
-            Action.Global.READ_NON_SSN_CHILDREN_REPORT ->
+            Action.Global.SUBMIT_PATU_REPORT -> {
+                sequenceOf(HasGlobalRole(UserRole.ADMIN))
+            }
+
+            Action.Global.READ_NON_SSN_CHILDREN_REPORT -> {
                 sequenceOf(HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER))
-            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT -> emptySequence()
-            else -> action.defaultRules.asSequence()
+            }
+
+            Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT -> {
+                emptySequence()
+            }
+
+            else -> {
+                action.defaultRules.asSequence()
+            }
         }
 
     override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
@@ -41,6 +51,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>
                     )
             }
+
             Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
@@ -48,6 +59,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
                     )
             }
+
             Action.Unit.READ_SERVICE_VOUCHER_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -62,6 +74,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             .inUnit() as ScopedActionRule<in T>
                     )
             }
+
             Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
@@ -69,6 +82,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
                     )
             }
+
             Action.Unit.READ_FAMILY_CONFLICT_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -76,18 +90,21 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+
             Action.Group.UPDATE -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf<ScopedActionRule<in T>>(
                     HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
                 )
             }
+
             Action.Group.DELETE -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf<ScopedActionRule<in T>>(
                     HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
                 )
             }
+
             Action.Person.CREATE_PARTNERSHIP -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -95,6 +112,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+
             Action.Person.CREATE_PARENTSHIP -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -102,6 +120,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+
             Action.Partnership.UPDATE,
             Action.Partnership.RETRY -> {
                 @Suppress("UNCHECKED_CAST")
@@ -110,6 +129,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+
             Action.Parentship.UPDATE,
             Action.Parentship.RETRY,
             Action.Parentship.DELETE_CONFLICTED_PARENTSHIP -> {
@@ -119,6 +139,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         as ScopedActionRule<in T>
                 )
             }
+
             Action.Child.READ_DAILY_SERVICE_TIMES -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -135,6 +156,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             .inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
             }
+
             Action.Child.CREATE_DAILY_SERVICE_TIME -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -150,6 +172,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             .inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
             }
+
             Action.Citizen.Child.READ_DAILY_SERVICE_TIMES -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
@@ -160,12 +183,16 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             as ScopedActionRule<in T>
                     )
             }
+
             Action.Invoice.RESEND -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
                     HasGlobalRole(UserRole.ADMIN, UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>
                 )
             }
-            else -> action.defaultRules.asSequence()
+
+            else -> {
+                action.defaultRules.asSequence()
+            }
         }
 }

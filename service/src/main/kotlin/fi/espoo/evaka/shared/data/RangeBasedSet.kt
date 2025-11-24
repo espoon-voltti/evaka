@@ -198,9 +198,13 @@ abstract class RangeBasedSet<
                 sortedList
                     .binarySearch {
                         when (val relation = getRange(it).relationTo(range)) {
-                            is BoundedRange.Relation.LeftTo ->
+                            is BoundedRange.Relation.LeftTo -> {
                                 if (adjacentBelongToCenter && relation.gap == null) 1 else -1
-                            else -> 1
+                            }
+
+                            else -> {
+                                1
+                            }
                         }
                     }
                     // If an exact match is not found, the returned index is (-insertion point + 1)
@@ -213,9 +217,13 @@ abstract class RangeBasedSet<
                 sortedList
                     .binarySearch(fromIndex = leftIdx) {
                         when (val relation = getRange(it).relationTo(range)) {
-                            is BoundedRange.Relation.RightTo ->
+                            is BoundedRange.Relation.RightTo -> {
                                 if (adjacentBelongToCenter && relation.gap == null) -1 else 1
-                            else -> -1
+                            }
+
+                            else -> {
+                                -1
+                            }
                         }
                     }
                     // If an exact match is not found, the returned index is (-insertion point + 1).

@@ -76,7 +76,10 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                                 .associateWith { Deferred(ctx.user.globalRoles) }
                         }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -84,13 +87,17 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             params: HasGlobalRole,
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
                     if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {
                         QuerySql { filter(ctx.user, ctx.now) }
                     } else {
                         null
                     }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
     }
 

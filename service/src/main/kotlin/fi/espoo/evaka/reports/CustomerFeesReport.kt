@@ -47,9 +47,11 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                         Action.Global.READ_CUSTOMER_FEES_REPORT,
                     )
                     when (decisionType) {
-                        FinanceDecisionType.FEE_DECISION ->
+                        FinanceDecisionType.FEE_DECISION -> {
                             tx.getFeeDecisionRows(date, areaId, unitId, providerType, placementType)
-                        FinanceDecisionType.VOUCHER_VALUE_DECISION ->
+                        }
+
+                        FinanceDecisionType.VOUCHER_VALUE_DECISION -> {
                             tx.getVoucherValueDecisionRows(
                                 date,
                                 areaId,
@@ -57,6 +59,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                                 providerType,
                                 placementType,
                             )
+                        }
                     }
                 }
             }

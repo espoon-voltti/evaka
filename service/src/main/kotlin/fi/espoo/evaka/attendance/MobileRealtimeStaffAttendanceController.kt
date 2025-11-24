@@ -537,12 +537,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val planStart = plans.minOf { it.start }
         if (arrivalTime < planStart.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (arrival.type) {
-                StaffAttendanceType.OVERTIME ->
+                StaffAttendanceType.OVERTIME -> {
                     listOf(createNewAttendance(arrivalTime, null, arrival.type))
-                else ->
+                }
+
+                else -> {
                     throw BadRequest(
                         "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan start"
                     )
+                }
             }
         }
 
@@ -566,10 +569,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT),
                     )
                 }
-                else ->
+
+                else -> {
                     throw BadRequest(
                         "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan start"
                     )
+                }
             }
         }
 
@@ -646,26 +651,32 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK,
                 StaffAttendanceType.SICKNESS,
-                StaffAttendanceType.CHILD_SICKNESS ->
+                StaffAttendanceType.CHILD_SICKNESS -> {
                     listOf(
                         ongoingAttendance.copy(departed = departureTime),
                         createNewAttendance(departureTime, null, departure.type),
                     )
-                else ->
+                }
+
+                else -> {
                     throw BadRequest(
                         "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes or more before plan end"
                     )
+                }
             }
         }
 
         if (departureTime > planEnd.plusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
-                StaffAttendanceType.OVERTIME ->
+                StaffAttendanceType.OVERTIME -> {
                     listOf(ongoingAttendance.copy(departed = departureTime, type = departure.type))
-                else ->
+                }
+
+                else -> {
                     throw BadRequest(
                         "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan end"
                     )
+                }
             }
         }
 

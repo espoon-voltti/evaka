@@ -33,13 +33,20 @@ class ApplicationReceivedEmailService(
         val fromAddress = emailEnv.sender(language)
         val content =
             when (type) {
-                ApplicationType.CLUB -> emailMessageProvider.clubApplicationReceived(language)
-                ApplicationType.DAYCARE -> emailMessageProvider.daycareApplicationReceived(language)
-                ApplicationType.PRESCHOOL ->
+                ApplicationType.CLUB -> {
+                    emailMessageProvider.clubApplicationReceived(language)
+                }
+
+                ApplicationType.DAYCARE -> {
+                    emailMessageProvider.daycareApplicationReceived(language)
+                }
+
+                ApplicationType.PRESCHOOL -> {
                     emailMessageProvider.preschoolApplicationReceived(
                         language,
                         sentWithinPreschoolApplicationPeriod!!,
                     )
+                }
             }
         logger.info { "Sending application email (personId: $personId)" }
         Email.create(

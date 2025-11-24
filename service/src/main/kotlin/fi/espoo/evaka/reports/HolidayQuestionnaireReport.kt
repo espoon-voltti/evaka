@@ -66,10 +66,13 @@ class HolidayQuestionnaireReport(
 
                     val questionnaire =
                         when (featureConfig.holidayQuestionnaireType) {
-                            QuestionnaireType.FIXED_PERIOD ->
+                            QuestionnaireType.FIXED_PERIOD -> {
                                 tx.getFixedPeriodQuestionnaire(questionnaireId)
-                            QuestionnaireType.OPEN_RANGES ->
+                            }
+
+                            QuestionnaireType.OPEN_RANGES -> {
                                 tx.getOpenRangesQuestionnaire(questionnaireId)
+                            }
                         } ?: throw NotFound()
                     val period =
                         when (questionnaire) {
@@ -77,7 +80,10 @@ class HolidayQuestionnaireReport(
                                 val options = questionnaire.periodOptions
                                 FiniteDateRange(options.first().start, options.last().end)
                             }
-                            is HolidayQuestionnaire.OpenRangesQuestionnaire -> questionnaire.period
+
+                            is HolidayQuestionnaire.OpenRangesQuestionnaire -> {
+                                questionnaire.period
+                            }
                         }
                     val holidays = getHolidays(period)
 

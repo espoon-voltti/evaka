@@ -204,16 +204,24 @@ fun reduceDailyOccupancyValues(
         .sortedBy { it.key }
         .fold(listOf<Pair<FiniteDateRange, OccupancyValues>>()) { acc, (date, values) ->
             when {
-                acc.isEmpty() -> listOf(FiniteDateRange(date, date) to values)
-                else ->
+                acc.isEmpty() -> {
+                    listOf(FiniteDateRange(date, date) to values)
+                }
+
+                else -> {
                     acc.last().let { (lastPeriod, lastValues) ->
                         when {
-                            values == lastValues && lastPeriod.end.isEqual(date.minusDays(1)) ->
+                            values == lastValues && lastPeriod.end.isEqual(date.minusDays(1)) -> {
                                 acc.dropLast(1) +
                                     (FiniteDateRange(lastPeriod.start, date) to values)
-                            else -> acc + (FiniteDateRange(date, date) to values)
+                            }
+
+                            else -> {
+                                acc + (FiniteDateRange(date, date) to values)
+                            }
                         }
                     }
+                }
             }
         }
         .map { (period, values) -> values.withPeriod(period) }
@@ -461,13 +469,16 @@ WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))
         when (type) {
             OccupancyType.DRAFT,
             OccupancyType.PLANNED,
-            OccupancyType.CONFIRMED ->
+            OccupancyType.CONFIRMED -> {
                 getPlannedCaretakersForGroups(
                     GroupPredicate.ByIds(groups.map { it.key.groupId }),
                     period,
                 )
-            OccupancyType.REALIZED ->
+            }
+
+            OccupancyType.REALIZED -> {
                 getRealizedCaretakersForGroups(groups.map { it.key.groupId }, period)
+            }
         }
     val defaults = DateMap.of(period to BigDecimal.ZERO)
     return groups
@@ -539,14 +550,21 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
 ): Iterable<Placement> {
     val (groupingId, daterange, additionalJoin) =
         when (K::class) {
-            UnitKey::class -> Triple("u.id", "daterange(p.start_date, p.end_date, '[]')", "")
-            UnitGroupKey::class ->
+            UnitKey::class -> {
+                Triple("u.id", "daterange(p.start_date, p.end_date, '[]')", "")
+            }
+
+            UnitGroupKey::class -> {
                 Triple(
                     "gp.daycare_group_id",
                     "daterange(greatest(p.start_date, gp.start_date), least(p.end_date, gp.end_date), '[]')",
                     "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id",
                 )
-            else -> error("Unsupported placement query class parameter (${K::class})")
+            }
+
+            else -> {
+                error("Unsupported placement query class parameter (${K::class})")
+            }
         }
 
     return this.createQuery {
@@ -791,18 +809,21 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                     ?: error("No occupancy coefficients found for placement type ${placement.type}")
 
             when (type) {
-                OccupancyType.REALIZED ->
+                OccupancyType.REALIZED -> {
                     when {
                         placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
                         under3y -> coefficients.realizedOccupancyCoefficientUnder3y
                         else -> coefficients.realizedOccupancyCoefficient
                     }
-                else ->
+                }
+
+                else -> {
                     when {
                         placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
                         under3y -> coefficients.occupancyCoefficientUnder3y
                         else -> coefficients.occupancyCoefficient
                     }
+                }
             }
         }
 

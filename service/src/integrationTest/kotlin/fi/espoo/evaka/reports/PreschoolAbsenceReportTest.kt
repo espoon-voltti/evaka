@@ -224,6 +224,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     AbsenceType.OTHER_ABSENCE,
                     AbsenceType.SICKLEAVE,
                     AbsenceType.UNKNOWN_ABSENCE -> true
+
                     else -> false
                 }
             }
@@ -240,6 +241,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                                 // 5h full day absence + arrived 1h late + left 1h early + arrived
                                 // 45min late
                                 AbsenceType.OTHER_ABSENCE -> 7
+
                                 else -> 0
                             }
                         },

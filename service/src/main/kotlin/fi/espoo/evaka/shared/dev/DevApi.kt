@@ -962,11 +962,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         return db.connect { dbc ->
             dbc.transaction {
                 when (body) {
-                    is PairingsController.PostPairingReq.Unit ->
+                    is PairingsController.PostPairingReq.Unit -> {
                         it.initPairing(clock, unitId = body.unitId)
+                    }
 
-                    is PairingsController.PostPairingReq.Employee ->
+                    is PairingsController.PostPairingReq.Employee -> {
                         it.initPairing(clock, employeeId = body.employeeId)
+                    }
                 }
             }
         }
@@ -1016,11 +1018,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 when (body) {
-                    is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
+                    is QuestionnaireBody.FixedPeriodQuestionnaireBody -> {
                         tx.createFixedPeriodQuestionnaire(body)
+                    }
 
-                    is QuestionnaireBody.OpenRangesQuestionnaireBody ->
+                    is QuestionnaireBody.OpenRangesQuestionnaireBody -> {
                         tx.createOpenRangesQuestionnaire(body)
+                    }
                 }.let {
                     tx.createUpdate {
                             sql(
@@ -1463,31 +1467,38 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
     ): ByteArray {
         val emailContent =
             when (message) {
-                EmailMessageFilter.pendingDecisionNotification ->
+                EmailMessageFilter.pendingDecisionNotification -> {
                     emailMessageProvider.pendingDecisionNotification(Language.fi)
+                }
 
-                EmailMessageFilter.clubApplicationReceived ->
+                EmailMessageFilter.clubApplicationReceived -> {
                     emailMessageProvider.clubApplicationReceived(Language.fi)
+                }
 
-                EmailMessageFilter.daycareApplicationReceived ->
+                EmailMessageFilter.daycareApplicationReceived -> {
                     emailMessageProvider.daycareApplicationReceived(Language.fi)
+                }
 
-                EmailMessageFilter.preschoolApplicationReceived ->
+                EmailMessageFilter.preschoolApplicationReceived -> {
                     emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
+                }
 
-                EmailMessageFilter.assistanceNeedDecisionNotification ->
+                EmailMessageFilter.assistanceNeedDecisionNotification -> {
                     emailMessageProvider.assistanceNeedDecisionNotification(Language.fi)
+                }
 
-                EmailMessageFilter.assistanceNeedPreschoolDecisionNotification ->
+                EmailMessageFilter.assistanceNeedPreschoolDecisionNotification -> {
                     emailMessageProvider.assistanceNeedPreschoolDecisionNotification(Language.fi)
+                }
 
-                EmailMessageFilter.missingReservationsNotification ->
+                EmailMessageFilter.missingReservationsNotification -> {
                     emailMessageProvider.missingReservationsNotification(
                         Language.fi,
                         FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now()),
                     )
+                }
 
-                EmailMessageFilter.messageNotification ->
+                EmailMessageFilter.messageNotification -> {
                     emailMessageProvider.messageNotification(
                         Language.fi,
                         MessageThreadData(
@@ -1501,20 +1512,23 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             isCopy = false,
                         ),
                     )
+                }
 
-                EmailMessageFilter.pedagogicalDocumentNotification ->
+                EmailMessageFilter.pedagogicalDocumentNotification -> {
                     emailMessageProvider.pedagogicalDocumentNotification(
                         Language.fi,
                         ChildId(UUID.randomUUID()),
                     )
+                }
 
-                EmailMessageFilter.outdatedIncomeNotification ->
+                EmailMessageFilter.outdatedIncomeNotification -> {
                     emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
                         Language.fi,
                     )
+                }
 
-                EmailMessageFilter.calendarEventNotification ->
+                EmailMessageFilter.calendarEventNotification -> {
                     emailMessageProvider.calendarEventNotification(
                         Language.fi,
                         listOf(
@@ -1531,13 +1545,15 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             ),
                         ),
                     )
+                }
 
-                EmailMessageFilter.financeDecisionNotification ->
+                EmailMessageFilter.financeDecisionNotification -> {
                     emailMessageProvider.financeDecisionNotification(
                         FinanceDecisionType.FEE_DECISION
                     )
+                }
 
-                EmailMessageFilter.discussionTimeReservation ->
+                EmailMessageFilter.discussionTimeReservation -> {
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
@@ -1551,8 +1567,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
+                }
 
-                EmailMessageFilter.discussionTimeCancellation ->
+                EmailMessageFilter.discussionTimeCancellation -> {
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
@@ -1566,8 +1583,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 )
                         ),
                     )
+                }
 
-                EmailMessageFilter.discussionTimeReservationReminder ->
+                EmailMessageFilter.discussionTimeReservationReminder -> {
                     emailMessageProvider.discussionTimeReservationReminder(
                         Language.fi,
                         DiscussionTimeReminderData(
@@ -1576,8 +1594,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             endTime = LocalTime.of(12, 50),
                         ),
                     )
+                }
 
-                EmailMessageFilter.discussionSurveyCreation ->
+                EmailMessageFilter.discussionSurveyCreation -> {
                     emailMessageProvider.discussionSurveyCreationNotification(
                         Language.fi,
                         DiscussionSurveyCreationNotificationData(
@@ -1589,32 +1608,37 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                 ),
                         ),
                     )
+                }
 
-                EmailMessageFilter.absenceApplicationAcceptedNotification ->
+                EmailMessageFilter.absenceApplicationAcceptedNotification -> {
                     emailMessageProvider.absenceApplicationDecidedNotification(
                         accepted = true,
                         startDate = LocalDate.now(),
                         endDate = LocalDate.now().plusWeeks(1),
                     )
+                }
 
-                EmailMessageFilter.absenceApplicationRejectedNotification ->
+                EmailMessageFilter.absenceApplicationRejectedNotification -> {
                     emailMessageProvider.absenceApplicationDecidedNotification(
                         accepted = false,
                         startDate = LocalDate.now(),
                         endDate = LocalDate.now().plusWeeks(1),
                     )
+                }
 
-                EmailMessageFilter.serviceApplicationAcceptedNotification ->
+                EmailMessageFilter.serviceApplicationAcceptedNotification -> {
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = true,
                         startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
                     )
+                }
 
-                EmailMessageFilter.serviceApplicationRejectedNotification ->
+                EmailMessageFilter.serviceApplicationRejectedNotification -> {
                     emailMessageProvider.serviceApplicationDecidedNotification(
                         accepted = false,
                         startDate = LocalDate.now().plusMonths(1).withDayOfMonth(1),
                     )
+                }
             }
         val content =
             if (format == "html") emailContent.html
@@ -1780,7 +1804,10 @@ private fun <T> Database.Connection.withLockedDatabase(
         } catch (e: UnableToExecuteStatementException) {
             when (e.psqlCause()?.sqlState) {
                 LOCK_NOT_AVAILABLE -> {}
-                else -> throw e
+
+                else -> {
+                    throw e
+                }
             }
         }
         logger.warn { "Failed to obtain database lock" }

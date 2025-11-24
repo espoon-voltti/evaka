@@ -77,6 +77,7 @@ ${content.html}
                                         when (subjectPostfix) {
                                             null,
                                             "" -> content.subject
+
                                             else -> "${content.subject} [$subjectPostfix]"
                                         }
                                     )
@@ -94,8 +95,10 @@ ${content.html}
                 is MailFromDomainNotVerifiedException,
                 is ConfigurationSetDoesNotExistException,
                 is ConfigurationSetSendingPausedException,
-                is AccountSendingPausedException ->
+                is AccountSendingPausedException -> {
                     logger.error(e) { "Will not send email (traceId: $traceId): ${e.message}" }
+                }
+
                 else -> {
                     logger.error(e) { "Couldn't send email (traceId: $traceId): ${e.message}" }
                     throw e

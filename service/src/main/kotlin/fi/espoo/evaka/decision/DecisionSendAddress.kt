@@ -29,12 +29,16 @@ fun getSendAddress(
         }
     }
     return when {
-        guardian.restrictedDetailsEnabled -> messageProvider.getDefaultDecisionAddress(lang)
+        guardian.restrictedDetailsEnabled -> {
+            messageProvider.getDefaultDecisionAddress(lang)
+        }
+
         addressIsUnusable(guardian.streetAddress, guardian.postalCode, guardian.postOffice) -> {
             logMissingAddress()
             messageProvider.getDefaultDecisionAddress(lang)
         }
-        else ->
+
+        else -> {
             DecisionSendAddress(
                 street = guardian.streetAddress,
                 postalCode = guardian.postalCode,
@@ -43,6 +47,7 @@ fun getSendAddress(
                 row2 = "${guardian.postalCode} ${guardian.postOffice}",
                 row3 = "",
             )
+        }
     }
 }
 

@@ -92,10 +92,13 @@ class HolidayQuestionnaireController(
                     )
                     try {
                         when (body) {
-                            is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
+                            is QuestionnaireBody.FixedPeriodQuestionnaireBody -> {
                                 it.createFixedPeriodQuestionnaire(body)
-                            is QuestionnaireBody.OpenRangesQuestionnaireBody ->
+                            }
+
+                            is QuestionnaireBody.OpenRangesQuestionnaireBody -> {
                                 it.createOpenRangesQuestionnaire(body)
+                            }
                         }
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
@@ -123,10 +126,13 @@ class HolidayQuestionnaireController(
                 )
                 try {
                     when (body) {
-                        is QuestionnaireBody.FixedPeriodQuestionnaireBody ->
+                        is QuestionnaireBody.FixedPeriodQuestionnaireBody -> {
                             it.updateFixedPeriodQuestionnaire(id, body)
-                        is QuestionnaireBody.OpenRangesQuestionnaireBody ->
+                        }
+
+                        is QuestionnaireBody.OpenRangesQuestionnaireBody -> {
                             it.updateOpenRangesQuestionnaire(id, body)
+                        }
                     }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)

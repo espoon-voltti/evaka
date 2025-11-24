@@ -52,15 +52,27 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
         val parentSealedClass =
             clazz.allSuperclasses.firstNotNullOfOrNull { tsReprMap[it] as? TsSealedClass }
         return when {
-            isDatabaseTableType -> TsIdType(clazz)
-            parentSealedClass != null -> TsSealedVariant(parentSealedClass, TsPlainObject(clazz))
-            clazz.java.isEnum -> TsStringEnum(clazz)
+            isDatabaseTableType -> {
+                TsIdType(clazz)
+            }
+
+            parentSealedClass != null -> {
+                TsSealedVariant(parentSealedClass, TsPlainObject(clazz))
+            }
+
+            clazz.java.isEnum -> {
+                TsStringEnum(clazz)
+            }
+
             clazz.isSealed -> {
                 val serializer =
                     typeSerializerFor(clazz) ?: error("No Jackson serializer found for $clazz")
                 TsSealedClass(TsPlainObject(clazz), clazz.sealedSubclasses.toSet(), serializer)
             }
-            else -> TsPlainObject(clazz)
+
+            else -> {
+                TsPlainObject(clazz)
+            }
         }
     }
 
@@ -70,21 +82,31 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
                 is TsArray,
                 is TsRecord,
                 is TsTuple,
-                is GenericWrapper -> typeArguments.forEach { it.type?.discover() }
-                is TsPlainObject ->
+                is GenericWrapper -> {
+                    typeArguments.forEach { it.type?.discover() }
+                }
+
+                is TsPlainObject -> {
                     representation.applyTypeArguments(typeArguments).values.forEach {
                         it.discover()
                     }
-                is TsSealedVariant ->
+                }
+
+                is TsSealedVariant -> {
                     TsType(representation.obj, isNullable = false, typeArguments = emptyList())
                         .discover()
+                }
+
                 is TsSealedClass -> {
                     TsType(representation.obj, isNullable = false, typeArguments = emptyList())
                         .discover()
                     representation.variants.forEach { it.starProjectedType.discover() }
                 }
-                is TsObjectLiteral ->
+
+                is TsObjectLiteral -> {
                     representation.properties.values.forEach { it.type.discover() }
+                }
+
                 is TsStringEnum,
                 is Excluded,
                 is TsPlain,

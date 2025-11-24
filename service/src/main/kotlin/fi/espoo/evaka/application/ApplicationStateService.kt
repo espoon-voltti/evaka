@@ -136,17 +136,30 @@ class ApplicationStateService(
                 )
                 moveToWaitingPlacement(tx, user, clock, applicationId)
             }
-            SimpleApplicationAction.RETURN_TO_SENT -> returnToSent(tx, user, clock, applicationId)
-            SimpleApplicationAction.CANCEL_PLACEMENT_PLAN ->
+
+            SimpleApplicationAction.RETURN_TO_SENT -> {
+                returnToSent(tx, user, clock, applicationId)
+            }
+
+            SimpleApplicationAction.CANCEL_PLACEMENT_PLAN -> {
                 cancelPlacementPlan(tx, user, clock, applicationId)
-            SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL ->
+            }
+
+            SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL -> {
                 sendDecisionsWithoutProposal(tx, user, clock, applicationId)
-            SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL ->
+            }
+
+            SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL -> {
                 sendPlacementProposal(tx, user, clock, applicationId)
-            SimpleApplicationAction.WITHDRAW_PLACEMENT_PROPOSAL ->
+            }
+
+            SimpleApplicationAction.WITHDRAW_PLACEMENT_PROPOSAL -> {
                 withdrawPlacementProposal(tx, user, clock, applicationId)
-            SimpleApplicationAction.CONFIRM_DECISION_MAILED ->
+            }
+
+            SimpleApplicationAction.CONFIRM_DECISION_MAILED -> {
                 confirmDecisionMailed(tx, user, clock, applicationId)
+            }
         }
     }
 
@@ -211,19 +224,25 @@ class ApplicationStateService(
     ): ApplicationForm {
         val startDate =
             when (type) {
-                ApplicationType.PRESCHOOL ->
+                ApplicationType.PRESCHOOL -> {
                     tx.getPreschoolTerms()
                         .find {
                             it.applicationPeriod.start <= today && today < it.extendedTerm.start
                         }
                         ?.extendedTerm
                         ?.start
-                ApplicationType.CLUB ->
+                }
+
+                ApplicationType.CLUB -> {
                     tx.getClubTerms()
                         .find { it.applicationPeriod.start <= today && today < it.term.start }
                         ?.term
                         ?.start
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
 
         return form.copy(preferences = form.preferences.copy(preferredStartDate = startDate))
@@ -544,21 +563,27 @@ class ApplicationStateService(
 
         if (application.confidential == null) {
             when {
-                user is AuthenticatedUser.Citizen ->
+                user is AuthenticatedUser.Citizen -> {
                     tx.setApplicationConfidentiality(
                         applicationId,
                         true,
                         clock.now(),
                         user.evakaUserId,
                     )
-                confidential != null ->
+                }
+
+                confidential != null -> {
                     tx.setApplicationConfidentiality(
                         applicationId,
                         confidential,
                         clock.now(),
                         user.evakaUserId,
                     )
-                else -> throw BadRequest("Confidentiality must be set")
+                }
+
+                else -> {
+                    throw BadRequest("Confidentiality must be set")
+                }
             }
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
@@ -983,22 +1008,30 @@ class ApplicationStateService(
                 PlacementType.PREPARATORY_DAYCARE -> {
                     when (decision.type) {
                         DecisionType.PRESCHOOL,
-                        DecisionType.PREPARATORY_EDUCATION ->
+                        DecisionType.PREPARATORY_EDUCATION -> {
                             PlacementPlanExtent.OnlyPreschool(
                                 plan.period.copy(start = requestedStartDate)
                             )
+                        }
+
                         DecisionType.PRESCHOOL_DAYCARE,
-                        DecisionType.PRESCHOOL_CLUB ->
+                        DecisionType.PRESCHOOL_CLUB -> {
                             PlacementPlanExtent.OnlyPreschoolDaycare(
                                 plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
                             )
-                        else ->
+                        }
+
+                        else -> {
                             throw IllegalStateException(
                                 "Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}"
                             )
+                        }
                     }
                 }
-                else -> PlacementPlanExtent.FullSingle(plan.period.copy(start = requestedStartDate))
+
+                else -> {
+                    PlacementPlanExtent.FullSingle(plan.period.copy(start = requestedStartDate))
+                }
             }
 
         // everything validated now!
@@ -1282,7 +1315,7 @@ class ApplicationStateService(
         )
 
         when (manuallySetDueDate) {
-            null ->
+            null -> {
                 // We don't want to calculate the due date for applications in the CREATED state.
                 // Whether this is a transfer application affects the calculation of the due date,
                 // but it's only determined when the application is sent.
@@ -1294,7 +1327,11 @@ class ApplicationStateService(
                         updatedForm.preferences.urgent,
                     )
                 }
-            else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
+            }
+
+            else -> {
+                updateManuallySetDueDate(original.id, manuallySetDueDate)
+            }
         }
 
         resetCheckedByAdminAndConfidentiality(original.id, now, modifiedBy)

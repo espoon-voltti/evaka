@@ -67,19 +67,32 @@ object EspooInvoiceProducts {
                     PlacementType.DAYCARE,
                     PlacementType.DAYCARE_PART_TIME,
                     PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> Product.DAYCARE
-                    PlacementType.PRESCHOOL_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
-                    PlacementType.PREPARATORY_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
+                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
+                        Product.DAYCARE
+                    }
+
+                    PlacementType.PRESCHOOL_DAYCARE -> {
+                        Product.PRESCHOOL_WITH_DAYCARE
+                    }
+
+                    PlacementType.PREPARATORY_DAYCARE -> {
+                        Product.PRESCHOOL_WITH_DAYCARE
+                    }
+
                     PlacementType.TEMPORARY_DAYCARE,
-                    PlacementType.TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
+                    PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
+                        Product.TEMPORARY_CARE
+                    }
+
                     PlacementType.PRESCHOOL,
                     PlacementType.PRESCHOOL_DAYCARE_ONLY,
                     PlacementType.PRESCHOOL_CLUB,
                     PlacementType.PREPARATORY,
                     PlacementType.PREPARATORY_DAYCARE_ONLY,
                     PlacementType.CLUB,
-                    PlacementType.SCHOOL_SHIFT_CARE ->
+                    PlacementType.SCHOOL_SHIFT_CARE -> {
                         error("No product mapping found for placement type $placementType")
+                    }
                 }
             return product.key
         }
@@ -91,17 +104,28 @@ object EspooInvoiceProducts {
             val product =
                 when (findProduct(productKey) to feeAlterationType) {
                     Product.DAYCARE to FeeAlterationType.DISCOUNT,
-                    Product.DAYCARE to FeeAlterationType.RELIEF -> Product.DAYCARE_DISCOUNT
-                    Product.DAYCARE to FeeAlterationType.INCREASE -> Product.DAYCARE_INCREASE
+                    Product.DAYCARE to FeeAlterationType.RELIEF -> {
+                        Product.DAYCARE_DISCOUNT
+                    }
+
+                    Product.DAYCARE to FeeAlterationType.INCREASE -> {
+                        Product.DAYCARE_INCREASE
+                    }
+
                     Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.DISCOUNT,
-                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.RELIEF ->
+                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.RELIEF -> {
                         Product.PRESCHOOL_WITH_DAYCARE_DISCOUNT
-                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.INCREASE ->
+                    }
+
+                    Product.PRESCHOOL_WITH_DAYCARE to FeeAlterationType.INCREASE -> {
                         Product.PRESCHOOL_WITH_DAYCARE_INCREASE
-                    else ->
+                    }
+
+                    else -> {
                         error(
                             "No product mapping found for product + fee alteration type combo ($productKey + $feeAlterationType)"
                         )
+                    }
                 }
             return product.key
         }

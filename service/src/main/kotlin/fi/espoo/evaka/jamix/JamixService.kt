@@ -438,6 +438,7 @@ class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMap
                     jsonMapper.readValue(result.get())
                 }
             }
+
             is Result.Failure -> {
                 error(
                     "failed to request ${request.method} ${request.url}: status=${response.statusCode} error=${result.error.errorData.decodeToString()}"

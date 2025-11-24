@@ -662,6 +662,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 StaffAttendanceType.PRESENT,
                 StaffAttendanceType.OVERTIME,
                 StaffAttendanceType.JUSTIFIED_CHANGE -> 1.0 to 14.3
+
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK,
                 StaffAttendanceType.SICKNESS,

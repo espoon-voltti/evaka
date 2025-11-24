@@ -1083,15 +1083,18 @@ private data class ReservationTimesForDate(
 ) {
     fun toReservationTimes() =
         when {
-            startTime == null || endTime == null ->
+            startTime == null || endTime == null -> {
                 ReservationResponse.NoTimes(staffCreated, modifiedAt, modifiedBy)
-            else ->
+            }
+
+            else -> {
                 ReservationResponse.Times(
                     TimeRange(startTime, endTime),
                     staffCreated,
                     modifiedAt,
                     modifiedBy,
                 )
+            }
         }
 }
 

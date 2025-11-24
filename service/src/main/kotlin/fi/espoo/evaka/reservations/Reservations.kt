@@ -44,6 +44,8 @@ import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.ranges.contains
+import kotlin.text.get
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
@@ -156,19 +158,22 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     companion object {
         fun from(reservationRow: ReservationRow) =
             when (reservationRow.reservation) {
-                is Reservation.NoTimes ->
+                is Reservation.NoTimes -> {
                     NoTimes(
                         reservationRow.staffCreated,
                         reservationRow.modifiedAt,
                         reservationRow.modifiedBy,
                     )
-                is Reservation.Times ->
+                }
+
+                is Reservation.Times -> {
                     Times(
                         reservationRow.reservation.range,
                         reservationRow.staffCreated,
                         reservationRow.modifiedAt,
                         reservationRow.modifiedBy,
                     )
+                }
             }
     }
 }
@@ -281,10 +286,17 @@ fun createReservationsAndAbsences(
                             // if placement start date is after holiday period response deadline
                             // reservation is allowed
                             is DailyReservationRequest.Reservations,
-                            is DailyReservationRequest.Present ->
+                            is DailyReservationRequest.Present -> {
                                 request.takeIf { hasReservation && !hasAbsence }
-                            is DailyReservationRequest.Absent -> request
-                            is DailyReservationRequest.Nothing -> null
+                            }
+
+                            is DailyReservationRequest.Absent -> {
+                                request
+                            }
+
+                            is DailyReservationRequest.Nothing -> {
+                                null
+                            }
                         }
                     } else {
                         request
@@ -308,7 +320,10 @@ fun createReservationsAndAbsences(
                             request
                         }
                     }
-                    else -> request
+
+                    else -> {
+                        request
+                    }
                 }
             }
             // Transform `Reservation` to `Present` on open holiday period days
@@ -542,8 +557,8 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
     attendances.forEach {
         if (
             date == now.toLocalDate() &&
-                (it.end == null && it.startsAfter(threshold) ||
-                    it.end != null && it.overlaps(TimeInterval(threshold, null)))
+                ((it.end == null && it.startsAfter(threshold)) ||
+                    (it.end != null && it.overlaps(TimeInterval(threshold, null))))
         ) {
             throw BadRequest(
                 "Cannot mark attendances into future",
@@ -620,8 +635,8 @@ fun computeUsedService(
     // Today's date is taken to be "in the future" if child has no attendances today or there's an
     // ongoing attendance
     val isDateInFuture =
-        date > today ||
-            date == today && (attendances.isEmpty() || attendances.any { it.end == null })
+        (date > today) ||
+            (date == today && (attendances.isEmpty() || attendances.any { it.end == null }))
 
     val absenceTypes = absences.map { it.first }.toSet()
     val absenceCategories = absences.map { it.second }.toSet()
@@ -698,11 +713,11 @@ fun computeUsedService(
 
     val absenceCategoriesByType = absences.groupBy({ it.first }, { it.second })
     val isPlannedAbsence =
-        absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
-            absenceCategories == placementType.absenceCategories() ||
-            absenceCategoriesByType[AbsenceType.PLANNED_ABSENCE]?.contains(
+        (absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
+            absenceCategories == placementType.absenceCategories()) ||
+            (absenceCategoriesByType[AbsenceType.PLANNED_ABSENCE]?.contains(
                 AbsenceCategory.BILLABLE
-            ) == true
+            ) == true)
 
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(

@@ -85,12 +85,14 @@ GROUP BY application.guardian_id
                                     }
                                     count
                                 }
+
                                 guardian.email.isNullOrBlank() -> {
                                     logger.warn {
                                         "Could not send pending decision email to guardian ${guardian.id}: invalid email"
                                     }
                                     count
                                 }
+
                                 else -> {
                                     asyncJobRunner.plan(
                                         tx,
@@ -161,8 +163,10 @@ WHERE id = ${bind(decisionId)}
         return when (languageStr) {
             "sv",
             "SV" -> Language.sv
+
             "en",
             "EN" -> Language.en
+
             else -> Language.fi
         }
     }

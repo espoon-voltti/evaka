@@ -67,7 +67,7 @@ private fun Database.Transaction.refreshStudyRight(
 ): Pair<KoskiStudyRightId, Boolean> {
     val studyRightQuery = QuerySql {
         when (key.type) {
-            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> {
                 sql(
                     """
 SELECT
@@ -76,7 +76,9 @@ SELECT
 FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 """
                 )
-            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+            }
+
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
                 sql(
                     """
 SELECT
@@ -85,6 +87,7 @@ SELECT
 FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 """
                 )
+            }
         }
     }
     return createQuery {
@@ -147,7 +150,7 @@ fun Database.Transaction.beginKoskiUpload(
             ?.toKoskiData(sourceSystem, ophOrganizationOid)
     } else {
         when (key.type) {
-            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> {
                 createQuery {
                         sql(
                             """
@@ -166,7 +169,9 @@ fun Database.Transaction.beginKoskiUpload(
                         )
                     }
                     .exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
-            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+            }
+
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
                 createQuery {
                         sql(
                             """
@@ -185,6 +190,7 @@ fun Database.Transaction.beginKoskiUpload(
                         )
                     }
                     .exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
+            }
         }?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
     }
 }

@@ -24,13 +24,19 @@ fun resolveFiveYearOldPlacementPeriods(
             val (normalPlacementType, fiveYearOldPlacementType) =
                 when (type) {
                     PlacementType.DAYCARE,
-                    PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
+                    PlacementType.DAYCARE_FIVE_YEAR_OLDS -> {
                         PlacementType.DAYCARE to PlacementType.DAYCARE_FIVE_YEAR_OLDS
+                    }
+
                     PlacementType.DAYCARE_PART_TIME,
-                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
                         PlacementType.DAYCARE_PART_TIME to
                             PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-                    else -> return@map listOf(period to type)
+                    }
+
+                    else -> {
+                        return@map listOf(period to type)
+                    }
                 }
 
             listOfNotNull(

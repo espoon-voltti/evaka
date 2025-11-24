@@ -41,27 +41,30 @@ class DvvModificationsService(
                         personModifications.tietoryhmat.map { infoGroup ->
                             try {
                                 when (infoGroup) {
-                                    is DeathDvvInfoGroup ->
+                                    is DeathDvvInfoGroup -> {
                                         handleDeath(
                                             db,
                                             clock,
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+                                    }
 
-                                    is RestrictedInfoDvvInfoGroup ->
+                                    is RestrictedInfoDvvInfoGroup -> {
                                         handleRestrictedInfo(
                                             db,
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+                                    }
 
-                                    is SsnDvvInfoGroup ->
+                                    is SsnDvvInfoGroup -> {
                                         handleSsnDvvInfoGroup(
                                             db,
                                             personModifications.henkilotunnus,
                                             infoGroup,
                                         )
+                                    }
 
                                     is CaretakerLimitedDvvInfoGroup -> {
                                         if (infoGroup.huoltaja.henkilotunnus != null) {
@@ -75,8 +78,9 @@ class DvvModificationsService(
                                         }
                                     }
 
-                                    is DefaultDvvInfoGroup ->
+                                    is DefaultDvvInfoGroup -> {
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                                    }
 
                                     else -> {
                                         logger.error {

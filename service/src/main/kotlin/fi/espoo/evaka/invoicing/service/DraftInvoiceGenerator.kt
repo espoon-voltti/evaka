@@ -145,7 +145,8 @@ class DraftInvoiceGenerator(
                                         )
                                 )
                             }
-                            else ->
+
+                            else -> {
                                 headInput.decisions
                                     .filter { placementPeriod.overlaps(it.validDuring) }
                                     .mapNotNull { decision ->
@@ -160,6 +161,7 @@ class DraftInvoiceGenerator(
                                         relevantPeriod.intersection(decisionPeriod)!! to
                                             RowInput.fromFeeDecisionPart(part)
                                     }
+                            }
                         }
                     }
                 }
@@ -182,20 +184,23 @@ class DraftInvoiceGenerator(
                             val rows =
                                 when (rowInput.placementType) {
                                     PlacementType.TEMPORARY_DAYCARE,
-                                    PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+                                    PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
                                         toTemporaryPlacementInvoiceRows(
                                             config,
                                             childInput,
                                             period,
                                             rowInput,
                                         )
-                                    else ->
+                                    }
+
+                                    else -> {
                                         toPermanentPlacementInvoiceRows(
                                             invoiceRowSum,
                                             childInput,
                                             period,
                                             rowInput,
                                         )
+                                    }
                                 }
                             invoiceRowSum += rows.sumOf { it.price }
                             invoiceRows += rows
@@ -421,11 +426,18 @@ class DraftInvoiceGenerator(
             val (amount, unitPrice) =
                 when {
                     // surplus days increase takes invoice row sum above max price threshold
-                    total + totalAddition > maxPrice -> 1 to (maxPrice - total)
-                    // total attendances days is over the max contract day surplus threshold
-                    (config.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) < attendanceDays ->
+                    total + totalAddition > maxPrice -> {
                         1 to (maxPrice - total)
-                    else -> surplusAttendanceDays to surplusDailyPrice
+                    }
+
+                    // total attendances days is over the max contract day surplus threshold
+                    (config.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) < attendanceDays -> {
+                        1 to (maxPrice - total)
+                    }
+
+                    else -> {
+                        surplusAttendanceDays to surplusDailyPrice
+                    }
                 }
             // it is possible that the max fee is not over the already accumulated invoice total so
             // this prevents the surplus from being a 0 € row or a discount
@@ -510,13 +522,21 @@ class DraftInvoiceGenerator(
 
         val (product, totalDiscount) =
             when (fullMonthAbsenceType) {
-                FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH ->
+                FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH -> {
                     productProvider.fullMonthSickLeave to -total
-                FullMonthAbsenceType.SICK_LEAVE_11 ->
+                }
+
+                FullMonthAbsenceType.SICK_LEAVE_11 -> {
                     productProvider.partMonthSickLeave to -halfPrice(total)
-                FullMonthAbsenceType.ABSENCE_FULL_MONTH ->
+                }
+
+                FullMonthAbsenceType.ABSENCE_FULL_MONTH -> {
                     productProvider.fullMonthAbsence to -halfPrice(total)
-                FullMonthAbsenceType.NOTHING -> return listOf()
+                }
+
+                FullMonthAbsenceType.NOTHING -> {
+                    return listOf()
+                }
             }
 
         return listOf(toInvoiceRow(product, totalDiscount))

@@ -18,10 +18,8 @@ typealias ErrorResponseResultOf = Triple<Request, Response, Result.Failure<FuelE
 
 private val logger = KotlinLogging.logger {}
 
-/**
- * Collection of miscellaneous extensions to Fuel core classes. For example: extra status code
- * checks, headers.
- */
+// Collection of miscellaneous extensions to Fuel core classes. For example: extra status code
+// checks, headers.
 
 /**
  * Response status sent to throttle a requester. A Retry-After header might be included to this
@@ -73,10 +71,13 @@ fun Request.responseStringWithRetries(
     val (request, response, result) = responseResult
 
     return when (result) {
-        is Result.Success -> responseResult
-        is Result.Failure ->
+        is Result.Success -> {
+            responseResult
+        }
+
+        is Result.Failure -> {
             when (response.isTooManyRequests) {
-                true ->
+                true -> {
                     if (remainingTries <= 0) {
                         return ResponseResultOf(
                             request,
@@ -110,6 +111,8 @@ fun Request.responseStringWithRetries(
                         TimeUnit.SECONDS.sleep(retryAfter)
                         this.responseStringWithRetries(remainingTries - 1, maxRetryAfterWaitSeconds)
                     }
+                }
+
                 false -> {
                     return errorCallback(
                         ErrorResponseResultOf(request, response, result),
@@ -117,5 +120,6 @@ fun Request.responseStringWithRetries(
                     )
                 }
             }
+        }
     }
 }

@@ -15,17 +15,20 @@ import java.time.LocalDate
 fun PlacementType.toApplicationType(): ApplicationType =
     when (this) {
         PlacementType.CLUB -> ApplicationType.CLUB
+
         PlacementType.DAYCARE,
         PlacementType.DAYCARE_PART_TIME,
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
         PlacementType.PRESCHOOL_DAYCARE_ONLY,
         PlacementType.PREPARATORY_DAYCARE_ONLY -> ApplicationType.DAYCARE
+
         PlacementType.PRESCHOOL,
         PlacementType.PRESCHOOL_DAYCARE,
         PlacementType.PRESCHOOL_CLUB,
         PlacementType.PREPARATORY,
         PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
+
         PlacementType.TEMPORARY_DAYCARE,
         PlacementType.TEMPORARY_DAYCARE_PART_DAY,
         PlacementType.SCHOOL_SHIFT_CARE -> error("Unsupported placement type ($this)")

@@ -110,16 +110,19 @@ fun Database.Read.getFixedPeriodQuestionnaire(
 
 fun Database.Read.getHolidayQuestionnaires(type: QuestionnaireType): List<HolidayQuestionnaire> =
     when (type) {
-        QuestionnaireType.FIXED_PERIOD ->
+        QuestionnaireType.FIXED_PERIOD -> {
             questionnaireQuery(
                     Predicate { where("$it.type = ${bind(QuestionnaireType.FIXED_PERIOD)}") }
                 )
                 .toList<HolidayQuestionnaire.FixedPeriodQuestionnaire>()
-        QuestionnaireType.OPEN_RANGES ->
+        }
+
+        QuestionnaireType.OPEN_RANGES -> {
             questionnaireQuery(
                     Predicate { where("$it.type = ${bind(QuestionnaireType.OPEN_RANGES)}") }
                 )
                 .toList<HolidayQuestionnaire.OpenRangesQuestionnaire>()
+        }
     }
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(

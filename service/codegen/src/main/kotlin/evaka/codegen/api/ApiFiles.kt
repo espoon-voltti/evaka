@@ -46,11 +46,18 @@ fun generateApiFiles(): Map<TsFile, String> {
         object : TsCodeGenerator(metadata + devMetadata) {
             override fun locateNamedType(namedType: TsNamedType<*>): TsFile =
                 when (namedType.clazz) {
-                    in metadata ->
+                    in metadata -> {
                         TsProject.LibCommon /
                             "generated/api-types/${getBasePackage(namedType.clazz)}.ts"
-                    in devMetadata -> TsProject.E2ETest / "generated/api-types.ts"
-                    else -> error("Unexpected type $namedType")
+                    }
+
+                    in devMetadata -> {
+                        TsProject.E2ETest / "generated/api-types.ts"
+                    }
+
+                    else -> {
+                        error("Unexpected type $namedType")
+                    }
                 }
         }
 
@@ -194,11 +201,21 @@ fun generateImports(currentFile: TsFile, imports: Iterable<TsImport>): String =
         .joinToString("\n") { import ->
             val path = import.source.importFrom(currentFile)
             when (import) {
-                is TsImport.Default -> "import ${import.name} from '$path'"
-                is TsImport.NamedAs ->
+                is TsImport.Default -> {
+                    "import ${import.name} from '$path'"
+                }
+
+                is TsImport.NamedAs -> {
                     "import { ${import.originalName} as ${import.name} } from '$path'"
-                is TsImport.Named -> "import { ${import.name} } from '$path'"
-                is TsImport.Type -> "import type { ${import.name} } from '$path'"
+                }
+
+                is TsImport.Named -> {
+                    "import { ${import.name} } from '$path'"
+                }
+
+                is TsImport.Type -> {
+                    "import type { ${import.name} } from '$path'"
+                }
             }
         }
 
@@ -228,11 +245,15 @@ fun generateApiClients(
             .map {
                 try {
                     when (it.type) {
-                        is EndpointType.Json ->
+                        is EndpointType.Json -> {
                             generateJsonApiClient(config, generator, axiosClient, it, wrapBody)
-                        is EndpointType.PlainGet ->
+                        }
+
+                        is EndpointType.PlainGet -> {
                             generatePlainGetApiFunction(generator, apiPrefix, it)
-                        is EndpointType.Multipart ->
+                        }
+
+                        is EndpointType.Multipart -> {
                             generateMultipartUploadApiFunction(
                                 config,
                                 generator,
@@ -241,6 +262,7 @@ fun generateApiClients(
                                 it.type.requestParts,
                                 wrapBody,
                             )
+                        }
                     }
                 } catch (e: Exception) {
                     throw RuntimeException(

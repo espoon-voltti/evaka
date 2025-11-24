@@ -46,10 +46,14 @@ data class Decision(
                         DecisionType.DAYCARE,
                         DecisionType.DAYCARE_PART_TIME,
                         DecisionType.PRESCHOOL_DAYCARE,
-                        DecisionType.PRESCHOOL_CLUB -> featureConfig.requestedStartUpperLimit
+                        DecisionType.PRESCHOOL_CLUB -> {
+                            featureConfig.requestedStartUpperLimit
+                        }
+
                         DecisionType.PRESCHOOL,
-                        DecisionType.PREPARATORY_EDUCATION ->
+                        DecisionType.PREPARATORY_EDUCATION -> {
                             if (isCitizen) 0 else featureConfig.requestedStartUpperLimit
+                        }
                     }.toLong()
                 ),
             ),

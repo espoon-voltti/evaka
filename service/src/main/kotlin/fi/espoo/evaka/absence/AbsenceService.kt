@@ -373,15 +373,18 @@ fun getGroupMonthCalendar(
                                     ?.find { it.validDuring.includes(date) }
                                     ?.shiftCare ?: ShiftCareType.NONE
                             when (shiftCare) {
-                                ShiftCareType.NONE ->
+                                ShiftCareType.NONE -> {
                                     daycare.operationDays.contains(date.dayOfWeek.value) &&
                                         !holidays.contains(date)
+                                }
+
                                 ShiftCareType.FULL,
-                                ShiftCareType.INTERMITTENT ->
+                                ShiftCareType.INTERMITTENT -> {
                                     (daycare.shiftCareOperationDays ?: daycare.operationDays)
                                         .contains(date.dayOfWeek.value) &&
                                         (daycare.shiftCareOpenOnHolidays ||
                                             !holidays.contains(date))
+                                }
                             }
                         }
 
@@ -593,13 +596,16 @@ private fun supplementReservationsWithDailyServiceTimes(
                 } else {
                     reservations.mapNotNull { res ->
                         when (res.reservation) {
-                            is Reservation.Times ->
+                            is Reservation.Times -> {
                                 res.reservation.range
                                     .fixMidnightEndTime()
                                     .asHelsinkiDateTimeRange(date)
+                            }
 
                             // Reserved but no times -> use daily service times
-                            is Reservation.NoTimes -> null
+                            is Reservation.NoTimes -> {
+                                null
+                            }
                         }
                     }
                 }
@@ -630,14 +636,19 @@ private fun dailyServiceTimesToPerDateTimeRanges(
                     ?: return@mapNotNull null
 
             when (dailyServiceTimes) {
-                is DailyServiceTimesValue.RegularTimes ->
+                is DailyServiceTimesValue.RegularTimes -> {
                     dailyServiceTimes.regularTimes.asHelsinkiDateTimeRange(date)
+                }
+
                 is DailyServiceTimesValue.IrregularTimes -> {
                     dailyServiceTimes
                         .timesForDayOfWeek(date.dayOfWeek)
                         ?.asHelsinkiDateTimeRange(date)
                 }
-                is DailyServiceTimesValue.VariableTimes -> null
+
+                is DailyServiceTimesValue.VariableTimes -> {
+                    null
+                }
             }
         }
     )

@@ -31,23 +31,39 @@ fun KType.asJdbiJavaType(): Type {
         // Arrays need special handling, because Array<Byte>, ByteArray, and Array<Byte?> all behave
         // a bit
         // differently due to underlying JVM implementation details
-        ByteArray::class ->
+        ByteArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Byte>::class.java else ByteArray::class.java
-        CharArray::class ->
+        }
+
+        CharArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Char>::class.java else CharArray::class.java
-        ShortArray::class ->
+        }
+
+        ShortArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Short>::class.java else ShortArray::class.java
-        IntArray::class ->
+        }
+
+        IntArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Int>::class.java else IntArray::class.java
-        LongArray::class ->
+        }
+
+        LongArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Long>::class.java else LongArray::class.java
-        FloatArray::class ->
+        }
+
+        FloatArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Float>::class.java else FloatArray::class.java
-        DoubleArray::class ->
+        }
+
+        DoubleArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Double>::class.java else DoubleArray::class.java
-        BooleanArray::class ->
+        }
+
+        BooleanArray::class -> {
             if (this.arguments.isNotEmpty()) Array<Boolean>::class.java
             else BooleanArray::class.java
+        }
+
         is KClass<*> -> {
             val javaClass = classifier.javaObjectType
             if (
@@ -67,7 +83,10 @@ fun KType.asJdbiJavaType(): Type {
                 )
             }
         }
-        else -> error("Unsupported type $this")
+
+        else -> {
+            error("Unsupported type $this")
+        }
     }
 }
 

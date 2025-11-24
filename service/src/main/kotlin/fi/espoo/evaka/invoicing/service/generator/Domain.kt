@@ -67,11 +67,17 @@ data class PlacementDetails(
     val financeDecisionType: FinanceDecisionType?
         get() =
             when {
-                providerType == ProviderType.PRIVATE_SERVICE_VOUCHER ->
+                providerType == ProviderType.PRIVATE_SERVICE_VOUCHER -> {
                     FinanceDecisionType.VOUCHER_VALUE_DECISION
-                invoicedUnit && serviceNeedOption.feeCoefficient > BigDecimal.ZERO ->
+                }
+
+                invoicedUnit && serviceNeedOption.feeCoefficient > BigDecimal.ZERO -> {
                     FinanceDecisionType.FEE_DECISION
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
 }
 

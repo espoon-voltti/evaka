@@ -57,10 +57,16 @@ class ProcessMetadataService(private val accessControl: AccessControl) {
 
     private fun getProcessName(applicationType: ApplicationType): String =
         when (applicationType) {
-            ApplicationType.CLUB -> "Kerhohakemus"
-            ApplicationType.DAYCARE ->
+            ApplicationType.CLUB -> {
+                "Kerhohakemus"
+            }
+
+            ApplicationType.DAYCARE -> {
                 "Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen"
-            ApplicationType.PRESCHOOL ->
+            }
+
+            ApplicationType.PRESCHOOL -> {
                 "Esiopetushakemus / hakemus esiopetuksessa järjestettävään perusopetukseen valmistavaan opetukseen"
+            }
         }
 }

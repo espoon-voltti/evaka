@@ -126,10 +126,17 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
                 name =
                     column<ApplicationType>("type").let { type ->
                         when (type) {
-                            ApplicationType.DAYCARE -> "Varhaiskasvatus- ja palvelusetelihakemus"
-                            ApplicationType.PRESCHOOL ->
+                            ApplicationType.DAYCARE -> {
+                                "Varhaiskasvatus- ja palvelusetelihakemus"
+                            }
+
+                            ApplicationType.PRESCHOOL -> {
                                 "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
-                            ApplicationType.CLUB -> "Kerhohakemus"
+                            }
+
+                            ApplicationType.CLUB -> {
+                                "Kerhohakemus"
+                            }
                         }
                     },
                 createdAt = column<LocalDate>("sentdate").let { HelsinkiDateTime.atStartOfDay(it) },
@@ -203,15 +210,33 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
                 name =
                     column<DecisionType>("type").let {
                         when (it) {
-                            DecisionType.DAYCARE -> "Päätös varhaiskasvatuksesta"
-                            DecisionType.DAYCARE_PART_TIME ->
+                            DecisionType.DAYCARE -> {
+                                "Päätös varhaiskasvatuksesta"
+                            }
+
+                            DecisionType.DAYCARE_PART_TIME -> {
                                 "Päätös osa-aikaisesta varhaiskasvatuksesta"
-                            DecisionType.PRESCHOOL -> "Päätös esiopetuksesta"
-                            DecisionType.PREPARATORY_EDUCATION -> "Päätös valmistavasta opetuksesta"
-                            DecisionType.PRESCHOOL_DAYCARE ->
+                            }
+
+                            DecisionType.PRESCHOOL -> {
+                                "Päätös esiopetuksesta"
+                            }
+
+                            DecisionType.PREPARATORY_EDUCATION -> {
+                                "Päätös valmistavasta opetuksesta"
+                            }
+
+                            DecisionType.PRESCHOOL_DAYCARE -> {
                                 "Päätös liittyvästä varhaiskasvatuksesta"
-                            DecisionType.CLUB -> "Päätös kerhosta"
-                            DecisionType.PRESCHOOL_CLUB -> "Päätös esiopetuksen kerhosta"
+                            }
+
+                            DecisionType.CLUB -> {
+                                "Päätös kerhosta"
+                            }
+
+                            DecisionType.PRESCHOOL_CLUB -> {
+                                "Päätös esiopetuksen kerhosta"
+                            }
                         }
                     },
                 createdAt =

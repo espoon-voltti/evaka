@@ -278,7 +278,9 @@ class FamilyInitializerService(
                         )
                     }
 
-                    else -> throw e
+                    else -> {
+                        throw e
+                    }
                 }
             }
         }
@@ -334,7 +336,9 @@ class FamilyInitializerService(
                         )
                     }
 
-                    else -> throw e
+                    else -> {
+                        throw e
+                    }
                 }
             }
         }

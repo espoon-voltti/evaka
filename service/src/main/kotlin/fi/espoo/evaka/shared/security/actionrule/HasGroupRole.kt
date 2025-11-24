@@ -84,7 +84,10 @@ data class HasGroupRole(
                         }
                         .mapValues { (_, queryResult) -> Deferred(queryResult) }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -92,7 +95,7 @@ data class HasGroupRole(
             params: HasGroupRole,
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
                     QuerySql {
                         sql(
                             """
@@ -105,7 +108,11 @@ data class HasGroupRole(
                                 .trimIndent()
                         )
                     }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
     }
 

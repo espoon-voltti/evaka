@@ -401,9 +401,13 @@ private fun generateDecisionPages(
                 "manager",
                 when (decision.type) {
                     DecisionType.PRESCHOOL,
-                    DecisionType.PREPARATORY_EDUCATION ->
+                    DecisionType.PREPARATORY_EDUCATION -> {
                         preschoolManager.let { if (it.name.isBlank()) unitManager else it }
-                    else -> unitManager
+                    }
+
+                    else -> {
+                        unitManager
+                    }
                 },
             )
             setVariable("isPartTimeDecision", isPartTimeDecision)
@@ -419,14 +423,20 @@ private fun generateDecisionPages(
                 "decisionUnitName",
                 when (decision.type) {
                     DecisionType.DAYCARE,
-                    DecisionType.DAYCARE_PART_TIME ->
+                    DecisionType.DAYCARE_PART_TIME -> {
                         decision.unit.daycareDecisionName.takeUnless { it.isBlank() }
+                    }
+
                     DecisionType.PRESCHOOL,
                     DecisionType.PRESCHOOL_DAYCARE,
                     DecisionType.PRESCHOOL_CLUB,
-                    DecisionType.PREPARATORY_EDUCATION ->
+                    DecisionType.PREPARATORY_EDUCATION -> {
                         decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
-                    else -> null
+                    }
+
+                    else -> {
+                        null
+                    }
                 } ?: decision.unit.name,
             )
             setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
@@ -442,7 +452,10 @@ private fun createTemplate(
     isTransferApplication: Boolean,
 ): String {
     return when (decision.type) {
-        DecisionType.CLUB -> templateProvider.getClubDecisionPath()
+        DecisionType.CLUB -> {
+            templateProvider.getClubDecisionPath()
+        }
+
         DecisionType.DAYCARE,
         DecisionType.PRESCHOOL_DAYCARE,
         DecisionType.PRESCHOOL_CLUB,
@@ -457,7 +470,13 @@ private fun createTemplate(
                 }
             }
         }
-        DecisionType.PRESCHOOL -> templateProvider.getPreschoolDecisionPath()
-        DecisionType.PREPARATORY_EDUCATION -> templateProvider.getPreparatoryDecisionPath()
+
+        DecisionType.PRESCHOOL -> {
+            templateProvider.getPreschoolDecisionPath()
+        }
+
+        DecisionType.PREPARATORY_EDUCATION -> {
+            templateProvider.getPreparatoryDecisionPath()
+        }
     }
 }

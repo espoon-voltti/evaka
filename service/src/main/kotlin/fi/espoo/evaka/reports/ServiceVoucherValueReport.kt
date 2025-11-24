@@ -143,14 +143,18 @@ fun getServiceVoucherReport(
 
     val unitIds =
         when (unitFilter) {
-            AccessControlFilter.PermitAll -> null
-            is AccessControlFilter.Some ->
+            AccessControlFilter.PermitAll -> {
+                null
+            }
+
+            is AccessControlFilter.Some -> {
                 tx.createQuery {
                         sql(
                             "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
                         )
                     }
                     .toSet<DaycareId>()
+            }
         }
     val snapshotTime = tx.getSnapshotDate(year, month)
     val rows =

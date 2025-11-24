@@ -37,7 +37,10 @@ data class PreschoolTerm(
                 if (termBreaks.includes(date)) ScheduleType.TERM_BREAK
                 else ScheduleType.FIXED_SCHEDULE
             }
-            else -> null
+
+            else -> {
+                null
+            }
         }
 }
 

@@ -109,47 +109,64 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
 
     override fun relationTo(other: FiniteDateRange): BoundedRange.Relation<FiniteDateRange> =
         when {
-            this.end < other.start ->
+            this.end < other.start -> {
                 BoundedRange.Relation.LeftTo(
                     gap = tryCreate(this.end.plusDays(1), other.start.minusDays(1))
                 )
-            other.end < this.start ->
+            }
+
+            other.end < this.start -> {
                 BoundedRange.Relation.RightTo(
                     gap = tryCreate(other.end.plusDays(1), this.start.minusDays(1))
                 )
-            else ->
+            }
+
+            else -> {
                 BoundedRange.Relation.Overlap(
                     left =
                         when {
-                            this.start < other.start ->
+                            this.start < other.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(this.start, other.start.minusDays(1)),
                                     isFirst = true,
                                 )
-                            other.start < this.start ->
+                            }
+
+                            other.start < this.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(other.start, this.start.minusDays(1)),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                     overlap =
                         FiniteDateRange(maxOf(this.start, other.start), minOf(this.end, other.end)),
                     right =
                         when {
-                            other.end < this.end ->
+                            other.end < this.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(other.end.plusDays(1), this.end),
                                     isFirst = true,
                                 )
-                            this.end < other.end ->
+                            }
+
+                            this.end < other.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(this.end.plusDays(1), other.end),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                 )
+            }
         }
 
     /** Returns a lazy sequence of all dates included in this date range. */

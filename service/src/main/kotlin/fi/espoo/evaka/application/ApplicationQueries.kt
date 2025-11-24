@@ -119,9 +119,11 @@ fun Database.Read.activePlacementExists(
 ): Boolean {
     val placementTypes =
         when (type) {
-            ApplicationType.DAYCARE ->
+            ApplicationType.DAYCARE -> {
                 listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME)
-            ApplicationType.PRESCHOOL ->
+            }
+
+            ApplicationType.PRESCHOOL -> {
                 listOf(
                     PlacementType.PREPARATORY,
                     PlacementType.PREPARATORY_DAYCARE,
@@ -129,7 +131,11 @@ fun Database.Read.activePlacementExists(
                     PlacementType.PRESCHOOL_DAYCARE,
                     PlacementType.PRESCHOOL_CLUB,
                 )
-            else -> listOf()
+            }
+
+            else -> {
+                listOf()
+            }
         }
     if (placementTypes.isEmpty()) return false
 
@@ -203,7 +209,7 @@ fun Database.Read.fetchApplicationSummaries(
             PredicateSql.all(
                 basis.map { applicationBasis ->
                     when (applicationBasis) {
-                        ApplicationBasis.ADDITIONAL_INFO ->
+                        ApplicationBasis.ADDITIONAL_INFO -> {
                             PredicateSql {
                                 where(
                                     """
@@ -213,31 +219,53 @@ fun Database.Read.fetchApplicationSummaries(
                     """
                                 )
                             }
-                        ApplicationBasis.SIBLING_BASIS ->
+                        }
+
+                        ApplicationBasis.SIBLING_BASIS -> {
                             PredicateSql {
                                 where("(a.document -> 'apply' ->> 'siblingBasis')::boolean = true")
                             }
-                        ApplicationBasis.ASSISTANCE_NEED -> assistanceNeeded(true)
-                        ApplicationBasis.CLUB_CARE -> PredicateSql { where("was_on_club_care") }
-                        ApplicationBasis.CONTINUATION -> PredicateSql { where("continuation") }
-                        ApplicationBasis.DAYCARE ->
+                        }
+
+                        ApplicationBasis.ASSISTANCE_NEED -> {
+                            assistanceNeeded(true)
+                        }
+
+                        ApplicationBasis.CLUB_CARE -> {
+                            PredicateSql { where("was_on_club_care") }
+                        }
+
+                        ApplicationBasis.CONTINUATION -> {
+                            PredicateSql { where("continuation") }
+                        }
+
+                        ApplicationBasis.DAYCARE -> {
                             PredicateSql {
                                 where("(a.document ->> 'wasOnDaycare')::boolean = true")
                             }
-                        ApplicationBasis.EXTENDED_CARE ->
+                        }
+
+                        ApplicationBasis.EXTENDED_CARE -> {
                             PredicateSql {
                                 where("(a.document ->> 'extendedCare')::boolean = true")
                             }
-                        ApplicationBasis.DUPLICATE_APPLICATION ->
+                        }
+
+                        ApplicationBasis.DUPLICATE_APPLICATION -> {
                             PredicateSql { where("has_duplicates") }
-                        ApplicationBasis.URGENT ->
+                        }
+
+                        ApplicationBasis.URGENT -> {
                             PredicateSql { where("(a.document ->> 'urgent')::boolean = true") }
-                        ApplicationBasis.HAS_ATTACHMENTS ->
+                        }
+
+                        ApplicationBasis.HAS_ATTACHMENTS -> {
                             PredicateSql {
                                 where(
                                     "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
                                 )
                             }
+                        }
                     }
                 }
             ),
@@ -253,44 +281,55 @@ fun Database.Read.fetchApplicationSummaries(
                 PredicateSql.any(
                     preschoolType.map {
                         when (it) {
-                            PRESCHOOL_ONLY ->
+                            PRESCHOOL_ONLY -> {
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = false,
                                     additionalDaycareApplication = false,
                                 )
-                            PRESCHOOL_DAYCARE ->
+                            }
+
+                            PRESCHOOL_DAYCARE -> {
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = false,
                                     serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE,
                                 )
-                            PRESCHOOL_CLUB ->
+                            }
+
+                            PRESCHOOL_CLUB -> {
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = false,
                                     serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB,
                                 )
-                            PREPARATORY_ONLY ->
+                            }
+
+                            PREPARATORY_ONLY -> {
                                 PreschoolFlags(
                                     preparatory = true,
                                     connectedDaycare = false,
                                     additionalDaycareApplication = false,
                                 )
-                            PREPARATORY_DAYCARE ->
+                            }
+
+                            PREPARATORY_DAYCARE -> {
                                 PreschoolFlags(
                                     preparatory = true,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = false,
                                 )
-                            DAYCARE_ONLY ->
+                            }
+
+                            DAYCARE_ONLY -> {
                                 PreschoolFlags(
                                     preparatory = null,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = true,
                                 )
+                            }
                         }.run {
                             PredicateSql.all(
                                 preparatory?.let {
@@ -312,22 +351,27 @@ fun Database.Read.fetchApplicationSummaries(
                                 },
                                 serviceNeedOptionType?.let { pt ->
                                     when (pt) {
-                                        PlacementType.PRESCHOOL_DAYCARE ->
+                                        PlacementType.PRESCHOOL_DAYCARE -> {
                                             PredicateSql {
                                                 where(
                                                     "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
                                                 )
                                             }
-                                        PlacementType.PRESCHOOL_CLUB ->
+                                        }
+
+                                        PlacementType.PRESCHOOL_CLUB -> {
                                             PredicateSql {
                                                 where(
                                                     "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
                                                 )
                                             }
-                                        else ->
+                                        }
+
+                                        else -> {
                                             throw Error(
                                                 "Unsupported preschool type: $serviceNeedOptionType"
                                             )
+                                        }
                                     }
                                 } ?: PredicateSql.alwaysTrue(),
                             )
@@ -375,42 +419,70 @@ fun Database.Read.fetchApplicationSummaries(
                 personFreeTextSearchPredicate(listOf("child"), searchTerms)
             else null,
             when (transferApplications) {
-                TransferApplicationFilter.TRANSFER_ONLY ->
+                TransferApplicationFilter.TRANSFER_ONLY -> {
                     PredicateSql { where("a.transferApplication") }
-                TransferApplicationFilter.NO_TRANSFER ->
+                }
+
+                TransferApplicationFilter.NO_TRANSFER -> {
                     PredicateSql { where("NOT a.transferApplication") }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             },
             when (voucherApplications) {
-                VoucherApplicationFilter.VOUCHER_FIRST_CHOICE ->
+                VoucherApplicationFilter.VOUCHER_FIRST_CHOICE -> {
                     PredicateSql { where("d.provider_type = 'PRIVATE_SERVICE_VOUCHER'") }
-                VoucherApplicationFilter.VOUCHER_ONLY ->
+                }
+
+                VoucherApplicationFilter.VOUCHER_ONLY -> {
                     PredicateSql {
                         where(
                             "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
                         )
                     }
-                VoucherApplicationFilter.NO_VOUCHER ->
+                }
+
+                VoucherApplicationFilter.NO_VOUCHER -> {
                     PredicateSql {
                         where(
                             "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
                         )
                     }
-                null -> null
+                }
+
+                null -> {
+                    null
+                }
             },
         )
 
     val orderBy =
         when (sortBy) {
-            ApplicationSortColumn.APPLICATION_TYPE ->
+            ApplicationSortColumn.APPLICATION_TYPE -> {
                 "ORDER BY type $sortDir, last_name, first_name"
-            ApplicationSortColumn.CHILD_NAME -> "ORDER BY last_name $sortDir, first_name"
-            ApplicationSortColumn.DUE_DATE -> "ORDER BY duedate $sortDir, last_name, first_name"
-            ApplicationSortColumn.START_DATE ->
+            }
+
+            ApplicationSortColumn.CHILD_NAME -> {
+                "ORDER BY last_name $sortDir, first_name"
+            }
+
+            ApplicationSortColumn.DUE_DATE -> {
+                "ORDER BY duedate $sortDir, last_name, first_name"
+            }
+
+            ApplicationSortColumn.START_DATE -> {
                 "ORDER BY preferredStartDate $sortDir, last_name, first_name"
-            ApplicationSortColumn.STATUS ->
+            }
+
+            ApplicationSortColumn.STATUS -> {
                 "ORDER BY application_status $sortDir, last_name, first_name"
-            ApplicationSortColumn.UNIT_NAME -> "ORDER BY d.name $sortDir, last_name, first_name"
+            }
+
+            ApplicationSortColumn.UNIT_NAME -> {
+                "ORDER BY d.name $sortDir, last_name, first_name"
+            }
         }.exhaust()
 
     val applicationSummaries =
@@ -1029,7 +1101,10 @@ WHERE application.transferapplication
 
 fun Row.mapRequestedPlacementType(colName: String): PlacementType =
     when (jsonColumn<FormWithType>(colName).type) {
-        "CLUB" -> PlacementType.CLUB
+        "CLUB" -> {
+            PlacementType.CLUB
+        }
+
         "DAYCARE" -> {
             if (jsonColumn<DaycareFormV0>(colName).partTime) {
                 PlacementType.DAYCARE_PART_TIME
@@ -1037,6 +1112,7 @@ fun Row.mapRequestedPlacementType(colName: String): PlacementType =
                 PlacementType.DAYCARE
             }
         }
+
         "PRESCHOOL" -> {
             jsonColumn<DaycareFormV0>(colName).let {
                 if (it.careDetails.preparatory == true) {
@@ -1054,7 +1130,10 @@ fun Row.mapRequestedPlacementType(colName: String): PlacementType =
                 }
             }
         }
-        else -> throw Error("unknown form type")
+
+        else -> {
+            throw Error("unknown form type")
+        }
     }
 
 fun Database.Read.getApplicationType(id: ApplicationId): ApplicationType =
@@ -1097,11 +1176,19 @@ fun Database.Transaction.resetCheckedByAdminAndConfidentiality(
             application.attachments.isNotEmpty() ||
                 form.child.assistanceNeeded ||
                 form.child.allergies.isNotBlank() ||
-                form.child.diet.isNotBlank() ->
-                true // If any of these fields are filled, the application is always confidential
-            form.otherInfo.isNotBlank() ->
-                null // else if other info is filled, the confidentiality is not known
-            else -> false // else the application is not confidential
+                form.child.diet.isNotBlank() -> {
+                true
+            }
+
+            // If any of these fields are filled, the application is always confidential
+            form.otherInfo.isNotBlank() -> {
+                null
+            }
+
+            // else if other info is filled, the confidentiality is not known
+            else -> {
+                false
+            } // else the application is not confidential
         }
 
     val requiresManualChecking =

@@ -129,7 +129,7 @@ WHERE application.type = 'PRESCHOOL'
                 tx,
                 placements.map { (childIdentifier, preschoolId) ->
                     when {
-                        isValidSSN(childIdentifier) ->
+                        isValidSSN(childIdentifier) -> {
                             AsyncJob.PlacementToolFromSSN(
                                 user,
                                 childIdentifier,
@@ -137,7 +137,9 @@ WHERE application.type = 'PRESCHOOL'
                                 serviceNeedOptionId,
                                 nextPreschoolTermId,
                             )
-                        else ->
+                        }
+
+                        else -> {
                             AsyncJob.PlacementTool(
                                 user,
                                 PlacementToolData(
@@ -147,6 +149,7 @@ WHERE application.type = 'PRESCHOOL'
                                 serviceNeedOptionId,
                                 nextPreschoolTermId,
                             )
+                        }
                     }
                 },
                 runAt = clock.now(),

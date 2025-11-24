@@ -283,12 +283,25 @@ data class VardaUnit(
             jarjestamismuoto_koodi = listOfNotNull(providerType.vardaCode),
             toimintamuoto_koodi =
                 when {
-                    type.contains(VardaUnitType.CENTRE) -> VardaUnitType.CENTRE.vardaCode
-                    type.contains(VardaUnitType.FAMILY) -> VardaUnitType.FAMILY.vardaCode
-                    type.contains(VardaUnitType.GROUP_FAMILY) ->
+                    type.contains(VardaUnitType.CENTRE) -> {
+                        VardaUnitType.CENTRE.vardaCode
+                    }
+
+                    type.contains(VardaUnitType.FAMILY) -> {
+                        VardaUnitType.FAMILY.vardaCode
+                    }
+
+                    type.contains(VardaUnitType.GROUP_FAMILY) -> {
                         VardaUnitType.GROUP_FAMILY.vardaCode
-                    type.contains(VardaUnitType.PRESCHOOL) -> VardaUnitType.PRESCHOOL.vardaCode
-                    else -> null
+                    }
+
+                    type.contains(VardaUnitType.PRESCHOOL) -> {
+                        VardaUnitType.PRESCHOOL.vardaCode
+                    }
+
+                    else -> {
+                        null
+                    }
                 },
             toimintakieli_koodi = listOfNotNull(language.vardaCode),
             kielipainotus_kytkin = false,

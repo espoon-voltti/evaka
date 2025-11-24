@@ -51,7 +51,10 @@ data class DaycareFormV0(
 ) : DatabaseForm.DaycareForm() {
     init {
         when (type) {
-            ApplicationType.CLUB -> error("Invalid application type $type")
+            ApplicationType.CLUB -> {
+                error("Invalid application type $type")
+            }
+
             ApplicationType.DAYCARE,
             ApplicationType.PRESCHOOL -> {}
         }

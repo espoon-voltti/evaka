@@ -23,18 +23,22 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
             is AuthenticatedUser.Citizen -> {
                 gen.writeObjectField("id", value.id.toString())
             }
+
             is AuthenticatedUser.Employee -> {
                 gen.writeObjectField("id", value.id.toString())
                 gen.writeObjectField("globalRoles", value.globalRoles)
                 gen.writeObjectField("allScopedRoles", value.allScopedRoles)
             }
+
             is AuthenticatedUser.MobileDevice -> {
                 gen.writeObjectField("id", value.id.toString())
                 value.employeeId?.let {
                     gen.writeObjectField("employeeId", value.employeeId.toString())
                 }
             }
+
             is AuthenticatedUser.Integration -> {}
+
             is AuthenticatedUser.SystemInternalUser -> {}
         }.exhaust()
         gen.writeEndObject()

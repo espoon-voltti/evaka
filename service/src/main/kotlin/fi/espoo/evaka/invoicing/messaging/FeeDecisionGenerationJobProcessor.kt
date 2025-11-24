@@ -27,14 +27,17 @@ class FeeDecisionGenerationJobProcessor(
         logger.info { "Generating finance decisions with parameters $msg" }
         db.transaction { tx ->
             when (msg.person) {
-                is AsyncJob.GenerateFinanceDecisions.Person.Adult ->
+                is AsyncJob.GenerateFinanceDecisions.Person.Adult -> {
                     generator.generateNewDecisionsForAdult(
                         tx,
                         msg.person.adultId,
                         skipPropagation = msg.person.skipPropagation == true,
                     )
-                is AsyncJob.GenerateFinanceDecisions.Person.Child ->
+                }
+
+                is AsyncJob.GenerateFinanceDecisions.Person.Child -> {
                     generator.generateNewDecisionsForChild(tx, msg.person.childId)
+                }
             }
         }
     }

@@ -15,12 +15,16 @@ class EmailConfig {
     @Bean
     fun emailClient(client: ObjectProvider<SesClient>, env: EmailEnv): EmailClient =
         when (env.enabled) {
-            true ->
+            true -> {
                 SESEmailClient(
                     client = client.getObject(),
                     whitelist = env.whitelist,
                     subjectPostfix = env.subjectPostfix,
                 )
-            false -> MockEmailClient()
+            }
+
+            false -> {
+                MockEmailClient()
+            }
         }
 }

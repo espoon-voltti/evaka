@@ -50,11 +50,15 @@ sealed interface DocumentKey {
         ) : this(
             when (type) {
                 DecisionType.CLUB -> "clubdecision"
+
                 DecisionType.DAYCARE,
                 DecisionType.DAYCARE_PART_TIME -> "daycaredecision"
+
                 DecisionType.PRESCHOOL -> "preschooldecision"
+
                 DecisionType.PRESCHOOL_DAYCARE,
                 DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
+
                 DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
             }.let { "${it}_${id}_$lang" }
         )

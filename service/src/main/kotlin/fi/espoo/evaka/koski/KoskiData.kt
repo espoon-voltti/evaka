@@ -42,12 +42,19 @@ data class KoskiChildRaw(
 ) {
     fun toHenkilö(): Henkilö =
         when {
-            !ssn.isNullOrBlank() -> UusiHenkilö(ssn, firstName, lastName)
-            !ophPersonOid.isNullOrBlank() -> OidHenkilö(ophPersonOid)
-            else ->
+            !ssn.isNullOrBlank() -> {
+                UusiHenkilö(ssn, firstName, lastName)
+            }
+
+            !ophPersonOid.isNullOrBlank() -> {
+                OidHenkilö(ophPersonOid)
+            }
+
+            else -> {
                 throw IllegalStateException(
                     "not enough information available to create Koski Henkilö"
                 )
+            }
         }
 }
 
@@ -67,18 +74,21 @@ data class KoskiUnitRaw(
     ) =
         Suoritus(
             when (type) {
-                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> {
                     Koulutusmoduuli(
                         tunniste =
                             KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
                         perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL,
                     )
-                OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                }
+
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
                     Koulutusmoduuli(
                         tunniste =
                             KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
                         perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY,
                     )
+                }
             },
             Toimipiste(ophUnitOid),
             Suorituskieli(unitLanguage.uppercase()),
@@ -94,17 +104,28 @@ data class KoskiUnitRaw(
 
     fun haeJärjestämisMuoto(type: OpiskeluoikeudenTyyppiKoodi) =
         when (type) {
-            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> {
                 when (providerType) {
                     ProviderType.PURCHASED,
                     ProviderType.EXTERNAL_PURCHASED,
-                    ProviderType.PRIVATE -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
-                    ProviderType.PRIVATE_SERVICE_VOUCHER ->
+                    ProviderType.PRIVATE -> {
+                        Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
+                    }
+
+                    ProviderType.PRIVATE_SERVICE_VOUCHER -> {
                         Järjestämismuoto(JärjestämismuotoKoodi.PRIVATE_SERVICE_VOUCHER)
+                    }
+
                     ProviderType.MUNICIPAL,
-                    ProviderType.MUNICIPAL_SCHOOL -> null
+                    ProviderType.MUNICIPAL_SCHOOL -> {
+                        null
+                    }
                 }
-            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> null
+            }
+
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
+                null
+            }
         }
 }
 
@@ -202,7 +223,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
     ): Opiskeluoikeus {
         val vahvistus =
             when (termination) {
-                is StudyRightTermination.Qualified ->
+                is StudyRightTermination.Qualified -> {
                     Vahvistus(
                         päivä = termination.date,
                         paikkakunta = VahvistusPaikkakunta(koodiarvo = ophMunicipalityCode),
@@ -216,7 +237,11 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                                 )
                             ),
                     )
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
         return Opiskeluoikeus(
             oid = studyRightOid,
@@ -242,17 +267,23 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
             .set(getInterruptedDates().ranges(), OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
             .let {
                 when (termination) {
-                    is StudyRightTermination.Qualified ->
+                    is StudyRightTermination.Qualified -> {
                         it.set(
                             FiniteDateRange(termination.date, LocalDate.MAX),
                             OpiskeluoikeusjaksonTilaKoodi.QUALIFIED,
                         )
-                    is StudyRightTermination.Resigned ->
+                    }
+
+                    is StudyRightTermination.Resigned -> {
                         it.set(
                             FiniteDateRange(termination.date, LocalDate.MAX),
                             OpiskeluoikeusjaksonTilaKoodi.RESIGNED,
                         )
-                    null -> it // still ongoing
+                    }
+
+                    null -> {
+                        it
+                    } // still ongoing
                 }
             }
             .entries()
@@ -291,6 +322,7 @@ data class KoskiActivePreschoolDataRaw(
                 when (lastPlacementEnd.month) {
                     Month.MAY,
                     Month.JUNE -> true
+
                     else -> false
                 }
         return if (isQualified) {
@@ -453,6 +485,7 @@ data class KoskiActivePreparatoryDataRaw(
                 when (lastPlacementEnd.month) {
                     Month.MAY,
                     Month.JUNE -> true
+
                     else -> false
                 }
             // changing from PREPARATORY to PRESCHOOL is considered qualified
