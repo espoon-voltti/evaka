@@ -52,7 +52,8 @@ class AssistanceNeedPreschoolDecisionCitizenController(
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}")
     fun getAssistanceNeedPreschoolDecision(
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): AssistanceNeedPreschoolDecision {
         throw BadRequest(
             "Preschool assistance need decisions have been migrated to MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION documents"
@@ -61,7 +62,8 @@ class AssistanceNeedPreschoolDecisionCitizenController(
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}/pdf")
     fun getAssistanceNeedPreschoolDecisionPdf(
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): ResponseEntity<Any> {
         throw BadRequest(
             "Preschool assistance need decisions have been migrated to MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION documents"

@@ -287,48 +287,6 @@ test('Foster parent can receive and reply to messages', async () => {
   await endedCitizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
 })
 
-test('Foster parent can read an accepted assistance decision', async () => {
-  const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
-  await Fixture.placement({
-    childId: fosterChild.id,
-    unitId: testDaycare.id,
-    startDate: mockedDate,
-    endDate: mockedDate.addMonths(6)
-  }).save()
-  const decision = await Fixture.preFilledAssistanceNeedDecision({
-    childId: fosterChild.id,
-    selectedUnit: testDaycare.id,
-    status: 'ACCEPTED',
-    assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
-    validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
-    decisionMade: mockedDate
-  }).save()
-  await activeRelationshipHeader.selectTab('decisions')
-
-  await citizenDecisionsPage.assertAssistanceDecision(
-    fosterChild.id,
-    decision.id ?? '',
-    {
-      assistanceLevel:
-        'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
-      selectedUnit: testDaycare.name,
-      validityPeriod: `${mockedDate.format()} - ${mockedDate
-        .addYears(1)
-        .format()}`,
-      decisionMade: mockedDate.format(),
-      status: 'Hyväksytty'
-    }
-  )
-
-  const { endedRelationshipPage, endedRelationshipHeader } =
-    await openEndedRelationshipPage()
-  await endedRelationshipHeader.selectTab('decisions')
-  await activeRelationshipPage.goto(config.enduserMessagesUrl)
-  await new CitizenDecisionsPage(endedRelationshipPage).assertNoChildDecisions(
-    fosterChild.id
-  )
-})
-
 test('Foster parent can read a pedagogical document', async () => {
   await Fixture.placement({
     childId: fosterChild.id,

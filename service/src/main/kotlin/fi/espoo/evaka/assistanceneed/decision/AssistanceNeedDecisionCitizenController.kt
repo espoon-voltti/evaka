@@ -50,7 +50,8 @@ class AssistanceNeedDecisionCitizenController(
 
     @GetMapping("/children/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
-        @PathVariable id: AssistanceNeedDecisionId
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedDecisionId,
     ): AssistanceNeedDecision {
         throw BadRequest(
             "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
@@ -59,7 +60,8 @@ class AssistanceNeedDecisionCitizenController(
 
     @GetMapping("/children/assistance-need-decision/{id}/pdf")
     fun getAssistanceNeedDecisionPdf(
-        @PathVariable id: AssistanceNeedDecisionId
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
         throw BadRequest(
             "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
@@ -67,7 +69,10 @@ class AssistanceNeedDecisionCitizenController(
     }
 
     @PostMapping("/children/assistance-need-decision/{id}/read")
-    fun markAssistanceNeedDecisionAsRead(@PathVariable id: AssistanceNeedDecisionId) {
+    fun markAssistanceNeedDecisionAsRead(
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedDecisionId,
+    ) {
 
         throw BadRequest(
             "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
