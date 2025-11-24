@@ -22,11 +22,15 @@ class PersonDetailsServiceConfig {
         ctx: ApplicationContext,
     ): IPersonDetailsService =
         when (evakaEnv.vtjEnabled) {
-            true ->
+            true -> {
                 VTJPersonDetailsService(
                     vtjClientService = ctx.getBean(VtjClientService::class.java),
                     henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
                 )
-            false -> MockPersonDetailsService()
+            }
+
+            false -> {
+                MockPersonDetailsService()
+            }
         }
 }

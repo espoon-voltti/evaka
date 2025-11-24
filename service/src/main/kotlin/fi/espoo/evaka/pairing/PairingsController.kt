@@ -67,6 +67,7 @@ class PairingsController(
                             )
                             tx.initPairing(clock, unitId = body.unitId)
                         }
+
                         is PostPairingReq.Employee -> {
                             accessControl.requirePermissionFor(
                                 tx,
@@ -140,7 +141,7 @@ class PairingsController(
                     val (unitId, employeeId) = it.fetchPairingReferenceIds(id)
                     try {
                         when {
-                            unitId != null ->
+                            unitId != null -> {
                                 accessControl.requirePermissionFor(
                                     it,
                                     user,
@@ -148,8 +149,15 @@ class PairingsController(
                                     Action.Pairing.POST_RESPONSE,
                                     id,
                                 )
-                            employeeId != null -> if (user.id != employeeId) throw Forbidden()
-                            else -> error("Pairing unitId and employeeId were null")
+                            }
+
+                            employeeId != null -> {
+                                if (user.id != employeeId) throw Forbidden()
+                            }
+
+                            else -> {
+                                error("Pairing unitId and employeeId were null")
+                            }
                         }
                     } catch (e: Forbidden) {
                         throw NotFound("Pairing not found or not authorized")

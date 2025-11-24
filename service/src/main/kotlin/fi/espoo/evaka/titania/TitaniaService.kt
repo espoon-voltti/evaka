@@ -100,14 +100,18 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                         event.date,
                                         event.endTime!!.let {
                                             when (it) {
-                                                "2400" -> LocalTime.of(23, 59)
-                                                else ->
+                                                "2400" -> {
+                                                    LocalTime.of(23, 59)
+                                                }
+
+                                                else -> {
                                                     LocalTime.parse(
                                                         it,
                                                         DateTimeFormatter.ofPattern(
                                                             TITANIA_TIME_FORMAT
                                                         ),
                                                     )
+                                                }
                                             }
                                         },
                                     ),
@@ -254,18 +258,28 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                     ),
                                             beginReasonCode =
                                                 when (attendance.type) {
-                                                    StaffAttendanceType.PRESENT ->
+                                                    StaffAttendanceType.PRESENT -> {
                                                         if (
                                                             prev?.type ==
                                                                 StaffAttendanceType.CHILD_SICKNESS
                                                         )
                                                             "LS"
                                                         else null
-                                                    StaffAttendanceType.OTHER_WORK -> "TA"
-                                                    StaffAttendanceType.TRAINING -> "KO"
-                                                    StaffAttendanceType.OVERTIME ->
+                                                    }
+
+                                                    StaffAttendanceType.OTHER_WORK -> {
+                                                        "TA"
+                                                    }
+
+                                                    StaffAttendanceType.TRAINING -> {
+                                                        "KO"
+                                                    }
+
+                                                    StaffAttendanceType.OVERTIME -> {
                                                         if (arrivedPlan != null) null else "YT"
-                                                    StaffAttendanceType.JUSTIFIED_CHANGE ->
+                                                    }
+
+                                                    StaffAttendanceType.JUSTIFIED_CHANGE -> {
                                                         if (
                                                             isNotFirstInPlan(
                                                                 arrived,
@@ -275,15 +289,29 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                         )
                                                             null
                                                         else "PM"
-                                                    StaffAttendanceType.SICKNESS -> "SA"
-                                                    StaffAttendanceType.CHILD_SICKNESS -> null
+                                                    }
+
+                                                    StaffAttendanceType.SICKNESS -> {
+                                                        "SA"
+                                                    }
+
+                                                    StaffAttendanceType.CHILD_SICKNESS -> {
+                                                        null
+                                                    }
                                                 },
                                             endTime =
                                                 when (departed?.toLocalTime()) {
-                                                    null -> null
-                                                    LocalTime.MAX.truncatedTo(ChronoUnit.MICROS) ->
+                                                    null -> {
+                                                        null
+                                                    }
+
+                                                    LocalTime.MAX.truncatedTo(
+                                                        ChronoUnit.MICROS
+                                                    ) -> {
                                                         "2400"
-                                                    else ->
+                                                    }
+
+                                                    else -> {
                                                         departed
                                                             .toLocalTime()
                                                             .format(
@@ -291,10 +319,11 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                                     TITANIA_TIME_FORMAT
                                                                 )
                                                             )
+                                                    }
                                                 },
                                             endReasonCode =
                                                 when (attendance.type) {
-                                                    StaffAttendanceType.PRESENT ->
+                                                    StaffAttendanceType.PRESENT -> {
                                                         if (
                                                             departed != null &&
                                                                 next?.type ==
@@ -303,15 +332,25 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                         )
                                                             "LS"
                                                         else null
-                                                    StaffAttendanceType.OTHER_WORK -> null
-                                                    StaffAttendanceType.TRAINING -> null
-                                                    StaffAttendanceType.OVERTIME ->
+                                                    }
+
+                                                    StaffAttendanceType.OTHER_WORK -> {
+                                                        null
+                                                    }
+
+                                                    StaffAttendanceType.TRAINING -> {
+                                                        null
+                                                    }
+
+                                                    StaffAttendanceType.OVERTIME -> {
                                                         if (
                                                             departed == null || departedPlan != null
                                                         )
                                                             null
                                                         else "YT"
-                                                    StaffAttendanceType.JUSTIFIED_CHANGE ->
+                                                    }
+
+                                                    StaffAttendanceType.JUSTIFIED_CHANGE -> {
                                                         if (
                                                             departed == null ||
                                                                 isNotLastInPlan(
@@ -322,8 +361,15 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                         )
                                                             null
                                                         else "PM"
-                                                    StaffAttendanceType.SICKNESS -> null
-                                                    StaffAttendanceType.CHILD_SICKNESS -> null
+                                                    }
+
+                                                    StaffAttendanceType.SICKNESS -> {
+                                                        null
+                                                    }
+
+                                                    StaffAttendanceType.CHILD_SICKNESS -> {
+                                                        null
+                                                    }
                                                 },
                                         )
                                     }

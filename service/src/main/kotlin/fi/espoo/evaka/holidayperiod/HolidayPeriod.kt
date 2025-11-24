@@ -48,10 +48,18 @@ data class HolidayPeriod(
         when {
             reservationEnabledPlacementRanges.none {
                 it.range.overlaps(FiniteDateRange(reservationsOpenOn, reservationDeadline))
-            } -> null
-            today < reservationsOpenOn ->
+            } -> {
+                null
+            }
+
+            today < reservationsOpenOn -> {
                 HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn)
-            today in reservationsOpenOn..reservationDeadline -> HolidayPeriodEffect.ReservationsOpen
+            }
+
+            today in reservationsOpenOn..reservationDeadline -> {
+                HolidayPeriodEffect.ReservationsOpen
+            }
+
             // Reservation period is over and a placement was active when it was still open
             else -> {
                 val holidayPeriodPlacements =

@@ -226,9 +226,13 @@ class TermsController(private val accessControl: AccessControl) {
     ) {
         val allTerms =
             when {
-                termIdToUpdate != null ->
+                termIdToUpdate != null -> {
                     tx.getClubTerms().filter { term -> term.id != termIdToUpdate }
-                else -> tx.getClubTerms()
+                }
+
+                else -> {
+                    tx.getClubTerms()
+                }
             }
 
         allTerms.forEach {
@@ -245,9 +249,13 @@ class TermsController(private val accessControl: AccessControl) {
     ) {
         val allTermsToCompare =
             when {
-                termIdToUpdate != null ->
+                termIdToUpdate != null -> {
                     tx.getPreschoolTerms().filter { term -> term.id != termIdToUpdate }
-                else -> tx.getPreschoolTerms()
+                }
+
+                else -> {
+                    tx.getPreschoolTerms()
+                }
             }
         allTermsToCompare.forEach { term ->
             if (termReq.finnishPreschool.overlaps(term.finnishPreschool)) {

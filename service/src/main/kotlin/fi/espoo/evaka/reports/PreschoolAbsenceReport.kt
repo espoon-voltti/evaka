@@ -59,6 +59,7 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                                 AbsenceType.SICKLEAVE,
                                 AbsenceType.PLANNED_ABSENCE,
                                 AbsenceType.UNKNOWN_ABSENCE -> true
+
                                 else -> false
                             }
                         }
@@ -134,9 +135,13 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                 val dailyTimeInMinutes =
                     when (r.placementType) {
                         PlacementType.PREPARATORY,
-                        PlacementType.PREPARATORY_DAYCARE ->
+                        PlacementType.PREPARATORY_DAYCARE -> {
                             dailyPreparatoryTime.duration.toMinutes()
-                        else -> dailyPreschoolTime.duration.toMinutes()
+                        }
+
+                        else -> {
+                            dailyPreschoolTime.duration.toMinutes()
+                        }
                     }
                 val childAttendanceDeviationMinutes =
                     if (r.absenceType == AbsenceType.OTHER_ABSENCE) {

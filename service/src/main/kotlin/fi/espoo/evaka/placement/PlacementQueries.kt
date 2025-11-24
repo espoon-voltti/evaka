@@ -532,9 +532,13 @@ fun Database.Read.getDaycarePlacements(
                      -> PlacementSourceCreatedBy.EMPLOYEE_PAPER
 
                     PlacementSource.MANUAL -> PlacementSourceCreatedBy.EMPLOYEE_MANUAL
+
                     PlacementSource.APPLICATION -> PlacementSourceCreatedBy.CITIZEN
+
                     PlacementSource.SERVICE_APPLICATION -> PlacementSourceCreatedBy.CITIZEN
+
                     PlacementSource.PLACEMENT_TERMINATION -> PlacementSourceCreatedBy.CITIZEN
+
                     null -> PlacementSourceCreatedBy.UNKNOWN
                 }
 

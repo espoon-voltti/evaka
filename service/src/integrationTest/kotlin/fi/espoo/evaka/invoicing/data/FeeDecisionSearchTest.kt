@@ -389,9 +389,13 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             val result = search(sortBy = sortBy, sortDirection = direction)
             assertEquals(2, result.size)
             when (direction) {
-                SortDirection.ASC -> assertEquals(decisions.map { it.id }, result.map { it.id })
-                SortDirection.DESC ->
+                SortDirection.ASC -> {
+                    assertEquals(decisions.map { it.id }, result.map { it.id })
+                }
+
+                SortDirection.DESC -> {
                     assertEquals(decisions.reversed().map { it.id }, result.map { it.id })
+                }
             }
         }
     }

@@ -107,6 +107,7 @@ class DvvModificationsServiceClient(
                     jsonMapper.readTree(result.get()).toString()
                 )
             }
+
             is Result.Failure -> {
                 logger.error(result.getException()) {
                     "Fetching the first modification of $date from DVV modification service failed, message: ${String(result.error.errorData)}"
@@ -147,6 +148,7 @@ class DvvModificationsServiceClient(
                     jsonMapper.readTree(result.get()).toString()
                 )
             }
+
             is Result.Failure -> {
                 logger.error(result.getException()) {
                     "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(result.error.errorData)}"

@@ -266,12 +266,21 @@ class AssistanceNeedPreschoolDecisionController(
         val decided =
             when (body.status) {
                 AssistanceNeedDecisionStatus.ACCEPTED,
-                AssistanceNeedDecisionStatus.REJECTED -> true
-                AssistanceNeedDecisionStatus.NEEDS_WORK -> false
-                AssistanceNeedDecisionStatus.DRAFT ->
+                AssistanceNeedDecisionStatus.REJECTED -> {
+                    true
+                }
+
+                AssistanceNeedDecisionStatus.NEEDS_WORK -> {
+                    false
+                }
+
+                AssistanceNeedDecisionStatus.DRAFT -> {
                     throw BadRequest("Assistance need decisions cannot be decided to be draft")
-                AssistanceNeedDecisionStatus.ANNULLED ->
+                }
+
+                AssistanceNeedDecisionStatus.ANNULLED -> {
                     throw BadRequest("Assistance need decisions cannot be decided to be annulled")
+                }
             }
 
         return db.connect { dbc ->

@@ -38,6 +38,7 @@ class EspooPatuIntegrationClient(
             is Result.Success -> {
                 PatuIntegrationClient.Result(true)
             }
+
             is Result.Failure -> {
                 logger.error(result.getException()) {
                     "Sending patu report failed, message: ${String(result.error.errorData)}"

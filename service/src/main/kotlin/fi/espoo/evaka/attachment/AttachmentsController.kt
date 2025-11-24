@@ -502,11 +502,18 @@ class AttachmentsController(
                     is AttachmentParent.IncomeStatement,
                     is AttachmentParent.Income,
                     is AttachmentParent.Invoice,
-                    is AttachmentParent.PedagogicalDocument ->
+                    is AttachmentParent.PedagogicalDocument -> {
                         it.userAttachmentCount(user.evakaUserId, attachTo)
+                    }
+
                     is AttachmentParent.MessageDraft,
-                    is AttachmentParent.MessageContent -> 0
-                    is AttachmentParent.FeeAlteration -> Integer.MAX_VALUE
+                    is AttachmentParent.MessageContent -> {
+                        0
+                    }
+
+                    is AttachmentParent.FeeAlteration -> {
+                        Integer.MAX_VALUE
+                    }
                 }
             }
         if (count >= maxAttachmentsPerUser) {
@@ -542,9 +549,13 @@ class AttachmentsController(
 
         val allowedContentTypes =
             when (attachTo) {
-                is AttachmentParent.PedagogicalDocument ->
+                is AttachmentParent.PedagogicalDocument -> {
                     pedagogicalDocumentAllowedAttachmentContentTypes
-                else -> defaultAllowedAttachmentContentTypes
+                }
+
+                else -> {
+                    defaultAllowedAttachmentContentTypes
+                }
             }
         val fileName = getAndCheckFileName(file)
         val contentType =
@@ -614,7 +625,7 @@ class AttachmentsController(
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
                     when (attachedTo) {
-                        is AttachmentParent.Application ->
+                        is AttachmentParent.Application -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -622,7 +633,9 @@ class AttachmentsController(
                                 Action.Attachment.READ_APPLICATION_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.Income ->
+                        }
+
+                        is AttachmentParent.Income -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -630,7 +643,9 @@ class AttachmentsController(
                                 Action.Attachment.READ_INCOME_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.IncomeStatement ->
+                        }
+
+                        is AttachmentParent.IncomeStatement -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -638,7 +653,9 @@ class AttachmentsController(
                                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.Invoice ->
+                        }
+
+                        is AttachmentParent.Invoice -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -646,6 +663,8 @@ class AttachmentsController(
                                 Action.Attachment.READ_INVOICE_ATTACHMENT,
                                 attachment.id,
                             )
+                        }
+
                         is AttachmentParent.MessageContent -> {
                             val accountIds =
                                 it.getMessageAccountIdsByContentId(attachedTo.messageContentId)
@@ -657,6 +676,7 @@ class AttachmentsController(
                                 accountIds,
                             )
                         }
+
                         is AttachmentParent.MessageDraft -> {
                             val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
@@ -667,7 +687,8 @@ class AttachmentsController(
                                 accountId!!,
                             )
                         }
-                        is AttachmentParent.PedagogicalDocument ->
+
+                        is AttachmentParent.PedagogicalDocument -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -675,7 +696,9 @@ class AttachmentsController(
                                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.FeeAlteration ->
+                        }
+
+                        is AttachmentParent.FeeAlteration -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -683,7 +706,9 @@ class AttachmentsController(
                                 Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.None ->
+                        }
+
+                        is AttachmentParent.None -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -691,6 +716,7 @@ class AttachmentsController(
                                 Action.Attachment.READ_ORPHAN_ATTACHMENT,
                                 attachment.id,
                             )
+                        }
                     }.exhaust()
                     attachment
                 }
@@ -733,7 +759,7 @@ class AttachmentsController(
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
                     when (attachedTo) {
-                        is AttachmentParent.Application ->
+                        is AttachmentParent.Application -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -741,7 +767,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.Income ->
+                        }
+
+                        is AttachmentParent.Income -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -749,7 +777,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_INCOME_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.IncomeStatement ->
+                        }
+
+                        is AttachmentParent.IncomeStatement -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -757,7 +787,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.Invoice ->
+                        }
+
+                        is AttachmentParent.Invoice -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -765,6 +797,8 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_INVOICE_ATTACHMENT,
                                 attachment.id,
                             )
+                        }
+
                         is AttachmentParent.MessageDraft -> {
                             val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
                             accessControl.requirePermissionFor(
@@ -775,7 +809,8 @@ class AttachmentsController(
                                 accountId!!,
                             )
                         }
-                        is AttachmentParent.MessageContent ->
+
+                        is AttachmentParent.MessageContent -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -783,7 +818,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.PedagogicalDocument ->
+                        }
+
+                        is AttachmentParent.PedagogicalDocument -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -791,7 +828,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
                                 attachment.id,
                             )
-                        is AttachmentParent.FeeAlteration ->
+                        }
+
+                        is AttachmentParent.FeeAlteration -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -799,7 +838,9 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
                                 attachment.id,
                             )
-                        is AttachmentParent.None ->
+                        }
+
+                        is AttachmentParent.None -> {
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -807,6 +848,7 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_ORPHAN_ATTACHMENT,
                                 attachment.id,
                             )
+                        }
                     }.exhaust()
                     attachment
                 }

@@ -288,6 +288,7 @@ fun clearServiceNeedsFromPeriod(
                 periodToClear.contains(oldPeriod) -> {
                     tx.deleteServiceNeed(old.id)
                 }
+
                 periodToClear.includes(oldPeriod.start) -> {
                     tx.updateServiceNeed(
                         id = old.id,
@@ -300,6 +301,7 @@ fun clearServiceNeedsFromPeriod(
                         confirmedAt = old.confirmed?.at,
                     )
                 }
+
                 periodToClear.includes(oldPeriod.end) -> {
                     tx.updateServiceNeed(
                         id = old.id,
@@ -312,6 +314,7 @@ fun clearServiceNeedsFromPeriod(
                         confirmedAt = old.confirmed?.at,
                     )
                 }
+
                 else -> {
                     tx.updateServiceNeed(
                         id = old.id,

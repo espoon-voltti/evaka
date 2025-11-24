@@ -123,7 +123,10 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val guardian = tx.getPersonById(id) ?: return null
 
         return when (guardian.identity) {
-            is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
+            is ExternalIdentifier.NoID -> {
+                toPersonWithChildrenDTO(guardian)
+            }
+
             is ExternalIdentifier.SSN -> {
                 if (forceRefresh || guardian.vtjDependantsQueried == null) {
                     getPersonWithDependants(user, guardian.identity)
@@ -155,7 +158,10 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val child = tx.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
-            is ExternalIdentifier.NoID -> emptyList()
+            is ExternalIdentifier.NoID -> {
+                emptyList()
+            }
+
             is ExternalIdentifier.SSN -> {
                 if (forceRefresh || child.vtjGuardiansQueried == null) {
                     getPersonWithGuardians(user, child.identity)
@@ -224,7 +230,10 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         return when (person.identity) {
-            is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
+            is ExternalIdentifier.SSN -> {
+                throw BadRequest("User already has ssn")
+            }
+
             is ExternalIdentifier.NoID -> {
                 if (tx.getPersonBySSN(ssn.ssn) != null) {
                     throw Conflict("User with same ssn already exists")

@@ -241,6 +241,7 @@ class EspooInvoiceIntegrationClient(
                     ) -> invoiceAddress
 
                     addressIsValid(address.first, address.second, address.third) -> address
+
                     else -> Triple(fallbackStreetAddress, fallbackPostalCode, fallbackPostOffice)
                 }
 

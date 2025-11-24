@@ -444,7 +444,8 @@ class ApplicationControllerCitizen(
                             )
                             tx.deleteApplication(applicationId)
                         }
-                        ApplicationStatus.SENT ->
+
+                        ApplicationStatus.SENT -> {
                             applicationStateService.cancelApplication(
                                 tx,
                                 user,
@@ -452,10 +453,13 @@ class ApplicationControllerCitizen(
                                 applicationId,
                                 null,
                             )
-                        else ->
+                        }
+
+                        else -> {
                             throw BadRequest(
                                 "Only applications which are not yet being processed can be cancelled"
                             )
+                        }
                     }
                     application
                 }

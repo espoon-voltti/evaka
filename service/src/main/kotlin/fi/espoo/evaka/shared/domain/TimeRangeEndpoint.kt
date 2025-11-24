@@ -21,10 +21,14 @@ sealed interface TimeRangeEndpoint : Comparable<TimeRangeEndpoint> {
     data class Start(override val inner: LocalTime) : TimeRangeEndpoint {
         override fun compareTo(other: TimeRangeEndpoint): Int =
             when (other) {
-                is Start -> this.inner.compareTo(other.inner)
-                is End ->
+                is Start -> {
+                    this.inner.compareTo(other.inner)
+                }
+
+                is End -> {
                     if (this.inner == LocalTime.MIDNIGHT || other.inner == LocalTime.MIDNIGHT) -1
                     else this.inner.compareTo(other.inner)
+                }
             }
 
         override fun asStart() = this
@@ -41,13 +45,16 @@ sealed interface TimeRangeEndpoint : Comparable<TimeRangeEndpoint> {
     data class End(override val inner: LocalTime) : TimeRangeEndpoint {
         override fun compareTo(other: TimeRangeEndpoint): Int =
             when (other) {
-                is Start ->
+                is Start -> {
                     if (other.inner == LocalTime.MIDNIGHT || this.inner == LocalTime.MIDNIGHT) 1
                     else inner.compareTo(other.inner)
-                is End ->
+                }
+
+                is End -> {
                     if (this.inner == LocalTime.MIDNIGHT && other.inner == LocalTime.MIDNIGHT) 0
                     else if (this.inner == LocalTime.MIDNIGHT) 1
                     else if (other.inner == LocalTime.MIDNIGHT) -1 else inner.compareTo(other.inner)
+                }
             }
 
         override fun asStart(): Start =

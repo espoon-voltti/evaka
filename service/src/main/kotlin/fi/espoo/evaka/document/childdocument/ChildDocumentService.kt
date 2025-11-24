@@ -316,10 +316,17 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 val documentStatus = column<DocumentStatus>("document_status")
                 val notificationType =
                     when {
-                        documentType.decision -> ChildDocumentNotificationType.DECISION_DOCUMENT
-                        documentStatus.citizenEditable ->
+                        documentType.decision -> {
+                            ChildDocumentNotificationType.DECISION_DOCUMENT
+                        }
+
+                        documentStatus.citizenEditable -> {
                             ChildDocumentNotificationType.EDITABLE_DOCUMENT
-                        else -> ChildDocumentNotificationType.BASIC_DOCUMENT
+                        }
+
+                        else -> {
+                            ChildDocumentNotificationType.BASIC_DOCUMENT
+                        }
                     }
 
                 AsyncJob.SendChildDocumentNotificationEmail(

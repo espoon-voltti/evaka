@@ -247,25 +247,35 @@ data class HelsinkiDateTimeRange(
         other: HelsinkiDateTimeRange
     ): BoundedRange.Relation<HelsinkiDateTimeRange> =
         when {
-            this.end <= other.start ->
+            this.end <= other.start -> {
                 BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
-            other.end <= this.start ->
+            }
+
+            other.end <= this.start -> {
                 BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
-            else ->
+            }
+
+            else -> {
                 BoundedRange.Relation.Overlap(
                     left =
                         when {
-                            this.start < other.start ->
+                            this.start < other.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(this.start, other.start),
                                     isFirst = true,
                                 )
-                            other.start < this.start ->
+                            }
+
+                            other.start < this.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(other.start, this.start),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                     overlap =
                         HelsinkiDateTimeRange(
@@ -274,19 +284,26 @@ data class HelsinkiDateTimeRange(
                         ),
                     right =
                         when {
-                            other.end < this.end ->
+                            other.end < this.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(other.end, this.end),
                                     isFirst = true,
                                 )
-                            this.end < other.end ->
+                            }
+
+                            this.end < other.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(this.end, other.end),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                 )
+            }
         }
 
     fun getDuration(): Duration = Duration.between(start.toInstant(), end.toInstant())

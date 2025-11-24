@@ -80,13 +80,16 @@ fun getYearFromSSN(ssn: String): Int {
             'D',
             'E',
             'F' -> 2000
+
             '-',
             'U',
             'V',
             'W',
             'X',
             'Y' -> 1900
+
             '+' -> 1800
+
             else -> throw java.lang.IllegalArgumentException("Invalid century in SSN ('$c')")
         }
     return century + ssn.substring(4, 6).toInt()

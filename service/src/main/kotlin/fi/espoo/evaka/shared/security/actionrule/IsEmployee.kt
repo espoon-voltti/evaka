@@ -63,7 +63,10 @@ data object IsEmployee : DatabaseActionRule.Params {
                                 .associateWith { DatabaseActionRule.Deferred.Permitted }
                         }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -98,11 +101,15 @@ data object IsEmployee : DatabaseActionRule.Params {
                         targets: Set<EmployeeId>,
                     ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> =
                         when (ctx.user) {
-                            is AuthenticatedUser.Employee ->
+                            is AuthenticatedUser.Employee -> {
                                 targets
                                     .filter { it == ctx.user.id }
                                     .associateWith { DatabaseActionRule.Deferred.Permitted }
-                            else -> emptyMap()
+                            }
+
+                            else -> {
+                                emptyMap()
+                            }
                         }
 
                     override fun queryWithParams(
@@ -110,9 +117,13 @@ data object IsEmployee : DatabaseActionRule.Params {
                         params: IsEmployee,
                     ): QuerySql? =
                         when (ctx.user) {
-                            is AuthenticatedUser.Employee ->
+                            is AuthenticatedUser.Employee -> {
                                 QuerySql { sql("SELECT ${bind(ctx.user.id)} AS id") }
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         }
                 }
         }
@@ -128,7 +139,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee ->
+                        is AuthenticatedUser.Employee -> {
                             ctx.tx
                                 .createQuery {
                                     sql(
@@ -147,7 +158,11 @@ SELECT EXISTS (
                                     if (isPermitted) DatabaseActionRule.Deferred.Permitted
                                     else DatabaseActionRule.Deferred.None
                                 }
-                        else -> DatabaseActionRule.Deferred.None
+                        }
+
+                        else -> {
+                            DatabaseActionRule.Deferred.None
+                        }
                     }
             },
         )
@@ -288,7 +303,7 @@ WHERE decision_maker = ${bind(employee.id)}
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee ->
+                        is AuthenticatedUser.Employee -> {
                             ctx.tx
                                 .createQuery {
                                     sql(
@@ -305,7 +320,11 @@ SELECT EXISTS (
                                     if (isPermitted) DatabaseActionRule.Deferred.Permitted
                                     else DatabaseActionRule.Deferred.None
                                 }
-                        else -> DatabaseActionRule.Deferred.None
+                        }
+
+                        else -> {
+                            DatabaseActionRule.Deferred.None
+                        }
                     }
             },
         )
@@ -347,7 +366,7 @@ AND sent_for_decision IS NOT NULL
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee ->
+                        is AuthenticatedUser.Employee -> {
                             ctx.tx
                                 .createQuery {
                                     sql(
@@ -367,7 +386,11 @@ SELECT EXISTS (
                                     if (isPermitted) DatabaseActionRule.Deferred.Permitted
                                     else DatabaseActionRule.Deferred.None
                                 }
-                        else -> DatabaseActionRule.Deferred.None
+                        }
+
+                        else -> {
+                            DatabaseActionRule.Deferred.None
+                        }
                     }
             },
         )

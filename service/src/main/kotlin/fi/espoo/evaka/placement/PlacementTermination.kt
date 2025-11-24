@@ -41,6 +41,7 @@ data class TerminatablePlacementGroup(
 private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacementType =
     when (type) {
         PlacementType.CLUB -> TerminatablePlacementType.CLUB
+
         PlacementType.TEMPORARY_DAYCARE,
         PlacementType.TEMPORARY_DAYCARE_PART_DAY,
         PlacementType.SCHOOL_SHIFT_CARE,
@@ -50,9 +51,11 @@ private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacem
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
         PlacementType.PRESCHOOL_DAYCARE_ONLY,
         PlacementType.PREPARATORY_DAYCARE_ONLY -> TerminatablePlacementType.DAYCARE
+
         PRESCHOOL,
         PRESCHOOL_DAYCARE,
         PRESCHOOL_CLUB -> TerminatablePlacementType.PRESCHOOL
+
         PREPARATORY,
         PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
     }
@@ -88,7 +91,10 @@ fun mapToTerminatablePlacements(
                             PRESCHOOL_DAYCARE,
                             PRESCHOOL_CLUB,
                             PREPARATORY,
-                            PREPARATORY_DAYCARE -> it.type
+                            PREPARATORY_DAYCARE -> {
+                                it.type
+                            }
+
                             PlacementType.DAYCARE,
                             PlacementType.DAYCARE_PART_TIME,
                             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
@@ -97,7 +103,7 @@ fun mapToTerminatablePlacements(
                             PlacementType.PREPARATORY_DAYCARE_ONLY,
                             PlacementType.TEMPORARY_DAYCARE,
                             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                            PlacementType.SCHOOL_SHIFT_CARE ->
+                            PlacementType.SCHOOL_SHIFT_CARE -> {
                                 if (
                                     maybePreschoolOrPreparatoryPlacement
                                         ?.startDate
@@ -107,6 +113,7 @@ fun mapToTerminatablePlacements(
                                 } else {
                                     it.type
                                 }
+                            }
                         }
                     )
                 }
@@ -175,13 +182,23 @@ fun terminateBilledDaycare(
         }
         val newPlacementType =
             when (placement.type) {
-                PRESCHOOL_DAYCARE -> PRESCHOOL
-                PRESCHOOL_CLUB -> PRESCHOOL
-                PREPARATORY_DAYCARE -> PREPARATORY
-                else ->
+                PRESCHOOL_DAYCARE -> {
+                    PRESCHOOL
+                }
+
+                PRESCHOOL_CLUB -> {
+                    PRESCHOOL
+                }
+
+                PREPARATORY_DAYCARE -> {
+                    PREPARATORY
+                }
+
+                else -> {
                     throw IllegalStateException(
                         "Should not be handling any other placement types here"
                     )
+                }
             }
         // It is possible that we already have an adjacent placement of the same type, e.g. when the
         // billed DAYCARE part

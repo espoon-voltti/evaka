@@ -39,6 +39,7 @@ enum class StaffAttendanceType : DatabaseEnum {
             TRAINING,
             SICKNESS,
             CHILD_SICKNESS -> false
+
             else -> true
         }
 

@@ -24,19 +24,32 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
         return when (user.type!!) {
-            AuthenticatedUserType.citizen ->
+            AuthenticatedUserType.citizen -> {
                 AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.STRONG)
-            AuthenticatedUserType.citizen_weak ->
+            }
+
+            AuthenticatedUserType.citizen_weak -> {
                 AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.WEAK)
-            AuthenticatedUserType.employee ->
+            }
+
+            AuthenticatedUserType.employee -> {
                 AuthenticatedUser.Employee(
                     EmployeeId(user.id!!),
                     user.globalRoles + user.allScopedRoles,
                 )
-            AuthenticatedUserType.mobile ->
+            }
+
+            AuthenticatedUserType.mobile -> {
                 AuthenticatedUser.MobileDevice(MobileDeviceId(user.id!!), user.employeeId)
-            AuthenticatedUserType.integration -> AuthenticatedUser.Integration
-            AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
+            }
+
+            AuthenticatedUserType.integration -> {
+                AuthenticatedUser.Integration
+            }
+
+            AuthenticatedUserType.system -> {
+                AuthenticatedUser.SystemInternalUser
+            }
         }
     }
 }

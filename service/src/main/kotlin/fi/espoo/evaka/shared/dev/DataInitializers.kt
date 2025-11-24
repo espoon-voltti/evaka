@@ -411,10 +411,12 @@ RETURNING id
                 DevPersonType.CHILD -> {
                     insert(DevChild(id))
                 }
+
                 DevPersonType.ADULT -> {
                     upsertCitizenUser(id)
                     createPersonMessageAccount(id)
                 }
+
                 DevPersonType.RAW_ROW -> {}
             }
         }

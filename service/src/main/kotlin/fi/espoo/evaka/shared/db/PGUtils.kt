@@ -22,9 +22,13 @@ fun mapPSQLException(e: Exception): Exception {
         val ex = e.cause as PSQLException
         when (ex.sqlState) {
             PSQLState.UNIQUE_VIOLATION.state,
-            PSQLState.EXCLUSION_VIOLATION.state ->
+            PSQLState.EXCLUSION_VIOLATION.state -> {
                 Conflict("Unique or exclusion constraint violation in database", cause = e)
-            else -> ex
+            }
+
+            else -> {
+                ex
+            }
         }
     } else {
         e

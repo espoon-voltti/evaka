@@ -202,11 +202,18 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 val oldEnd = old.validityPeriod.end
                 when {
                     // end date is removed
-                    oldEnd != null && newValidity.end == null -> DateRange(oldEnd.plusDays(1), null)
+                    oldEnd != null && newValidity.end == null -> {
+                        DateRange(oldEnd.plusDays(1), null)
+                    }
+
                     // end date is moved later
-                    oldEnd != null && newValidity.end != null && newValidity.end > oldEnd ->
+                    oldEnd != null && newValidity.end != null && newValidity.end > oldEnd -> {
                         DateRange(oldEnd.plusDays(1), newValidity.end)
-                    else -> null
+                    }
+
+                    else -> {
+                        null
+                    }
                 }?.let { changePeriod ->
                     notifyOfServiceTimeChange(
                         tx = tx,
@@ -271,8 +278,11 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                             new.start != old.start &&
                             old.end != null &&
                             new.end != old.end -> throw Conflict("Unsupported overlap")
+
                         new.start <= old.start -> DateRange(new.end!!.plusDays(1), old.end)
+
                         old.start < new.start -> DateRange(old.start, new.start.minusDays(1))
+
                         else -> throw Conflict("Unsupported overlap")
                     }
                 tx.updateChildDailyServiceTimesValidity(oldId, updatedRange)

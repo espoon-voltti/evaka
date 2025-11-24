@@ -258,7 +258,7 @@ WHERE id = ${bind(id)}
 
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
     return when (row.type) {
-        DailyServiceTimesType.REGULAR ->
+        DailyServiceTimesType.REGULAR -> {
             DailyServiceTimesValue.RegularTimes(
                     validityPeriod = row.validityPeriod,
                     regularTimes =
@@ -268,7 +268,9 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                             ),
                 )
                 .withId(row.id, row.childId)
-        DailyServiceTimesType.IRREGULAR ->
+        }
+
+        DailyServiceTimesType.IRREGULAR -> {
             DailyServiceTimesValue.IrregularTimes(
                     validityPeriod = row.validityPeriod,
                     monday = row.mondayTimes,
@@ -280,9 +282,12 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                     sunday = row.sundayTimes,
                 )
                 .withId(row.id, row.childId)
-        DailyServiceTimesType.VARIABLE_TIME ->
+        }
+
+        DailyServiceTimesType.VARIABLE_TIME -> {
             DailyServiceTimesValue.VariableTimes(validityPeriod = row.validityPeriod)
                 .withId(row.id, row.childId)
+        }
     }.exhaust()
 }
 

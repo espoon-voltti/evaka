@@ -29,6 +29,7 @@ fun main(args: Array<String>) {
         when (System.getenv("VOLTTI_ENV")) {
             "dev",
             "test" -> arrayOf("espoo_evaka", "enable_dev_api")
+
             else -> arrayOf("espoo_evaka")
         }
 

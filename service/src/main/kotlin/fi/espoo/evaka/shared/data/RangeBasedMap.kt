@@ -288,15 +288,22 @@ abstract class RangeBasedMap<
 
             fun append(entry: Pair<Range, T>) {
                 when (val last = result.lastOrNull()) {
-                    null -> result.add(entry)
-                    else ->
+                    null -> {
+                        result.add(entry)
+                    }
+
+                    else -> {
                         when (val merged = last.tryMerge(entry)) {
-                            null -> result.add(entry)
+                            null -> {
+                                result.add(entry)
+                            }
+
                             else -> {
                                 result.removeLast()
                                 result.add(merged)
                             }
                         }
+                    }
                 }
             }
 
@@ -314,7 +321,10 @@ abstract class RangeBasedMap<
                     continue
                 }
                 when (val relation = oldRange.relationTo(newRange)) {
-                    is BoundedRange.Relation.LeftTo -> append(oldRange to oldValue)
+                    is BoundedRange.Relation.LeftTo -> {
+                        append(oldRange to oldValue)
+                    }
+
                     is BoundedRange.Relation.Overlap -> {
                         // Any remainder on the left side can just be added as is
                         relation.left?.let {
@@ -342,6 +352,7 @@ abstract class RangeBasedMap<
                                 }
                             }
                     }
+
                     is BoundedRange.Relation.RightTo -> {
                         // If the old range is to the right of the new range, we are guaranteed
                         // to never see more overlaps

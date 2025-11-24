@@ -412,10 +412,14 @@ class SystemController(
                         throw Forbidden("User is not active")
                     }
                     when (accessControl.verifyPinCode(tx, params.employeeId, params.pin, clock)) {
-                        AccessControl.PinError.PIN_LOCKED ->
+                        AccessControl.PinError.PIN_LOCKED -> {
                             PinLoginResponse(PinLoginStatus.PIN_LOCKED)
-                        AccessControl.PinError.WRONG_PIN ->
+                        }
+
+                        AccessControl.PinError.WRONG_PIN -> {
                             PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                        }
+
                         null -> {
                             employee?.let {
                                 PinLoginResponse(

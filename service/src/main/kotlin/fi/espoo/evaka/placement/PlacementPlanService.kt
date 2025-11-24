@@ -106,7 +106,7 @@ class PlacementPlanService(
                 val preschoolDaycarePeriod =
                     when (type) {
                         PlacementType.PRESCHOOL_DAYCARE,
-                        PlacementType.PREPARATORY_DAYCARE ->
+                        PlacementType.PREPARATORY_DAYCARE -> {
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
@@ -114,7 +114,9 @@ class PlacementPlanService(
                                 ),
                                 LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31),
                             )
-                        PlacementType.PRESCHOOL_CLUB ->
+                        }
+
+                        PlacementType.PRESCHOOL_CLUB -> {
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
@@ -122,7 +124,11 @@ class PlacementPlanService(
                                 ),
                                 exactTerm.end,
                             )
-                        else -> null
+                        }
+
+                        else -> {
+                            null
+                        }
                     }
 
                 PlacementPlanDraft(
@@ -136,6 +142,7 @@ class PlacementPlanService(
                     guardianHasRestrictedDetails = guardianHasRestrictedDetails,
                 )
             }
+
             ApplicationType.DAYCARE -> {
                 val endFromBirthDate = daycarePlacementPlanEndMonthDay.atYear(child.dob.year + 6)
                 val endFromStartDate =
@@ -160,6 +167,7 @@ class PlacementPlanService(
                     guardianHasRestrictedDetails = guardianHasRestrictedDetails,
                 )
             }
+
             ApplicationType.CLUB -> {
                 val clubTerm =
                     tx.getActiveClubTermAt(startDate)
@@ -203,16 +211,24 @@ class PlacementPlanService(
             PlacementType.PREPARATORY_DAYCARE -> {
                 val (preschoolPeriods, preschoolDaycarePeriod) =
                     when (extent) {
-                        is PlacementPlanExtent.OnlyPreschool -> Pair(listOf(extent.period), null)
-                        is PlacementPlanExtent.OnlyPreschoolDaycare ->
+                        is PlacementPlanExtent.OnlyPreschool -> {
+                            Pair(listOf(extent.period), null)
+                        }
+
+                        is PlacementPlanExtent.OnlyPreschoolDaycare -> {
                             Pair(emptyList(), extent.period)
-                        is PlacementPlanExtent.FullDouble ->
+                        }
+
+                        is PlacementPlanExtent.FullDouble -> {
                             Pair(
                                 extent.period.complement(extent.preschoolDaycarePeriod),
                                 extent.preschoolDaycarePeriod,
                             )
-                        is PlacementPlanExtent.FullSingle ->
+                        }
+
+                        is PlacementPlanExtent.FullSingle -> {
                             error("Single extent not supported for $type")
+                        }
                     }
                 val preschoolPlacementType =
                     when (type) {
@@ -250,6 +266,7 @@ class PlacementPlanService(
                         }
                     } ?: emptyList())
             }
+
             else -> {
                 check(extent is PlacementPlanExtent.FullSingle) {
                     "Only single extent is supported for $type"
@@ -325,9 +342,13 @@ class PlacementPlanService(
                 when (placementType) {
                     PlacementType.PRESCHOOL_DAYCARE,
                     PlacementType.PRESCHOOL_CLUB,
-                    PlacementType.PREPARATORY_DAYCARE ->
+                    PlacementType.PREPARATORY_DAYCARE -> {
                         PlacementPlanExtent.FullDouble(period, preschoolDaycarePeriod!!)
-                    else -> PlacementPlanExtent.FullSingle(period)
+                    }
+
+                    else -> {
+                        PlacementPlanExtent.FullSingle(period)
+                    }
                 },
             )
 

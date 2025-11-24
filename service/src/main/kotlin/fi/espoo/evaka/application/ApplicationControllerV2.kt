@@ -285,9 +285,13 @@ class ApplicationControllerV2(
 
                     val action =
                         when {
-                            application.form.child.assistanceNeeded ->
+                            application.form.child.assistanceNeeded -> {
                                 Action.Application.READ_IF_HAS_ASSISTANCE_NEED
-                            else -> Action.Application.READ
+                            }
+
+                            else -> {
+                                Action.Application.READ
+                            }
                         }
                     accessControl.requirePermissionFor(tx, user, clock, action, applicationId)
 

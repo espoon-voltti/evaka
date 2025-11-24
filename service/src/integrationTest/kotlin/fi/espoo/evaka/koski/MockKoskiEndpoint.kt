@@ -57,7 +57,8 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                     }
                 }
             }
-            HttpMethod.PUT ->
+
+            HttpMethod.PUT -> {
                 if (
                     oppija.opiskeluoikeudet
                         .mapNotNull { it.oid }
@@ -73,14 +74,21 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                             )
                         )
                 }
-            else -> error("Unsupported operation type $method")
+            }
+
+            else -> {
+                error("Unsupported operation type $method")
+            }
         }
 
         val response =
             lock.withLock {
                 val personOid =
                     when (oppija.henkilö) {
-                        is OidHenkilö -> (oppija.henkilö as OidHenkilö).oid
+                        is OidHenkilö -> {
+                            (oppija.henkilö as OidHenkilö).oid
+                        }
+
                         is UusiHenkilö -> {
                             val ssn = (oppija.henkilö as UusiHenkilö).hetu
                             persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }

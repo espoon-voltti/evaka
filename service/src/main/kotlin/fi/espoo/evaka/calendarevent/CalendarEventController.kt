@@ -930,8 +930,14 @@ private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): L
 //   f   |  f  | N/A | N/A |  t
 private fun getManipulationWindowStart(originalDate: LocalDate) =
     when (originalDate.dayOfWeek) {
-        DayOfWeek.THURSDAY -> originalDate.plusDays(4) // MONDAY
-        DayOfWeek.FRIDAY -> originalDate.plusDays(4) // TUESDAY
-        DayOfWeek.SATURDAY -> originalDate.plusDays(3) // TUESDAY
+        DayOfWeek.THURSDAY -> originalDate.plusDays(4)
+
+        // MONDAY
+        DayOfWeek.FRIDAY -> originalDate.plusDays(4)
+
+        // TUESDAY
+        DayOfWeek.SATURDAY -> originalDate.plusDays(3)
+
+        // TUESDAY
         else -> originalDate.plusDays(2)
     }

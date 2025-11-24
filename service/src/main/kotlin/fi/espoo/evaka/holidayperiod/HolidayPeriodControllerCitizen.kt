@@ -94,10 +94,13 @@ class HolidayPeriodControllerCitizen(
                     )
                     val activeQuestionnaire =
                         when (featureConfig.holidayQuestionnaireType) {
-                            QuestionnaireType.FIXED_PERIOD ->
+                            QuestionnaireType.FIXED_PERIOD -> {
                                 tx.getActiveFixedPeriodQuestionnaire(clock.today())
-                            QuestionnaireType.OPEN_RANGES ->
+                            }
+
+                            QuestionnaireType.OPEN_RANGES -> {
                                 tx.getActiveOpenRangesQuestionnaire(clock.today())
+                            }
                         } ?: return@read listOf()
 
                     val eligibleChildren =
@@ -245,9 +248,14 @@ class HolidayPeriodControllerCitizen(
                         ranges.flatMap { range ->
                             val absenceType =
                                 when {
-                                    range.durationInDays() >= questionnaire.absenceTypeThreshold ->
+                                    range.durationInDays() >=
+                                        questionnaire.absenceTypeThreshold -> {
                                         questionnaire.absenceType
-                                    else -> AbsenceType.OTHER_ABSENCE
+                                    }
+
+                                    else -> {
+                                        AbsenceType.OTHER_ABSENCE
+                                    }
                                 }
                             range
                                 .dates()
@@ -354,6 +362,7 @@ class HolidayPeriodControllerCitizen(
                     }
                     .toMap()
             }
+
             is HolidayQuestionnaire.OpenRangesQuestionnaire -> {
                 eligibleChildren
                     .associateWith { listOf(questionnaire.period) }

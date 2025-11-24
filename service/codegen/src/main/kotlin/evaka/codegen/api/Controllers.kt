@@ -103,13 +103,18 @@ data class EndpointMetadata(
                             fail("It should not use a request body")
                         }
                     }
+
                     RequestMethod.POST,
                     RequestMethod.PUT,
                     RequestMethod.PATCH -> {}
+
                     RequestMethod.TRACE,
-                    RequestMethod.OPTIONS -> fail("Method not supported")
+                    RequestMethod.OPTIONS -> {
+                        fail("Method not supported")
+                    }
                 }
             }
+
             is EndpointType.PlainGet -> {
                 if (httpMethod != RequestMethod.GET) {
                     fail("It should use HTTP GET")
@@ -118,11 +123,15 @@ data class EndpointMetadata(
                     fail("It should not use a request body")
                 }
             }
+
             is EndpointType.Multipart -> {
                 when (httpMethod) {
                     RequestMethod.POST,
                     RequestMethod.PUT -> {}
-                    else -> fail("Method not supported")
+
+                    else -> {
+                        fail("Method not supported")
+                    }
                 }
             }
         }
@@ -130,31 +139,45 @@ data class EndpointMetadata(
         when {
             path.startsWith("/citizen/public/") ||
                 path.startsWith("/employee/public/") ||
-                path.startsWith("/employee-mobile/public/") ->
+                path.startsWith("/employee-mobile/public/") -> {
                 if (authenticatedUserType != null) {
                     fail("It must not include any AuthenticatedUser as a parameter")
                 }
-            path.startsWith("/system/") ->
+            }
+
+            path.startsWith("/system/") -> {
                 if (authenticatedUserType != typeOf<AuthenticatedUser.SystemInternalUser>()) {
                     fail("It must include an AuthenticatedUser.SystemInternalUser parameter")
                 }
-            path.startsWith("/integration/") ->
+            }
+
+            path.startsWith("/integration/") -> {
                 if (authenticatedUserType != typeOf<AuthenticatedUser.Integration>()) {
                     fail("It must include an AuthenticatedUser.Integration parameter")
                 }
-            path.startsWith("/citizen/") ->
+            }
+
+            path.startsWith("/citizen/") -> {
                 if (authenticatedUserType != typeOf<AuthenticatedUser.Citizen>()) {
                     fail("It must include an AuthenticatedUser.Citizen parameter")
                 }
-            path.startsWith("/employee/") ->
+            }
+
+            path.startsWith("/employee/") -> {
                 if (authenticatedUserType != typeOf<AuthenticatedUser.Employee>()) {
                     fail("It must include an AuthenticatedUser.Employee parameter")
                 }
-            path.startsWith("/employee-mobile/") ->
+            }
+
+            path.startsWith("/employee-mobile/") -> {
                 if (authenticatedUserType != typeOf<AuthenticatedUser.MobileDevice>()) {
                     fail("It must include an AuthenticatedUser.MobileDevice parameter")
                 }
-            else -> fail("It must have a valid prefix (e.g. /citizen/ or /employee/)")
+            }
+
+            else -> {
+                fail("It must have a valid prefix (e.g. /citizen/ or /employee/)")
+            }
         }
     }
 }

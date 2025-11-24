@@ -437,12 +437,25 @@ class UnitAclController(
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {
-            UserRole.STAFF -> Action.Unit.INSERT_ACL_STAFF
-            UserRole.UNIT_SUPERVISOR -> Action.Unit.INSERT_ACL_UNIT_SUPERVISOR
-            UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY ->
+            UserRole.STAFF -> {
+                Action.Unit.INSERT_ACL_STAFF
+            }
+
+            UserRole.UNIT_SUPERVISOR -> {
+                Action.Unit.INSERT_ACL_UNIT_SUPERVISOR
+            }
+
+            UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY -> {
                 Action.Unit.INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY
-            UserRole.SPECIAL_EDUCATION_TEACHER -> Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER
-            else -> throw BadRequest("Invalid daycare acl role: $role")
+            }
+
+            UserRole.SPECIAL_EDUCATION_TEACHER -> {
+                Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER
+            }
+
+            else -> {
+                throw BadRequest("Invalid daycare acl role: $role")
+            }
         }
 
     @GetMapping("/employee/daycares/{unitId}/temporary")

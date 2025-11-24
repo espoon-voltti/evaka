@@ -81,42 +81,59 @@ data class TimeRange(
 
     override fun relationTo(other: TimeRange): BoundedRange.Relation<TimeRange> =
         when {
-            this.end <= other.start ->
+            this.end <= other.start -> {
                 BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
-            other.end <= this.start ->
+            }
+
+            other.end <= this.start -> {
                 BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
-            else ->
+            }
+
+            else -> {
                 BoundedRange.Relation.Overlap(
                     left =
                         when {
-                            this.start < other.start ->
+                            this.start < other.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(this.start, other.start),
                                     isFirst = true,
                                 )
-                            other.start < this.start ->
+                            }
+
+                            other.start < this.start -> {
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(other.start, this.start),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                     overlap = TimeRange(maxOf(this.start, other.start), minOf(this.end, other.end)),
                     right =
                         when {
-                            other.end < this.end ->
+                            other.end < this.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(other.end, this.end),
                                     isFirst = true,
                                 )
-                            this.end < other.end ->
+                            }
+
+                            this.end < other.end -> {
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(this.end, other.end),
                                     isFirst = false,
                                 )
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         },
                 )
+            }
         }
 
     override fun includes(point: TimeRangeEndpoint) = this.start <= point && point < this.end

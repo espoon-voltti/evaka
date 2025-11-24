@@ -10,27 +10,52 @@ import fi.espoo.evaka.shared.domain.OfficialLanguage
 class EvakaTemplateProvider : ITemplateProvider {
     override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String {
         return when (lang) {
-            OfficialLanguage.SV ->
+            OfficialLanguage.SV -> {
                 when (type) {
-                    DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
+                    DecisionType.CLUB -> {
+                        "Kerhopäätös"
+                    }
+
+                    // All clubs are in Finnish
                     DecisionType.DAYCARE,
-                    DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
-                    DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
-                    DecisionType.PRESCHOOL_DAYCARE -> "Anslutande_småbarnspedagogik"
-                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös (sv)"
-                    DecisionType.PREPARATORY_EDUCATION ->
-                        "Valmistava_päätös" // Svebi does not offer preparatory education
+                    DecisionType.DAYCARE_PART_TIME -> {
+                        "Beslut_om_småbarnspedagogisk_verksamhet"
+                    }
+
+                    DecisionType.PRESCHOOL -> {
+                        "Beslut_om_förskoleplats"
+                    }
+
+                    DecisionType.PRESCHOOL_DAYCARE -> {
+                        "Anslutande_småbarnspedagogik"
+                    }
+
+                    DecisionType.PRESCHOOL_CLUB -> {
+                        "Esiopetuksen_kerhopäätös (sv)"
+                    }
+
+                    DecisionType.PREPARATORY_EDUCATION -> {
+                        "Valmistava_päätös"
+                    } // Svebi does not offer preparatory education
                 }
-            else ->
+            }
+
+            else -> {
                 when (type) {
                     DecisionType.CLUB -> "Kerhopäätös"
+
                     DecisionType.DAYCARE,
                     DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
+
                     DecisionType.PRESCHOOL -> "Esiopetuspäätös"
+
                     DecisionType.PRESCHOOL_DAYCARE -> "Liittyvä_varhaiskasvatuspäätös"
+
                     DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös"
+
                     DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
                 }
+            }
         }
     }
 

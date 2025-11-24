@@ -220,12 +220,16 @@ private class Parser(private var text: CharSequence) {
             }
         when (val char = parseChar()) {
             ',' -> {}
-            else -> error("Expected comma, got $char")
+
+            else -> {
+                error("Expected comma, got $char")
+            }
         }
         val upper =
             when (peekChar()) {
                 ']',
                 ')' -> null
+
                 else -> parseUpper(this)
             }
         val upperInclusive =
@@ -259,7 +263,10 @@ private class Parser(private var text: CharSequence) {
     fun <T : Any> parseMultiRange(parseRange: (parser: Parser) -> T): List<T> {
         when (val char = parseChar()) {
             '{' -> {}
-            else -> error("Expected '{', got $char")
+
+            else -> {
+                error("Expected '{', got $char")
+            }
         }
         val result = mutableListOf<T>()
         while (true) {
@@ -271,7 +278,10 @@ private class Parser(private var text: CharSequence) {
         }
         when (val char = parseChar()) {
             '}' -> {}
-            else -> error("Expected '}', got $char")
+
+            else -> {
+                error("Expected '}', got $char")
+            }
         }
         return result
     }

@@ -115,18 +115,30 @@ class ProcessMetadataController(
                             processName =
                                 when (type) {
                                     ChildDocumentType.VASU,
-                                    ChildDocumentType.MIGRATED_VASU ->
+                                    ChildDocumentType.MIGRATED_VASU -> {
                                         "Lapsen varhaiskasvatussuunnitelma"
+                                    }
+
                                     ChildDocumentType.LEOPS,
-                                    ChildDocumentType.MIGRATED_LEOPS ->
+                                    ChildDocumentType.MIGRATED_LEOPS -> {
                                         "Lapsen esiopetuksen oppimissuunnitelma"
-                                    ChildDocumentType.HOJKS ->
+                                    }
+
+                                    ChildDocumentType.HOJKS -> {
                                         "Henkilökohtainen opetuksen järjestämistä koskeva suunnitelma"
-                                    ChildDocumentType.PEDAGOGICAL_ASSESSMENT ->
+                                    }
+
+                                    ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> {
                                         "Esiopetuksen pedagoginen arvio"
-                                    ChildDocumentType.PEDAGOGICAL_REPORT ->
+                                    }
+
+                                    ChildDocumentType.PEDAGOGICAL_REPORT -> {
                                         "Esiopetuksen pedagoginen selvitys"
-                                    else -> null
+                                    }
+
+                                    else -> {
+                                        null
+                                    }
                                 },
                             primaryDocument =
                                 document.copy(

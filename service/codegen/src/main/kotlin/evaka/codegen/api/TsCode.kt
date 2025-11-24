@@ -31,11 +31,15 @@ enum class TsProject {
 data class TsFile(val project: TsProject, val path: Path) {
     fun importFrom(other: TsFile): String =
         when {
-                this.project == other.project ->
+                this.project == other.project -> {
                     path.relativeTo(other.path.parent).let {
                         if (it.fileName == it) Path.of("./$it") else it
                     }
-                else -> this.project.absoluteImportPath(path)
+                }
+
+                else -> {
+                    this.project.absoluteImportPath(path)
+                }
             }
             .toString()
             .removeSuffix(".d.ts")

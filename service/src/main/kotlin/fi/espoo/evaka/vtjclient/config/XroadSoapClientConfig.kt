@@ -79,6 +79,7 @@ class XroadSoapClientConfig {
                     }
                     throw WebServiceFaultException(message)
                 }
+
                 else -> {
                     logger.error { "Unknown error while doing X-Road request: \"$message\"." }
                     throw WebServiceFaultException("Message has unknown fault: $message")

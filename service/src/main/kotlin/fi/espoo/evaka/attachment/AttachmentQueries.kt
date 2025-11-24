@@ -65,17 +65,45 @@ data class AttachmentForeignKeys(
 
     fun parent(): AttachmentParent =
         when {
-            applicationId != null -> AttachmentParent.Application(applicationId)
-            feeAlterationId != null -> AttachmentParent.FeeAlteration(feeAlterationId)
-            incomeId != null -> AttachmentParent.Income(incomeId)
-            incomeStatementId != null -> AttachmentParent.IncomeStatement(incomeStatementId)
-            invoiceId != null -> AttachmentParent.Invoice(invoiceId)
-            messageContentId != null -> AttachmentParent.MessageContent(messageContentId)
-            messageDraftId != null -> AttachmentParent.MessageDraft(messageDraftId)
-            pedagogicalDocumentId != null ->
+            applicationId != null -> {
+                AttachmentParent.Application(applicationId)
+            }
+
+            feeAlterationId != null -> {
+                AttachmentParent.FeeAlteration(feeAlterationId)
+            }
+
+            incomeId != null -> {
+                AttachmentParent.Income(incomeId)
+            }
+
+            incomeStatementId != null -> {
+                AttachmentParent.IncomeStatement(incomeStatementId)
+            }
+
+            invoiceId != null -> {
+                AttachmentParent.Invoice(invoiceId)
+            }
+
+            messageContentId != null -> {
+                AttachmentParent.MessageContent(messageContentId)
+            }
+
+            messageDraftId != null -> {
+                AttachmentParent.MessageDraft(messageDraftId)
+            }
+
+            pedagogicalDocumentId != null -> {
                 AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
-            allIds().all { it == null } -> AttachmentParent.None
-            else -> error("Unhandled AttachmentParent type")
+            }
+
+            allIds().all { it == null } -> {
+                AttachmentParent.None
+            }
+
+            else -> {
+                error("Unhandled AttachmentParent type")
+            }
         }
 
     companion object {
@@ -264,19 +292,39 @@ private fun AttachmentParent.toPredicate() = Predicate {
         "Unexpected AttachmentForeignKeys field count"
     }
     when (this@toPredicate) {
-        is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
-        is AttachmentParent.FeeAlteration ->
+        is AttachmentParent.Application -> {
+            where("$it.application_id = ${bind(applicationId)}")
+        }
+
+        is AttachmentParent.FeeAlteration -> {
             where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
-        is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
-        is AttachmentParent.IncomeStatement ->
+        }
+
+        is AttachmentParent.Income -> {
+            where("$it.income_id = ${bind(incomeId)}")
+        }
+
+        is AttachmentParent.IncomeStatement -> {
             where("$it.income_statement_id = ${bind(incomeStatementId)}")
-        is AttachmentParent.Invoice -> where("$it.invoice_id = ${bind(invoiceId)}")
-        is AttachmentParent.MessageContent ->
+        }
+
+        is AttachmentParent.Invoice -> {
+            where("$it.invoice_id = ${bind(invoiceId)}")
+        }
+
+        is AttachmentParent.MessageContent -> {
             where("$it.message_content_id = ${bind(messageContentId)}")
-        is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
-        is AttachmentParent.PedagogicalDocument ->
+        }
+
+        is AttachmentParent.MessageDraft -> {
+            where("$it.message_draft_id = ${bind(draftId)}")
+        }
+
+        is AttachmentParent.PedagogicalDocument -> {
             where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
-        is AttachmentParent.None ->
+        }
+
+        is AttachmentParent.None -> {
             where(
                 """
 $it.application_id IS NULL
@@ -289,6 +337,7 @@ AND $it.message_draft_id IS NULL
 AND $it.pedagogical_document_id IS NULL
 """
             )
+        }
     }
 }
 

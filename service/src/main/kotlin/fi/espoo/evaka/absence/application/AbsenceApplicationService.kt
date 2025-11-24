@@ -61,12 +61,19 @@ class AbsenceApplicationService(
                     emailEnv.sender(language),
                     emailMessageProvider.absenceApplicationDecidedNotification(
                         when (application.status) {
-                            AbsenceApplicationStatus.ACCEPTED -> true
-                            AbsenceApplicationStatus.REJECTED -> false
-                            else ->
+                            AbsenceApplicationStatus.ACCEPTED -> {
+                                true
+                            }
+
+                            AbsenceApplicationStatus.REJECTED -> {
+                                false
+                            }
+
+                            else -> {
                                 throw IllegalArgumentException(
                                     "Invalid absence application status: ${application.status}"
                                 )
+                            }
                         },
                         application.startDate,
                         application.endDate,

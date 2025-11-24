@@ -125,9 +125,15 @@ sealed class IncomeStatementBody(open val startDate: LocalDate, open val endDate
 fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
     if (body.endDate != null && body.startDate > body.endDate) return false
     return when (body) {
-        is IncomeStatementBody.HighestFee -> true
-        is IncomeStatementBody.ChildIncome -> true
-        is IncomeStatementBody.Income ->
+        is IncomeStatementBody.HighestFee -> {
+            true
+        }
+
+        is IncomeStatementBody.ChildIncome -> {
+            true
+        }
+
+        is IncomeStatementBody.Income -> {
             if (body.gross == null && body.entrepreneur == null) {
                 false
             } else if (body.endDate == null) {
@@ -153,6 +159,7 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
                             validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome))
                 }
             }
+        }
     }
 }
 

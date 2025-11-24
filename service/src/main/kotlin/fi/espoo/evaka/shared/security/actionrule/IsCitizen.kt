@@ -76,7 +76,10 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                                 .associateWith { Deferred(ctx.user.authLevel) }
                         }
                 }
-                else -> emptyMap()
+
+                else -> {
+                    emptyMap()
+                }
             }
 
         override fun queryWithParams(
@@ -84,13 +87,17 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             params: IsCitizen,
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.Citizen ->
+                is AuthenticatedUser.Citizen -> {
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
                         QuerySql { filter(ctx.user.id, ctx.now) }
                     } else {
                         null
                     }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
     }
 
@@ -127,11 +134,15 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                         targets: Set<PersonId>,
                     ): Map<PersonId, DatabaseActionRule.Deferred<IsCitizen>> =
                         when (ctx.user) {
-                            is AuthenticatedUser.Citizen ->
+                            is AuthenticatedUser.Citizen -> {
                                 targets
                                     .filter { it == ctx.user.id }
                                     .associateWith { Deferred(ctx.user.authLevel) }
-                            else -> emptyMap()
+                            }
+
+                            else -> {
+                                emptyMap()
+                            }
                         }
 
                     override fun queryWithParams(
@@ -139,9 +150,13 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                         params: IsCitizen,
                     ): QuerySql? =
                         when (ctx.user) {
-                            is AuthenticatedUser.Citizen ->
+                            is AuthenticatedUser.Citizen -> {
                                 QuerySql { sql("SELECT ${bind(ctx.user.id)} AS id") }
-                            else -> null
+                            }
+
+                            else -> {
+                                null
+                            }
                         }
                 }
         }

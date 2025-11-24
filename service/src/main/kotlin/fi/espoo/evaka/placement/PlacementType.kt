@@ -41,6 +41,7 @@ enum class PlacementType : DatabaseEnum {
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY,
             SCHOOL_SHIFT_CARE -> false
+
             PRESCHOOL,
             PRESCHOOL_DAYCARE,
             PRESCHOOL_CLUB,
@@ -72,29 +73,38 @@ enum class PlacementType : DatabaseEnum {
             PRESCHOOL,
             PREPARATORY,
             CLUB,
-            SCHOOL_SHIFT_CARE -> setOf(AbsenceCategory.NONBILLABLE)
+            SCHOOL_SHIFT_CARE -> {
+                setOf(AbsenceCategory.NONBILLABLE)
+            }
+
             DAYCARE,
             DAYCARE_PART_TIME,
             PRESCHOOL_DAYCARE_ONLY,
             PREPARATORY_DAYCARE_ONLY,
             TEMPORARY_DAYCARE,
-            TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
+            TEMPORARY_DAYCARE_PART_DAY -> {
+                setOf(AbsenceCategory.BILLABLE)
+            }
+
             PRESCHOOL_DAYCARE,
             PRESCHOOL_CLUB,
             PREPARATORY_DAYCARE,
             DAYCARE_FIVE_YEAR_OLDS,
-            DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
                 setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
+            }
         }
 
     private fun messagingCategory(): MessagingCategory? =
         when (this) {
             CLUB -> MessagingCategory.MESSAGING_CLUB
+
             DAYCARE,
             DAYCARE_PART_TIME,
             DAYCARE_FIVE_YEAR_OLDS,
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
             SCHOOL_SHIFT_CARE -> MessagingCategory.MESSAGING_DAYCARE
+
             PRESCHOOL,
             PRESCHOOL_DAYCARE,
             PRESCHOOL_DAYCARE_ONLY,
@@ -102,6 +112,7 @@ enum class PlacementType : DatabaseEnum {
             PREPARATORY,
             PREPARATORY_DAYCARE,
             PREPARATORY_DAYCARE_ONLY -> MessagingCategory.MESSAGING_PRESCHOOL
+
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY -> null
         }
@@ -112,29 +123,70 @@ enum class PlacementType : DatabaseEnum {
         preschoolTerms: List<PreschoolTerm>,
     ): ScheduleType =
         when (this) {
-            CLUB ->
+            CLUB -> {
                 clubTerms.firstNotNullOfOrNull { it.scheduleType(date) } ?: ScheduleType.TERM_BREAK
-            DAYCARE -> ScheduleType.RESERVATION_REQUIRED
-            DAYCARE_PART_TIME -> ScheduleType.RESERVATION_REQUIRED
-            DAYCARE_FIVE_YEAR_OLDS -> ScheduleType.RESERVATION_REQUIRED
-            DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> ScheduleType.RESERVATION_REQUIRED
+            }
+
+            DAYCARE -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            DAYCARE_PART_TIME -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            DAYCARE_FIVE_YEAR_OLDS -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
             // Fall back to FIXED_SCHEDULE outside preschool terms for situations where placement's
             // start/end is outside the term. This might happen in Espoo if swedish terms differ
             // from finnish terms, for example.
-            PRESCHOOL ->
+            PRESCHOOL -> {
                 preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
                     ?: ScheduleType.FIXED_SCHEDULE
-            PREPARATORY ->
+            }
+
+            PREPARATORY -> {
                 preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
                     ?: ScheduleType.FIXED_SCHEDULE
-            PRESCHOOL_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
-            PRESCHOOL_DAYCARE_ONLY -> ScheduleType.RESERVATION_REQUIRED
-            PRESCHOOL_CLUB -> ScheduleType.RESERVATION_REQUIRED
-            PREPARATORY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
-            PREPARATORY_DAYCARE_ONLY -> ScheduleType.RESERVATION_REQUIRED
-            TEMPORARY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
-            TEMPORARY_DAYCARE_PART_DAY -> ScheduleType.RESERVATION_REQUIRED
-            SCHOOL_SHIFT_CARE -> ScheduleType.RESERVATION_REQUIRED
+            }
+
+            PRESCHOOL_DAYCARE -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            PRESCHOOL_DAYCARE_ONLY -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            PRESCHOOL_CLUB -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            PREPARATORY_DAYCARE -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            PREPARATORY_DAYCARE_ONLY -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            TEMPORARY_DAYCARE -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            TEMPORARY_DAYCARE_PART_DAY -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
+
+            SCHOOL_SHIFT_CARE -> {
+                ScheduleType.RESERVATION_REQUIRED
+            }
         }
 
     fun fixedScheduleRange(
@@ -150,10 +202,12 @@ enum class PlacementType : DatabaseEnum {
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY,
             SCHOOL_SHIFT_CARE -> null
+
             PRESCHOOL,
             PRESCHOOL_DAYCARE,
             PRESCHOOL_CLUB,
             PRESCHOOL_DAYCARE_ONLY -> dailyPreschoolTime
+
             PREPARATORY,
             PREPARATORY_DAYCARE,
             PREPARATORY_DAYCARE_ONLY -> dailyPreparatoryTime

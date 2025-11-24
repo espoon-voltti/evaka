@@ -68,7 +68,7 @@ data class ApplicationForm(
     companion object {
         fun fromV0(v0: DatabaseForm, childRestricted: Boolean, guardianRestricted: Boolean) =
             when (v0) {
-                is DaycareFormV0 ->
+                is DaycareFormV0 -> {
                     ApplicationForm(
                         child =
                             ChildDetails(
@@ -220,7 +220,9 @@ data class ApplicationForm(
                         maxFeeAccepted = v0.maxFeeAccepted,
                         clubDetails = null,
                     )
-                is ClubFormV0 ->
+                }
+
+                is ClubFormV0 -> {
                     ApplicationForm(
                         child =
                             ChildDetails(
@@ -318,7 +320,11 @@ data class ApplicationForm(
                                 wasOnDaycare = v0.wasOnDaycare,
                             ),
                     )
-                else -> throw Exception("lol")
+                }
+
+                else -> {
+                    throw Exception("lol")
+                }
             }
 
         fun initForm(

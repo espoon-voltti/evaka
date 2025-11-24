@@ -120,15 +120,17 @@ fun getExpectedAbsenceCategories(
         )
 
     return when (placementType) {
-        PlacementType.PRESCHOOL ->
+        PlacementType.PRESCHOOL -> {
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
                         overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
                     }
                 )
                 .takeIf { preschoolEducationOnGoing }
+        }
+
         PlacementType.PRESCHOOL_DAYCARE,
-        PlacementType.PRESCHOOL_CLUB ->
+        PlacementType.PRESCHOOL_CLUB -> {
             if (preschoolEducationOnGoing) {
                 setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
@@ -146,14 +148,18 @@ fun getExpectedAbsenceCategories(
                     }
                 )
             }
-        PlacementType.PREPARATORY ->
+        }
+
+        PlacementType.PREPARATORY -> {
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
                         overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
                     }
                 )
                 .takeIf { preparatoryEducationOnGoing }
-        PlacementType.PREPARATORY_DAYCARE ->
+        }
+
+        PlacementType.PREPARATORY_DAYCARE -> {
             if (preparatoryEducationOnGoing) {
                 setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
@@ -171,17 +177,21 @@ fun getExpectedAbsenceCategories(
                     }
                 )
             }
+        }
+
         PlacementType.DAYCARE,
         PlacementType.DAYCARE_PART_TIME,
         PlacementType.PRESCHOOL_DAYCARE_ONLY,
         PlacementType.PREPARATORY_DAYCARE_ONLY,
         PlacementType.TEMPORARY_DAYCARE,
-        PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+        PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
             setOfNotNull(
                 AbsenceCategory.BILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
             )
+        }
+
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
             setOfNotNull(
                 AbsenceCategory.NONBILLABLE.takeIf {
                     totalTime(presences) < Duration.ofMinutes(15)
@@ -190,11 +200,17 @@ fun getExpectedAbsenceCategories(
                     totalTime(presences) < Duration.ofMinutes(4 * 60 + 15)
                 },
             )
-        PlacementType.SCHOOL_SHIFT_CARE ->
+        }
+
+        PlacementType.SCHOOL_SHIFT_CARE -> {
             setOfNotNull(
                 AbsenceCategory.NONBILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
             )
-        PlacementType.CLUB -> null
+        }
+
+        PlacementType.CLUB -> {
+            null
+        }
     }
 }
 

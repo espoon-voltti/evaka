@@ -56,7 +56,9 @@ class EspooBiJob(private val client: EspooBiClient) {
 
         override fun read(): Int =
             when (val buffer = acquireBuffer()) {
-                null -> -1 // end of stream
+                null -> -1
+
+                // end of stream
                 else -> buffer.get().toInt().also { totalBytes += 1 }
             }
 

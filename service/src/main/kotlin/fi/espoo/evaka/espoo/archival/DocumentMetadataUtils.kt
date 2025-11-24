@@ -77,10 +77,17 @@ fun marshalMetadata(metadata: RecordMetadataInstance): String {
                         requirePrefix: Boolean,
                     ): String {
                         return when (namespaceUri) {
-                            "http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0" ->
+                            "http://www.avaintec.com/2005/x-archive/record-metadata-instance/2.0" -> {
                                 "ns0"
-                            "http://www.avaintec.com/2004/records-schedule-fi/1.0" -> "at0"
-                            else -> suggestion ?: "ns"
+                            }
+
+                            "http://www.avaintec.com/2004/records-schedule-fi/1.0" -> {
+                                "at0"
+                            }
+
+                            else -> {
+                                suggestion ?: "ns"
+                            }
                         }
                     }
                 },
@@ -166,7 +173,7 @@ fun createRetentionPolicy(documentType: ChildDocumentType): RetentionPolicyType 
                         rule =
                             when (documentType) {
                                 ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
-                                ChildDocumentType.PEDAGOGICAL_REPORT ->
+                                ChildDocumentType.PEDAGOGICAL_REPORT -> {
                                     PolicyConfiguration.Rules.Rule().apply {
                                         timeSpan = 28
                                         triggerEvent = "YearsFromCustomerBirthDate"
@@ -177,7 +184,9 @@ fun createRetentionPolicy(documentType: ChildDocumentType): RetentionPolicyType 
                                                     "Perusopetuslaki (628/1998) 16 a §"
                                             }
                                     }
-                                else ->
+                                }
+
+                                else -> {
                                     PolicyConfiguration.Rules.Rule().apply {
                                         timeSpan = 0
                                         triggerEvent = "InPerpetuity"
@@ -187,6 +196,7 @@ fun createRetentionPolicy(documentType: ChildDocumentType): RetentionPolicyType 
                                                 actionAnnotation = "KA/13089/07.01.01.03.01/2018"
                                             }
                                     }
+                                }
                             }
                     }
             }
@@ -256,21 +266,40 @@ fun createDocumentDescription(
                 ChildDocumentType.LEOPS,
                 ChildDocumentType.MIGRATED_LEOPS,
                 ChildDocumentType.HOJKS -> "Suunnitelma"
+
                 ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> "Arvio"
+
                 ChildDocumentType.PEDAGOGICAL_REPORT -> "Selvitys"
+
                 else -> null
             }
         documentTypeSpecifier =
             when (document.template.type) {
                 ChildDocumentType.VASU,
-                ChildDocumentType.MIGRATED_VASU -> "Varhaiskasvatussuunnitelma"
+                ChildDocumentType.MIGRATED_VASU -> {
+                    "Varhaiskasvatussuunnitelma"
+                }
+
                 ChildDocumentType.LEOPS,
-                ChildDocumentType.MIGRATED_LEOPS -> "Lapsen esiopetuksen oppimissuunnitelma LEOPS"
-                ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> "Pedagoginen arvio"
-                ChildDocumentType.PEDAGOGICAL_REPORT -> "Pedagoginen selvitys"
-                ChildDocumentType.HOJKS ->
+                ChildDocumentType.MIGRATED_LEOPS -> {
+                    "Lapsen esiopetuksen oppimissuunnitelma LEOPS"
+                }
+
+                ChildDocumentType.PEDAGOGICAL_ASSESSMENT -> {
+                    "Pedagoginen arvio"
+                }
+
+                ChildDocumentType.PEDAGOGICAL_REPORT -> {
+                    "Pedagoginen selvitys"
+                }
+
+                ChildDocumentType.HOJKS -> {
                     "Henkilökohtaisen opetuksen järjestämistä koskeva suunnitelma HOJKS"
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
         personalData = PersonalDataType.CONTAINS_SENSITIVE_PERSONAL_INFORMATION
         language = document.template.language.isoLanguage.alpha2

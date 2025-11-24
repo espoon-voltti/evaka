@@ -320,7 +320,7 @@ $unsubscribeEn
     ): EmailContent {
         val (typeFi, typeSv, typeEn) =
             when (thread.type) {
-                MessageType.MESSAGE ->
+                MessageType.MESSAGE -> {
                     if (thread.urgent)
                         Triple(
                             "kiireellinen viesti",
@@ -328,7 +328,9 @@ $unsubscribeEn
                             "urgent message",
                         )
                     else Triple("viesti", "personligt meddelande", "message")
-                MessageType.BULLETIN ->
+                }
+
+                MessageType.BULLETIN -> {
                     if (thread.urgent)
                         Triple(
                             "kiireellinen tiedote",
@@ -336,6 +338,7 @@ $unsubscribeEn
                             "urgent bulletin",
                         )
                     else Triple("tiedote", "allmänt meddelande", "bulletin")
+                }
             }
 
         val showSubjectInBody = isSenderMunicipalAccount && thread.type == MessageType.BULLETIN
@@ -365,7 +368,7 @@ $unsubscribeEn
         notificationType: ChildDocumentNotificationType,
     ): EmailContent {
         return when (notificationType) {
-            ChildDocumentNotificationType.BASIC_DOCUMENT ->
+            ChildDocumentNotificationType.BASIC_DOCUMENT -> {
                 EmailContent.fromHtml(
                     subject =
                         "Uusi asiakirja eVakassa / Nytt dokument i eVaka / New document in eVaka",
@@ -384,7 +387,9 @@ $unsubscribeSv
 $unsubscribeEn
 """,
                 )
-            ChildDocumentNotificationType.EDITABLE_DOCUMENT ->
+            }
+
+            ChildDocumentNotificationType.EDITABLE_DOCUMENT -> {
                 EmailContent.fromHtml(
                     subject =
                         "Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka",
@@ -403,7 +408,9 @@ $unsubscribeSv
 $unsubscribeEn
 """,
                 )
-            ChildDocumentNotificationType.DECISION_DOCUMENT ->
+            }
+
+            ChildDocumentNotificationType.DECISION_DOCUMENT -> {
                 EmailContent.fromHtml(
                     subject = "Uusi päätös eVakassa / Nytt beslut i eVaka / New decision in eVaka",
                     html =
@@ -421,6 +428,7 @@ $unsubscribeSv
 $unsubscribeEn
 """,
                 )
+            }
         }
     }
 
@@ -645,10 +653,13 @@ $unsubscribeEn
     override fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent {
         val (decisionTypeFi, decisionTypeSv, decisionTypeEn) =
             when (decisionType) {
-                FinanceDecisionType.VOUCHER_VALUE_DECISION ->
+                FinanceDecisionType.VOUCHER_VALUE_DECISION -> {
                     Triple("arvopäätös", "beslut om servicesedel", "voucher value decision")
-                FinanceDecisionType.FEE_DECISION ->
+                }
+
+                FinanceDecisionType.FEE_DECISION -> {
                     Triple("maksupäätös", "betalningsbeslut", "fee decision")
+                }
             }
         return EmailContent.fromHtml(
             subject =

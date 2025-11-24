@@ -493,24 +493,38 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             applicationId = applicationId,
                             type =
                                 when (type) {
-                                    PlacementType.CLUB -> DecisionType.CLUB
+                                    PlacementType.CLUB -> {
+                                        DecisionType.CLUB
+                                    }
+
                                     PlacementType.DAYCARE,
                                     PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                                     PlacementType.PRESCHOOL_DAYCARE_ONLY,
-                                    PlacementType.PREPARATORY_DAYCARE_ONLY -> DecisionType.DAYCARE
+                                    PlacementType.PREPARATORY_DAYCARE_ONLY -> {
+                                        DecisionType.DAYCARE
+                                    }
+
                                     PlacementType.DAYCARE_PART_TIME,
-                                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+                                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
                                         DecisionType.DAYCARE_PART_TIME
+                                    }
+
                                     PlacementType.PRESCHOOL,
                                     PlacementType.PRESCHOOL_DAYCARE,
-                                    PlacementType.PRESCHOOL_CLUB -> DecisionType.PRESCHOOL
+                                    PlacementType.PRESCHOOL_CLUB -> {
+                                        DecisionType.PRESCHOOL
+                                    }
+
                                     PlacementType.PREPARATORY,
-                                    PlacementType.PREPARATORY_DAYCARE ->
+                                    PlacementType.PREPARATORY_DAYCARE -> {
                                         DecisionType.PREPARATORY_EDUCATION
+                                    }
+
                                     PlacementType.TEMPORARY_DAYCARE,
                                     PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                                    PlacementType.SCHOOL_SHIFT_CARE ->
+                                    PlacementType.SCHOOL_SHIFT_CARE -> {
                                         error("Unsupported placement type ($type)")
+                                    }
                                 },
                             startDate = period.start,
                             endDate = period.end,

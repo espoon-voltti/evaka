@@ -223,9 +223,15 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                     .iterator()
             while (rules.hasNext() && undecided.isNotEmpty()) {
                 when (val rule = rules.next()) {
-                    is StaticActionRule -> decideAll(rule.evaluate(user))
-                    is DatabaseActionRule.Unscoped<*> -> decideAll(unscopedEvaluator.evaluate(rule))
-                    is DatabaseActionRule.Scoped<in T, *> ->
+                    is StaticActionRule -> {
+                        decideAll(rule.evaluate(user))
+                    }
+
+                    is DatabaseActionRule.Unscoped<*> -> {
+                        decideAll(unscopedEvaluator.evaluate(rule))
+                    }
+
+                    is DatabaseActionRule.Scoped<in T, *> -> {
                         scopedEvaluator.evaluateWithTargets(rule, undecided).forEach {
                             (target, decision) ->
                             if (decision != AccessControlDecision.None) {
@@ -233,6 +239,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                                 undecided = undecided - target
                             }
                         }
+                    }
                 }
             }
             return@withSpan decided + undecided.associateWith { AccessControlDecision.None }
@@ -259,7 +266,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                 actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
             for (rule in rules) {
                 when (rule) {
-                    is StaticActionRule ->
+                    is StaticActionRule -> {
                         rule.evaluate(user).let { decision ->
                             if (decision.isPermitted()) {
                                 return@withSpan AccessControlFilter.PermitAll
@@ -267,7 +274,9 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                                 decision.assertIfTerminal()
                             }
                         }
-                    is DatabaseActionRule.Unscoped<*> ->
+                    }
+
+                    is DatabaseActionRule.Unscoped<*> -> {
                         unscopedEvaluator.evaluate(rule).let { decision ->
                             if (decision.isPermitted()) {
                                 return@withSpan AccessControlFilter.PermitAll
@@ -275,8 +284,11 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                                 decision.assertIfTerminal()
                             }
                         }
-                    is DatabaseActionRule.Scoped<in T, *> ->
+                    }
+
+                    is DatabaseActionRule.Scoped<in T, *> -> {
                         rule.queryWithParams(queryCtx)?.let { filter -> filters += filter }
+                    }
                 }
             }
             return@withSpan if (filters.isEmpty()) {
@@ -328,23 +340,28 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                         .iterator()
                 for (rule in rules) {
                     when (rule) {
-                        is StaticActionRule ->
+                        is StaticActionRule -> {
                             if (rule.evaluate(user).isPermitted()) {
                                 globalPermissions.add(action)
                                 break
                             }
-                        is DatabaseActionRule.Unscoped<*> ->
+                        }
+
+                        is DatabaseActionRule.Unscoped<*> -> {
                             if (unscopedEvaluator.evaluate(rule).isPermitted()) {
                                 globalPermissions.add(action)
                                 break
                             }
-                        is DatabaseActionRule.Scoped<in T, *> ->
+                        }
+
+                        is DatabaseActionRule.Scoped<in T, *> -> {
                             scopedEvaluator.evaluateWithTargets(rule, targets).forEach {
                                 (target, decision) ->
                                 if (decision.isPermitted()) {
                                     individualPermissions[target]?.add(action)
                                 }
                             }
+                        }
                     }
                 }
             }

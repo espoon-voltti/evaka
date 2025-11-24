@@ -285,19 +285,32 @@ fun updateDocumentCaseProcessHistory(
 
     val newProcessState =
         when (newStatus) {
-            DocumentStatus.DRAFT -> CaseProcessState.INITIAL
-            DocumentStatus.PREPARED -> CaseProcessState.PREPARATION
-            DocumentStatus.CITIZEN_DRAFT -> CaseProcessState.INITIAL
-            DocumentStatus.DECISION_PROPOSAL -> CaseProcessState.PREPARATION
-            DocumentStatus.COMPLETED ->
+            DocumentStatus.DRAFT -> {
+                CaseProcessState.INITIAL
+            }
+
+            DocumentStatus.PREPARED -> {
+                CaseProcessState.PREPARATION
+            }
+
+            DocumentStatus.CITIZEN_DRAFT -> {
+                CaseProcessState.INITIAL
+            }
+
+            DocumentStatus.DECISION_PROPOSAL -> {
+                CaseProcessState.PREPARATION
+            }
+
+            DocumentStatus.COMPLETED -> {
                 // decision documents are completed only once the SFI message is sent
                 if (document.template.type.decision) CaseProcessState.DECIDING
                 else CaseProcessState.COMPLETED
+            }
         }
     val newStateIndex = CaseProcessState.entries.indexOf(newProcessState)
 
     when {
-        newStateIndex > currentStateIndex ->
+        newStateIndex > currentStateIndex -> {
             // moving forwards
             tx.insertCaseProcessHistoryRow(
                 processId = process.id,
@@ -305,12 +318,15 @@ fun updateDocumentCaseProcessHistory(
                 now = now,
                 userId = userId,
             )
-        newStateIndex < currentStateIndex ->
+        }
+
+        newStateIndex < currentStateIndex -> {
             // moving backwards
             tx.cancelLastCaseProcessHistoryRow(
                 processId = process.id,
                 stateToCancel = currentProcessState,
             )
+        }
     }
 }
 

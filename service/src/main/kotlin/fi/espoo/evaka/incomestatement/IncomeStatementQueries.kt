@@ -147,7 +147,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
     val status = column<IncomeStatementStatus>("status")
     val handlerNote = if (isCitizen) "" else column("handler_note")
     return when (column<IncomeStatementType>("type")) {
-        IncomeStatementType.HIGHEST_FEE ->
+        IncomeStatementType.HIGHEST_FEE -> {
             IncomeStatement.HighestFee(
                 id = id,
                 personId = personId,
@@ -162,6 +162,8 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 status = status,
                 handlerNote = handlerNote,
             )
+        }
+
         IncomeStatementType.INCOME -> {
             val noIncomeDescription = column<String?>("gross_no_income_description")
             val gross =
@@ -264,7 +266,8 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 attachments = jsonColumn("attachments"),
             )
         }
-        IncomeStatementType.CHILD_INCOME ->
+
+        IncomeStatementType.CHILD_INCOME -> {
             IncomeStatement.ChildIncome(
                 id = id,
                 personId = personId,
@@ -281,6 +284,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 otherInfo = column("other_info"),
                 attachments = jsonColumn("attachments"),
             )
+        }
     }
 }
 
@@ -350,11 +354,15 @@ class IncomeStatementBindings(
 
 private fun IncomeStatementBindings.bindIncomeStatementBody(body: IncomeStatementBody) {
     when (body) {
-        is IncomeStatementBody.HighestFee -> type = IncomeStatementType.HIGHEST_FEE
+        is IncomeStatementBody.HighestFee -> {
+            type = IncomeStatementType.HIGHEST_FEE
+        }
+
         is IncomeStatementBody.ChildIncome -> {
             type = IncomeStatementType.CHILD_INCOME
             otherInfo = body.otherInfo
         }
+
         is IncomeStatementBody.Income -> {
             type = IncomeStatementType.INCOME
             if (body.gross != null) bindGross(body.gross)
@@ -374,6 +382,7 @@ private fun IncomeStatementBindings.bindGross(gross: Gross) {
             grossOtherIncome = gross.otherIncome
             grossOtherIncomeInfo = gross.otherIncomeInfo
         }
+
         is Gross.NoIncome -> {
             grossNoIncomeDescription = gross.noIncomeDescription
         }
@@ -748,18 +757,29 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     val count = createQuery { sql("SELECT COUNT(*) FROM (${subquery(query)}) q") }.exactlyOne<Int>()
     val sortColumn =
         when (sortBy) {
-            IncomeStatementSortParam.SENT_AT ->
+            IncomeStatementSortParam.SENT_AT -> {
                 "i.sent_at ${sortDirection.name}, i.start_date, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
-            IncomeStatementSortParam.START_DATE ->
+            }
+
+            IncomeStatementSortParam.START_DATE -> {
                 "i.start_date ${sortDirection.name}, i.sent_at, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
-            IncomeStatementSortParam.INCOME_END_DATE ->
+            }
+
+            IncomeStatementSortParam.INCOME_END_DATE -> {
                 "income_end_date ${sortDirection.name}, i.sent_at, i.start_date, i.type, i.handler_note, person.last_name, person.first_name"
-            IncomeStatementSortParam.TYPE ->
+            }
+
+            IncomeStatementSortParam.TYPE -> {
                 "i.type ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.handler_note, person.last_name, person.first_name"
-            IncomeStatementSortParam.HANDLER_NOTE ->
+            }
+
+            IncomeStatementSortParam.HANDLER_NOTE -> {
                 "i.handler_note ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.type, person.last_name, person.first_name"
-            IncomeStatementSortParam.PERSON_NAME ->
+            }
+
+            IncomeStatementSortParam.PERSON_NAME -> {
                 "person.last_name ${sortDirection.name}, person.first_name ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.type, i.handler_note"
+            }
         }
     val rows =
         createQuery {

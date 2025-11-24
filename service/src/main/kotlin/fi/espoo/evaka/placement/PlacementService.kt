@@ -296,6 +296,7 @@ fun Database.Transaction.transferGroup(
                 "Cannot transfer to another group before the original placement even starts"
             )
         }
+
         startDate.isEqual(groupPlacement.startDate) -> {
             if (groupId == groupPlacement.groupId) {
                 return // no changes requested
@@ -310,6 +311,7 @@ fun Database.Transaction.transferGroup(
                 )
             }
         }
+
         startDate.isAfter(groupPlacement.startDate) -> {
             if (startDate.isAfter(groupPlacement.endDate)) {
                 throw BadRequest(
@@ -379,7 +381,10 @@ private fun Database.Transaction.clearOldPlacements(
                     checkAclAuth(aclAuth, old)
                     movePlacementStartDateLater(old, to.plusDays(1), now, userId)
                 }
-                else -> throw Error("bug discovered: some forgotten case?")
+
+                else -> {
+                    throw Error("bug discovered: some forgotten case?")
+                }
             }.exhaust()
         }
 }

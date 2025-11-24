@@ -113,16 +113,23 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                 decisionMaker = decisionMaker,
                 decisionStatus =
                     when (decision.status) {
-                        AssistanceNeedDecisionStatus.ACCEPTED ->
+                        AssistanceNeedDecisionStatus.ACCEPTED -> {
                             ChildDocumentDecisionStatus.ACCEPTED
-                        AssistanceNeedDecisionStatus.REJECTED ->
+                        }
+
+                        AssistanceNeedDecisionStatus.REJECTED -> {
                             ChildDocumentDecisionStatus.REJECTED
-                        AssistanceNeedDecisionStatus.ANNULLED ->
+                        }
+
+                        AssistanceNeedDecisionStatus.ANNULLED -> {
                             ChildDocumentDecisionStatus.ANNULLED
-                        else ->
+                        }
+
+                        else -> {
                             throw IllegalStateException(
                                 "Decision ${decision.id} is not in a valid state for migration"
                             )
+                        }
                     },
                 decisionValidity = decision.validityPeriod,
                 decisionNumber = decisionNumber,
@@ -203,16 +210,23 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
                 decisionMaker = decisionMaker,
                 decisionStatus =
                     when (decision.status) {
-                        AssistanceNeedDecisionStatus.ACCEPTED ->
+                        AssistanceNeedDecisionStatus.ACCEPTED -> {
                             ChildDocumentDecisionStatus.ACCEPTED
-                        AssistanceNeedDecisionStatus.REJECTED ->
+                        }
+
+                        AssistanceNeedDecisionStatus.REJECTED -> {
                             ChildDocumentDecisionStatus.REJECTED
-                        AssistanceNeedDecisionStatus.ANNULLED ->
+                        }
+
+                        AssistanceNeedDecisionStatus.ANNULLED -> {
                             ChildDocumentDecisionStatus.ANNULLED
-                        else ->
+                        }
+
+                        else -> {
                             throw IllegalStateException(
                                 "Decision ${decision.id} is not in a valid state for migration"
                             )
+                        }
                     },
                 decisionValidity = DateRange(validFrom, decision.form.validTo),
                 decisionNumber = decisionNumber,
@@ -362,13 +376,19 @@ private fun migrateDaycareContent(
                     when {
                         !decision.assistanceLevels.contains(
                             AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME
-                        ) -> "-"
-                        decision.endDateNotKnown || decision.validityPeriod.end == null ->
+                        ) -> {
+                            "-"
+                        }
+
+                        decision.endDateNotKnown || decision.validityPeriod.end == null -> {
                             translations.endDateNotKnown
-                        else ->
+                        }
+
+                        else -> {
                             decision.validityPeriod.end.format(
                                 DateTimeFormatter.ofPattern("dd.MM.yyyy")
                             )
+                        }
                     },
             ),
             AnsweredQuestion.TextAnswer(
@@ -622,6 +642,7 @@ private fun Database.Transaction.insertMigratedDocument(
         when (decisionStatus) {
             ChildDocumentDecisionStatus.ACCEPTED,
             ChildDocumentDecisionStatus.ANNULLED -> decisionValidity.start
+
             ChildDocumentDecisionStatus.REJECTED -> null
         }
 

@@ -478,6 +478,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                     is ValueBinding<*> -> {
                         raw.bindByType(idx, binding.value, binding.type)
                     }
+
                     is LazyBinding<R, *> -> {
                         raw.bindByType(idx, binding.getValue(row), binding.getType(row))
                     }

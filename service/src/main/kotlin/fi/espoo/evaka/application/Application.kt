@@ -145,10 +145,15 @@ data class ApplicationDetails(
                     else PlacementType.PRESCHOOL
                 }
             }
-            ApplicationType.DAYCARE ->
+
+            ApplicationType.DAYCARE -> {
                 if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME
                 else PlacementType.DAYCARE
-            ApplicationType.CLUB -> PlacementType.CLUB
+            }
+
+            ApplicationType.CLUB -> {
+                PlacementType.CLUB
+            }
         }
 }
 

@@ -380,8 +380,14 @@ data class DailyChildData(
                     return if (isServiceTimesOverlapping) PresenceStatus.PRESENT
                     else PresenceStatus.ABSENT
                 }
-                is ServiceTimesPresenceStatus.Absent -> return PresenceStatus.ABSENT
-                is ServiceTimesPresenceStatus.Unknown -> return PresenceStatus.UNKNOWN
+
+                is ServiceTimesPresenceStatus.Absent -> {
+                    return PresenceStatus.ABSENT
+                }
+
+                is ServiceTimesPresenceStatus.Unknown -> {
+                    return PresenceStatus.UNKNOWN
+                }
             }
         }
         return PresenceStatus.UNKNOWN
@@ -435,9 +441,13 @@ fun getAttendanceReservationReport(
     val serviceTimesMap = tx.getDailyServiceTimesForChildren(allChildren.toSet())
     val staffAttendancesMap =
         when (reservationType) {
-            ReservationType.RESERVATION -> emptyMap()
-            ReservationType.REALIZATION ->
+            ReservationType.RESERVATION -> {
+                emptyMap()
+            }
+
+            ReservationType.REALIZATION -> {
                 tx.getStaffAttendancesForDateRange(unitId, range).groupBy { it.groupId }
+            }
         }
 
     val dailyChildData =
@@ -451,13 +461,19 @@ fun getAttendanceReservationReport(
                 when {
                     daycare.type.any {
                         listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
-                    } -> familyUnitPlacementCoefficient.toDouble()
-                    childAgeYears < 3 ->
+                    } -> {
+                        familyUnitPlacementCoefficient.toDouble()
+                    }
+
+                    childAgeYears < 3 -> {
                         serviceNeed?.occupancyCoefficientUnder
                             ?: placementInfo.occupancyCoefficientUnder
-                    else ->
+                    }
+
+                    else -> {
                         serviceNeed?.occupancyCoefficientOver
                             ?: placementInfo.occupancyCoefficientOver
+                    }
                 }
             val assistanceNeedFactor =
                 assistanceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }?.capacityFactor
@@ -505,22 +521,29 @@ fun getAttendanceReservationReport(
                         HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
                     val presentChildren =
                         when (reservationType) {
-                            ReservationType.RESERVATION ->
+                            ReservationType.RESERVATION -> {
                                 childrenInGroup.filter {
                                     it.isPresent(interval) == PresenceStatus.PRESENT
                                 }
-                            ReservationType.REALIZATION ->
+                            }
+
+                            ReservationType.REALIZATION -> {
                                 childrenInGroup.filter { it.wasPresent(interval) }
+                            }
                         }
 
                     val unknownChildren =
                         when (reservationType) {
-                            ReservationType.RESERVATION ->
+                            ReservationType.RESERVATION -> {
                                 childrenInGroup.filter {
                                     it.date == intervalStart.toLocalDate() &&
                                         it.isPresent(interval) == PresenceStatus.UNKNOWN
                                 }
-                            ReservationType.REALIZATION -> emptyList()
+                            }
+
+                            ReservationType.REALIZATION -> {
+                                emptyList()
+                            }
                         }
 
                     val staffAttendances =
@@ -549,15 +572,18 @@ fun getAttendanceReservationReport(
                                 .toDouble(),
                         staffCount =
                             when (reservationType) {
-                                ReservationType.RESERVATION ->
+                                ReservationType.RESERVATION -> {
                                     BigDecimal(presentChildren.sumOf { it.capacityFactor } / 7)
                                         .setScale(1, RoundingMode.HALF_UP)
                                         .toDouble()
-                                ReservationType.REALIZATION ->
+                                }
+
+                                ReservationType.REALIZATION -> {
                                     staffAttendances
                                         .sumOf { it.occupancyCoefficient }
                                         .divide(BigDecimal.valueOf(7), 1, RoundingMode.HALF_UP)
                                         .toDouble()
+                                }
                             },
                         unknownChildCount = unknownChildren.count(),
                         unknownChildCapacityFactor =

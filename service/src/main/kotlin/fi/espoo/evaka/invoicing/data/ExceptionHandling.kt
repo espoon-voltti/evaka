@@ -25,10 +25,13 @@ fun <T> handlingExceptions(fn: () -> T): T {
                 with(e.cause as PSQLException) {
                     when (this.sqlState) {
                         dataException,
-                        checkViolation -> throw BadRequest("Invalid data", cause = e)
+                        checkViolation -> {
+                            throw BadRequest("Invalid data", cause = e)
+                        }
 
-                        exclusionViolation ->
+                        exclusionViolation -> {
                             throw Conflict("Exclusion constraint violation in database", cause = e)
+                        }
 
                         else -> {
                             logger.warn {
@@ -39,7 +42,10 @@ fun <T> handlingExceptions(fn: () -> T): T {
                     }
                 }
             }
-            else -> throw e
+
+            else -> {
+                throw e
+            }
         }
     }
 }

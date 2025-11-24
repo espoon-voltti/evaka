@@ -18,17 +18,45 @@ const val CSV_RECORD_SEPARATOR = "\r\n"
 
 fun printCsvField(value: Any?): String =
     when (value) {
-        null -> ""
-        is Number -> value.toString()
-        is String -> value
-        is Boolean -> if (value) "true" else "false"
-        is UUID -> value.toString()
-        is LocalDate -> value.format(DateTimeFormatter.ISO_LOCAL_DATE)
-        is HelsinkiDateTime ->
+        null -> {
+            ""
+        }
+
+        is Number -> {
+            value.toString()
+        }
+
+        is String -> {
+            value
+        }
+
+        is Boolean -> {
+            if (value) "true" else "false"
+        }
+
+        is UUID -> {
+            value.toString()
+        }
+
+        is LocalDate -> {
+            value.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        }
+
+        is HelsinkiDateTime -> {
             value.toZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        is List<*> -> value.joinToString(",")
-        is Enum<*> -> value.name
-        else -> error("Unsupported CSV field type ${value.javaClass}")
+        }
+
+        is List<*> -> {
+            value.joinToString(",")
+        }
+
+        is Enum<*> -> {
+            value.name
+        }
+
+        else -> {
+            error("Unsupported CSV field type ${value.javaClass}")
+        }
     }
 
 fun <T : Any> toCsvRecords(

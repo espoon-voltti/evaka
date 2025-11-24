@@ -21,16 +21,35 @@ fun <P : Any, C : HasDateOfBirth> determineHeadOfFamily(
     val firstParentsYoungestChild = firstParentChildren.minByOrNull { it.dateOfBirth }
     val secondParentsYoungestChild = secondParentChildren?.minByOrNull { it.dateOfBirth }
     return when {
-        parent2 == null -> parent1 to parent2
-        firstParentsYoungestChild == null -> parent2 to parent1
-        secondParentsYoungestChild == null -> parent1 to parent2
-        // First parent has more fridge children
-        firstParentChildren.size > secondParentChildren.size -> parent1 to parent2
-        // Second parent has more fridge children
-        firstParentChildren.size < secondParentChildren.size -> parent2 to parent1
-        // First parent has the youngest fridge child
-        firstParentsYoungestChild.dateOfBirth.isAfter(secondParentsYoungestChild.dateOfBirth) ->
+        parent2 == null -> {
             parent1 to parent2
-        else -> parent2 to parent1
+        }
+
+        firstParentsYoungestChild == null -> {
+            parent2 to parent1
+        }
+
+        secondParentsYoungestChild == null -> {
+            parent1 to parent2
+        }
+
+        // First parent has more fridge children
+        firstParentChildren.size > secondParentChildren.size -> {
+            parent1 to parent2
+        }
+
+        // Second parent has more fridge children
+        firstParentChildren.size < secondParentChildren.size -> {
+            parent2 to parent1
+        }
+
+        // First parent has the youngest fridge child
+        firstParentsYoungestChild.dateOfBirth.isAfter(secondParentsYoungestChild.dateOfBirth) -> {
+            parent1 to parent2
+        }
+
+        else -> {
+            parent2 to parent1
+        }
     }
 }

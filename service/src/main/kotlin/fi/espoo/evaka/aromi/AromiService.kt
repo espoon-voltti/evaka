@@ -374,19 +374,25 @@ private fun getAttendancePredictionRows(
                             else // modified attendance without breakfast
                                 evakaAttendanceTimes.mapNotNull { timeRange ->
                                     return@mapNotNull when {
-                                        breakfastRefusalStartTime.isBefore(timeRange.start.inner) ->
+                                        breakfastRefusalStartTime.isBefore(
+                                            timeRange.start.inner
+                                        ) -> {
                                             timeRange
+                                        }
 
                                         breakfastRefusalStartTime.equals(timeRange.end.inner) ||
                                             breakfastRefusalStartTime.isAfter(
                                                 timeRange.end.inner
-                                            ) -> null
+                                            ) -> {
+                                            null
+                                        }
 
-                                        else ->
+                                        else -> {
                                             TimeRange(
                                                 breakfastRefusalStartTime,
                                                 timeRange.end.inner,
                                             )
+                                        }
                                     }
                                 }
                         } else evakaAttendanceTimes

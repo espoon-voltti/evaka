@@ -139,8 +139,11 @@ sealed interface PredicateSql {
     fun and(other: PredicateSql): PredicateSql =
         when (other) {
             is AlwaysTrue -> this
+
             is AlwaysFalse -> other
+
             is AndOperator -> AndOperator(listOf(this) + other.predicates)
+
             is Single,
             is OrOperator -> AndOperator(listOf(this, other))
         }
@@ -148,8 +151,11 @@ sealed interface PredicateSql {
     fun or(other: PredicateSql): PredicateSql =
         when (other) {
             is AlwaysFalse -> this
+
             is AlwaysTrue -> other
+
             is OrOperator -> OrOperator(listOf(this) + other.predicates)
+
             is Single,
             is AndOperator -> OrOperator(listOf(this, other))
         }
@@ -187,8 +193,11 @@ sealed interface PredicateSql {
         override fun or(other: PredicateSql): PredicateSql =
             when (other) {
                 is AlwaysFalse -> this
+
                 is AlwaysTrue -> other
+
                 is OrOperator -> OrOperator(this.predicates + other.predicates)
+
                 is AndOperator,
                 is Single -> OrOperator(this.predicates + other)
             }
@@ -204,8 +213,11 @@ sealed interface PredicateSql {
         override fun and(other: PredicateSql): PredicateSql =
             when (other) {
                 is AlwaysTrue -> this
+
                 is AlwaysFalse -> other
+
                 is AndOperator -> AndOperator(this.predicates + other.predicates)
+
                 is OrOperator,
                 is Single -> AndOperator(this.predicates + other)
             }
@@ -224,10 +236,13 @@ sealed interface PredicateSql {
             this.used = true
             return when (sql) {
                 "" -> throw IllegalArgumentException("Predicate cannot be empty")
+
                 "TRUE",
                 "true" -> AlwaysTrue
+
                 "FALSE",
                 "false" -> AlwaysFalse
+
                 else -> Single(PredicateSqlString(sql), bindings)
             }
         }
