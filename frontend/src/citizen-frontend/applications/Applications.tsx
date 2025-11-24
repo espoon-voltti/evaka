@@ -10,12 +10,14 @@ import { Link } from 'wouter'
 
 import { isLoading } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import { useScreenReaderMessage } from '../calendar/hooks'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
@@ -24,6 +26,7 @@ import { guardianApplicationsQuery } from './queries'
 export default React.memo(function Applications() {
   const t = useTranslation()
   const guardianApplications = useQueryResult(guardianApplicationsQuery())
+  const [screenReaderMessage, setScreenReaderMessage] = useScreenReaderMessage()
 
   useTitle(t, t.applicationsList.title)
 
@@ -52,7 +55,18 @@ export default React.memo(function Applications() {
             (childApplications) =>
               childApplications.duplicateOf === null && (
                 <Fragment key={childApplications.childId}>
-                  <ChildApplicationsBlock data={childApplications} />
+                  <ChildApplicationsBlock
+                    data={childApplications}
+                    onApplicationDeleted={(status) => {
+                      setTimeout(() => {
+                        setScreenReaderMessage(
+                          status === 'CREATED'
+                            ? t.applications.deleteUnprocessedApplicationSuccess
+                            : t.applications.deleteApplicationSuccess
+                        )
+                      }, 100)
+                    }}
+                  />
                   <Gap size="s" />
                 </Fragment>
               )
@@ -65,6 +79,9 @@ export default React.memo(function Applications() {
           )}
         </>
       ))}
+      <ScreenReaderOnly aria-live="polite" aria-atomic="true">
+        {screenReaderMessage}
+      </ScreenReaderOnly>
     </Container>
   )
 })

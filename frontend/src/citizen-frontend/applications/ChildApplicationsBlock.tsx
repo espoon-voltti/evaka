@@ -89,6 +89,7 @@ const Icon = styled(FontAwesomeIcon)`
 
 interface ChildApplicationsBlockProps {
   data: ApplicationsOfChild
+  onApplicationDeleted: (status: ApplicationStatus) => void
 }
 
 const ChildHeading = styled(H2)`
@@ -168,7 +169,8 @@ export default React.memo(function ChildApplicationsBlock({
     applicationSummaries,
     permittedActions,
     decidableApplications
-  }
+  },
+  onApplicationDeleted
 }: ChildApplicationsBlockProps) {
   const [, navigate] = useLocation()
   const t = useTranslation()
@@ -195,18 +197,19 @@ export default React.memo(function ChildApplicationsBlock({
       type: applicationStatus === 'CREATED' ? 'warning' : 'danger',
       icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
       resolve: {
-        action: () => {
-          removeUnprocessedApplication({ applicationId })
-            .catch(() => {
-              setErrorMessage({
-                title: t.applications.deleteUnprocessedApplicationError,
-                type: 'error',
-                resolveLabel: t.common.ok
-              })
+        action: async () => {
+          try {
+            await removeUnprocessedApplication({ applicationId })
+            onApplicationDeleted(applicationStatus)
+          } catch {
+            setErrorMessage({
+              title: t.applications.deleteUnprocessedApplicationError,
+              type: 'error',
+              resolveLabel: t.common.ok
             })
-            .finally(() => {
-              clearInfoMessage()
-            })
+          } finally {
+            clearInfoMessage()
+          }
         },
         label:
           applicationStatus === 'CREATED'

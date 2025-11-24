@@ -673,7 +673,9 @@ const sv: Translations = {
     deleteSentText:
       'Alla uppgifter på din ansökan raderas, också ansökan som du redan skickat raderas.',
     deleteSentOk: 'Ta bort ansökan',
+    deleteApplicationSuccess: 'Ansökan återtagen',
     deleteSentCancel: 'Tillbaka',
+    deleteUnprocessedApplicationSuccess: 'Ansökan raderad',
     deleteUnprocessedApplicationError: 'Att radera ansökan misslyckades',
     creation: {
       title: 'Ansökningsblankett',

@@ -682,7 +682,9 @@ const en: Translations = {
     deleteSentText:
       'All the information of the application will be lost. Also, as the application has already been sent, it will be cancelled.',
     deleteSentOk: 'Cancel application',
+    deleteApplicationSuccess: 'Application cancelled',
     deleteSentCancel: 'Go back',
+    deleteUnprocessedApplicationSuccess: 'Application removed successfully',
     deleteUnprocessedApplicationError: 'Failed to remove the application',
     creation: {
       title: 'Application type',
