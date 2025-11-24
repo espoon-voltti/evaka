@@ -2,13 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
@@ -440,123 +437,6 @@ describe('Child Information assistance functionality for employees', () => {
 
     await logUserIn(specialEducationTeacher)
     await assistance.assertAssistanceFactorCount(2)
-  })
-})
-
-describe('Child assistance need decisions for employees', () => {
-  test('Shows an empty draft in the list', async () => {
-    await Fixture.assistanceNeedDecision({ childId }).save()
-
-    await logUserIn(admin)
-    await assistance.waitUntilAssistanceNeedDecisionsLoaded()
-
-    const decision = await assistance.assistanceNeedDecisions(0)
-
-    expect(decision.date).toEqual('02.01.2019 –')
-    expect(decision.unitName).toEqual('-')
-    expect(decision.sentDate).toEqual('-')
-    expect(decision.decisionMadeDate).toEqual('-')
-    expect(decision.status).toEqual('DRAFT')
-    expect(decision.actionCount).toEqual(2)
-  })
-
-  test('Shows a filled in draft in the list', async () => {
-    const serviceWorker = await Fixture.employee().serviceWorker().save()
-    await Fixture.preFilledAssistanceNeedDecision({
-      childId,
-      selectedUnit: testDaycare.id,
-      decisionMaker: {
-        employeeId: serviceWorker.id,
-        title: 'head teacher',
-        name: null,
-        phoneNumber: null
-      },
-      preparedBy1: {
-        employeeId: serviceWorker.id,
-        title: 'teacher',
-        phoneNumber: '010202020202',
-        name: null
-      },
-      guardianInfo: [
-        {
-          id: null,
-          personId: familyWithTwoGuardians.guardian.id,
-          isHeard: true,
-          name: '',
-          details: 'Guardian 1 details'
-        }
-      ],
-      sentForDecision: LocalDate.of(2020, 5, 11),
-      validityPeriod: new DateRange(
-        LocalDate.of(2020, 7, 1),
-        LocalDate.of(2020, 12, 11)
-      ),
-      decisionMade: LocalDate.of(2020, 6, 2),
-      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME']
-    }).save()
-
-    await logUserIn(admin)
-    await assistance.waitUntilAssistanceNeedDecisionsLoaded()
-
-    const decision = await assistance.assistanceNeedDecisions(0)
-
-    expect(decision.date).toEqual('01.07.2020 – 11.12.2020')
-    expect(decision.unitName).toEqual(testDaycare.name)
-    expect(decision.sentDate).toEqual('11.05.2020')
-    expect(decision.decisionMadeDate).toEqual('02.06.2020')
-    expect(decision.status).toEqual('DRAFT')
-    expect(decision.actionCount).toEqual(2)
-  })
-
-  test('Hides edit and delete actions for non-draft/non-workable decisions', async () => {
-    await Fixture.preFilledAssistanceNeedDecision({
-      childId,
-      status: 'ACCEPTED'
-    }).save()
-    await Fixture.preFilledAssistanceNeedDecision({
-      childId,
-      status: 'REJECTED'
-    }).save()
-
-    await logUserIn(admin)
-    await assistance.waitUntilAssistanceNeedDecisionsLoaded()
-
-    const acceptedDecision = await assistance.assistanceNeedDecisions(0)
-    expect(acceptedDecision.status).toEqual('ACCEPTED')
-    expect(acceptedDecision.actionCount).toEqual(0)
-
-    const rejectedDecision = await assistance.assistanceNeedDecisions(1)
-    expect(rejectedDecision.status).toEqual('REJECTED')
-    expect(rejectedDecision.actionCount).toEqual(0)
-  })
-
-  test('Shows acceted decisions for staff', async () => {
-    const staff = await Fixture.employee().staff(unitId).save()
-    await setupPlacement('DAYCARE')
-    const statuses: AssistanceNeedDecisionStatus[] = [
-      'DRAFT',
-      'NEEDS_WORK',
-      'ACCEPTED',
-      'REJECTED',
-      'ANNULLED'
-    ]
-    await Promise.all(
-      statuses.map((status) =>
-        Fixture.preFilledAssistanceNeedDecision({
-          childId,
-          status,
-          annulmentReason: status === 'ANNULLED' ? 'not shown to staff' : ''
-        }).save()
-      )
-    )
-
-    await logUserIn(staff)
-    await assistance.waitUntilAssistanceNeedDecisionsLoaded()
-    await assistance.assertAssistanceNeedDecisionCount(1)
-
-    const acceptedDecision = await assistance.assistanceNeedDecisions(0)
-    expect(acceptedDecision.status).toEqual('ACCEPTED')
-    expect(acceptedDecision.actionCount).toEqual(0)
   })
 })
 
