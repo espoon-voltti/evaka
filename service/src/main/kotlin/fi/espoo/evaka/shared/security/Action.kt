@@ -806,50 +806,18 @@ sealed interface Action {
     enum class AssistanceNeedDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
     ) : ScopedAction<AssistanceNeedDecisionId> {
-        READ_DECISION_MAKER_OPTIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        UPDATE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true),
-        ),
-        SEND(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
-        READ_IN_REPORT(
-            HasGlobalRole(ADMIN),
-            HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedDecision(ChildAclConfig(application = false)),
-        ),
-        READ_METADATA(HasGlobalRole(ADMIN)),
-        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
-        MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
-        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
-        ANNUL(HasGlobalRole(ADMIN), IsEmployee.andIsDecisionMakerForAssistanceNeedDecision());
+        READ_DECISION_MAKER_OPTIONS(),
+        UPDATE(),
+        DELETE(),
+        READ(),
+        SEND(),
+        REVERT_TO_UNSENT(),
+        READ_IN_REPORT(),
+        READ_METADATA(),
+        DECIDE(),
+        MARK_AS_OPENED(),
+        UPDATE_DECISION_MAKER(),
+        ANNUL();
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
