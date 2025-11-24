@@ -184,6 +184,7 @@ const ChildDocumentEditViewInner = React.memo(
 
     // invalidate cached document on unmount
     const queryClient = useQueryClient()
+
     useEffect(
       () => () => {
         void queryClient.invalidateQueries({
