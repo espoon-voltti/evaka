@@ -329,13 +329,13 @@ export default React.memo(function MessageEditor({
                   role="group"
                   aria-labelledby="message-editor-secondary-recipients"
                 >
-                  <label>
+                  <label htmlFor="secondary-recipients-list">
                     <Bold id="message-editor-secondary-recipients">
                       {i18n.messages.messageEditor.secondaryRecipients}
                     </Bold>
                   </label>
                   <Gap size="xs" horizontal={true} />
-                  <SecondaryRecipients>
+                  <SecondaryRecipients id="secondary-recipients-list">
                     {validAccounts.secondary.map((recipient) => (
                       <ToggleableRecipient
                         key={recipient.id}

@@ -56,10 +56,11 @@ export function ToggleableRecipient({
       onClick={onClick}
       selected={selected}
       toggleable={toggleable}
-      disabled={!toggleable}
+      aria-disabled={!toggleable}
       data-qa="secondary-recipient"
       aria-label={label}
-      aria-pressed={selected}
+      role="checkbox"
+      aria-checked={selected}
     >
       {selected ? (
         <>

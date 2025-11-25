@@ -29,6 +29,8 @@ const components: Translations = {
     openExpandingInfo: 'Öppna detaljer',
     showPassword: 'Visa lösenord',
     hidePassword: 'Dölj lösenord',
+    selected: 'Vald',
+    unselected: 'Ej vald',
     userTypes: {
       // TODO
       SYSTEM: 'järjestelmä',

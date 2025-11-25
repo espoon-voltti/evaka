@@ -36,6 +36,8 @@ export interface Translations {
     openExpandingInfo: string
     showPassword: string
     hidePassword: string
+    selected: string
+    unselected: string
     userTypes: {
       SYSTEM: string
       CITIZEN: string

@@ -40,6 +40,8 @@ export const testTranslations: Translations = {
     openExpandingInfo: '',
     showPassword: '',
     hidePassword: '',
+    selected: '',
+    unselected: '',
     userTypes: {
       SYSTEM: '',
       CITIZEN: '',

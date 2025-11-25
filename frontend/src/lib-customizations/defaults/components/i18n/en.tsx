@@ -29,6 +29,8 @@ const components: Translations = {
     openExpandingInfo: 'Open the details',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
+    selected: 'Selected',
+    unselected: 'Unselected',
     userTypes: {
       // TODO
       SYSTEM: 'järjestelmä',
