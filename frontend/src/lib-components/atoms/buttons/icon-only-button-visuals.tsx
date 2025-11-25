@@ -61,7 +61,8 @@ export const renderBaseIconOnlyButton = (
     'aria-busy'?: boolean
   },
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
-  children: (icon: IconDefinition, size: IconSize) => React.ReactNode
+  children: (icon: IconDefinition, size: IconSize) => React.ReactNode,
+  ref?: React.Ref<HTMLButtonElement>
 ) => (
   <StyledButton
     id={id}
@@ -71,6 +72,7 @@ export const renderBaseIconOnlyButton = (
     $size={size}
     $color={color}
     onClick={onClick}
+    ref={ref}
     {...props}
   >
     {children(icon, size)}

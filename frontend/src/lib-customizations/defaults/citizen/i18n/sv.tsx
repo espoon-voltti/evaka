@@ -507,6 +507,8 @@ const sv: Translations = {
       },
       present: 'Närvarande',
       absent: 'Frånvarande',
+      absenceAdded: 'Markerad som frånvarande',
+      absenceRemoved: 'Frånvaromarkering har tagits bort',
       reservationClosed: 'Registreringen är stängd',
       reservationClosedInfo: 'Kontakta personalen om du vill anmäla närvaro',
       saveErrors: {
