@@ -53,7 +53,9 @@ const WeekDay = React.memo(function WeekDay({
     <Day
       bind={day}
       label={
-        <LabelLike>{i18n.common.datetime.weekdaysShort[weekDay - 1]}</LabelLike>
+        <LabelLike aria-label={i18n.common.datetime.weekdays[weekDay - 1]}>
+          {i18n.common.datetime.weekdaysShort[weekDay - 1]}
+        </LabelLike>
       }
       showAllErrors={showAllErrors}
       dataQaPrefix={`weekly-${weekDay - 1}`}

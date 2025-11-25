@@ -29,7 +29,9 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
   const [firstWeekDay, lastWeekDay] = weekDayRange.state
 
   const label = (
-    <Label>{`${i18n.common.datetime.weekdaysShort[firstWeekDay - 1]}-${
+    <Label
+      aria-label={`${i18n.common.datetime.weekdays[firstWeekDay - 1]} - ${i18n.common.datetime.weekdays[lastWeekDay - 1]}`}
+    >{`${i18n.common.datetime.weekdaysShort[firstWeekDay - 1]}-${
       i18n.common.datetime.weekdaysShort[lastWeekDay - 1]
     }`}</Label>
   )
