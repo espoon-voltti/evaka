@@ -22,7 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
-import { useTimedScreenReaderMessage } from '../../../calendar/hooks'
+import { useScreenReaderMessage } from '../../../calendar/hooks'
 import { useTranslation } from '../../../localization'
 
 import PreferredUnitBox from './PreferredUnitBox'
@@ -47,7 +47,7 @@ export default React.memo(function UnitsSubSection({
   const [displaySwedish, setDisplaySwedish] = useState(false)
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
   const [screenReaderMessage, showTimedScreenReaderMessage] =
-    useTimedScreenReaderMessage()
+    useScreenReaderMessage()
   const maxUnits = getMaxPreferredUnits(applicationType)
 
   const removeChoice = useCallback(

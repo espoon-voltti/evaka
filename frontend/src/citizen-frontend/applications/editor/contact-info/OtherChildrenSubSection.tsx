@@ -19,7 +19,7 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
-import { useTimedScreenReaderMessage } from '../../../calendar/hooks'
+import { useScreenReaderMessage } from '../../../calendar/hooks'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 import { focusElementAfterDelay } from '../../../utils/focus'
@@ -34,8 +34,7 @@ export default React.memo(function OtherChildrenSubSection({
 }: ContactInfoSectionProps) {
   const t = useTranslation()
   const otherChildrenExistsRef = React.useRef<HTMLInputElement>(null)
-  const [screenReaderMessage, setScreenReaderMessage] =
-    useTimedScreenReaderMessage()
+  const [screenReaderMessage, setScreenReaderMessage] = useScreenReaderMessage()
 
   return (
     <>
@@ -233,7 +232,7 @@ export default React.memo(function OtherChildrenSubSection({
           />
         </>
       )}
-      <ScreenReaderOnly aria-live="assertive" aria-atomic="true">
+      <ScreenReaderOnly aria-live="polite" aria-atomic="true">
         {screenReaderMessage}
       </ScreenReaderOnly>
     </>

@@ -686,7 +686,9 @@ export default {
     deleteSentText:
       'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
     deleteSentOk: 'Peruuta hakemus',
+    deleteApplicationSuccess: 'Hakemus peruutettu',
     deleteSentCancel: 'Palaa takaisin',
+    deleteUnprocessedApplicationSuccess: 'Hakemus poistettu',
     deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
       title: 'Hakemustyyppi',
