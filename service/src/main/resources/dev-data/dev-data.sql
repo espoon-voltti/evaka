@@ -119,7 +119,7 @@ VALUES ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10, 'D
        ('INTERPRETATION_SERVICES', 'Tulkitsemispalvelut', 50, 'PRESCHOOL', '2025-08-01'::date, NULL);
 
 UPDATE daycare
-SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS, VASU_AND_PEDADOC, MOBILE_MESSAGING}';
+SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS, VASU_AND_PEDADOC, MOBILE_MESSAGING, OTHER_DECISION, CITIZEN_BASIC_DOCUMENT}';
 
 WITH source AS (
     INSERT INTO password_blacklist_source (name, imported_at) VALUES ('dev-data', now())
