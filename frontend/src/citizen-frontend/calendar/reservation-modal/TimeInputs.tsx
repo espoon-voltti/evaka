@@ -174,7 +174,13 @@ const ReservationTimes = React.memo(function ReservationTimes({
   return (
     <>
       {content}
-      <ScreenReaderOnly aria-live="polite" aria-atomic={true}>
+      <ScreenReaderOnly
+        aria-live="polite"
+        aria-atomic={true}
+        data-qa={
+          dataQaPrefix ? `${dataQaPrefix}-screen-reader-message` : undefined
+        }
+      >
         {screenReaderMessage}
       </ScreenReaderOnly>
     </>
@@ -457,6 +463,11 @@ const TimeRanges = React.memo(function TimeRanges({
           </MiddleCell>
           <RightCell>
             <IconOnlyRefButton
+              data-qa={
+                dataQaPrefix
+                  ? `${dataQaPrefix}-time-1-delete-button`
+                  : undefined
+              }
               icon={faTrash}
               onClick={() => {
                 bind.update((prev) => prev.slice(0, 1))

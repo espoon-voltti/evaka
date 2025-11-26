@@ -413,6 +413,10 @@ type ReadOnlyDayState =
 class ReservationModal extends Element {
   startDate: DatePicker
   endDate: DatePicker
+  dailyAddReservationButton: Element
+  dailyAbsentButton: Element
+  dailySecondRangeDeleteButton: Element
+  dailyScreenReaderMessage: Element
   #repetitionSelect: Select
   #dailyStartTimeInput: TextInput
   #dailyEndTimeInput: TextInput
@@ -458,6 +462,14 @@ class ReservationModal extends Element {
       (index) => new Radio(this.findByDataQa(`weekly-${index}-absent-radio`))
     )
     this.#modalSendButton = this.findByDataQa('modal-okBtn')
+    this.dailyAddReservationButton = this.findByDataQa('daily-add-res-button')
+    this.dailyAbsentButton = this.findByDataQa('daily-absent-button')
+    this.dailySecondRangeDeleteButton = this.findByDataQa(
+      'daily-time-1-delete-button'
+    )
+    this.dailyScreenReaderMessage = this.findByDataQa(
+      'daily-screen-reader-message'
+    )
   }
 
   irregularStartTimeInput = (date: LocalDate) =>
@@ -507,8 +519,7 @@ class ReservationModal extends Element {
   }
 
   async fillDaily2ndReservationInfo(startTime: string, endTime: string) {
-    const addReservationButton = this.findByDataQa('daily-add-res-button')
-    await addReservationButton.click()
+    await this.dailyAddReservationButton.click()
     const daily2ndReservationStartTimeInput = new TextInput(
       this.findByDataQa('daily-time-1-start')
     )

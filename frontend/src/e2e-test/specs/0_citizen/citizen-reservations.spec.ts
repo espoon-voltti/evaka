@@ -37,6 +37,7 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenNotificationsPage from '../../pages/citizen/citizen-app-notifications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import { waitUntilEqual } from '../../utils'
 import { envs, Page } from '../../utils/page'
 import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -654,6 +655,40 @@ describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
         ])
       }
     }
+  })
+
+  test('Screen reader text is set for removing 2nd reservation', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    const firstReservationDay = today.addDays(14)
+    const reservationsModal = await calendarPage.openReservationModal()
+
+    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+    await reservationsModal.selectRepetition('DAILY')
+    await reservationsModal.fillDaily2ndReservationInfo('09:00', '17:00')
+    await reservationsModal.dailyAddReservationButton.assertDisabled(true)
+    await reservationsModal.dailySecondRangeDeleteButton.click()
+    await reservationsModal.dailyAddReservationButton.assertDisabled(false)
+    await reservationsModal.dailyAddReservationButton.assertFocused(true)
+    await waitUntilEqual(
+      () => reservationsModal.dailyScreenReaderMessage.text,
+      'Toinen aikaväli poistettu'
+    )
+  })
+  test('Screen reader text is set for marking absence', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    const firstReservationDay = today.addDays(14)
+    const reservationsModal = await calendarPage.openReservationModal()
+
+    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+    await reservationsModal.selectRepetition('DAILY')
+    await reservationsModal.dailyAbsentButton.click()
+    await waitUntilEqual(
+      () => reservationsModal.dailyScreenReaderMessage.text,
+      'Merkitty poissaolevaksi'
+    )
+    await reservationsModal.dailyAbsentButton.assertFocused(true)
   })
 })
 
