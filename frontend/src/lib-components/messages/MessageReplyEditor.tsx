@@ -84,8 +84,8 @@ function MessageReplyEditor<T, R>({
 
   return (
     <>
-      <EditorRow>
-        <Label>{i18n.messages.recipients}:</Label>{' '}
+      <EditorRow role="group" aria-labelledby="recipients-label">
+        <Label id="recipients-label">{i18n.messages.recipients}:</Label>{' '}
         {recipients.map((recipient) => (
           <ToggleableRecipient
             key={recipient.id}

@@ -717,10 +717,10 @@ export class StaticChip extends Element {
 export class SecondaryRecipient extends Element {
   async assertIsSelected() {
     await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-pressed', 'true')
+    await this.assertAttributeEquals('aria-checked', 'true')
   }
   async assertIsUnselected() {
     await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-pressed', 'false')
+    await this.assertAttributeEquals('aria-checked', 'false')
   }
 }

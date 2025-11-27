@@ -29,6 +29,8 @@ const components: Translations = {
     openExpandingInfo: 'Avaa lisätietokenttä',
     showPassword: 'Näytä salasana',
     hidePassword: 'Piilota salasana',
+    selected: 'Valittu',
+    unselected: 'Ei valittu',
     userTypes: {
       SYSTEM: 'järjestelmä',
       CITIZEN: 'kuntalainen',
