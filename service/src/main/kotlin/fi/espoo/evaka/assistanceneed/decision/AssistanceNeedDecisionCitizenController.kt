@@ -8,10 +8,11 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import kotlin.collections.emptyList
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,7 +42,7 @@ class AssistanceNeedDecisionCitizenController(
                         user.id,
                     )
 
-                    tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id)
+                    emptyList<AssistanceNeedDecisionCitizenListItem>()
                 }
             }
             .also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = AuditId(user.id)) }
@@ -49,80 +50,33 @@ class AssistanceNeedDecisionCitizenController(
 
     @GetMapping("/children/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
-        db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
     ): AssistanceNeedDecision {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.AssistanceNeedDecision.READ,
-                        id,
-                    )
-                    val decision = tx.getAssistanceNeedDecisionById(id)
-
-                    if (
-                        decision.status != AssistanceNeedDecisionStatus.ACCEPTED &&
-                            decision.status != AssistanceNeedDecisionStatus.REJECTED &&
-                            decision.status != AssistanceNeedDecisionStatus.ANNULLED
-                    ) {
-                        throw NotFound(
-                            "Citizen can only view accepted and rejected assistance need decisions"
-                        )
-                    }
-
-                    decision
-                }
-            }
-            .also { Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = AuditId(id)) }
+        throw BadRequest(
+            "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
+        )
     }
 
     @GetMapping("/children/assistance-need-decision/{id}/pdf")
     fun getAssistanceNeedDecisionPdf(
-        db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Citizen.AssistanceNeedDecision.DOWNLOAD,
-                        id,
-                    )
-                }
-                assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = AuditId(id)) }
+        throw BadRequest(
+            "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
+        )
     }
 
     @PostMapping("/children/assistance-need-decision/{id}/read")
     fun markAssistanceNeedDecisionAsRead(
-        db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
     ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
-                        id,
-                    )
-                    tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
-                }
-            }
-            .also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = AuditId(id)) }
+
+        throw BadRequest(
+            "Assistance need decisions have been migrated to MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION documents"
+        )
     }
 
     @GetMapping("/children/assistance-need-decisions/unread-counts")
@@ -140,7 +94,7 @@ class AssistanceNeedDecisionCitizenController(
                         Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
                         user.id,
                     )
-                    tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
+                    emptyList<UnreadAssistanceNeedDecisionItem>()
                 }
             }
             .also {

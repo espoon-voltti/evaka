@@ -807,50 +807,18 @@ sealed interface Action {
     enum class AssistanceNeedDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>
     ) : ScopedAction<AssistanceNeedDecisionId> {
-        READ_DECISION_MAKER_OPTIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        UPDATE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true),
-        ),
-        SEND(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-        ),
-        REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
-        READ_IN_REPORT(
-            HasGlobalRole(ADMIN),
-            HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedDecision(ChildAclConfig(application = false)),
-        ),
-        READ_METADATA(HasGlobalRole(ADMIN)),
-        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
-        MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
-        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
-        ANNUL(HasGlobalRole(ADMIN), IsEmployee.andIsDecisionMakerForAssistanceNeedDecision());
+        READ_DECISION_MAKER_OPTIONS(),
+        UPDATE(),
+        DELETE(),
+        READ(),
+        SEND(),
+        REVERT_TO_UNSENT(),
+        READ_IN_REPORT(),
+        READ_METADATA(),
+        DECIDE(),
+        MARK_AS_OPENED(),
+        UPDATE_DECISION_MAKER(),
+        ANNUL();
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -858,49 +826,17 @@ sealed interface Action {
     enum class AssistanceNeedPreschoolDecision(
         override vararg val defaultRules: ScopedActionRule<in AssistanceNeedPreschoolDecisionId>
     ) : ScopedAction<AssistanceNeedPreschoolDecisionId> {
-        READ_DECISION_MAKER_OPTIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-        ),
-        UPDATE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-        ),
-        DELETE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-        ),
-        READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasGlobalRole(DIRECTOR).andAssistanceNeedPreschoolDecisionHasBeenSent(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(),
-        ),
-        SEND(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-        ),
-        REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
-        READ_IN_REPORT(
-            HasGlobalRole(ADMIN),
-            HasGlobalRole(DIRECTOR).andIsDecisionMakerForPreschoolAssistanceNeedDecision(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedPreschoolDecision(
-                    ChildAclConfig(application = false)
-                ),
-        ),
-        READ_METADATA(HasGlobalRole(ADMIN)),
-        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
-        MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
-        ANNUL(
-            HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
-        );
+        READ_DECISION_MAKER_OPTIONS(),
+        UPDATE(),
+        DELETE(),
+        READ(),
+        SEND(),
+        REVERT_TO_UNSENT(),
+        READ_IN_REPORT(),
+        READ_METADATA(),
+        DECIDE(),
+        MARK_AS_OPENED(),
+        ANNUL();
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1186,18 +1122,12 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
-        READ_ASSISTANCE_NEED_DECISIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-        ), // used in UI
+        READ_ASSISTANCE_NEED_DECISIONS(), // used in UI
         CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
-        READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-        ), // used in UI
+        READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(), // used in UI
         READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andChildHasServiceVoucherPlacement(),

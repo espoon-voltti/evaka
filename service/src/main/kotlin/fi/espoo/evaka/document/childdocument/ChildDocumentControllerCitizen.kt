@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.caseprocess.updateDocumentCaseProcessHistory
 import fi.espoo.evaka.children.getCitizenChildIds
-import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -48,13 +47,7 @@ class ChildDocumentControllerCitizen(
                         Action.Citizen.Child.READ_CHILD_DOCUMENTS,
                         childId,
                     )
-                    tx.getChildDocumentCitizenSummaries(user, childId).filter {
-                        it.type !in
-                            listOf(
-                                ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION,
-                                ChildDocumentType.MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION,
-                            )
-                    }
+                    tx.getChildDocumentCitizenSummaries(user, childId)
                 }
             }
             .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
@@ -147,16 +140,7 @@ class ChildDocumentControllerCitizen(
                     val children = tx.getCitizenChildIds(clock.today(), user.id)
 
                     children.associateWith { childId ->
-                        tx.getChildDocumentCitizenSummaries(user, childId)
-                            .filter {
-                                it.type !in
-                                    listOf(
-                                        ChildDocumentType.MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION,
-                                        ChildDocumentType
-                                            .MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION,
-                                    )
-                            }
-                            .count { it.unread }
+                        tx.getChildDocumentCitizenSummaries(user, childId).count { it.unread }
                     }
                 }
             }
