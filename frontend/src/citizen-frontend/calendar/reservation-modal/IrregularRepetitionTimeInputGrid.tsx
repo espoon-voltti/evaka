@@ -68,7 +68,13 @@ const IrregularDay = React.memo(function IrregularDay({
       ) : null}
       <Day
         bind={day}
-        label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+        label={
+          <Label
+            aria-label={`${date.formatExotic('eeee do MMMM', lang).toString()}`}
+          >
+            {date.format('EEEEEE d.M.', lang)}
+          </Label>
+        }
         showAllErrors={showAllErrors}
         dataQaPrefix={`irregular-${date.formatIso()}`}
         onFocus={(ev) => {

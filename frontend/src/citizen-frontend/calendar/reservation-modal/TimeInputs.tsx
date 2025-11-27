@@ -13,7 +13,10 @@ import {
   useFormUnion
 } from 'lib-common/form/hooks'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
-import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import {
+  IconOnlyButton,
+  IconOnlyRefButton
+} from 'lib-components/atoms/buttons/IconOnlyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -106,9 +109,14 @@ const ReservationTimes = React.memo(function ReservationTimes({
   const { set } = reservation
   const { branch, form } = useFormUnion(reservation)
 
+  const [screenReaderMessage, showScreenReaderMessage] =
+    useScreenReaderMessage()
+
+  let content: React.ReactNode
+
   switch (branch) {
     case 'absent':
-      return (
+      content = (
         <FixedSpaceRow
           fullWidth
           alignItems="center"
@@ -127,6 +135,9 @@ const ReservationTimes = React.memo(function ReservationTimes({
               }
               icon={fasUserMinus}
               onClick={() => {
+                showScreenReaderMessage(
+                  i18n.calendar.reservationModal.absenceRemoved
+                )
                 set({
                   branch: 'timeRanges',
                   state: [emptyTimeRange(validTimeRange)]
@@ -140,18 +151,40 @@ const ReservationTimes = React.memo(function ReservationTimes({
           </RightCell>
         </FixedSpaceRow>
       )
+      break
     case 'timeRanges':
-      return (
+      content = (
         <TimeRanges
           bind={form}
           label={label}
           showAllErrors={showAllErrors}
-          onAbsent={() => set({ branch: 'absent', state: true })}
+          onAbsent={() => {
+            showScreenReaderMessage(i18n.calendar.reservationModal.absenceAdded)
+            set({ branch: 'absent', state: true })
+            if (dataQaPrefix) {
+              focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
+            }
+          }}
           dataQaPrefix={dataQaPrefix}
           onFocus={onFocus}
+          showScreenReaderMessage={showScreenReaderMessage}
         />
       )
   }
+  return (
+    <>
+      {content}
+      <ScreenReaderOnly
+        aria-live="polite"
+        aria-atomic={true}
+        data-qa={
+          dataQaPrefix ? `${dataQaPrefix}-screen-reader-message` : undefined
+        }
+      >
+        {screenReaderMessage}
+      </ScreenReaderOnly>
+    </>
+  )
 })
 
 interface ReadOnlyDayProps {
@@ -334,6 +367,7 @@ interface TimeRangesProps {
   dataQaPrefix?: string
   onAbsent?: () => void
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
+  showScreenReaderMessage: (message: string) => void
 }
 
 const TimeRanges = React.memo(function TimeRanges({
@@ -342,17 +376,18 @@ const TimeRanges = React.memo(function TimeRanges({
   showAllErrors,
   dataQaPrefix,
   onAbsent,
-  onFocus
+  onFocus,
+  showScreenReaderMessage
 }: TimeRangesProps) {
   const i18n = useTranslation()
   const firstTimeRange = useFormElem(bind, 0)
   const secondTimeRange = useFormElem(bind, 1)
-  const [screenReaderMessage, showTimedScreenReaderMessage] =
-    useScreenReaderMessage()
 
   if (firstTimeRange === undefined) {
     throw new Error('BUG: at least one time range expected')
   }
+
+  const addTimeRangeButtonRef = React.useRef<HTMLButtonElement>(null)
 
   return (
     <>
@@ -384,39 +419,31 @@ const TimeRanges = React.memo(function TimeRanges({
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
                 icon={faUserMinus}
-                onClick={() => {
-                  onAbsent()
-                  if (dataQaPrefix) {
-                    focusElementOnNextFrame(`${dataQaPrefix}-absent-button`)
-                  }
-                }}
+                onClick={onAbsent}
                 aria-label={i18n.calendar.absentEnable}
               />
             ) : null}
-            {secondTimeRange === undefined ? (
-              <IconOnlyButton
-                icon={faPlus}
-                data-qa={
-                  dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
+            <IconOnlyRefButton
+              ref={addTimeRangeButtonRef}
+              icon={faPlus}
+              data-qa={
+                dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
+              }
+              disabled={secondTimeRange !== undefined}
+              onClick={() => {
+                bind.update((prev) =>
+                  // use same valid range times as first reservation
+                  [prev[0], emptyTimeRange(prev[0].validRange)]
+                )
+                if (dataQaPrefix) {
+                  focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
                 }
-                onClick={() => {
-                  bind.update((prev) =>
-                    // use same valid range times as first reservation
-                    [prev[0], emptyTimeRange(prev[0].validRange)]
-                  )
-                  if (dataQaPrefix) {
-                    focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)
-                  }
-                }}
-                aria-label={i18n.calendar.reservationModal.secondTimeRange.add}
-              />
-            ) : null}
+              }}
+              aria-label={i18n.calendar.reservationModal.secondTimeRange.add}
+            />
           </FixedSpaceRow>
         </RightCell>
       </FixedSpaceRow>
-      <ScreenReaderOnly aria-live="polite" aria-atomic={true}>
-        {screenReaderMessage}
-      </ScreenReaderOnly>
       {secondTimeRange !== undefined ? (
         <FixedSpaceRow fullWidth alignItems="center">
           {label !== undefined ? <LeftCell /> : null}
@@ -435,14 +462,20 @@ const TimeRanges = React.memo(function TimeRanges({
             />
           </MiddleCell>
           <RightCell>
-            <IconOnlyButton
+            <IconOnlyRefButton
+              data-qa={
+                dataQaPrefix
+                  ? `${dataQaPrefix}-time-1-delete-button`
+                  : undefined
+              }
               icon={faTrash}
               onClick={() => {
                 bind.update((prev) => prev.slice(0, 1))
-                showTimedScreenReaderMessage(
+                showScreenReaderMessage(
                   i18n.calendar.reservationModal.secondTimeRange.deleteSuccess
                 )
               }}
+              returnFocusRef={addTimeRangeButtonRef}
               aria-label={i18n.calendar.reservationModal.secondTimeRange.delete}
             />
           </RightCell>

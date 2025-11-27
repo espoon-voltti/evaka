@@ -518,6 +518,8 @@ export default {
       },
       present: 'Läsnä',
       absent: 'Poissa',
+      absenceAdded: 'Merkitty poissaolevaksi',
+      absenceRemoved: 'Poissaolomerkintä poistettu',
       reservationClosed: 'Ilmoittautuminen päättynyt',
       reservationClosedInfo:
         'Jos haluat ilmoittaa läsnäoloajan tälle päivälle, ota yhteyttä henkilökuntaan',

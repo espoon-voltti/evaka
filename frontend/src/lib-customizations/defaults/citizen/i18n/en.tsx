@@ -516,6 +516,8 @@ const en: Translations = {
       },
       present: 'Present',
       absent: 'Absent',
+      absenceAdded: 'Marked as absent',
+      absenceRemoved: 'Absence removed',
       reservationClosed: 'Reservation closed',
       reservationClosedInfo:
         'Please contact staff if you want to add an attendance for this day',
