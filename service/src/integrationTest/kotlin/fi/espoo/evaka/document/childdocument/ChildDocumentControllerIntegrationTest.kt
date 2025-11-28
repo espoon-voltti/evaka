@@ -398,7 +398,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 devTemplateHojks.confidentiality?.basis,
                 it.primaryDocument.confidentiality?.basis,
             )
-            assertNotNull(it.primaryDocument.createdAt)
+            assertNotNull(it.primaryDocument.createdAtDate)
+            assertNotNull(it.primaryDocument.createdAtTime)
             assertEquals(employeeUser.evakaUserId, it.primaryDocument.createdBy?.id)
             it.process.history.also { history ->
                 assertEquals(1, history.size)
