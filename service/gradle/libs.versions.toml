@@ -6,7 +6,7 @@
 bouncycastle = "1.82"
 dd-java-agent = "1.55.0"
 flyingsaucer = "10.0.4"
-flyway = "11.17.1"
+flyway = "11.17.2"
 fuel = "2.3.1"
 java = "21"
 kotlin = "2.2.21"
