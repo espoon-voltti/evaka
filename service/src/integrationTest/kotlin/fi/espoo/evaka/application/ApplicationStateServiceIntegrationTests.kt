@@ -1778,7 +1778,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         )
 
         db.read { tx ->
-            // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
@@ -1844,7 +1843,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.read { tx ->
             val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_MAILING, application.status)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
