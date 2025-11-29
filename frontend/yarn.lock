@@ -6442,7 +6442,7 @@ __metadata:
     punycode: "npm:2.3.1"
     react: "npm:19.2.0"
     react-chartjs-2: "npm:5.3.1"
-    react-day-picker: "npm:9.11.1"
+    react-day-picker: "npm:9.11.2"
     react-dom: "npm:19.2.0"
     react-focus-lock: "npm:2.13.6"
     react-focus-on: "npm:3.10.0"
@@ -9802,16 +9802,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:9.11.1":
-  version: 9.11.1
-  resolution: "react-day-picker@npm:9.11.1"
+"react-day-picker@npm:9.11.2":
+  version: 9.11.2
+  resolution: "react-day-picker@npm:9.11.2"
   dependencies:
     "@date-fns/tz": "npm:^1.4.1"
     date-fns: "npm:^4.1.0"
     date-fns-jalali: "npm:^4.1.0-0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/7b05dca19f7c0025a4492f4ee6cc87570beffdeb237a150d8210d08afd7a88f3fd0a652eb084befb7b5f8cd51198e17a4046994b35c012ee4361d0a843a952ec
+  checksum: 10/acca392666137d72d1f4c7a469daef744a4e77a59606c42724de08ab6f08d5c9c87415b27886a94f6988b12afe37909c49c4710a06541cdac56dbaecaea2444a
   languageName: node
   linkType: hard
 
