@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUser
-import java.time.LocalDate
 import org.intellij.lang.annotations.Language
 
 @Language("sql")
@@ -74,10 +73,12 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
             )
         }
         .map {
+            val createdAt = column<HelsinkiDateTime>("created")
             DocumentMetadata(
                 documentId = column("id"),
                 name = column("name"),
-                createdAt = column("created"),
+                createdAtDate = createdAt.toLocalDate(),
+                createdAtTime = createdAt.toLocalTime(),
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(
@@ -139,7 +140,8 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
                             }
                         }
                     },
-                createdAt = column<LocalDate>("sentdate").let { HelsinkiDateTime.atStartOfDay(it) },
+                createdAtDate = column("sentdate"),
+                createdAtTime = null,
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(
@@ -239,8 +241,8 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
                             }
                         }
                     },
-                createdAt =
-                    column<LocalDate>("sent_date").let { HelsinkiDateTime.atStartOfDay(it) },
+                createdAtDate = column("sent_date"),
+                createdAtTime = null,
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(
@@ -286,10 +288,12 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
             )
         }
         .map {
+            val createdAt = column<HelsinkiDateTime>("created")
             DocumentMetadata(
                 documentId = column("id"),
                 name = "Maksupäätös",
-                createdAt = column("created"),
+                createdAtDate = createdAt.toLocalDate(),
+                createdAtTime = createdAt.toLocalTime(),
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(
@@ -335,10 +339,12 @@ fun Database.Read.getVoucherValueDecisionDocumentMetadata(
             )
         }
         .map {
+            val createdAt = column<HelsinkiDateTime?>("created")
             DocumentMetadata(
                 documentId = column("id"),
                 name = "Arvopäätös",
-                createdAt = column("created"),
+                createdAtDate = createdAt?.toLocalDate(),
+                createdAtTime = createdAt?.toLocalTime(),
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(

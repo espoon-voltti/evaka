@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import type { ProcessMetadata } from 'lib-common/generated/api-types/caseprocess'
 import type { DocumentMetadata } from 'lib-common/generated/api-types/caseprocess'
@@ -24,6 +24,15 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
   document: DocumentMetadata
 }) {
   const i18n = useTranslations()
+
+  const createdAt = useMemo(() => {
+    const values = [
+      document.createdAtDate?.format(),
+      document.createdAtTime?.format()
+    ].filter((str) => str !== undefined)
+    if (values.length === 0) return '-'
+    return values.join(' ')
+  }, [document.createdAtDate, document.createdAtTime])
 
   return (
     <div>
@@ -58,7 +67,7 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
           },
           {
             label: i18n.metadata.createdAt,
-            value: document.createdAt?.format() ?? '-'
+            value: createdAt
           },
           {
             label: i18n.metadata.createdBy,

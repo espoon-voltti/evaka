@@ -12,7 +12,6 @@ import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
-import fi.espoo.evaka.espoo.archival.asXMLGregorianCalendar
 import fi.espoo.evaka.espoo.archival.calculateNextJuly31
 import fi.espoo.evaka.espoo.archival.createCaseFile
 import fi.espoo.evaka.espoo.archival.createCreation
@@ -31,6 +30,7 @@ import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -89,7 +89,8 @@ class DocumentMetadataUtilsTest {
         return DocumentMetadata(
             documentId = documentId.raw,
             name = "VASU 2022-2023",
-            createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")),
+            createdAtDate = LocalDate.of(2023, 2, 1),
+            createdAtTime = LocalTime.of(12, 10),
             createdBy =
                 EvakaUser(
                     id = EvakaUserId(userId),
@@ -273,7 +274,7 @@ class DocumentMetadataUtilsTest {
 
         val result = createCaseFile(documentMetadata, caseProcess, document)
 
-        assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.caseCreated)
+        assertEquals(documentMetadata.createdAtDate?.toXMLGregorianCalendar(), result.caseCreated)
 
         assertEquals(completionDateTime.toLocalDate().toXMLGregorianCalendar(), result.caseFinished)
     }
@@ -323,7 +324,11 @@ class DocumentMetadataUtilsTest {
 
         val createdDate = LocalDateTime.parse("2023-02-01T12:10:00")
         val documentMetadata =
-            createTestDocumentMetadata().copy(createdAt = HelsinkiDateTime.of(createdDate))
+            createTestDocumentMetadata()
+                .copy(
+                    createdAtDate = createdDate.toLocalDate(),
+                    createdAtTime = createdDate.toLocalTime(),
+                )
 
         val result = createCaseFile(documentMetadata, null, document)
 
@@ -338,7 +343,11 @@ class DocumentMetadataUtilsTest {
 
         val createdDate = LocalDateTime.parse("2023-08-01T12:10:00")
         val documentMetadata =
-            createTestDocumentMetadata().copy(createdAt = HelsinkiDateTime.of(createdDate))
+            createTestDocumentMetadata()
+                .copy(
+                    createdAtDate = createdDate.toLocalDate(),
+                    createdAtTime = createdDate.toLocalTime(),
+                )
 
         val result = createCaseFile(documentMetadata, null, document)
 
@@ -493,7 +502,8 @@ class DocumentMetadataUtilsTest {
     fun `createCreation prefers case process initial date when available`() {
         val documentMetadata = createTestDocumentMetadata()
         documentMetadata.copy(
-            createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00"))
+            createdAtDate = LocalDate.of(2023, 2, 1),
+            createdAtTime = LocalTime.of(12, 10),
         )
 
         // Create case process with different initial date than document metadata
@@ -542,7 +552,7 @@ class DocumentMetadataUtilsTest {
         val result = createCreation(documentMetadata, null)
 
         // Should use document metadata creation date when no case process
-        assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.created)
+        assertEquals(documentMetadata.createdAtDate?.toXMLGregorianCalendar(), result.created)
     }
 
     @Test
@@ -550,7 +560,10 @@ class DocumentMetadataUtilsTest {
         val document = createTestDocument()
         val documentMetadata =
             createTestDocumentMetadata()
-                .copy(createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")))
+                .copy(
+                    createdAtDate = LocalDate.of(2023, 2, 1),
+                    createdAtTime = LocalTime.of(12, 10),
+                )
 
         // Create case process with different initial date than document metadata
         val caseProcessInitialDate = LocalDateTime.parse("2019-01-15T10:30:00")
@@ -590,7 +603,7 @@ class DocumentMetadataUtilsTest {
         val result = createCaseFile(documentMetadata, null, document)
 
         // Should use document metadata creation date when no case process
-        assertEquals(documentMetadata.createdAt?.asXMLGregorianCalendar(), result.caseCreated)
+        assertEquals(documentMetadata.createdAtDate?.toXMLGregorianCalendar(), result.caseCreated)
     }
 
     @Test
@@ -609,7 +622,10 @@ class DocumentMetadataUtilsTest {
 
         val documentMetadata =
             createTestDocumentMetadata()
-                .copy(createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2023-02-01T12:10:00")))
+                .copy(
+                    createdAtDate = LocalDate.of(2023, 2, 1),
+                    createdAtTime = LocalTime.of(12, 10),
+                )
 
         // Create case process with different initial date than document metadata
         val caseProcessInitialDate = LocalDateTime.parse("2019-08-01T10:30:00")

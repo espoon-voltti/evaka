@@ -26,6 +26,7 @@ import java.io.File
 import java.io.StringWriter
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.UUID
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -167,7 +168,8 @@ class ArchiveChildDocumentServiceTest {
             DocumentMetadata(
                 documentId = documentId.raw,
                 name = "VASU 2022-2023",
-                createdAt = HelsinkiDateTime.of(LocalDateTime.parse("2025-02-21T13:19:49.943153")),
+                createdAtDate = LocalDate.of(2025, 2, 21),
+                createdAtTime = LocalTime.of(13, 19, 49, 943153),
                 createdBy =
                     EvakaUser(
                         id = EvakaUserId(userId),

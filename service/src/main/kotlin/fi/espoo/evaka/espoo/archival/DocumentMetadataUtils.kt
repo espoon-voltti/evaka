@@ -11,30 +11,13 @@ import fi.espoo.evaka.document.ChildDocumentType
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.sarma.model.*
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import jakarta.xml.bind.JAXBContext
 import java.io.StringWriter
 import java.time.LocalDate
-import java.time.ZoneId
 import javax.xml.datatype.DatatypeConstants
 import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper
-
-fun HelsinkiDateTime.asXMLGregorianCalendar(): XMLGregorianCalendar {
-    val zdt = this.toLocalDateTime().atZone(ZoneId.of("Europe/Helsinki"))
-    return DatatypeFactory.newInstance()
-        .newXMLGregorianCalendar(
-            zdt.year,
-            zdt.monthValue,
-            zdt.dayOfMonth,
-            DatatypeConstants.FIELD_UNDEFINED,
-            DatatypeConstants.FIELD_UNDEFINED,
-            DatatypeConstants.FIELD_UNDEFINED,
-            DatatypeConstants.FIELD_UNDEFINED,
-            DatatypeConstants.FIELD_UNDEFINED,
-        )
-}
 
 /** Converts LocalDate to XMLGregorianCalendar with only date fields. */
 fun LocalDate.toXMLGregorianCalendar(): XMLGregorianCalendar {
@@ -333,9 +316,12 @@ private fun createFormat(filename: String): StandardMetadataType.Format {
 private fun getCreationDate(
     documentMetadata: DocumentMetadata,
     caseProcess: CaseProcess?,
-): HelsinkiDateTime? {
-    return caseProcess?.history?.find { it.state == CaseProcessState.INITIAL }?.enteredAt
-        ?: documentMetadata.createdAt
+): LocalDate? {
+    return caseProcess
+        ?.history
+        ?.find { it.state == CaseProcessState.INITIAL }
+        ?.enteredAt
+        ?.toLocalDate() ?: documentMetadata.createdAtDate
 }
 
 fun createCreation(
@@ -343,7 +329,7 @@ fun createCreation(
     caseProcess: CaseProcess?,
 ): StandardMetadataType.Creation {
     return StandardMetadataType.Creation().apply {
-        created = getCreationDate(documentMetadata, caseProcess)?.asXMLGregorianCalendar()
+        created = getCreationDate(documentMetadata, caseProcess)?.toXMLGregorianCalendar()
         originatingSystem = "Varhaiskasvatuksen toiminnanohjausjärjestelmä"
     }
 }
@@ -374,10 +360,10 @@ private fun getCaseFinishDate(
         ?.history
         ?.find { it.state == CaseProcessState.COMPLETED }
         ?.enteredAt
-        ?.asXMLGregorianCalendar()
+        ?.toLocalDate()
+        ?.toXMLGregorianCalendar()
         ?: document.template.validity.end?.toXMLGregorianCalendar()
-        ?: getCreationDate(documentMetadata, caseProcess)?.let {
-            val createdDate = it.toLocalDateTime().toLocalDate()
+        ?: getCreationDate(documentMetadata, caseProcess)?.let { createdDate ->
             calculateNextJuly31(createdDate).toXMLGregorianCalendar()
         }
 }
@@ -388,7 +374,7 @@ fun createCaseFile(
     document: ChildDocumentDetails,
 ): CaseFileType {
     return CaseFileType().apply {
-        caseCreated = getCreationDate(documentMetadata, caseProcess)?.asXMLGregorianCalendar()
+        caseCreated = getCreationDate(documentMetadata, caseProcess)?.toXMLGregorianCalendar()
 
         caseFinished = getCaseFinishDate(documentMetadata, caseProcess, document)
     }
