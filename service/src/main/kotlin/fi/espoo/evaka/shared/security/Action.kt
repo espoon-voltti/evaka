@@ -2249,7 +2249,10 @@ sealed interface Action {
         ),
         UPDATE_FEATURES(HasGlobalRole(ADMIN)),
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
-        READ_TERMINATED_PLACEMENTS(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_TERMINATED_PLACEMENTS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+        ),
         READ_MISSING_GROUP_PLACEMENTS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
