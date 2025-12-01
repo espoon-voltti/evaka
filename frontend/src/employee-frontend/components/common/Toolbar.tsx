@@ -42,10 +42,10 @@ interface ToolbarProps {
   guarantee?: boolean
   warning?: string
   disableAll?: boolean
-  onEdit?: () => undefined | void
-  onDelete?: () => undefined | void
-  onRetry?: () => undefined | void
-  onCopy?: () => undefined | void
+  onEdit?: () => void
+  onDelete?: () => void
+  onRetry?: () => void
+  onCopy?: () => void
   editable: boolean
   deletable: boolean
   dataQaEdit?: string

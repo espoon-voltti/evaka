@@ -68,7 +68,7 @@ interface Props {
   type: 'confirmed' | 'planned' | 'draft' | 'realized'
   data: OccupancyResponse
   active: boolean
-  onClick: () => undefined | void
+  onClick: () => void
 }
 
 export default React.memo(function OccupancyCard({

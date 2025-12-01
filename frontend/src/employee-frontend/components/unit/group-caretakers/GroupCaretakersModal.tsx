@@ -40,8 +40,8 @@ interface Props {
   unitId: DaycareId
   groupId: GroupId
   existing: CaretakerAmount | null
-  onSuccess: () => undefined | void
-  onReject: () => undefined | void
+  onSuccess: () => void
+  onReject: () => void
 }
 
 function GroupCaretakersModal({

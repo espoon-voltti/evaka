@@ -43,7 +43,7 @@ type Props = {
   placementPlan: PlacementPlanDetails
   confirmationState: PlacementPlanConfirmationStatus
   submitting: boolean
-  onChange: (state: PlacementPlanConfirmationStatus) => undefined | void
+  onChange: (state: PlacementPlanConfirmationStatus) => void
   openModal: () => void
 }
 
