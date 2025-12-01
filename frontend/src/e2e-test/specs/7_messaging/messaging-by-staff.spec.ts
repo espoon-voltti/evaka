@@ -509,7 +509,7 @@ describe('Staff copies', () => {
     // 1. A bulletin is sent to cherry-picked groups from TWO different units
     // 2. Each unit has MULTIPLE groups with MULTIPLE children (realistic scenario)
     // 3. The bulletin is sent to only ONE group per unit (not all groups)
-    // 4. Staff from each unit only see recipient names from their own accessible unit
+    // 4. Staff from each unit only sees the recipient name that is the "root recipient" causing the message copy to exist in the group mailbox
 
     // Helper function to create a family where each child is placed in a different group
     // Creates one child per group ID provided and returns the children
@@ -661,7 +661,7 @@ describe('Staff copies', () => {
     await messagesPage.assertCopyContent(message.title, message.content)
     const copyPage1 = await messagesPage.openCopyThread()
 
-    const expectedGroupName1 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
+    const expectedGroupName1 = 'Kosmiset vakiot'
     await copyPage1.assertMessageRecipients(expectedGroupName1)
 
     // Verify: Staff from second unit sees unit names only
@@ -673,7 +673,7 @@ describe('Staff copies', () => {
     await messagesPage2.assertCopyContent(message.title, message.content)
     const copyPage2 = await messagesPage2.openCopyThread()
 
-    const expectedGroupName2 = `Alkuräjähdyksen päiväkoti - Alkuryhmän toinen ryhmä (osa), Alkuräjähdyksen päiväkoti - Kosmiset vakiot, Mustan aukon päiväkoti - Korholan ryhmä, Mustan aukon päiväkoti - Korholan toinen ryhmä (osa)`
+    const expectedGroupName2 = 'Korholan ryhmä'
     await copyPage2.assertMessageRecipients(expectedGroupName2)
   })
 })
