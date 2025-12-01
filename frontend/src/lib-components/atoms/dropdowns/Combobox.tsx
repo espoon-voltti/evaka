@@ -346,11 +346,14 @@ function Combobox<T>(props: ComboboxProps<T>) {
           <Menu
             $openAbove={openAbove}
             className={classNames({ closed: !isOpen })}
-            {...getMenuProps({
-              // styled-components and downshift typings don't play nice together
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
-              ref: menuRef as any
-            })}
+            {
+              // eslint-disable-next-line react-hooks/refs -- downshift library requires passing ref to getMenuProps
+              ...getMenuProps({
+                // styled-components and downshift typings don't play nice together
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
+                ref: menuRef as any
+              })
+            }
           >
             {isOpen && (
               <>

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import type { LocalDateRangeField } from 'lib-common/form/fields'
@@ -43,11 +43,22 @@ const DateRangePicker = React.memo(function DateRangePicker({
   ...datePickerProps
 }: DateRangePickerProps) {
   const i18n = useTranslations()
-  const [internalStart, setInternalStart] = useState(start?.format() ?? '')
-  const [internalEnd, setInternalEnd] = useState(end?.format() ?? '')
+  const [state, setState] = useState<{
+    internalStart: string
+    internalEnd: string
+    prevStart: LocalDate | null
+    prevEnd: LocalDate | null
+  }>({
+    internalStart: start?.format() ?? '',
+    internalEnd: end?.format() ?? '',
+    prevStart: start,
+    prevEnd: end
+  })
   const [internalStartError, setInternalStartError] = useState<InputInfo>()
   const [internalEndError, setInternalEndError] = useState<InputInfo>()
   const [isValid, setIsValid] = useState<boolean>()
+
+  const { internalStart, internalEnd } = state
 
   const afterValidation = useStableCallback(
     onValidationResult ?? (() => undefined)
@@ -117,27 +128,26 @@ const DateRangePicker = React.memo(function DateRangePicker({
     if (isValid !== undefined) afterValidation(isValid)
   }, [afterValidation, isValid])
 
-  const prevStart = useRef(start)
-  const prevEnd = useRef(end)
   if (
-    prevStart.current?.formatIso() !== start?.formatIso() ||
-    prevEnd.current?.formatIso() !== end?.formatIso()
+    state.prevStart?.formatIso() !== start?.formatIso() ||
+    state.prevEnd?.formatIso() !== end?.formatIso()
   ) {
-    prevStart.current = start
-    if (start !== null) {
-      setInternalStart(start.format())
-    }
-    prevEnd.current = end
-    if (end !== null) {
-      setInternalEnd(end.format())
-    }
+    setState({
+      internalStart: start?.format() ?? '',
+      internalEnd: end?.format() ?? '',
+      prevStart: start,
+      prevEnd: end
+    })
     validate(start, end)
   }
 
   const handleChange = useCallback(
     ([startStr, endStr]: [string, string]) => {
-      setInternalStart(startStr)
-      setInternalEnd(endStr)
+      setState((prev) => ({
+        ...prev,
+        internalStart: startStr,
+        internalEnd: endStr
+      }))
       const newStart = LocalDate.parseFiOrNull(startStr)
       const newEnd = LocalDate.parseFiOrNull(endStr)
       const isValid = validate(newStart, newEnd)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import type { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
@@ -23,17 +23,22 @@ export default React.memo(function DailyServiceTimeNotification() {
 
   const notifications = dailyServiceTimeNotifications.getOrElse([])
 
-  const [notificationIds, setNotificationIds] = useState<
-    DailyServiceTimeNotificationId[]
-  >([])
+  const [state, setState] = useState<{
+    notificationIds: DailyServiceTimeNotificationId[]
+    prevNotifications: DailyServiceTimeNotificationId[]
+  }>({
+    notificationIds: notifications,
+    prevNotifications: notifications
+  })
 
-  useEffect(() => {
-    if (notifications.length === 0) return
+  if (state.prevNotifications !== notifications && notifications.length > 0) {
+    setState({
+      notificationIds: notifications,
+      prevNotifications: notifications
+    })
+  }
 
-    setNotificationIds(notifications)
-  }, [notifications, i18n.calendar])
-
-  if (notificationIds.length === 0) {
+  if (state.notificationIds.length === 0) {
     return null
   }
 
@@ -45,8 +50,13 @@ export default React.memo(function DailyServiceTimeNotification() {
       icon={faExclamation}
       resolve={{
         async action() {
-          await dismissDailyServiceTimeNotification({ body: notificationIds })
-          setNotificationIds([])
+          await dismissDailyServiceTimeNotification({
+            body: state.notificationIds
+          })
+          setState((prev) => ({
+            ...prev,
+            notificationIds: []
+          }))
         },
         label: i18n.calendar.dailyServiceTimeModifiedModal.ok
       }}

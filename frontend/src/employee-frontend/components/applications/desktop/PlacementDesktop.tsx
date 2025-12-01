@@ -110,9 +110,50 @@ const PlacementDesktopValidated = React.memo(
     )
 
     // optimistic cache to avoid refetching all applications when updating placements drafts
-    const [placementDraftCache, setPlacementDraftCache] = useState<
-      Record<ApplicationId, ApplicationSummaryPlacementDraft | undefined>
-    >({})
+    const [placementDraftCacheState, setPlacementDraftCacheState] = useState<{
+      cache: Record<ApplicationId, ApplicationSummaryPlacementDraft | undefined>
+      prevApplications: ApplicationSummary[]
+    }>({
+      cache: {},
+      prevApplications: []
+    })
+
+    // getDerivedStateFromProps: sync cache with applications
+    if (placementDraftCacheState.prevApplications !== applications) {
+      setPlacementDraftCacheState({
+        cache: applications.reduce(
+          (acc, application) => ({
+            ...acc,
+            [application.id]: application.placementDraft
+          }),
+          {}
+        ),
+        prevApplications: applications
+      })
+    }
+
+    const placementDraftCache = placementDraftCacheState.cache
+    const setPlacementDraftCache = useCallback(
+      (
+        updater:
+          | Record<ApplicationId, ApplicationSummaryPlacementDraft | undefined>
+          | ((
+              prev: Record<
+                ApplicationId,
+                ApplicationSummaryPlacementDraft | undefined
+              >
+            ) => Record<
+              ApplicationId,
+              ApplicationSummaryPlacementDraft | undefined
+            >)
+      ) =>
+        setPlacementDraftCacheState((prev) => ({
+          ...prev,
+          cache: typeof updater === 'function' ? updater(prev.cache) : updater
+        })),
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlacementDraftCacheState is stable
+      []
+    )
 
     const daycareListRef = useRef<HTMLDivElement>(null)
     const [daycareRefs, setDaycareRefs] = useState<
@@ -182,21 +223,8 @@ const PlacementDesktopValidated = React.memo(
       [allUnits, shownDaycares]
     )
 
-    useEffect(() => {
-      setPlacementDraftCache(
-        applications.reduce(
-          (acc, application) => ({
-            ...acc,
-            [application.id]: application.placementDraft
-          }),
-          {}
-        )
-      )
-    }, [applications])
-
-    useEffect(() => {
-      if (shownDaycares !== undefined) return
-
+    // getDerivedStateFromProps: initialize shownDaycares if undefined
+    if (shownDaycares === undefined) {
       // By default, show daycares that are
       // - one of the searched units, or
       // - a preferred unit of some result application, or
@@ -216,7 +244,7 @@ const PlacementDesktopValidated = React.memo(
           (u) => u.name
         )
       )
-    }, [applications, searchedUnits, shownDaycares, setShownDaycares])
+    }
 
     const onUpsertApplicationPlacementSuccess = useCallback(
       (
@@ -229,6 +257,7 @@ const PlacementDesktopValidated = React.memo(
           [applicationId]: { unit, startDate }
         }))
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlacementDraftCache is stable
       []
     )
 
@@ -239,6 +268,7 @@ const PlacementDesktopValidated = React.memo(
           [applicationId]: undefined
         }))
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- setPlacementDraftCache is stable
       []
     )
 
@@ -398,6 +428,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   const [initialDataInsertedForArgs, setInitialDataInsertedForArgs] =
     useState<Arg0<typeof getPlacementDesktopDaycaresQuery> | null>(null)
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Side effect: populate query cache with initial data
   useEffect(() => {
     if (initialData.isSuccess && !initialData.isReloading) {
       initialData.value.forEach((unit) => {

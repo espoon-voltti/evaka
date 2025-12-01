@@ -48,6 +48,7 @@ export function useDraft(initialId: MessageDraftId | null): {
   const [initializing, setInitializing] = useState<boolean>(false)
   useEffect(() => {
     if (!id && saveState === 'dirty' && !initializing && draft) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate: initializing draft asynchronously when first needed
       setInitializing(true)
       void initDraft({ accountId: draft.accountId }).then((draftId) => {
         setId(draftId)

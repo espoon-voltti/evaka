@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import type { FormEvent } from 'react'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
@@ -177,10 +177,8 @@ export default React.memo(function AssistanceActionForm(props: Props) {
   )
   const [form, setForm] = useState<FormState>(initialFormState)
 
-  const [formErrors, setFormErrors] =
+  const [apiFormErrors, setApiFormErrors] =
     useState<AssistanceActionFormErrors>(noErrors)
-
-  const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
   const updateFormState: UpdateStateFn<FormState> = (values) => {
     const newState = { ...form, ...values }
@@ -209,6 +207,47 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     [i18n, props.assistanceActionOptions, form.startDate, form.endDate]
   )
 
+  const validationErrors = useMemo(() => {
+    const isSoftConflict = checkSoftConflict(form, props)
+    const isHardConflict = checkHardConflict(form, props)
+    const isAnyConflict = isSoftConflict || isHardConflict
+
+    const { startDate, endDate } = form
+    const required = startDate === null || endDate === null
+    const inverted = !required && isDateRangeInverted({ startDate, endDate })
+    const conflict = isCreate(props) ? isHardConflict : isAnyConflict
+
+    return {
+      dateRange: required
+        ? ('required' as const)
+        : inverted
+          ? ('inverted' as const)
+          : conflict
+            ? ('conflict' as const)
+            : undefined,
+      invalidOption: !form.actions.every((action) =>
+        optionsWithValidation.some(
+          (option) =>
+            option.value === action && typeof option.validation !== 'string'
+        )
+      )
+    }
+  }, [form, props, optionsWithValidation])
+
+  const autoCutWarning = useMemo(
+    () =>
+      isCreate(props) &&
+      checkSoftConflict(form, props) &&
+      !checkHardConflict(form, props),
+    [form, props]
+  )
+
+  // Merge validation errors with API errors (API errors take precedence)
+  const formErrors: AssistanceActionFormErrors = {
+    dateRange: apiFormErrors.dateRange ?? validationErrors.dateRange,
+    invalidOption: apiFormErrors.invalidOption || validationErrors.invalidOption
+  }
+
   const sortedOptions = useMemo(
     () =>
       assistanceActionOptionCategories.reduce(
@@ -228,35 +267,6 @@ export default React.memo(function AssistanceActionForm(props: Props) {
       ),
     [optionsWithValidation]
   )
-
-  useEffect(() => {
-    const isSoftConflict = checkSoftConflict(form, props)
-    const isHardConflict = checkHardConflict(form, props)
-    const isAnyConflict = isSoftConflict || isHardConflict
-
-    const { startDate, endDate } = form
-    const required = startDate === null || endDate === null
-    const inverted = !required && isDateRangeInverted({ startDate, endDate })
-    const conflict = isCreate(props) ? isHardConflict : isAnyConflict
-
-    setFormErrors({
-      dateRange: required
-        ? 'required'
-        : inverted
-          ? 'inverted'
-          : conflict
-            ? 'conflict'
-            : undefined,
-      invalidOption: !form.actions.every((action) =>
-        optionsWithValidation.some(
-          (option) =>
-            option.value === action && typeof option.validation !== 'string'
-        )
-      )
-    })
-
-    setAutoCutWarning(isCreate(props) && isSoftConflict && !isHardConflict)
-  }, [form, props, optionsWithValidation])
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -289,7 +299,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
         clearUiMode()
       } else if (res.isFailure) {
         if (res.statusCode === 409) {
-          setFormErrors({ ...formErrors, dateRange: 'conflict' })
+          setApiFormErrors({ ...apiFormErrors, dateRange: 'conflict' })
         } else {
           setErrorMessage({
             type: 'error',

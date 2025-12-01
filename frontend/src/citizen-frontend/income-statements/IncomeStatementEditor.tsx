@@ -122,6 +122,7 @@ export default React.memo(function IncomeStatementEditor() {
         scrollToElement(firstInvalidElement, 0, 'center')
         firstInvalidElement.focus()
       }
+
       setShouldScrollToError(false)
     }
   }, [shouldScrollToError])
