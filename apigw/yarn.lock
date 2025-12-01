@@ -2867,9 +2867,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.79.0":
-  version: 5.79.0
-  resolution: "dd-trace@npm:5.79.0"
+"dd-trace@npm:5.80.0":
+  version: 5.80.0
+  resolution: "dd-trace@npm:5.80.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
     "@datadog/native-appsec": "npm:10.3.0"
@@ -2908,7 +2908,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tlhunter-sorted-set: "npm:^0.1.0"
     ttl-set: "npm:^1.0.0"
-  checksum: 10/66213fd911ccb04e31448d723c2452d450e6f29799e2c13b1414d38fb0e1b615da8aef7276a9a24cd24ae4065019dcd01e23d3cc54bce29f380a90c2318a2968
+  checksum: 10/0f24cc78b42a8af7a4cfadaec4070cbb67a78c3fdb374d03f03de57e15ce655e980cef5eb334ca4653801e07b4605f53c9fd2b6cb251ae0615a4337580464424
   languageName: node
   linkType: hard
 
@@ -3557,7 +3557,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.79.0"
+    dd-trace: "npm:5.80.0"
     eslint: "npm:9.39.1"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
