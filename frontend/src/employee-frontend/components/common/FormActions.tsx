@@ -17,7 +17,7 @@ const ButtonsContainer = styled.div`
 
 interface AddButtonProps {
   submitButtonText?: string
-  onCancel: () => undefined | void
+  onCancel: () => void
   disabled?: boolean
   'data-qa'?: string
 }
