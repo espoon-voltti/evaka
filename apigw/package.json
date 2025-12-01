@@ -22,7 +22,7 @@
     "cookie-parser": "1.4.7",
     "date-fns": "4.1.0",
     "dd-trace": "5.80.0",
-    "express": "5.1.0",
+    "express": "5.2.0",
     "express-basic-auth": "1.2.1",
     "express-http-proxy": "2.1.2",
     "express-session": "1.18.2",

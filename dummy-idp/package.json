@@ -9,7 +9,7 @@
     "dev": "tsc --build src && concurrently --prefix '[{name}]' --names 'tsc,nodemon' 'tsc --build --preserveWatchOutput -w src' 'NODE_ENV=local nodemon --enable-source-maps dist/index.js'"
   },
   "dependencies": {
-    "express": "5.1.0",
+    "express": "5.2.0",
     "express-session": "1.18.2",
     "samlp": "7.1.1",
     "tslib": "2.8.1",
