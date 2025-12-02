@@ -8,6 +8,8 @@ import type { CaseProcessId } from './shared'
 import type { EvakaUser } from './user'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
+import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import type { UUID } from '../../types'
 
 /**
@@ -58,7 +60,8 @@ export interface DocumentConfidentiality {
 export interface DocumentMetadata {
   confidential: boolean | null
   confidentiality: DocumentConfidentiality | null
-  createdAt: HelsinkiDateTime | null
+  createdAtDate: LocalDate | null
+  createdAtTime: LocalTime | null
   createdBy: EvakaUser | null
   documentId: UUID
   downloadPath: string | null
@@ -128,7 +131,8 @@ export function deserializeJsonCaseProcessHistoryRow(json: JsonOf<CaseProcessHis
 export function deserializeJsonDocumentMetadata(json: JsonOf<DocumentMetadata>): DocumentMetadata {
   return {
     ...json,
-    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    createdAtDate: (json.createdAtDate != null) ? LocalDate.parseIso(json.createdAtDate) : null,
+    createdAtTime: (json.createdAtTime != null) ? LocalTime.parseIso(json.createdAtTime) : null,
     sfiDeliveries: json.sfiDeliveries.map(e => deserializeJsonSfiDelivery(e))
   }
 }

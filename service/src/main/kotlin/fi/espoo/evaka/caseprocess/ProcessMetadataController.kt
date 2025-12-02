@@ -23,6 +23,8 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.user.EvakaUser
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -49,7 +51,8 @@ data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val ba
 data class DocumentMetadata(
     val documentId: UUID,
     val name: String,
-    val createdAt: HelsinkiDateTime?,
+    val createdAtDate: LocalDate?,
+    val createdAtTime: LocalTime?,
     @Nested("created_by") val createdBy: EvakaUser?,
     val confidential: Boolean?,
     @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
@@ -411,10 +414,12 @@ class ProcessMetadataController(
                 )
             }
             .map {
+                val createdAt = column<HelsinkiDateTime>("created_at")
                 DocumentMetadata(
                     documentId = column("id"),
                     name = "Päätös tuesta varhaiskasvatuksessa",
-                    createdAt = column("created_at"),
+                    createdAtDate = createdAt.toLocalDate(),
+                    createdAtTime = createdAt.toLocalTime(),
                     createdBy =
                         column<EvakaUserId?>("created_by_id")?.let {
                             EvakaUser(
@@ -459,10 +464,12 @@ class ProcessMetadataController(
                 )
             }
             .map {
+                val createdAt = column<HelsinkiDateTime>("created_at")
                 DocumentMetadata(
                     documentId = column("id"),
                     name = "Päätös tuesta esiopetuksessa",
-                    createdAt = column("created_at"),
+                    createdAtDate = createdAt.toLocalDate(),
+                    createdAtTime = createdAt.toLocalTime(),
                     createdBy =
                         column<EvakaUserId?>("created_by_id")?.let {
                             EvakaUser(

@@ -13,6 +13,14 @@ describe('LocalTime', () => {
     const expected = LocalTime.of(1, 2, 3)
     expect(LocalTime.parseIso('01:02:03').isEqual(expected)).toBeTruthy()
   })
+  it('can be parsed from ISO local time string with hundred milliseconds', () => {
+    const expected = LocalTime.of(1, 2, 3, 100000000)
+    expect(LocalTime.parseIso('01:02:03.1').isEqual(expected)).toBeTruthy()
+  })
+  it('can be parsed from ISO local time string with microseconds', () => {
+    const expected = LocalTime.of(1, 2, 3, 456000)
+    expect(LocalTime.parseIso('01:02:03.000456').isEqual(expected)).toBeTruthy()
+  })
   it('zero nanoseconds are omitted from ISO local time string', () => {
     const time = LocalTime.of(1, 2, 3)
     expect(time.formatIso()).toStrictEqual('01:02:03')

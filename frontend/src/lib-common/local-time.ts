@@ -11,7 +11,7 @@ import type { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
 
 // ISO local time with nanosecond precision
-const isoPattern = /^(\d{2}):(\d{2}):(\d{2})(?:.(\d{9}))?$/
+const isoPattern = /^(\d{2}):(\d{2}):(\d{2})(?:.(\d{1,9}))?$/
 
 const hourMinutePattern = /^(\d{2}):(\d{2})$/
 
@@ -120,7 +120,16 @@ export default class LocalTime implements Ordered<LocalTime> {
     if (parts) {
       const [, hour, minute, second, nanosecond] =
         parts &&
-        parts.map((part) => (part !== undefined ? parseInt(part, 10) : 0))
+        parts.map((part, index) => {
+          if (part === undefined) {
+            return 0
+          }
+          if (index === 4) {
+            // expand to nanoseconds
+            part = part.padEnd(9, '0')
+          }
+          return parseInt(part, 10)
+        })
       const result = LocalTime.tryCreate(
         hour,
         minute,
