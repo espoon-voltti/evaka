@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import fi.espoo.evaka.user.EvakaUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -888,6 +889,7 @@ fun Database.Read.fetchApplicationDetails(
                         e_modified.name AS modified_by_name,
                         e_modified.type AS modified_by_type,
                         a.sentdate,
+                        a.senttime,
                         a.duedate,
                         a.duedate_set_manually_at,
                         a.checkedbyadmin,
@@ -961,6 +963,7 @@ fun Database.Read.fetchApplicationDetails(
                             type = column("modified_by_type"),
                         ),
                     sentDate = column("sentdate"),
+                    sentTime = column("senttime"),
                     dueDate = column("duedate"),
                     dueDateSetManuallyAt = column("duedate_set_manually_at"),
                     checkedByAdmin = column("checkedbyadmin"),
@@ -1235,13 +1238,14 @@ fun Database.Transaction.updateApplicationStatus(
 fun Database.Transaction.updateApplicationDates(
     id: ApplicationId,
     sentDate: LocalDate,
+    sentTime: LocalTime?,
     dueDate: LocalDate?,
     now: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
 ) {
     execute {
         sql(
-            "UPDATE application SET sentdate = ${bind(sentDate)}, duedate = ${bind(dueDate)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
+            "UPDATE application SET sentdate = ${bind(sentDate)}, senttime = ${bind(sentTime)}, duedate = ${bind(dueDate)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(id)}"
         )
     }
 }

@@ -3069,7 +3069,8 @@ export const applicationFixture = (
   modifiedAt: HelsinkiDateTime.now(),
   modifiedBy: systemInternalUser.id,
   dueDate: null,
-  sentDate: null
+  sentDate: null,
+  sentTime: null
 })
 
 const feeThresholds = {

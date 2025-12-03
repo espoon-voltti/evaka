@@ -1378,6 +1378,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             modifiedAt = mockClock.now().minusDays(55),
             modifiedBy = guardian.evakaUserId(),
             sentDate = mockClock.today().minusDays(55),
+            sentTime = mockClock.now().toLocalTime(),
             dueDate = mockClock.today().plusDays(18),
             status = status,
             guardianId = guardian.id,

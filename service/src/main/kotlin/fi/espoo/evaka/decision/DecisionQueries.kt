@@ -224,7 +224,7 @@ WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
 
 fun Database.Transaction.finalizeDecisions(
     applicationId: ApplicationId,
-    today: LocalDate,
+    sentAt: HelsinkiDateTime,
 ): List<DecisionId> {
     // discard unplanned drafts
     execute {
@@ -235,7 +235,7 @@ fun Database.Transaction.finalizeDecisions(
 
     return createQuery {
             sql(
-                "UPDATE decision SET sent_date = ${bind(today)} WHERE application_id = ${bind(applicationId)} RETURNING id"
+                "UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())} WHERE application_id = ${bind(applicationId)} RETURNING id"
             )
         }
         .toList<DecisionId>()
@@ -243,23 +243,23 @@ fun Database.Transaction.finalizeDecisions(
 
 fun Database.Transaction.markApplicationDecisionsSent(
     applicationId: ApplicationId,
-    sentDate: LocalDate,
+    sentAt: HelsinkiDateTime,
 ) {
     execute {
         sql(
             """
-UPDATE decision SET sent_date = ${bind(sentDate)}
+UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())}
 WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = true
 """
         )
     }
 }
 
-fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
+fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentAt: HelsinkiDateTime) {
     execute {
         sql(
             """
-UPDATE decision SET sent_date = ${bind(sentDate)}
+UPDATE decision SET sent_date = ${bind(sentAt.toLocalDate())}, sent_time = ${bind(sentAt.toLocalTime())}
 WHERE sent_date IS NULL AND id = ${bind(decisionId)} AND planned = true
 """
         )

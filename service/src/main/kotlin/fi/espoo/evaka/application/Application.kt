@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class CitizenApplicationUpdate(
     val form: ApplicationFormUpdate,
@@ -124,6 +125,7 @@ data class ApplicationDetails(
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUser?,
     val sentDate: LocalDate?,
+    val sentTime: LocalTime?,
     val dueDate: LocalDate?,
     val dueDateSetManuallyAt: HelsinkiDateTime?,
     val transferApplication: Boolean,

@@ -766,6 +766,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         tx.updateApplicationDates(
                             id,
                             sentDate = application.sentDate ?: application.createdAt.toLocalDate(),
+                            sentTime = application.sentTime ?: application.createdAt.toLocalTime(),
                             dueDate = application.dueDate,
                             now = clock.now(),
                             modifiedBy = enteredBy,
@@ -2370,6 +2371,7 @@ data class DevApplicationWithForm(
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUserId,
     var sentDate: LocalDate?,
+    val sentTime: LocalTime?,
     var dueDate: LocalDate?,
     val status: ApplicationStatus,
     val guardianId: PersonId,

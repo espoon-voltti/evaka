@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -72,7 +73,8 @@ class DecisionService(
         sendAsMessage: Boolean,
         skipGuardianApproval: Boolean,
     ): List<DecisionId> {
-        val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
+        val now = clock.now()
+        val decisionIds = tx.finalizeDecisions(applicationId, now)
         asyncJobRunner.plan(
             tx,
             decisionIds.map { decisionId ->
@@ -84,7 +86,7 @@ class DecisionService(
                     skipGuardianApproval && decision.type == DecisionType.PRESCHOOL,
                 )
             },
-            runAt = clock.now(),
+            runAt = now,
         )
         return decisionIds
     }
@@ -170,6 +172,7 @@ class DecisionService(
         decisionId: DecisionId,
         skipGuardianApproval: Boolean?,
     ) {
+        val now = clock.now()
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
@@ -187,7 +190,7 @@ class DecisionService(
 
         val documentLocation = documentClient.locate(DocumentKey.Decision(decision.documentKey))
         val currentGuardians =
-            tx.getChildGuardiansAndFosterParents(decision.childId, clock.today()).toSet()
+            tx.getChildGuardiansAndFosterParents(decision.childId, now.toLocalDate()).toSet()
 
         val applicationGuardian =
             tx.getPersonById(application.guardianId)
@@ -195,7 +198,7 @@ class DecisionService(
         if (currentGuardians.contains(applicationGuardian.id)) {
             deliverDecisionToGuardian(
                 tx,
-                clock,
+                now,
                 decision,
                 applicationGuardian,
                 documentLocation,
@@ -220,7 +223,7 @@ class DecisionService(
                     if (currentGuardians.contains(guardianId)) {
                         deliverDecisionToGuardian(
                             tx,
-                            clock,
+                            now,
                             decision,
                             otherGuardian,
                             documentLocation,
@@ -234,12 +237,12 @@ class DecisionService(
                 }
             }
         }
-        tx.markDecisionSent(decisionId, clock.today())
+        tx.markDecisionSent(decisionId, now)
     }
 
     fun deliverDecisionToGuardian(
         tx: Database.Transaction,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
         decision: Decision,
         guardian: PersonDTO,
         documentLocation: DocumentLocation,
@@ -280,7 +283,7 @@ class DecisionService(
                 messageContent = messageProvider.getDecisionContent(lang, skipGuardianApproval),
             )
 
-        asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
+        asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = now)
     }
 
     fun sendNewDecisionEmail(
