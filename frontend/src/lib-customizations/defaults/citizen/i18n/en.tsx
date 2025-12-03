@@ -2648,7 +2648,8 @@ const en: Translations = {
         "Do you want to terminate your child's early childhood education agreement?",
       confirmDescription: (date: string) =>
         `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
-      terminate: 'Terminate the agreement'
+      terminate: 'Terminate the agreement',
+      terminatePrefix: 'Terminate'
     },
     pedagogicalDocuments: {
       title: 'Growth and learning',

@@ -194,6 +194,9 @@ export default React.memo(function PlacementTerminationForm({
             data-qa="placement"
             key={p.pseudoId}
             label={getPlacementLabel(p)}
+            aria-label={`${t.children.placementTermination.terminatePrefix} ${getPlacementLabel(
+              p
+            )}`}
             checked={
               !!state.placements.find(({ pseudoId }) => pseudoId === p.pseudoId)
             }

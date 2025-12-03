@@ -126,6 +126,7 @@ export const StaticCheckBox = React.memo(function StaticCheckBox({
 
 export interface CheckboxProps extends CommonProps {
   label: ReactNode
+  'aria-label'?: string
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void
   disabled?: boolean
@@ -136,6 +137,7 @@ export interface CheckboxProps extends CommonProps {
 const Checkbox = React.memo(function Checkbox({
   checked,
   label,
+  'aria-label': ariaLabel,
   hiddenLabel,
   onChange,
   disabled,
@@ -152,6 +154,7 @@ const Checkbox = React.memo(function Checkbox({
         <CheckboxInput
           type="checkbox"
           checked={checked}
+          aria-label={ariaLabel}
           data-qa={dataQa ? `${dataQa}-input` : undefined}
           id={ariaId}
           disabled={disabled}
