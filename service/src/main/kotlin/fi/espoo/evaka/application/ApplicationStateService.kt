@@ -1064,7 +1064,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (
-            application.status == WAITING_CONFIRMATION &&
+            (application.status == WAITING_CONFIRMATION || application.status == WAITING_MAILING) &&
                 decisions
                     .filter { it.id != decision.id }
                     .none { it.status == DecisionStatus.PENDING }
