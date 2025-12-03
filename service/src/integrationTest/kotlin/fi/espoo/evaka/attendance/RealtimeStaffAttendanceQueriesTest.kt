@@ -349,6 +349,80 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure at planned time for overnight attendance when type is SICKNESS`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
+        val arrival = now.atStartOfDay().minusHours(4)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1.id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.SICKNESS,
+                modifiedAt = now,
+                modifiedBy = employee1.evakaUserId,
+            )
+
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1.id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
+
+            tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                plannedDeparture,
+                staffAttendances.first { it.employeeId == employee1.id }.departed,
+            )
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure at planned time for overnight attendance when type is CHILD_SICKNESS`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
+        val arrival = now.atStartOfDay().minusHours(4)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1.id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.CHILD_SICKNESS,
+                modifiedAt = now,
+                modifiedBy = employee1.evakaUserId,
+            )
+
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1.id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
+
+            tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                plannedDeparture,
+                staffAttendances.first { it.employeeId == employee1.id }.departed,
+            )
+        }
+    }
+
+    @Test
     fun `addMissingStaffAttendanceDeparture adds a departure at planned time for overnight attendance when type is OTHER_WORK`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().minusHours(4)
