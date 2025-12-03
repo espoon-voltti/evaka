@@ -660,7 +660,8 @@ const en: Translations = {
       search: 'Search',
       noResults: 'No results, select a child or children first',
       messageSendError: 'Failed to send the message',
-      messageSentNotification: 'Message sent'
+      messageSentNotification: 'Message sent',
+      required: 'Required field'
     },
     confirmDelete: {
       title: 'Do you really want to delete the message thread?',

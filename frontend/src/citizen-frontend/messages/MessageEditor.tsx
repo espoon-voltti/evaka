@@ -23,6 +23,7 @@ import type {
 import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
+import { ScreenReaderOnlyInline } from 'lib-components/atoms/ScreenReaderOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -186,9 +187,19 @@ export default React.memo(function MessageEditor({
     !!(recipients.primary.length > 0 && message.content && message.title) &&
     uploadStatus.inProgress === 0
 
-  const required = (text: string) => `${text}*`
+  const required = (text: string) => (
+    <>
+      {text}
+      <span aria-hidden="true">*</span>
+      <ScreenReaderOnlyInline>
+        ({i18n.messages.messageEditor.required})
+      </ScreenReaderOnlyInline>
+    </>
+  )
 
   const chipGroupContainerRef = React.useRef<HTMLDivElement>(null)
+  const isInvalidChildSelection =
+    isChildSelectionTouched && message.children.length === 0
 
   return (
     <ModalAccessibilityWrapper>
@@ -217,8 +228,14 @@ export default React.memo(function MessageEditor({
             <Gap size="s" />
             {childIds && childIds.length > 1 && (
               <>
-                <label>
-                  <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
+                <div
+                  role="group"
+                  aria-labelledby="children-group-label"
+                  aria-invalid={isInvalidChildSelection}
+                >
+                  <Bold id="children-group-label">
+                    {required(i18n.messages.messageEditor.children)}
+                  </Bold>
                   <FixedSpaceColumn>
                     <ChipContainer
                       horizontalSpacing="xs"
@@ -278,14 +295,13 @@ export default React.memo(function MessageEditor({
                           </div>
                         ))}
                     </ChipContainer>
-                    {isChildSelectionTouched &&
-                      message.children.length === 0 && (
-                        <ErrorMessageBox
-                          text={i18n.calendar.childSelectionMissingError}
-                        />
-                      )}
+                    {isInvalidChildSelection && (
+                      <ErrorMessageBox
+                        text={i18n.calendar.childSelectionMissingError}
+                      />
+                    )}
                   </FixedSpaceColumn>
-                </label>
+                </div>
                 <Gap size="s" />
               </>
             )}
@@ -376,6 +392,7 @@ export default React.memo(function MessageEditor({
             <label>
               <Bold>{required(i18n.messages.messageEditor.subject)}</Bold>
               <InputField
+                type="text"
                 value={message.title ?? ''}
                 onChange={(updated) =>
                   setMessage((message) => ({ ...message, title: updated }))
@@ -387,10 +404,11 @@ export default React.memo(function MessageEditor({
 
             <Gap size="s" />
 
-            <TextAreaLabel>
+            <TextAreaLabel htmlFor="message-editor-content">
               <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
               <Gap size="s" />
               <StyledTextArea
+                id="message-editor-content"
                 value={message.content}
                 onChange={(updated) =>
                   setMessage((message) => ({
