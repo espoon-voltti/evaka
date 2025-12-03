@@ -25,6 +25,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import type { MessageContentId } from './shared'
 import type { MessageThreadId } from './shared'
 import type { OccupancyResponse } from './occupancy'
@@ -153,6 +154,7 @@ export interface ApplicationDetails {
   origin: ApplicationOrigin
   otherGuardianLivesInSameAddress: boolean | null
   sentDate: LocalDate | null
+  sentTime: LocalTime | null
   status: ApplicationStatus
   transferApplication: boolean
   type: ApplicationType
@@ -931,7 +933,8 @@ export function deserializeJsonApplicationDetails(json: JsonOf<ApplicationDetail
     form: deserializeJsonApplicationForm(json.form),
     guardianDateOfDeath: (json.guardianDateOfDeath != null) ? LocalDate.parseIso(json.guardianDateOfDeath) : null,
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
-    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null,
+    sentTime: (json.sentTime != null) ? LocalTime.parseIso(json.sentTime) : null
   }
 }
 

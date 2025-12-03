@@ -289,7 +289,9 @@ class ApplicationStateService(
     ) {
         accessControl.requirePermissionFor(tx, user, clock, Action.Application.SEND, applicationId)
 
-        val currentDate = clock.today()
+        val now = clock.now()
+        val currentDate = now.toLocalDate()
+
         val application = getApplication(tx, applicationId)
         verifyStatus(application, CREATED)
         validateApplication(
@@ -304,9 +306,11 @@ class ApplicationStateService(
         personService.getGuardians(tx, user, application.childId)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
-        tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
+        tx.updateApplicationFlags(application.id, applicationFlags, now, user.evakaUserId)
 
-        val sentDate = application.sentDate ?: currentDate
+        val (sentDate, sentTime) =
+            application.sentDate?.let { it to application.sentTime }
+                ?: (currentDate to now.toLocalTime())
         val dueDate =
             application.dueDate
                 ?: calculateDueDate(
@@ -317,7 +321,14 @@ class ApplicationStateService(
                     applicationFlags.isTransferApplication,
                     application.attachments,
                 )
-        tx.updateApplicationDates(application.id, sentDate, dueDate, clock.now(), user.evakaUserId)
+        tx.updateApplicationDates(
+            application.id,
+            sentDate,
+            sentTime,
+            dueDate,
+            now,
+            user.evakaUserId,
+        )
 
         tx.getPersonById(application.guardianId)?.let {
             val email =
@@ -347,7 +358,7 @@ class ApplicationStateService(
                         ApplicationType.DAYCARE,
                     )
                 ),
-                runAt = clock.now(),
+                runAt = now,
             )
         }
 
@@ -361,7 +372,7 @@ class ApplicationStateService(
                         ApplicationType.CLUB,
                     )
                 ),
-                runAt = clock.now(),
+                runAt = now,
             )
         }
 
@@ -378,14 +389,13 @@ class ApplicationStateService(
                         sentWithinPreschoolApplicationPeriod,
                     )
                 ),
-                runAt = clock.now(),
+                runAt = now,
             )
         }
 
-        tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
+        tx.syncApplicationOtherGuardians(application.id, currentDate)
+        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, now)
 
-        val now = clock.now()
         metadata
             .getProcessParams(ArchiveProcessType.fromApplicationType(application.type), now.year)
             ?.also { process ->
@@ -393,13 +403,13 @@ class ApplicationStateService(
                 tx.insertCaseProcessHistoryRow(
                     processId = processId,
                     state = CaseProcessState.INITIAL,
-                    now = clock.now(),
+                    now = now,
                     userId = user.evakaUserId,
                 )
-                tx.setApplicationProcessId(applicationId, processId, clock.now(), user.evakaUserId)
+                tx.setApplicationProcessId(applicationId, processId, now, user.evakaUserId)
             }
 
-        tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
+        tx.resetCheckedByAdminAndConfidentiality(applicationId, now, user.evakaUserId)
 
         Audit.ApplicationSend.log(
             targetId = AuditId(applicationId),
@@ -413,18 +423,29 @@ class ApplicationStateService(
         clock: EvakaClock,
         application: ApplicationDetails,
     ) {
-        val applicationFlags = tx.applicationFlags(application, clock.today())
-        tx.updateApplicationFlags(application.id, applicationFlags, clock.now(), user.evakaUserId)
+        val now = clock.now()
+        val today = now.toLocalDate()
+
+        val applicationFlags = tx.applicationFlags(application, today)
+        tx.updateApplicationFlags(application.id, applicationFlags, now, user.evakaUserId)
 
         val sentDate = application.sentDate!!
+        val sentTime = application.sentTime
         val dueDate = application.sentDate
-        tx.updateApplicationDates(application.id, sentDate, dueDate, clock.now(), user.evakaUserId)
+        tx.updateApplicationDates(
+            application.id,
+            sentDate,
+            sentTime,
+            dueDate,
+            now,
+            user.evakaUserId,
+        )
 
         if (!application.hideFromGuardian) {
             messageService.sendMessageAsEmployee(
                 tx,
                 user,
-                clock.now(),
+                now,
                 sender = tx.getServiceWorkerAccountId()!!,
                 type = MessageType.MESSAGE,
                 msg =
@@ -447,9 +468,8 @@ class ApplicationStateService(
             )
         }
 
-        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
+        tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, now)
 
-        val now = clock.now()
         metadata
             .getProcessParams(ArchiveProcessType.fromApplicationType(application.type), now.year)
             ?.also { process ->
@@ -457,13 +477,13 @@ class ApplicationStateService(
                 tx.insertCaseProcessHistoryRow(
                     processId = processId,
                     state = CaseProcessState.INITIAL,
-                    now = clock.now(),
+                    now = now,
                     userId = user.evakaUserId,
                 )
-                tx.setApplicationProcessId(application.id, processId, clock.now(), user.evakaUserId)
+                tx.setApplicationProcessId(application.id, processId, now, user.evakaUserId)
             }
 
-        tx.resetCheckedByAdminAndConfidentiality(application.id, clock.now(), user.evakaUserId)
+        tx.resetCheckedByAdminAndConfidentiality(application.id, now, user.evakaUserId)
     }
 
     fun moveToWaitingPlacement(
@@ -916,21 +936,13 @@ class ApplicationStateService(
             applicationId,
         )
 
+        val now = clock.now()
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
-        tx.syncApplicationOtherGuardians(application.id, clock.today())
-        tx.updateApplicationStatus(
-            application.id,
-            WAITING_CONFIRMATION,
-            user.evakaUserId,
-            clock.now(),
-        )
-        tx.markApplicationDecisionsSent(application.id, clock.today())
-        asyncJobRunner.plan(
-            tx,
-            listOf(AsyncJob.SendNewDecisionEmail(application.id)),
-            runAt = clock.now(),
-        )
+        tx.syncApplicationOtherGuardians(application.id, now.toLocalDate())
+        tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION, user.evakaUserId, now)
+        tx.markApplicationDecisionsSent(application.id, now)
+        asyncJobRunner.plan(tx, listOf(AsyncJob.SendNewDecisionEmail(application.id)), runAt = now)
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }
 

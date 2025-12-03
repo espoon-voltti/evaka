@@ -110,6 +110,7 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
             a.id,
             a.type,
             a.sentdate,
+            a.senttime,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
@@ -141,7 +142,7 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
                         }
                     },
                 createdAtDate = column("sentdate"),
-                createdAtTime = null,
+                createdAtTime = column("senttime"),
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(
@@ -192,6 +193,7 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
             d.id,
             d.type,
             d.sent_date,
+            d.sent_time,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
@@ -242,7 +244,7 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
                         }
                     },
                 createdAtDate = column("sent_date"),
-                createdAtTime = null,
+                createdAtTime = column("sent_time"),
                 createdBy =
                     column<EvakaUserId?>("created_by_id")?.let {
                         EvakaUser(

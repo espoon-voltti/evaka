@@ -2503,7 +2503,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
         assertEquals(guardian.evakaUserId(), metadata.primaryDocument.createdBy?.id)
         assertEquals(clock.today(), metadata.primaryDocument.createdAtDate)
-        assertNull(metadata.primaryDocument.createdAtTime)
+        assertEquals(clock.now().toLocalTime(), metadata.primaryDocument.createdAtTime)
         assertNull(metadata.primaryDocument.downloadPath)
         assertEquals(1, metadata.secondaryDocuments.size)
         metadata.secondaryDocuments[0].also { doc ->

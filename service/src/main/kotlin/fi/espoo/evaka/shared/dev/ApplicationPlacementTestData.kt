@@ -159,6 +159,7 @@ private fun createTestApplication(
         modifiedAt = HelsinkiDateTime.now().minusDays(55),
         modifiedBy = guardian.evakaUserId(),
         sentDate = LocalDate.now().minusDays(55),
+        sentTime = null,
         dueDate = LocalDate.now().plusDays(18),
         status = ApplicationStatus.WAITING_PLACEMENT,
         guardianId = guardian.id,

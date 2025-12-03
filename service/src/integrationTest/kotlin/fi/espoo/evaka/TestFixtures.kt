@@ -715,6 +715,7 @@ fun Database.Transaction.insertApplication(
             modifiedAt = HelsinkiDateTime.now(),
             modifiedBy = testDecisionMaker_1.toEvakaUser(),
             sentDate = null,
+            sentTime = null,
             dueDate = null,
             dueDateSetManuallyAt = null,
             transferApplication = transferApplication,

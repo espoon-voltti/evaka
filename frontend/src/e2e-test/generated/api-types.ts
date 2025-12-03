@@ -217,6 +217,7 @@ export interface DevApplicationWithForm {
   origin: ApplicationOrigin
   otherGuardians: PersonId[]
   sentDate: LocalDate | null
+  sentTime: LocalTime | null
   status: ApplicationStatus
   transferApplication: boolean
   type: ApplicationType
@@ -1326,7 +1327,8 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     form: deserializeJsonApplicationForm(json.form),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
-    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null,
+    sentTime: (json.sentTime != null) ? LocalTime.parseIso(json.sentTime) : null
   }
 }
 

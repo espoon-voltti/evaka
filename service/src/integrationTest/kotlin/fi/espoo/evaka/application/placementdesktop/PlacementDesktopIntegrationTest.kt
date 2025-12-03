@@ -386,6 +386,7 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             modifiedAt = clock.now().minusDays(55),
             modifiedBy = guardian.evakaUserId(),
             sentDate = clock.today().minusDays(55),
+            sentTime = clock.now().toLocalTime(),
             dueDate = clock.today().plusDays(18),
             status = status,
             guardianId = guardian.id,
