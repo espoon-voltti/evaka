@@ -156,8 +156,12 @@ export default React.memo(function SearchSection({
         <>
           <Gap size="m" />
 
-          <FixedSpaceColumn spacing="xs">
-            <Label>{t.map.providerType}</Label>
+          <FixedSpaceColumn
+            spacing="xs"
+            role="group"
+            aria-labelledby="map-provider-type-label"
+          >
+            <Label id="map-provider-type-label">{t.map.providerType}</Label>
             <FixedSpaceRow>
               <FixedSpaceFlexWrap>
                 {mapConfig.unitProviderTypeFilters.map((type) => (
