@@ -101,8 +101,12 @@ export default React.memo(function SearchSection({
 
       <Gap size="m" />
 
-      <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.careType}</Label>
+      <FixedSpaceColumn
+        spacing="xs"
+        role="group"
+        aria-labelledby="map-care-type-label"
+      >
+        <Label id="map-care-type-label">{t.map.careType}</Label>
         <FixedSpaceFlexWrap>
           {mapConfig.careTypeFilters.map((careTypeFilter) => (
             <Radio
