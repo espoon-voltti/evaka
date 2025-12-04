@@ -127,7 +127,7 @@ VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee
                     employee.employeeNumber
                 )
             }, ${bind(employee.roles)}::user_role[], ${bind(employee.active)}, ${bind(now)})
-ON CONFLICT (external_id) DO UPDATE
+ON CONFLICT (external_id) WHERE active = TRUE DO UPDATE
 SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number, active = TRUE
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active, (social_security_number IS NOT NULL) AS has_ssn, last_login
 """
@@ -183,6 +183,7 @@ fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
 SELECT employee_number
 FROM employee
 WHERE id = ${bind(id)}
+AND active = TRUE
 """
             )
         }
@@ -662,6 +663,7 @@ private fun Database.Read.employeeNumbersQuery(
             SELECT id, employee_number
             FROM employee
             WHERE employee_number = ANY (${bind(employeeNumbers)})
+            AND active = TRUE
             """
         )
     }

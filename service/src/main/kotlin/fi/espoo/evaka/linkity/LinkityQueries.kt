@@ -59,6 +59,7 @@ fun Database.Read.getEmployeeIdsForEnabledDaycares(
 SELECT id, employee_number
 FROM employee e
 WHERE employee_number = ANY (${bind(employeeNumbers)})
+    AND active = TRUE
     AND EXISTS (
         SELECT
         FROM daycare_acl acl
