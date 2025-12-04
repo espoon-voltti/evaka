@@ -18,6 +18,10 @@ export interface Translations {
     failure: string
     success: string
   }
+  combobox: {
+    openDropdown: string
+    closeDropdown: string
+  }
   common: {
     add: string
     cancel: string

@@ -12,6 +12,7 @@ import styled, { css } from 'styled-components'
 
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 
+import { useTranslations } from '../../i18n'
 import UnderRowStatusIcon from '../StatusIcon'
 import type { InputInfo } from '../form/InputField'
 import { InputFieldUnderRow } from '../form/InputField'
@@ -197,6 +198,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
     'data-qa': dataQa,
     'aria-labelledby': ariaLabelledby
   } = props
+  const i18n = useTranslations()
   const defaultFilterItems = useCallback(
     (inputValue: string, items: readonly T[]) => {
       const filter = inputValue.toLowerCase()
@@ -335,6 +337,9 @@ function Combobox<T>(props: ComboboxProps<T>) {
           <Button
             data-qa="toggle"
             type="button"
+            aria-label={
+              isOpen ? i18n.combobox.closeDropdown : i18n.combobox.openDropdown
+            }
             {...getToggleButtonProps({
               disabled,
               // avoid toggling the menu twice

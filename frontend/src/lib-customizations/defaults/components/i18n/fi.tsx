@@ -11,6 +11,10 @@ const components: Translations = {
     failure: 'Lataus epäonnistui',
     success: 'Valmis'
   },
+  combobox: {
+    openDropdown: 'Avaa valikko',
+    closeDropdown: 'Sulje valikko'
+  },
   common: {
     add: 'Lisää',
     cancel: 'Peruuta',
