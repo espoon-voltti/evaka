@@ -18,6 +18,8 @@ export interface DropdownProps<T, E extends HTMLElement> {
   onFocus?: FocusEventHandler<E>
   fullWidth?: boolean
   'data-qa'?: string
+  'aria-label'?: string
+  'aria-labelledby'?: string
 }
 
 export const borderRadius = '2px'

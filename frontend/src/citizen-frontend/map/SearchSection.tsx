@@ -85,8 +85,13 @@ export default React.memo(function SearchSection({
       </P>
 
       <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.searchLabel}</Label>
+        <Label id="map-search-label" htmlFor="map-search-input">
+          {t.map.searchLabel}
+        </Label>
+        {/* The downshift dropdown needs the input to have an id and aria-labelledby for accessibility */}
         <SearchInput
+          id="map-search-input"
+          aria-labelledby="map-search-label"
           allUnits={allUnits}
           selectedAddress={selectedAddress}
           setSelectedAddress={setSelectedAddress}

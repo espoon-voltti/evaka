@@ -194,7 +194,8 @@ function Combobox<T>(props: ComboboxProps<T>) {
     children,
     fullWidth,
     openAbove,
-    'data-qa': dataQa
+    'data-qa': dataQa,
+    'aria-labelledby': ariaLabelledby
   } = props
   const defaultFilterItems = useCallback(
     (inputValue: string, items: readonly T[]) => {
@@ -315,7 +316,8 @@ function Combobox<T>(props: ComboboxProps<T>) {
               name,
               disabled,
               placeholder,
-              onFocus
+              onFocus,
+              'aria-labelledby': ariaLabelledby
             })}
           />
           {clearable && selectedItem && (
