@@ -122,8 +122,12 @@ export default React.memo(function SearchSection({
 
       <Gap size="xs" />
 
-      <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.language}</Label>
+      <FixedSpaceColumn
+        spacing="xs"
+        role="group"
+        aria-labelledby="map-language-label"
+      >
+        <Label id="map-language-label">{t.map.language}</Label>
         <FixedSpaceRow>
           <SelectionChip
             data-qa="map-filter-fi"
