@@ -649,7 +649,8 @@ const sv: Translations = {
       search: 'Sök',
       noResults: 'Inga resultat, välj ett barn eller flera barn först',
       messageSendError: 'Misslyckades med att skicka meddelande',
-      messageSentNotification: 'Meddelande skickat'
+      messageSentNotification: 'Meddelande skickat',
+      required: 'Obligatoriskt fält'
     },
     confirmDelete: {
       title: 'Vill du verkligen radera meddelandetråden?',
