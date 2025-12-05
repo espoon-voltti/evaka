@@ -174,14 +174,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             )
 
-            fun insertGroup(id: GroupId): MessageAccountId {
+            fun insertGroup(id: GroupId, name: String? = null): MessageAccountId {
                 tx.insert(
-                    DevDaycareGroup(id = id, daycareId = testDaycare.id, startDate = placementStart)
+                    DevDaycareGroup(
+                        id = id,
+                        daycareId = testDaycare.id,
+                        startDate = placementStart,
+                        name = name ?: "Testiläiset",
+                    )
                 )
                 return tx.createDaycareGroupMessageAccount(id)
             }
             group1Account = insertGroup(groupId1)
-            group2Account = insertGroup(groupId2)
+            group2Account = insertGroup(groupId2, "Group 2")
 
             fun insertPerson(person: DevPerson): MessageAccountId {
                 val id = tx.insert(person, DevPersonType.ADULT)
@@ -2545,71 +2550,133 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `bulletin staff copy shows group names instead of individual recipient names`() {
-        // given: a child in group1 with a guardian
-        val child = DevPerson(firstName = "Alice", lastName = "Anderson")
-        val guardian = testAdult_1
-        db.transaction { tx ->
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insertGuardian(guardian.id, child.id)
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = ChildId(child.id.raw),
-                        unitId = testDaycare.id,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+    fun `getMessageCopiesByAccount filters recipient names by group names`() {
+        // Test with STAFF employee assigned to group1 but not group2
+        val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
+        val staffUser =
+            db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    testDaycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
                 )
-            tx.insert(
-                DevDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    daycareGroupId = groupId1,
-                    startDate = placementStart,
-                    endDate = placementEnd,
-                )
-            )
-        }
+                staffEmployee.user
+            }
 
-        // when: employee1 sends a bulletin to the child's group with individual names (simulating
-        // frontend behavior)
-        val individualRecipientNames =
+        val allRecipientNames =
             listOf(
-                "${guardian.firstName} ${guardian.lastName}",
-                "${child.firstName} ${child.lastName}",
-            )
-        val messageThreadId =
-            postNewThread(
-                "Test Bulletin",
-                "Test content",
-                MessageType.BULLETIN,
-                employee1Account,
-                listOf(MessageRecipient.Group(groupId1)),
-                recipientNames = individualRecipientNames, // This is what frontend sends
-                user = employee1,
-                now = sendTime,
+                "Testiläiset", // Group 1 name
+                "Group 2", // Group 2 name
             )
 
-        // then: staff copy shows group name instead of individual recipient name
-        val copies = getMessageCopies(employee1, group1Account, readTime)
-        assertEquals(1, copies.size)
-        val copy = copies.first()
+        // Send bulletin to both groups
+        postNewThread(
+            title = "Bulletin to Both Groups",
+            message = "This bulletin is sent to both groups",
+            messageType = MessageType.BULLETIN,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Group(groupId1), MessageRecipient.Group(groupId2)),
+            recipientNames = allRecipientNames,
+            user = employee1,
+            now = sendTime,
+        )
 
-        // Verify that recipientNames contains group name, not individual names
-        assertTrue(copy.recipientNames.isNotEmpty(), "recipientNames should not be empty")
-        assertTrue(
-            copy.recipientNames.any { it.contains(testDaycare.name) && it.contains("Testiläiset") },
-            "recipientNames should contain unit and group name but got: ${copy.recipientNames}",
+        val staffCopies = getMessageCopies(staffUser, group1Account, readTime)
+
+        assertEquals(1, staffCopies.size)
+        val staffCopy = staffCopies.first()
+
+        // Staff should only see group1 name in recipientNames
+        assertEquals(listOf("Testiläiset"), staffCopy.recipientNames)
+    }
+
+    @Test
+    fun `getMessageCopiesByAccount prefers unit name over group names in recipient names`() {
+        // Test with STAFF employee assigned to group1
+        val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
+        val staffUser =
+            db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    testDaycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
+                )
+                staffEmployee.user
+            }
+
+        val allRecipientNames =
+            listOf(
+                "Test Daycare" // Unit name
+            )
+
+        // Send bulletin to unit
+        postNewThread(
+            title = "Bulletin to whole unit",
+            message = "This bulletin is sent to whole unit",
+            messageType = MessageType.BULLETIN,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
+            recipientNames = allRecipientNames,
+            user = employee1,
+            now = sendTime,
         )
-        assertTrue(
-            copy.recipientNames.none {
-                it.contains(guardian.firstName) ||
-                    it.contains(guardian.lastName) ||
-                    it.contains(child.firstName) ||
-                    it.contains(child.lastName)
-            },
-            "recipientNames should not contain individual guardian or child names but got: ${copy.recipientNames}",
+
+        val staffCopies = getMessageCopies(staffUser, group1Account, readTime)
+
+        assertEquals(1, staffCopies.size)
+        val staffCopy = staffCopies.first()
+
+        // Staff should only see unit name in recipientNames
+        assertEquals(listOf("Test Daycare"), staffCopy.recipientNames)
+    }
+
+    @Test
+    fun `getMessageCopiesByAccount prefers area name over other names in recipient names`() {
+        // Test with STAFF employee assigned to group1
+        val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
+        val staffUser =
+            db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    testDaycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
+                )
+                staffEmployee.user
+            }
+
+        val allRecipientNames =
+            listOf(
+                "Test Area" // Area name
+            )
+
+        // Send bulletin to area
+        postNewThread(
+            title = "Bulletin to whole area",
+            message = "This bulletin is sent to whole area",
+            messageType = MessageType.BULLETIN,
+            sender = messagerAccount,
+            recipients = listOf(MessageRecipient.Area(testArea.id)),
+            recipientNames = allRecipientNames,
+            user = messager,
+            now = sendTime,
         )
+
+        val staffCopies = getMessageCopies(staffUser, group1Account, readTime)
+
+        assertEquals(1, staffCopies.size)
+        val staffCopy = staffCopies.first()
+
+        // Staff should only see area name in recipientNames
+        assertEquals(listOf("Test Area"), staffCopy.recipientNames)
     }
 }
 

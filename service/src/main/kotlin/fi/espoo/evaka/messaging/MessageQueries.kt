@@ -888,10 +888,11 @@ fun Database.Read.getMessageCopiesByAccount(
             Predicate { where("$it.sent_at >= ${bind(accountAccessLimit.date)}") }
         else Predicate.alwaysTrue()
 
+    val accountContext = getMessageAccountContext(accountId)
+
     return createQuery {
             sql(
                 """
-WITH message_list AS (
     SELECT
         COUNT(*) OVER () AS count,
         t.id AS thread_id,
@@ -930,70 +931,78 @@ WITH message_list AS (
         ${predicate(accountAccessPredicate.forTable("m"))}
     ORDER BY m.sent_at DESC
     LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
-)
-SELECT
-    ml.count,
-    ml.thread_id,
-    ml.message_id,
-    ml.title,
-    ml.type,
-    ml.urgent,
-    ml.sensitive,
-    ml.sent_at,
-    ml.sender_name,
-    ml.sender_id,
-    ml.sender_account_type,
-    ml.content_id,
-    ml.content,
-    ml.read_at,
-    ml.recipient_id,
-    ml.recipient_name,
-    ml.recipient_account_type,
-    CASE 
-        WHEN ml.type = 'BULLETIN' THEN COALESCE(grn.grouped_names, ARRAY[]::text[])
-        ELSE ml.recipient_names
-    END AS recipient_names,
-    ml.attachments
-FROM message_list ml
-LEFT JOIN (
-    SELECT 
-        message_id,
-        array_agg(DISTINCT group_name) AS grouped_names
-    FROM (
-        SELECT DISTINCT
-            ml2.message_id,
-            d.name || ' - ' || dg.name || 
-            CASE 
-                WHEN COUNT(DISTINCT mtc.child_id) < (
-                    SELECT COUNT(DISTINCT p2.child_id)
-                    FROM daycare_group_placement dgp2
-                    JOIN placement p2 ON p2.id = dgp2.daycare_placement_id
-                    WHERE dgp2.daycare_group_id = dg.id
-                        AND daterange(dgp2.start_date, dgp2.end_date, '[]') @> ml2.sent_at::date
-                        AND daterange(p2.start_date, p2.end_date, '[]') @> ml2.sent_at::date
-                ) THEN ' (osa)'
-                ELSE ''
-            END as group_name
-        FROM message_list ml2
-        JOIN message m2 ON m2.content_id = (SELECT content_id FROM message WHERE id = ml2.message_id)
-        JOIN message_thread t2 ON t2.id = m2.thread_id AND NOT t2.is_copy
-        JOIN message_thread_children mtc ON mtc.thread_id = t2.id
-        JOIN placement p ON p.child_id = mtc.child_id
-        JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
-        JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-        JOIN daycare d ON d.id = dg.daycare_id
-        WHERE 
-            daterange(dgp.start_date, dgp.end_date, '[]') @> ml2.sent_at::date
-            AND ml2.type = 'BULLETIN'
-        GROUP BY ml2.message_id, ml2.sent_at, dg.id, d.name, dg.name
-    ) distinct_groups
-    GROUP BY message_id
-) grn ON grn.message_id = ml.message_id
 """
             )
         }
-        .toList { WithCount(column("count"), row<MessageCopy>()) }
-        .mapToPaged(::PagedMessageCopies, pageSize)
+        .mapToPaged(::PagedMessageCopies, pageSize) {
+            val messageCopy = row<MessageCopy>()
+            val allRecipientNames = messageCopy.recipientNames.toSet()
+            val areaRecipients = allRecipientNames.intersect(accountContext.careAreaNames)
+            val unitRecipients =
+                allRecipientNames.intersect(
+                    accountContext.daycareNames +
+                        accountContext.daycareNames.map { "$it (aloittavat lapset)" }
+                )
+            val groupRecipients =
+                allRecipientNames.intersect(
+                    accountContext.daycareGroupNames +
+                        accountContext.daycareGroupNames.map { "$it (aloittavat lapset)" }
+                )
+            val filteredRecipients =
+                areaRecipients.ifEmpty { unitRecipients.ifEmpty { groupRecipients } }
+            messageCopy.copy(recipientNames = filteredRecipients.toList())
+        }
+}
+
+data class MessageAccountContext(
+    val daycareGroupNames: Set<String>,
+    val daycareNames: Set<String>,
+    val careAreaNames: Set<String>,
+)
+
+fun Database.Read.getMessageAccountContext(accountId: MessageAccountId): MessageAccountContext {
+    data class ContextRow(
+        val daycareGroupName: String,
+        val daycareName: String,
+        val careAreaName: String,
+    )
+
+    val rows =
+        createQuery {
+                sql(
+                    """
+SELECT
+    dg.name AS daycare_group_name,
+    d.name AS daycare_name,
+    ca.name AS care_area_name
+FROM message_account a
+JOIN daycare_group dg on a.daycare_group_id = dg.id
+JOIN daycare d on dg.daycare_id = d.id
+JOIN care_area ca on d.care_area_id = ca.id
+WHERE a.id = ${bind(accountId)}
+
+UNION ALL
+
+SELECT
+    dg.name AS daycare_group_name,
+    d.name AS daycare_name,
+    ca.name AS care_area_name
+FROM message_account a
+    JOIN daycare_acl da ON da.employee_id = a.employee_id AND da.role = ANY('{UNIT_SUPERVISOR,SPECIAL_EDUCATION_TEACHER}'::user_role[])
+    JOIN daycare_group dg on dg.daycare_id = da.daycare_id
+    JOIN daycare d on da.daycare_id = d.id
+    JOIN public.care_area ca on d.care_area_id = ca.id
+WHERE a.id = ${bind(accountId)}
+"""
+                )
+            }
+            .toList<ContextRow>()
+
+    return MessageAccountContext(
+        daycareGroupNames = rows.map { it.daycareGroupName }.toSet(),
+        daycareNames = rows.map { it.daycareName }.toSet(),
+        careAreaNames = rows.map { it.careAreaName }.toSet(),
+    )
 }
 
 fun Database.Read.getSentMessage(
