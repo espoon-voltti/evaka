@@ -22,6 +22,10 @@ export const testTranslations: Translations = {
     failure: '',
     success: ''
   },
+  combobox: {
+    openDropdown: '',
+    closeDropdown: ''
+  },
   common: {
     add: '',
     cancel: '',
