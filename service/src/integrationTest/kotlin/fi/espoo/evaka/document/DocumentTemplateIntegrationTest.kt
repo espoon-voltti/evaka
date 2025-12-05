@@ -319,6 +319,23 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `template can be exported`() {
+        val request = testCreationRequest.copy(placementTypes = setOf(PlacementType.DAYCARE))
+        val created = controller.createTemplate(dbInstance(), employeeUser, now, request)
+        controller.updateDraftTemplateContent(
+            dbInstance(),
+            employeeUser,
+            now,
+            created.id,
+            testContent,
+        )
+
+        val exported = controller.exportTemplate(dbInstance(), employeeUser, now, created.id)
+
+        assertEquals(request.toExported(testContent), exported.body)
+    }
+
+    @Test
     fun `active templates endpoint returns valid templates`() {
         val template =
             controller.createTemplate(
@@ -661,3 +678,19 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         }
     }
 }
+
+private fun DocumentTemplateBasicsRequest.Regular.toExported(content: DocumentTemplateContent) =
+    ExportedDocumentTemplate(
+        name,
+        type,
+        placementTypes,
+        language,
+        confidentiality,
+        legalBasis,
+        validity,
+        processDefinitionNumber,
+        archiveDurationMonths,
+        archiveExternally,
+        endDecisionWhenUnitChanges,
+        content,
+    )
