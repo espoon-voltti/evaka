@@ -2882,7 +2882,8 @@ const sv: Translations = {
       confirmQuestion: 'Vill du säga upp platsen?',
       confirmDescription: (date: string) =>
         `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
-      terminate: 'Säg upp platsen'
+      terminate: 'Säg upp platsen',
+      terminatePrefix: 'Säg upp'
     },
     pedagogicalDocuments: {
       title: 'Tillväxt och inlärning',

@@ -194,6 +194,9 @@ export default React.memo(function PlacementTerminationForm({
             data-qa="placement"
             key={p.pseudoId}
             label={getPlacementLabel(p)}
+            aria-label={`${t.children.placementTermination.terminatePrefix} ${getPlacementLabel(
+              p
+            )}`}
             checked={
               !!state.placements.find(({ pseudoId }) => pseudoId === p.pseudoId)
             }
@@ -206,9 +209,12 @@ export default React.memo(function PlacementTerminationForm({
           info={t.children.placementTermination.lastDayInfo}
           inlineChildren
         >
-          <Label>{t.children.placementTermination.lastDayOfPresence}</Label>
+          <Label htmlFor="termination-date">
+            {t.children.placementTermination.lastDayOfPresence}
+          </Label>
         </ExpandingInfo>
         <DatePicker
+          id="termination-date"
           data-qa="termination-date"
           hideErrorsBeforeTouched
           required
