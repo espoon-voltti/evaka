@@ -68,7 +68,7 @@
     "node-forge": "1.3.2",
     "prettier": "3.6.2",
     "tough-cookie": "6.0.0",
-    "ts-jest": "29.4.5",
+    "ts-jest": "29.4.6",
     "typescript": "5.9.3",
     "typescript-eslint": "8.48.0",
     "xml-crypto": "6.1.2",
