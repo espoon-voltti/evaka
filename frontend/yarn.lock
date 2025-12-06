@@ -6444,7 +6444,7 @@ __metadata:
     react-day-picker: "npm:9.11.3"
     react-dom: "npm:19.2.0"
     react-focus-lock: "npm:2.13.7"
-    react-focus-on: "npm:3.10.0"
+    react-focus-on: "npm:3.10.1"
     react-image-crop: "npm:11.0.10"
     react-leaflet: "npm:5.0.0"
     react-select: "npm:5.10.2"
@@ -9825,7 +9825,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-lock@npm:2.13.7, react-focus-lock@npm:^2.13.6":
+"react-focus-lock@npm:2.13.7, react-focus-lock@npm:^2.13.7":
   version: 2.13.7
   resolution: "react-focus-lock@npm:2.13.7"
   dependencies:
@@ -9845,13 +9845,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-on@npm:3.10.0":
-  version: 3.10.0
-  resolution: "react-focus-on@npm:3.10.0"
+"react-focus-on@npm:3.10.1":
+  version: 3.10.1
+  resolution: "react-focus-on@npm:3.10.1"
   dependencies:
     aria-hidden: "npm:^1.2.5"
-    react-focus-lock: "npm:^2.13.6"
-    react-remove-scroll: "npm:^2.6.3"
+    react-focus-lock: "npm:^2.13.7"
+    react-remove-scroll: "npm:^2.6.4"
     react-style-singleton: "npm:^2.2.3"
     tslib: "npm:^2.3.1"
     use-sidecar: "npm:^1.1.3"
@@ -9861,7 +9861,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/606883a53f2636b1da608de5e90e1b19d9235ea98bdac88e9d084da72dbfaa3795e555534ce7a43c0596bea1786965158c8155bf4d96ae2047cf47a59fbec3ca
+  checksum: 10/1da0c78a03b76933b7e336b52c3f7cfdbf40a40131d7861a04fcd846b8ebc64ea6db6c579e22a4087c751f73c62c6fb28303c0e9ed7768b0892e9c9d9324fdd4
   languageName: node
   linkType: hard
 
@@ -9938,9 +9938,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-remove-scroll@npm:^2.6.3":
-  version: 2.7.0
-  resolution: "react-remove-scroll@npm:2.7.0"
+"react-remove-scroll@npm:^2.6.4":
+  version: 2.7.2
+  resolution: "react-remove-scroll@npm:2.7.2"
   dependencies:
     react-remove-scroll-bar: "npm:^2.3.7"
     react-style-singleton: "npm:^2.2.3"
@@ -9953,7 +9953,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/6fa65227b101f097be17126dbefdaaa170b39f8e4f53b4e90f058501e14047215de7eea7ce4516aa18b9daaee5b32e84abf0360dd7f0156d8017da64c8cc84e0
+  checksum: 10/6a7858f9a3eb57128abb64479ced78283b0cbee0b43c2b87e42711e75c564c27d1d3dd2b81f2ea95c80cb9e6b6965d1c9e2332f6a7e7b753cd8aeb02b9b97704
   languageName: node
   linkType: hard
 
