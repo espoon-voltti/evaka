@@ -110,7 +110,7 @@
     "postcss-preset-env": "10.4.0",
     "prettier": "3.6.2",
     "terser": "5.44.1",
-    "ts-jest": "29.4.5",
+    "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.48.0",
