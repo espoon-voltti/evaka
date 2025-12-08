@@ -29,6 +29,8 @@ import type { MapAddress } from './MapView'
 import { addressOptionsQuery } from './queries'
 
 type Props = {
+  id: string
+  'aria-labelledby': string
   allUnits: Result<PublicUnit[]>
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
@@ -36,6 +38,8 @@ type Props = {
 }
 
 export default React.memo(function SearchInput({
+  id,
+  'aria-labelledby': ariaLabelledby,
   allUnits,
   selectedAddress,
   setSelectedAddress,
@@ -129,6 +133,8 @@ export default React.memo(function SearchInput({
   return (
     <div data-qa="map-search-input">
       <Combobox
+        id={id}
+        aria-labelledby={ariaLabelledby}
         clearable
         isLoading={combine(addressOptions, allUnits).isLoading}
         onInputChange={onInputChange}

@@ -85,8 +85,13 @@ export default React.memo(function SearchSection({
       </P>
 
       <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.searchLabel}</Label>
+        <Label id="map-search-label" htmlFor="map-search-input">
+          {t.map.searchLabel}
+        </Label>
+        {/* The downshift dropdown needs the input to have an id and aria-labelledby for accessibility */}
         <SearchInput
+          id="map-search-input"
+          aria-labelledby="map-search-label"
           allUnits={allUnits}
           selectedAddress={selectedAddress}
           setSelectedAddress={setSelectedAddress}
@@ -96,8 +101,12 @@ export default React.memo(function SearchSection({
 
       <Gap size="m" />
 
-      <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.careType}</Label>
+      <FixedSpaceColumn
+        spacing="xs"
+        role="group"
+        aria-labelledby="map-care-type-label"
+      >
+        <Label id="map-care-type-label">{t.map.careType}</Label>
         <FixedSpaceFlexWrap>
           {mapConfig.careTypeFilters.map((careTypeFilter) => (
             <Radio
@@ -113,8 +122,12 @@ export default React.memo(function SearchSection({
 
       <Gap size="xs" />
 
-      <FixedSpaceColumn spacing="xs">
-        <Label>{t.map.language}</Label>
+      <FixedSpaceColumn
+        spacing="xs"
+        role="group"
+        aria-labelledby="map-language-label"
+      >
+        <Label id="map-language-label">{t.map.language}</Label>
         <FixedSpaceRow>
           <SelectionChip
             data-qa="map-filter-fi"
@@ -143,8 +156,12 @@ export default React.memo(function SearchSection({
         <>
           <Gap size="m" />
 
-          <FixedSpaceColumn spacing="xs">
-            <Label>{t.map.providerType}</Label>
+          <FixedSpaceColumn
+            spacing="xs"
+            role="group"
+            aria-labelledby="map-provider-type-label"
+          >
+            <Label id="map-provider-type-label">{t.map.providerType}</Label>
             <FixedSpaceRow>
               <FixedSpaceFlexWrap>
                 {mapConfig.unitProviderTypeFilters.map((type) => (

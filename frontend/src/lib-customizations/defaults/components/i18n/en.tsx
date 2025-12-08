@@ -11,6 +11,10 @@ const components: Translations = {
     failure: 'Failed to load',
     success: 'Success'
   },
+  combobox: {
+    openDropdown: 'Open menu',
+    closeDropdown: 'Close menu'
+  },
   common: {
     add: 'Add',
     cancel: 'Cancel',
