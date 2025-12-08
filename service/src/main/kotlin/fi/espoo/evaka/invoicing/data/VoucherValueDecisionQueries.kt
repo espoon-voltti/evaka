@@ -403,8 +403,8 @@ NOT EXISTS (
                 NOT EXISTS (
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, decision.child_id) AND
-                        daterange(start_date, end_date, '[]') && daterange((${bind(today)} - interval '14 months')::date, ${bind(today)}, '[]') AND
-                        status = 'SENT'
+                        daterange(income_statement.start_date, income_statement.end_date, '[]') && daterange((decision.valid_from - interval '14 months')::date, decision.valid_from, '[]') AND
+                        income_statement.status = 'SENT'
                     )
                 """
                     )
