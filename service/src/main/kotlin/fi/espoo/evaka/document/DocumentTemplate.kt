@@ -448,7 +448,7 @@ data class ExportedDocumentTemplate(
     val type: ChildDocumentType,
     val placementTypes: Set<PlacementType>,
     val language: UiLanguage,
-    val confidentiality: DocumentConfidentiality?,
+    @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
     val legalBasis: String,
     val validity: DateRange,
     val processDefinitionNumber: String?,
