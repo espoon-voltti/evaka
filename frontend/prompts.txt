@@ -1,0 +1,11 @@
+prompt 1:
+File employee/i18n/sv.txt currently has all the translations in Finnish. We should replace all of these with proper Swedish translations.
+
+Because the task is quite large, you should first create a plan. Save the plan in a file and separate each top-level section of the file into a different subtask, number them and mark which ones are completed already. When we start the actual translation work, keep that up to date. Do not start translating yet.
+
+prompt 2:
+Break down the three largest sections to smaller steps
+
+prompt 3:
+For examples of which words to use, you may check the existing Finnish and Swedish translations on the citizen side of the application in citizen/i18n/fi.tsx and citizen/i18n/sv.tsx. Please add this instruction into the translation plan under Key Translation Considerations.
+
