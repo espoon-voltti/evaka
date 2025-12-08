@@ -160,8 +160,10 @@ export const PlainPinInput = React.memo(function PlainPinInput(
   )
 })
 
-interface PlainPinInputF
-  extends Omit<PlainPinInputProps, 'value' | 'onChange'> {
+interface PlainPinInputF extends Omit<
+  PlainPinInputProps,
+  'value' | 'onChange'
+> {
   bind: BoundFormState<string>
 }
 

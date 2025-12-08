@@ -11,22 +11,21 @@ import { autocomplete } from 'lib-common/time'
 import type { TextInputProps } from './InputField'
 import InputField from './InputField'
 
-export interface TimeInputProps
-  extends Pick<
-    TextInputProps,
-    | 'placeholder'
-    | 'hideErrorsBeforeTouched'
-    | 'onBlur'
-    | 'info'
-    | 'id'
-    | 'name'
-    | 'required'
-    | 'readonly'
-    | 'inputRef'
-    | 'aria-describedby'
-    | 'aria-description'
-    | 'data-qa'
-  > {
+export interface TimeInputProps extends Pick<
+  TextInputProps,
+  | 'placeholder'
+  | 'hideErrorsBeforeTouched'
+  | 'onBlur'
+  | 'info'
+  | 'id'
+  | 'name'
+  | 'required'
+  | 'readonly'
+  | 'inputRef'
+  | 'aria-describedby'
+  | 'aria-description'
+  | 'data-qa'
+> {
   size?: 'wide' | 'normal' | 'narrow'
   value: string
   onChange: (v: string) => void
@@ -101,8 +100,10 @@ const ScalingInput = styled(InputField)`
   }
 `
 
-export interface TimeInputFProps
-  extends Omit<TimeInputProps, 'value' | 'onChange'> {
+export interface TimeInputFProps extends Omit<
+  TimeInputProps,
+  'value' | 'onChange'
+> {
   bind: BoundFormState<string>
 }
 

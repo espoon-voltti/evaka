@@ -42,8 +42,10 @@ const createChildDailyNoteResult = wrapResult(createChildDailyNote)
 const updateChildDailyNoteResult = wrapResult(updateChildDailyNote)
 const deleteChildDailyNoteResult = wrapResult(deleteChildDailyNote)
 
-interface ChildDailyNoteFormData
-  extends Omit<ChildDailyNoteBody, 'sleepingMinutes'> {
+interface ChildDailyNoteFormData extends Omit<
+  ChildDailyNoteBody,
+  'sleepingMinutes'
+> {
   sleepingHours: string
   sleepingMinutes: string
 }

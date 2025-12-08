@@ -21,8 +21,10 @@ import type { DatePickerProps } from './DatePicker'
 import type { DateRangePickerLowLevelProps } from './DateRangePickerLowLevel'
 import DateRangePickerLowLevel from './DateRangePickerLowLevel'
 
-interface DateRangePickerProps
-  extends Omit<DatePickerProps, 'date' | 'onChange'> {
+interface DateRangePickerProps extends Omit<
+  DatePickerProps,
+  'date' | 'onChange'
+> {
   start: LocalDate | null
   end: LocalDate | null
   onChange: (start: LocalDate | null, end: LocalDate | null) => void
@@ -176,17 +178,16 @@ const DateInputSpacer = styled.div`
   padding: 6px;
 `
 
-export interface DateRangePickerFProps
-  extends Omit<
-    DateRangePickerLowLevelProps,
-    | 'value'
-    | 'onChange'
-    | 'startInfo'
-    | 'endInfo'
-    | 'isInvalidDate'
-    | 'minDate'
-    | 'maxDate'
-  > {
+export interface DateRangePickerFProps extends Omit<
+  DateRangePickerLowLevelProps,
+  | 'value'
+  | 'onChange'
+  | 'startInfo'
+  | 'endInfo'
+  | 'isInvalidDate'
+  | 'minDate'
+  | 'maxDate'
+> {
   bind: BoundForm<LocalDateRangeField>
   info?: InputInfo | undefined
   ariaId?: string

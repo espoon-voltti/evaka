@@ -13,8 +13,10 @@ import type { DatePickerLowLevelProps } from './DatePickerLowLevel'
 import DatePickerLowLevel from './DatePickerLowLevel'
 import { DatePickerSpacer } from './DateRangePicker'
 
-export interface DateRangePickerLowLevelProps
-  extends Omit<DatePickerLowLevelProps, 'value' | 'onChange' | 'info'> {
+export interface DateRangePickerLowLevelProps extends Omit<
+  DatePickerLowLevelProps,
+  'value' | 'onChange' | 'info'
+> {
   value: [string, string]
   onChange: (value: [string, string]) => void
   startInfo?: InputInfo

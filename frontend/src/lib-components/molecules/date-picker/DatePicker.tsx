@@ -15,8 +15,10 @@ import { useTranslations } from '../../i18n'
 import type { DatePickerLowLevelProps } from './DatePickerLowLevel'
 import DatePickerLowLevel from './DatePickerLowLevel'
 
-export interface DatePickerProps
-  extends Omit<DatePickerLowLevelProps, 'value' | 'onChange'> {
+export interface DatePickerProps extends Omit<
+  DatePickerLowLevelProps,
+  'value' | 'onChange'
+> {
   date: LocalDate | null
   onChange: (date: LocalDate | null) => void
 }
@@ -89,11 +91,10 @@ const DatePicker = React.memo(function DatePicker({
 
 export default DatePicker
 
-export interface DatePickerFProps
-  extends Omit<
-    DatePickerLowLevelProps,
-    'value' | 'onChange' | 'isInvalidDate' | 'minDate' | 'maxDate'
-  > {
+export interface DatePickerFProps extends Omit<
+  DatePickerLowLevelProps,
+  'value' | 'onChange' | 'isInvalidDate' | 'minDate' | 'maxDate'
+> {
   bind: BoundForm<LocalDateField>
 }
 
