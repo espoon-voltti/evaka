@@ -4,859 +4,859 @@
 
 import React, { type ReactNode } from 'react'
 
+import type DateRange from 'lib-common/date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import type LocalDate from 'lib-common/local-date'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/sv'
-import type LocalDate from '../../../../lib-common/local-date'
-import type DateRange from '../../../../lib-common/date-range'
-import type HelsinkiDateTime from '../../../../lib-common/helsinki-date-time'
-import type FiniteDateRange from '../../../../lib-common/finite-date-range'
-import type { InvoiceStatus } from '../../../../lib-common/generated/api-types/invoicing'
 
 export const sv = {
   titles: {
-    defaultTitle: 'Varhaiskasvatus',
-    login: 'Kirjaudu sisään',
+    defaultTitle: 'Småbarnspedagogik',
+    login: 'Logga in',
     ai: 'AI test',
-    applications: 'Hakemukset',
-    childInformation: 'Lapsen tiedot',
-    employees: 'Käyttäjät',
-    financeBasics: 'Talouden maksuasetukset',
-    units: 'Yksiköt',
-    customers: 'Asiakastiedot',
-    placementPlan: 'Sijoitussuunnitelma',
-    decision: 'Päätöksen teko ja lähetys',
-    documentTemplates: 'Asiakirjapohjat',
-    feeDecisions: 'Maksupäätökset',
-    feeDecision: 'Maksupäätös',
-    feeDecisionDraft: 'Maksupäätösluonnos',
-    holidayPeriod: 'Loma-aika',
-    holidayPeriods: 'Loma-ajat',
-    holidayAndTermPeriods: 'Loma-ajat ja toimintakaudet',
-    holidayQuestionnaire: 'Loma-aikakysely',
-    groupCaretakers: 'Henkilökunnan tarve ryhmässä',
-    incomeStatements: 'Tuloselvitykset',
-    valueDecisions: 'Arvopäätökset',
-    valueDecision: 'Arvopäätös',
-    valueDecisionDraft: 'Arvopäätösluonnos',
-    incomeStatement: 'Tuloselvityslomake',
-    invoices: 'Laskut',
-    payments: 'Maksatus',
-    invoice: 'Lasku',
-    invoiceDraft: 'Laskuluonnos',
-    reports: 'Raportit',
-    messages: 'Viestit',
-    caretakers: 'Henkilökunta',
-    createUnit: 'Luo uusi yksikkö',
-    personProfile: 'Aikuisen tiedot',
-    personTimeline: 'Asiakkaan aikajana',
-    personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
-    preschoolTerm: 'Esiopetuksen lukukausi',
-    preschoolTerms: 'Esiopetuksen lukukaudet',
-    employeePinCode: 'PIN-koodin hallinta',
-    preferredFirstName: 'Kutsumanimen hallinta',
-    settings: 'Asetukset',
-    systemNotifications: 'Tilapäinen ilmoitus',
-    unitFeatures: 'Toimintojen avaukset',
-    welcomePage: 'Tervetuloa eVakaan',
-    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
-    assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
-    clubTerm: 'Kerhon lukukausi',
-    clubTerms: 'Kerhojen lukukaudet',
-    placementTool: 'Optimointityökalu',
-    outOfOffice: 'Poissaoloviesti'
+    applications: 'Ansökningar',
+    childInformation: 'Barnets uppgifter',
+    employees: 'Användare',
+    financeBasics: 'Ekonomins betalningsinställningar',
+    units: 'Enheter',
+    customers: 'Kunduppgifter',
+    placementPlan: 'Placeringsplan',
+    decision: 'Beslut och utskick',
+    documentTemplates: 'Dokumentmallar',
+    feeDecisions: 'Avgiftsbeslut',
+    feeDecision: 'Avgiftsbeslut',
+    feeDecisionDraft: 'Utkast till avgiftsbeslut',
+    holidayPeriod: 'Semestertid',
+    holidayPeriods: 'Semestertider',
+    holidayAndTermPeriods: 'Semestertider och verksamhetsperioder',
+    holidayQuestionnaire: 'Semestertidsenkät',
+    groupCaretakers: 'Personalbehov i gruppen',
+    incomeStatements: 'Inkomstutredningar',
+    valueDecisions: 'Värdebeslut',
+    valueDecision: 'Värdebeslut',
+    valueDecisionDraft: 'Utkast till värdebeslut',
+    incomeStatement: 'Inkomstutredningsblankett',
+    invoices: 'Fakturor',
+    payments: 'Betalning',
+    invoice: 'Faktura',
+    invoiceDraft: 'Utkast till faktura',
+    reports: 'Rapporter',
+    messages: 'Meddelanden',
+    caretakers: 'Personal',
+    createUnit: 'Skapa ny enhet',
+    personProfile: 'Vuxenuppgifter',
+    personTimeline: 'Kundens tidslinje',
+    personalMobileDevices: 'Personlig eVaka-mobil',
+    preschoolTerm: 'Förskolans läsår',
+    preschoolTerms: 'Förskolans läsår',
+    employeePinCode: 'Hantering av PIN-kod',
+    preferredFirstName: 'Hantering av tilltalsnamn',
+    settings: 'Inställningar',
+    systemNotifications: 'Tillfälligt meddelande',
+    unitFeatures: 'Öppning av funktioner',
+    welcomePage: 'Välkommen till eVaka',
+    assistanceNeedDecision: 'Beslut om stöd inom småbarnspedagogik',
+    assistanceNeedPreschoolDecision: 'Beslut om stöd i förskolan',
+    clubTerm: 'Klubbens läsår',
+    clubTerms: 'Klubbarnas läsår',
+    placementTool: 'Optimeringsverktyg',
+    outOfOffice: 'Frånvaromeddelande'
   },
   common: {
-    yes: 'Kyllä',
-    no: 'Ei',
-    and: 'Ja',
-    loadingFailed: 'Tietojen haku epäonnistui',
-    noAccess: 'Oikeudet puuttuvat',
-    edit: 'Muokkaa',
-    add: 'Lisää',
-    addNew: 'Lisää uusi',
-    clear: 'Tyhjennä',
-    create: 'Luo',
-    remove: 'Poista',
-    doNotRemove: 'Älä poista',
-    archive: 'Arkistoi',
-    download: 'Lataa',
-    cancel: 'Peruuta',
-    goBack: 'Palaa',
-    leavePage: 'Poistu',
-    confirm: 'Vahvista',
-    period: 'Ajalle',
-    search: 'Hae',
-    select: 'Valitse',
-    send: 'Lähetä',
-    save: 'Tallenna',
-    saving: 'Tallennetaan',
-    saved: 'Tallennettu',
-    unknown: 'Ei tiedossa',
-    all: 'Kaikki',
-    continue: 'Jatka',
+    yes: 'Ja',
+    no: 'Nej',
+    and: 'Och',
+    loadingFailed: 'Hämtningen av uppgifter misslyckades',
+    noAccess: 'Saknar behörighet',
+    edit: 'Redigera',
+    add: 'Lägg till',
+    addNew: 'Lägg till ny',
+    clear: 'Töm',
+    create: 'Skapa',
+    remove: 'Ta bort',
+    doNotRemove: 'Ta inte bort',
+    archive: 'Arkivera',
+    download: 'Ladda ner',
+    cancel: 'Avbryt',
+    goBack: 'Återgå',
+    leavePage: 'Lämna',
+    confirm: 'Bekräfta',
+    period: 'För tiden',
+    search: 'Sök',
+    select: 'Välj',
+    send: 'Skicka',
+    save: 'Spara',
+    saving: 'Sparar',
+    saved: 'Sparad',
+    unknown: 'Okänd',
+    all: 'Alla',
+    continue: 'Fortsätt',
     statuses: {
-      active: 'Aktiivinen',
-      coming: 'Tulossa',
-      completed: 'Päättynyt',
-      conflict: 'Konflikti',
-      guarantee: 'Takuupaikka'
+      active: 'Aktiv',
+      coming: 'Kommande',
+      completed: 'Avslutad',
+      conflict: 'Konflikt',
+      guarantee: 'Garantiplats'
     },
     careTypeLabels: {
-      club: 'Kerho',
-      preschool: 'Esiopetus',
-      daycare: 'Varhaiskasvatus',
-      daycare5yo: 'Varhaiskasvatus',
-      preparatory: 'Valmistava',
-      'backup-care': 'Varasijoitus',
-      temporary: 'Tilapäinen',
-      'school-shift-care': 'Koululaisten vuorohoito',
-      'connected-daycare': 'Liittyvä'
+      club: 'Klubb',
+      preschool: 'Förskola',
+      daycare: 'Småbarnspedagogik',
+      daycare5yo: 'Småbarnspedagogik',
+      preparatory: 'Förberedande',
+      'backup-care': 'Reservplacering',
+      temporary: 'Tillfällig',
+      'school-shift-care': 'Skiftomsorg för skolbarn',
+      'connected-daycare': 'Ansluten'
     },
     providerType: {
-      MUNICIPAL: 'Kunnallinen',
-      PURCHASED: 'Ostopalvelu',
-      PRIVATE: 'Yksityinen',
-      MUNICIPAL_SCHOOL: 'Suomenkielinen opetustoimi (SUKO)',
-      PRIVATE_SERVICE_VOUCHER: 'Yksityinen (palveluseteli)',
-      EXTERNAL_PURCHASED: 'Ostopalvelu (muu)'
+      MUNICIPAL: 'Kommunal',
+      PURCHASED: 'Köptjänst',
+      PRIVATE: 'Privat',
+      MUNICIPAL_SCHOOL: 'Svenskspråkig undervisningssektor (SUKO)',
+      PRIVATE_SERVICE_VOUCHER: 'Privat (servicesedel)',
+      EXTERNAL_PURCHASED: 'Köptjänst (annan)'
     },
     types: {
-      CLUB: 'Kerho',
-      FAMILY: 'Perhepäivähoito',
-      GROUP_FAMILY: 'Ryhmäperhepäivähoito',
-      CENTRE: 'Päiväkoti',
-      PRESCHOOL: 'Esiopetus',
-      DAYCARE: 'Varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PREPARATORY_EDUCATION: 'Valmistava esiopetus',
-      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus',
-      DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
-      DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
+      CLUB: 'Klubb',
+      FAMILY: 'Familjedagvård',
+      GROUP_FAMILY: 'Gruppfamiljedagvård',
+      CENTRE: 'Daghem',
+      PRESCHOOL: 'Förskola',
+      DAYCARE: 'Småbarnspedagogik',
+      PRESCHOOL_DAYCARE: 'Ansluten småbarnspedagogik',
+      PREPARATORY_EDUCATION: 'Förberedande förskola',
+      PREPARATORY_DAYCARE: 'Ansluten småbarnspedagogik',
+      DAYCARE_5YO_FREE: '5-årig avgiftsfri småbarnspedagogik',
+      DAYCARE_5YO_PAID: 'Småbarnspedagogik (avgiftsbelagd)'
     },
     form: {
-      address: 'Osoite',
-      addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi',
-      age: 'Ikä',
-      backupPhone: 'Varapuhelinnumero',
-      birthday: 'Syntymäaika',
-      dateOfDeath: 'Kuollut',
-      email: 'Sähköposti',
-      endDate: ' Päättyen',
-      firstName: 'Etunimi',
-      firstNames: 'Etunimet',
-      invoiceRecipient: 'Laskun vastaanottaja',
-      invoicingAddress: 'Laskutusosoite',
-      lastModified: 'Viimeksi muokattu',
-      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
-      lastName: 'Sukunimi',
-      name: 'Nimi',
-      ophPersonOid: 'OPH henkilö-OID',
-      phone: 'Puhelinnumero',
-      postOffice: 'Postitoimipaikka',
-      postalCode: 'Postinumero',
-      municipalityOfResidence: 'Kotikunta',
-      range: 'Ajalle',
-      socialSecurityNumber: 'Hetu',
-      startDate: 'Alkaen',
-      streetAddress: 'Katuosoite',
-      updatedFromVtj: 'Tiedot päivitetty VTJ:stä'
+      address: 'Adress',
+      addressRestricted:
+        'Adressen är inte tillgänglig på grund av skyddsförbud',
+      age: 'Ålder',
+      backupPhone: 'Reservtelefonnummer',
+      birthday: 'Födelsedatum',
+      dateOfDeath: 'Död',
+      email: 'E-post',
+      endDate: ' Slutar',
+      firstName: 'Förnamn',
+      firstNames: 'Förnamn',
+      invoiceRecipient: 'Fakturamottagare',
+      invoicingAddress: 'Faktureringsadress',
+      lastModified: 'Senast redigerad',
+      lastModifiedBy: (name: string) => `Redigerad av: ${name}`,
+      lastName: 'Efternamn',
+      name: 'Namn',
+      ophPersonOid: 'UBS person-OID',
+      phone: 'Telefonnummer',
+      postOffice: 'Postanstalt',
+      postalCode: 'Postnummer',
+      municipalityOfResidence: 'Hemkommun',
+      range: 'För tiden',
+      socialSecurityNumber: 'Personbeteckning',
+      startDate: 'Från och med',
+      streetAddress: 'Gatuadress',
+      updatedFromVtj: 'Uppgifter uppdaterade från BIS'
     },
     expandableList: {
-      others: 'muuta'
+      others: 'andra'
     },
     resultCount: (count: number) =>
-      count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
-    ok: 'Selvä!',
-    tryAgain: 'Yritä uudestaan',
-    checkDates: 'Tarkista päivämäärät',
-    multipleChildren: 'Useita lapsia',
-    today: 'Tänään',
+      count > 0 ? `Sökresultat: ${count}` : 'Inga sökresultat',
+    ok: 'Okej!',
+    tryAgain: 'Försök igen',
+    checkDates: 'Kontrollera datum',
+    multipleChildren: 'Flera barn',
+    today: 'Idag',
     error: {
-      unknown: 'Hups, jotain meni pieleen!',
-      forbidden: 'Oikeudet tähän toimintoon puuttuvat',
-      saveFailed: 'Muutosten tallentaminen ei onnistunut, yritä uudelleen.',
-      minutes: 'Korkeintaan 59 minuuttia'
+      unknown: 'Hoppsan, något gick fel!',
+      forbidden: 'Saknar behörighet för denna åtgärd',
+      saveFailed: 'Att spara ändringarna misslyckades, försök igen.',
+      minutes: 'Högst 59 minuter'
     },
-    days: 'päivää',
-    day: 'päivä',
-    loading: 'Ladataan...',
-    noResults: 'Ei hakutuloksia',
-    noFirstName: 'Etunimi puuttuu',
-    noLastName: 'Sukunimi puuttuu',
-    noName: 'Nimi puuttuu',
-    date: 'Päivämäärä',
-    month: 'Kuukausi',
-    year: 'Vuosi',
-    code: 'Koodi',
-    ready: 'Valmis',
-    page: 'Sivu',
-    group: 'Ryhmä',
-    openExpandingInfo: 'Avaa lisätietokenttä',
+    days: 'dagar',
+    day: 'dag',
+    loading: 'Laddar...',
+    noResults: 'Inga sökresultat',
+    noFirstName: 'Förnamn saknas',
+    noLastName: 'Efternamn saknas',
+    noName: 'Namn saknas',
+    date: 'Datum',
+    month: 'Månad',
+    year: 'År',
+    code: 'Kod',
+    ready: 'Klar',
+    page: 'Sida',
+    group: 'Grupp',
+    openExpandingInfo: 'Öppna tilläggsinformationsfält',
     datetime: {
-      weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],
-      week: 'Viikko',
-      weekShort: 'Vk',
-      monthShort: 'Kk',
+      weekdaysShort: ['Må', 'Ti', 'On', 'To', 'Fr', 'Lö', 'Sö'],
+      week: 'Vecka',
+      weekShort: 'V',
+      monthShort: 'Mån',
       weekdays: [
-        'Maanantai',
-        'Tiistai',
-        'Keskiviikko',
-        'Torstai',
-        'Perjantai',
-        'Lauantai',
-        'Sunnuntai'
+        'Måndag',
+        'Tisdag',
+        'Onsdag',
+        'Torsdag',
+        'Fredag',
+        'Lördag',
+        'Söndag'
       ],
       months: [
-        'Tammikuu',
-        'Helmikuu',
-        'Maaliskuu',
-        'Huhtikuu',
-        'Toukokuu',
-        'Kesäkuu',
-        'Heinäkuu',
-        'Elokuu',
-        'Syyskuu',
-        'Lokakuu',
-        'Marraskuu',
-        'Joulukuu'
+        'Januari',
+        'Februari',
+        'Mars',
+        'April',
+        'Maj',
+        'Juni',
+        'Juli',
+        'Augusti',
+        'September',
+        'Oktober',
+        'November',
+        'December'
       ]
     },
-    nb: 'Huom',
-    lastModified: (dateTime: string) => `Viimeksi muokattu: ${dateTime}`,
-    validTo: (date: string) => `Voimassa ${date} saakka`,
-    closeModal: 'Sulje ponnahdusikkuna',
+    nb: 'Obs',
+    lastModified: (dateTime: string) => `Senast redigerad: ${dateTime}`,
+    validTo: (date: string) => `Gäller till och med ${date}`,
+    closeModal: 'Stäng popup-fönster',
     datePicker: {
-      previousMonthLabel: 'Edellinen kuukausi',
-      nextMonthLabel: 'Seuraava kuukausi',
-      calendarLabel: 'Kalenteri'
+      previousMonthLabel: 'Föregående månad',
+      nextMonthLabel: 'Nästa månad',
+      calendarLabel: 'Kalender'
     },
-    close: 'Sulje',
-    open: 'Avaa',
-    copy: 'Kopioi',
-    startDate: 'Aloituspäivä',
-    endDate: 'Lopetuspäivä',
+    close: 'Stäng',
+    open: 'Öppna',
+    copy: 'Kopiera',
+    startDate: 'Startdatum',
+    endDate: 'Slutdatum',
     retroactiveConfirmation: {
       title:
-        'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
-      checkboxLabel: 'Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*'
+        'Du håller på att göra en ändring som retroaktivt kan orsaka ändringar i kundavgifterna.',
+      checkboxLabel: 'Jag förstår, jag kontaktar faktureringsteamet om saken.*'
     },
     userTypes: {
-      SYSTEM: 'järjestelmä',
-      CITIZEN: 'kuntalainen',
-      EMPLOYEE: 'työntekijä',
-      MOBILE_DEVICE: 'mobiililaite',
-      UNKNOWN: 'tuntematon'
+      SYSTEM: 'system',
+      CITIZEN: 'kommuninvånare',
+      EMPLOYEE: 'anställd',
+      MOBILE_DEVICE: 'mobilenhet',
+      UNKNOWN: 'okänd'
     },
-    showMore: 'Näytä lisää',
-    showLess: 'Piilota'
+    showMore: 'Visa mer',
+    showLess: 'Dölj'
   },
   header: {
-    applications: 'Hakemukset',
-    units: 'Yksiköt',
-    search: 'Asiakastiedot',
-    finance: 'Talous',
-    invoices: 'Laskut',
-    payments: 'Maksatus',
-    incomeStatements: 'Tuloselvitykset',
-    feeDecisions: 'Maksupäätökset',
-    valueDecisions: 'Arvopäätökset',
-    reports: 'Raportit',
-    messages: 'Viestit',
-    logout: 'Kirjaudu ulos'
+    applications: 'Ansökningar',
+    units: 'Enheter',
+    search: 'Kunduppgifter',
+    finance: 'Ekonomi',
+    invoices: 'Fakturor',
+    payments: 'Betalning',
+    incomeStatements: 'Inkomstutredningar',
+    feeDecisions: 'Avgiftsbeslut',
+    valueDecisions: 'Värdebeslut',
+    reports: 'Rapporter',
+    messages: 'Meddelanden',
+    logout: 'Logga ut'
   },
   footer: {
-    cityLabel: 'Espoon kaupunki',
-    linkLabel: 'Espoon varhaiskasvatus',
-    linkHref: 'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus'
+    cityLabel: 'Esbo stad',
+    linkLabel: 'Småbarnspedagogik i Esbo',
+    linkHref:
+      'https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspeadagogik'
   },
   language: {
-    fi: 'Suomi',
-    sv: 'Ruotsi',
-    en: 'Englanti'
+    fi: 'Finska',
+    sv: 'Svenska',
+    en: 'Engelska'
   },
   errorPage: {
-    reload: 'Lataa sivu uudelleen',
-    text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
-    title: 'Jotain meni pieleen'
+    reload: 'Ladda om sidan',
+    text: 'Vi stötte på ett oväntat problem. Uppgifterna om felet har vidarebefordrats.',
+    title: 'Något gick fel'
   },
   validationError: {
-    mandatoryField: 'Pakollinen tieto',
-    endDateIsMandatoryField: 'Päättymispäivä on pakollinen tieto',
-    dateRange: 'Päivämäärä on virheellinen',
-    invertedDateRange:
-      'Aloituspäivämäärä ei saa olla lopetuspäivämäärän jälkeen',
+    mandatoryField: 'Obligatorisk uppgift',
+    endDateIsMandatoryField: 'Slutdatum är obligatorisk uppgift',
+    dateRange: 'Datumet är felaktigt',
+    invertedDateRange: 'Startdatum får inte vara efter slutdatum',
     existingDateRangeError:
-      'Päivämäärät eivät saa mennä päällekkäin jo luotujen ajanjaksojen kanssa',
+      'Datum får inte överlappa redan skapade tidsperioder',
     coveringDateRangeError:
-      'Päivämääräväli ei saa peittää jo olemassaolevaa kokonaan',
-    email: 'Sähköposti on väärässä muodossa',
-    phone: 'Puhelinnumero on väärässä muodossa',
-    ssn: 'Henkilötunnus on väärässä muodossa',
-    time: 'Aika on väärässä muodossa',
-    cents: 'Euromäärä on väärässä muodossa',
-    decimal: 'Desimaaliluku on väärässä muodossa',
-    startDateNotOnTerm: 'Aloituspäivän pitää kohdistua jollekin kaudelle'
+      'Datumintervallet får inte helt täcka ett redan existerande',
+    email: 'E-postadressen är i fel format',
+    phone: 'Telefonnumret är i fel format',
+    ssn: 'Personbeteckningen är i fel format',
+    time: 'Tiden är i fel format',
+    cents: 'Eurobeloppet är i fel format',
+    decimal: 'Decimaltal är i fel format',
+    startDateNotOnTerm: 'Startdatum måste infalla under någon termin'
   },
   login: {
-    title: 'Varhaiskasvatus',
-    subtitle: 'Asiakastiedot ja yksiköt',
-    systemNotification: 'Tärkeä tiedote',
-    login: 'Kirjaudu sisään',
-    loginAD: 'Espoo AD',
-    loginEvaka: 'Palveluntuottaja',
+    title: 'Småbarnspedagogik',
+    subtitle: 'Kunduppgifter och enheter',
+    systemNotification: 'Viktigt meddelande',
+    login: 'Logga in',
+    loginAD: 'Esbo AD',
+    loginEvaka: 'Tjänsteleverantör',
     error: {
-      noRole: 'Sinulla ei ole tarvittavaa roolia',
-      default: 'Jokin meni vikaan'
+      noRole: 'Du har inte den nödvändiga rollen',
+      default: 'Något gick fel'
     }
   },
   applications: {
-    show: 'Näytä',
-    asList: 'Listana',
-    asDesktop: 'Työpöytänä',
+    show: 'Visa',
+    asList: 'Som lista',
+    asDesktop: 'Som skrivbord',
     list: {
-      addNote: 'Lisää muistiinpano',
-      areaPlaceholder: 'Valitse alue',
-      basis: 'Perusteet',
-      currentUnit: 'Nyk.',
-      dueDate: 'Käsiteltävä',
-      name: 'Lapsen nimi/ikä',
-      noResults: 'Ei hakutuloksia',
-      note: 'Huom',
-      paper: 'Paperihakemus',
-      resultCount: 'Hakutuloksia',
-      serviceWorkerNote: 'Palveluohjauksen huomio',
-      startDate: 'Aloitus',
-      status: 'Tila',
-      statusLastModified: 'Tila viimeksi muokattu',
-      subtype: 'Osa / Koko',
-      title: 'Hakemukset',
-      transfer: 'Siirtohakemus',
+      addNote: 'Lägg till anteckning',
+      areaPlaceholder: 'Välj område',
+      basis: 'Grunder',
+      currentUnit: 'Nuv.',
+      dueDate: 'Att behandla',
+      name: 'Barnets namn/ålder',
+      noResults: 'Inga sökresultat',
+      note: 'Obs',
+      paper: 'Pappersansökan',
+      resultCount: 'Sökresultat',
+      serviceWorkerNote: 'Servicehandledningens anmärkning',
+      startDate: 'Start',
+      status: 'Status',
+      statusLastModified: 'Status senast redigerad',
+      subtype: 'Del / Hel',
+      title: 'Ansökningar',
+      transfer: 'Överflyttningsansökan',
       transferFilter: {
-        title: 'Siirtohakemukset',
-        transferOnly: 'Näytä vain siirtohakemukset',
-        hideTransfer: 'Piilota siirtohakemukset',
-        all: 'Ei rajausta'
+        title: 'Överflyttningsansökningar',
+        transferOnly: 'Visa endast överflyttningsansökningar',
+        hideTransfer: 'Dölj överflyttningsansökningar',
+        all: 'Ingen avgränsning'
       },
-      type: 'Hakutyyppi',
-      unit: 'Yksikkö',
+      type: 'Ansökningstyp',
+      unit: 'Enhet',
       voucherFilter: {
-        title: 'Palvelusetelihakemukset',
-        firstChoice: 'Näytä jos 1. hakutoiveena',
-        allVoucher: 'Näytä kaikki palvelusetelihakemukset',
-        hideVoucher: 'Piilota palvelusetelihakemukset',
-        noFilter: 'Ei rajausta'
+        title: 'Servicesedelansökningar',
+        firstChoice: 'Visa om 1. önskat placeringsställe',
+        allVoucher: 'Visa alla servicesedelansökningar',
+        hideVoucher: 'Dölj servicesedelansökningar',
+        noFilter: 'Ingen avgränsning'
       }
     },
     placementDesktop: {
       warnings: {
         tooManyApplicationsTitle: (count: number) =>
-          `Liikaa hakemuksia (${count})`,
+          `För många ansökningar (${count})`,
         tooManyApplicationsMessage:
-          'Tarkenna hakuehtoja niin, että hakemuksia on enintään 50 kpl.'
+          'Precisera sökvillkoren så att det finns högst 50 ansökningar.'
       },
-      occupancyPeriod: 'Näytä täyttöasteiden maksimi aikaväliltä',
-      shownUnitsCount: 'Näytettäviä yksiköitä',
-      addShownUnit: 'Lisää näytettävä yksikkö...',
-      applicationsCount: 'Hakemuksia',
-      preferences: 'Hakutoiveet',
-      createPlacementDraft: 'Hahmottele',
-      createPlacementDraftToOtherUnit: 'Hahmottele muuhun yksikköön...',
-      cancelPlacementDraft: 'Peru hahmotelma',
+      occupancyPeriod: 'Visa beläggningsgradens maximum för tidsintervallet',
+      shownUnitsCount: 'Enheter att visa',
+      addShownUnit: 'Lägg till enhet att visa...',
+      applicationsCount: 'Ansökningar',
+      preferences: 'Placeringsönskemål',
+      createPlacementDraft: 'Skissa',
+      createPlacementDraftToOtherUnit: 'Skissa till annan enhet...',
+      cancelPlacementDraft: 'Avbryt skiss',
       cancelPlacementDraftConfirmationTitle:
-        'Haluatko varmasti perua sijoitushahmotelman?',
+        'Vill du verkligen avbryta placeringsskissen?',
       cancelPlacementDraftConfirmationMessage:
-        'Tähän liittyvä hakemus ei ole mukana nyt näytettävissä hakutuloksissa.',
-      show: 'Näytä',
-      showUnit: 'Näytä yksikkö',
-      hideUnit: 'Piilota yksikkö',
-      other: 'Muu',
-      birthDate: 'Syntymäaika',
-      dueDate: 'Lakisääteisyys',
-      preferredStartDate: 'Toivottu aloitus',
-      transfer: 'Siirto',
-      toPlacementPlan: 'Sijoita',
-      checkApplication: 'Tarkista hakemus',
-      occupancies: 'Täyttöasteet',
+        'Den relaterade ansökan ingår inte i de sökresultat som visas nu.',
+      show: 'Visa',
+      showUnit: 'Visa enhet',
+      hideUnit: 'Dölj enhet',
+      other: 'Annan',
+      birthDate: 'Födelsedatum',
+      dueDate: 'Lagstadgat',
+      preferredStartDate: 'Önskad start',
+      transfer: 'Överflyttning',
+      toPlacementPlan: 'Placera',
+      checkApplication: 'Kontrollera ansökan',
+      occupancies: 'Beläggningsgrader',
       occupancyTypes: {
-        confirmed: 'Vahvistettu',
-        planned: 'Suunniteltu',
-        draft: 'Hahmoteltu'
+        confirmed: 'Bekräftad',
+        planned: 'Planerad',
+        draft: 'Skissad'
       },
-      openGraph: 'Avaa täyttöastegraafi',
-      placementDrafts: 'Sijoitushahmotelmat',
-      notInSearchResults: 'Hakemus ei ole mukana hakutuloksissa',
-      draftedBy: 'Hahmotellut'
+      openGraph: 'Öppna beläggningsgradsgraf',
+      placementDrafts: 'Placeringsskisser',
+      notInSearchResults: 'Ansökan ingår inte i sökresultaten',
+      draftedBy: 'Skissad av'
     },
     actions: {
-      moveToWaitingPlacement: 'Siirrä sijoitettaviin',
-      returnToSent: 'Palauta saapuneisiin',
-      cancelApplication: 'Poista käsittelystä',
+      moveToWaitingPlacement: 'Flytta till att placera',
+      returnToSent: 'Återför till inkomna',
+      cancelApplication: 'Ta bort från behandling',
       cancelApplicationConfirm:
-        'Haluatko varmasti poistaa hakemuksen käsittelystä?',
-      cancelApplicationConfidentiality: 'Onko hakemus salassapidettävä?',
-      check: 'Tarkista',
-      setVerified: 'Merkitse tarkistetuksi',
-      createPlacementPlan: 'Sijoita',
-      cancelPlacementPlan: 'Palauta sijoitettaviin',
-      editDecisions: 'Päätökset',
-      confirmPlacementWithoutDecision: 'Vahvista ilman päätöstä',
-      sendDecisionsWithoutProposal: 'Lähetä päätökset',
-      sendPlacementProposal: 'Lähetä sijoitusehdotus',
-      withdrawPlacementProposal: 'Peru sijoitusehdotus',
-      confirmDecisionMailed: 'Merkitse postitetuksi',
+        'Vill du verkligen ta bort ansökan från behandlingen?',
+      cancelApplicationConfidentiality: 'Är ansökan sekretessbelagd?',
+      check: 'Kontrollera',
+      setVerified: 'Markera som kontrollerad',
+      createPlacementPlan: 'Placera',
+      cancelPlacementPlan: 'Återför till att placera',
+      editDecisions: 'Beslut',
+      confirmPlacementWithoutDecision: 'Bekräfta utan beslut',
+      sendDecisionsWithoutProposal: 'Skicka beslut',
+      sendPlacementProposal: 'Skicka placeringsförslag',
+      withdrawPlacementProposal: 'Återkalla placeringsförslag',
+      confirmDecisionMailed: 'Markera som postad',
       checked: (count: number) =>
-        count === 1 ? `${count} hakemus valittu` : `${count} hakemusta valittu`
+        count === 1 ? `${count} ansökan vald` : `${count} ansökningar valda`
     },
     distinctiveDetails: {
-      SECONDARY: 'Näytä myös, jos yksikköön on haettu 2. tai 3. toiveena'
+      SECONDARY: 'Visa även om enheten sökts som 2. eller 3. önskan'
     },
     basisTooltip: {
-      ADDITIONAL_INFO: 'Lisätietokentässä tekstiä',
-      SIBLING_BASIS: 'Käyttää sisarusperustetta',
-      ASSISTANCE_NEED: 'Tuen tarve',
-      CLUB_CARE: 'Edellisenä toimintakautena ollut kerhopaikka',
-      CONTINUATION: 'Jatkava lapsi',
-      DAYCARE: 'On ilmoittanut luopuvansa varhaiskasvatuspaikasta',
-      EXTENDED_CARE: 'Vuorotyö',
-      DUPLICATE_APPLICATION: 'Tuplahakemus',
-      URGENT: 'Kiireellinen hakemus',
-      HAS_ATTACHMENTS: 'Hakemuksessa liite'
+      ADDITIONAL_INFO: 'Text i tilläggsinformationsfältet',
+      SIBLING_BASIS: 'Använder syskongrund',
+      ASSISTANCE_NEED: 'Stödbehov',
+      CLUB_CARE: 'Haft klubbplats föregående verksamhetsperiod',
+      CONTINUATION: 'Fortsättande barn',
+      DAYCARE: 'Har meddelat att ger upp småbarnspedagogikplats',
+      EXTENDED_CARE: 'Skiftarbete',
+      DUPLICATE_APPLICATION: 'Dubblettansökan',
+      URGENT: 'Brådskande ansökan',
+      HAS_ATTACHMENTS: 'Ansökan har bilaga'
     },
     types: {
-      PRESCHOOL: 'Esiopetushakemus',
-      DAYCARE: 'Varhaiskasvatushakemus',
-      CLUB: 'Kerhohakemus',
-      PRESCHOOL_ONLY: 'Esiopetus',
-      PRESCHOOL_DAYCARE: 'Esiopetus & liittyvä',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-      PREPARATORY_ONLY: 'Valmistava',
-      PREPARATORY_DAYCARE: 'Valmistava & liittyvä',
-      DAYCARE_ONLY: 'Myöhemmin haettu liittyvä',
-      ALL: 'Kaikki'
+      PRESCHOOL: 'Förskoleansökan',
+      DAYCARE: 'Småbarnspedagogikansökan',
+      CLUB: 'Klubbansökan',
+      PRESCHOOL_ONLY: 'Förskola',
+      PRESCHOOL_DAYCARE: 'Förskola & ansluten',
+      PRESCHOOL_CLUB: 'Förskolans klubb',
+      PREPARATORY_ONLY: 'Förberedande',
+      PREPARATORY_DAYCARE: 'Förberedande & ansluten',
+      DAYCARE_ONLY: 'Senare sökt ansluten',
+      ALL: 'Alla'
     },
-    searchPlaceholder: 'Haku nimellä, hetulla tai osoitteella',
-    basis: 'Huomiot',
-    distinctions: 'Tarkennettu haku',
-    secondaryTooltip: 'Valitse ensin toimipaikka'
+    searchPlaceholder: 'Sök med namn, personbeteckning eller adress',
+    basis: 'Anmärkningar',
+    distinctions: 'Preciserad sökning',
+    secondaryTooltip: 'Välj först verksamhetsställe'
   },
   application: {
-    tabTitle: 'Hakemus',
-    messageSubject: (date: string, name: string) => `Hakemus ${date}: ${name}`,
+    tabTitle: 'Ansökan',
+    messageSubject: (date: string, name: string) => `Ansökan ${date}: ${name}`,
     types: {
-      PRESCHOOL: 'Esiopetushakemus',
-      DAYCARE: 'Varhaiskasvatushakemus',
-      CLUB: 'Kerhohakemus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PREPARATORY_EDUCATION: 'Valmistava opetus',
-      ALL: 'Kaikki'
+      PRESCHOOL: 'Förskoleansökan',
+      DAYCARE: 'Småbarnspedagogikansökan',
+      CLUB: 'Klubbansökan',
+      PRESCHOOL_DAYCARE: 'Ansluten småbarnspedagogik',
+      PREPARATORY_EDUCATION: 'Förberedande undervisning',
+      ALL: 'Alla'
     },
     statuses: {
-      CREATED: 'Luonnos',
-      SENT: 'Saapunut',
-      WAITING_PLACEMENT: 'Odottaa sijoitusta',
-      WAITING_DECISION: 'Päätöksen valmistelu',
-      WAITING_UNIT_CONFIRMATION: 'Johtajan tarkistettavana',
-      WAITING_MAILING: 'Odottaa postitusta',
-      WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
-      ACTIVE: 'Paikka vastaanotettu',
-      REJECTED: 'Paikka hylätty',
-      CANCELLED: 'Poistettu käsittelystä',
-      ALL: 'Kaikki'
+      CREATED: 'Utkast',
+      SENT: 'Inkommen',
+      WAITING_PLACEMENT: 'Väntar på placering',
+      WAITING_DECISION: 'Beslutsberedning',
+      WAITING_UNIT_CONFIRMATION: 'För rektors granskning',
+      WAITING_MAILING: 'Väntar på postning',
+      WAITING_CONFIRMATION: 'För vårdnadshavares bekräftelse',
+      ACTIVE: 'Plats mottagen',
+      REJECTED: 'Plats avslagen',
+      CANCELLED: 'Borttagen från behandling',
+      ALL: 'Alla'
     },
-    selectConfidentialityLabel: 'Onko hakemus salassapidettävä?',
-    selectAll: 'Valitse kaikki',
-    unselectAll: 'Poista valinnat',
-    transfer: 'Siirtohakemus',
+    selectConfidentialityLabel: 'Är ansökan sekretessbelagd?',
+    selectAll: 'Välj alla',
+    unselectAll: 'Ta bort val',
+    transfer: 'Överflyttningsansökan',
     origins: {
-      ELECTRONIC: 'Sähköinen hakemus',
-      PAPER: 'Paperihakemus'
+      ELECTRONIC: 'Elektronisk ansökan',
+      PAPER: 'Pappersansökan'
     },
     person: {
-      name: 'Nimi',
-      ssn: 'Henkilötunnus',
-      dob: 'Syntymäaika',
-      address: 'Osoite',
-      restricted: 'Turvakielto voimassa',
+      name: 'Namn',
+      ssn: 'Personbeteckning',
+      dob: 'Födelsedatum',
+      address: 'Adress',
+      restricted: 'Skyddsförbud i kraft',
       hasFutureAddress:
-        'Väestorekisterissä oleva osoite on muuttunut / muuttumassa',
-      futureAddress: 'Tuleva osoite',
-      movingDate: 'Muuttopäivä',
-      nationality: 'Kansalaisuus',
-      language: 'Kieli',
-      phone: 'Puhelinnumero',
-      email: 'Sähköposti',
-      agreementStatus: 'Sovittu yhdessä',
+        'Adressen i befolkningsregistret har ändrats / kommer att ändras',
+      futureAddress: 'Kommande adress',
+      movingDate: 'Flyttningsdatum',
+      nationality: 'Nationalitet',
+      language: 'Språk',
+      phone: 'Telefonnummer',
+      email: 'E-post',
+      agreementStatus: 'Överenskommet tillsammans',
       otherGuardianAgreementStatuses: {
-        AGREED: 'Sovittu yhdessä',
-        NOT_AGREED: 'Ei ole sovittu yhdessä',
-        RIGHT_TO_GET_NOTIFIED: 'Vain tiedonsaantioikeus',
-        AUTOMATED: 'Automaattinen päätös',
-        NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
+        AGREED: 'Överenskommet tillsammans',
+        NOT_AGREED: 'Inte överenskommet tillsammans',
+        RIGHT_TO_GET_NOTIFIED: 'Endast rätt till information',
+        AUTOMATED: 'Automatiskt beslut',
+        NOT_SET: 'Vårdnadshavarna bor på samma adress'
       },
-      noOtherChildren: 'Ei muita lapsia',
-      applicantDead: 'Hakija kuollut'
+      noOtherChildren: 'Inga andra barn',
+      applicantDead: 'Sökande avliden'
     },
     serviceNeed: {
-      title: 'Palvelun tarve',
-      startDate: 'Toivottu aloituspäivä',
-      connectedLabel: 'Liittyvä varhaiskasvatus',
-      connectedValue: 'Haen myös liittyvää varhaiskasvatusta',
+      title: 'Servicebehov',
+      startDate: 'Önskat startdatum',
+      connectedLabel: 'Ansluten småbarnspedagogik',
+      connectedValue: 'Jag söker även ansluten småbarnspedagogik',
       connectedDaycarePreferredStartDateLabel:
-        'Liittyvän varhaiskasvatuksen toivottu aloituspäivä',
-      connectedDaycareServiceNeedOptionLabel: 'Täydentävän palveluntarve',
-      dailyTime: 'Päivittäinen läsnäoloaika',
+        'Önskat startdatum för ansluten småbarnspedagogik',
+      connectedDaycareServiceNeedOptionLabel: 'Kompletterande servicebehov',
+      dailyTime: 'Daglig närvarotid',
       startTimePlaceholder: '08:00',
       endTimePlaceholder: '16:00',
-      shiftCareLabel: 'Ilta- ja vuorohoito',
-      shiftCareNeeded: 'Tarvitaan ilta- ja vuorohoitoa',
-      shiftCareWithAttachments: 'Tarvitaan ilta- ja vuorohoitoa, liitteet:',
-      urgentLabel: 'Kiireellinen hakemus',
-      notUrgent: 'Ei',
-      isUrgent: 'On kiireellinen',
-      isUrgentWithAttachments: 'On kiireellinen, liitteet:',
-      missingAttachment: 'Liite puuttuu',
-      preparatoryLabel: 'Valmistava opetus',
-      preparatoryValue: 'Haen myös valmistavaan opetukseen',
-      assistanceLabel: 'Tuen tarve',
-      assistanceValue: 'Lapsella on tuen tarve',
-      assistanceDesc: 'Tuen tarpeen kuvaus',
-      partTime: 'Osapäiväinen',
-      fullTime: 'Kokopäiväinen',
-      partTimeLabel: 'Osa- tai kokopäiväinen',
+      shiftCareLabel: 'Kväll- och skiftomsorg',
+      shiftCareNeeded: 'Kväll- och skiftomsorg behövs',
+      shiftCareWithAttachments: 'Kväll- och skiftomsorg behövs, bilagor:',
+      urgentLabel: 'Brådskande ansökan',
+      notUrgent: 'Nej',
+      isUrgent: 'Är brådskande',
+      isUrgentWithAttachments: 'Är brådskande, bilagor:',
+      missingAttachment: 'Bilaga saknas',
+      preparatoryLabel: 'Förberedande undervisning',
+      preparatoryValue: 'Jag söker även till förberedande undervisning',
+      assistanceLabel: 'Stödbehov',
+      assistanceValue: 'Barnet har stödbehov',
+      assistanceDesc: 'Beskrivning av stödbehov',
+      partTime: 'Deltid',
+      fullTime: 'Heltid',
+      partTimeLabel: 'Deltid eller heltid',
       error: {
-        getServiceNeedOptions: 'Palveluntarpeiden haku epäonnistui!'
+        getServiceNeedOptions: 'Hämtning av servicebehov misslyckades!'
       }
     },
     clubDetails: {
-      wasOnClubCareLabel: 'Kerhossa edellisenä toimintakautena',
+      wasOnClubCareLabel: 'I klubb föregående verksamhetsperiod',
       wasOnClubCareValue:
-        'Lapsi on ollut kerhossa edellisen toimintakauden aikana',
-      wasOnDaycareLabel: 'Varhaiskasvatuksessa ennen kerhoa',
+        'Barnet har varit i klubb under föregående verksamhetsperiod',
+      wasOnDaycareLabel: 'I småbarnspedagogik innan klubben',
       wasOnDaycareValue:
-        'Lapsi on varhaiskasvatuksessa ennen kerhon toivottua alkamispäivää'
+        'Barnet är i småbarnspedagogik innan klubbens önskade startdatum'
     },
     preferences: {
-      title: 'Hakutoive',
-      preferredUnits: 'Hakutoiveet',
-      moveUp: 'Siirrä ylös',
-      moveDown: 'Siirrä alas',
-      missingPreferredUnits: 'Valitse vähintään yksi hakutoive',
-      unitMismatch: 'Hakutoiveet eivät vastaa haettavia yksiköitä',
-      unitsOnMap: 'Yksiköt kartalla',
-      siblingBasisLabel: 'Sisarusperuste',
-      siblingBasisValue: 'Haen paikkaa sisarusperusteella',
-      siblingName: 'Sisaruksen nimi',
-      siblingSsn: 'Sisaruksen henkilötunnus',
-      siblingUnit: 'Sisaruksen yksikkö'
+      title: 'Placeringsönskan',
+      preferredUnits: 'Placeringsönskemål',
+      moveUp: 'Flytta uppåt',
+      moveDown: 'Flytta nedåt',
+      missingPreferredUnits: 'Välj minst ett placeringsönskemål',
+      unitMismatch: 'Placeringsönskemål motsvarar inte sökta enheter',
+      unitsOnMap: 'Enheter på karta',
+      siblingBasisLabel: 'Syskongrund',
+      siblingBasisValue: 'Jag söker plats på syskongrund',
+      siblingName: 'Syskonets namn',
+      siblingSsn: 'Syskonets personbeteckning',
+      siblingUnit: 'Syskonets enhet'
     },
     child: {
-      title: 'Lapsen tiedot'
+      title: 'Barnets uppgifter'
     },
     guardians: {
-      title: 'Hakijan tiedot',
-      appliedGuardian: 'Hakijan tiedot',
+      title: 'Sökandens uppgifter',
+      appliedGuardian: 'Sökandens uppgifter',
       secondGuardian: {
-        title: 'Ilmoitetun toisen aikuisen tiedot',
-        checkboxLabel: 'Hakija on ilmoittanut toisen huoltajan tiedot',
-        exists: 'Lapsella on toinen huoltaja',
-        sameAddress: 'Toinen huoltaja asuu samassa osoitteessa',
-        separated: 'Toinen huoltaja asuu eri osoitteessa',
-        agreed: 'Hakemuksesta on sovittu yhdessä',
-        noVtjGuardian: 'Vtj:n mukaan lapsella ei ole toista huoltajaa'
+        title: 'Uppgifter om anmäld andra vuxen',
+        checkboxLabel:
+          'Sökanden har anmält den andra vårdnadshavarens uppgifter',
+        exists: 'Barnet har en andra vårdnadshavare',
+        sameAddress: 'Den andra vårdnadshavaren bor på samma adress',
+        separated: 'Den andra vårdnadshavaren bor på annan adress',
+        agreed: 'Ansökan har överenskommits tillsammans',
+        noVtjGuardian: 'Enligt BIS har barnet inte en andra vårdnadshavare'
       },
-      vtjGuardian: 'VTJ:n mukaisen toisen huoltajan tiedot'
+      vtjGuardian: 'Uppgifter om andra vårdnadshavaren enligt BIS'
     },
     otherPeople: {
-      title: 'Muut henkilöt',
-      adult: 'Muu aikuinen',
-      spouse: 'Hakija asuu yhdessä muun avio- tai avopuolison kanssa',
-      children: 'Muut samassa taloudessa asuvat lapset',
-      addChild: 'Lisää lapsi'
+      title: 'Andra personer',
+      adult: 'Annan vuxen',
+      spouse: 'Sökanden bor tillsammans med annan make/maka eller sambo',
+      children: 'Andra barn som bor i samma hushåll',
+      addChild: 'Lägg till barn'
     },
     additionalInfo: {
-      title: 'Lisätiedot',
-      applicationInfo: 'Hakemuksen lisätiedot',
-      allergies: 'Allergiat',
-      diet: 'Erityisruokavalio',
-      maxFeeAccepted: 'Suostumus korkeimpaan maksuun',
-      serviceWorkerAttachmentsTitle: 'Palveluohjauksen liitteet',
-      noAttachments: 'Ei liitteitä'
+      title: 'Tilläggsinformation',
+      applicationInfo: 'Ansökans tilläggsinformation',
+      allergies: 'Allergier',
+      diet: 'Specialdiet',
+      maxFeeAccepted: 'Samtycke till högsta avgift',
+      serviceWorkerAttachmentsTitle: 'Servicehandledningens bilagor',
+      noAttachments: 'Inga bilagor'
     },
     decisions: {
-      title: 'Päätökset',
-      noDecisions: 'Hakemukseen ei vielä liity päätöksiä.',
-      type: 'Päätöksen tyyppi',
+      title: 'Beslut',
+      noDecisions: 'Ansökan har ännu inga beslut.',
+      type: 'Beslutstyp',
       types: {
-        CLUB: 'Kerhopäätös',
-        DAYCARE: 'Varhaiskasvatuspäätös',
-        DAYCARE_PART_TIME: 'Varhaiskasvatuspäätös (osapäiväinen)',
-        PRESCHOOL: 'Esiopetuspäätös',
-        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatuspäätös',
-        PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-        PREPARATORY_EDUCATION: 'Valmistavan opetuksen päätös'
+        CLUB: 'Klubbeslut',
+        DAYCARE: 'Beslut om småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Beslut om småbarnspedagogik (deltid)',
+        PRESCHOOL: 'Förskolebeslut',
+        PRESCHOOL_DAYCARE: 'Beslut om ansluten småbarnspedagogik',
+        PRESCHOOL_CLUB: 'Förskolans klubb',
+        PREPARATORY_EDUCATION: 'Beslut om förberedande undervisning'
       },
-      num: 'Päätösnumero',
-      status: 'Päätöksen tila',
+      num: 'Beslutsnummer',
+      status: 'Beslutets status',
       statuses: {
-        draft: 'Luonnos',
-        waitingMailing: 'Odottaa postitusta',
-        PENDING: 'Vahvistettavana huoltajalla',
-        ACCEPTED: 'Vastaanotettu',
-        REJECTED: 'Hylätty'
+        draft: 'Utkast',
+        waitingMailing: 'Väntar på postning',
+        PENDING: 'För vårdnadshavares bekräftelse',
+        ACCEPTED: 'Mottagen',
+        REJECTED: 'Avslagen'
       },
-      unit: 'Päätösyksikkö',
-      download: 'Lataa päätös PDF-tiedostona',
+      unit: 'Beslutsenhet',
+      download: 'Ladda ner beslut som PDF-fil',
       downloadPending:
-        'Päätöksen PDF-tiedosto ei ole vielä ladattavissa. Yritä myöhemmin uudelleen.',
+        'Beslutets PDF-fil är ännu inte nedladdningsbar. Försök igen senare.',
       response: {
-        label: 'Vahvistus kuntalaisen puolesta',
-        accept: 'Huoltaja on vastaanottanut paikan',
-        reject: 'Huoltaja on hylännyt paikan',
-        submit: 'Vahvista kuntalaisen puolesta',
+        label: 'Bekräftelse på kommuninvånarens vägnar',
+        accept: 'Vårdnadshavaren har mottagit platsen',
+        reject: 'Vårdnadshavaren har avslagit platsen',
+        submit: 'Bekräfta på kommuninvånarens vägnar',
         acceptError:
-          'Paikan vastaanottaminen ei onnistunut. Päivämäärä saattaa olla virheellinen.',
+          'Mottagande av platsen misslyckades. Datumet kan vara felaktigt.',
         rejectError:
-          'Paikan hylkääminen ei onnistunut. Päivitä sivu ja yritä uudelleen.'
+          'Avslag av platsen misslyckades. Uppdatera sidan och försök igen.'
       },
       blocked:
-        'Tämän päätöksen voi hyväksyä vasta esiopetuspäätöksen hyväksymisen jälkeen'
+        'Detta beslut kan godkännas först efter att förskolebeslutet godkänts'
     },
     attachments: {
-      title: 'Liitteet',
-      none: 'Hakemukseen ei liity liitteitä',
-      name: 'Tiedostonimi',
-      updated: 'Muutettu',
-      contentType: 'Tyyppi',
-      receivedByPaperAt: 'Toimitettu paperisena',
-      receivedAt: 'Toimitettu sähköisesti'
+      title: 'Bilagor',
+      none: 'Ansökan har inga bilagor',
+      name: 'Filnamn',
+      updated: 'Ändrad',
+      contentType: 'Typ',
+      receivedByPaperAt: 'Levererad som papper',
+      receivedAt: 'Levererad elektroniskt'
     },
     state: {
-      title: 'Hakemuksen tila',
-      status: 'Hakemuksen tila',
-      origin: 'Hakemuksen lähetysmuoto',
-      sent: 'Saapunut',
-      modified: 'Muokattu viimeksi',
-      modifiedBy: 'Muokkaaja',
-      due: 'Käsiteltävä viimeistään'
+      title: 'Ansökans status',
+      status: 'Ansökans status',
+      origin: 'Ansökans sändningsform',
+      sent: 'Inkommen',
+      modified: 'Senast redigerad',
+      modifiedBy: 'Redigerare',
+      due: 'Att behandla senast'
     },
     date: {
-      DUE: 'Hakemus käsiteltävä viimeistään',
-      START: 'Aloitustarve',
-      ARRIVAL: 'Hakemus saapunut'
+      DUE: 'Ansökan att behandla senast',
+      START: 'Startbehov',
+      ARRIVAL: 'Ansökan inkommen'
     },
     notes: {
-      add: 'Lisää muistiinpano',
-      newNote: 'Uusi muistiinpano',
-      created: 'Luotu',
-      editing: 'Muokattavana',
-      lastEdited: 'Muokattu viimeksi',
-      placeholder: 'Kirjoita muistiinpano',
-      confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
-      sent: 'Lähetetty',
-      message: 'viesti',
+      add: 'Lägg till anteckning',
+      newNote: 'Ny anteckning',
+      created: 'Skapad',
+      editing: 'Under redigering',
+      lastEdited: 'Senast redigerad',
+      placeholder: 'Skriv anteckning',
+      confirmDelete: 'Vill du verkligen ta bort anteckningen',
+      sent: 'Skickad',
+      message: 'meddelande',
       error: {
-        save: 'Muistiinpanon tallentaminen epäonnnistui',
-        remove: 'Muistiinpanon poistaminen epäonnnistui'
+        save: 'Att spara anteckningen misslyckades',
+        remove: 'Att ta bort anteckningen misslyckades'
       }
     },
     messaging: {
-      sendMessage: 'Lähetä viesti'
+      sendMessage: 'Skicka meddelande'
     }
   },
   childInformation: {
-    restrictedDetails: 'Turvakielto',
-    asAdult: 'Tarkastele aikuisena',
+    restrictedDetails: 'Skyddsförbud',
+    asAdult: 'Granska som vuxen',
     personDetails: {
-      title: 'Henkilö-, yhteys- ja terveystiedot',
-      attendanceReport: 'Läsnä- ja poissaolotiedot',
-      name: 'Lapsen nimi',
-      email: 'Sähköposti',
-      socialSecurityNumber: 'Henkilötunnus',
-      birthday: 'Syntymäaika',
-      language: 'Kieli (VTJ)',
-      address: 'Osoite',
-      familyLink: 'Perheen tiedot',
-      languageAtHome: 'Kotikieli, jos muu kuin VTJ:ssä mainittu',
-      specialDiet: 'Ruokatilausintegraatiossa käytettävä erityisruokavalio',
-      mealTexture: 'Ruokatilausintegraatiossa käytettävä ruoan rakenne',
-      participatesInBreakfast: 'Syö aamiaista',
-      participatesInBreakfastYes: 'Kyllä',
-      participatesInBreakfastNo: 'Ei',
-      nekkuDiet: 'Nekku-ruokatilauksen ruokavalio',
-      nekkuSpecialDiet: 'Nekku-erityisruokavalio',
+      title: 'Person-, kontakt- och hälsouppgifter',
+      attendanceReport: 'Närvaro- och frånvarouppgifter',
+      name: 'Barnets namn',
+      email: 'E-post',
+      socialSecurityNumber: 'Personbeteckning',
+      birthday: 'Födelsedatum',
+      language: 'Språk (BIS)',
+      address: 'Adress',
+      familyLink: 'Familjens uppgifter',
+      languageAtHome: 'Hemspråk, om annat än angivet i BIS',
+      specialDiet: 'Specialdiet för matbeställningsintegration',
+      mealTexture: 'Matens konsistens för matbeställningsintegration',
+      participatesInBreakfast: 'Äter frukost',
+      participatesInBreakfastYes: 'Ja',
+      participatesInBreakfastNo: 'Nej',
+      nekkuDiet: 'Nekku-matbeställningens diet',
+      nekkuSpecialDiet: 'Nekku-specialdiet',
       nekkuSpecialDietInfo:
-        'Nekku-erityisruokavalio -kenttään kirjataan vain sellaiset allergiat, joita ei voi valita Nekku-erityisruokavalio kohdan rasteilla. Tähän ei kirjata lapsen ruokajuomia, vaan ne kirjataan ylempänä olevaan Lisätiedot-kohtaan.',
+        'I fältet Nekku-specialdiet antecknas endast sådana allergier som inte kan väljas med kryssrutorna i punkten Nekku-specialdiet. Här antecknas inte barnets måltidsdrycker, utan de antecknas i punkten Tilläggsinformation ovan.',
       noGuardian:
-        'Huoltajatiedot puuttuvat. Lapsen huoltajat eivät pysty asioimaan eVakassa',
+        'Vårdnadshavaruppgifter saknas. Barnets vårdnadshavare kan inte använda eVaka',
       placeholder: {
-        languageAtHome: 'Valitse kieli',
-        languageAtHomeDetails: 'Lisätiedot kotikielestä',
-        specialDiet: 'Valitse erityisruokavalio',
-        mealTexture: 'Valitse ruoan rakenne'
+        languageAtHome: 'Välj språk',
+        languageAtHomeDetails: 'Tilläggsinformation om hemspråk',
+        specialDiet: 'Välj specialdiet',
+        mealTexture: 'Välj matens konsistens'
       }
     },
     familyContacts: {
-      title: 'Perheen yhteystiedot ja varahakijat',
-      contacts: 'Yhteystiedot',
-      name: 'Nimi',
-      role: 'Rooli',
+      title: 'Familjens kontaktuppgifter och reservsökande',
+      contacts: 'Kontaktuppgifter',
+      name: 'Namn',
+      role: 'Roll',
       roles: {
-        LOCAL_GUARDIAN: 'Huoltaja',
-        LOCAL_FOSTER_PARENT: 'Sijaisvanhempi',
-        LOCAL_ADULT: 'Aikuinen samassa taloudessa',
-        LOCAL_SIBLING: 'Lapsi',
-        REMOTE_GUARDIAN: 'Huoltaja',
-        REMOTE_FOSTER_PARENT: 'Sijaisvanhempi'
+        LOCAL_GUARDIAN: 'Vårdnadshavare',
+        LOCAL_FOSTER_PARENT: 'Fosterförälder',
+        LOCAL_ADULT: 'Vuxen i samma hushåll',
+        LOCAL_SIBLING: 'Barn',
+        REMOTE_GUARDIAN: 'Vårdnadshavare',
+        REMOTE_FOSTER_PARENT: 'Fosterförälder'
       },
-      contact: 'S-posti ja puhelin',
-      contactPerson: 'Yhteyshlö',
-      address: 'Osoite',
-      backupPhone: 'Varanro'
+      contact: 'E-post och telefon',
+      contactPerson: 'Kontaktperson',
+      address: 'Adress',
+      backupPhone: 'Reservnr'
     },
     timeBasedStatuses: {
-      ACTIVE: 'Aktiivinen',
-      ENDED: 'Päättynyt',
-      UPCOMING: 'Tuleva'
+      ACTIVE: 'Aktiv',
+      ENDED: 'Avslutad',
+      UPCOMING: 'Kommande'
     },
     serviceNeed: {
-      title: 'Palveluntarve',
-      dateRange: 'Palveluntarve ajalle',
-      hoursPerWeek: 'Viikottainen palveluntarve',
+      title: 'Servicebehov',
+      dateRange: 'Servicebehov för tiden',
+      hoursPerWeek: 'Veckovis servicebehov',
       hoursPerWeekInfo:
-        'Kirjoita tähän viikoittainen palveluntarve, joka sisältää kokonaisuudessaan perheen ilmoittaman läsnäoloajan, mukaan lukien mahdollisen esiopetusajan, 5-vuotiaan maksuttoman varhaiskasvatuksen ja valmistavan opetuksen.',
-      hoursInWeek: 'h / viikko',
-      serviceNeedDetails: 'Tarkennus palveluntarpeeseen',
-      createdByName: 'Yksikön johtajan vahvistus',
-      create: 'Luo uusi palveluntarve',
-      removeServiceNeed: 'Haluatko poistaa palveluntarpeen?',
-      previousServiceNeeds: 'Aiemmin luodut palveluntarpeet',
+        'Skriv här det veckobehov som omfattar hela den närvarotid som familjen angett, inklusive eventuell förskoletid, 5-årig avgiftsfri småbarnspedagogik och förberedande undervisning.',
+      hoursInWeek: 'h / vecka',
+      serviceNeedDetails: 'Precisering av servicebehov',
+      createdByName: 'Enhetschefens bekräftelse',
+      create: 'Skapa nytt servicebehov',
+      removeServiceNeed: 'Vill du ta bort servicebehovet?',
+      previousServiceNeeds: 'Tidigare skapade servicebehov',
       errors: {
-        conflict:
-          'Palveluntarve menee päällekkäin toisen palveluntarpeen kanssa.',
+        conflict: 'Servicebehovet överlappar med ett annat servicebehov.',
         hardConflict:
-          'Palveluntarve menee päällekkäin toisen palveluntarpeen alkupäivämäärän kanssa.',
-        checkHours: 'Tarkista',
+          'Servicebehovet överlappar med ett annat servicebehovs startdatum.',
+        checkHours: 'Kontrollera',
         placementMismatchWarning:
-          'Viikottainen palveluntarve ei vastaa sijoituksen toimintamuotoa.',
+          'Veckovis servicebehov motsvarar inte placeringens verksamhetsform.',
         autoCutWarning:
-          'Aiemmat päällekkäiset palveluntarpeet katkaistaan automaattisesti.'
+          'Tidigare överlappande servicebehov avbryts automatiskt.'
       }
     },
     dailyServiceTimes: {
-      title: 'Päivittäinen varhaiskasvatusaika',
-      info: 'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
+      title: 'Daglig småbarnspedagogiktid',
+      info: 'Skriv här den dagliga småbarnspedagogiktid som angetts i småbarnspedagogikavtalet, inklusive förskola / förberedande undervisning / 5-årig avgiftsfri småbarnspedagogik.',
       info2:
-        'Älä päivitä varhaiskasvatusaikaa, jos uudessa sopimuksessa ilmoitettu varhaiskasvatusaika ei ole muuttunut aiemmasta.',
-      info3:
-        'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
-      create: 'Luo uusi varhaiskasvatusaika',
+        'Uppdatera inte småbarnspedagogiktiden om den småbarnspedagogiktid som angetts i det nya avtalet inte har ändrats från tidigare.',
+      info3: 'Oregelbundna och regelbundna frånvaron antecknas i dagboken.',
+      create: 'Skapa ny småbarnspedagogiktid',
       types: {
-        REGULAR: 'Säännöllinen varhaiskasvatusaika',
-        IRREGULAR: 'Epäsäännöllinen varhaiskasvatusaika',
-        VARIABLE_TIME: 'Vaihteleva varhaiskasvatusaika'
+        REGULAR: 'Regelbunden småbarnspedagogiktid',
+        IRREGULAR: 'Oregelbunden småbarnspedagogiktid',
+        VARIABLE_TIME: 'Varierande småbarnspedagogiktid'
       },
       weekdays: {
-        monday: 'maanantai',
-        tuesday: 'tiistai',
-        wednesday: 'keskiviikko',
-        thursday: 'torstai',
-        friday: 'perjantai',
-        saturday: 'lauantai',
-        sunday: 'sunnuntai'
+        monday: 'måndag',
+        tuesday: 'tisdag',
+        wednesday: 'onsdag',
+        thursday: 'torsdag',
+        friday: 'fredag',
+        saturday: 'lördag',
+        sunday: 'söndag'
       },
       errors: {
-        required: 'Pakollinen tieto'
+        required: 'Obligatorisk uppgift'
       },
-      dailyServiceTime: 'Päivittäinen varhaiskasvatusaika',
-      validityPeriod: 'Päivittäinen varhaiskasvatusaika voimassa',
-      validFrom: 'Päivittäinen varhaiskasvatusaika voimassa alkaen',
-      validUntil: 'Päivittäisen varhaiskasvatusajan voimassaolo päättyy',
-      createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika',
+      dailyServiceTime: 'Daglig småbarnspedagogiktid',
+      validityPeriod: 'Daglig småbarnspedagogiktid i kraft',
+      validFrom: 'Daglig småbarnspedagogiktid i kraft från och med',
+      validUntil: 'Daglig småbarnspedagogiktids giltighet upphör',
+      createNewTimes: 'Skapa ny daglig småbarnspedagogiktid',
       deleteModal: {
-        title: 'Poistetaanko varhaiskasvatusaika?',
+        title: 'Tas småbarnspedagogiktiden bort?',
         description:
-          'Haluatko varmasti poistaa päivittäisen varhaiskasvatusajan? Aikaa ei saa palautettua, vaan se tulee poiston jälkeen tarvittaessa lisätä uudelleen.',
-        deleteBtn: 'Poista aika'
+          'Vill du verkligen ta bort den dagliga småbarnspedagogiktiden? Tiden kan inte återställas, utan den måste läggas till på nytt vid behov efter borttagning.',
+        deleteBtn: 'Ta bort tid'
       },
       retroactiveModificationWarning:
-        'Huom! Olet muokkaamassa päivittäistä varhaiskasvatusaikaa takautuvasti. Lapsen läsnäolokalenterin merkinnät saattavat muuttua tällä aikavälillä.'
+        'Obs! Du håller på att redigera den dagliga småbarnspedagogiktiden retroaktivt. Barnets närvarokalenderanteckningar kan ändras under denna tidsperiod.'
     },
     assistance: {
-      title: 'Tuen tarve ja tukitoimet',
-      unknown: 'Ei tiedossa',
+      title: 'Stödbehov och stödåtgärder',
+      unknown: 'Okänd',
       fields: {
-        capacityFactor: 'Kerroin',
-        lastModified: 'Viimeksi muokattu',
-        lastModifiedBy: (name: string) => `Muokkaaja ${name}.`,
-        level: 'Taso',
-        otherAssistanceMeasureType: 'Toimi',
-        status: 'Tila',
-        validDuring: 'Voimassaoloaika'
+        capacityFactor: 'Koefficient',
+        lastModified: 'Senast redigerad',
+        lastModifiedBy: (name: string) => `Redigerare ${name}.`,
+        level: 'Nivå',
+        otherAssistanceMeasureType: 'Åtgärd',
+        status: 'Status',
+        validDuring: 'Giltighetstid'
       },
       validationErrors: {
         overlap:
-          'Tälle ajanjaksolle on jo päällekkäinen merkintä. Muokkaa tarvittaessa edellistä ajanjaksoa',
+          'För denna tidsperiod finns redan en överlappande anteckning. Redigera vid behov föregående tidsperiod',
         startBeforeMinDate: (date: LocalDate) =>
-          `Tämä tuki voi alkaa aikaisintaan ${date.format()}`,
+          `Detta stöd kan börja tidigast ${date.format()}`,
         endAfterMaxDate: (date: LocalDate) =>
-          `Tämän tuen voi myöntää korkeintaan ${date.format()} saakka`
+          `Detta stöd kan beviljas högst till och med ${date.format()}`
       },
       types: {
         daycareAssistanceLevel: {
-          GENERAL_SUPPORT: 'Yleinen tuki, ei päätöstä',
-          GENERAL_SUPPORT_WITH_DECISION: 'Yleinen tuki, päätös tukipalveluista',
-          INTENSIFIED_SUPPORT: 'Tehostettu tuki',
-          SPECIAL_SUPPORT: 'Erityinen tuki'
+          GENERAL_SUPPORT: 'Allmänt stöd, inget beslut',
+          GENERAL_SUPPORT_WITH_DECISION: 'Allmänt stöd, beslut om stödtjänster',
+          INTENSIFIED_SUPPORT: 'Intensifierat stöd',
+          SPECIAL_SUPPORT: 'Särskilt stöd'
         },
         preschoolAssistanceLevel: {
-          INTENSIFIED_SUPPORT: 'Tehostettu tuki',
-          SPECIAL_SUPPORT:
-            'Erityinen tuki ilman pidennettyä oppivelvollisuutta',
+          INTENSIFIED_SUPPORT: 'Intensifierat stöd',
+          SPECIAL_SUPPORT: 'Särskilt stöd utan förlängd läroplikt',
           SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1:
-            'Erityinen tuki ja pidennetty oppivelvollisuus - muu (Koskeen)',
+            'Särskilt stöd och förlängd läroplikt - annat (till Koski)',
           SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
-            'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)',
+            'Särskilt stöd och förlängd läroplikt - utvecklingsstörning 2 (till Koski)',
           CHILD_SUPPORT:
-            'Lapsikohtainen tuki ilman varhennettua oppivelvollisuutta (Koskeen)',
+            'Barnspecifikt stöd utan tidigarelagd läroplikt (till Koski)',
           CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION:
-            'Lapsikohtainen tuki ja varhennettu oppivelvollisuus (Koskeen)',
+            'Barnspecifikt stöd och tidigarelagd läroplikt (till Koski)',
           CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION:
-            'Lapsikohtainen tuki ja vanhan mallinen pidennetty ov - muu (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
+            'Barnspecifikt stöd och gammalt format förlängd lp - annat (till Koski, i bruk under övergångsperiod 1.8.2025 - 31.7.2026)',
           CHILD_SUPPORT_2_AND_OLD_EXTENDED_COMPULSORY_EDUCATION:
-            'Lapsikohtainen tuki ja vanhan mallinen pidennetty ov - kehitysvamma 2 (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
-          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot'
+            'Barnspecifikt stöd och gammalt format förlängd lp - utvecklingsstörning 2 (till Koski, i bruk under övergångsperiod 1.8.2025 - 31.7.2026)',
+          GROUP_SUPPORT: 'Gruppspecifika stödformer'
         },
         otherAssistanceMeasureType: {
-          TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',
-          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
-          ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta',
-          CHILD_DISCUSSION_OFFERED: 'Lapset puheeksi tarjottu',
-          CHILD_DISCUSSION_HELD: 'Lapset puheeksi pidetty',
-          CHILD_DISCUSSION_COUNSELING: 'Lapset puheeksi neuvonpito'
+          TRANSPORT_BENEFIT: 'Transportförmån (för förskolebarn Koski-uppgift)',
+          ACCULTURATION_SUPPORT: 'Barnets integrationsstöd (ELY)',
+          ANOMALOUS_EDUCATION_START:
+            'Avvikande tidpunkt för undervisningsstart',
+          CHILD_DISCUSSION_OFFERED: 'Barnet på tal erbjuden',
+          CHILD_DISCUSSION_HELD: 'Barnet på tal hållen',
+          CHILD_DISCUSSION_COUNSELING: 'Barnet på tal rådgivning'
         }
       },
       assistanceFactor: {
-        title: 'Tuen kerroin',
-        create: 'Luo uusi tuen kertoimen ajanjakso',
-        removeConfirmation: 'Haluatko poistaa tuen kertoimen ajanjakson?',
+        title: 'Stödkoefficient',
+        create: 'Skapa ny stödkoefficientsperiod',
+        removeConfirmation: 'Vill du ta bort stödkoefficientsperioden?',
         info: (): React.ReactNode => undefined
       },
       daycareAssistance: {
-        title: 'Tuen taso varhaiskasvatuksessa',
-        create: 'Luo uusi tuen tason ajanjakso (varhaiskasvatus)',
-        removeConfirmation: 'Haluatko poistaa tuen tason ajanjakson?'
+        title: 'Stödnivå inom småbarnspedagogik',
+        create: 'Skapa ny stödnivåperiod (småbarnspedagogik)',
+        removeConfirmation: 'Vill du ta bort stödnivåperioden?'
       },
       preschoolAssistance: {
-        title: 'Tuki esiopetuksessa',
-        create: 'Luo uusi tuen ajanjakso (esiopetus)',
-        removeConfirmation: 'Haluatko poistaa tuen ajanjakson?'
+        title: 'Stöd i förskolan',
+        create: 'Skapa ny stödperiod (förskola)',
+        removeConfirmation: 'Vill du ta bort stödperioden?'
       },
       otherAssistanceMeasure: {
-        title: 'Muut toimet',
-        create: 'Lisää muu toimi',
-        removeConfirmation: 'Haluatko poistaa muun toimen?',
-        infoList: 'Lisätietoja muista toimista:',
+        title: 'Andra åtgärder',
+        create: 'Lägg till annan åtgärd',
+        removeConfirmation: 'Vill du ta bort den andra åtgärden?',
+        infoList: 'Tilläggsinformation om andra åtgärder:',
         info: {
           TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
           ACCULTURATION_SUPPORT: (): React.ReactNode => undefined,
@@ -868,2501 +868,2503 @@ export const sv = {
       }
     },
     assistanceNeed: {
-      title: 'Tuen tarve',
+      title: 'Stödbehov',
       fields: {
-        dateRange: 'Tuen tarve ajalle',
-        capacityFactor: 'Lapsen tuen kerroin',
+        dateRange: 'Stödbehov för tiden',
+        capacityFactor: 'Barnets stödkoefficient',
         capacityFactorInfo:
-          'Kapasiteetti määräytyy yleensä lapsen iän ja palveluntarpeen mukaan. Mikäli lapsella on sellainen tuki, joka käyttää kapasiteettia enemmän, lisää tuen kerroin tähän kohtaan. Esim. erityisryhmässä tukea tarvitsevan lapsen kerroin on 2,33' as ReactNode,
-        bases: 'Perusteet'
+          'Kapaciteten bestäms vanligtvis enligt barnets ålder och servicebehov. Om barnet har sådant stöd som använder mer kapacitet, lägg till stödkoefficienten här. T.ex. för barn i behov av stöd i specialgrupp är koefficienten 2,33' as ReactNode,
+        bases: 'Grunder'
       },
-      create: 'Luo uusi tuen tarpeen ajanjakso',
-      removeConfirmation: 'Haluatko poistaa tuen tarpeen?',
+      create: 'Skapa ny stödbehovsperiod',
+      removeConfirmation: 'Vill du ta bort stödbehovet?',
       errors: {
-        invalidCoefficient: 'Virheellinen kerroin.',
-        conflict: 'Tuen tarve menee päällekkäin toisen tuen tarpeen kanssa.',
+        invalidCoefficient: 'Felaktig koefficient.',
+        conflict: 'Stödbehovet överlappar med ett annat stödbehov.',
         hardConflict:
-          'Tuen tarve menee päällekkäin toisen tuen tarpeen alkupäivämäärän kanssa.',
-        autoCutWarning:
-          'Aiemmat päällekkäiset tuentarpeet katkaistaan automaattisesti.'
+          'Stödbehovet överlappar med ett annat stödbehovs startdatum.',
+        autoCutWarning: 'Tidigare överlappande stödbehov avbryts automatiskt.'
       }
     },
     assistanceAction: {
-      title: 'Tukitoimet ja toimenpiteet',
-      modified: 'Muokattu viimeksi',
+      title: 'Stödåtgärder och åtgärder',
+      modified: 'Senast redigerad',
       fields: {
-        dateRange: 'Tukitoimien voimassaoloaika',
-        actions: 'Tukitoimet',
+        dateRange: 'Stödåtgärdernas giltighetstid',
+        actions: 'Stödåtgärder',
         actionsByCategory: {
-          DAYCARE: 'Varhaiskasvatuksen tukitoimet',
-          PRESCHOOL: 'Esiopetuksen tukitoimet',
-          OTHER: 'Muut tukitoimet'
+          DAYCARE: 'Småbarnspedagogikens stödåtgärder',
+          PRESCHOOL: 'Förskolans stödåtgärder',
+          OTHER: 'Andra stödåtgärder'
         },
         actionTypes: {
-          OTHER: 'Muu tukitoimi'
+          OTHER: 'Annan stödåtgärd'
         },
         otherActionPlaceholder:
-          'Voit kirjoittaa tähän lisätietoa muista tukitoimista.',
-        lastModifiedBy: (name: string) => `Muokkaaja ${name}.`
+          'Du kan här skriva tilläggsinformation om andra stödåtgärder.',
+        lastModifiedBy: (name: string) => `Redigerare ${name}.`
       },
-      create: 'Luo uusi tukitoimien ajanjakso',
-      removeConfirmation: 'Haluatko poistaa tukitoimien ajanjakson?',
+      create: 'Skapa ny stödåtgärdsperiod',
+      removeConfirmation: 'Vill du ta bort stödåtgärdsperioden?',
       errors: {
-        conflict: 'Tukitoimet menevät päällekkäin toisen ajanjakson kanssa.',
+        conflict: 'Stödåtgärder överlappar med en annan period.',
         hardConflict:
-          'Tukitoimet menevät päällekkäin toisen ajanjakson alkupäivämäärän kanssa.',
+          'Stödåtgärder överlappar med en annan periods startdatum.',
         autoCutWarning:
-          'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.',
+          'Tidigare överlappande stödåtgärder avbryts automatiskt.',
         startBeforeMinDate: (date: LocalDate) =>
-          `Tämä tukitoimi voi alkaa aikaisintaan ${date.format()}`,
+          `Denna stödåtgärd kan börja tidigast ${date.format()}`,
         endAfterMaxDate: (date: LocalDate) =>
-          `Tämän tukitoimen voi myöntää korkeintaan ${date.format()} saakka`
+          `Denna stödåtgärd kan beviljas högst till och med ${date.format()}`
       }
     },
     childDocuments: {
       title: {
-        internal: 'Pedagogiset asiakirjat',
-        decision: 'Muut päätökset',
-        external: 'Huoltajien täytettävät asiakirjat'
+        internal: 'Pedagogiska dokument',
+        decision: 'Andra beslut',
+        external: 'Dokument för vårdnadshavare att fylla i'
       },
       table: {
-        document: 'Asiakirja',
-        status: 'Tila',
-        open: 'Avaa asiakirja',
-        modified: 'Muokattu',
-        modifiedBy: (name: string) => `Muokkaaja ${name}.`,
-        unit: 'Yksikkö',
-        valid: 'Voimassa',
-        published: 'Julkaistu',
-        publishedBy: (name: string) => `Julkaisija ${name}.`,
-        sent: 'Lähetetty',
-        notSent: 'Ei lähetetty',
-        answered: 'Vastattu',
-        unanswered: 'Ei vastattu'
+        document: 'Dokument',
+        status: 'Status',
+        open: 'Öppna dokument',
+        modified: 'Redigerad',
+        modifiedBy: (name: string) => `Redigerare ${name}.`,
+        unit: 'Enhet',
+        valid: 'I kraft',
+        published: 'Publicerad',
+        publishedBy: (name: string) => `Publicerare ${name}.`,
+        sent: 'Skickad',
+        notSent: 'Inte skickad',
+        answered: 'Besvarad',
+        unanswered: 'Inte besvarad'
       },
       addNew: {
-        internal: 'Luo uusi pedagoginen asiakirja',
-        decision: 'Luo uusi päätös',
-        external: 'Luo huoltajille täytettävä asiakirja'
+        internal: 'Skapa nytt pedagogiskt dokument',
+        decision: 'Skapa nytt beslut',
+        external: 'Skapa dokument för vårdnadshavare att fylla i'
       },
-      select: 'Valitse asiakirja',
-      removeConfirmation: 'Haluatko varmasti poistaa asiakirjan?',
+      select: 'Välj dokument',
+      removeConfirmation: 'Vill du verkligen ta bort dokumentet?',
       confirmation:
-        'Oletko varma, että haluat avata tämän asiakirjan lapselle? Kaikki asiakirjat julkaistaan huoltajille ja arkistoidaan automaattisesti toimintakauden päättyessä',
+        'Är du säker på att du vill öppna detta dokument för barnet? Alla dokument publiceras till vårdnadshavare och arkiveras automatiskt när verksamhetsperioden upphör',
       statuses: {
-        DRAFT: 'Luonnos',
-        PREPARED: 'Laadittu',
-        DECISION_PROPOSAL: 'Päätösesitys',
-        COMPLETED: 'Valmis'
+        DRAFT: 'Utkast',
+        PREPARED: 'Upprättad',
+        DECISION_PROPOSAL: 'Beslutsförslag',
+        COMPLETED: 'Färdig'
       },
       decisions: {
-        accept: 'Tee myönteinen päätös',
-        acceptConfirmTitle: 'Haluatko varmasti tehdä myönteisen päätöksen?',
-        validityPeriod: 'Myönnetään ajalle',
-        reject: 'Tee kielteinen päätös',
-        rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
-        annul: 'Mitätöi päätös',
-        annulConfirmTitle: 'Haluatko varmasti mitätöidä päätöksen?',
+        accept: 'Gör ett positivt beslut',
+        acceptConfirmTitle: 'Vill du verkligen göra ett positivt beslut?',
+        validityPeriod: 'Beviljas för tiden',
+        reject: 'Gör ett negativt beslut',
+        rejectConfirmTitle: 'Vill du verkligen göra ett negativt beslut?',
+        annul: 'Annullera beslut',
+        annulConfirmTitle: 'Vill du verkligen annullera beslutet?',
         annulInstructions:
-          'Mitätöi päätös vain perustellusta syystä, esim. jos päätös on tehty vahingossa väärään yksikköön. Ilmoita mitätöinnistä aina myös huoltajille.',
-        annulReasonLabel: 'Päätöksen mitätöinnin perustelu',
-        decisionNumber: 'Päätösnumero',
-        updateValidity: 'Korjaa päätöksen voimassaoloaikaa',
+          'Annullera beslutet endast av grundad anledning, t.ex. om beslutet har fattats av misstag till fel enhet. Meddela alltid vårdnadshavarna om annulleringen.',
+        annulReasonLabel: 'Motivering för annullering av beslut',
+        decisionNumber: 'Beslutsnummer',
+        updateValidity: 'Korrigera beslutets giltighetstid',
         otherValidDecisions: {
-          title: 'Muut voimassaolevat päätökset',
+          title: 'Andra giltiga beslut',
           description: (validity: DateRange) => (
             <P>
-              Olet tekemässä myönteisen päätöksen.
+              Du håller på att göra ett positivt beslut.
               <br />
-              Lapsella on muita päätöksiä, jotka ovat voimassa nyt tehtävän
-              päätöksen astuessa voimaan {validity.start.format().toString()}
+              Barnet har andra beslut som gäller när det nu fattade beslutet
+              träder i kraft {validity.start.format().toString()}
             </P>
           ),
-          label: 'Valitse sopiva toimenpide seuraaville päätöksille*',
+          label: 'Välj lämplig åtgärd för följande beslut*',
           options: {
-            end: 'Katkaistaan',
-            keep: 'Ei katkaista'
+            end: 'Avbryts',
+            keep: 'Avbryts inte'
           }
         }
       },
       editor: {
-        lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
+        lockedErrorTitle: 'Dokumentet är tillfälligt låst',
         lockedError:
-          'Toinen käyttäjä muokkaa asiakirjaa. Yritä myöhemmin uudelleen.',
+          'En annan användare redigerar dokumentet. Försök igen senare.',
         lockedErrorDetailed: (modifiedByName: string, opensAt: string) =>
-          `Käyttäjä ${modifiedByName} on muokkaamassa asiakirjaa. Asiakirjan lukitus vapautuu ${opensAt} mikäli muokkaamista ei jatketa. Yritä myöhemmin uudelleen.`,
-        saveError: 'Asiakirjan tallentaminen epäonnistui.',
-        preview: 'Esikatsele',
-        publish: 'Julkaise huoltajalle',
-        publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',
+          `Användaren ${modifiedByName} redigerar dokumentet. Dokumentets låsning frigörs ${opensAt} om redigeringen inte fortsätter. Försök igen senare.`,
+        saveError: 'Att spara dokumentet misslyckades.',
+        preview: 'Förhandsgranska',
+        publish: 'Publicera till vårdnadshavare',
+        publishConfirmTitle: 'Vill du verkligen publicera till vårdnadshavare?',
         publishConfirmText:
-          'Huoltaja saa nähdäkseen tämänhetkisen version. Tämän jälkeen tekemäsi muutokset eivät näy huoltajalle ennen kuin julkaiset uudelleen.',
-        downloadPdf: 'Lataa PDF-tiedostona',
-        archive: 'Arkistoi',
+          'Vårdnadshavaren får se den nuvarande versionen. Ändringar du gör efter detta syns inte för vårdnadshavaren förrän du publicerar igen.',
+        downloadPdf: 'Ladda ner som PDF-fil',
+        archive: 'Arkivera',
         alreadyArchived: (archivedAt: HelsinkiDateTime) =>
-          `Asiakirja on arkistoitu ${archivedAt.toLocalDate().format()}`,
+          `Dokumentet är arkiverat ${archivedAt.toLocalDate().format()}`,
         archiveDisabledNotExternallyArchived:
-          'Asiakirjaa ei ole määritetty siirrettäväksi ulkoiseen arkistoon',
-        archiveDisabledNotCompleted: 'Asiakirja ei ole valmis-tilassa',
+          'Dokumentet har inte definierats för överföring till externt arkiv',
+        archiveDisabledNotCompleted: 'Dokumentet är inte i färdig-status',
         goToNextStatus: {
-          DRAFT: 'Julkaise luonnos-tilassa',
-          PREPARED: 'Julkaise laadittu-tilassa',
-          CITIZEN_DRAFT: 'Lähetä kuntalaisen täytettäväksi',
-          DECISION_PROPOSAL: 'Lähetä päättäjälle',
-          COMPLETED: 'Julkaise valmis-tilassa'
+          DRAFT: 'Publicera i utkast-status',
+          PREPARED: 'Publicera i upprättad-status',
+          CITIZEN_DRAFT: 'Skicka för kommuninvånare att fylla i',
+          DECISION_PROPOSAL: 'Skicka till beslutsfattare',
+          COMPLETED: 'Publicera i färdig-status'
         },
         goToNextStatusConfirmTitle: {
-          DRAFT: 'Haluatko varmasti julkaista asiakirjan luonnos-tilassa?',
-          PREPARED: 'Haluatko varmasti julkaista asiakirjan laadittu-tilassa?',
+          DRAFT: 'Vill du verkligen publicera dokumentet i utkast-status?',
+          PREPARED:
+            'Vill du verkligen publicera dokumentet i upprättad-status?',
           CITIZEN_DRAFT:
-            'Haluatko varmasti julkaista asiakirjan kuntalaisen täytettäväksi -tilassa?',
+            'Vill du verkligen publicera dokumentet i för kommuninvånare att fylla i-status?',
           DECISION_PROPOSAL:
-            'Haluatko varmasti lähettää päätösesityksen päättäjälle?',
-          COMPLETED: 'Haluatko varmasti julkaista asiakirjan valmis-tilassa?'
+            'Vill du verkligen skicka beslutsförslaget till beslutsfattare?',
+          COMPLETED: 'Vill du verkligen publicera dokumentet i färdig-status?'
         },
         goToCompletedConfirmText:
-          'Huoltaja saa nähdäkseen tämänhetkisen version. Valmis-tilassa olevaa asiakirjaa ei voi enää muokata. Vain pääkäyttäjä voi peruuttaa tämän.',
+          'Vårdnadshavaren får se den nuvarande versionen. Ett dokument i färdig-status kan inte längre redigeras. Endast huvudanvändare kan ångra detta.',
         extraConfirmCompletion:
-          'Ymmärrän, että asiakirjaa ei tämän jälkeen voi enää muokata',
+          'Jag förstår att dokumentet inte kan redigeras efter detta',
         goToPrevStatus: {
-          DRAFT: 'Palauta luonnokseksi',
-          PREPARED: 'Palauta laadituksi',
-          CITIZEN_DRAFT: 'Palauta kuntalaisen täytettäväksi',
-          DECISION_PROPOSAL: 'Palauta päätösesitykseksi', // not applicable,
-          COMPLETED: 'Palauta valmiiksi' // not applicable
+          DRAFT: 'Återställ till utkast',
+          PREPARED: 'Återställ till upprättad',
+          CITIZEN_DRAFT: 'Återställ till för kommuninvånare att fylla i',
+          DECISION_PROPOSAL: 'Återställ till beslutsförslag', // not applicable,
+          COMPLETED: 'Återställ till färdig' // not applicable
         },
         goToPrevStatusConfirmTitle: {
-          DRAFT: 'Haluatko varmasti palauttaa asiakirjan luonnokseksi?',
-          PREPARED: 'Haluatko varmasti palauttaa asiakirjan laadituksi?',
+          DRAFT: 'Vill du verkligen återställa dokumentet till utkast?',
+          PREPARED: 'Vill du verkligen återställa dokumentet till upprättad?',
           CITIZEN_DRAFT:
-            'Haluatko varmasti palauttaa asiakirjan kuntalaisen täytettäväksi?',
+            'Vill du verkligen återställa dokumentet till för kommuninvånare att fylla i?',
           DECISION_PROPOSAL:
-            'Haluatko varmasti palauttaa päätöksen päätösesitykseksi?', // not applicable,
-          COMPLETED: 'Haluatko varmasti palauttaa asiakirjan valmiiksi?' // not applicable,
+            'Vill du verkligen återställa beslutet till beslutsförslag?', // not applicable,
+          COMPLETED: 'Vill du verkligen återställa dokumentet till färdig?' // not applicable,
         },
         goBackToDraftConfirmText:
-          'Luonnosvaiheessa voit muokata asiakirjan tietoja.',
-        deleteDraft: 'Poista luonnos',
-        deleteDraftConfirmTitle: 'Haluatko varmasti poistaa luonnoksen?',
-        fullyPublished: 'Asiakirjan viimeisin versio on julkaistu',
+          'I utkastfasen kan du redigera dokumentets uppgifter.',
+        deleteDraft: 'Ta bort utkast',
+        deleteDraftConfirmTitle: 'Vill du verkligen ta bort utkastet?',
+        fullyPublished: 'Dokumentets senaste version är publicerad',
         notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
-          `Asiakirjassa on julkaisemattomia muutoksia ${
-            publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
+          `Dokumentet har opublicerade ändringar${
+            publishedAt ? ` (publicerad ${publishedAt.format()})` : ''
           }`,
-        decisionMaker: 'Päätöksen tekijä',
-        notSet: 'Ei asetettu'
+        decisionMaker: 'Beslutsfattare',
+        notSet: 'Inte angiven'
       }
     },
     assistanceNeedPreschoolDecision: {
-      sectionTitle: 'Päätökset tuesta esiopetuksessa',
+      sectionTitle: 'Beslut om stöd i förskolan',
       statuses: {
-        DRAFT: 'Luonnos',
-        NEEDS_WORK: 'Korjattava',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty',
-        ANNULLED: 'Mitätöity'
+        DRAFT: 'Utkast',
+        NEEDS_WORK: 'Att korrigera',
+        ACCEPTED: 'Godkänd',
+        REJECTED: 'Avslagen',
+        ANNULLED: 'Annullerad'
       },
-      annulmentReason: 'Päätöksen mitätöinnin perustelu',
-      pageTitle: 'Päätös tuesta esiopetuksessa',
-      decisionNumber: 'Päätösnumero',
-      confidential: 'Salassa pidettävä',
-      lawReference: 'JulkL 24.1 §',
+      annulmentReason: 'Motivering för annullering av beslut',
+      pageTitle: 'Beslut om stöd i förskolan',
+      decisionNumber: 'Beslutsnummer',
+      confidential: 'Sekretessbelagd',
+      lawReference: 'OffL 24.1 §',
       types: {
-        NEW: 'Erityinen tuki alkaa',
-        CONTINUING: 'Erityinen tuki jatkuu',
-        TERMINATED: 'Erityinen tuki päättyy'
+        NEW: 'Särskilt stöd börjar',
+        CONTINUING: 'Särskilt stöd fortsätter',
+        TERMINATED: 'Särskilt stöd upphör'
       },
-      decidedAssistance: 'Päätettävä tuki',
-      type: 'Erityisen tuen tila',
-      validFrom: 'Voimassa alkaen',
+      decidedAssistance: 'Stöd som beslutas',
+      type: 'Det särskilda stödets status',
+      validFrom: 'I kraft från och med',
       validFromInfo: (): React.ReactNode => (
         <ul>
           <li>
-            Erityinen tuki alkaa merkitään huoltajien kuulemispäivämäärästä tai
-            esiopetuksen alkamispäivästä (jos päätös tehdään ennen esiopetuksen
-            alkua)
+            Särskilt stöd börjar noteras från och med datumet för hörandet av
+            vårdnadshavarna eller från och med förskolans startdatum (om
+            beslutet fattas innan förskolan börjar)
           </li>
           <li>
-            Erityinen tuki jatkuu merkitään, kun lapsi vaihtaa
-            esiopetusyksikköä/tukimuotoihin (esim. lapsi siirtyy erityisryhmään)
-            tulee muutoksia/saa päätöksen koululykkäyksestä
+            Särskilt stöd fortsätter noteras när barnet byter
+            förskoleenhet/stödformer (t.ex. barnet flyttas till en specialgrupp)
+            blir föremål för ändringar/får beslut om uppskjuten skolstart
           </li>
           <li>
-            Erityinen tuki päättyy merkitään, kun erityinen tuki esiopetuksessa
-            puretaan
+            Särskilt stöd upphör noteras när det särskilda stödet i förskolan
+            avbryts
           </li>
         </ul>
       ),
-      validTo: 'Voimassa päättyen',
-      extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
-      extendedCompulsoryEducation:
-        'Kyllä, lapsella on pidennetty oppivelvollisuus',
-      no: 'Ei',
-      extendedCompulsoryEducationInfo:
-        'Lisätiedot pidennetystä oppivelvollisuudesta',
-      extendedCompulsoryEducationInfoInfo: (): React.ReactNode => 'infoa',
+      validTo: 'I kraft t.o.m.',
+      extendedCompulsoryEducationSection: 'Förlängd läroplikt',
+      extendedCompulsoryEducation: 'Ja, barnet har förlängd läroplikt',
+      no: 'Nej',
+      extendedCompulsoryEducationInfo: 'Mer information om förlängd läroplikt',
+      extendedCompulsoryEducationInfoInfo: (): React.ReactNode => 'info',
       grantedAssistanceSection:
-        'Myönnettävät tulkitsemis- ja avustajapalvelut tai erityiset apuvälineet',
+        'Tolknings- och assistenttjänster eller särskilda hjälpmedel som beviljas',
       grantedAssistanceSectionInfo: (): React.ReactNode =>
-        'Merkitään jos lapselle myönnetään avustamis-/tulkitsemispalveluita tai apuvälineitä. Kirjataan perusteluihin ”Lapselle myönnetään perusopetuslain 31§ mukaisena tukipalveluna avustamispalvelua/tarvittavat erityiset apuvälineet/tulkitsemispalvelua/opetuksen poikkeava järjestäminen” sekä lyhyt perustelu.',
-      grantedAssistanceService: 'Lapselle myönnetään avustajapalveluita',
-      grantedInterpretationService: 'Lapselle myönnetään tulkitsemispalveluita',
-      grantedAssistiveDevices: 'Lapselle myönnetään erityisiä apuvälineitä',
-      grantedNothing: 'Ei valintaa',
+        'Antecknas om barnet beviljas assistans-/tolkningstjänster eller hjälpmedel. I motiveringarna antecknas "Barnet beviljas enligt grundskolelagen 31§ assistanstjänster/nödvändiga särskilda hjälpmedel/tolkningstjänster/avvikande ordnande av undervisning" samt en kort motivering.',
+      grantedAssistanceService: 'Barnet beviljas assistenttjänster',
+      grantedInterpretationService: 'Barnet beviljas tolkningstjänster',
+      grantedAssistiveDevices: 'Barnet beviljas särskilda hjälpmedel',
+      grantedNothing: 'Inget val',
       grantedServicesBasis:
-        'Perustelut myönnettäville tulkitsemis- ja avustajapalveluille ja apuvälineille',
-      selectedUnit: 'Esiopetuksen järjestämispaikka',
-      primaryGroup: 'Pääsääntöinen opetusryhmä',
+        'Motiveringar till de tolknings- och assistenttjänster och hjälpmedel som beviljas',
+      selectedUnit: 'Plats för förskoleundervisning',
+      primaryGroup: 'Huvudsaklig undervisningsgrupp',
       primaryGroupInfo: (): React.ReactNode =>
-        'Kirjaa tähän ryhmän muoto erityisryhmä/pedagogisesti vahvistettu ryhmä/esiopetusryhmä/3-5-vuotiaiden ryhmä.',
-      decisionBasis: 'Perustelut päätökselle',
+        'Anteckna här gruppens form specialgrupp/pedagogiskt förstärkt grupp/förskolegrupp/grupp för 3-5-åringar.',
+      decisionBasis: 'Motiveringar till beslutet',
       decisionBasisInfo: (): React.ReactNode =>
-        'Kirjaa mihin selvityksiin päätös perustuu (pedagoginen selvitys ja/tai psykologinen tai lääketieteellinen lausunto sekä päivämäärät). Jos lapselle on myönnetty pidennetty oppivelvollisuus, kirjataan ”lapselle on tehty pidennetyn oppivelvollisuuden päätös pvm."',
-      documentBasis: 'Asiakirjat, joihin päätös perustuu',
+        'Anteckna vilka utredningar beslutet grundar sig på (pedagogisk utredning och/eller psykologiskt eller medicinskt utlåtande samt datum). Om barnet har beviljats förlängd läroplikt, antecknas "barnet har ett beslut om förlängd läroplikt datum."',
+      documentBasis: 'Handlingar som beslutet grundar sig på',
       documentBasisInfo: (): React.ReactNode =>
-        'Liitteenä voi olla myös huoltajan yksilöity valtakirja, huoltajan nimi ja päivämäärä.',
-      basisDocumentPedagogicalReport: 'Pedagoginen selvitys',
-      basisDocumentPsychologistStatement: 'Psykologin lausunto',
-      basisDocumentDoctorStatement: 'Lääkärin lausunto',
-      basisDocumentSocialReport: 'Sosiaalinen selvitys',
-      basisDocumentOtherOrMissing: 'Liite puuttuu, tai muu liite, mikä?',
-      basisDocumentsInfo: 'Lisätiedot liitteistä',
-      guardianCollaborationSection: 'Huoltajien kanssa tehty yhteistyö',
-      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
-      heardGuardians: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+        'Som bilaga kan också finnas vårdnadshavarens specificerade fullmakt, vårdnadshavarens namn och datum.',
+      basisDocumentPedagogicalReport: 'Pedagogisk utredning',
+      basisDocumentPsychologistStatement: 'Psykologutlåtande',
+      basisDocumentDoctorStatement: 'Läkarutlåtande',
+      basisDocumentSocialReport: 'Social utredning',
+      basisDocumentOtherOrMissing: 'Bilaga saknas, eller annan bilaga, vilken?',
+      basisDocumentsInfo: 'Ytterligare information om bilagor',
+      guardianCollaborationSection: 'Samarbete med vårdnadshavare',
+      guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
+      heardGuardians: 'Vårdnadshavare som har hörts och hörandesätt',
       heardGuardiansInfo: (): React.ReactNode =>
-        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajien kirjallinen vastine, valtakirja). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi.',
+        'Anteckna här med vilka medel vårdnadshavaren har hörts (t.ex. möte, distansförbindelse, vårdnadshavarnas skriftliga svar, fullmakt). Om vårdnadshavaren inte har hörts, anteckna här en utredning om hur och när hen har kallats till hörande.',
       otherRepresentative:
-        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
-      viewOfGuardians: 'Huoltajien näkemys esitetystä tuesta',
+        'Annan laglig företrädare (namn, telefonnummer och hörandesätt)',
+      viewOfGuardians: 'Vårdnadshavarnas syn på det föreslagna stödet',
       viewOfGuardiansInfo: (): React.ReactNode => (
         <div>
           <p>
-            Kirjaa selkeästi huoltajien mielipide. Mikäli huoltajat ovat
-            haettavista opetusjärjestelyistä eri mieltä, niin perustelut tulee
-            kirjata tarkasti.
+            Anteckna tydligt vårdnadshavarnas åsikt. Om vårdnadshavarna har
+            olika åsikter om de sökta undervisningsarrangemangen, ska
+            motiveringarna antecknas noggrant.
           </p>
           <p>
-            Kirjaa tähän myös lapsen mielipide asiaan tai kirjaa ”lapsi ei
-            ikänsä ja/tai kehitystasonsa puolesta pysty ilmaisemaan
-            mielipidettään”.
+            Anteckna här också barnets åsikt i ärendet eller anteckna
+            &quot;barnet kan inte på grund av sin ålder och/eller
+            utvecklingsnivå uttrycka sin åsikt&quot;.
           </p>
         </div>
       ),
-      responsiblePeople: 'Vastuuhenkilöt',
-      preparer: 'Päätöksen valmistelija',
-      decisionMaker: 'Päätöksen tekijä',
-      employeeTitle: 'Titteli',
-      phone: 'Puhelinnumero',
-      legalInstructions: 'Sovelletut oikeusohjeet',
-      legalInstructionsText: 'Perusopetuslaki 17 §',
-      legalInstructionsTextExtendedCompulsoryEducation:
-        'Oppivelvollisuulaki 2 §',
-      jurisdiction: 'Toimivalta',
+      responsiblePeople: 'Ansvariga personer',
+      preparer: 'Beslutsberedare',
+      decisionMaker: 'Beslutsfattare',
+      employeeTitle: 'Titel',
+      phone: 'Telefonnummer',
+      legalInstructions: 'Tillämpade rättsregler',
+      legalInstructionsText: 'Grundskolelagen 17 §',
+      legalInstructionsTextExtendedCompulsoryEducation: 'Läropliktslag 2 §',
+      jurisdiction: 'Behörighet',
       jurisdictionText:
-        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta' as
+        'Delegationsbeslut om den finskspråkiga småbarnspedagogikens samt sektorns för tillväxt och lärande stabs beslutsrätt A del 3 § 1 punkt' as
           | string
           | React.ReactNode,
       disclaimer: null as string | null,
-      appealInstructionsTitle: 'Oikaisuvaatimusohje',
+      appealInstructionsTitle: 'Anvisning för begäran om omprövning',
       appealInstructions: (
         <>
           <P>
-            Tähän päätökseen tyytymätön voi tehdä kirjallisen
-            oikaisuvaatimuksen. Päätökseen ei saa hakea muutosta valittamalla
-            tuomioistuimeen.
+            Den som är missnöjd med detta beslut kan göra en skriftlig begäran
+            om omprövning. Beslutet kan inte överklagas genom besvär till
+            domstol.
           </P>
 
-          <H3>Oikaisuvaatimusoikeus</H3>
+          <H3>Rätt att begära omprövning</H3>
           <P>
-            Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
-            jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
-            vaikuttaa (asianosainen).
+            Omprövning får begäras av den som beslutet riktar sig till eller
+            vars rätt, skyldighet eller fördel direkt påverkas av beslutet
+            (part).
           </P>
 
-          <H3>Oikaisuvaatimusaika</H3>
+          <H3>Tid för begäran om omprövning</H3>
           <P>
-            Oikaisuvaatimus on tehtävä 14 päivän kuluessa päätöksen
-            tiedoksisaannista.
+            Begäran om omprövning ska göras inom 14 dagar från delfåendet av
+            beslutet.
           </P>
           <P>
-            Oikaisuvaatimus on toimitettava Etelä-Suomen aluehallintovirastolle
-            viimeistään määräajan viimeisenä päivänä ennen Etelä-Suomen
-            aluehallintoviraston aukioloajan päättymistä.
+            Begäran om omprövning ska ha kommit fram till
+            Regionförvaltningsverket i Södra Finland senast den sista dagen av
+            fristen före Regionförvaltningsverket i Södra Finlands öppettid
+            upphör.
           </P>
           <P>
-            Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-            näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
-            saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.
+            En part anses ha fått del av beslutet, om inte annat visas, sju
+            dagar efter att brevet avsändes eller den dag som antecknats i
+            mottagningsbeviset eller delgivningsbeviset.
           </P>
           <P>
-            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
-            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä,
-            kolmantena päivänä viestin lähettämisestä.
+            Vid användning av vanlig elektronisk delgivning anses parten ha fått
+            del av beslutet, om inte annat visas, den tredje dagen efter att
+            meddelandet sändes.
           </P>
           <P>
-            Tiedoksisaantipäivää ei lueta oikaisuvaatimusaikaan. Jos
-            oikaisuvaatimusajan viimeinen päivä on pyhäpäivä, itsenäisyyspäivä,
-            vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa
-            oikaisuvaatimuksen tehdä ensimmäisenä arkipäivänä sen jälkeen.
+            Dagen för delfående räknas inte in i tiden för begäran om
+            omprövning. Om den sista dagen för begäran om omprövning är en
+            helgdag, självständighetsdagen, första maj, jul- eller
+            midsommarafton eller en helgfri lördag, får begäran om omprövning
+            göras den första vardagen därefter.
           </P>
 
-          <H3>Oikaisuviranomainen</H3>
+          <H3>Omprövningsmyndighet</H3>
           <P>
-            Viranomainen, jolle oikaisuvaatimus tehdään, on Etelä-Suomen
-            aluehallintovirasto
+            Den myndighet till vilken begäran om omprövning riktas är
+            Regionförvaltningsverket i Södra Finland
           </P>
           <P>
-            Postiosoite: PL 1, 13035 AVI
+            Postadress: PB 1, 13035 RFV
             <br />
-            Helsingin toimipaikan käyntiosoite: Ratapihantie 9, 00521 Helsinki
+            Besöksadress för enheten i Helsingfors: Bangårdsvägen 9, 00520
+            Helsingfors
             <br />
-            Sähköpostiosoite: kirjaamo.etela@avi.fi
+            E-postadress: registratur.sodra@rfv.fi
             <br />
-            Puhelinvaihde: 0295 016 000
+            Telefonväxel: 0295 016 000
             <br />
-            Faksinumero: 0295 016 661
+            Faxnummer: 0295 016 661
             <br />
-            Virastoaika: ma-pe 8.00–16.15
+            Ämbetsverkets öppettider: må-fr 8.00–16.15
           </P>
-          <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
+          <H3>Begärans form och innehåll</H3>
           <P>
-            Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
-            täyttää vaatimuksen kirjallisesta muodosta.
+            Begäran om omprövning ska göras skriftligt. Även elektroniska
+            dokument uppfyller kravet på skriftlig form.
           </P>
-          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <P noMargin>I begäran om omprövning ska anges</P>
           <ul>
-            <li>päätös, johon vaaditaan oikaisua,</li>
-            <li>millaista oikaisua päätökseen vaaditaan,</li>
-            <li>millä perusteilla oikaisua vaaditaan</li>
+            <li>det beslut som begäran om omprövning gäller,</li>
+            <li>på vilket sätt beslutet ska omprövas,</li>
+            <li>på vilka grunder omprövning begärs</li>
           </ul>
           <P>
-            Oikaisuvaatimuksessa on lisäksi ilmoitettava tekijän nimi,
-            kotikunta, postiosoite, puhelinnumero ja muut asian hoitamiseksi
-            tarvittavat yhteystiedot.
+            I begäran om omprövning ska dessutom anges uppgiftsgivarens namn,
+            hemkommun, postadress, telefonnummer och övriga kontaktuppgifter som
+            behövs för skötseln av ärendet.
           </P>
           <P>
-            Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
-            viestinä, yhteystietona pyydetään ilmoittamaan myös
-            sähköpostiosoite.
+            Om omprövningsbeslutet kan delges elektroniskt som ett meddelande,
+            ber vi om att även e-postadress anges som kontaktuppgift.
           </P>
           <P>
-            Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen
-            edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on
-            joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän
-            nimi ja kotikunta.
+            Om den som gjort begäran om omprövning inte själv sköter sin talan,
+            utan genom sin lagliga företrädare eller ombud, eller om någon annan
+            person har upprättat begäran, ska även denna persons namn och
+            hemkommun anges i begäran om omprövning.
           </P>
-          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <P noMargin>Till begäran om omprövning ska fogas</P>
           <ul>
+            <li>det beslut som överklagas i original eller som kopia</li>
             <li>
-              päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+              intyg över vilken dag beslutet har delgetts, eller annan utredning
+              om när tiden för begäran om omprövning började
             </li>
             <li>
-              todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
-              selvitys oikaisuvaatimusajan alkamisen ajankohdasta
-            </li>
-            <li>
-              asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
-              oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
-              toimitettu viranomaiselle.
+              de handlingar som den som begär omprövning åberopar till stöd för
+              sin begäran, om de inte redan tidigare har lämnats till
+              myndigheten.
             </li>
           </ul>
         </>
       )
     },
     assistanceNeedDecision: {
-      pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
-      annulmentReason: 'Päätöksen mitätöinnin perustelu',
-      sectionTitle: 'Päätökset tuesta varhaiskasvatuksessa',
+      pageTitle: 'Beslut om stöd i småbarnspedagogiken',
+      annulmentReason: 'Motivering för annullering av beslut',
+      sectionTitle: 'Beslut om stöd i småbarnspedagogiken',
       deprecated:
-        'Täältä löydät toistaiseksi vanhan malliset tuen päätökset. Uudet päätökset tehdään osiossa Lapsen asiakirjat > Muut päätökset.',
+        'Här hittar du tills vidare beslut om stöd enligt den gamla modellen. Nya beslut görs i avsnittet Barnets dokument > Andra beslut.',
       description:
-        'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
+        'Godkända och avslagna beslut om stöd syns för vårdnadshavaren i eVaka.',
       table: {
-        form: 'Asiakirja',
-        inEffect: 'Voimassa',
-        unit: 'Yksikkö',
-        sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
-        decisionMadeOn: 'Päätös tehty',
-        status: 'Tila'
+        form: 'Dokument',
+        inEffect: 'I kraft',
+        unit: 'Enhet',
+        sentToDecisionMaker: 'Skickad till beslutsfattare',
+        decisionMadeOn: 'Beslut fattat',
+        status: 'Status'
       },
-      create: 'Luo uusi päätös',
+      create: 'Skapa nytt beslut',
       modal: {
-        delete: 'Poista päätös',
-        title: 'Poistetaanko päätös?',
+        delete: 'Ta bort beslut',
+        title: 'Ska beslutet tas bort?',
         description:
-          'Haluatko varmasti poistaa päätöspohjan? Kaikki päätöspohjaan täydennetyt tiedot menetetään.'
+          'Vill du verkligen ta bort beslutsmallen? Alla uppgifter som fyllts i i beslutsmallen går förlorade.'
       },
       validation: {
-        title: 'Päätösesityksen tarkistus',
+        title: 'Granskning av beslutsförslag',
         description:
-          'Ole hyvä ja tarkista seuraavat tiedot päätösesityksestä ennen esikatselua:'
+          'Var god och granska följande uppgifter från beslutsförslaget före förhandsgranskning:'
       },
-      genericPlaceholder: 'Kirjoita',
-      formLanguage: 'Lomakkeen kieli',
-      neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
-      pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
+      genericPlaceholder: 'Skriv',
+      formLanguage: 'Blankett språk',
+      neededTypesOfAssistance: 'De former av stöd barnet behöver',
+      pedagogicalMotivation: 'Pedagogiska stödformer och motiveringar',
       pedagogicalMotivationInfo:
-        'Kirjaa tähän esitys lapsen tarvitsemista pedagogisen tuen muodoista, esim. päivän rakenteeseen, päivärytmiin ja oppimisympäristöihin liityvät ratkaisut sekä pedagogiset ja erityispedagogiset ratkaisut. Perustele lyhyesti, miksi lapsi saa näitä tuen muotoja.',
-      structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
+        'Anteckna här förslaget på de pedagogiska stödformer barnet behöver, t.ex. lösningar relaterade till dagens struktur, dagsrytm och lärmiljöer samt pedagogiska och specialpedagogiska lösningar. Motivera kort varför barnet får dessa stödformer.',
+      structuralMotivation: 'Strukturella stödformer och motiveringar',
       structuralMotivationInfo:
-        'Valitse lapsen tarvitsemat rakenteellisen tuen muodot. Perustele, miksi lapsi saa näitä tuen muotoja.',
+        'Välj de strukturella stödformer barnet behöver. Motivera varför barnet får dessa stödformer.',
       structuralMotivationOptions: {
-        smallerGroup: 'Ryhmäkoon pienennys',
-        specialGroup: 'Erityisryhmä',
-        smallGroup: 'Pienryhmä',
-        groupAssistant: 'Ryhmäkohtainen avustaja',
-        childAssistant: 'Lapsikohtainen avustaja',
-        additionalStaff: 'Henkilöresurssin lisäys'
+        smallerGroup: 'Minskning av gruppstorlek',
+        specialGroup: 'Specialgrupp',
+        smallGroup: 'Liten grupp',
+        groupAssistant: 'Gruppspecifik assistent',
+        childAssistant: 'Barnspecifik assistent',
+        additionalStaff: 'Ökning av personalresurs'
       },
       structuralMotivationPlaceholder:
-        'Valittujen rakenteellisten tuen muotojen kuvaus ja perustelut',
-      careMotivation: 'Hoidolliset tuen muodot ja perustelut',
+        'Beskrivning och motiveringar för valda strukturella stödformer',
+      careMotivation: 'Vårdrelaterade stödformer och motiveringar',
       careMotivationInfo:
-        'Kirjaa tähän lapsen tarvitsemat hoidollisen tuen muodot, esim. menetelmät lapsen hoitoon, hoivaan ja avustamiseen huomioiden pitkäaikaissairauksien hoito, lääkitys, ruokavalio, liikkuminen ja näihin liittyvät apuvälineet. Perustele, miksi lapsi saa näitä tuen muotoja.',
+        'Anteckna här de vårdrelaterade stödformer barnet behöver, t.ex. metoder för barnets vård, omvårdnad och assistans med beaktande av vård av långvariga sjukdomar, medicinering, kost, förflyttning och relaterade hjälpmedel. Motivera varför barnet får dessa stödformer.',
       serviceOptions: {
         consultationSpecialEd:
-          'Varhaiskasvatuksen erityisopettajan antama konsultaatio',
+          'Konsultation av speciallärare i småbarnspedagogik',
         partTimeSpecialEd:
-          'Varhaiskasvatuksen erityisopettajan osa-aikainen opetus',
+          'Deltidsundervisning av speciallärare i småbarnspedagogik',
         fullTimeSpecialEd:
-          'Varhaiskasvatuksen erityisopettajan kokoaikainen opetus',
-        interpretationAndAssistanceServices:
-          'Tulkitsemis- ja avustamispalvelut',
-        specialAides: 'Apuvälineet'
+          'Heltidsundervisning av speciallärare i småbarnspedagogik',
+        interpretationAndAssistanceServices: 'Tolknings- och assistanstjänster',
+        specialAides: 'Hjälpmedel'
       },
-      services: 'Tukipalvelut ja perustelut',
+      services: 'Stödtjänster och motiveringar',
       servicesInfo:
-        'Valitse tästä lapselle esitettävät tukipalvelut. Perustele, miksi lapsi saa näitä tukipalveluja',
-      servicesPlaceholder: 'Perustelut valituille tukipalveluille',
-      collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
-      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
-      guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+        'Välj här de stödtjänster som föreslås för barnet. Motivera varför barnet får dessa stödtjänster',
+      servicesPlaceholder: 'Motiveringar för valda stödtjänster',
+      collaborationWithGuardians: 'Samarbete med vårdnadshavare',
+      guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
+      guardiansHeard: 'Vårdnadshavare som hörts och hörandesätt',
       guardiansHeardInfo:
-        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
-      guardiansHeardValidation: 'Kaikkia huoltajia tulee olla kuultu.',
-      oneAssistanceLevel: 'Valitse vain yksi tuen taso',
-      viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
+        'Anteckna här med vilka medel vårdnadshavaren har hörts (t.ex. möte, distansförbindelse, vårdnadshavarens skriftliga svar). Om vårdnadshavaren inte har hörts, anteckna här en utredning om hur och när hen har kallats för att höras, och hur och när barnets plan för småbarnspedagogik har delgivits vårdnadshavaren.\nAlla barnets vårdnadshavare ska ha möjlighet att höras. Vårdnadshavaren kan vid behov ge fullmakt åt en annan vårdnadshavare att representera sig.',
+      guardiansHeardValidation: 'Alla vårdnadshavare ska ha hörts.',
+      oneAssistanceLevel: 'Välj endast en stödnivå',
+      viewOfTheGuardians: 'Vårdnadshavarnas syn på det föreslagna stödet',
       viewOfTheGuardiansInfo:
-        'Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.',
+        'Anteckna här vårdnadshavarnas syn på det stöd som föreslås för barnet.',
       otherLegalRepresentation:
-        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
-      decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
-      futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
+        'Annan laglig företrädare (namn, telefonnummer och hörandesätt)',
+      decisionAndValidity: 'Stödnivå som ska beslutas och giltighetstid',
+      futureLevelOfAssistance: 'Barnets stödnivå framöver',
       assistanceLevel: {
-        assistanceEnds: 'Erityinen/tehostettu tuki päättyy',
-        assistanceServicesForTime: 'Tukipalvelut päätöksen voimassaolon aikana',
-        enhancedAssistance: 'Tehostettu tuki',
-        specialAssistance: 'Erityinen tuki'
+        assistanceEnds: 'Särskilt/intensifierat stöd upphör',
+        assistanceServicesForTime: 'Stödtjänster under beslutets giltighetstid',
+        enhancedAssistance: 'Intensifierat stöd',
+        specialAssistance: 'Särskilt stöd'
       },
-      startDate: 'Voimassa alkaen',
+      startDate: 'I kraft från och med',
       startDateIndefiniteInfo:
-        'Tuki on voimassa toistaiseksi alkamispäivästä alkaen.',
+        'Stödet gäller tills vidare från och med startdatumet.',
       startDateInfo:
-        'Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
-      endDate: 'Päätös voimassa saakka',
-      endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
-      selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
+        'Barnets stöd granskas alltid när stödbehovet förändras och minst en gång per år.',
+      endDate: 'Beslut i kraft t.o.m.',
+      endDateServices: 'Beslut i kraft för stödtjänster t.o.m.',
+      selectedUnit: 'Småbarnspedagogikenhet vald för beslutet',
       unitMayChange:
-        'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
-      motivationForDecision: 'Perustelut lapsen tuen tasolle',
-      legalInstructions: 'Sovelletut oikeusohjeet',
-      legalInstructionsText: 'Varhaiskasvatuslaki, 3 a luku',
-      jurisdiction: 'Toimivalta',
+        'Under semesterperioder kan platsen och sättet för ordnandet av stöd förändras.',
+      motivationForDecision: 'Motiveringar för barnets stödnivå',
+      legalInstructions: 'Tillämpade rättsregler',
+      legalInstructionsText: 'Lagen om småbarnspedagogik, kapitel 3 a',
+      jurisdiction: 'Behörighet',
       jurisdictionText: (): React.ReactNode =>
-        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
-      personsResponsible: 'Vastuuhenkilöt',
-      preparator: 'Päätöksen valmistelija',
-      decisionMaker: 'Päätöksen tekijä',
-      title: 'Titteli',
-      tel: 'Puhelinnumero',
+        'Delegationsbeslut om den finskspråkiga småbarnspedagogikens samt sektorns för tillväxt och lärande stabs beslutsrätt A del 3 § 3 punkt',
+      personsResponsible: 'Ansvariga personer',
+      preparator: 'Beslutsberedare',
+      decisionMaker: 'Beslutsfattare',
+      title: 'Titel',
+      tel: 'Telefonnummer',
       disclaimer:
-        'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
-      decisionNumber: 'Päätösnumero',
-      endDateNotKnown: 'Tukipalvelun päättymisajankohta ei tiedossa',
+        'Enligt 15 e § i lagen om småbarnspedagogik kan detta beslut verkställas trots ändringssökande.',
+      decisionNumber: 'Beslutsnummer',
+      endDateNotKnown: 'Slutdatum för stödtjänst är okänt',
       statuses: {
-        DRAFT: 'Luonnos',
-        NEEDS_WORK: 'Korjattava',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty',
-        ANNULLED: 'Mitätöity'
+        DRAFT: 'Utkast',
+        NEEDS_WORK: 'Att korrigera',
+        ACCEPTED: 'Godkänd',
+        REJECTED: 'Avslagen',
+        ANNULLED: 'Annullerad'
       },
-      confidential: 'Salassa pidettävä',
-      lawReference: 'Varhaiskasvatuslaki 40 §',
-      noRecord: 'Ei merkintää',
-      leavePage: 'Poistu',
-      preview: 'Esikatsele',
-      modifyDecision: 'Muokkaa',
-      sendToDecisionMaker: 'Lähetä päätöksen tekijälle',
-      revertToUnsent: 'Palauta takaisin lähettämättömäksi',
-      sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
-      appealInstructionsTitle: 'Oikaisuvaatimusohje',
+      confidential: 'Sekretessbelagd',
+      lawReference: 'Lagen om småbarnspedagogik 40 §',
+      noRecord: 'Ingen anteckning',
+      leavePage: 'Lämna',
+      preview: 'Förhandsgranska',
+      modifyDecision: 'Redigera',
+      sendToDecisionMaker: 'Skicka till beslutsfattare',
+      revertToUnsent: 'Återställ till oskickad',
+      sentToDecisionMaker: 'Skickad till beslutsfattare',
+      appealInstructionsTitle: 'Anvisning för begäran om omprövning',
       appealInstructions: (
         <>
-          <H3>Oikaisuvaatimusoikeus</H3>
+          <H3>Rätt att begära omprövning</H3>
           <P>
-            Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
-            jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
-            vaikuttaa (asianosainen).
+            Omprövning får begäras av den som beslutet riktar sig till eller
+            vars rätt, skyldighet eller fördel direkt påverkas av beslutet
+            (part).
           </P>
-          <H3>Oikaisuvaatimusaika</H3>
+          <H3>Tid för begäran om omprövning</H3>
           <P>
-            Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
-            tiedoksisaannista.
+            Begäran om omprövning ska göras inom 30 dagar från delfåendet av
+            beslutet.
           </P>
-          <H3>Tiedoksisaanti</H3>
+          <H3>Delfående</H3>
           <P>
-            Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-            näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
-            saantitodistukseen tai tiedoksiantotodistukseen merkittynä päivänä.
-            Käytettäessä tavallista sähköistä tiedoksiantoa asianosaisen
-            katsotaan saaneen päätöksestä tiedon, jollei muuta näytetä
-            kolmantena päivänä viestin lähettämisestä. Tiedoksisaantipäivää ei
-            lueta määräaikaan. Jos määräajan viimeinen päivä on pyhäpäivä,
-            itsenäisyyspäivä, vapunpäivä, joulu- tai juhannusaatto tai
-            arkilauantai, saa tehtävän toimittaa ensimmäisenä arkipäivänä sen
-            jälkeen.
+            En part anses ha fått del av beslutet, om inte annat visas, sju
+            dagar efter att brevet avsändes eller den dag som antecknats i
+            mottagningsbeviset eller delgivningsbeviset. Vid användning av
+            vanlig elektronisk delgivning anses parten ha fått del av beslutet,
+            om inte annat visas, den tredje dagen efter att meddelandet sändes.
+            Dagen för delfående räknas inte in i fristen. Om fristens sista dag
+            är en helgdag, självständighetsdagen, första maj, jul- eller
+            midsommarafton eller en helgfri lördag, får uppgiften lämnas in den
+            första vardagen därefter.
           </P>
-          <H3>Oikaisuviranomainen</H3>
-          <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
+          <H3>Omprövningsmyndighet</H3>
+          <P>Omprövning begärs hos Regionförvaltningsverket i Södra Finland.</P>
           <P>
-            Etelä-Suomen aluehallintovirasto
+            Regionförvaltningsverket i Södra Finland
             <br />
-            Käyntiosoite: Ratapihantie 9, 00521 Helsinki
+            Besöksadress: Bangårdsvägen 9, 00520 Helsingfors
             <br />
-            Virastoaika: ma-pe 8.00–16.15
+            Ämbetsverkets öppettider: må-fr 8.00–16.15
             <br />
-            Postiosoite: PL 1, 13035 AVI
+            Postadress: PB 1, 13035 RFV
             <br />
-            Sähköposti: kirjaamo.etela@avi.fi
+            E-post: registratur.sodra@rfv.fi
             <br />
             Fax: 0295 016 661
             <br />
-            Puhelin: 0295 016 000
+            Telefon: 0295 016 000
           </P>
-          <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
+          <H3>Begärans form och innehåll</H3>
           <P>
-            Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
-            täyttää vaatimuksen kirjallisesta muodosta.
+            Begäran om omprövning ska göras skriftligt. Även elektroniska
+            dokument uppfyller kravet på skriftlig form.
           </P>
-          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <P noMargin>I begäran om omprövning ska anges</P>
           <ul>
             <li>
-              Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
-              puhelinnumero ja muut asian hoitamiseksi tarvittavat yhteystiedot
+              Den som begär omprövnings namn, hemkommun, postadress,
+              telefonnummer och övriga kontaktuppgifter som behövs för skötseln
+              av ärendet
             </li>
-            <li>päätös, johon haetaan oikaisua</li>
+            <li>det beslut som överklagas</li>
             <li>
-              miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
-              vaaditaan tehtäväksi
+              till vilka delar omprövning begärs och vilken omprövning som krävs
             </li>
-            <li>vaatimuksen perusteet</li>
+            <li>grunderna för kravet</li>
           </ul>
           <P>
-            Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
-            viestinä, yhteystietona pyydetään ilmoittamaan myös
-            sähköpostiosoite.
+            Om omprövningsbeslutet kan delges elektroniskt som ett meddelande,
+            ber vi om att även e-postadress anges som kontaktuppgift.
           </P>
           <P>
-            Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen
-            edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana on
-            joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän
-            nimi ja kotikunta.
+            Om den som gjort begäran om omprövning inte själv sköter sin talan,
+            utan genom sin lagliga företrädare eller ombud, eller om någon annan
+            person har upprättat begäran om omprövning, ska även denna persons
+            namn och hemkommun anges i begäran.
           </P>
-          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <P noMargin>Till begäran om omprövning ska fogas</P>
           <ul>
+            <li>det beslut som överklagas i original eller som kopia</li>
             <li>
-              päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+              intyg över vilken dag beslutet har delgetts, eller annan utredning
+              om när tiden för begäran om omprövning började
             </li>
             <li>
-              todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
-              selvitys oikaisuvaatimusajan alkamisen ajankohdasta
-            </li>
-            <li>
-              asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
-              oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
-              toimitettu viranomaiselle.
+              de handlingar som den som begär omprövning åberopar till stöd för
+              sin begäran, om de inte redan tidigare har lämnats till
+              myndigheten.
             </li>
           </ul>
-          <H3>Oikaisuvaatimuksen toimittaminen</H3>
+          <H3>Lämnande av begäran om omprövning</H3>
           <P>
-            Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan kuluessa
-            oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän tulee olla
-            perillä oikaisuvaatimusajan viimeisenä päivänä ennen viraston
-            aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen postitse tai
-            sähköisesti tapahtuu lähettäjän omalla vastuulla.
+            Skrivelsen med begäran om omprövning ska lämnas in till
+            omprövningsmyndigheten inom tiden för begäran. Skrivelsen ska ha
+            kommit fram den sista dagen av fristen före ämbetsverkets öppettid
+            upphör. Att skicka begäran om omprövning per post eller elektroniskt
+            sker på avsändarens eget ansvar.
           </P>
         </>
       )
     },
     assistanceNeedVoucherCoefficient: {
-      actions: 'Toiminnat',
-      create: 'Aseta uusi palvelusetelikerroin',
+      actions: 'Åtgärder',
+      create: 'Sätt ny servicesedelkoefficient',
       deleteModal: {
-        title: 'Poistetaanko palvelusetelikerroin?',
+        title: 'Ska servicesedelkoefficienten tas bort?',
         description:
-          'Haluatko varmasti poistaa palvelusetelikertoimen? Asiakkaalle ei luoda uutta arvopäätöstä, vaikka kertoimen poistaisi, vaan sinun tulee tehdä uusi takautuva arvopäätös.',
-        delete: 'Poista kerroin'
+          'Vill du verkligen ta bort servicesedelkoefficienten? Ett nytt värdebeslut skapas inte för kunden även om koefficienten tas bort, utan du måste göra ett nytt retroaktivt värdebeslut.',
+        delete: 'Ta bort koefficient'
       },
-      factor: 'Kerroin',
+      factor: 'Koefficient',
       form: {
-        coefficient: 'Palvelusetelikerroin (luku)',
-        editTitle: 'Muokkaa palvelusetelikerrointa',
+        coefficient: 'Servicesedelkoefficient (tal)',
+        editTitle: 'Redigera servicesedelkoefficient',
         errors: {
           previousOverlap:
-            'Aiempi päällekkäinen palvelusetelikerroin katkaistaan automaattisesti.',
+            'Tidigare överlappande servicesedelkoefficient avbryts automatiskt.',
           upcomingOverlap:
-            'Tuleva päällekkäinen palvelusetelikerroin siirretään alkamaan myöhemmin automaattisesti.',
+            'Kommande överlappande servicesedelkoefficient flyttas fram automatiskt.',
           fullOverlap:
-            'Edellinen päällekkäinen palvelusetelikerroin poistetaan automaattisesti.',
-          coefficientRange: 'Kerroin tulee olla välillä 1-10'
+            'Tidigare överlappande servicesedelkoefficient tas bort automatiskt.',
+          coefficientRange: 'Koefficienten ska vara mellan 1-10'
         },
-        title: 'Aseta uusi palvelusetelikerroin',
+        title: 'Sätt ny servicesedelkoefficient',
         titleInfo:
-          'Valitse palvelusetelikertoimen voimassaolopäivämäärät tuen tarpeen päätöksen mukaisesti.',
-        validityPeriod: 'Palvelusetelikerroin voimassa'
+          'Välj giltighetsdatum för servicesedelkoefficienten enligt beslutet om stödbehov.',
+        validityPeriod: 'Servicesedelkoefficient i kraft'
       },
-      lastModified: 'Viimeksi muokattu',
-      lastModifiedBy: (name: string) => `Muokkaaja ${name}.`,
-      sectionTitle: 'Palvelusetelikerroin',
-      status: 'Tila',
-      unknown: 'Ei tiedossa',
-      validityPeriod: 'Voimassaoloaika',
-      voucherCoefficient: 'Palvelusetelikerroin'
+      lastModified: 'Senast redigerad',
+      lastModifiedBy: (name: string) => `Redigerare ${name}.`,
+      sectionTitle: 'Servicesedelkoefficient',
+      status: 'Status',
+      unknown: 'Okänd',
+      validityPeriod: 'Giltighetstid',
+      voucherCoefficient: 'Servicesedelkoefficient'
     },
     application: {
-      title: 'Hakemukset',
-      guardian: 'Hakemuksen tekijä',
-      preferredUnit: 'Haettu yksikkö',
-      startDate: 'Haettu aloituspvm',
-      sentDate: 'Hakemuksen saapumispvm',
-      type: 'Palvelumuoto',
+      title: 'Ansökningar',
+      guardian: 'Ansökan gjord av',
+      preferredUnit: 'Ansökt enhet',
+      startDate: 'Ansökt startdatum',
+      sentDate: 'Ansökan anländ',
+      type: 'Serviceform',
       types: {
-        PRESCHOOL: 'Esiopetus',
-        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-        PREPARATORY_EDUCATION: 'Valmistava opetus',
-        DAYCARE: 'Varhaiskasvatus',
-        DAYCARE_PART_TIME: 'Varhaiskasvatus',
-        CLUB: 'Kerho'
+        PRESCHOOL: 'Förskola',
+        PRESCHOOL_DAYCARE: 'Anknuten småbarnspedagogik',
+        PREPARATORY_EDUCATION: 'Förberedande undervisning',
+        DAYCARE: 'Småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Småbarnspedagogik',
+        CLUB: 'Klubb'
       },
-      status: 'Tila',
+      status: 'Status',
       statuses: {
-        CREATED: 'Luonnos',
-        SENT: 'Saapunut',
-        WAITING_PLACEMENT: 'Odottaa sijoitusta',
-        WAITING_DECISION: 'Päätöksen valmistelu',
-        WAITING_UNIT_CONFIRMATION: 'Odottaa johtajan hyväksyntää',
-        WAITING_MAILING: 'Odottaa postitusta',
-        WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
-        REJECTED: 'Paikka hylätty',
-        ACTIVE: 'Paikka vastaanotettu',
-        CANCELLED: 'Poistettu käsittelystä'
+        CREATED: 'Utkast',
+        SENT: 'Mottagen',
+        WAITING_PLACEMENT: 'Väntar på placering',
+        WAITING_DECISION: 'Beslut under beredning',
+        WAITING_UNIT_CONFIRMATION: 'Väntar på chefens godkännande',
+        WAITING_MAILING: 'Väntar på utskick',
+        WAITING_CONFIRMATION: 'Bekräftas av vårdnadshavare',
+        REJECTED: 'Plats nekad',
+        ACTIVE: 'Plats mottagen',
+        CANCELLED: 'Avförd från behandling'
       },
-      open: 'Avaa hakemus',
+      open: 'Öppna ansökan',
       create: {
-        createButton: 'Luo uusi hakemus',
-        modalTitle: 'Uusi hakemus',
-        applier: 'Hakemuksen tekijä',
+        createButton: 'Skapa ny ansökan',
+        modalTitle: 'Ny ansökan',
+        applier: 'Ansökningslämnare',
         personTypes: {
-          GUARDIAN: 'Valitse huoltajista',
-          DB_SEARCH: 'Hae asiakastiedoista',
-          VTJ: 'Hae VTJ:stä',
-          NEW_NO_SSN: 'Luo uusi hetuton'
+          GUARDIAN: 'Välj från vårdnadshavare',
+          DB_SEARCH: 'Sök i kunduppgifter',
+          VTJ: 'Sök i BIS',
+          NEW_NO_SSN: 'Skapa ny utan personbeteckning'
         },
-        applicationType: 'Hakemustyyppi',
+        applicationType: 'Ansökningstyp',
         applicationTypes: {
-          DAYCARE: 'Varhaiskasvatushakemus',
-          PRESCHOOL: 'Esiopetushakemus',
-          CLUB: 'Kerhohakemus'
+          DAYCARE: 'Ansökan om småbarnspedagogik',
+          PRESCHOOL: 'Ansökan om förskola',
+          CLUB: 'Klubbansökan'
         },
-        sentDate: 'Hakemus saapunut',
-        hideFromGuardian: 'Piilota hakemus huoltajalta',
-        transferApplication: 'Siirtohakemus'
+        sentDate: 'Ansökan mottagen',
+        hideFromGuardian: 'Dölj ansökan för vårdnadshavare',
+        transferApplication: 'Överflyttningsansökan'
       }
     },
     additionalInformation: {
-      title: 'Lisätietoja',
-      allergies: 'Allergiat',
-      diet: 'Erityisruokavalio',
-      additionalInfo: 'Lisätiedot',
-      preferredName: 'Kutsumanimi',
-      medication: 'Lääkitys'
+      title: 'Tilläggsinformation',
+      allergies: 'Allergier',
+      diet: 'Specialdiet',
+      additionalInfo: 'Tilläggsinformation',
+      preferredName: 'Tilltalsnamn',
+      medication: 'Medicinering'
     },
     income: {
-      title: 'Tulotiedot'
+      title: 'Inkomstuppgifter'
     },
     feeAlteration: {
-      title: 'Alennukset, vapautukset ja korotukset',
-      error: 'Maksumuutosten lataus epäonnistui',
-      create: 'Luo uusi maksumuutos',
-      updateError: 'Maksumuutoksen tallennus epäonnistui',
-      deleteError: 'Maksumuutoksen poisto epäonnistui',
-      confirmDelete: 'Haluatko poistaa maksumuutoksen?',
-      lastModifiedAt: (date: string) => `Viimeksi muokattu ${date}`,
-      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
+      title: 'Nedsättningar, befrielser och höjningar',
+      error: 'Laddning av avgiftsändringar misslyckades',
+      create: 'Skapa ny avgiftsändring',
+      updateError: 'Sparande av avgiftsändring misslyckades',
+      deleteError: 'Borttagning av avgiftsändring misslyckades',
+      confirmDelete: 'Vill du ta bort avgiftsändringen?',
+      lastModifiedAt: (date: string) => `Senast redigerad ${date}`,
+      lastModifiedBy: (name: string) => `Redigerare: ${name}`,
       editor: {
-        titleNew: 'Lisää uusi alennus tai korotus',
-        titleEdit: 'Muokkaa alennusta tai korotusta',
-        alterationType: 'Muutostyyppi',
-        alterationTypePlaceholder: 'Muutostyyppi',
-        validDuring: 'Myönnetään ajalle',
-        notes: 'Lisätietoja',
-        cancel: 'Peruuta',
-        save: 'Tallenna'
+        titleNew: 'Lägg till ny nedsättning eller höjning',
+        titleEdit: 'Redigera nedsättning eller höjning',
+        alterationType: 'Ändringstyp',
+        alterationTypePlaceholder: 'Ändringstyp',
+        validDuring: 'Beviljas för tiden',
+        notes: 'Tilläggsinformation',
+        cancel: 'Avbryt',
+        save: 'Spara'
       },
       types: {
-        DISCOUNT: 'Alennus',
-        INCREASE: 'Korotus',
-        RELIEF: 'Huojennus'
+        DISCOUNT: 'Nedsättning',
+        INCREASE: 'Höjning',
+        RELIEF: 'Lättnad'
       },
-      attachmentsTitle: 'Liitteet',
+      attachmentsTitle: 'Bilagor',
       employeeAttachments: {
-        title: 'Lisää liitteitä',
+        title: 'Lägg till bilagor',
         description:
-          'Tässä voit lisätä asiakkaan toimittamia liitteitä maksujen alennuksiin, vapautuksiin tai korotuksiin.'
+          'Här kan du lägga till bilagor som kunden har lämnat för avgiftsnedsättningar, befrielser eller höjningar.'
       }
     },
     placements: {
-      title: 'Sijoitukset ja palveluntarpeet',
-      placements: 'Sijoitukset',
-      rowTitle: 'Sijoituspäätös voimassa',
-      startDate: 'Aloituspäivämäärä',
-      endDate: 'Päättymispäivämäärä',
-      createdBy: 'Luoja',
-      source: 'Luonnin lähde',
+      title: 'Placeringar och servicebehov',
+      placements: 'Placeringar',
+      rowTitle: 'Placeringsbeslut i kraft',
+      startDate: 'Startdatum',
+      endDate: 'Slutdatum',
+      createdBy: 'Skapare',
+      source: 'Skapandekälla',
       sourceOptions: {
-        CITIZEN: 'Kuntalaisen hakemus',
-        EMPLOYEE_MANUAL: 'Työntekijä manuaalisesti',
-        EMPLOYEE_PAPER: 'Työntekijä paperihakemuksesta',
-        SYSTEM: 'Järjestelmä',
-        UNKNOWN: 'Tietoa ei saatavilla'
+        CITIZEN: 'Ansökan från kommuninvånare',
+        EMPLOYEE_MANUAL: 'Anställd manuellt',
+        EMPLOYEE_PAPER: 'Anställd från pappersansökan',
+        SYSTEM: 'System',
+        UNKNOWN: 'Information inte tillgänglig'
       },
-      modifiedAt: 'Muokattu',
-      modifiedBy: 'Muutoksentekijä',
-      terminatedByGuardian: 'Huoltaja irtisanonut',
-      terminated: 'Irtisanottu',
-      area: 'Alue',
-      daycareUnit: 'Toimipaikka',
-      daycareGroups: 'Ryhmä',
-      daycareGroupMissing: 'Ei ryhmitetty',
-      type: 'Sijoitustyyppi',
-      providerType: 'Järjestämismuoto',
-      updatedAt: 'Päivitetty viimeksi',
-      serviceNeedMissing1: 'Sijoitukselta puuttuu palveluntarve',
+      modifiedAt: 'Redigerad',
+      modifiedBy: 'Redigerare',
+      terminatedByGuardian: 'Uppsagd av vårdnadshavare',
+      terminated: 'Uppsagd',
+      area: 'Område',
+      daycareUnit: 'Enhet',
+      daycareGroups: 'Grupp',
+      daycareGroupMissing: 'Inte grupperad',
+      type: 'Placeringstyp',
+      providerType: 'Ordnandeform',
+      updatedAt: 'Senast uppdaterad',
+      serviceNeedMissing1: 'Placeringen saknar servicebehov för',
       serviceNeedMissing2:
-        'päivältä. Merkitse palveluntarve koko sijoituksen ajalle.',
-      serviceNeedMissingTooltip1: 'Palveluntarve puuttuu',
-      serviceNeedMissingTooltip2: 'päivältä.',
+        'dag(ar). Anteckna servicebehov för hela placeringstiden.',
+      serviceNeedMissingTooltip1: 'Servicebehov saknas för',
+      serviceNeedMissingTooltip2: 'dag(ar).',
       deletePlacement: {
-        btn: 'Poista sijoitus',
-        confirmTitle: 'Haluatko varmasti perua tämän sijoituksen?',
+        btn: 'Ta bort placering',
+        confirmTitle: 'Vill du verkligen avbryta denna placering?',
         hasDependingBackupCares:
-          'Lapsen varasijoitus on riippuvainen tästä sijoituksesta, joten tämän sijoituksen poistaminen voi muuttaa tai poistaa varasijoituksen.'
+          'Barnets reservplacering är beroende av denna placering, så borttagning av denna placering kan ändra eller ta bort reservplaceringen.'
       },
       createPlacement: {
-        btn: 'Luo uusi sijoitus',
-        title: 'Uusi sijoitus',
-        text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekkäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
-        temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
-        startDateMissing: 'Alkupäivä on pakollinen tieto',
-        unitMissing: 'Yksikkö puuttuu',
-        preschoolTermNotOpen: 'Sijoituksen tulee olla esiopetuskaudella',
+        btn: 'Skapa ny placering',
+        title: 'Ny placering',
+        text: 'Ett beslut kan inte skickas för denna placering. Om placeringen överlappar med barnets tidigare skapade placeringar, förkortas eller tas dessa placeringar bort automatiskt.',
+        temporaryDaycareWarning:
+          'OBS! Använd inte vid skapande av reservplacering!',
+        startDateMissing: 'Startdatum är obligatorisk uppgift',
+        unitMissing: 'Enhet saknas',
+        preschoolTermNotOpen: 'Placeringen måste vara under förskoleperioden',
         preschoolExtendedTermNotOpen:
-          'Sijoituksen tulee olla esiopetuskaudella',
+          'Placeringen måste vara under förskoleperioden',
         placeGuarantee: {
-          title: 'Varhaiskasvatuspaikkatakuu',
-          info: 'Tulevaisuuden sijoitus liittyy varhaiskasvatuspaikkatakuuseen'
+          title: 'Småbarnspedagogikplatsgaranti',
+          info: 'Framtida placering är relaterad till småbarnspedagogikplatsgarantin'
         }
       },
       error: {
         conflict: {
-          title: 'Päivämäärää ei voitu muokata',
+          title: 'Datumet kunde inte redigeras',
           text:
-            'Lapsella on sijoitus, joka menee päällekkäin' +
-            ' nyt ilmoittamiesi päivämäärien kanssa. Voit palata muokkaamaan' +
-            ' ilmoittamiasi päivämääriä tai ottaa yhteyttä pääkäyttäjään.'
+            'Barnet har en placering som överlappar med' +
+            ' de datum du nu angett. Du kan gå tillbaka för att redigera' +
+            ' de datum du angett eller kontakta huvudanvändaren.'
         }
       },
       warning: {
-        overlap: 'Ajalle on jo sijoitus',
-        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi',
+        overlap: 'Det finns redan en placering för denna tid',
+        ghostUnit: 'Enheten är markerad som spökenhet',
         backupCareDepends:
-          'Varasijoitus on riippuvainen tästä sijoituksesta, ja muutettu aikaväli voi poistaa tai muttaa varasijoitusta.'
+          'Reservplaceringen är beroende av denna placering, och den ändrade perioden kan ta bort eller ändra reservplaceringen.'
       },
       serviceNeeds: {
-        title: 'Sijoituksen palveluntarpeet',
-        period: 'Aikaväli',
-        description: 'Kuvaus',
-        shiftCare: 'Ilta/Vuoro',
+        title: 'Placeringens servicebehov',
+        period: 'Period',
+        description: 'Beskrivning',
+        shiftCare: 'Kväll/Skift',
         shiftCareTypes: {
-          NONE: 'Ei',
-          INTERMITTENT: 'Satunnainen',
-          FULL: 'Kyllä'
+          NONE: 'Nej',
+          INTERMITTENT: 'Sporadisk',
+          FULL: 'Ja'
         },
-        partWeek: 'Osaviikkoinen',
-        confirmed: 'Vahvistettu',
-        createNewBtn: 'Luo uusi palveluntarve',
-        addNewBtn: 'Lisää palveluntarve',
-        optionPlaceholder: 'Valitse...',
-        missing: 'Puuttuva palveluntarve',
+        partWeek: 'Delvecka',
+        confirmed: 'Bekräftad',
+        createNewBtn: 'Skapa nytt servicebehov',
+        addNewBtn: 'Lägg till servicebehov',
+        optionPlaceholder: 'Välj...',
+        missing: 'Saknat servicebehov',
         deleteServiceNeed: {
-          btn: 'Poista palveluntarve',
-          confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'
+          btn: 'Ta bort servicebehov',
+          confirmTitle: 'Vill du verkligen ta bort detta servicebehov?'
         },
         overlapWarning: {
-          title: 'Palveluntarpeet menevät päällekkäin',
+          title: 'Servicebehoven överlappar',
           message:
-            'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
+            'Det servicebehov du angett överlappar med ett tidigare angivet. Om du bekräftar det nu angivna servicebehovet kommer det tidigare angivna servicebehovet att avbrytas automatiskt för den överlappande tiden.'
         },
         optionStartNotValidWarningTitle: (validFrom: LocalDate) =>
-          `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom.format()} alkaen`,
+          `Den valda servicebehovstypen är tillgänglig först från och med ${validFrom.format()}`,
         optionEndNotValidWarningTitle: (validTo: LocalDate) =>
-          `Valittu palveluntarvetyyppi on käytettävissä vain ${validTo.format()} asti`,
+          `Den valda servicebehovstypen är endast tillgänglig till och med ${validTo.format()}`,
         optionStartEndNotValidWarningTitle: (validity: FiniteDateRange) =>
-          `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validity.format()}`,
+          `Den valda servicebehovstypen är tillgänglig under perioden ${validity.format()}`,
         notFullyValidOptionWarning:
-          'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
+          'Den valda servicebehovstypen måste vara tillgänglig för hela perioden. Skapa servicebehovet vid behov i två delar.'
       }
     },
     absenceApplications: {
-      title: 'Esiopetuksen poissaolohakemukset',
-      absenceApplication: 'Poissaolohakemus',
-      range: 'Poissaolojakso',
-      createdBy: 'Hakemuksen tekijä',
-      description: 'Poissaolon syy',
+      title: 'Ansökningar om frånvaro från förskolan',
+      absenceApplication: 'Frånvaroansökan',
+      range: 'Frånvaroperiod',
+      createdBy: 'Ansökan gjord av',
+      description: 'Orsak till frånvaro',
       acceptInfo:
-        'Jos hyväksyt ehdotuksen, merkitään lapselle automaattisesti poissaolo huoltajan hakemalle ajalle.',
-      reject: 'Hylkää hakemus',
-      accept: 'Hyväksy hakemus',
-      list: 'Aiemmat hakemukset',
-      status: 'Tila',
+        'Om du godkänner förslaget kommer barnet automatiskt att markeras som frånvarande för den tid vårdnadshavaren ansökt om.',
+      reject: 'Neka ansökan',
+      accept: 'Godkänn ansökan',
+      list: 'Tidigare ansökningar',
+      status: 'Status',
       statusText: {
-        WAITING_DECISION: 'Odottaa päätöstä',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty'
+        WAITING_DECISION: 'Väntar på beslut',
+        ACCEPTED: 'Godkänd',
+        REJECTED: 'Nekad'
       },
-      rejectedReason: 'Syy',
+      rejectedReason: 'Orsak',
       rejectModal: {
-        title: 'Esiopetuksen poissaolohakemuksen hylkääminen',
-        reason: 'Hylkäyksen syy'
+        title: 'Nekande av ansökan om frånvaro från förskolan',
+        reason: 'Orsak till nekande'
       },
       userType: {
-        SYSTEM: 'järjestelmä',
-        CITIZEN: 'huoltaja',
-        EMPLOYEE: 'työntekijä',
-        MOBILE_DEVICE: 'mobiili',
-        UNKNOWN: 'tuntematon'
+        SYSTEM: 'system',
+        CITIZEN: 'vårdnadshavare',
+        EMPLOYEE: 'anställd',
+        MOBILE_DEVICE: 'mobil',
+        UNKNOWN: 'okänd'
       }
     },
     serviceApplications: {
-      title: 'Palveluntarpeen muutoshakemukset',
-      applicationTitle: 'Palveluntarpeen muutoshakemus',
-      sentAt: 'Lähetetty',
-      sentBy: 'Hakija',
-      startDate: 'Ehdotettu aloituspäivä',
-      serviceNeed: 'Ehdotettu palveluntarve',
-      additionalInfo: 'Lisätiedot',
-      status: 'Tila',
+      title: 'Ansökningar om ändring av servicebehov',
+      applicationTitle: 'Ansökan om ändring av servicebehov',
+      sentAt: 'Skickad',
+      sentBy: 'Sökande',
+      startDate: 'Föreslagen startdag',
+      serviceNeed: 'Föreslagt servicebehov',
+      additionalInfo: 'Tilläggsinformation',
+      status: 'Status',
       decision: {
         statuses: {
-          ACCEPTED: 'Hyväksytty',
-          REJECTED: 'Hylätty'
+          ACCEPTED: 'Godkänd',
+          REJECTED: 'Nekad'
         },
-        rejectedReason: 'Hylkäysperuste',
-        accept: 'Hyväksy',
-        reject: 'Hylkää',
-        confirmAcceptTitle: 'Hyväksytäänkö hakemus uudesta palveluntarpeesta?',
+        rejectedReason: 'Grund för nekande',
+        accept: 'Godkänn',
+        reject: 'Neka',
+        confirmAcceptTitle: 'Ska ansökan om nytt servicebehov godkännas?',
         confirmAcceptText: (range: FiniteDateRange, placementChange: boolean) =>
-          `Uusi ${placementChange ? 'sijoitus ja ' : ''}palveluntarve luodaan ajalle ${range.format()}.`,
-        shiftCareLabel: 'Ilta/vuorohoito',
-        shiftCareCheckbox: 'Lapsella on oikeus ilta/vuorohoitoon',
-        partWeekLabel: 'Osaviikkoisuus',
-        partWeekCheckbox: 'Palveluntarve on osaviikkoinen',
-        confirmAcceptBtn: 'Vahvista',
-        confirmRejectTitle: 'Hakemuksen hylkääminen'
+          `Ny ${placementChange ? 'placering och ' : ''}servicebehov skapas för perioden ${range.format()}.`,
+        shiftCareLabel: 'Kväll/skiftvård',
+        shiftCareCheckbox: 'Barnet har rätt till kväll/skiftvård',
+        partWeekLabel: 'Delvecka',
+        partWeekCheckbox: 'Servicebehovet är delvecka',
+        confirmAcceptBtn: 'Bekräfta',
+        confirmRejectTitle: 'Nekande av ansökan'
       },
-      decidedApplications: 'Käsitellyt hakemukset',
-      noApplications: 'Ei hakemuksia'
+      decidedApplications: 'Behandlade ansökningar',
+      noApplications: 'Inga ansökningar'
     },
     fridgeParents: {
-      title: 'Päämiehet',
-      name: 'Nimi',
-      ssn: 'Hetu',
-      startDate: 'Alkaen',
-      endDate: 'Päättyen',
-      status: 'Tila'
+      title: 'Huvudmän',
+      name: 'Namn',
+      ssn: 'Personbeteckning',
+      startDate: 'Från och med',
+      endDate: 'Till och med',
+      status: 'Status'
     },
     fosterParents: {
-      title: 'Sijaisvanhemmat',
-      name: 'Nimi',
-      ssn: 'Hetu',
-      startDate: 'Alkaen',
-      endDate: 'Päättyen',
-      status: 'Tila'
+      title: 'Fosterföräldrar',
+      name: 'Namn',
+      ssn: 'Personbeteckning',
+      startDate: 'Från och med',
+      endDate: 'Till och med',
+      status: 'Status'
     },
     backupCares: {
-      title: 'Varasijoitukset',
-      remove: 'Haluatko poistaa varasijoituksen?',
-      editing: 'muokkauksessa',
-      create: 'Luo uusi varasijoitus',
-      dateRange: 'Varasijoitus ajalle',
-      unit: 'Yksikkö',
+      title: 'Reservplaceringar',
+      remove: 'Vill du ta bort reservplaceringen?',
+      editing: 'under redigering',
+      create: 'Skapa ny reservplacering',
+      dateRange: 'Reservplacering för perioden',
+      unit: 'Enhet',
       validationNoMatchingPlacement:
-        'Varasijoitus ei ole minkään lapsen sijoituksen aikana.',
+        'Reservplaceringen är inte under någon av barnets placeringar.',
       validationChildAlreadyInOtherUnit:
-        'Lapsi on jo kirjattu sisään toiseen yksikköön.',
+        'Barnet är redan inskrivet i en annan enhet.',
       validationBackupCareNotOpen:
-        'Yksikkö ei ole avoinna koko varasijoituksen ajan.'
+        'Enheten är inte öppen under hela reservplaceringsperioden.'
     },
     backupPickups: {
-      title: 'Varahakijat',
-      name: 'Varahakijan nimi',
-      phone: 'Puhelinnumero',
-      add: 'Lisää varahakija',
-      edit: 'Muokkaa varahakijan tietoja',
-      removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
+      title: 'Reservhämtare',
+      name: 'Reservhämtarens namn',
+      phone: 'Telefonnummer',
+      add: 'Lägg till reservhämtare',
+      edit: 'Redigera reservhämtarens uppgifter',
+      removeConfirmation: 'Vill du verkligen ta bort reservhämtaren?'
     },
-    childDocumentsSectionTitle: 'Lapsen asiakirjat',
+    childDocumentsSectionTitle: 'Barnets dokument',
     pedagogicalDocument: {
-      create: 'Lisää uusi',
-      created: 'Lisätty',
-      createdBy: (name: string) => `Lisääjä: ${name}`,
-      date: 'Päivämäärä',
+      create: 'Lägg till ny',
+      created: 'Tillagd',
+      createdBy: (name: string) => `Tillagd av: ${name}`,
+      date: 'Datum',
       descriptionInfo: '',
-      description: 'Pedagoginen kuvaus',
-      document: 'Dokumentti',
+      description: 'Pedagogisk beskrivning',
+      document: 'Dokument',
       documentInfo: '',
       explanation: '',
       explanationInfo: '',
-      lastModified: 'Viimeksi muokattu',
-      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
-      removeConfirmation: 'Haluatko poistaa dokumentin?',
+      lastModified: 'Senast redigerad',
+      lastModifiedBy: (name: string) => `Redigerare: ${name}`,
+      removeConfirmation: 'Vill du ta bort dokumentet?',
       removeConfirmationText:
-        'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.',
-      title: 'Pedagoginen dokumentointi'
+        'Vill du verkligen ta bort det pedagogiska dokumentet och dess beskrivningstext? Borttagningen kan inte ångras, och dokumentet tas bort från vyn även för vårdnadshavaren.',
+      title: 'Pedagogisk dokumentation'
     }
   },
   personSearch: {
-    search: 'Etsi henkilötunnuksella',
-    searchByName: 'Etsi henkilötunnuksella tai nimellä',
-    notFound: 'Henkilöä ei löydy',
-    inputPlaceholder: 'Etsi nimellä, osoitteella tai henkilötunnuksella',
-    age: 'Ikä',
-    address: 'Osoite',
-    maxResultsFound: 'Rajaa hakua nähdäksesi muut tulokset',
-    socialSecurityNumber: 'Henkilötunnus',
-    newAdult: 'Luo hetuton aikuinen',
-    newChild: 'Luo hetuton lapsi',
+    search: 'Sök med personbeteckning',
+    searchByName: 'Sök med personbeteckning eller namn',
+    notFound: 'Person hittades inte',
+    inputPlaceholder: 'Sök med namn, adress eller personbeteckning',
+    age: 'Ålder',
+    address: 'Adress',
+    maxResultsFound: 'Begränsa sökningen för att se andra resultat',
+    socialSecurityNumber: 'Personbeteckning',
+    newAdult: 'Skapa vuxen utan personbeteckning',
+    newChild: 'Skapa barn utan personbeteckning',
     addPersonFromVTJ: {
-      title: 'Tuo henkilö VTJ:stä',
-      modalConfirmLabel: 'Tuo henkilö',
-      ssnLabel: 'Henkilötunnus',
-      restrictedDetails: 'Henkilöllä on turvakielto',
-      badRequest: 'Epäkelpo henkilötunnus',
-      notFound: 'Ei tuloksia',
-      unexpectedError: 'Henkilötietojen haku epäonnistui'
+      title: 'Importera person från BRC',
+      modalConfirmLabel: 'Importera person',
+      ssnLabel: 'Personbeteckning',
+      restrictedDetails: 'Personen har spärrmarkering',
+      badRequest: 'Ogiltig personbeteckning',
+      notFound: 'Inga resultat',
+      unexpectedError: 'Hämtning av personuppgifter misslyckades'
     },
     createNewPerson: {
-      title: 'Luo hetuton henkilö',
-      modalConfirmLabel: 'Luo henkilö',
+      title: 'Skapa person utan personbeteckning',
+      modalConfirmLabel: 'Skapa person',
       form: {
-        firstName: 'Etunimi',
-        lastName: 'Sukunimi',
-        dateOfBirth: 'Syntymäaika',
-        address: 'Osoite',
-        streetAddress: 'Katuosoite',
-        postalCode: 'Postinro',
-        postOffice: 'Toimipaikka',
-        phone: 'Puhelin',
-        email: 'Sähköposti'
+        firstName: 'Förnamn',
+        lastName: 'Efternamn',
+        dateOfBirth: 'Födelsedatum',
+        address: 'Adress',
+        streetAddress: 'Gatuadress',
+        postalCode: 'Postnummer',
+        postOffice: 'Postort',
+        phone: 'Telefon',
+        email: 'E-post'
       }
     }
   },
   personProfile: {
-    restrictedDetails: 'Turvakielto',
-    asChild: 'Tarkastele lapsena',
-    timeline: 'Aikajana',
-    personDetails: 'Henkilö- ja yhteystiedot',
-    addSsn: 'Aseta hetu',
-    noSsn: 'Hetuton',
+    restrictedDetails: 'Spärrmarkering',
+    asChild: 'Visa som barn',
+    timeline: 'Tidslinje',
+    personDetails: 'Person- och kontaktuppgifter',
+    addSsn: 'Ange personbeteckning',
+    noSsn: 'Utan personbeteckning',
     ssnAddingDisabledCheckbox:
-      'Vain pääkäyttäjillä on oikeus asettaa lapselle henkilötunnus',
+      'Endast huvudanvändare har rätt att ange personbeteckning för barn',
     ssnAddingDisabledInfo:
-      'Palveluohjauksen ja talouden käyttäjät eivät saa asetettua lapselle henkilötunnusta. Kun henkilötunnus puuttuu, lapsella ei ole huoltajasuhdetta. Jos henkilötunnus halutaan myöhemmin asettaa, lapsen aiemmat dokumentit on poistettava järjestelmästä.',
-    ssnInvalid: 'Epäkelpo henkilötunnus',
-    ssnConflict: 'Tämä käyttäjä löytyy jo järjestelmästä.',
-    updateFromVtj: 'Päivitä VTJ:stä',
-    partner: 'Puolisot',
+      'Användare för servicerådgivning och ekonomi får inte ange personbeteckning för barn. När personbeteckning saknas har barnet ingen vårdnadsrelation. Om personbeteckning ska anges senare måste barnets tidigare dokument tas bort från systemet.',
+    ssnInvalid: 'Ogiltig personbeteckning',
+    ssnConflict: 'Denna användare finns redan i systemet.',
+    updateFromVtj: 'Uppdatera från BRC',
+    partner: 'Makar',
     partnerInfo:
-      'Samassa osoitteessa avio/avoliiton omaisessa suhteessa asuva toinen henkilö',
-    partnerAdd: 'Lisää puoliso',
+      'Annan person som bor på samma adress i ett förhållande som liknar äktenskap/samboförhållande',
+    partnerAdd: 'Lägg till maka/make',
     financeNotesAndMessages: {
-      title: 'Talouden muistiinpanot ja viestit',
-      addNote: 'Lisää muistiinpano',
-      sendMessage: 'Lähetä eVaka-viesti',
+      title: 'Ekonomins anteckningar och meddelanden',
+      addNote: 'Lägg till anteckning',
+      sendMessage: 'Skicka eVaka-meddelande',
       noMessaging:
-        'eVaka-viestin voi lähettää vain henkilölle, jolla on henkilötunnus.',
-      link: 'Linkki alkuperäiseen viestiin',
-      showMessages: 'Näytä kaikki viestit',
-      hideMessages: 'Piilota kaikki viestit',
-      confirmDeleteNote: 'Haluatko varmasti poistaa muistiinpanon',
-      confirmArchiveThread: 'Haluatko varmasti siirtää viestiketjun arkistoon',
-      note: 'Muistiinpano',
-      created: 'Luotu',
-      inEdit: 'Muokattavana'
+        'eVaka-meddelande kan endast skickas till person med personbeteckning.',
+      link: 'Länk till originalmeddelandet',
+      showMessages: 'Visa alla meddelanden',
+      hideMessages: 'Dölj alla meddelanden',
+      confirmDeleteNote: 'Vill du verkligen ta bort anteckningen',
+      confirmArchiveThread:
+        'Vill du verkligen flytta meddelandetråden till arkivet',
+      note: 'Anteckning',
+      created: 'Skapad',
+      inEdit: 'Under redigering'
     },
-    forceManualFeeDecisionsLabel: 'Maksupäätösten lähettäminen',
-    forceManualFeeDecisionsChecked: 'Lähetetään aina manuaalisesti',
-    forceManualFeeDecisionsUnchecked: 'Automaattisesti, jos mahdollista',
-    fridgeChildOfHead: 'Päämiehen alaiset alle 18v lapset',
-    fridgeChildAdd: 'Lisää lapsi',
+    forceManualFeeDecisionsLabel: 'Sändning av avgiftsbeslut',
+    forceManualFeeDecisionsChecked: 'Skickas alltid manuellt',
+    forceManualFeeDecisionsUnchecked: 'Automatiskt, om möjligt',
+    fridgeChildOfHead: 'Huvudmannens underställda barn under 18 år',
+    fridgeChildAdd: 'Lägg till barn',
     fosterChildren: {
-      sectionTitle: 'Sijaislapset',
-      addFosterChildTitle: 'Lisää uusi sijaislapsi',
+      sectionTitle: 'Fosterbarn',
+      addFosterChildTitle: 'Lägg till nytt fosterbarn',
       addFosterChildParagraph:
-        'Sijaisvanhempi näkee lapsesta samat tiedot eVakassa kuin huoltaja. Sijaislapsen saa lisätä vain sosiaalityöntekijän luvalla.',
-      updateFosterChildTitle: 'Päivitä suhteen voimassaoloaikaa',
-      childLabel: 'Hetu tai nimi',
-      validDuringLabel: 'Voimassa',
-      createError: 'Sijaislapsen lisäys epäonnistui',
-      deleteFosterChildTitle: 'Sijaislapsen poisto',
+        'Fosterförälder ser samma uppgifter om barnet i eVaka som vårdnadshavare. Fosterbarn får endast läggas till med socialarbetarens tillstånd.',
+      updateFosterChildTitle: 'Uppdatera relationens giltighetstid',
+      childLabel: 'Personbeteckning eller namn',
+      validDuringLabel: 'Giltig',
+      createError: 'Tillägg av fosterbarn misslyckades',
+      deleteFosterChildTitle: 'Borttagning av fosterbarn',
       deleteFosterChildParagraph:
-        'Haluatko varmasti poistaa sijaislapsen? Sijaisvanhemmuuden päättyessä merkitse suhteelle loppumisaika.'
+        'Vill du verkligen ta bort fosterbarnet? När fosterföräldraskapet upphör, markera ett slutdatum för relationen.'
     },
-    fosterParents: 'Sijaisvanhemmat',
-    applications: 'Hakemukset',
+    fosterParents: 'Fosterföräldrar',
+    applications: 'Ansökningar',
     feeDecisions: {
-      title: 'Päämiehen maksupäätökset',
-      createRetroactive: 'Luo takautuvia maksupäätösluonnoksia'
+      title: 'Huvudmannens avgiftsbeslut',
+      createRetroactive: 'Skapa retroaktiva utkast till avgiftsbeslut'
     },
-    invoices: 'Päämiehen laskut',
+    invoices: 'Huvudmannens fakturor',
     invoiceCorrections: {
-      title: 'Hyvitykset ja korotukset',
-      noteModalTitle: 'Talouden oma muistiinpano',
-      noteModalInfo: 'Muistiinpano ei tule näkyviin laskulle.',
-      invoiceStatusHeader: 'Tila',
+      title: 'Krediteringar och höjningar',
+      noteModalTitle: 'Ekonomins egen anteckning',
+      noteModalInfo: 'Anteckningen syns inte på fakturan.',
+      invoiceStatusHeader: 'Status',
       invoiceStatus: (status: InvoiceStatus | null) =>
         status === 'DRAFT'
-          ? 'Laskuluonnoksella'
+          ? 'På fakturautkast'
           : status
-            ? 'Laskulla'
-            : 'Ei laskulla'
+            ? 'På faktura'
+            : 'Inte på faktura'
     },
     voucherValueDecisions: {
-      title: 'Päämiehen arvopäätökset',
-      createRetroactive: 'Luo takautuvia arvopäätösluonnoksia'
+      title: 'Huvudmannens värdebeslut',
+      createRetroactive: 'Skapa retroaktiva utkast till värdebeslut'
     },
-    dependants: 'Päämiehen huollettavat',
-    guardiansAndParents: 'Huoltajat ja päämiehet',
-    guardians: 'Huoltajat',
-    name: 'Nimi',
-    ssn: 'Hetu',
-    streetAddress: 'Katuosoite',
-    age: 'Ikä',
+    dependants: 'Huvudmannens vårdnadshavare',
+    guardiansAndParents: 'Vårdnadshavare och huvudmän',
+    guardians: 'Vårdnadshavare',
+    name: 'Namn',
+    ssn: 'Personbeteckning',
+    streetAddress: 'Gatuadress',
+    age: 'Ålder',
     evakaRights: {
-      tableHeader: 'eVaka-oikeudet',
-      statusAllowed: 'Sallittu',
-      statusDenied: 'Kielletty',
-      editModalTitle: 'Huoltajan eVaka-oikeudet',
+      tableHeader: 'eVaka-rättigheter',
+      statusAllowed: 'Tillåten',
+      statusDenied: 'Förbjuden',
+      editModalTitle: 'Vårdnadshavarens eVaka-rättigheter',
       modalInfoParagraph: (
         <>
-          EVaka-oikeuksilla määritetään, näkeekö huoltaja huostaanotettuun
-          lapseensa liittyvät tiedot eVakassa. Oikeudet voi kieltää vain{' '}
+          Med eVaka-rättigheter bestäms om vårdnadshavaren ser uppgifter
+          relaterade till sitt omhändertagna barn i eVaka. Rättigheterna kan
+          endast förbjudas{' '}
           <strong>
-            perustelluissa lastensuojelutilanteissa sosiaalityöntekijän
-            kirjallisella ilmoituksella
+            i motiverade barnskyddssituationer med socialarbetarens skriftliga
+            meddelande
           </strong>
-          . Oikeudet tulee palauttaa, mikäli huostaanotto päättyy.
+          . Rättigheterna ska återställas om omhändertagandet upphör.
         </>
       ),
       modalUpdateSubtitle:
-        'Huoltajan eVaka-oikeuksien kieltäminen, kun lapsi on huostaanotettu',
+        'Förbud av vårdnadshavarens eVaka-rättigheter när barnet är omhändertaget',
       confirmedLabel:
-        'Vahvistan, että huoltajan tiedonsaannin rajoittamiseen on sosiaalityöntekijän kirjallinen lupa',
-      deniedLabel: 'Kiellän huostaanotetun lapsen huoltajalta eVaka-oikeudet'
+        'Jag bekräftar att det finns socialarbetarens skriftliga tillstånd för att begränsa vårdnadshavarens rätt till information',
+      deniedLabel:
+        'Jag förbjuder vårdnadshavaren för omhändertaget barn eVaka-rättigheter'
     },
     familyOverview: {
-      title: 'Perheen tietojen kooste',
-      colName: 'Nimi',
-      colRole: 'Rooli perheessä',
-      colAge: 'Ikä',
-      colIncome: 'Tulot',
-      colAddress: 'Osoite',
+      title: 'Sammanfattning av familjens uppgifter',
+      colName: 'Namn',
+      colRole: 'Roll i familjen',
+      colAge: 'Ålder',
+      colIncome: 'Inkomster',
+      colAddress: 'Adress',
       role: {
-        HEAD: 'Päämies',
-        PARTNER: 'Puoliso',
-        CHILD: 'Lapsi'
+        HEAD: 'Huvudman',
+        PARTNER: 'Maka/make',
+        CHILD: 'Barn'
       },
-      familySizeLabel: 'Perhekoko',
+      familySizeLabel: 'Familjestorlek',
       familySizeValue: (adults: number, children: number) => {
-        const adultText = adults === 1 ? 'aikuinen' : 'aikuista'
-        const childrenText = children === 1 ? 'lapsi' : 'lasta'
+        const adultText = adults === 1 ? 'vuxen' : 'vuxna'
+        const childrenText = children === 1 ? 'barn' : 'barn'
         return `${adults} ${adultText}, ${children} ${childrenText}`
       },
-      incomeTotalLabel: 'Aikuisten tulot yhteensä',
+      incomeTotalLabel: 'Vuxnas inkomster totalt',
       incomeValue: (val: string) => `${val} €`,
-      incomeMissingCompletely: 'Tulotiedot puuttuvat'
+      incomeMissingCompletely: 'Inkomstuppgifter saknas'
     },
     fridgeHead: {
       error: {
         edit: {
-          title: 'Päämiehen muokkaus epäonnistui!'
+          title: 'Redigering av huvudman misslyckades!'
         }
       }
     },
     fridgePartner: {
-      newPartner: 'Uusi puoliso',
-      editPartner: 'Puolison muokkaus',
-      removePartner: 'Puolison poisto',
+      newPartner: 'Ny maka/make',
+      editPartner: 'Redigering av maka/make',
+      removePartner: 'Borttagning av maka/make',
       confirmText:
-        'Haluatko varmasti poistaa puolison? Puolison vaihtuessa merkitse edelliselle suhteelle loppumisaika ja lisää sen jälkeen uusi puoliso',
+        'Vill du verkligen ta bort makan/maken? Vid byte av maka/make, markera ett slutdatum för den tidigare relationen och lägg sedan till en ny maka/make',
       error: {
         remove: {
-          title: 'Puolison poisto epäonnistui!'
+          title: 'Borttagning av maka/make misslyckades!'
         },
         add: {
-          title: 'Puolison lisäys epäonnistui!'
+          title: 'Tillägg av maka/make misslyckades!'
         },
         edit: {
-          title: 'Puolison muokkaus epäonnistui!'
+          title: 'Redigering av maka/make misslyckades!'
         },
         conflict:
-          'Osapuolilta löytyy aktiivinen suhde annetulta aikaväliltä. Nykyinen aktiivinen suhde tulee päättää ennen uuden luomista'
+          'Det finns en aktiv relation för parterna under angiven tidsperiod. Den nuvarande aktiva relationen måste avslutas innan en ny skapas'
       },
       validation: {
         deadPerson:
-          'Suhteen päättymispäivä ei voi olla henkilön kuolinpäivän jälkeen',
+          'Relationens slutdatum kan inte vara efter personens dödsdag',
         deadPartner:
-          'Suhteen päättymispäivä ei voi olla puolison kuolinpäivän jälkeen'
+          'Relationens slutdatum kan inte vara efter makens/makans dödsdag'
       },
-      searchTitle: 'Hetu tai nimi'
+      searchTitle: 'Personbeteckning eller namn'
     },
     fridgeChild: {
-      newChild: 'Uusi lapsi',
-      editChild: 'Lapsen muokkaus',
-      removeChild: 'Lapsen poisto',
+      newChild: 'Nytt barn',
+      editChild: 'Redigering av barn',
+      removeChild: 'Borttagning av barn',
       confirmText:
-        'Haluatko varmasti poistaa lapsen? Päämiehen vaihtuessa merkitse edelliselle suhteelle loppumisaika ja lisää sen jälkeen uusi',
+        'Vill du verkligen ta bort barnet? Vid byte av huvudman, markera ett slutdatum för den tidigare relationen och lägg sedan till en ny',
       error: {
         add: {
-          title: 'Lapsen lisäys epäonnistui!'
+          title: 'Tillägg av barn misslyckades!'
         },
         edit: {
-          title: 'Lapsen muokkaus epäonnistui!'
+          title: 'Redigering av barn misslyckades!'
         },
         remove: {
-          title: 'Lapsen poisto epäonnistui!'
+          title: 'Borttagning av barn misslyckades!'
         },
         conflict:
-          'Kyseisellä lapselta löytyy jo tällä aikavälillä päämies. Olemassa oleva päämiessuhde täytyy päättää ensin'
+          'Det finns redan en huvudman för detta barn under denna tidsperiod. Den befintliga huvudmanrelationen måste avslutas först'
       },
       validation: {
         deadAdult:
-          'Suhteen päättymispäivä ei voi olla aikuisen kuolinpäivän jälkeen',
-        deadChild:
-          'Suhteen päättymispäivä ei voi olla lapsen kuolinpäivän jälkeen'
+          'Relationens slutdatum kan inte vara efter den vuxnas dödsdag',
+        deadChild: 'Relationens slutdatum kan inte vara efter barnets dödsdag'
       },
-      searchTitle: 'Hetu tai nimi'
+      searchTitle: 'Personbeteckning eller namn'
     },
     application: {
-      child: 'Lapsi',
-      preferredUnit: 'Haettu yksikkö',
-      startDate: 'Haettu aloituspvm',
-      sentDate: 'Hakemuksen saapumispvm',
-      type: 'Palvelumuoto',
+      child: 'Barn',
+      preferredUnit: 'Sökt enhet',
+      startDate: 'Sökt startdatum',
+      sentDate: 'Ansökningens ankomstdatum',
+      type: 'Serviceform',
       types: {
-        PRESCHOOL: 'Esiopetus',
-        PRESCHOOL_WITH_DAYCARE: 'Esiopetus + liittyvä',
-        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-        PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-        PREPARATORY_EDUCATION: 'Valmistava opetus',
-        PREPARATORY_WITH_DAYCARE: 'Valmistava opetus + liittyvä',
-        DAYCARE: 'Varhaiskasvatus',
-        DAYCARE_PART_TIME: 'Varhaiskasvatus',
-        CLUB: 'Kerho'
+        PRESCHOOL: 'Förskoleundervisning',
+        PRESCHOOL_WITH_DAYCARE: 'Förskoleundervisning + tillhörande',
+        PRESCHOOL_DAYCARE: 'Tillhörande småbarnspedagogik',
+        PRESCHOOL_CLUB: 'Förskoleundervisningens klubb',
+        PREPARATORY_EDUCATION: 'Förberedande undervisning',
+        PREPARATORY_WITH_DAYCARE: 'Förberedande undervisning + tillhörande',
+        DAYCARE: 'Småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Småbarnspedagogik',
+        CLUB: 'Klubb'
       },
-      status: 'Tila',
-      open: 'Avaa hakemus',
+      status: 'Status',
+      open: 'Öppna ansökan',
       statuses: {
-        CREATED: 'Luonnos',
-        SENT: 'Saapunut',
-        WAITING_PLACEMENT: 'Odottaa sijoitusta',
-        WAITING_DECISION: 'Päätöksen valmistelu',
-        WAITING_UNIT_CONFIRMATION: 'Odottaa johtajan hyväksyntää',
-        WAITING_MAILING: 'Odottaa postitusta',
-        WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
-        REJECTED: 'Paikka hylätty',
-        ACTIVE: 'Paikka vastaanotettu',
-        CANCELLED: 'Poistettu käsittelystä'
+        CREATED: 'Utkast',
+        SENT: 'Anländ',
+        WAITING_PLACEMENT: 'Väntar på placering',
+        WAITING_DECISION: 'Beslutsförberedelse',
+        WAITING_UNIT_CONFIRMATION: 'Väntar på chefsens godkännande',
+        WAITING_MAILING: 'Väntar på utskick',
+        WAITING_CONFIRMATION: 'Bekräftas av vårdnadshavare',
+        REJECTED: 'Plats avvisad',
+        ACTIVE: 'Plats mottagen',
+        CANCELLED: 'Bortagen från behandlingen'
       }
     },
     decision: {
-      decisions: 'Päätökset',
-      decisionUnit: 'Sijoitusyksikkö',
-      status: 'Tila',
-      archived: 'Arkistoitu',
+      decisions: 'Beslut',
+      decisionUnit: 'Placeringsenhet',
+      status: 'Status',
+      archived: 'Arkiverad',
       statuses: {
-        PENDING: 'Odottaa vastausta',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty'
+        PENDING: 'Väntar på svar',
+        ACCEPTED: 'Godkänd',
+        REJECTED: 'Avvisad'
       },
-      archive: 'Arkistoi',
-      startDate: 'Aloituspvm päätöksellä',
-      sentDate: 'Päätös lähetetty'
+      archive: 'Arkivera',
+      startDate: 'Startdatum enligt beslut',
+      sentDate: 'Beslut skickat'
     },
     income: {
-      title: 'Tulotiedot',
-      itemHeader: 'Tulotiedot ajalle',
-      itemHeaderNew: 'Uusi tulotieto',
-      lastModifiedAt: (date: string) => `Viimeksi muokattu ${date}`,
-      lastModifiedBy: (name: string) => `Muokkaaja: ${name}`,
+      title: 'Inkomstuppgifter',
+      itemHeader: 'Inkomstuppgifter för perioden',
+      itemHeaderNew: 'Ny inkomstuppgift',
+      lastModifiedAt: (date: string) => `Senast redigerad ${date}`,
+      lastModifiedBy: (name: string) => `Redigerare: ${name}`,
       details: {
-        attachments: 'Liitteet',
-        name: 'Nimi',
-        created: 'Tulotiedot luotu',
-        handler: 'Käsittelijä',
+        attachments: 'Bilagor',
+        name: 'Namn',
+        created: 'Inkomstuppgifter skapade',
+        handler: 'Handläggare',
         originApplication:
-          'Huoltaja on hakemuksella suostunut korkeimpaan maksuluokkaan',
-        dateRange: 'Ajalle',
-        notes: 'Lisätiedot',
-        effect: 'Maksun peruste',
+          'Vårdnadshavare har i ansökan godkänt högsta avgiftsklass',
+        dateRange: 'För perioden',
+        notes: 'Tilläggsuppgifter',
+        effect: 'Avgiftsgrund',
         effectOptions: {
-          MAX_FEE_ACCEPTED: 'Huoltaja on suostunut korkeimpaan maksuluokkaan',
-          INCOMPLETE: 'Puutteelliset tulotiedot',
-          INCOME: 'Huoltajan toimittamat tulotiedot',
-          NOT_AVAILABLE: 'Puutteelliset tulotiedot'
+          MAX_FEE_ACCEPTED: 'Vårdnadshavare har godkänt högsta avgiftsklass',
+          INCOMPLETE: 'Bristfälliga inkomstuppgifter',
+          INCOME: 'Vårdnadshavarens levererade inkomstuppgifter',
+          NOT_AVAILABLE: 'Bristfälliga inkomstuppgifter'
         },
-        miscTitle: 'Lisätiedot',
-        incomeTitle: 'Tulot',
-        income: 'Tulot',
-        expensesTitle: 'Menot',
-        expenses: 'Menot',
+        miscTitle: 'Tilläggsuppgifter',
+        incomeTitle: 'Inkomster',
+        income: 'Inkomster',
+        expensesTitle: 'Utgifter',
+        expenses: 'Utgifter',
         amount: '€',
-        coefficient: 'Kerroin',
-        monthlyAmount: '€ / KK',
-        time: 'Ajalle',
-        sum: 'Yhteensä',
-        entrepreneur: 'Yrittäjä',
-        echa: 'Euroopan kemikaalivirasto',
-        source: 'Lähde',
-        createdFromApplication: 'Luotu automaattisesti hakemukselta',
-        application: 'Hakemus',
+        coefficient: 'Koefficient',
+        monthlyAmount: '€ / MÅN',
+        time: 'För perioden',
+        sum: 'Totalt',
+        entrepreneur: 'Företagare',
+        echa: 'Europeiska kemikaliemyndigheten',
+        source: 'Källa',
+        createdFromApplication: 'Skapad automatiskt från ansökan',
+        application: 'Ansökan',
         incomeCoefficients: {
-          MONTHLY_WITH_HOLIDAY_BONUS: 'Kuukausi',
-          MONTHLY_NO_HOLIDAY_BONUS: 'Kuukausi ilman lomarahaa',
-          BI_WEEKLY_WITH_HOLIDAY_BONUS: '2 viikkoa',
-          BI_WEEKLY_NO_HOLIDAY_BONUS: '2 viikkoa ilman lomarahaa',
-          DAILY_ALLOWANCE_21_5: 'Päiväraha x 21,5',
-          DAILY_ALLOWANCE_25: 'Päiväraha x 25',
-          YEARLY: 'Vuosi'
+          MONTHLY_WITH_HOLIDAY_BONUS: 'Månad',
+          MONTHLY_NO_HOLIDAY_BONUS: 'Månad utan semesterpenning',
+          BI_WEEKLY_WITH_HOLIDAY_BONUS: '2 veckor',
+          BI_WEEKLY_NO_HOLIDAY_BONUS: '2 veckor utan semesterpenning',
+          DAILY_ALLOWANCE_21_5: 'Dagpenning x 21,5',
+          DAILY_ALLOWANCE_25: 'Dagpenning x 25',
+          YEARLY: 'År'
         },
-        updateError: 'Tulotietojen tallennus epäonnistui',
-        missingIncomeDaysWarningTitle: 'Tulotiedot puuttuvat joiltain päiviltä',
+        updateError: 'Sparande av inkomstuppgifter misslyckades',
+        missingIncomeDaysWarningTitle:
+          'Inkomstuppgifter saknas för vissa dagar',
         missingIncomeDaysWarningText: (missingIncomePeriodsString: string) =>
-          `Tulotiedot puuttuvat seuraavilta päiviltä: ${missingIncomePeriodsString}. Jos tulotietoja ei lisätä, tulot määräytyvät näille päiville korkeimman maksuluokan mukaan. Tarkista päivämäärät ja lisää tarvittaessa tulotiedot puuttuville päiville.`,
+          `Inkomstuppgifter saknas för följande dagar: ${missingIncomePeriodsString}. Om inkomstuppgifter inte läggs till, fastställs inkomsterna för dessa dagar enligt högsta avgiftsklass. Kontrollera datumen och lägg vid behov till inkomstuppgifter för de saknade dagarna.`,
         conflictErrorText:
-          'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.',
-        closeWarning: 'Muista tallentaa!',
+          'Inkomstuppgifter har redan sparats för tidsperioden! Kontrollera inkomstuppgifternas giltighetstider.',
+        closeWarning: 'Kom ihåg att spara!',
         closeWarningText:
-          'Tallenna tai peruuta muutokset ennen lomakkeen sulkemista.'
+          'Spara eller avbryt ändringar innan du stänger formuläret.'
       },
-      add: 'Luo uusi tulotieto',
+      add: 'Skapa ny inkomstuppgift',
       deleteModal: {
-        title: 'Tulotiedon poisto',
-        confirmText: 'Haluatko varmasti poistaa tulotiedon ajalta',
-        cancelButton: 'Peruuta',
-        deleteButton: 'Poista'
+        title: 'Borttagning av inkomstuppgift',
+        confirmText: 'Vill du verkligen ta bort inkomstuppgiften för perioden',
+        cancelButton: 'Avbryt',
+        deleteButton: 'Ta bort'
       }
     },
     incomeStatement: {
-      title: 'Tuloselvitykset',
-      notificationsTitle: 'Muistutukset tuloselvityksen tekemisestä',
-      custodianTitle: 'Huollettavien tuloselvitykset',
-      noIncomeStatements: 'Ei tuloselvityksiä',
-      incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
-      sentAtHeading: 'Saapumispäivä',
-      handledHeading: 'Käsitelty',
-      open: 'Avaa lomake',
-      handled: 'Tuloselvitys käsitelty',
-      notificationSent: 'Lähetetty',
-      noNotifications: 'Ei lähetettyjä muistutuksia',
+      title: 'Inkomstutredningar',
+      notificationsTitle: 'Påminnelser om att göra inkomstutredning',
+      custodianTitle: 'Vårdnadshavarnas inkomstutredningar',
+      noIncomeStatements: 'Inga inkomstutredningar',
+      incomeStatementHeading: 'Kundens inkomstutredningsformulär',
+      sentAtHeading: 'Ankomstdag',
+      handledHeading: 'Behandlad',
+      open: 'Öppna formulär',
+      handled: 'Inkomstutredning behandlad',
+      notificationSent: 'Skickad',
+      noNotifications: 'Inga skickade påminnelser',
       notificationTypes: {
-        INITIAL_EMAIL: 'Ensimmäinen muistutus',
-        REMINDER_EMAIL: 'Toinen muistutus',
-        EXPIRED_EMAIL: 'Tulot päättyneet',
-        NEW_CUSTOMER: 'Aloittava asiakas'
+        INITIAL_EMAIL: 'Första påminnelsen',
+        REMINDER_EMAIL: 'Andra påminnelsen',
+        EXPIRED_EMAIL: 'Inkomster upphört',
+        NEW_CUSTOMER: 'Inledande kund'
       },
-      noCustodians: 'Ei huollettavia'
+      noCustodians: 'Inga vårdnadshavare'
     },
     invoice: {
-      createReplacementDrafts: 'Muodosta oikaisulaskut',
-      validity: 'Kausi',
+      createReplacementDrafts: 'Bilda korrigeringsfakturor',
+      validity: 'Period',
       price: 'Summa',
-      status: 'Tila'
+      status: 'Status'
     },
-    downloadAddressPage: 'Lataa osoitesivu'
+    downloadAddressPage: 'Ladda ner adresssida'
   },
   timeline: {
-    title: 'Perheen aikajana',
-    feeDecision: 'Maksupäätös',
-    valueDecision: 'Arvopäätös',
-    partner: 'Puoliso',
-    child: 'Lapsi',
-    createdAtTitle: 'Luotu',
-    unknownSource: 'Luontilähde ei tiedossa',
-    modifiedAtTitle: 'Muokattu',
-    unknownModification: 'Muokkauksen tekijä ei tiedossa',
-    notModified: 'Ei muokattu',
-    user: 'Käyttäjä',
-    application: 'Hakemus',
-    dvvSync: 'Väestötietojärjestelmä',
-    notAvailable: 'Aika ei tiedossa',
-    DVV: 'Väestötietojärjestelmä synkronointi'
+    title: 'Familjens tidslinje',
+    feeDecision: 'Avgiftsbeslut',
+    valueDecision: 'Värdebeslut',
+    partner: 'Maka/make',
+    child: 'Barn',
+    createdAtTitle: 'Skapad',
+    unknownSource: 'Skapandekälla okänd',
+    modifiedAtTitle: 'Redigerad',
+    unknownModification: 'Redigerare okänd',
+    notModified: 'Inte redigerad',
+    user: 'Användare',
+    application: 'Ansökan',
+    dvvSync: 'Befolkningsdatasystemet',
+    notAvailable: 'Tid okänd',
+    DVV: 'Befolkningsdatasystemets synkronisering'
   },
   incomeStatement: {
-    startDate: 'Voimassa alkaen',
-    feeBasis: 'Asiakasmaksun peruste',
+    startDate: 'Giltig från och med',
+    feeBasis: 'Grund för kundavgift',
 
-    grossTitle: 'Bruttotulot',
+    grossTitle: 'Bruttoinkomster',
     noIncomeTitle:
-      'Ei mitään tuloja tai tukia, tiedot saa tarkastaa tulorekisteristä ja Kelasta',
-    noIncomeDescription: 'Kuvaile tilannettasi tarkemmin',
-    incomeSource: 'Tietojen toimitus',
+      'Inga inkomster eller stöd, uppgifterna får kontrolleras från inkomstregistret och FPA',
+    noIncomeDescription: 'Beskriv din situation noggrannare',
+    incomeSource: 'Leverans av uppgifter',
     incomesRegister:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta sekä tulorekisteristä.',
+      'Jag godkänner att uppgifter relaterade till mina inkomster granskas från FPA samt inkomstregistret.',
     attachmentsAndKela:
-      'Toimitan tiedot liitteinä ja tietoni saa tarkastaa Kelasta',
-    grossEstimatedIncome: 'Arvio bruttotuloista',
-    otherIncome: 'Muut tulot',
+      'Jag levererar uppgifterna som bilagor och mina uppgifter får kontrolleras från FPA',
+    grossEstimatedIncome: 'Uppskattning av bruttoinkomster',
+    otherIncome: 'Andra inkomster',
     otherIncomeTypes: {
-      PENSION: 'Eläke',
-      ADULT_EDUCATION_ALLOWANCE: 'Aikuiskoulutustuki',
-      SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
-      PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
-      HOME_CARE_ALLOWANCE: 'Lasten kotihoidontuki',
+      PENSION: 'Pension',
+      ADULT_EDUCATION_ALLOWANCE: 'Vuxenutbildningsstöd',
+      SICKNESS_ALLOWANCE: 'Sjukdagpenning',
+      PARENTAL_ALLOWANCE: 'Moderskaps- och föräldrapenning',
+      HOME_CARE_ALLOWANCE: 'Stöd för hemvård av barn',
       FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
-        'Joustava tai osittainen hoitoraha',
-      ALIMONY: 'Elatusapu tai -tuki',
-      INTEREST_AND_INVESTMENT_INCOME: 'Korko- ja osinkotulot',
-      RENTAL_INCOME: 'Vuokratulot',
-      UNEMPLOYMENT_ALLOWANCE: 'Työttömyyspäiväraha',
-      LABOUR_MARKET_SUBSIDY: 'Työmarkkinatuki',
-      ADJUSTED_DAILY_ALLOWANCE: 'Soviteltu päiväraha',
-      JOB_ALTERNATION_COMPENSATION: 'Vuorotteluvapaakorvaus',
-      REWARD_OR_BONUS: 'Palkkio tai bonus',
-      RELATIVE_CARE_SUPPORT: 'Omaishoidontuki',
-      BASIC_INCOME: 'Perustulo',
-      FOREST_INCOME: 'Metsätulo',
-      FAMILY_CARE_COMPENSATION: 'Perhehoidon palkkiot',
-      REHABILITATION: 'Kuntoutustuki tai kuntoutusraha',
-      EDUCATION_ALLOWANCE: 'Koulutuspäiväraha',
-      GRANT: 'Apuraha',
-      APPRENTICESHIP_SALARY: 'Palkkatulo oppisopimuskoulutuksesta',
-      ACCIDENT_INSURANCE_COMPENSATION: 'Korvaus tapaturmavakuutuksesta',
-      OTHER_INCOME: 'Muut tulot'
+        'Flexibel eller partiell vårdpenning',
+      ALIMONY: 'Underhållsbidrag eller -stöd',
+      INTEREST_AND_INVESTMENT_INCOME: 'Ränte- och dividendinkomster',
+      RENTAL_INCOME: 'Hyresinkomster',
+      UNEMPLOYMENT_ALLOWANCE: 'Arbetslöshetsdagpenning',
+      LABOUR_MARKET_SUBSIDY: 'Arbetsmarknadsstöd',
+      ADJUSTED_DAILY_ALLOWANCE: 'Jämkad dagpenning',
+      JOB_ALTERNATION_COMPENSATION: 'Alterneringsledighetsersättning',
+      REWARD_OR_BONUS: 'Arvode eller bonus',
+      RELATIVE_CARE_SUPPORT: 'Närståendevårdsstöd',
+      BASIC_INCOME: 'Grundinkomst',
+      FOREST_INCOME: 'Skogsinkomst',
+      FAMILY_CARE_COMPENSATION: 'Arvoden för familjevård',
+      REHABILITATION: 'Rehabiliteringsstöd eller rehabiliteringspenning',
+      EDUCATION_ALLOWANCE: 'Utbildningsdagpenning',
+      GRANT: 'Stipendium',
+      APPRENTICESHIP_SALARY: 'Löneinkomst från läroavtalsutbildning',
+      ACCIDENT_INSURANCE_COMPENSATION: 'Ersättning från olycksfallsförsäkring',
+      OTHER_INCOME: 'Andra inkomster'
     },
-    otherIncomeInfo: 'Arviot muista tuloista',
+    otherIncomeInfo: 'Uppskattningar av andra inkomster',
 
-    entrepreneurTitle: 'Yrittäjän tulotiedot',
-    startOfEntrepreneurship: 'Yrittäjyys alkanut',
-    companyName: 'Yrityksen / yritysten nimi',
-    businessId: 'Y-tunnus / Y-tunnukset',
-    spouseWorksInCompany: 'Työskenteleekö puoliso yrityksessä',
-    startupGrant: 'Starttiraha',
-    companyInfoTitle: 'Yrityksen tiedot',
-    checkupConsentLabel: 'Tietojen tarkastus',
+    entrepreneurTitle: 'Företagarens inkomstuppgifter',
+    startOfEntrepreneurship: 'Företagsverksamhet påbörjad',
+    companyName: 'Företagets / företagens namn',
+    businessId: 'FO-nummer / FO-nummer',
+    spouseWorksInCompany: 'Arbetar makan/maken i företaget',
+    startupGrant: 'Startpeng',
+    companyInfoTitle: 'Företagets uppgifter',
+    checkupConsentLabel: 'Kontroll av uppgifter',
     checkupConsent:
-      'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tarvittaessa tulorekisteristä sekä Kelasta.',
-    companyType: 'Toimintamuoto',
-    selfEmployed: 'Toiminimi',
+      'Jag godkänner att uppgifter relaterade till mina inkomster vid behov granskas från inkomstregistret samt FPA.',
+    companyType: 'Verksamhetsform',
+    selfEmployed: 'Firma',
     selfEmployedAttachments:
-      'Toimitan liitteinä yrityksen viimeisimmän tulos- ja taselaskelman tai veropäätöksen.',
-    selfEmployedEstimation: 'Arvio keskimääräisistä kuukausituloista',
-    limitedCompany: 'Osakeyhtiö',
+      'Jag levererar som bilagor företagets senaste resultat- och balansräkning eller skattebeslut.',
+    selfEmployedEstimation: 'Uppskattning av genomsnittliga månadsinkomster',
+    limitedCompany: 'Aktiebolag',
     limitedCompanyIncomesRegister:
-      'Tuloni voi tarkastaa suoraan tulorekisteristä sekä tarvittaessa Kelasta.',
+      'Mina inkomster kan kontrolleras direkt från inkomstregistret samt vid behov från FPA.',
     limitedCompanyAttachments:
-      'Toimitan tositteet tuloistani liitteenä ja hyväksyn, että tuloihini liittyviä tietoja tarkastellaan Kelasta.',
-    partnership: 'Avoin yhtiö tai kommandiittiyhtiö',
-    lightEntrepreneur: 'Kevytyrittäjyys',
-    attachments: 'Liitteet',
+      'Jag levererar verifikat för mina inkomster som bilaga och godkänner att uppgifter relaterade till mina inkomster granskas från FPA.',
+    partnership: 'Öppet bolag eller kommanditbolag',
+    lightEntrepreneur: 'Lättföretagande',
+    attachments: 'Bilagor',
 
-    estimatedMonthlyIncome: 'Keskimääräiset tulot €/kk',
-    timeRange: 'Aikavälillä',
+    estimatedMonthlyIncome: 'Genomsnittliga inkomster €/mån',
+    timeRange: 'Under tidsperioden',
 
-    accountantTitle: 'Kirjanpitäjän tiedot',
-    accountant: 'Kirjanpitäjä',
-    email: 'Sähköpostiosoite',
-    phone: 'Puhelinnumero',
-    address: 'Postiosoite',
+    accountantTitle: 'Bokförarens uppgifter',
+    accountant: 'Bokförare',
+    email: 'E-postadress',
+    phone: 'Telefonnummer',
+    address: 'Postadress',
 
-    otherInfoTitle: 'Muita tuloihin liittyviä tietoja',
-    student: 'Opiskelija',
-    alimonyPayer: 'Maksaa elatusmaksuja',
-    otherInfo: 'Lisätietoja tulotietoihin liittyen',
+    otherInfoTitle: 'Andra uppgifter relaterade till inkomster',
+    student: 'Studerande',
+    alimonyPayer: 'Betalar underhållsbidrag',
+    otherInfo: 'Tilläggsuppgifter relaterade till inkomstuppgifter',
 
     citizenAttachments: {
-      title: 'Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet',
-      noAttachments: 'Ei liitteitä',
-      attachmentMissing: 'Liite puuttuu'
+      title: 'Bilagor relaterade till inkomster och småbarnspedagogikavgifter',
+      noAttachments: 'Inga bilagor',
+      attachmentMissing: 'Bilaga saknas'
     },
 
     employeeAttachments: {
-      title: 'Lisää liitteitä',
+      title: 'Lägg till bilagor',
       description:
-        'Tässä voit lisätä asiakkaan paperisena toimittamia liitteitä eVakan kautta palautettuun tuloselvitykseen.'
+        'Här kan du lägga till bilagor som kunden levererat i pappersform till inkomstutredningen som returnerats via eVaka.'
     },
 
     statementTypes: {
-      HIGHEST_FEE: 'Suostumus korkeimpaan maksuluokkaan',
-      INCOME: 'Huoltajan toimittamat tulotiedot',
-      CHILD_INCOME: 'Lapsen tulotiedot'
+      HIGHEST_FEE: 'Samtycke till högsta avgiftsklass',
+      INCOME: 'Vårdnadshavarens levererade inkomstuppgifter',
+      CHILD_INCOME: 'Barnets inkomstuppgifter'
     },
     table: {
-      title: 'Käsittelyä odottavat tuloselvitykset',
-      customer: 'Asiakas',
-      area: 'Alue',
-      sentAt: 'Lähetetty',
-      startDate: 'Voimassa',
-      incomeEndDate: 'Tulotieto päättyy',
-      type: 'Tyyppi',
-      link: 'Selvitys',
-      note: 'Muistiinpano'
+      title: 'Inkomstutredningar som väntar på behandling',
+      customer: 'Kund',
+      area: 'Område',
+      sentAt: 'Skickad',
+      startDate: 'Giltig',
+      incomeEndDate: 'Inkomstuppgift upphör',
+      type: 'Typ',
+      link: 'Utredning',
+      note: 'Anteckning'
     },
-    noNote: 'Tuloselvityksellä ei muistiinpanoa',
+    noNote: 'Inkomstutredningen har ingen anteckning',
     handlerNotesForm: {
-      title: 'Käsittelijän muistiinpanot',
-      handled: 'Käsitelty',
-      handlerNote: 'Muistiinpano (sisäinen)'
+      title: 'Handläggarens anteckningar',
+      handled: 'Behandlad',
+      handlerNote: 'Anteckning (intern)'
     },
     attachmentNames: {
-      OTHER: 'Muu liite',
-      PENSION: 'Päätös eläkkeestä',
-      ADULT_EDUCATION_ALLOWANCE: 'Päätös aikuiskoulutustuesta',
-      SICKNESS_ALLOWANCE: 'Päätös sairauspäivärahasta',
-      PARENTAL_ALLOWANCE: 'Päätös äitiys- tai vanhempainrahasta',
-      HOME_CARE_ALLOWANCE: 'Päätös kotihoidontuesta',
-      FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Päätös hoitorahasta',
-      ALIMONY: 'Elatussopimus tai päätös elatustuesta',
-      UNEMPLOYMENT_ALLOWANCE: 'Päätös työttömyyspäivärahasta',
-      LABOUR_MARKET_SUBSIDY: 'Päätös työmarkkinatuesta',
-      ADJUSTED_DAILY_ALLOWANCE: 'Päätös päivärahasta',
-      JOB_ALTERNATION_COMPENSATION: 'Tosite vuorotteluvapaakorvaus',
-      REWARD_OR_BONUS: 'Palkkatosite bonuksesta tai/ja palkkiosta',
-      RELATIVE_CARE_SUPPORT: 'Päätös omaishoidontuesta',
-      BASIC_INCOME: 'Päätös perustulosta',
-      FOREST_INCOME: 'Tosite metsätulosta',
-      FAMILY_CARE_COMPENSATION: 'Tositteet perhehoidon palkkioista',
-      REHABILITATION: 'Päätös kuntoutustuesta tai kuntoutusrahasta',
-      EDUCATION_ALLOWANCE: 'Päätös koulutuspäivärahasta',
-      GRANT: 'Tosite apurahasta',
-      APPRENTICESHIP_SALARY: 'Tosite oppisopimuskoulutuksen palkkatuloista',
+      OTHER: 'Annan bilaga',
+      PENSION: 'Beslut om pension',
+      ADULT_EDUCATION_ALLOWANCE: 'Beslut om vuxenutbildningsstöd',
+      SICKNESS_ALLOWANCE: 'Beslut om sjukdagpenning',
+      PARENTAL_ALLOWANCE: 'Beslut om moderskaps- eller föräldrapenning',
+      HOME_CARE_ALLOWANCE: 'Beslut om stöd för hemvård',
+      FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Beslut om vårdpenning',
+      ALIMONY: 'Underhållsavtal eller beslut om underhållsstöd',
+      UNEMPLOYMENT_ALLOWANCE: 'Beslut om arbetslöshetsdagpenning',
+      LABOUR_MARKET_SUBSIDY: 'Beslut om arbetsmarknadsstöd',
+      ADJUSTED_DAILY_ALLOWANCE: 'Beslut om dagpenning',
+      JOB_ALTERNATION_COMPENSATION: 'Verifikat alterneringsledighetsersättning',
+      REWARD_OR_BONUS: 'Löneverifikat för bonus och/eller arvode',
+      RELATIVE_CARE_SUPPORT: 'Beslut om närståendevårdsstöd',
+      BASIC_INCOME: 'Beslut om grundinkomst',
+      FOREST_INCOME: 'Verifikat för skogsinkomst',
+      FAMILY_CARE_COMPENSATION: 'Verifikat för arvoden för familjevård',
+      REHABILITATION:
+        'Beslut om rehabiliteringsstöd eller rehabiliteringspenning',
+      EDUCATION_ALLOWANCE: 'Beslut om utbildningsdagpenning',
+      GRANT: 'Verifikat för stipendium',
+      APPRENTICESHIP_SALARY:
+        'Verifikat för löneinkomst från läroavtalsutbildning',
       ACCIDENT_INSURANCE_COMPENSATION:
-        'Tosite tapaturmavakuutuksen korvauksesta',
-      OTHER_INCOME: 'Liitteet muista tuloista',
-      ALIMONY_PAYOUT: 'Maksutosite elatusmaksuista',
-      INTEREST_AND_INVESTMENT_INCOME: 'Tositteet korko- ja osinkotuloista',
-      RENTAL_INCOME: 'Tositteet vuokratuloista ja vastikkeesta',
-      PAYSLIP_GROSS: 'Viimeisin palkkakuitti',
-      STARTUP_GRANT: 'Starttirahapäätös',
+        'Verifikat för ersättning från olycksfallsförsäkring',
+      OTHER_INCOME: 'Bilagor för andra inkomster',
+      ALIMONY_PAYOUT: 'Betalningsverifikat för underhållsbidrag',
+      INTEREST_AND_INVESTMENT_INCOME:
+        'Verifikat för ränte- och dividendinkomster',
+      RENTAL_INCOME: 'Verifikat för hyresinkomster och vederlag',
+      PAYSLIP_GROSS: 'Senaste lönespecifikationen',
+      STARTUP_GRANT: 'Beslut om startpeng',
       ACCOUNTANT_REPORT_PARTNERSHIP:
-        'Kirjanpitäjän selvitys palkasta ja luontoiseduista',
-      PAYSLIP_LLC: 'Viimeisin palkkakuitti',
+        'Bokförarens utredning om lön och naturaförmåner',
+      PAYSLIP_LLC: 'Senaste lönespecifikationen',
       ACCOUNTANT_REPORT_LLC:
-        'Kirjanpitäjän selvitys luontoiseduista ja osingoista',
+        'Bokförarens utredning om naturaförmåner och dividender',
       PROFIT_AND_LOSS_STATEMENT_SELF_EMPLOYED:
-        'Tulos- ja taselaskelma tai veropäätös',
-      PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP: 'Tulos- ja taselaskelma',
-      SALARY: 'Maksutositteet palkoista ja työkorvauksista',
+        'Resultat- och balansräkning eller skattebeslut',
+      PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP: 'Resultat- och balansräkning',
+      SALARY: 'Betalningsverifikat för löner och arbetsersättningar',
       PROOF_OF_STUDIES:
-        'Opiskelutodistus tai päätös työttömyyskassan opintoetuudesta / työllisyysrahaston koulutustuesta',
-      CHILD_INCOME: 'Tositteet lapsen tuloista'
+        'Studieintyg eller beslut om studieförmån från arbetslöshetskassan / utbildningsstöd från sysselsättningsfonden',
+      CHILD_INCOME: 'Verifikat för barnets inkomster'
     }
   },
   units: {
-    name: 'Nimi',
-    area: 'Alue',
-    address: 'Osoite',
-    city: 'Kunta',
-    type: 'Tyyppi',
-    findByName: 'Etsi yksikön nimellä',
-    selectProviderTypes: 'Valitse järjestämismuoto',
-    selectCareTypes: 'Valitse toimintamuoto',
-    includeClosed: 'Näytä lopetetut yksiköt',
-    noResults: 'Ei tuloksia'
+    name: 'Namn',
+    area: 'Område',
+    address: 'Adress',
+    city: 'Kommun',
+    type: 'Typ',
+    findByName: 'Sök med enhetens namn',
+    selectProviderTypes: 'Välj anordningsform',
+    selectCareTypes: 'Välj verksamhetsform',
+    includeClosed: 'Visa avslutade enheter',
+    noResults: 'Inga resultat'
   },
   unit: {
     serviceWorkerNote: {
-      title: 'Palveluohjauksen muistiinpanot',
-      add: 'Aseta muistiinpano'
+      title: 'Anteckningar från servicerådgivning',
+      add: 'Lägg till anteckning'
     },
     tabs: {
-      unitInfo: 'Yksikön tiedot',
-      groups: 'Ryhmät',
-      calendar: 'Kalenteri',
-      applicationProcess: 'Hakuprosessi'
+      unitInfo: 'Enhetsinformation',
+      groups: 'Grupper',
+      calendar: 'Kalender',
+      applicationProcess: 'Ansökningsprocess'
     },
-    create: 'Luo uusi yksikkö',
-    openDetails: 'Näytä yksikön kaikki tiedot',
-    occupancies: 'Käyttö- ja täyttöaste',
+    create: 'Skapa ny enhet',
+    openDetails: 'Visa alla enhetens uppgifter',
+    occupancies: 'Utnyttjande- och beläggningsgrad',
     info: {
-      title: 'Yksikön tiedot',
-      area: 'Alue',
-      visitingAddress: 'Käyntiosoite',
-      mailingAddress: 'Postiosoite',
-      phone: 'Puhelinnumero',
+      title: 'Enhetsinformation',
+      area: 'Område',
+      visitingAddress: 'Besöksadress',
+      mailingAddress: 'Postadress',
+      phone: 'Telefonnummer',
       caretakers: {
-        titleLabel: 'Henkilökuntaa',
-        unitOfValue: 'henkilöä'
+        titleLabel: 'Personal',
+        unitOfValue: 'personer'
       }
     },
     manager: {
-      title: 'Yksikön johtaja',
-      name: 'Nimi',
-      email: 'Sähköpostiosoite',
-      phone: 'Puhelinnumero'
+      title: 'Enhetschef',
+      name: 'Namn',
+      email: 'E-postadress',
+      phone: 'Telefonnummer'
     },
     accessControl: {
-      aclRoles: 'Luvitukset',
-      activeAclRoles: 'Aktiiviset luvitukset',
-      roleChange: 'Roolin vaihto',
-      scheduledAclRoles: 'Tulevat luvitukset',
-      role: 'Rooli',
-      name: 'Nimi',
-      email: 'Sähköpostiosoite',
-      aclStartDate: 'Luvitus alkaa',
-      aclEndDate: 'Luvitus päättyy',
+      aclRoles: 'Behörigheter',
+      activeAclRoles: 'Aktiva behörigheter',
+      roleChange: 'Rollbyte',
+      scheduledAclRoles: 'Kommande behörigheter',
+      role: 'Roll',
+      name: 'Namn',
+      email: 'E-postadress',
+      aclStartDate: 'Behörighet börjar',
+      aclEndDate: 'Behörighet upphör',
       removeConfirmation:
-        'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
-      removeScheduledConfirmation: 'Haluatko poistaa tulevan luvituksen?',
+        'Vill du ta bort åtkomsträttigheten från den valda personen?',
+      removeScheduledConfirmation: 'Vill du ta bort den kommande behörigheten?',
       addDaycareAclModal: {
-        title: 'Lisää luvitus',
-        role: 'Valitse rooli',
-        employees: 'Valitse henkilö',
+        title: 'Lägg till behörighet',
+        role: 'Välj roll',
+        employees: 'Välj person',
         scheduledAclWarning:
-          'Henkilöllä on tuleva luvitus tässä yksikössä. Tuleva luvitus poistetaan.'
+          'Personen har en kommande behörighet i denna enhet. Den kommande behörigheten kommer att tas bort.'
       },
       editDaycareAclModal: {
-        title: 'Muokkaa luvitusta'
+        title: 'Redigera behörighet'
       },
-      chooseRole: 'Valitse rooli',
-      choosePerson: 'Valitse henkilö',
-      chooseGroup: 'Valitse ryhmä',
+      chooseRole: 'Välj roll',
+      choosePerson: 'Välj person',
+      chooseGroup: 'Välj grupp',
       temporaryEmployees: {
-        title: 'Tilapäiset sijaiset',
-        previousEmployeesTitle: 'Aiemmat tilapäiset sijaiset',
-        firstName: 'Etunimi',
-        firstNamePlaceholder: 'Kirjoita etunimi',
-        lastName: 'Sukunimi',
-        lastNamePlaceholder: 'Kirjoita sukunimi',
-        pinCode: 'PIN-koodi',
-        pinCodePlaceholder: 'koodi'
+        title: 'Tillfälliga vikarier',
+        previousEmployeesTitle: 'Tidigare tillfälliga vikarier',
+        firstName: 'Förnamn',
+        firstNamePlaceholder: 'Skriv förnamn',
+        lastName: 'Efternamn',
+        lastNamePlaceholder: 'Skriv efternamn',
+        pinCode: 'PIN-kod',
+        pinCodePlaceholder: 'kod'
       },
       addTemporaryEmployeeModal: {
-        title: 'Lisää tilapäinen sijainen'
+        title: 'Lägg till tillfällig vikarie'
       },
       editTemporaryEmployeeModal: {
-        title: 'Muokkaa tilapäistä sijaista'
+        title: 'Redigera tillfällig vikarie'
       },
-      reactivateTemporaryEmployee: 'Luvita uudelleen',
+      reactivateTemporaryEmployee: 'Bevilja behörighet på nytt',
       removeTemporaryEmployeeConfirmation:
-        'Haluatko poistaa listalta valitun henkilön?',
+        'Vill du ta bort den valda personen från listan?',
       mobileDevices: {
-        mobileDevices: 'Yksikön mobiililaitteet',
-        addMobileDevice: 'Lisää mobiililaite',
-        editName: 'Muokkaa laitteen nimeä',
-        removeConfirmation: 'Haluatko poistaa mobiililaitteen?',
-        editPlaceholder: 'esim. Hippiäisten kännykkä'
+        mobileDevices: 'Enhetens mobilenheter',
+        addMobileDevice: 'Lägg till mobilenhet',
+        editName: 'Redigera enhetens namn',
+        removeConfirmation: 'Vill du ta bort mobilenheten?',
+        editPlaceholder: 't.ex. Hippogruppensmobil'
       },
-      groups: 'Luvitukset ryhmiin',
-      noGroups: 'Ei luvituksia',
-      hasOccupancyCoefficient: 'Kasvatusvastuullinen'
+      groups: 'Gruppbehörigheter',
+      noGroups: 'Inga behörigheter',
+      hasOccupancyCoefficient: 'Ansvarig för fostran'
     },
     filters: {
-      title: 'Näytä tiedot',
+      title: 'Visa uppgifter',
       periods: {
-        day: 'Päivä',
-        threeMonths: '3 kk',
-        sixMonths: '6 kk',
-        year: 'Vuosi'
+        day: 'Dag',
+        threeMonths: '3 mån',
+        sixMonths: '6 mån',
+        year: 'År'
       }
     },
     occupancy: {
-      display: 'Näytä',
-      fullUnit: 'Koko yksikkö',
-      title: 'Yksikön täyttöaste',
+      display: 'Visa',
+      fullUnit: 'Hela enheten',
+      title: 'Enhetens beläggningsgrad',
       subtitles: {
-        confirmed: 'Vahvistettu täyttöaste',
-        planned: 'Suunniteltu täyttöaste',
-        draft: 'Hahmoteltu täyttöaste',
-        realized: 'Käyttöaste'
+        confirmed: 'Bekräftad beläggningsgrad',
+        planned: 'Planerad beläggningsgrad',
+        draft: 'Uppskattad beläggningsgrad',
+        realized: 'Utnyttjandegrad'
       },
-      fail: 'Täyttöasteen lataaminen epäonnistui',
-      failRealized: 'Käyttöasteen lataaminen epäonnistui',
-      maximum: 'Maksimi',
-      minimum: 'Minimi',
-      noValidValues: 'Aikavälille ei voitu laskea täyttöastetta',
-      noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta',
+      fail: 'Laddning av beläggningsgrad misslyckades',
+      failRealized: 'Laddning av utnyttjandegrad misslyckades',
+      maximum: 'Maximum',
+      minimum: 'Minimum',
+      noValidValues: 'Beläggningsgrad kunde inte beräknas för tidsperioden',
+      noValidValuesRealized:
+        'Utnyttjandegrad kunde inte beräknas för tidsperioden',
       realtime: {
         modes: {
-          REALIZED: 'Toteuma',
-          PLANNED: 'Suunnitelma'
+          REALIZED: 'Utfall',
+          PLANNED: 'Plan'
         },
-        noData: 'Ei tietoja valitulle päivälle',
-        legendTitle: 'Merkintöjen selitykset',
-        chartYAxisTitle: 'Lapsia kertoimilla',
-        chartY1AxisTitle: 'Henkilökuntaa',
-        staffPresent: 'Työntekijöiden lukumäärä',
-        staffRequired: 'Tarvittavat työntekijät',
-        childrenMax: 'Lasten maksimimäärä (kertoimella)',
-        childrenPresent: 'Lasten lukumäärä',
-        children: 'Lasten määrä (kertoimella)',
-        unknownChildren: '+ lapsia ilman varausta',
-        utilization: 'Käyttöaste'
+        noData: 'Inga uppgifter för vald dag',
+        legendTitle: 'Förklaring av markeringar',
+        chartYAxisTitle: 'Barn med koefficienter',
+        chartY1AxisTitle: 'Personal',
+        staffPresent: 'Antal arbetare',
+        staffRequired: 'Erforderliga arbetare',
+        childrenMax: 'Maximalt antal barn (med koefficient)',
+        childrenPresent: 'Antal barn',
+        children: 'Antal barn (med koefficient)',
+        unknownChildren: '+ barn utan reservation',
+        utilization: 'Utnyttjandegrad'
       }
     },
     staffOccupancies: {
-      title: 'Kasvatusvastuullisuus',
-      occupancyCoefficientEnabled: 'Lasketaan käyttöasteesen'
+      title: 'Ansvar för fostran',
+      occupancyCoefficientEnabled: 'Räknas in i utnyttjandegraden'
     },
     applicationProcess: {
-      title: 'Hakuprosessi'
+      title: 'Ansökningsprocess'
     },
     placementPlans: {
-      title: 'Vahvistettavana huoltajalla',
-      name: 'Nimi',
-      birthday: 'Syntymäaika',
-      placementDuration: 'Sijoitettu yksikköön',
-      type: 'Sijoitustyyppi',
-      subtype: 'Osa/Koko',
-      application: 'Hakemus'
+      title: 'Väntar på bekräftelse från vårdnadshavare',
+      name: 'Namn',
+      birthday: 'Födelsedatum',
+      placementDuration: 'Placerad i enheten',
+      type: 'Placeringstyp',
+      subtype: 'Del/Hel',
+      application: 'Ansökan'
     },
     placementProposals: {
-      acceptAllTitle: 'Valitut sijoitusehdotukset',
+      acceptAllTitle: 'Valda placeringsförslag',
       acceptAllSummary: ({
-                           accepted,
-                           rejected
-                         }: {
+        accepted,
+        rejected
+      }: {
         accepted: number
         rejected: number
-      }) => `${accepted} hyväksytään, ${rejected} hylätään`,
-      acceptAllButton: 'Vahvista valinnat',
-      application: 'Hakemus',
-      birthday: 'Syntymäaika',
-      citizenHasRejectedPlacement: 'Paikka hylätty',
-      confirmation: 'Hyväksyntä',
-      describeOtherReason: 'Kirjoita perustelu',
+      }) => `${accepted} godkänns, ${rejected} avvisas`,
+      acceptAllButton: 'Bekräfta val',
+      application: 'Ansökan',
+      birthday: 'Födelsedatum',
+      citizenHasRejectedPlacement: 'Plats avvisad',
+      confirmation: 'Godkännande',
+      describeOtherReason: 'Skriv motivering',
       infoText:
-        'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.',
-      infoTitle: 'Hyväksytyksi / hylätyksi merkitseminen',
-      name: 'Nimi',
-      placementDuration: 'Sijoitettu yksikköön',
-      rejectTitle: 'Valitse palautuksen syy',
+        'Markera de barn som du kan ta emot. När du har godkänt alla barn kan du trycka på knappen Bekräfta godkända. Om du inte kan godkänna alla barn, markera krysset och lägg till en motivering. Servicerådgivningen gör då ett nytt placeringsförslag eller tar kontakt.',
+      infoTitle: 'Markering som godkänd / avvisad',
+      name: 'Namn',
+      placementDuration: 'Placerad i enheten',
+      rejectTitle: 'Välj orsak till avvisning',
       rejectReasons: {
         REASON_1:
-          'TILARAJOITE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
+          'UTRYMMESBEGRÄNSNING, överenskommen med områdeschefen för småbarnspedagogik.',
         REASON_2:
-          'YKSIKÖN KOKONAISTILANNE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
+          'ENHETENS TOTALA SITUATION, överenskommen med områdeschefen för småbarnspedagogik.',
         REASON_3: '',
-        OTHER: 'Muu syy'
+        OTHER: 'Annan orsak'
       },
       statusLastModified: (name: string, date: string) =>
-        `Viimeksi muokattu ${date}. Muokkaaja: ${name}`,
-      subtype: 'Osa/Koko',
-      title: 'Sijoitusehdotukset',
-      type: 'Sijoitustyyppi',
-      unknown: 'Ei tiedossa'
+        `Senast ändrad ${date}. Redaktör: ${name}`,
+      subtype: 'Del/Hel',
+      title: 'Placeringsförslag',
+      type: 'Placeringstyp',
+      unknown: 'Okänd'
     },
     applications: {
-      title: 'Hakemukset',
-      child: 'Lapsen nimi/synt.aika',
-      guardian: 'Hakenut huoltaja',
-      type: 'Sijoitustyyppi',
+      title: 'Ansökningar',
+      child: 'Barnets namn/födelsedatum',
+      guardian: 'Vårdnadshavare som ansökt',
+      type: 'Placeringstyp',
       types: {
-        CLUB: 'Kerho',
-        DAYCARE: 'Varhaiskasvatus',
-        DAYCARE_PART_TIME: 'Varhaiskasvatus',
-        PRESCHOOL: 'Esiopetus',
-        PRESCHOOL_DAYCARE: 'Esiopetus',
-        PREPARATORY: 'Valmistava',
-        PREPARATORY_DAYCARE: 'Valmistava'
+        CLUB: 'Klubb',
+        DAYCARE: 'Småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Småbarnspedagogik',
+        PRESCHOOL: 'Förskola',
+        PRESCHOOL_DAYCARE: 'Förskola',
+        PREPARATORY: 'Förberedande',
+        PREPARATORY_DAYCARE: 'Förberedande'
       },
-      placement: 'Osa/Koko',
-      preferenceOrder: 'Toive',
-      startDate: 'Aloitus',
-      status: 'Tila',
-      extendedCare: 'Vuorohoito'
+      placement: 'Del/Hel',
+      preferenceOrder: 'Önskemål',
+      startDate: 'Start',
+      status: 'Status',
+      extendedCare: 'Skiftvård'
     },
     transferApplications: {
-      title: 'Siirtoa muualle hakeneet',
-      child: 'Lapsen nimi/synt.aika',
-      startDate: 'Toive aloituspäivästä, ei vielä sijoitusta'
+      title: 'Ansökt om överföring till annan plats',
+      child: 'Barnets namn/födelsedatum',
+      startDate: 'Önskemål om startdatum, ännu ingen placering'
     },
     serviceApplications: {
-      title: 'Käsittelyä odottavat palveluntarpeen muutoshakemukset',
-      child: 'Lapsi',
-      range: 'Ajalle',
-      newNeed: 'Uusi tarve',
-      currentNeed: 'Nykyinen tarve',
-      sentDate: 'Lähetetty'
+      title: 'Ändringsansökningar för servicebehov som väntar på behandling',
+      child: 'Barn',
+      range: 'För perioden',
+      newNeed: 'Nytt behov',
+      currentNeed: 'Aktuellt behov',
+      sentDate: 'Skickat'
     },
     placements: {
-      title: 'Ryhmää odottavat lapset',
-      name: 'Nimi',
-      birthday: 'Syntymäaika',
-      under3: 'Alle 3-vuotias sijoituksen alkaessa',
-      over3: 'Yli 3-vuotias sijoituksen alkaessa',
-      placementDuration: 'Sijoitettu yksikköön',
-      missingGroup: 'Ryhmä puuttuu',
-      type: 'Sijoitustyyppi',
-      subtype: 'Osa/Koko',
-      addToGroup: 'Ryhmitä',
+      title: 'Barn som väntar på grupp',
+      name: 'Namn',
+      birthday: 'Födelsedatum',
+      under3: 'Under 3 år vid placeringens början',
+      over3: 'Över 3 år vid placeringens början',
+      placementDuration: 'Placerad i enheten',
+      missingGroup: 'Grupp saknas',
+      type: 'Placeringstyp',
+      subtype: 'Del/Hel',
+      addToGroup: 'Gruppera',
       modal: {
-        createTitle: 'Lapsen sijoitus ryhmään',
-        transferTitle: 'Lapsen siirto toiseen ryhmään',
-        child: 'Sijoitettava lapsi',
-        group: 'Ryhmä',
+        createTitle: 'Barnets placering i grupp',
+        transferTitle: 'Överföring av barn till annan grupp',
+        child: 'Barn som ska placeras',
+        group: 'Grupp',
         errors: {
-          noGroup: 'Et ole valinnut ryhmää tai aktiivisia ryhmiä ei ole',
-          noStartDate: 'Et ole valinnut aloituspäivämäärää',
-          noEndDate: 'Et ole valinnut päättymispäivämäärää',
-          groupNotStarted: 'Ryhmä ei ole vielä alkanut',
-          groupEnded: 'Ryhmä on jo lakkautettu'
+          noGroup: 'Du har inte valt grupp eller det finns inga aktiva grupper',
+          noStartDate: 'Du har inte valt startdatum',
+          noEndDate: 'Du har inte valt slutdatum',
+          groupNotStarted: 'Gruppen har inte börjat ännu',
+          groupEnded: 'Gruppen är redan nedlagd'
         }
       }
     },
     termination: {
-      title: 'Päättyvät sijoitukset',
-      info: 'Listalla näkyvät ne lapset, joilla huoltaja on tehnyt irtisanomisilmoituksen edellisen kahden viikon aikana, tai joilla on huoltajan hyväksymä siirtohakemus toiseen yksikköön. Lapsia, joilla on muusta syystä päättyvä sijoitus, ei näytetä tällä listalla.',
-      terminationRequestedDate: 'Irtisanomispäivä',
-      endDate: 'Päättymispäivämäärä',
-      groupName: 'Ryhmä'
+      title: 'Placeringar som upphör',
+      info: 'På listan visas de barn vars vårdnadshavare har gjort en uppsägningsanmälan under de senaste två veckorna, eller som har en av vårdnadshavaren godkänd överföringsansökan till en annan enhet. Barn som har en placering som upphör av annan orsak visas inte på listan.',
+      terminationRequestedDate: 'Uppsägningsdatum',
+      endDate: 'Slutdatum',
+      groupName: 'Grupp'
     },
     calendar: {
-      title: 'Kalenteri',
-      noGroup: 'Ei ryhmää',
-      shiftCare: 'Vuorohoito',
-      staff: 'Henkilökunta',
-      allChildren: 'Kaikki lapset',
+      title: 'Kalender',
+      noGroup: 'Ingen grupp',
+      shiftCare: 'Skiftvård',
+      staff: 'Personal',
+      allChildren: 'Alla barn',
       modes: {
-        week: 'Viikko',
-        month: 'Kuukausi'
+        week: 'Vecka',
+        month: 'Månad'
       },
       attendances: {
-        title: 'Varaukset ja läsnäolot'
+        title: 'Reservationer och närvaro'
       },
-      nextWeek: 'Seuraava viikko',
-      previousWeek: 'Edellinen viikko',
+      nextWeek: 'Nästa vecka',
+      previousWeek: 'Föregående vecka',
       events: {
-        title: 'Tapahtumat',
-        createEvent: 'Luo muu tapahtuma',
+        title: 'Händelser',
+        createEvent: 'Skapa annan händelse',
         lastModified: (date: string, name: string) =>
-          `Viimeksi muokattu ${date}; muokkaaja: ${name}`,
-        lastModifiedAt: 'Viimeksi muokattu',
-        lastModifiedBy: 'Muokkaaja',
+          `Senast ändrad ${date}; redaktör: ${name}`,
+        lastModifiedAt: 'Senast ändrad',
+        lastModifiedBy: 'Redaktör',
         edit: {
-          title: 'Tapahtuma',
-          saveChanges: 'Tallenna muutokset',
-          delete: 'Poista tapahtuma'
+          title: 'Händelse',
+          saveChanges: 'Spara ändringar',
+          delete: 'Ta bort händelse'
         },
         create: {
-          title: 'Lisää uusi tapahtuma',
-          text: 'Lisää tässä tapahtumat, jotka huoltajan on tärkeä muistaa: tapahtuma tulee näkyviin huoltajan eVaka-kalenteriin. Muista tapahtumista kannattaa tiedottaa huoltajaa viestitse.',
-          add: 'Lisää tapahtuma',
-          period: 'Ajankohta',
-          attendees: 'Tapahtuman osallistujat',
-          attendeesPlaceholder: 'Valitse...',
-          eventTitle: 'Tapahtuman otsikko',
-          eventTitlePlaceholder: 'Max. 30 merkkiä',
-          description: 'Tapahtuman kuvaus',
+          title: 'Lägg till ny händelse',
+          text: 'Lägg här till händelser som är viktiga för vårdnadshavaren att komma ihåg: händelsen visas i vårdnadshavarens eVaka-kalender. Om andra händelser är det bra att informera vårdnadshavaren via meddelande.',
+          add: 'Lägg till händelse',
+          period: 'Tidpunkt',
+          attendees: 'Deltagare i händelsen',
+          attendeesPlaceholder: 'Välj...',
+          eventTitle: 'Händelserubrik',
+          eventTitlePlaceholder: 'Max. 30 tecken',
+          description: 'Händelsebeskrivning',
           descriptionPlaceholder:
-            'Lyhyet ohjeet huoltajalle, esim. kellonaika, mitä pakata mukaan',
+            'Korta instruktioner till vårdnadshavaren, t.ex. klockslag, vad som ska packas',
           missingPlacementsWarning:
-            'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.',
-          unorderedMeals: 'Tilaamatta jätettävät ateriat',
+            'En del av de valda barnen har ingen placering i den aktuella enheten eller är inte placerade i den valda gruppen under händelsen. Under dessa dagar listas inte barnet som deltagare och händelsen visas inte för vårdnadshavaren i kalendern.',
+          unorderedMeals: 'Måltider som inte ska beställas',
           meals: {
-            BREAKFAST: 'Aamiainen',
-            LUNCH: 'Lounas',
-            SNACK: 'Välipala',
-            DINNER: 'Päivällinen',
-            SUPPER: 'Iltapala'
+            BREAKFAST: 'Frukost',
+            LUNCH: 'Lunch',
+            SNACK: 'Mellanmål',
+            DINNER: 'Middag',
+            SUPPER: 'Kvällsmål'
           }
         },
         discussionReservation: {
           calendar: {
-            eventTooltipTitle: 'Muita tapahtumia:',
-            otherEventSingular: 'muu tapahtuma',
-            otherEventPlural: 'muuta tapahtumaa'
+            eventTooltipTitle: 'Andra händelser:',
+            otherEventSingular: 'annan händelse',
+            otherEventPlural: 'andra händelser'
           },
-          discussionPageTitle: 'Keskusteluaikojen hallinta',
+          discussionPageTitle: 'Hantering av samtalstider',
           discussionPageDescription:
-            'Tällä sivulla voit luoda ja seurata kyselyjä, joilla kysytään huoltajille sopivia keskusteluaikoja.',
-          surveyCreate: 'Uusi keskustelukysely',
-          surveyBasicsTitle: 'Perustiedot',
-          surveyPeriod: 'Kyselyn kesto',
-          surveySubject: 'Keskustelun aihe',
-          surveyInvitees: 'Keskustelujen osallistujat',
-          surveySummary: 'Lisätietoja huoltajalle',
-          surveySummaryCalendarLabel: 'Lisätietoja',
+            'På denna sida kan du skapa och följa upp förfrågningar där du frågar vårdnadshavare om passande samtalstider.',
+          surveyCreate: 'Ny samtalförfrågan',
+          surveyBasicsTitle: 'Grunduppgifter',
+          surveyPeriod: 'Förfrågningens varaktighet',
+          surveySubject: 'Samtalsämne',
+          surveyInvitees: 'Deltagare i samtalen',
+          surveySummary: 'Ytterligare information till vårdnadshavaren',
+          surveySummaryCalendarLabel: 'Ytterligare information',
           surveySummaryInfo:
-            'Tämä teksti näytetään huoltajalle kyselyn yhteydessä. Voit kertoa siinä lisätietoja keskusteluista, esimerkiksi saapumisohjeet tai keskusteluun varattavan ajan.',
-          surveySubjectPlaceholder: 'Enintään 30 merkkiä',
-          surveySummaryPlaceholder: 'Kirjoita lisätiedot',
-          surveyDiscussionTimesTitle: 'Keskusteluajat',
-          surveyInviteeTitle: 'Osallistujat',
-          editSurveyButton: 'Muokkaa',
-          createSurveyButton: 'Lähetä keskusteluajat',
-          saveSurveyButton: 'Tallenna muutokset',
-          deleteSurveyButton: 'Poista',
-          cancelButton: 'Peruuta',
+            'Denna text visas för vårdnadshavaren i samband med förfrågan. Du kan berätta mer om samtalen, till exempel ankomstanvisningar eller hur lång tid samtalet tar.',
+          surveySubjectPlaceholder: 'Högst 30 tecken',
+          surveySummaryPlaceholder: 'Skriv ytterligare information',
+          surveyDiscussionTimesTitle: 'Samtalstider',
+          surveyInviteeTitle: 'Deltagare',
+          editSurveyButton: 'Redigera',
+          createSurveyButton: 'Skicka samtalstider',
+          saveSurveyButton: 'Spara ändringar',
+          deleteSurveyButton: 'Ta bort',
+          cancelButton: 'Avbryt',
           cancelConfirmation: {
-            title: 'Haluatko perua muutokset?',
-            text: 'Tekemiäsi muutoksia ei tallenneta',
-            cancelButton: 'Jatka muokkaamista',
-            continueButton: 'Peru muutokset'
+            title: 'Vill du avbryta ändringarna?',
+            text: 'Dina ändringar kommer inte att sparas',
+            cancelButton: 'Fortsätt redigera',
+            continueButton: 'Avbryt ändringar'
           },
-          surveyModifiedAt: 'Muokattu',
+          surveyModifiedAt: 'Ändrad',
           surveyStatus: {
-            SENT: 'Lähetetty',
-            ENDED: 'Päättynyt'
+            SENT: 'Skickad',
+            ENDED: 'Avslutad'
           },
-          reservedTitle: 'Varanneet',
-          reserveButton: 'Varaa',
-          unreservedTitle: 'Varaamatta',
+          reservedTitle: 'Har reserverat',
+          reserveButton: 'Reservera',
+          unreservedTitle: 'Ej reserverat',
           calendarSurveySummary: (
             link: (text: string) => React.ReactNode
           ): React.ReactNode => (
             <>
-              Tarkempia tietoja varten{' '}
-              {link('siirry keskustelukyselyn tarkastelunäkymään')}
+              För mer detaljerad information{' '}
+              {link('gå till granskningsvyn för samtalförfrågan')}
             </>
           ),
           reservationModal: {
-            reservationStatus: 'Varaustilanne',
-            removeReservation: 'Poista varaus',
-            removeDiscussionTime: 'Poista keskusteluaika',
-            reserved: 'Varattu',
-            unreserved: 'Vapaa',
-            selectPlaceholder: 'Valitse',
-            inviteeLabel: 'Osallistuja',
-            reserveError: 'Keskusteluajan varaaminen epäonnistui',
-            deleteError: 'Keskusteluajan poistaminen epäonnistui',
+            reservationStatus: 'Reservationsstatus',
+            removeReservation: 'Ta bort reservation',
+            removeDiscussionTime: 'Ta bort samtalstid',
+            reserved: 'Reserverad',
+            unreserved: 'Ledig',
+            selectPlaceholder: 'Välj',
+            inviteeLabel: 'Deltagare',
+            reserveError: 'Reservation av samtalstid misslyckades',
+            deleteError: 'Borttagning av samtalstid misslyckades',
             deleteConfirmation: {
-              title: 'Poistettava aika on jo varattu',
-              text: 'Haluatko poistaa ajan ja varauksen?',
-              cancelButton: 'Peru poisto',
-              continueButton: 'Poista'
+              title: 'Tiden som ska tas bort är redan reserverad',
+              text: 'Vill du ta bort tiden och reservationen?',
+              cancelButton: 'Avbryt borttagning',
+              continueButton: 'Ta bort'
             }
           },
           deleteConfirmation: {
-            title: 'Haluatko varmasti poistaa lähetetyn kyselyn?',
-            text: 'Kaikki vapaat ja varatut ajat poistetaan. Tätä toimintoa ei voi peruuttaa.',
-            error: 'Keskustelukyselyn poistaminen epäonnistui'
+            title: 'Vill du verkligen ta bort den skickade förfrågan?',
+            text: 'Alla lediga och reserverade tider kommer att tas bort. Denna åtgärd kan inte ångras.',
+            error: 'Borttagning av samtalförfrågan misslyckades'
           },
           eventTime: {
-            addError: 'Keskusteluajan lisääminen epäonnistui',
-            deleteError: 'Keskusteluajan poistaminen epäonnistui'
+            addError: 'Tillägg av samtalstid misslyckades',
+            deleteError: 'Borttagning av samtalstid misslyckades'
           },
-          reservationClearConfirmationTitle:
-            'Poistetaanko seuraavat varaukset?',
-          clearReservationButtonLabel: 'Poista varaukset'
+          reservationClearConfirmationTitle: 'Ta bort följande reservationer?',
+          clearReservationButtonLabel: 'Ta bort reservationer'
         },
-        reservedTimesLabel: 'varattua',
-        freeTimesLabel: 'vapaata'
+        reservedTimesLabel: 'reserverade',
+        freeTimesLabel: 'lediga'
       }
     },
     groups: {
-      title: 'Toimipisteen ryhmät',
-      familyContacts: 'Näytä yhteystietokooste',
-      attendanceReservations: 'Läsnäolovaraukset',
-      create: 'Luo uusi ryhmä',
+      title: 'Enhetens grupper',
+      familyContacts: 'Visa kontaktuppgiftssammanställning',
+      attendanceReservations: 'Närvaroreservationer',
+      create: 'Skapa ny grupp',
       createModal: {
-        title: 'Uusi ryhmä',
-        confirmButton: 'Tallenna',
-        cancelButton: 'Peruuta',
-        name: 'Ryhmän nimi',
-        type: 'Tyyppi',
-        initialCaretakers: 'Henkilökunnan määrä ryhmän alkaessa',
-        aromiCustomerId: 'Aromin vastuuyksikkökoodi',
+        title: 'Ny grupp',
+        confirmButton: 'Spara',
+        cancelButton: 'Avbryt',
+        name: 'Gruppens namn',
+        type: 'Typ',
+        initialCaretakers: 'Antal personal vid gruppens start',
+        aromiCustomerId: 'Aromi ansvarsenhetskod',
         errors: {
-          nameRequired: 'Ryhmällä täytyy olla nimi',
+          nameRequired: 'Gruppen måste ha ett namn',
           aromiWarning:
-            'Mikäli Aromin vastuuyksikkökoodi puuttuu, ryhmäläiset eivät kuulu ruokatilaukseen',
-          initialCaretakersPositive:
-            'Henkilökunnan määrä ei voi olla negatiivinen'
+            'Om Aromi ansvarsenhetskod saknas ingår inte gruppmedlemmarna i matbeställningen',
+          initialCaretakersPositive: 'Antalet personal kan inte vara negativt'
         }
       },
       updateModal: {
-        title: 'Muokkaa ryhmän tietoja',
-        name: 'Nimi',
-        startDate: 'Perustettu',
-        endDate: 'Viimeinen toimintapäivä',
-        info: 'Ryhmän aikaisempia tietoja ei säilytetä',
+        title: 'Redigera gruppinformation',
+        name: 'Namn',
+        startDate: 'Grundad',
+        endDate: 'Sista verksamhetsdag',
+        info: 'Tidigare information om gruppen bevaras inte',
         jamixPlaceholder: 'Jamix customerNumber',
-        jamixTitle: 'Ruokatilausten asiakasnumero',
-        aromiPlaceholder: 'Aromin vastuuyksikkökoodi',
-        aromiTitle: 'Aromi-ruokatilausten vastuuyksikkökoodi',
-        nekkuUnitTitle: 'Nekku-ruokatilausten yksikkö',
-        nekkuCustomerNumberTitle: 'Nekku-ruokatilausten asiakasnumero'
+        jamixTitle: 'Matbeställningarnas kundnummer',
+        aromiPlaceholder: 'Aromi ansvarsenhetskod',
+        aromiTitle: 'Aromi-matbeställningarnas ansvarsenhetskod',
+        nekkuUnitTitle: 'Nekku-matbeställningarnas enhet',
+        nekkuCustomerNumberTitle: 'Nekku-matbeställningarnas kundnummer'
       },
       nekkuOrderModal: {
-        title: 'Nekku-ruokatilaus'
+        title: 'Nekku-matbeställning'
       },
-      startDate: 'Perustettu',
-      endDate: 'Viimeinen toimintapäivä',
-      caretakers: 'Henkilökuntaa',
-      childrenLabel: 'Lapsia',
+      startDate: 'Grundad',
+      endDate: 'Sista verksamhetsdag',
+      caretakers: 'Personal',
+      childrenLabel: 'Barn',
       childrenValue: {
-        single: 'lapsi',
-        plural: 'lasta'
+        single: 'barn',
+        plural: 'barn'
       },
-      childServiceNeedFactor: 'Lapsen kerroin',
-      childAssistanceNeedFactor: 'Tuen tarve',
-      factor: 'Kerroin',
-      maxOccupancy: 'Suurin täyttöaste',
-      maxRealizedOccupancy: 'Suurin käyttöaste',
-      name: 'Nimi',
-      birthday: 'Syntymäaika',
-      placementDuration: 'Sijoitettu ryhmään',
-      serviceNeed: 'Palv.tarve',
-      serviceNeedChecked: 'Palveluntarve merkitty',
-      serviceNeedMissing1: 'Palveluntarve puuttuu (',
-      serviceNeedMissing2: 'päivää)',
-      placementType: 'Sijoitustyyppi',
-      placementSubtype: 'Osa/Koko',
-      noChildren: 'Ryhmään ei ole sijoitettu lapsia.',
-      returnBtn: 'Palauta',
-      transferBtn: 'Siirrä',
-      diaryButton: 'Avaa päiväkirja',
-      deleteGroup: 'Poista ryhmä',
-      update: 'Muokkaa tietoja',
-      nekkuOrder: 'Nekku-tilaus',
+      childServiceNeedFactor: 'Barnets koefficient',
+      childAssistanceNeedFactor: 'Stödbehov',
+      factor: 'Koefficient',
+      maxOccupancy: 'Högsta beläggningsgrad',
+      maxRealizedOccupancy: 'Högsta utnyttjandegrad',
+      name: 'Namn',
+      birthday: 'Födelsedatum',
+      placementDuration: 'Placerad i gruppen',
+      serviceNeed: 'Servicebehov',
+      serviceNeedChecked: 'Servicebehov markerat',
+      serviceNeedMissing1: 'Servicebehov saknas (',
+      serviceNeedMissing2: 'dagar)',
+      placementType: 'Placeringstyp',
+      placementSubtype: 'Del/Hel',
+      noChildren: 'Inga barn har placerats i gruppen.',
+      returnBtn: 'Återställ',
+      transferBtn: 'Överför',
+      diaryButton: 'Öppna dagbok',
+      deleteGroup: 'Ta bort grupp',
+      update: 'Redigera uppgifter',
+      nekkuOrder: 'Nekku-beställning',
       daycareDailyNote: {
-        dailyNote: 'Päivän muistiinpanot',
-        header: 'Tänään koettua ja opittua',
-        groupNotesHeader: 'Ryhmän muistiinpanot',
-        stickyNotesHeader: 'Huomioitavaa lähipäivinä',
+        dailyNote: 'Dagens anteckningar',
+        header: 'Dagens upplevelser och lärdomar',
+        groupNotesHeader: 'Gruppanteckningar',
+        stickyNotesHeader: 'Att observera de närmaste dagarna',
         notesHint:
-          'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
+          'Lekar, framgångar, glädjeämnen och lärdomar idag (ej hälsoinformation eller sekretessbelagd information).',
         childStickyNoteHint:
-          'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
-        otherThings: 'Muut asiat',
-        feedingHeader: 'Lapsi söi tänään',
-        sleepingHeader: 'Lapsi nukkui tänään',
-        sleepingHoursHint: 'tunnit',
-        sleepingMinutesHint: 'minuutit',
+          'Anteckning för personalen (ej hälsoinformation eller sekretessbelagd information).',
+        otherThings: 'Annat',
+        feedingHeader: 'Barnet åt idag',
+        sleepingHeader: 'Barnet sov idag',
+        sleepingHoursHint: 'timmar',
+        sleepingMinutesHint: 'minuter',
         sleepingHours: 't',
         sleepingMinutes: 'min',
-        reminderHeader: 'Muistettavia asioita',
-        otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
-        groupNoteModalLink: 'Ryhmän muistiinpano',
-        groupNoteHint: 'Koko ryhmää koskeva muistiinpano',
-        edit: 'Lisää päivän muistiinpano',
+        reminderHeader: 'Saker att komma ihåg',
+        otherThingsToRememberHeader: 'Annat att komma ihåg (t.ex. solkräm)',
+        groupNoteModalLink: 'Gruppanteckning',
+        groupNoteHint: 'Anteckning som gäller hela gruppen',
+        edit: 'Lägg till dagens anteckning',
         level: {
-          GOOD: 'Hyvin',
-          MEDIUM: 'Kohtalaisesti',
-          NONE: 'Ei yhtään'
+          GOOD: 'Bra',
+          MEDIUM: 'Måttligt',
+          NONE: 'Inte alls'
         },
         reminderType: {
-          DIAPERS: 'Lisää vaippoja',
-          CLOTHES: 'Lisää vaatteita',
-          LAUNDRY: 'Pyykit'
+          DIAPERS: 'Lägg till blöjor',
+          CLOTHES: 'Lägg till kläder',
+          LAUNDRY: 'Tvätt'
         }
       },
       childDocuments: {
-        createModalLink: 'Lähetä asiakirja',
+        createModalLink: 'Skicka dokument',
         createModal: {
-          title: 'Lähetä asiakirja usealle vastaanottajalle',
-          template: 'Asiakirja',
-          placements: 'Vastaanottajat'
+          title: 'Skicka dokument till flera mottagare',
+          template: 'Dokument',
+          placements: 'Mottagare'
         }
       }
     },
     backupCares: {
-      title: 'Varasijoituslapset',
-      childName: 'Nimi',
-      duration: 'Sijoitettu yksikköön',
-      birthDate: 'Syntymäaika'
+      title: 'Reservplaceringsbarn',
+      childName: 'Namn',
+      duration: 'Placerad i enheten',
+      birthDate: 'Födelsedatum'
     },
     attendanceReservations: {
-      ungrouped: 'Lapset ilman ryhmää',
-      childName: 'Lapsen nimi',
-      startTime: 'Saapuu',
-      endTime: 'Lähtee',
-      requiresBackupCare: 'Tee varasijoitus',
-      openReservationModal: 'Tee toistuva varaus',
-      childCount: 'Lapsia läsnä',
+      ungrouped: 'Barn utan grupp',
+      childName: 'Barnets namn',
+      startTime: 'Anländer',
+      endTime: 'Går',
+      requiresBackupCare: 'Gör reservplacering',
+      openReservationModal: 'Gör återkommande reservation',
+      childCount: 'Barn närvarande',
       lastModifiedStaff: (date: string, name: string) => (
         <div>
-          <p>*Henkilökunnan tekemä merkintä</p>
+          <p>*Markering gjord av personal</p>
           <p>
-            Viimeksi muokattu {date}; muokkaaja: {name}
+            Senast ändrad {date}; redaktör: {name}
           </p>
         </div>
       ),
       lastModifiedOther: (date: string, name: string) =>
-        `Viimeksi muokattu ${date}; muokkaaja: ${name}`,
+        `Senast ändrad ${date}; redaktör: ${name}`,
       reservationModal: {
-        title: 'Tee varaus',
-        selectedChildren: 'Lapset, joille varaus tehdään',
-        dateRange: 'Varauksen voimassaolo',
-        dateRangeLabel: 'Tee varaus päiville',
-        missingDateRange: 'Valitse varattavat päivät',
-        repetition: 'Tyyppi tai toistuvuus',
-        times: 'Kellonaika',
-        businessDays: 'Ma-Pe',
-        repeats: 'Toistuu',
+        title: 'Gör reservation',
+        selectedChildren: 'Barn för vilka reservation görs',
+        dateRange: 'Reservationens giltighetstid',
+        dateRangeLabel: 'Gör reservation för dagarna',
+        missingDateRange: 'Välj dagar att reservera',
+        repetition: 'Typ eller återkommande',
+        times: 'Klockslag',
+        businessDays: 'Må-Fre',
+        repeats: 'Återkommer',
         repetitions: {
-          DAILY: 'Päivittäin',
-          WEEKLY: 'Viikoittain',
-          IRREGULAR: 'Epäsäännöllinen'
+          DAILY: 'Dagligen',
+          WEEKLY: 'Veckovis',
+          IRREGULAR: 'Oregelbunden'
         }
       },
       childDateModal: {
         reservations: {
-          title: 'Läsnäolovaraus',
-          add: 'Lisää varaus',
-          noTimes: 'Läsnä, kellonaika ei vielä tiedossa'
+          title: 'Närvaroreservation',
+          add: 'Lägg till reservation',
+          noTimes: 'Närvarande, klockslag ännu inte känt'
         },
         attendances: {
-          title: 'Läsnäolototeuma',
-          add: 'Lisää uusi rivi'
+          title: 'Närvaroutfall',
+          add: 'Lägg till ny rad'
         },
         absences: {
-          title: 'Poissaolo',
+          title: 'Frånvaro',
           add: {
-            BILLABLE: 'Merkitse varhaiskasvatuksen poissaolo',
-            NONBILLABLE: 'Merkitse maksuttoman toiminnan poissaolo'
+            BILLABLE: 'Markera frånvaro från småbarnspedagogik',
+            NONBILLABLE: 'Markera frånvaro från kostnadsfri verksamhet'
           },
           label: {
-            BILLABLE: 'Poissa varhais-kasvatuksesta, syy:',
-            NONBILLABLE: 'Poissa maksuttomasta toiminnasta, syy:'
+            BILLABLE: 'Frånvarande från småbarnspedagogik, orsak:',
+            NONBILLABLE: 'Frånvarande från kostnadsfri verksamhet, orsak:'
           }
         },
-        overlapWarning: 'Tarkista päällekkäisyys',
-        absenceWarning: 'Tarkista poissaolo',
+        overlapWarning: 'Kontrollera överlappning',
+        absenceWarning: 'Kontrollera frånvaro',
         extraNonbillableAbsence:
-          'Läsnäoloaikojen mukaan lapsi oli läsnä maksuttomassa toiminnassa.',
+          'Enligt närvarotiderna var barnet närvarande i kostnadsfri verksamhet.',
         missingNonbillableAbsence:
-          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksuttomassa toiminnassa.',
+          'Enligt närvarotiderna var barnet inte närvarande i kostnadsfri verksamhet.',
         extraBillableAbsence:
-          'Läsnäoloaikojen mukaan lapsi oli läsnä maksullisessa varhaiskasvatuksessa.',
+          'Enligt närvarotiderna var barnet närvarande i avgiftsbelagd småbarnspedagogik.',
         missingBillableAbsence:
-          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksullisessa varhaiskasvatuksessa.',
+          'Enligt närvarotiderna var barnet inte närvarande i avgiftsbelagd småbarnspedagogik.',
         errorCodes: {
-          attendanceInFuture: 'Läsnäolo ei voi olla tulevaisuudessa'
+          attendanceInFuture: 'Närvaro kan inte vara i framtiden'
         }
       },
-      reservationNoTimes: 'Läsnä',
-      missingHolidayReservation: 'Lomavaraus puuttuu',
-      missingHolidayReservationShort: 'Lomavar. puuttuu',
-      fixedSchedule: 'Läsnä',
-      termBreak: 'Ei toimintaa',
-      missingReservation: 'Ilmoitus puuttuu',
+      reservationNoTimes: 'Närvarande',
+      missingHolidayReservation: 'Semesterreservation saknas',
+      missingHolidayReservationShort: 'Semesterres. saknas',
+      fixedSchedule: 'Närvarande',
+      termBreak: 'Ingen verksamhet',
+      missingReservation: 'Anmälan saknas',
       serviceTimeIndicator: '(s)',
       legend: {
-        reservation: 'Varaus',
-        serviceTime: 'Sopimusaika',
-        attendanceTime: 'Saapumis-/lähtöaika',
+        reservation: 'Reservation',
+        serviceTime: 'Avtalstid',
+        attendanceTime: 'Ankomst-/avgångstid',
         hhmm: 'tt:mm'
       },
-      affectsOccupancy: 'Lasketaan käyttöasteeseen',
-      doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
-      inOtherUnit: 'Muussa yksikössä',
-      inOtherGroup: 'Muussa ryhmässä',
-      createdByEmployee: '*Henkilökunnan tekemä merkintä'
+      affectsOccupancy: 'Räknas in i utnyttjandegraden',
+      doesNotAffectOccupancy: 'Räknas inte in i utnyttjandegraden',
+      inOtherUnit: 'I annan enhet',
+      inOtherGroup: 'I annan grupp',
+      createdByEmployee: '*Markering gjord av personal'
     },
     staffAttendance: {
-      startTime: 'tulo',
-      endTime: 'lähtö',
-      summary: 'Yhteenveto',
-      plan: 'Suunnitelma',
-      realized: 'Toteutuma',
-      hours: 'Tunnit',
-      dailyAttendances: 'Päivän kirjaukset',
-      continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
-      addNewAttendance: 'Lisää uusi kirjaus',
-      saveChanges: 'Tallenna muutokset',
-      noGroup: 'Ei ryhmää',
-      staffName: 'Työntekijän nimi',
-      addPerson: 'Lisää henkilö',
+      startTime: 'ankomst',
+      endTime: 'avgång',
+      summary: 'Sammanfattning',
+      plan: 'Plan',
+      realized: 'Utfall',
+      hours: 'Timmar',
+      dailyAttendances: 'Dagens registreringar',
+      continuationAttendance: '* registrering som började föregående dag',
+      addNewAttendance: 'Lägg till ny registrering',
+      saveChanges: 'Spara ändringar',
+      noGroup: 'Ingen grupp',
+      staffName: 'Arbetarens namn',
+      addPerson: 'Lägg till person',
       types: {
-        PRESENT: 'Läsnä',
-        OTHER_WORK: 'Työasia',
-        TRAINING: 'Koulutus',
-        OVERTIME: 'Ylityö',
-        JUSTIFIED_CHANGE: 'Perusteltu muutos',
-        SICKNESS: 'Muu syy (oma)',
-        CHILD_SICKNESS: 'Muu syy (lapsi)'
+        PRESENT: 'Närvarande',
+        OTHER_WORK: 'Arbetsärende',
+        TRAINING: 'Utbildning',
+        OVERTIME: 'Övertid',
+        JUSTIFIED_CHANGE: 'Motiverad ändring',
+        SICKNESS: 'Annan orsak (egen)',
+        CHILD_SICKNESS: 'Annan orsak (barn)'
       },
       incalculableSum:
-        'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
-      gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
-      openAttendanceWarning: (arrival: string) => `Avoin kirjaus ${arrival}`,
-      openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
+        'Timmarna kan inte beräknas eftersom den sista avgångstiden saknas från dagens registreringar.',
+      gapWarning: (gapRange: string) => `Registrering saknas för ${gapRange}`,
+      openAttendanceWarning: (arrival: string) =>
+        `Öppen registrering ${arrival}`,
+      openAttendanceInAnotherUnitWarning: 'Öppen registrering ',
       openAttendanceInAnotherUnitWarningCont:
-        '. Kirjaus on päätettävä ennen uuden lisäystä.',
-      personCount: 'Läsnäolleiden yhteismäärä',
-      personCountAbbr: 'hlö',
-      unlinkOvernight: 'Erota yön yli menevä läsnäolo',
-      previousDay: 'Edellinen päivä',
-      nextDay: 'Seuraava päivä',
+        '. Registreringen måste avslutas innan en ny läggs till.',
+      personCount: 'Totalt antal närvarande',
+      personCountAbbr: 'pers',
+      unlinkOvernight: 'Separera närvaro över natten',
+      previousDay: 'Föregående dag',
+      nextDay: 'Nästa dag',
       addPersonModal: {
         description:
-          'Lisää väliaikaisesti läsnäoleva henkilö ja valitse lasketaanko hänet mukaan käyttöasteeseen.',
-        arrival: 'Saapumisaika',
-        name: 'Nimi',
-        namePlaceholder: 'Sukunimi Etunimi',
-        group: 'Ryhmä'
+          'Lägg till en tillfälligt närvarande person och välj om hen ska räknas med i utnyttjandegraden.',
+        arrival: 'Ankomsttid',
+        name: 'Namn',
+        namePlaceholder: 'Efternamn Förnamn',
+        group: 'Grupp'
       },
-      addedAt: 'Merkintä luotu',
-      modifiedAt: 'Muokattu',
-      departedAutomatically: 'Automaattikatkaistu',
-      hasStaffOccupancyEffect: 'Kasvatusvastuullinen'
+      addedAt: 'Registrering skapad',
+      modifiedAt: 'Ändrad',
+      departedAutomatically: 'Automatiskt avslutad',
+      hasStaffOccupancyEffect: 'Ansvarig för fostran'
     },
     error: {
       placement: {
-        create: 'Sijoitus ryhmään epäonnistui',
-        transfer: 'Sijoitus toiseen ryhmään epäonnistui'
+        create: 'Placering i grupp misslyckades',
+        transfer: 'Placering i annan grupp misslyckades'
       }
     }
   },
   groupCaretakers: {
-    info: 'Luo aina uusi henkilökunnan tarve, kun henkilökunnan lukumäärä muuttuu. Ilmoitettu lukumäärä on voimassa valitulla ajanjaksolla ja vaikuttaa yksikön ja ryhmän täyttöasteisiin.',
-    create: 'Luo uusi henkilökunnan tarve',
-    edit: 'Muokkaa tietoja',
+    info: 'Skapa alltid ett nytt personalbehov när antalet personal ändras. Det angivna antalet gäller för den valda tidsperioden och påverkar enhetens och gruppens beläggningsgrader.',
+    create: 'Skapa nytt personalbehov',
+    edit: 'Redigera uppgifter',
     editActiveWarning:
-      'Olet muokkaamassa käynnissäolevan ajanjakson tietoja. Jos henkilökunnan määrän muutos osuu muulle aikavälille, luo uusi henkilökunnan tarve, jotta historiatieto säilyy.',
+      'Du redigerar uppgifter för en pågående tidsperiod. Om ändringen i personalantalet gäller en annan tidsperiod, skapa ett nytt personalbehov så att historikuppgifterna bevaras.',
     editHistoryWarning:
-      'Olet muokkaamassa päättyneen ajanjakson tietoja. Jos henkilökunnan määrän muutos osuu muulle aikavälille, luo uusi henkilökunnan tarve, jotta historiatieto säilyy.',
-    confirmDelete: 'Haluatko varmasti poistaa henkilökunnan tarpeen?',
-    startDate: 'Alkaen',
-    endDate: 'Päättyen',
-    amount: 'Henkilökunnan tarve',
-    amountUnit: 'Henkilöä',
-    status: 'Tila',
+      'Du redigerar uppgifter för en avslutad tidsperiod. Om ändringen i personalantalet gäller en annan tidsperiod, skapa ett nytt personalbehov så att historikuppgifterna bevaras.',
+    confirmDelete: 'Vill du verkligen ta bort personalbehovet?',
+    startDate: 'Från och med',
+    endDate: 'Till och med',
+    amount: 'Personalbehov',
+    amountUnit: 'Personer',
+    status: 'Status',
     conflict:
-      'Valitussa ajanjaksossa on päällekkäisyys aiemmin luodun ajanjakson kanssa. Poista päällekkäisyys muokkaamalla toista ajanjaksoa.'
+      'Det finns en överlappning med en tidigare skapad tidsperiod i den valda tidsperioden. Ta bort överlappningen genom att redigera den andra tidsperioden.'
   },
   personalMobileDevices: {
-    title: 'Henkilökohtainen eVaka-mobiili',
+    title: 'Personlig eVaka-mobil',
     infoParagraph1:
-      'Tällä sivulla voit määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
+      'På denna sida kan du definiera en mobilenhet för ditt eget personliga bruk, med vilken du granskar alla dina enheters uppgifter i eVaka. Du kan också vid behov ta bort eller lägga till fler enheter.',
     infoParagraph2:
-      'Huolehdithan, että kaikissa mobiililaitteissasi on pääsykoodi käytössä.',
-    name: 'Laitteen nimi',
-    addDevice: 'Lisää mobiililaite',
-    editName: 'Muokkaa laitteen nimeä',
-    deleteDevice: 'Haluatko poistaa mobiililaitteen?'
+      'Se till att alla dina mobilenheter har en åtkomstkod aktiverad.',
+    name: 'Enhetens namn',
+    addDevice: 'Lägg till mobilenhet',
+    editName: 'Redigera enhetens namn',
+    deleteDevice: 'Vill du ta bort mobilenheten?'
   },
   mobilePairingModal: {
-    sharedDeviceModalTitle: 'Lisää yksikköön uusi mobiililaite',
-    personalDeviceModalTitle: 'Lisää uusi henkilökohtainen mobiililaite',
-    modalText1: 'Mene mobiililaitteella osoitteeseen',
-    modalText2: 'ja syötä laitteeseen alla oleva koodi.',
+    sharedDeviceModalTitle: 'Lägg till ny mobilenhet till enheten',
+    personalDeviceModalTitle: 'Lägg till ny personlig mobilenhet',
+    modalText1: 'Gå med mobilenheten till adressen',
+    modalText2: 'och skriv in koden nedan i enheten.',
     modalText3:
-      'Syötä mobiililaitteessa näkyvä vahvistuskoodi alla olevaan kenttään.',
+      'Skriv in bekräftelsekoden som visas på mobilenheten i fältet nedan.',
     modalText4:
-      'Anna mobiililaitteelle vielä nimi, jolla erotat sen muista mobiililaiteista.',
-    namePlaceholder: 'Nimi'
+      'Ge mobilenheten ett namn som du kan skilja den från andra mobilenheter med.',
+    namePlaceholder: 'Namn'
   },
   invoices: {
     table: {
-      title: 'Laskut',
-      toggleAll: 'Valitse kaikki alueen laskut',
-      head: 'Päämies',
-      children: 'Lapset',
-      period: 'Laskutuskausi',
-      createdAt: 'Luonnos luotu',
-      nb: 'Huom',
+      title: 'Fakturor',
+      toggleAll: 'Välj alla områdets fakturor',
+      head: 'Huvudman',
+      children: 'Barn',
+      period: 'Faktureringsperiod',
+      createdAt: 'Utkast skapat',
+      nb: 'Obs',
       totalPrice: 'Summa',
-      status: 'Tila',
-      replacementInvoice: 'Oikaisulasku'
+      status: 'Status',
+      replacementInvoice: 'Korrigeringsfaktura'
     },
     buttons: {
       checked: (count: number) =>
-        count === 1 ? `${count} lasku valittu` : `${count} laskua valittu`,
+        count === 1 ? `${count} faktura vald` : `${count} fakturor valda`,
       sendInvoice: (count: number) =>
-        count === 1 ? 'Siirrä valittu lasku' : 'Siirrä valitut laskut',
+        count === 1 ? 'Överför vald faktura' : 'Överför valda fakturor',
       resendInvoice: (count: number) =>
         count === 1
-          ? 'Lähetä valittu lasku uudelleen'
-          : 'Lähetä valitut laskut uudelleen',
-      createInvoices: 'Luo laskuluonnokset',
+          ? 'Skicka vald faktura på nytt'
+          : 'Skicka valda fakturor på nytt',
+      createInvoices: 'Skapa fakturautkast',
       deleteInvoice: (count: number) =>
-        count === 1 ? 'Poista valittu lasku' : 'Poista valitut laskut',
+        count === 1 ? 'Ta bort vald faktura' : 'Ta bort valda fakturor',
       checkAreaInvoices: (customRange: boolean) =>
         customRange
-          ? 'Valitse laskut valitulta aikaväliltä ja alueilta'
-          : 'Valitse tämän kuun laskut valituilta alueilta',
+          ? 'Välj fakturor från vald tidsperiod och områden'
+          : 'Välj denna månads fakturor från valda områden',
       individualSendAlertText:
-        'Muista nostaa aiemmin siirretyt laskut laskutusjärjestelmään ennen uusien siirtämistä.'
+        'Kom ihåg att hämta tidigare överförda fakturor till faktureringssystemet innan nya överförs.'
     },
     sendModal: {
-      title: 'Siirrä valitut laskut',
-      invoiceDate: 'Laskun päivä',
-      dueDate: 'Laskun eräpäivä'
+      title: 'Överför valda fakturor',
+      invoiceDate: 'Fakturans datum',
+      dueDate: 'Fakturans förfallodag'
     },
     resendModal: {
-      title: 'Haluatko aivan varmasti lähettää laskut uudelleen?',
-      text: 'Varmista ensin huolellisesti, että laskut eivät ole menneet laskutusjärjestelmään.',
-      confirm: 'Kyllä, ymmärrän mitä teen'
+      title: 'Vill du verkligen skicka fakturorna på nytt?',
+      text: 'Kontrollera först noggrant att fakturorna inte har gått till faktureringssystemet.',
+      confirm: 'Ja, jag förstår vad jag gör'
     },
-    sendSuccess: 'Lähettäminen onnistui',
-    sendFailure: 'Lähettäminen epäonnistui'
+    sendSuccess: 'Sändning lyckades',
+    sendFailure: 'Sändning misslyckades'
   },
   invoice: {
     status: {
-      DRAFT: 'Luonnos',
-      WAITING_FOR_SENDING: 'Siirretään manuaalisesti',
-      SENT: 'Siirretty',
-      REPLACEMENT_DRAFT: 'Oikaisuluonnos',
-      REPLACED: 'Oikaistu'
+      DRAFT: 'Utkast',
+      WAITING_FOR_SENDING: 'Överförs manuellt',
+      SENT: 'Överförd',
+      REPLACEMENT_DRAFT: 'Korrigeringsutkast',
+      REPLACED: 'Korrigerad'
     },
     title: {
-      DRAFT: 'Laskuluonnos',
-      WAITING_FOR_SENDING: 'Siirtoa odottava lasku',
-      SENT: 'Siirretty lasku',
-      REPLACEMENT_DRAFT: 'Oikaisulaskuluonnos',
-      REPLACED: 'Oikaistu lasku'
+      DRAFT: 'Fakturautkast',
+      WAITING_FOR_SENDING: 'Faktura som väntar på överföring',
+      SENT: 'Överförd faktura',
+      REPLACEMENT_DRAFT: 'Utkast till korrigeringsfaktura',
+      REPLACED: 'Korrigerad faktura'
     },
     form: {
       nav: {
-        return: 'Palaa'
+        return: 'Återvänd'
       },
       child: {
-        ssn: 'Lapsen hetu'
+        ssn: 'Barnets personbeteckning'
       },
       headOfFamily: {
-        title: 'Päämies',
-        fullName: 'Päämies',
-        ssn: 'Päämiehen hetu',
-        codebtorName: 'Kanssavelallinen',
-        codebtorSsn: 'Kanssavelallisen hetu'
+        title: 'Huvudman',
+        fullName: 'Huvudman',
+        ssn: 'Huvudmannens personbeteckning',
+        codebtorName: 'Medskyldige',
+        codebtorSsn: 'Medskyldiges personbeteckning'
       },
       details: {
-        title: 'Laskun tiedot',
-        status: 'Tila',
-        range: 'Laskutuskausi',
-        number: 'Laskun numero',
-        dueDate: 'Laskun eräpäivä',
-        account: 'Tili',
-        accountType: 'Tililaji',
-        agreementType: 'Laskulaji',
-        relatedFeeDecisions: 'Liittyvät maksupäätökset',
-        replacedInvoice: 'Korvaa laskun',
-        invoice: 'Lasku',
-        revision: (revisionNumber: number) => `Oikaisulasku ${revisionNumber}`,
+        title: 'Fakturans uppgifter',
+        status: 'Status',
+        range: 'Faktureringsperiod',
+        number: 'Fakturanummer',
+        dueDate: 'Fakturans förfallodag',
+        account: 'Konto',
+        accountType: 'Kontotyp',
+        agreementType: 'Faktureringstyp',
+        relatedFeeDecisions: 'Relaterade avgiftsbeslut',
+        replacedInvoice: 'Ersätter fakturan',
+        invoice: 'Faktura',
+        revision: (revisionNumber: number) =>
+          `Korrigeringsfaktura ${revisionNumber}`,
         replacedBy: (link: React.ReactNode) => (
-          <>Tämä lasku on oikaistu. Korvaava lasku: {link}</>
+          <>Denna faktura är korrigerad. Ersättande faktura: {link}</>
         ),
         replacedByDraft: (link: React.ReactNode) => (
-          <>Tälle laskulle on korvaava oikaisuluonnos: {link}</>
+          <>För denna faktura finns ett ersättande korrigeringsutkast: {link}</>
         )
       },
       replacement: {
-        title: 'Laskun oikaisuun liittyvät tiedot',
-        info: 'Voit lisätä tänne oikaisuun liittyvät tiedot.',
-        reason: 'Oikaisun syy',
+        title: 'Uppgifter relaterade till korrigering av fakturan',
+        info: 'Du kan lägga till uppgifter relaterade till korrigeringen här.',
+        reason: 'Orsak till korrigering',
         reasons: {
-          SERVICE_NEED: 'Väärä palveluntarve',
-          ABSENCE: 'Päiväkirjamerkintä',
-          INCOME: 'Puuttuvat/virheelliset tulotiedot',
-          FAMILY_SIZE: 'Virheellinen perhekoko',
-          RELIEF_RETROACTIVE: 'Maksuvapautus, takautuva',
-          OTHER: 'Muu'
+          SERVICE_NEED: 'Fel servicebehov',
+          ABSENCE: 'Dagboksanteckning',
+          INCOME: 'Saknade/felaktiga inkomstuppgifter',
+          FAMILY_SIZE: 'Felaktig familjestorlek',
+          RELIEF_RETROACTIVE: 'Avgiftsfrihet, retroaktiv',
+          OTHER: 'Annan'
         },
-        notes: 'Lisätiedot',
-        attachments: 'Liitteet',
+        notes: 'Ytterligare information',
+        attachments: 'Bilagor',
         sendInfo:
-          'Kun merkitset tämän laskun siirretyksi, korvattava lasku merkitään oikaistuksi!',
-        send: 'Merkitse siirretyksi',
-        markedAsSent: 'Merkitty siirretyksi'
+          'När du markerar denna faktura som överförd, markeras den ersatta fakturan som korrigerad!',
+        send: 'Markera som överförd',
+        markedAsSent: 'Markerad som överförd'
       },
       rows: {
-        title: 'Laskurivit',
-        product: 'Tuote',
-        description: 'Selite',
-        unitId: 'Yksikkö',
-        daterange: 'Ajanjakso',
-        amount: 'Kpl',
-        unitPrice: 'A-hinta',
+        title: 'Fakturarader',
+        product: 'Produkt',
+        description: 'Förklaring',
+        unitId: 'Enhet',
+        daterange: 'Tidsperiod',
+        amount: 'St',
+        unitPrice: 'Á-pris',
         price: 'Summa',
-        subtotal: 'Laskun summa'
+        subtotal: 'Fakturans summa'
       },
       sum: {
-        rowSubTotal: 'Lapsen rivien summa',
-        familyTotal: 'Perhe yhteensä'
+        rowSubTotal: 'Summa för barnets rader',
+        familyTotal: 'Familj totalt'
       },
       buttons: {
-        markSent: 'Merkitse siirretyksi'
+        markSent: 'Markera som överförd'
       }
     },
     distinctiveDetails: {
-      MISSING_ADDRESS: 'Osoite puuttuu'
+      MISSING_ADDRESS: 'Adress saknas'
     },
-    openAbsenceSummary: 'Avaa poissaolokooste'
+    openAbsenceSummary: 'Öppna frånvarosammanställning'
   },
   invoiceCorrections: {
-    noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
-    targetMonth: 'Korjataan laskutuskaudella',
-    nextTargetMonth: 'Seuraava laskutuskausi',
-    range: 'Syyn ajanjakso',
-    addRow: 'Lisää korjausrivi',
-    addTitle: 'Uusi korjausrivi',
-    editTitle: 'Muokkaa korjausriviä',
-    deleteConfirmTitle: 'Poistetaanko korjausrivi?'
+    noChildren: 'Personen är inte huvudman för något barn',
+    targetMonth: 'Korrigeras under faktureringsperioden',
+    nextTargetMonth: 'Nästa faktureringsperiod',
+    range: 'Orsakens tidsperiod',
+    addRow: 'Lägg till korrigeringsrad',
+    addTitle: 'Ny korrigeringsrad',
+    editTitle: 'Redigera korrigeringsrad',
+    deleteConfirmTitle: 'Ta bort korrigeringsrad?'
   },
   financeDecisions: {
     handlerSelectModal: {
-      title: 'Tarkista tiedot',
-      label: 'Päätöksentekijä',
-      error: 'Päätöksentekijöiden lataus epäonnistui, yritä uudelleen',
-      default: 'Yksikön tiedoissa asetettu päätöksentekijä',
+      title: 'Kontrollera uppgifterna',
+      label: 'Beslutsfattare',
+      error: 'Laddning av beslutsfattare misslyckades, försök igen',
+      default: 'Beslutsfattare som angetts i enhetens uppgifter',
       decisionCount: (count: number) =>
-        count === 1 ? '1 päätös valittu' : `${count} päätöstä valittu`,
+        count === 1 ? '1 beslut valt' : `${count} beslut valda`,
       resolve: (count: number) =>
-        count === 1 ? 'Vahvista ja luo päätös' : 'Vahvista ja luo päätökset'
+        count === 1 ? 'Bekräfta och skapa beslut' : 'Bekräfta och skapa beslut'
     }
   },
   feeDecisions: {
     table: {
-      title: 'Maksupäätökset',
-      head: 'Päämies',
-      children: 'Lapset',
-      validity: 'Maksupäätös voimassa',
+      title: 'Avgiftsbeslut',
+      head: 'Huvudman',
+      children: 'Barn',
+      validity: 'Avgiftsbeslut giltigt',
       price: 'Summa',
-      number: 'Numero',
-      status: 'Tila',
-      createdAt: 'Luotu',
-      sentAt: 'Lähetetty',
+      number: 'Nummer',
+      status: 'Status',
+      createdAt: 'Skapad',
+      sentAt: 'Skickad',
       difference: {
-        title: 'Muutos',
+        title: 'Ändring',
         value: {
-          GUARDIANS: 'Huoltajat',
-          CHILDREN: 'Lapset',
-          INCOME: 'Tulot',
-          PLACEMENT: 'Sijoitus',
-          SERVICE_NEED: 'Palveluntarve',
-          SIBLING_DISCOUNT: 'Sisaralennus',
-          FEE_ALTERATIONS: 'Maksumuutos',
-          FAMILY_SIZE: 'Perhekoko',
-          FEE_THRESHOLDS: 'Maksuasetukset'
+          GUARDIANS: 'Vårdnadshavare',
+          CHILDREN: 'Barn',
+          INCOME: 'Inkomst',
+          PLACEMENT: 'Placering',
+          SERVICE_NEED: 'Servicebehov',
+          SIBLING_DISCOUNT: 'Syskonrabatt',
+          FEE_ALTERATIONS: 'Avgiftsändring',
+          FAMILY_SIZE: 'Familjestorlek',
+          FEE_THRESHOLDS: 'Avgiftsinställningar'
         },
         valueShort: {
-          GUARDIANS: 'H',
-          CHILDREN: 'L',
-          INCOME: 'T',
-          PLACEMENT: 'S',
-          SERVICE_NEED: 'PT',
-          SIBLING_DISCOUNT: 'SA',
-          FEE_ALTERATIONS: 'M',
-          FAMILY_SIZE: 'P',
-          FEE_THRESHOLDS: 'MA'
+          GUARDIANS: 'V',
+          CHILDREN: 'B',
+          INCOME: 'I',
+          PLACEMENT: 'P',
+          SERVICE_NEED: 'SB',
+          SIBLING_DISCOUNT: 'SR',
+          FEE_ALTERATIONS: 'Ä',
+          FAMILY_SIZE: 'F',
+          FEE_THRESHOLDS: 'AI'
         }
       },
-      annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
+      annullingDecision: 'Annullera eller avsluta beslut från perioden'
     },
     buttons: {
       checked: (count: number) =>
-        count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
+        count === 1 ? `${count} beslut valt` : `${count} beslut valda`,
       createDecision: (count: number) =>
-        count === 1 ? 'Luo päätös' : 'Luo päätökset',
-      ignoreDraft: 'Ohita luonnos',
+        count === 1 ? 'Skapa beslut' : 'Skapa beslut',
+      ignoreDraft: 'Hoppa över utkast',
       unignoreDrafts: (count: number) =>
-        count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
-      markSent: 'Merkitse postitetuksi',
-      close: 'Sulje tallentamatta',
-      save: 'Tallenna muutokset',
+        count === 1 ? 'Ångra överhoppning' : 'Ångra överhoppningar',
+      markSent: 'Markera som postad',
+      close: 'Stäng utan att spara',
+      save: 'Spara ändringar',
       errors: {
         WAITING_FOR_MANUAL_SENDING:
-          'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
+          'En del huvudmän har beslut som väntar på manuell sändning'
       }
     }
   },
   ignoreDraftModal: {
-    title: 'Haluatko varmasti ohittaa luonnoksen?',
+    title: 'Vill du verkligen hoppa över utkastet?',
     content: (
       <div>
-        <H3>Luonnoksen saa ohittaa vain jos seuraavat asiat pätevät:</H3>
+        <H3>Utkastet får endast hoppas över om följande saker stämmer:</H3>
         <ul>
-          <li>Luonnos koskee menneisyyttä, ja</li>
+          <li>Utkastet gäller det förflutna, och</li>
           <li>
-            Luonnos on väärin, koska menneisyydessä olevat asiakastiedot ovat
-            väärin, ja
+            Utkastet är felaktigt eftersom kunduppgifterna i det förflutna är
+            felaktiga, och
           </li>
-          <li>Samalle ajalle oleva alkuperäinen lähetetty päätös on oikein</li>
+          <li>
+            Det ursprungliga skickade beslutet för samma period är korrekt
+          </li>
         </ul>
         <p>
-          Mikäli luonnos on väärin koska tiedot ovat väärin (esim. perhesuhteita
-          on takautuvasti poistettu virheellisesti), on tärkeää ensisijaisesti
-          pyrkiä korjaamaan tiedot ennalleen, koska ne vaikuttavat myös muihin
-          järjestelmiin.
+          Om utkastet är felaktigt eftersom uppgifterna är felaktiga (t.ex.
+          familjerelationer har felaktigt tagits bort retroaktivt), är det
+          viktigt att i första hand försöka korrigera uppgifterna till
+          ursprungligt skick, eftersom de också påverkar andra system.
         </p>
         <p>
-          Mikäli luonnos on väärin tai tarpeeton, vaikka tiedot ovat oikein, älä
-          ohita luonnosta, vaan ole yhteydessä kehittäjätiimiin, jotta vika
-          voidaan tutkia ja korjata.
+          Om utkastet är felaktigt eller onödigt, även om uppgifterna är
+          korrekta, hoppa inte över utkastet, utan kontakta utvecklingsteamet så
+          att felet kan undersökas och korrigeras.
         </p>
       </div>
     ),
-    confirm: 'Ymmärrän ja vahvistan tämän'
+    confirm: 'Jag förstår och bekräftar detta'
   },
   valueDecisions: {
     table: {
-      title: 'Arvopäätökset',
-      head: 'Päämies',
-      child: 'Lapsi',
-      validity: 'Arvopäätös voimassa',
-      totalValue: 'PS-Arvo',
-      totalCoPayment: 'Omavastuu',
-      number: 'Numero',
-      status: 'Tila',
-      createdAt: 'Luotu',
-      sentAt: 'Lähetetty',
+      title: 'Värdebeslut',
+      head: 'Huvudman',
+      child: 'Barn',
+      validity: 'Värdebeslut giltigt',
+      totalValue: 'SV-Värde',
+      totalCoPayment: 'Självrisk',
+      number: 'Nummer',
+      status: 'Status',
+      createdAt: 'Skapad',
+      sentAt: 'Skickad',
       difference: {
-        title: 'Muutos',
+        title: 'Ändring',
         value: {
-          GUARDIANS: 'Huoltajat',
-          INCOME: 'Tulot',
-          FAMILY_SIZE: 'Perhekoko',
-          PLACEMENT: 'Sijoitus',
-          SERVICE_NEED: 'Palveluntarve',
-          SIBLING_DISCOUNT: 'Sisaralennus',
-          CO_PAYMENT: 'Omavastuuosuus ennen maksumuutoksia',
-          FEE_ALTERATIONS: 'Maksumuutokset',
-          FINAL_CO_PAYMENT: 'Omavastuuosuus',
-          BASE_VALUE: 'Perusarvo',
-          VOUCHER_VALUE: 'Palvelusetelin arvo',
-          FEE_THRESHOLDS: 'Maksuasetukset'
+          GUARDIANS: 'Vårdnadshavare',
+          INCOME: 'Inkomst',
+          FAMILY_SIZE: 'Familjestorlek',
+          PLACEMENT: 'Placering',
+          SERVICE_NEED: 'Servicebehov',
+          SIBLING_DISCOUNT: 'Syskonrabatt',
+          CO_PAYMENT: 'Självriskanandel före avgiftsändringar',
+          FEE_ALTERATIONS: 'Avgiftsändringar',
+          FINAL_CO_PAYMENT: 'Självriskanandel',
+          BASE_VALUE: 'Grundvärde',
+          VOUCHER_VALUE: 'Servicesedelns värde',
+          FEE_THRESHOLDS: 'Avgiftsinställningar'
         },
         valueShort: {
-          GUARDIANS: 'H',
-          INCOME: 'T',
-          FAMILY_SIZE: 'P',
-          PLACEMENT: 'S',
-          SERVICE_NEED: 'PT',
-          SIBLING_DISCOUNT: 'SA',
-          CO_PAYMENT: 'OM',
-          FEE_ALTERATIONS: 'M',
-          FINAL_CO_PAYMENT: 'O',
-          BASE_VALUE: 'PA',
-          VOUCHER_VALUE: 'PS',
-          FEE_THRESHOLDS: 'MA'
+          GUARDIANS: 'V',
+          INCOME: 'I',
+          FAMILY_SIZE: 'F',
+          PLACEMENT: 'P',
+          SERVICE_NEED: 'SB',
+          SIBLING_DISCOUNT: 'SR',
+          CO_PAYMENT: 'SJ',
+          FEE_ALTERATIONS: 'Ä',
+          FINAL_CO_PAYMENT: 'S',
+          BASE_VALUE: 'GV',
+          VOUCHER_VALUE: 'SV',
+          FEE_THRESHOLDS: 'AI'
         }
       },
-      annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
+      annullingDecision: 'Annullera eller avsluta beslut från perioden'
     },
     buttons: {
       checked: (count: number) =>
-        count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
+        count === 1 ? `${count} beslut valt` : `${count} beslut valda`,
       createDecision: (count: number) =>
-        count === 1 ? 'Luo päätös' : 'Luo päätökset',
-      ignoreDraft: 'Ohita luonnos',
+        count === 1 ? 'Skapa beslut' : 'Skapa beslut',
+      ignoreDraft: 'Hoppa över utkast',
       unignoreDrafts: (count: number) =>
-        count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
-      markSent: 'Merkitse postitetuksi',
-      close: 'Sulje tallentamatta',
+        count === 1 ? 'Ångra överhoppning' : 'Ångra överhoppningar',
+      markSent: 'Markera som postad',
+      close: 'Stäng utan att spara',
       save: 'Tallenna muutokset',
       errors: {
         WAITING_FOR_MANUAL_SENDING:
@@ -3372,510 +3374,519 @@ export const sv = {
   },
   payments: {
     table: {
-      title: 'Maksut',
-      toggleAll: 'Valitse kaikki hakua vastaavat rivit',
-      unit: 'Yksikkö',
-      period: 'Maksatuskausi',
-      createdAt: 'Luonnos luotu',
-      number: 'Laskunro',
+      title: 'Betalningar',
+      toggleAll: 'Välj alla rader som matchar sökningen',
+      unit: 'Enhet',
+      period: 'Utbetalningsperiod',
+      createdAt: 'Utkast skapat',
+      number: 'Fakturanr',
       amount: 'Summa',
-      status: 'Tila',
-      nb: 'Huom',
-      missingPaymentDetails: 'Tietoja puuttuu'
+      status: 'Status',
+      nb: 'Obs',
+      missingPaymentDetails: 'Uppgifter saknas'
     },
     buttons: {
-      createPaymentDrafts: 'Luo maksatusaineisto',
+      createPaymentDrafts: 'Skapa utbetalningsunderlag',
       checked: (count: number) =>
-        count === 1 ? `${count} rivi valittu` : `${count} riviä valittu`,
+        count === 1 ? `${count} rad vald` : `${count} rader valda`,
       confirmPayments: (count: number) =>
         count === 1
-          ? `Merkitse ${count} maksu tarkastetuksi`
-          : `Merkitse ${count} maksua tarkastetuksi`,
+          ? `Markera ${count} betalning som granskad`
+          : `Markera ${count} betalningar som granskade`,
       revertPayments: (count: number) =>
         count === 1
-          ? `Palauta ${count} maksu luonnokseksi`
-          : `Palauta ${count} maksua luonnoksiksi`,
+          ? `Återställ ${count} betalning till utkast`
+          : `Återställ ${count} betalningar till utkast`,
       sendPayments: (count: number) =>
-        count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`,
+        count === 1
+          ? `Överför ${count} betalning`
+          : `Överför ${count} betalningar`,
       deletePayment: (count: number) =>
-        count === 1 ? `Poista ${count} maksu` : `Poista ${count} maksua`
+        count === 1
+          ? `Ta bort ${count} betalning`
+          : `Ta bort ${count} betalningar`
     },
     status: {
-      DRAFT: 'Luonnos',
-      CONFIRMED: 'Tarkastettu',
-      SENT: 'Siirretty'
+      DRAFT: 'Utkast',
+      CONFIRMED: 'Granskad',
+      SENT: 'Överförd'
     },
     sendModal: {
-      title: 'Siirrä valitut maksut',
-      paymentDate: 'Maksupäivä',
-      dueDate: 'Eräpäivä'
+      title: 'Överför valda betalningar',
+      paymentDate: 'Betalningsdag',
+      dueDate: 'Förfallodag'
     },
     distinctiveDetails: {
-      MISSING_PAYMENT_DETAILS: 'Maksutietoja puuttuu'
+      MISSING_PAYMENT_DETAILS: 'Betalningsuppgifter saknas'
     }
   },
   placement: {
     type: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
-      PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      CLUB: 'Klubb',
+      DAYCARE: 'Småbarnspedagogik',
+      FIVE_YEARS_OLD_DAYCARE: 'Småbarnspedagogik för 5-åringar',
+      PRESCHOOL_WITH_DAYCARE: 'Förskola och tillhörande småbarnspedagogik',
+      PREPARATORY_WITH_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Deltids småbarnspedagogik',
+      DAYCARE_FIVE_YEAR_OLDS: 'Småbarnspedagogik för 5-åringar',
       DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
-        '5-vuotiaiden osapäiväinen varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus',
-      PREPARATORY: 'Valmistava opetus',
-      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+        'Deltids småbarnspedagogik för 5-åringar',
+      PRESCHOOL: 'Förskola',
+      PREPARATORY: 'Förberedande undervisning',
+      PREPARATORY_DAYCARE:
+        'Förberedande undervisning och tillhörande småbarnspedagogik',
       PREPARATORY_DAYCARE_ONLY:
-        'Valmistavan opetuksen liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE_ONLY: 'Esiopetuksen liittyvä varhaiskasvatus',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
-      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+        'Småbarnspedagogik tillhörande förberedande undervisning',
+      PRESCHOOL_DAYCARE: 'Förskola och tillhörande småbarnspedagogik',
+      PRESCHOOL_DAYCARE_ONLY: 'Småbarnspedagogik tillhörande förskola',
+      PRESCHOOL_CLUB: 'Förskoleklubb',
+      TEMPORARY_DAYCARE: 'Tillfällig heldags småbarnspedagogik',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig deltids småbarnspedagogik',
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
     },
     messagingCategory: {
-      MESSAGING_CLUB: 'Kerho',
-      MESSAGING_DAYCARE: 'Varhaiskasvatus',
-      MESSAGING_PRESCHOOL: 'Esiopetus'
+      MESSAGING_CLUB: 'Klubb',
+      MESSAGING_DAYCARE: 'Småbarnspedagogik',
+      MESSAGING_PRESCHOOL: 'Förskola'
     },
-    defaultOptionText: '(Oletus)',
-    defaultOptionMissingText: 'Ei saatavilla oletuspalveluntarvetta'
+    defaultOptionText: '(Standard)',
+    defaultOptionMissingText: 'Standard servicebehov inte tillgängligt'
   },
   feeAlteration: {
-    DISCOUNT: 'Alennus',
-    INCREASE: 'Korotus',
-    RELIEF: 'Huojennus'
+    DISCOUNT: 'Rabatt',
+    INCREASE: 'Höjning',
+    RELIEF: 'Lättnad'
   },
   feeDecision: {
     title: {
-      DRAFT: 'Maksupäätösluonnos',
-      IGNORED: 'Ohitettu maksupäätösluonnos',
-      WAITING_FOR_SENDING: 'Maksupäätös (lähdössä)',
-      WAITING_FOR_MANUAL_SENDING: 'Maksupäätös (lähetetään manuaalisesti)',
-      SENT: 'Maksupäätös',
-      ANNULLED: 'Mitätöity maksupäätös'
+      DRAFT: 'Utkast till avgiftsbeslut',
+      IGNORED: 'Överhoppat utkast till avgiftsbeslut',
+      WAITING_FOR_SENDING: 'Avgiftsbeslut (skickas)',
+      WAITING_FOR_MANUAL_SENDING: 'Avgiftsbeslut (skickas manuellt)',
+      SENT: 'Avgiftsbeslut',
+      ANNULLED: 'Annullerat avgiftsbeslut'
     },
     distinctiveDetails: {
-      UNCONFIRMED_HOURS: 'Puuttuva palveluntarve',
-      EXTERNAL_CHILD: 'Ulkopaikkakuntalainen',
-      RETROACTIVE: 'Takautuva päätös',
-      NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
-      MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun',
-      PRESCHOOL_CLUB: 'Vain esiopetuksen kerho',
-      NO_OPEN_INCOME_STATEMENTS: 'Ei avoimia tuloselvityksiä'
+      UNCONFIRMED_HOURS: 'Saknat servicebehov',
+      EXTERNAL_CHILD: 'Barn från annan kommun',
+      RETROACTIVE: 'Retroaktivt beslut',
+      NO_STARTING_PLACEMENTS: 'Dölj nya barn som börjar',
+      MAX_FEE_ACCEPTED: 'Samtycke till högsta avgift',
+      PRESCHOOL_CLUB: 'Endast förskoleklubb',
+      NO_OPEN_INCOME_STATEMENTS: 'Inga öppna inkomstutredningar'
     },
     status: {
-      DRAFT: 'Luonnos',
-      IGNORED: 'Ohitettu luonnos',
-      WAITING_FOR_SENDING: 'Lähdössä',
-      WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
-      SENT: 'Lähetetty',
-      ANNULLED: 'Mitätöity'
+      DRAFT: 'Utkast',
+      IGNORED: 'Överhoppat utkast',
+      WAITING_FOR_SENDING: 'Skickas',
+      WAITING_FOR_MANUAL_SENDING: 'Skickas manuellt',
+      SENT: 'Skickad',
+      ANNULLED: 'Annullerad'
     },
     type: {
-      NORMAL: 'Tavallinen maksupäätös, ei huojennusta',
-      RELIEF_ACCEPTED: 'Huojennus hyväksytty (Lähetetään manuaalisesti)',
+      NORMAL: 'Vanligt avgiftsbeslut, ingen lättnad',
+      RELIEF_ACCEPTED: 'Lättnad godkänd (Skickas manuellt)',
       RELIEF_PARTLY_ACCEPTED:
-        'Osittainen' + ' huojennus hyväksytty (Lähetetään manuaalisesti)',
-      RELIEF_REJECTED: 'Huojennus hylätty (Lähetetään manuaalisesti)'
+        'Partiell' + ' lättnad godkänd (Skickas manuellt)',
+      RELIEF_REJECTED: 'Lättnad avvisad (Skickas manuellt)'
     },
-    headOfFamily: 'Päämies',
-    partner: 'Toinen huoltaja / maksuvelvollinen',
-    decisionNumber: 'Päätöksen numero',
-    validPeriod: 'Maksupäätös voimassa',
-    sentAt: 'Maksupäätös lähetetty',
-    decisionHandler: 'Päätöksen käsittelijä',
-    relief: 'Maksupäätöksen huojennus',
-    waitingManualSending: 'Lähetetään manuaalisesti',
-    pdfLabel: 'Maksupäätös PDF',
-    downloadPdf: 'Lataa PDF',
+    headOfFamily: 'Huvudman',
+    partner: 'Annan vårdnadshavare / betalskyldig',
+    decisionNumber: 'Beslutsnummer',
+    validPeriod: 'Avgiftsbeslut giltigt',
+    sentAt: 'Avgiftsbeslut skickat',
+    decisionHandler: 'Beslutshanterare',
+    relief: 'Avgiftsbeslutets lättnad',
+    waitingManualSending: 'Skickas manuellt',
+    pdfLabel: 'Avgiftsbeslut PDF',
+    downloadPdf: 'Ladda ner PDF',
     pdfInProgress:
-      '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua' +
-      ' uudelleen niin voit ladata sen oheisesta linkistä.)',
+      '(PDF:en skapas. Ladda om sidan om ett ögonblick' +
+      ' så kan du ladda ner den från länken bredvid.)',
     form: {
       nav: {
-        return: 'Palaa'
+        return: 'Återvänd'
       },
       income: {
-        title: 'Perheen tulotiedot',
-        maxFeeAccepted: 'Huoltajan suostumus korkeimpaan maksuluokkaan.'
+        title: 'Familjens inkomstuppgifter',
+        maxFeeAccepted: 'Vårdnadshavarens samtycke till högsta avgiftsklass.'
       },
       child: {
-        ssn: 'Henkilötunnus',
-        placementType: 'Sijoitustyyppi',
-        careArea: 'Palvelualue',
-        daycare: 'Toimipaikka',
-        placementDate: 'Sijoitus voimassa',
-        serviceNeed: 'Palveluntarve',
-        name: 'Nimi',
-        postOffice: 'Postitoimipaikka'
+        ssn: 'Personbeteckning',
+        placementType: 'Placeringstyp',
+        careArea: 'Serviceområde',
+        daycare: 'Verksamhetsställe',
+        placementDate: 'Placering giltig',
+        serviceNeed: 'Servicebehov',
+        name: 'Namn',
+        postOffice: 'Postanstalt'
       },
       summary: {
-        title: 'Kooste maksupäätöksen perusteista',
+        title: 'Sammanställning av avgiftsbeslutets grunder',
         income: {
-          title: 'Kooste perheen tuloista',
+          title: 'Sammanställning av familjens inkomster',
           effect: {
-            label: 'Maksun peruste',
+            label: 'Avgiftsgrund',
             MAX_FEE_ACCEPTED:
-              'Huoltajan suostumus korkeimpaan varhaiskasvatusmaksuun',
-            INCOMPLETE: 'Perheen tulotiedot ovat puutteelliset.',
-            INCOME: 'Maksun perusteena huoltajien tulotiedot',
+              'Vårdnadshavarens samtycke till högsta småbarnspedagogikavgift',
+            INCOMPLETE: 'Familjens inkomstuppgifter är bristfälliga.',
+            INCOME: 'Avgiften baseras på vårdnadshavarnas inkomstuppgifter',
             NOT_AVAILABLE:
-              'Maksun perusteena korkein tuloluokka (automaattinen)'
+              'Avgiften baseras på högsta inkomstklass (automatisk)'
           },
           details: {
-            MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan varhaiskasvatusmaksuun',
-            INCOMPLETE: 'Puutteelliset tulotiedot',
-            NOT_AVAILABLE: 'Tulotietoja ei ole toimitettu'
+            MAX_FEE_ACCEPTED: 'Samtycke till högsta småbarnspedagogikavgift',
+            INCOMPLETE: 'Bristfälliga inkomstuppgifter',
+            NOT_AVAILABLE: 'Inkomstuppgifter har inte lämnats'
           },
-          income: 'Tulot',
-          expenses: 'Menot',
-          total: 'Perheen tulot yhteensä',
-          familyComposition: 'Perheen kokoonpano ja maksun perusteet',
-          familySize: 'Perhekoko',
-          persons: ' henkilöä',
-          feePercent: 'Maksuprosentti',
-          minThreshold: 'Vähimmäisbruttoraja'
+          income: 'Inkomster',
+          expenses: 'Utgifter',
+          total: 'Familjens inkomster totalt',
+          familyComposition: 'Familjens sammansättning och avgiftsgrunder',
+          familySize: 'Familjestorlek',
+          persons: ' personer',
+          feePercent: 'Avgiftsprocent',
+          minThreshold: 'Minimibruttosgräns'
         },
         parts: {
-          title: 'Kooste perheen lasten maksuista',
-          siblingDiscount: 'sisaralennus',
+          title: 'Sammanställning av familjens barns avgifter',
+          siblingDiscount: 'syskonrabatt',
           sum: 'Summa'
         },
-        totalPrice: 'Perheen varhaiskasvatusmaksu yhteensä'
+        totalPrice: 'Familjens småbarnspedagogikavgift totalt'
       },
       buttons: {
-        saveChanges: 'Tallenna muutokset'
+        saveChanges: 'Spara ändringar'
       }
     },
     modal: {
-      title: 'Haluatko palata tallentamatta muutoksia?',
-      cancel: 'Palaa tallentamatta',
-      confirm: 'Jatka muokkausta'
+      title: 'Vill du återvända utan att spara ändringarna?',
+      cancel: 'Återvänd utan att spara',
+      confirm: 'Fortsätt redigera'
     }
   },
   filters: {
-    searchTerms: 'Hakuehdot',
+    searchTerms: 'Sökvillkor',
     freeTextPlaceholder:
-      'Haku nimellä, hetulla, osoitteella tai maksupäätöksen numerolla',
-    area: 'Alue',
-    unit: 'Toimipaikka',
-    financeDecisionHandler: 'Talouspäätösten käsittelijä',
-    unitPlaceholder: 'Valitse toimipaikka',
-    financeDecisionHandlerPlaceholder: 'Valitse työntekijä',
-    distinctiveDetails: 'Muuta huomioitavaa',
-    difference: 'Muutos',
-    providerType: 'Järjestämismuoto',
-    status: 'Tila',
-    clear: 'Tyhjennä valinnat',
-    validityPeriod: 'Voimassaoloaika',
-    searchByStartDate: 'Alkupäivä sijoittuu valitulle aikavälille',
-    invoiceDate: 'Laskun päiväys',
-    invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta',
-    paymentDate: 'Maksupäivä',
-    paymentFreeTextPlaceholder: 'Haku maksun numerolla',
-    incomeStatementSent: 'Tuloselvitys lähetetty',
-    incomeStatementPlacementValidDate: 'Sijoitus voimassa'
+      'Sök med namn, personbeteckning, adress eller avgiftsbeslutsnummer',
+    area: 'Område',
+    unit: 'Verksamhetsställe',
+    financeDecisionHandler: 'Beslutshanterare för ekonomibeslut',
+    unitPlaceholder: 'Välj verksamhetsställe',
+    financeDecisionHandlerPlaceholder: 'Välj arbetare',
+    distinctiveDetails: 'Annat att observera',
+    difference: 'Ändring',
+    providerType: 'Arrangemangsform',
+    status: 'Status',
+    clear: 'Rensa val',
+    validityPeriod: 'Giltighetstid',
+    searchByStartDate: 'Startdatum infaller inom vald tidsperiod',
+    invoiceDate: 'Fakturans datum',
+    invoiceSearchByStartDate: 'Skicka fakturor från vald period',
+    paymentDate: 'Betalningsdag',
+    paymentFreeTextPlaceholder: 'Sök med betalningsnummer',
+    incomeStatementSent: 'Inkomstutredning skickad',
+    incomeStatementPlacementValidDate: 'Placering giltig'
   },
   valueDecision: {
     title: {
-      DRAFT: 'Arvopäätösluonnos',
-      IGNORED: 'Ohitettu arvopäätösluonnos',
-      WAITING_FOR_SENDING: 'Arvopäätös (lähdössä)',
-      WAITING_FOR_MANUAL_SENDING: 'Arvopäätös (lähetetään manuaalisesti)',
-      SENT: 'Arvopäätös',
-      ANNULLED: 'Mitätöity arvopäätös'
+      DRAFT: 'Utkast till värdebeslut',
+      IGNORED: 'Överhoppat utkast till värdebeslut',
+      WAITING_FOR_SENDING: 'Värdebeslut (skickas)',
+      WAITING_FOR_MANUAL_SENDING: 'Värdebeslut (skickas manuellt)',
+      SENT: 'Värdebeslut',
+      ANNULLED: 'Annullerat värdebeslut'
     },
-    headOfFamily: 'Päämies',
-    partner: 'Toinen huoltaja / maksuvelvollinen',
-    decisionNUmber: 'Päätöksen numero',
-    validPeriod: 'Arvopäätös voimassa',
-    sentAt: 'Arvopäätös lähetetty',
-    pdfLabel: 'Arvopäätös PDF',
-    decisionHandlerName: 'Päätöksen käsittelijä',
-    relief: 'Arvopäätöksen huojennus',
-    downloadPdf: 'Lataa PDF',
+    headOfFamily: 'Huvudman',
+    partner: 'Annan vårdnadshavare / betalskyldig',
+    decisionNUmber: 'Beslutsnummer',
+    validPeriod: 'Värdebeslut giltigt',
+    sentAt: 'Värdebeslut skickat',
+    pdfLabel: 'Värdebeslut PDF',
+    decisionHandlerName: 'Beslutshanterare',
+    relief: 'Värdebeslutets lättnad',
+    downloadPdf: 'Ladda ner PDF',
     pdfInProgress:
-      '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',
+      '(PDF:en skapas. Ladda om sidan om ett ögonblick så kan du ladda ner den från länken bredvid.)',
     status: {
-      DRAFT: 'Luonnos',
-      IGNORED: 'Ohitettu luonnos',
-      WAITING_FOR_SENDING: 'Lähdössä',
-      WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
-      SENT: 'Lähetetty',
-      ANNULLED: 'Mitätöity'
+      DRAFT: 'Utkast',
+      IGNORED: 'Överhoppat utkast',
+      WAITING_FOR_SENDING: 'Skickas',
+      WAITING_FOR_MANUAL_SENDING: 'Skickas manuellt',
+      SENT: 'Skickad',
+      ANNULLED: 'Annullerad'
     },
     type: {
-      NORMAL: 'Tavallinen arvopäätös, ei huojennusta',
-      RELIEF_ACCEPTED: 'Huojennus hyväksytty (Lähetetään manuaalisesti)',
+      NORMAL: 'Vanligt värdebeslut, ingen lättnad',
+      RELIEF_ACCEPTED: 'Lättnad godkänd (Skickas manuellt)',
       RELIEF_PARTLY_ACCEPTED:
-        'Osittainen' + ' huojennus hyväksytty (Lähetetään manuaalisesti)',
-      RELIEF_REJECTED: 'Huojennus hylätty (Lähetetään manuaalisesti)'
+        'Partiell' + ' lättnad godkänd (Skickas manuellt)',
+      RELIEF_REJECTED: 'Lättnad avvisad (Skickas manuellt)'
     },
     child: {
-      name: 'Nimi',
-      ssn: 'Henkilötunnus',
-      postOffice: 'Postitoimipaikka',
-      placementType: 'Sijoitustyyppi',
-      careArea: 'Palvelualue',
-      unit: 'Toimipaikka',
-      serviceNeed: 'Palveluntarve'
+      name: 'Namn',
+      ssn: 'Personbeteckning',
+      postOffice: 'Postanstalt',
+      placementType: 'Placeringstyp',
+      careArea: 'Serviceområde',
+      unit: 'Verksamhetsställe',
+      serviceNeed: 'Servicebehov'
     },
     summary: {
-      title: 'Kooste arvopäätöksen perusteista',
-      coPayment: 'Omavastuuosuus',
+      title: 'Sammanställning av värdebeslutets grunder',
+      coPayment: 'Självriskanandel',
       sum: 'Summa',
-      siblingDiscount: 'Sisarusalennus',
-      totalValue: 'Palvelusetelin arvo omavastuun jälkeen',
+      siblingDiscount: 'Syskonrabatt',
+      totalValue: 'Servicesedelns värde efter självrisk',
       income: {
-        title: 'Kooste perheen tuloista',
+        title: 'Sammanställning av familjens inkomster',
         effect: {
-          label: 'Maksun peruste',
+          label: 'Avgiftsgrund',
           MAX_FEE_ACCEPTED:
-            'Huoltajan suostumus korkeimpaan varhaiskasvatusmaksuun',
-          INCOMPLETE: 'Perheen tulotiedot ovat puutteelliset.',
-          INCOME: 'Maksun perusteena huoltajien tulotiedot',
-          NOT_AVAILABLE: 'Maksun perusteena korkein tuloluokka (automaattinen)'
+            'Vårdnadshavarens samtycke till högsta småbarnspedagogikavgift',
+          INCOMPLETE: 'Familjens inkomstuppgifter är bristfälliga.',
+          INCOME: 'Avgiften baseras på vårdnadshavarnas inkomstuppgifter',
+          NOT_AVAILABLE: 'Avgiften baseras på högsta inkomstklass (automatisk)'
         },
         details: {
-          MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan varhaiskasvatusmaksuun',
-          INCOMPLETE: 'Puutteelliset tulotiedot',
-          NOT_AVAILABLE: 'Tulotietoja ei ole toimitettu'
+          MAX_FEE_ACCEPTED: 'Samtycke till högsta småbarnspedagogikavgift',
+          INCOMPLETE: 'Bristfälliga inkomstuppgifter',
+          NOT_AVAILABLE: 'Inkomstuppgifter har inte lämnats'
         },
-        income: 'Tulot',
-        expenses: 'Menot',
-        total: 'Perheen tulot yhteensä',
-        familyComposition: 'Perheen kokoonpano ja maksun perusteet',
-        familySize: 'Perhekoko',
-        persons: ' henkilöä',
-        feePercent: 'Maksuprosentti',
-        minThreshold: 'Vähimmäisbruttoraja'
+        income: 'Inkomster',
+        expenses: 'Utgifter',
+        total: 'Familjens inkomster totalt',
+        familyComposition: 'Familjens sammansättning och avgiftsgrunder',
+        familySize: 'Familjestorlek',
+        persons: ' personer',
+        feePercent: 'Avgiftsprocent',
+        minThreshold: 'Minimibruttosgräns'
       },
-      value: 'Palvelusetelin arvo',
+      value: 'Servicesedelns värde',
       age: {
-        LESS_THAN_3: 'Alle 3-vuotias',
-        OVER_3: 'Vähintään 3-vuotias'
+        LESS_THAN_3: 'Under 3 år',
+        OVER_3: 'Minst 3 år'
       },
-      assistanceNeedCoefficient: 'tuen tarpeen kerroin',
-      hoursPerWeek: 'tuntia viikossa'
+      assistanceNeedCoefficient: 'stödbehovets koefficient',
+      hoursPerWeek: 'timmar per vecka'
     }
   },
   // these are directly used by date picker so order and naming matters!
   datePicker: {
     months: [
-      'tammikuu',
-      'helmikuu',
-      'maaliskuu',
-      'huhtikuu',
-      'toukokuu',
-      'kesäkuu',
-      'heinäkuu',
-      'elokuu',
-      'syyskuu',
-      'lokakuu',
-      'marraskuu',
-      'joulukuu'
+      'januari',
+      'februari',
+      'mars',
+      'april',
+      'maj',
+      'juni',
+      'juli',
+      'augusti',
+      'september',
+      'oktober',
+      'november',
+      'december'
     ],
     weekdaysLong: [
-      'maanantai',
-      'tiistai',
-      'keskiviikko',
-      'torstai',
-      'perjantai',
-      'lauantai',
-      'sunnuntai'
+      'måndag',
+      'tisdag',
+      'onsdag',
+      'torsdag',
+      'fredag',
+      'lördag',
+      'söndag'
     ],
-    weekdaysShort: ['ma', 'ti', 'ke', 'to', 'pe', 'la', 'su']
+    weekdaysShort: ['må', 'ti', 'on', 'to', 'fr', 'lö', 'sö']
   },
   absences: {
-    title: 'Poissaolot',
+    title: 'Frånvaro',
     absenceTypes: {
-      OTHER_ABSENCE: 'Poissaolo',
-      SICKLEAVE: 'Sairaus',
-      UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-      PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
-      TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
-      PARENTLEAVE: 'Vanhempainvapaa',
-      FORCE_MAJEURE: 'Maksuton päivä',
-      FREE_ABSENCE: 'Maksuton poissaolo',
-      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-      NO_ABSENCE: 'Ei poissaoloa'
+      OTHER_ABSENCE: 'Frånvaro',
+      SICKLEAVE: 'Sjukdom',
+      UNKNOWN_ABSENCE: 'Oanmäld frånvaro',
+      PLANNED_ABSENCE: 'Skiftarbetsfrånvaro',
+      TEMPORARY_RELOCATION: 'Barn reservplacerat på annan plats',
+      PARENTLEAVE: 'Föräldraledighet',
+      FORCE_MAJEURE: 'Avgiftsfri dag',
+      FREE_ABSENCE: 'Avgiftsfri frånvaro',
+      UNAUTHORIZED_ABSENCE: 'Oanmäld frånvaro från jour',
+      NO_ABSENCE: 'Ingen frånvaro'
     },
-    missingHolidayReservation: 'Huoltaja ei ole vahvistanut loma-ajan varausta',
+    missingHolidayReservation:
+      'Vårdnadshavare har inte bekräftat semesterreservation',
     missingHolidayQuestionnaireAnswer:
-      'Huoltaja ei ole vastannut poissaolokyselyyn',
-    shiftCare: 'Ilta-/vuorohoito',
-    requiresBackupCare: 'Odottaa varasijoitusta',
+      'Vårdnadshavare har inte svarat på frånvaroförfrågan',
+    shiftCare: 'Kväll-/skiftvård',
+    requiresBackupCare: 'Väntar på reservplacering',
     additionalLegendItems: {
-      CONTRACT_DAYS: 'Sopimuspäivällinen palveluntarve'
+      CONTRACT_DAYS: 'Servicebehov med avtalsdagar'
     },
     absenceTypesShort: {
-      OTHER_ABSENCE: 'Poissaolo',
-      SICKLEAVE: 'Sairaus',
-      UNKNOWN_ABSENCE: 'Ilmoittamaton',
-      PLANNED_ABSENCE: 'Vuorotyö',
-      TEMPORARY_RELOCATION: 'Varasijoitus',
-      PARENTLEAVE: 'Vanh.vap.',
-      FORCE_MAJEURE: 'Maksuton',
-      FREE_ABSENCE: 'Maksuton',
-      UNAUTHORIZED_ABSENCE: 'Sakko',
-      NO_ABSENCE: 'Ei poissa'
+      OTHER_ABSENCE: 'Frånvaro',
+      SICKLEAVE: 'Sjukdom',
+      UNKNOWN_ABSENCE: 'Oanmäld',
+      PLANNED_ABSENCE: 'Skiftarbete',
+      TEMPORARY_RELOCATION: 'Reservplacering',
+      PARENTLEAVE: 'Föräldral.',
+      FORCE_MAJEURE: 'Avgiftsfri',
+      FREE_ABSENCE: 'Avgiftsfri',
+      UNAUTHORIZED_ABSENCE: 'Avgift',
+      NO_ABSENCE: 'Ej frånvaro'
     },
     absenceTypeInfo: {
       OTHER_ABSENCE:
-        'Käytetään aina, kun huoltaja on ilmoittanut poissaolosta mukaan lukien säännölliset vapaat ja loma-aika. Käytetään myös vuoroyksiköissä lasten lomamerkinnöissä tai muissa poissaoloissa, jotka ovat suunniteltujen läsnäolovarausten ulkopuolella.',
+        'Används alltid när vårdnadshavaren har anmält frånvaro, inklusive regelbundna ledigheter och semestertid. Används också i skiftenheter för barns semesteranteckningar eller andra frånvaror som är utanför planerade närvaroreservationer.',
       SICKLEAVE:
-        '11 päivää ylittävä yhtäjaksoinen sairauspoissaolo vaikuttaa alentavasti maksuun.',
+        'Sammanhängande sjukfrånvaro över 11 dagar påverkar avgiften nedsättande.',
       UNKNOWN_ABSENCE:
-        'Käytetään silloin, kun huoltaja ei ole ilmoittanut poissaolosta, vaikuttaa heinäkuussa myös laskutukseen. Koodi muutetaan vain, jos kyseessä on sairauspoissaolo, jonka jatkumisesta huoltaja ilmoittaa seuraavana päivänä.',
+        'Används när vårdnadshavaren inte har anmält frånvaro, påverkar även faktureringen i juli. Koden ändras endast om det gäller sjukfrånvaro vars fortsättning vårdnadshavaren anmäler följande dag.',
       PLANNED_ABSENCE:
-        'Käytetään vain vuoroyksiköissä, kun kyse on vuorotyöstä johtuvasta vapaasta, loma-ajat merkitään Poissa- koodilla. Ei oikeuta maksualennukseen laskulla.',
+        'Används endast i skiftenheter när det gäller ledighet på grund av skiftarbete, semestertider markeras med Frånvaro-kod. Ger inte rätt till avgiftsreducering på fakturan.',
       TEMPORARY_RELOCATION:
-        'Lapselle on tehty varasijoitus toiseen yksikköön. Poissaolon voi merkitä, mikäli sellainen on tiedossa. Tutustu kuitenkin loma-ajan ohjeeseen, mikäli poissaolo koskee loma-aikaa.',
+        'Barnet har reservplacerats i en annan enhet. Frånvaron kan markeras om sådan är känd. Bekanta dig dock med semesteranvisningen om frånvaron gäller semestertid.',
       PARENTLEAVE:
-        'Vanhempainvapaa, merkitään vain sille lapselle, jonka vuoksi huoltaja on vapaalla, ei sisaruksille. Vaikuttaa maksuun siten, että ko. aika on maksuton.',
+        'Föräldraledighet, markeras endast för det barn vars skull vårdnadshavaren är ledig, inte för syskon. Påverkar avgiften så att tiden är avgiftsfri.',
       FORCE_MAJEURE:
-        'Käytetään vain erikoistilanteissa hallinnon ohjeiden mukaan.',
-      FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
-      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-      NO_ABSENCE: 'Jos lapsi on paikalla, älä merkitse mitään.'
+        'Används endast i specialsituationer enligt administrationens anvisningar.',
+      FREE_ABSENCE: 'Avgiftsfri sommarfrånvaro',
+      UNAUTHORIZED_ABSENCE: 'Oanmäld frånvaro från jour',
+      NO_ABSENCE: 'Om barnet är på plats, markera ingenting.'
     },
     additionalLegendItemInfos: {
-      CONTRACT_DAYS: 'Lapsi, jolla palveluntarpeena sopimuspäivä'
+      CONTRACT_DAYS: 'Barn med avtalsdag som servicebehov'
     },
     careTypes: {
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
-      PRESCHOOL: 'Esiopetus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      DAYCARE_5YO_FREE: '5-vuotiaiden varhaiskasvatus',
-      DAYCARE: 'Varhaiskasvatus',
-      CLUB: 'Kerho'
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn',
+      PRESCHOOL: 'Förskola',
+      PRESCHOOL_DAYCARE: 'Tillhörande småbarnspedagogik',
+      DAYCARE_5YO_FREE: 'Småbarnspedagogik för 5-åringar',
+      DAYCARE: 'Småbarnspedagogik',
+      CLUB: 'Klubb'
     },
     absenceCategories: {
       NONBILLABLE:
-        'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerhotoiminta',
-      BILLABLE: 'Varhaiskasvatus (maksullinen)'
+        'Förskola, förberedande, småbarnspedagogik för 5-åringar eller klubbverksamhet',
+      BILLABLE: 'Småbarnspedagogik (avgiftsbelagd)'
     },
-    modifiedByStaff: 'Henkilökunta',
-    modifiedByCitizen: 'Huoltaja',
+    modifiedByStaff: 'Personal',
+    modifiedByCitizen: 'Vårdnadshavare',
     modal: {
-      absenceSectionLabel: 'Poissaolon syy',
-      placementSectionLabel: 'Toimintamuoto, jota poissaolo koskee',
-      saveButton: 'Tallenna',
-      cancelButton: 'Peruuta',
+      absenceSectionLabel: 'Orsak till frånvaro',
+      placementSectionLabel: 'Verksamhetsform som frånvaron gäller',
+      saveButton: 'Spara',
+      cancelButton: 'Avbryt',
       absenceTypes: {
-        OTHER_ABSENCE: 'Poissaolo',
-        SICKLEAVE: 'Sairaus',
-        UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-        PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
-        TEMPORARY_RELOCATION: 'Varasijoitettuna muualla',
-        PARENTLEAVE: 'Vanhempainvapaa',
-        FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
-        FREE_ABSENCE: 'Maksuton poissaolo',
-        UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-        NO_ABSENCE: 'Ei poissaoloa',
-        MISSING_HOLIDAY_RESERVATION: 'Loma-ajan ilmoitus puuttuu'
+        OTHER_ABSENCE: 'Frånvaro',
+        SICKLEAVE: 'Sjukdom',
+        UNKNOWN_ABSENCE: 'Oanmäld frånvaro',
+        PLANNED_ABSENCE: 'Skiftarbetsfrånvaro',
+        TEMPORARY_RELOCATION: 'Reservplacerad på annan plats',
+        PARENTLEAVE: 'Föräldraledighet',
+        FORCE_MAJEURE: 'Avgiftsfri dag (begränsad användning)',
+        FREE_ABSENCE: 'Avgiftsfri frånvaro',
+        UNAUTHORIZED_ABSENCE: 'Oanmäld frånvaro från jour',
+        NO_ABSENCE: 'Ingen frånvaro',
+        MISSING_HOLIDAY_RESERVATION: 'Semesteranmälan saknas'
       },
-      free: 'Maksuton',
-      paid: 'Maksullinen',
-      absenceSummaryTitle: 'Lapsen poissaolokooste'
+      free: 'Avgiftsfri',
+      paid: 'Avgiftsbelagd',
+      absenceSummaryTitle: 'Barnets frånvarosammanställning'
     },
     table: {
-      selectAll: 'Valitse kaikki',
-      staffRow: 'Henkilökuntaa paikalla',
-      disabledStaffCellTooltip: 'Ryhmä ei ole olemassa valittuna päivänä',
-      reservationsTotal: 'Varaus/kk',
-      attendancesTotal: 'Toteuma/kk'
+      selectAll: 'Välj alla',
+      staffRow: 'Personal närvarande',
+      disabledStaffCellTooltip: 'Gruppen existerar inte den valda dagen',
+      reservationsTotal: 'Reservation/mån',
+      attendancesTotal: 'Utfall/mån'
     },
-    legendTitle: 'Merkintöjen selitykset',
+    legendTitle: 'Förklaring av markeringar',
     addAbsencesButton(numOfSelected: number) {
       return numOfSelected === 1
-        ? 'Lisää merkintä valitulle...'
-        : 'Lisää merkinnät valituille...'
+        ? 'Lägg till markering för vald...'
+        : 'Lägg till markeringar för valda...'
     },
-    notOperationDay: 'Ei toimintapäivä',
-    absence: 'Poissaolo',
-    reservation: 'Varaus',
-    present: 'Läsnä',
-    guardian: 'Huoltaja',
-    staff: 'Henkilökunta',
-    dailyServiceTime: 'Sopimusaika'
+    notOperationDay: 'Ingen verksamhetsdag',
+    absence: 'Frånvaro',
+    reservation: 'Reservation',
+    present: 'Närvarande',
+    guardian: 'Vårdnadshavare',
+    staff: 'Personal',
+    dailyServiceTime: 'Avtalstid'
   },
   placementDraft: {
-    preschoolDaycare: 'Liittyvä varhaiskasvatus',
+    preschoolDaycare: 'Tillhörande småbarnspedagogik',
     card: {
-      title: 'Korkein täyttöaste alkaen sijoituspäivästä',
-      titleSpeculated: 'Täyttöaste mikäli lapsi sijoitetaan'
+      title: 'Högsta beläggningsgrad från placeringsdagen',
+      titleSpeculated: 'Beläggningsgrad om barnet placeras'
     },
-    upcoming: 'Tulossa',
-    active: 'Aktiivinen',
-    currentPlacements: 'Olemassa olevat sijoitukset',
-    noCurrentPlacements: 'Ei olemassaolevia sijoituksia',
-    addOtherUnit: 'Lisää muu yksikkö',
+    upcoming: 'Kommande',
+    active: 'Aktiv',
+    currentPlacements: 'Befintliga placeringar',
+    noCurrentPlacements: 'Inga befintliga placeringar',
+    addOtherUnit: 'Lägg till annan enhet',
     placementOverlapError:
-      'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
-    createPlacementDraft: 'Luo sijoitussuunnitelma',
-    datesTitle: 'Nyt luotava sijoitussuunnitelma',
-    type: 'Sijoitustyyppi',
-    date: 'Sijoituspäivämäärä',
-    dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
-    preparatoryPeriod: 'Valmistava opetus',
-    dateOfBirth: 'Syntymäaika',
-    selectUnit: 'Valitse yksikkö',
-    selectedUnit: 'Valittu yksikkö',
-    restrictedDetails: 'Huoltajalla on turvakielto',
+      'Tidigare överlappande placeringar avbryts automatiskt om kommuninvånaren tar emot den erbjudna platsen.',
+    createPlacementDraft: 'Skapa placeringsplan',
+    datesTitle: 'Nu skapad placeringsplan',
+    type: 'Placeringstyp',
+    date: 'Placeringsdatum',
+    dateError: 'Överlappande placering för perioden.',
+    preparatoryPeriod: 'Förberedande undervisning',
+    dateOfBirth: 'Födelsedatum',
+    selectUnit: 'Välj enhet',
+    selectedUnit: 'Vald enhet',
+    restrictedDetails: 'Vårdnadshavaren har spärrmarkering',
     restrictedDetailsTooltip:
-      'Päätös pitää lähettää käsin toiselle huoltajalle, kun hakijalla on turvakielto.'
+      'Beslutet måste skickas manuellt till den andra vårdnadshavaren när sökanden har spärrmarkering.'
   },
   decisionDraft: {
-    title: 'Päätöksen teko ja lähetys',
+    title: 'Beslutfattande och sändning',
     info1:
-      'Lähettämällä päätöksen hyväksyt sijoitussuunnitelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
+      'Genom att skicka beslutet godkänner du placeringsplanen. Kommuninvånaren skickas de beslut som du har valt nedan.',
     info2:
-      'Huomaathan, että valinnat ja päivämäärät vaikuttavat ainoastaan päätösdokumentteihin. Jos haluat muokata varsinaista sijoitusta, palauta hakemus takaisin sijoitettaviin ja sijoita se uudelleen.',
+      'Observera att valen och datumen endast påverkar beslutsdokumenten. Om du vill redigera den faktiska placeringen, returnera ansökan tillbaka till placeringskö och placera den på nytt.',
     ssnInfo1:
-      'Huoltajuutta ei voida tarkistaa ilman huoltajan ja lapsen henkilöturvatunnusta.',
-    ssnInfo2: 'Lähetä tulostettu päätös postitse ja merkitse se postitetuksi.',
-    unitInfo1: 'Yksikön tiedot ovat puutteelliset.',
+      'Vårdnaden kan inte verifieras utan vårdnadshavarens och barnets personbeteckning.',
+    ssnInfo2:
+      'Skicka det utskrivna beslutet per post och markera det som postat.',
+    unitInfo1: 'Enhetens uppgifter är bristfälliga.',
     unitInfo2:
-      'Puutteelliset tiedot on päivitettävä ennen päätösten luontia. Ota yhteyttä kehittäjiin.',
-    notGuardianInfo1: 'Hakemuksen huoltaja ei ole lapsen huoltaja.',
+      'Bristfälliga uppgifter måste uppdateras innan beslut skapas. Kontakta utvecklarna.',
+    notGuardianInfo1: 'Ansökans vårdnadshavare är inte barnets vårdnadshavare.',
     notGuardianInfo2:
-      'Henkilö joka on merkitty hakemuksella huoltajaksi ei ole VTJn mukaan lapsen huoltaja. Päätös pitää lähettää paperisena.',
-    unit: 'Toimipaikka',
-    contact: 'Kontaktihenkilö',
-    decisionLabelHeading: 'Sijoitustyyppi',
-    decisionValueHeading: 'Päätöspäivämäärä',
+      'Personen som är markerad som vårdnadshavare på ansökan är inte enligt BIS barnets vårdnadshavare. Beslutet måste skickas på papper.',
+    unit: 'Verksamhetsställe',
+    contact: 'Kontaktperson',
+    decisionLabelHeading: 'Placeringstyp',
+    decisionValueHeading: 'Beslutsdatum',
     types: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetukseen liittyvä varhaiskasvatus',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-      PRESCHOOL: 'Esiopetus',
-      PREPARATORY: 'Valmistava opetus',
-      PREPARATORY_EDUCATION: 'Valmistava opetus',
-      PREPARATORY_DAYCARE: 'Valmistavaan opetukseen liittyvä varhaiskasvatus'
+      CLUB: 'Klubb',
+      DAYCARE: 'Småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Deltids småbarnspedagogik',
+      PRESCHOOL_DAYCARE: 'Småbarnspedagogik tillhörande förskola',
+      PRESCHOOL_CLUB: 'Förskoleklubb',
+      PRESCHOOL: 'Förskola',
+      PREPARATORY: 'Förberedande undervisning',
+      PREPARATORY_EDUCATION: 'Förberedande undervisning',
+      PREPARATORY_DAYCARE:
+        'Småbarnspedagogik tillhörande förberedande undervisning'
     },
-    placementUnit: 'Sijoittaessa valittu yksikkö',
-    selectedUnit: 'Päätökselle valittava yksikkö',
-    unitDetailsHeading: 'Päätöksellä näytettävät tiedot',
-    preschoolDecisionName: 'Yksikön nimi esiopetuspäätöksellä',
-    daycareDecisionName: 'Yksikön nimi varhaiskasvatuspäätöksellä',
-    unitManager: 'Yksikön johtaja',
-    unitAddress: 'Yksikön osoite',
-    handlerName: 'Käsittelijän nimi',
-    handlerAddress: 'Käsittelijän osoite',
-    receiver: 'Vastaanottaja',
-    otherReceiver: 'Vastaanottaja (toinen huoltaja)',
-    missingValue: 'Tieto puuttuu.',
-    noOtherGuardian: 'Toista huoltajaa ei ole',
+    placementUnit: 'Vid placering vald enhet',
+    selectedUnit: 'Enhet att välja för beslutet',
+    unitDetailsHeading: 'Uppgifter som visas på beslutet',
+    preschoolDecisionName: 'Enhetens namn på förskolebeslutet',
+    daycareDecisionName: 'Enhetens namn på småbarnspedagogikbeslutet',
+    unitManager: 'Enhetschef',
+    unitAddress: 'Enhetens adress',
+    handlerName: 'Handläggarens namn',
+    handlerAddress: 'Handläggarens adress',
+    receiver: 'Mottagare',
+    otherReceiver: 'Mottagare (annan vårdnadshavare)',
+    missingValue: 'Uppgift saknas.',
+    noOtherGuardian: 'Ingen annan vårdnadshavare',
     differentUnit:
-      'Päätöksellä näkyvä yksikkö on eri kuin alkuperäisessä sijoituksessa.'
+      'Enheten som visas på beslutet är annan än i den ursprungliga placeringen.'
   },
   reports: {
     title: 'Raportit',
@@ -3924,1757 +3935,1775 @@ export const sv = {
       }
     },
     applications: {
-      title: 'Saapuneet hakemukset',
+      title: 'Inkomna ansökningar',
       description:
-        'Raportti listaa saapuneita ja käsittelyssä olevia hakemuksia yksiköittäin.',
-      ageInfo: 'Lapsen ikä lasketaan valitun aikavälin loppupäivänä',
-      preferredStartingDate: 'Aloituspäivä',
-      under3Years: 'Vakahakemuksia (alle 3v)',
-      over3Years: 'Vakahakemuksia (yli 3v)',
-      preschool: 'Esiopetushakemuksia',
-      club: 'Kerhohakemuksia',
-      totalChildren: 'Lapsia hakenut yhteensä'
+        'Rapporten listar inkomna och handlagda ansökningar enhetsvis.',
+      ageInfo: 'Barnets ålder räknas på slutdagen för vald tidsperiod',
+      preferredStartingDate: 'Startdag',
+      under3Years: 'Ansökningar om småbarnspedagogik (under 3 år)',
+      over3Years: 'Ansökningar om småbarnspedagogik (över 3 år)',
+      preschool: 'Ansökningar om förskoleundervisning',
+      club: 'Ansökningar om klubb',
+      totalChildren: 'Barn totalt som ansökt'
     },
     childDocumentDecisions: {
-      title: 'Tuen päätökset',
-      description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
-      statusFilter: 'Näytettävät tilat',
-      otherFilters: 'Muut valinnat',
-      includeEnded: 'Näytä päättyneet päätökset',
-      templateName: 'Päätös',
-      childName: 'Lapsi',
-      modifiedAt: 'Muokattu',
-      decisionMaker: 'Päätöksen tekijä',
-      decisionMade: 'Päätös tehty',
-      status: 'Tila'
+      title: 'Beslut om stöd',
+      description: 'Beslut om stöd som skickats till beslutsfattaren.',
+      statusFilter: 'Visa statusar',
+      otherFilters: 'Andra val',
+      includeEnded: 'Visa avslutade beslut',
+      templateName: 'Beslut',
+      childName: 'Barn',
+      modifiedAt: 'Ändrat',
+      decisionMaker: 'Beslutsfattare',
+      decisionMade: 'Beslut fattat',
+      status: 'Status'
     },
     decisions: {
-      title: 'Päätökset',
-      description: 'Raportti listaa tehtyjä päätöksiä yksiköittäin.',
-      ageInfo: 'Lapsen ikä lasketaan päätöksen lähetyspäivänä',
-      sentDate: 'Päätöksen lähetyspäivä',
-      daycareUnder3: 'Vakapäätöksiä (alle 3v)',
-      daycareOver3: 'Vakapäätöksiä (yli 3v)',
-      preschool: 'Esiopetuspäätöksiä',
-      preschoolDaycare: 'Esiopetus+liittyväpäätöksiä',
-      connectedDaycareOnly: 'Myöhemmin haetun liittyvän päätöksiä',
-      preparatory: 'Valmistavan päätöksiä',
-      preparatoryDaycare: 'Valmistavan+liittyvän päätöksiä',
-      club: 'Kerhopäätöksiä',
-      preference1: '1. toive',
-      preference2: '2. toive',
-      preference3: '3. toive',
-      preferenceNone: 'Ei toiveena',
-      total: 'Päätöksiä yhteensä'
+      title: 'Beslut',
+      description: 'Rapporten listar fattade beslut enhetsvis.',
+      ageInfo: 'Barnets ålder räknas på beslutsöversändningsdagen',
+      sentDate: 'Beslutsöversändningsdag',
+      daycareUnder3: 'Beslut om småbarnspedagogik (under 3 år)',
+      daycareOver3: 'Beslut om småbarnspedagogik (över 3 år)',
+      preschool: 'Beslut om förskoleundervisning',
+      preschoolDaycare: 'Beslut om förskoleundervisning+kompletterande',
+      connectedDaycareOnly: 'Beslut om senare ansökt kompletterande',
+      preparatory: 'Beslut om förberedande',
+      preparatoryDaycare: 'Beslut om förberedande+kompletterande',
+      club: 'Beslut om klubb',
+      preference1: '1. önskemål',
+      preference2: '2. önskemål',
+      preference3: '3. önskemål',
+      preferenceNone: 'Inte som önskemål',
+      total: 'Beslut totalt'
     },
     raw: {
-      title: 'Raakaraportti',
+      title: 'Rådata-rapport',
       description:
-        'Vähemmän pitkälle jalostettu laaja tietoaineisto, josta voi itse muodostaa erilaisia raportteja.'
+        'Mindre förädlad omfattande datamängd, som kan användas för att skapa olika rapporter.'
     },
     assistanceNeedDecisions: {
-      title: 'Vanhan malliset tuen päätökset',
+      title: 'Beslut om stöd enligt gammal modell',
       description:
-        'Päätöksen tekijälle lähetetyt vanhan malliset tuen päätökset.',
-      decisionNumber: 'Päätösnumero',
-      childhoodEducationPrefix: 'VK ',
-      preschoolPrefix: 'EO ',
-      sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
-      decisionMade: 'Päätös tehty',
-      status: 'Tila',
-      statusFilter: 'Näytettävät tilat',
-      otherFilters: 'Muut valinnat',
-      showExpired: 'Näytä päättyneet tuen päätökset',
+        'Beslut om stöd enligt gammal modell som skickats till beslutsfattaren.',
+      decisionNumber: 'Beslutsnummer',
+      childhoodEducationPrefix: 'SB ',
+      preschoolPrefix: 'FU ',
+      sentToDecisionMaker: 'Skickad till beslutsfattaren',
+      decisionMade: 'Beslut fattat',
+      status: 'Status',
+      statusFilter: 'Visa statusar',
+      otherFilters: 'Andra val',
+      showExpired: 'Visa avslutade beslut om stöd',
       returnForEditModal: {
-        title: 'Palautetaanko päätös korjattavaksi?',
-        okBtn: 'Palauta korjattavaksi',
-        text: 'Päätösesitystä ei lähetetä kuntalaiselle.'
+        title: 'Returnera beslut för redigering?',
+        okBtn: 'Returnera för redigering',
+        text: 'Beslutsförslag skickas inte till medborgaren.'
       },
       rejectModal: {
-        title: 'Hylätäänkö päätös?',
-        okBtn: 'Hylkää päätös',
-        text: 'Haluatko varmasti tehdä hylätyn päätöksen? Hylätty päätös lähetetään kuntalaisen nähtäväksi eVakaan.'
+        title: 'Avslå beslut?',
+        okBtn: 'Avslå beslut',
+        text: 'Vill du verkligen fatta ett avslagsbeslut? Det avslagna beslutet skickas till medborgaren för visning i eVaka.'
       },
       approveModal: {
-        title: 'Hyväksytäänkö päätös?',
-        okBtn: 'Hyväksy päätös',
-        text: 'Haluatko varmasti hyväksyä päätöksen? Hyväksytty päätös lähetetään kuntalaisen nähtäväksi eVakaan.'
+        title: 'Godkänn beslut?',
+        okBtn: 'Godkänn beslut',
+        text: 'Vill du verkligen godkänna beslutet? Det godkända beslutet skickas till medborgaren för visning i eVaka.'
       },
       approveFailedModal: {
-        title: 'Päätöksen hyväksyminen epäonnistui',
-        okBtn: 'Sulje'
+        title: 'Beslutsgodkännandet misslyckades',
+        okBtn: 'Stäng'
       },
       annulModal: {
-        title: 'Mitätöidäänkö päätös?',
-        okBtn: 'Mitätöi päätös',
-        text: 'Päätöstä ei saa mitätöidä keskustelematta ensin huoltajan kanssa. Uudella päätöksellä ei hallintolain mukaan saa heikentää huoltajan asemaa. Haluatko varmasti mitätöidä päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
-        inputPlaceholder: 'Kuvaile miksi päätös on mitätöity'
+        title: 'Annullera beslut?',
+        okBtn: 'Annullera beslut',
+        text: 'Beslutet får inte annulleras utan att först diskutera det med vårdnadshavaren. Med ett nytt beslut får vårdnadshavarens ställning inte försämras enligt förvaltningslagen. Vill du verkligen annullera beslutet? Beslutets giltighet upphör omedelbart. Information om annulleringen och dess motivering skickas till medborgaren för visning i eVaka.',
+        inputPlaceholder: 'Beskriv varför beslutet annullerades'
       },
       mismatchDecisionMakerWarning: {
-        text: 'Et ole tämän päätöksen päättäjä, joten et voi tehdä päätöstä.',
-        link: 'Vaihda itsesi päättäjäksi.'
+        text: 'Du är inte beslutsfattare för detta beslut, så du kan inte fatta beslut.',
+        link: 'Byt dig själv till beslutsfattare.'
       },
       mismatchDecisionMakerModal: {
-        title: 'Vaihda itsesi päättäjäksi',
-        text: 'Päättäjää muuttamalla voit palauttaa päätöksen korjattavaksi tai hylätä tai hyväksyä päätöksen. Nimesi ja tittelisi muutetaan päätökseen.',
-        titlePlaceholder: 'Titteli',
-        okBtn: 'Vaihda päättäjä'
+        title: 'Byt dig själv till beslutsfattare',
+        text: 'Genom att ändra beslutsfattare kan du returnera beslutet för redigering eller avslå eller godkänna beslutet. Ditt namn och titel ändras i beslutet.',
+        titlePlaceholder: 'Titel',
+        okBtn: 'Byt beslutsfattare'
       },
-      rejectDecision: 'Hylkää päätös',
-      returnDecisionForEditing: 'Palauta korjattavaksi',
-      approveDecision: 'Hyväksy päätös',
-      annulDecision: 'Mitätöi päätös'
+      rejectDecision: 'Avslå beslut',
+      returnDecisionForEditing: 'Returnera för redigering',
+      approveDecision: 'Godkänn beslut',
+      annulDecision: 'Annullera beslut'
     },
     attendanceReservation: {
-      title: 'Päiväkohtaiset lapsen tulo- ja lähtöajat',
-      description:
-        'Raportti lasten varauksista ja henkilökunnan määrän tarpeesta',
-      ungrouped: 'Ryhmää odottavat lapset',
-      capacityFactor: 'Lask',
-      staffCount: 'Hlökunta',
-      tooLongRange: 'Voit hakea raportin korkeintaan kahden kuukauden ajalta.'
+      title: 'Dagsvisa barnets ankomst- och avresetider',
+      description: 'Rapport om barns reservationer och behov av personalantal',
+      ungrouped: 'Barn som väntar på grupp',
+      capacityFactor: 'Koeff',
+      staffCount: 'Personal',
+      tooLongRange: 'Du kan hämta rapporten för högst två månaders period.'
     },
     attendanceReservationByChild: {
-      title: 'Lapsikohtaiset läsnäoloajat',
+      title: 'Närvaro- och frånvarotider barnvis',
       description:
-        'Raportti listaa lapsikohtaisesti huoltajien ilmoittamat lähtö- ja tuloajat. Raportti on saatavilla ryhmä- ja yksikkökohtaisesti.',
-      ungrouped: 'Ryhmää odottavat lapset',
+        'Rapporten listar barnvis de av vårdnadshavare meddelade avgångs- och ankomsttider. Rapporten är tillgänglig grupp- och enhetsvis.',
+      ungrouped: 'Barn som väntar på grupp',
       orderByOptions: {
-        start: 'Tuloaika',
-        end: 'Lähtöaika'
+        start: 'Ankomsttid',
+        end: 'Avgångstid'
       },
-      absence: 'Poissaolo',
-      noReservation: 'Varaus puuttuu',
-      filterByTime: 'Suodata ajan perusteella',
-      showOnlyShiftCare: 'Näytä vain vuorohoito',
-      includeClosed: 'Näytä lopetetut yksiköt ja ryhmät',
-      reservationStartTime: 'Tulo',
-      reservationEndTime: 'Lähtö',
-      timeFilterError: 'Virhe'
+      absence: 'Frånvaro',
+      noReservation: 'Reservation saknas',
+      filterByTime: 'Filtrera enligt tid',
+      showOnlyShiftCare: 'Visa endast skiftvård',
+      includeClosed: 'Visa avslutade enheter och grupper',
+      reservationStartTime: 'Ankomst',
+      reservationEndTime: 'Avgång',
+      timeFilterError: 'Fel'
     },
     childAttendance: {
-      title: 'Lapsen läsnä- ja poissaolotiedot',
-      range: 'Aikaväli',
-      date: 'Päivä',
-      reservations: 'Varaus',
-      attendances: 'Läsnäolo',
-      absenceBillable: 'Poissaolo (maksullisesta)',
-      absenceNonbillable: 'Poissaolo (maksuttomasta)'
+      title: 'Barnets närvaro- och frånvarouppgifter',
+      range: 'Tidsperiod',
+      date: 'Dag',
+      reservations: 'Reservation',
+      attendances: 'Närvaro',
+      absenceBillable: 'Frånvaro (avgiftsbelagd)',
+      absenceNonbillable: 'Frånvaro (avgiftsfri)'
     },
     customerFees: {
-      title: 'Asiakasmaksut',
-      description: 'Raportti lapsikohtaisten asiakasmaksujen summista.',
-      date: 'Päivämäärä',
-      area: 'Palvelualue',
-      unit: 'Yksikkö',
-      providerType: 'Järjestämismuoto',
-      placementType: 'Sijoitustyyppi',
-      type: 'Päätöstyyppi',
+      title: 'Kundavgifter',
+      description: 'Rapport om summor för kundavgifter barnvis.',
+      date: 'Datum',
+      area: 'Serviceområde',
+      unit: 'Enhet',
+      providerType: 'Arrangemangsform',
+      placementType: 'Placeringstyp',
+      type: 'Beslutstyp',
       types: {
-        FEE_DECISION: 'Maksupäätökset',
-        VOUCHER_VALUE_DECISION: 'Arvopäätökset'
+        FEE_DECISION: 'Avgiftsbeslut',
+        VOUCHER_VALUE_DECISION: 'Värdebeslut'
       },
-      fee: 'Lapsikohtainen maksu',
-      count: 'Lukumäärä'
+      fee: 'Avgift per barn',
+      count: 'Antal'
     },
     duplicatePeople: {
-      title: 'Monistuneet kuntalaiset',
+      title: 'Duplicerade medborgare',
       description:
-        'Raportti listaa ja antaa yhdistää ihmisiä, jotka vaikuttavat olevan järjestelmässä moneen kertaan.',
-      moveFrom: 'Siirrä tiedot',
-      moveTo: 'Siirrä tähän',
+        'Rapporten listar och låter sammanslå personer som verkar finnas flera gånger i systemet.',
+      moveFrom: 'Flytta uppgifter',
+      moveTo: 'Flytta hit',
       confirmMoveTitle:
-        'Haluatko varmasti siirtää kaikki tiedot toiselle henkilölle?',
-      confirmDeleteTitle: 'Haluatko varmasti poistaa tämän henkilön?',
-      errorTitle: 'Tietojen siirtäminen epäonnistui',
+        'Vill du verkligen flytta alla uppgifter till en annan person?',
+      confirmDeleteTitle: 'Vill du verkligen ta bort denna person?',
+      errorTitle: 'Överföringen av uppgifter misslyckades',
       errorText:
-        'Tarkista ettei henkilöillä ole esimerkiksi päällekkäisiä sijoituksia, palveluntarpeita tai muita päällekkäisyyksiä, jotka voisivat estää yhdistämisen.',
+        'Kontrollera att personerna inte har exempelvis överlappande placeringar, tjänstebehov eller andra överlappningar som kan förhindra sammanslagningen.',
       columns: {
-        'absence.child_id': 'Poissa- oloja',
-        'absence.modified_by_guardian_id': 'Itse merkittyjä poissa -oloja',
-        'absence_application.child_id': 'Esiopetuksen poissaolohakemuksia',
-        'application.child_id': 'Hakemuksia (lapsena)',
-        'application.guardian_id': 'Hakemuksia (huoltajana)',
-        'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',
-        'assistance_action.child_id': 'Tuki- toimia',
-        'assistance_need.child_id': 'Tuen tarpeita',
-        'assistance_need_decision.child_id': 'Tuen tarpeen päätöksiä',
+        'absence.child_id': 'Frånvaror',
+        'absence.modified_by_guardian_id': 'Självantecknade frånvaror',
+        'absence_application.child_id': 'Frånvaroansökningar för förskola',
+        'application.child_id': 'Ansökningar (som barn)',
+        'application.guardian_id': 'Ansökningar (som vårdnadshavare)',
+        'application.other_guardian_id':
+          'Ansökningar (som andra vårdnadshavare)',
+        'assistance_action.child_id': 'Stödåtgärder',
+        'assistance_need.child_id': 'Stödbehov',
+        'assistance_need_decision.child_id': 'Beslut om stödbehov',
         'assistance_need_decision_guardian.person_id':
-          'Tuen päätöksen huoltajana',
+          'Beslut om stöd som vårdnadshavare',
         'assistance_need_voucher_coefficient.child_id':
-          'Tuen palvelusetelikertoimia',
-        'attachment.uploaded_by_person': 'Liitteitä',
-        'attendance_reservation.child_id': 'Läsnäolo -varauksia',
+          'Servicesedelkoefficienter för stöd',
+        'attachment.uploaded_by_person': 'Bilagor',
+        'attendance_reservation.child_id': 'Närvaroreservationer',
         'attendance_reservation.created_by_guardian_id':
-          'Itse merkittyjä läsnäolo -varauksia',
-        'backup_care.child_id': 'Vara- sijoituksia',
-        'backup_pickup.child_id': 'Vara- hakijoita',
-        'calendar_event_attendee.child_id': 'Kalenteri- osallis- tujana',
-        'child_attendance.child_id': 'Läsnäoloja',
-        'child_images.child_id': 'Kuvia',
-        'backup_curriculum_document.child_id': 'Vanhoja opetussuunnitelemia',
-        'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
+          'Självantecknade närvaroreservationer',
+        'backup_care.child_id': 'Reservplaceringar',
+        'backup_pickup.child_id': 'Reservhämtare',
+        'calendar_event_attendee.child_id': 'Kalenderdeltagare',
+        'child_attendance.child_id': 'Närvaroanteckningar',
+        'child_images.child_id': 'Bilder',
+        'backup_curriculum_document.child_id': 'Gamla läroplaner',
+        'daily_service_time.child_id': 'Småbarnspedagogiska tider',
         'daily_service_time_notification.guardian_id':
-          'Varhais- kasvatus- aikojen ilmoituksia',
-        'daycare_daily_note.child_id': 'Muistiin- panoja',
-        'family_contact.child_id': 'Yhteys- henkilöitä (lapsi)',
-        'family_contact.contact_person_id': 'Yhteys- henkilöitä (aikuinen)',
-        'fee_alteration.person_id': 'Maksu- muutoksia',
-        'fee_decision.head_of_family_id': 'Maksu- päätöksiä (päämies)',
-        'fee_decision.partner_id': 'Maksu- päätöksiä (puoliso)',
-        'fee_decision_child.child_id': 'Maksu- päätös- rivejä',
-        'fridge_child.child_id': 'Päämiehiä',
-        'fridge_child.head_of_child': 'Jääkaappi- lapsia',
-        'fridge_partner.person_id': 'Jääkaappi- puolisoja',
-        'foster_parent.child_id': 'Sijais- lapsia',
-        'foster_parent.parent_id': 'Sijais- vanhempia',
-        'holiday_questionnaire_answer.child_id': 'Kyselyvastauksia',
-        'income.person_id': 'Tulo- tietoja',
-        'income_statement.person_id': 'Tulo -ilmoituksia',
-        'invoice.codebtor': 'Laskuja (kanssa -velallinen)',
-        'invoice.head_of_family': 'Laskuja',
-        'invoice_correction_row.child_id': 'Laskun korjausrivejä (lapsi)',
+          'Meddelanden om småbarnspedagogiska tider',
+        'daycare_daily_note.child_id': 'Anteckningar',
+        'family_contact.child_id': 'Kontaktpersoner (barn)',
+        'family_contact.contact_person_id': 'Kontaktpersoner (vuxen)',
+        'fee_alteration.person_id': 'Avgiftsändringar',
+        'fee_decision.head_of_family_id': 'Avgiftsbeslut (huvudman)',
+        'fee_decision.partner_id': 'Avgiftsbeslut (partner)',
+        'fee_decision_child.child_id': 'Avgiftsbeslut rader',
+        'fridge_child.child_id': 'Huvudmän',
+        'fridge_child.head_of_child': 'Kylskåps barn',
+        'fridge_partner.person_id': 'Kylskåps partner',
+        'foster_parent.child_id': 'Fosterbarn',
+        'foster_parent.parent_id': 'Fosterföräldrar',
+        'holiday_questionnaire_answer.child_id': 'Enkätsvar',
+        'income.person_id': 'Inkomstuppgifter',
+        'income_statement.person_id': 'Inkomstutredningar',
+        'invoice.codebtor': 'Fakturor (medgäldenär)',
+        'invoice.head_of_family': 'Fakturor',
+        'invoice_correction_row.child_id': 'Faktura korrigeringsrader (barn)',
         'invoice_correction_row.head_of_family':
-          'Laskun korjausrivejä (päämies)',
-        'invoice_row.child': 'Lasku- rivejä',
-        'koski_study_right.child_id': 'Koski opinto- oikeuksia',
-        'nekku_special_diet_choices.child_id': 'Nekku-erityis- ruokavalio',
-        'pedagogical_document.child_id': 'Pedagogisia dokumentteja',
-        'placement.child_id': 'Sijoituksia',
-        'service_application.child_id': 'Palv.tarve hakemuksia (lapsena)',
-        'service_application.person_id': 'Palv.tarve hakemuksia (huoltajana)',
-        'varda_child.person_id': 'Varda lapsi',
-        'varda_service_need.evaka_child_id': 'Varda palvelun -tarpeita',
-        'backup_vasu_document.child_id': 'Vanhoja vasuja',
-        'voucher_value_decision.child_id': 'Arvo- päätös- rivejä',
-        'voucher_value_decision.head_of_family_id': 'Arvo- päätöksiä (päämies)',
-        'voucher_value_decision.partner_id': 'Arvo- päätöksiä (puoliso)',
-        'message.sender_id': 'Lähetettyjä viestejä',
-        'message_content.author_id': 'Kirjoitettuja viesti- sisältöjä',
-        'message_recipients.recipient_id': 'Saatuja viestejä',
-        'message_draft.account_id': 'Viesti- luonnoksia'
+          'Faktura korrigeringsrader (huvudman)',
+        'invoice_row.child': 'Fakturarader',
+        'koski_study_right.child_id': 'Koski studierättigheter',
+        'nekku_special_diet_choices.child_id': 'Nekku specialkost',
+        'pedagogical_document.child_id': 'Pedagogiska dokument',
+        'placement.child_id': 'Placeringar',
+        'service_application.child_id': 'Tjänstebeh. ansökningar (som barn)',
+        'service_application.person_id':
+          'Tjänstebeh. ansökningar (som vårdnadshavare)',
+        'varda_child.person_id': 'Varda barn',
+        'varda_service_need.evaka_child_id': 'Varda tjänstebehov',
+        'backup_vasu_document.child_id': 'Gamla planer för småbarnspedagogik',
+        'voucher_value_decision.child_id': 'Värdebeslut rader',
+        'voucher_value_decision.head_of_family_id': 'Värdebeslut (huvudman)',
+        'voucher_value_decision.partner_id': 'Värdebeslut (partner)',
+        'message.sender_id': 'Skickade meddelanden',
+        'message_content.author_id': 'Skrivna meddelandeinnehåll',
+        'message_recipients.recipient_id': 'Mottagna meddelanden',
+        'message_draft.account_id': 'Meddelandeutkast'
       }
     },
     familyConflicts: {
-      title: 'Perhekonfliktit',
+      title: 'Familjekonflikter',
       description:
-        'Raportti listaa päämiehet, joiden perhesuhteissa on konflikteja. Konflikti voi muodostua jos hakemuksella ilmoitetut perhesuhteet ovat ristiriidassa aiempien tietojen kanssa.',
-      name: 'Päämiehen nimi',
-      ssn: 'Hetu',
-      partnerConflictCount: 'Konflikteja puolisoissa',
-      childConflictCount: 'Konflikteja lapsissa'
+        'Rapporten listar huvudmän som har konflikter i sina familjerelationer. Konflikt kan uppstå om familjerelationer angivna i ansökan står i strid med tidigare uppgifter.',
+      name: 'Huvudmannens namn',
+      ssn: 'Personbeteckning',
+      partnerConflictCount: 'Konflikter i partner',
+      childConflictCount: 'Konflikter i barn'
     },
     familyContacts: {
-      date: 'Päivämäärä',
-      name: 'Lapsen nimi',
-      ssn: 'Hetu',
-      group: 'Ryhmä',
-      address: 'Osoite',
-      headOfChild: 'Päämies',
-      guardian1: 'Huoltaja',
-      guardian2: 'Toinen huoltaja',
-      phone: 'Puhelinnumero',
-      email: 'Sähköpostiosoite'
+      date: 'Datum',
+      name: 'Barnets namn',
+      ssn: 'Personbeteckning',
+      group: 'Grupp',
+      address: 'Adress',
+      headOfChild: 'Huvudman',
+      guardian1: 'Vårdnadshavare',
+      guardian2: 'Andra vårdnadshavare',
+      phone: 'Telefonnummer',
+      email: 'E-postadress'
     },
     familyDaycareMealCount: {
-      title: 'Perhepäivähoidossa olevien lasten ateriaraportti',
+      title: 'Måltidsrapport för barn i familjedagvård',
       description:
-        'Raportti laskee perhepäivähoidossa olevien lasten läsnäolomerkinnät ateria-aikoina ja ryhmittelee tulokset yksiköittäin ja alueittain.',
-      childName: 'Lapsen nimi',
-      firstName: 'Etunimi',
-      lastName: 'Sukunimi',
-      daycareName: 'Toimintayksikkö',
-      timePeriod: 'Ajanjakso',
-      timePeriodTooLong: 'Ajanjakso enintään 6kk',
-      careArea: 'Palvelualue',
-      total: 'Yhteensä',
-      breakfastCountHeader: 'Aamiainen',
-      lunchCountHeader: 'Lounas',
-      snackCountHeader: 'Välipala',
-      totalHeader: 'Aterioita yhteensä',
-      noCareAreasFound: 'Ei tuloksia sisältäviä palvelualueita',
-      noDaycaresFound: 'Ei tuloksia sisältäviä yksiköitä'
+        'Rapporten räknar närvaroanteckningar för barn i familjedagvård under måltidstider och grupperar resultaten enhets- och områdesvis.',
+      childName: 'Barnets namn',
+      firstName: 'Förnamn',
+      lastName: 'Efternamn',
+      daycareName: 'Verksamhetsenhet',
+      timePeriod: 'Tidsperiod',
+      timePeriodTooLong: 'Tidsperiod högst 6 mån',
+      careArea: 'Serviceområde',
+      total: 'Totalt',
+      breakfastCountHeader: 'Frukost',
+      lunchCountHeader: 'Lunch',
+      snackCountHeader: 'Mellanmål',
+      totalHeader: 'Måltider totalt',
+      noCareAreasFound: 'Inga serviceområden med resultat',
+      noDaycaresFound: 'Inga enheter med resultat'
     },
     endedPlacements: {
-      title: 'Varhaiskasvatuksessa lopettavat lapset',
+      title: 'Barn som avslutar småbarnspedagogik',
       description:
-        'Kelaan toimitettava raportti varhaiskasvatuksessa lopettavista ja mahdollisesti myöhemmin jatkavista lapsista.',
-      ssn: 'Hetu',
-      placementEnd: 'Lopettaa varhaiskasvatuksessa',
-      unit: 'Yksikkö',
-      area: 'Alue',
-      nextPlacementStart: 'Jatkaa varhaiskasvatuksessa',
-      nextPlacementUnitName: 'Jatkaa yksikössä'
+        'Rapport till FPA om barn som avslutar småbarnspedagogik och eventuellt fortsätter senare.',
+      ssn: 'Personbeteckning',
+      placementEnd: 'Avslutar småbarnspedagogik',
+      unit: 'Enhet',
+      area: 'Område',
+      nextPlacementStart: 'Fortsätter småbarnspedagogik',
+      nextPlacementUnitName: 'Fortsätter i enhet'
     },
     missingHeadOfFamily: {
-      title: 'Puuttuvat päämiehet',
+      title: 'Huvudmän saknas',
       description:
-        'Raportti listaa lapset, joiden nykyisen sijoituksen ajalta puuttuu tieto päämiehestä.',
-      childLastName: 'Lapsen sukunimi',
-      childFirstName: 'Lapsen etunimi',
-      showFosterChildren: 'Näytä myös sijaislapset',
-      daysWithoutHeadOfFamily: 'Puutteelliset päivät'
+        'Rapporten listar barn som saknar huvudman under den nuvarande placeringsperioden.',
+      childLastName: 'Barnets efternamn',
+      childFirstName: 'Barnets förnamn',
+      showFosterChildren: 'Visa även fosterbarn',
+      daysWithoutHeadOfFamily: 'Ofullständiga dagar'
     },
     missingServiceNeed: {
-      title: 'Puuttuvat palveluntarpeet',
+      title: 'Tjänstebehov saknas',
       description:
-        'Raportti listaa lapset, joiden sijoituksen ajalta puuttuu palveluntarve.',
-      daysWithoutServiceNeed: 'Puutteellisia päiviä',
-      defaultOption: 'Käytetty oletuspalveluntarve'
+        'Rapporten listar barn som saknar tjänstebehov under placeringsperioden.',
+      daysWithoutServiceNeed: 'Ofullständiga dagar',
+      defaultOption: 'Använt standardtjänstebehov'
     },
     invalidServiceNeed: {
-      title: 'Virheelliset palveluntarpeet',
+      title: 'Felaktiga tjänstebehov',
       description:
-        'Raportti listaa palveluntarpeet, joissa vaikuttaisi olevan virhe.',
-      unit: 'Nykyinen yksikkö',
-      noCurrentUnit: 'Lopettanut'
+        'Rapporten listar tjänstebehov som verkar innehålla ett fel.',
+      unit: 'Nuvarande enhet',
+      noCurrentUnit: 'Avslutad'
     },
     partnersInDifferentAddress: {
-      title: 'Puoliso eri osoitteessa',
+      title: 'Partner på annan adress',
       description:
-        'Raportti listaa henkilöt, joiden jääkaappipuolisoksi merkitty henkilö asuu VTJ:n mukaan eri osoitteessa. Tarkista ovatko nämä henkilöt enää oikeasti avopuolisoja.',
-      person1: 'Henkilö',
-      address1: 'Osoite',
-      person2: 'Puoliso',
-      address2: 'Puolison osoite'
+        'Rapporten listar personer vars kylskåpspartner enligt BIS bor på en annan adress. Kontrollera om dessa personer fortfarande är samboende.',
+      person1: 'Person',
+      address1: 'Adress',
+      person2: 'Partner',
+      address2: 'Partners adress'
     },
     presence: {
-      title: 'Läsnäolot',
-      date: 'pvm',
-      SSN: 'hetu',
-      daycareId: 'varhaiskasvatuslaitos id',
-      daycareGroupName: 'ryhmä',
-      present: 'läsnä',
-      description: 'Talouden tilannehuone -raportti tutkimuskäyttöön',
-      info: 'Ajanjakson maksimipituus on kaksi viikkoa.'
+      title: 'Närvaroanteckningar',
+      date: 'datum',
+      SSN: 'personbeteckning',
+      daycareId: 'småbarnspedagogisk anstalt id',
+      daycareGroupName: 'grupp',
+      present: 'närvarande',
+      description: 'Rapport för forskningsbruk om ekonomins läge',
+      info: 'Tidsperiodens maximala längd är två veckor.'
     },
     serviceNeeds: {
-      title: 'Lasten palvelutarpeet ja iät yksiköissä',
+      title: 'Barns tjänstebehov och ålder i enheter',
       description:
-        'Raportti listaa lasten määriä yksiköissä palveluntarpeen ja iän mukaan.',
-      age: 'Ikä',
-      fullDay: 'kokopäiväinen',
-      partDay: 'osapäiväinen',
-      fullWeek: 'kokoviikkoinen',
-      partWeek: 'osaviikkoinen',
-      shiftCare: 'vuorohoito',
-      missingServiceNeed: 'palveluntarve puuttuu',
-      total: 'lapsia yhteensä'
+        'Rapporten listar antal barn i enheter enligt tjänstebehov och ålder.',
+      age: 'Ålder',
+      fullDay: 'heldags',
+      partDay: 'halvdags',
+      fullWeek: 'helvecka',
+      partWeek: 'halvvecka',
+      shiftCare: 'skiftvård',
+      missingServiceNeed: 'tjänstebehov saknas',
+      total: 'barn totalt'
     },
     exceededServiceNeed: {
-      title: 'Palveluntarpeen ylitykset',
+      title: 'Överskriden tjänstebehov',
       description:
-        'Raportti listaa lapset, joiden palveluntarpeen tunnit on ylitetty.',
-      serviceNeedHours: 'Palvelun tarve (h)',
-      usedServiceHours: 'Käytetty (h)',
-      groupLinkHeading: 'Yksikön viikkokalenteri',
-      excessHours: 'Ylitys (h)'
+        'Rapporten listar barn vars tjänstebehov i timmar överskridits.',
+      serviceNeedHours: 'Tjänstebehov (h)',
+      usedServiceHours: 'Använt (h)',
+      groupLinkHeading: 'Enhetens veckokalender',
+      excessHours: 'Överskridning (h)'
     },
     units: {
-      title: 'Yksiköt',
-      description: 'Yhteenveto yksiköiden tiedoista.',
-      name: 'Nimi',
-      careAreaName: 'Palvelualue',
-      careTypeCentre: 'Päiväkoti',
-      careTypeFamily: <span>Perhe&shy;päivä&shy;hoito</span>,
-      careTypeFamilyStr: 'Perhepäivähoito',
-      careTypeGroupFamily: <span>Ryhmä&shy;perhe&shy;päivä&shy;hoito</span>,
-      careTypeGroupFamilyStr: 'Ryhmäperhepäivähoito',
-      careTypeClub: 'Kerho',
-      careTypePreschool: 'Esiopetus',
-      careTypePreparatoryEducation: 'Valmistava',
-      clubApply: <span>Kerho&shy;haku</span>,
-      clubApplyStr: 'Kerhohaku',
-      daycareApply: <span>Päiväkoti&shy;haku</span>,
-      daycareApplyStr: 'Päiväkotihaku',
-      preschoolApply: <span>Esiopetus&shy;haku</span>,
-      preschoolApplyStr: 'Esiopetushaku',
-      providerType: 'Järjestämismuoto',
+      title: 'Enheter',
+      description: 'Sammanfattning av enheters uppgifter.',
+      name: 'Namn',
+      careAreaName: 'Serviceområde',
+      careTypeCentre: 'Daghem',
+      careTypeFamily: <span>Familje&shy;dagvård</span>,
+      careTypeFamilyStr: 'Familjedagvård',
+      careTypeGroupFamily: <span>Grupp&shy;familje&shy;dagvård</span>,
+      careTypeGroupFamilyStr: 'Gruppfamiljedagvård',
+      careTypeClub: 'Klubb',
+      careTypePreschool: 'Förskola',
+      careTypePreparatoryEducation: 'Förberedande',
+      clubApply: <span>Klubb&shy;ansökan</span>,
+      clubApplyStr: 'Klubbansökan',
+      daycareApply: <span>Daghem&shy;ansökan</span>,
+      daycareApplyStr: 'Daghemansökan',
+      preschoolApply: <span>Förskole&shy;ansökan</span>,
+      preschoolApplyStr: 'Förskoleansökan',
+      providerType: 'Arrangemangsform',
       uploadToVarda: 'Varda',
-      uploadChildrenToVarda: 'Varda (lapset)',
+      uploadChildrenToVarda: 'Varda (barn)',
       uploadToKoski: 'Koski',
-      ophUnitOid: 'Toimipaikan OID',
-      ophOrganizerOid: 'Järjestäjän OID',
-      invoicedByMunicipality: 'Laskutetaan eVakasta',
-      costCenter: 'Kustannuspaikka',
-      address: 'Käyntiosoite',
-      unitManagerName: 'Yksikön johtaja',
-      unitManagerPhone: 'Johtajan puh.',
-      capacity: 'Laskennallinen kapasiteetti'
+      ophUnitOid: 'Verksamhetsställets OID',
+      ophOrganizerOid: 'Anordnarens OID',
+      invoicedByMunicipality: 'Faktureras från eVaka',
+      costCenter: 'Kostnadsställe',
+      address: 'Besöksadress',
+      unitManagerName: 'Enhetens ledare',
+      unitManagerPhone: 'Ledarens tel.',
+      capacity: 'Beräknad kapacitet'
     },
     childrenInDifferentAddress: {
-      title: 'Lapsi eri osoitteessa',
+      title: 'Barn på annan adress',
       description:
-        'Raportti listaa päämiehet, joiden jääkaappilapsi asuu VTJ:n mukaan eri osoitteessa. Osa näistä voi olla virheitä, jotka tulisi korjata.',
-      person1: 'Päämies',
-      address1: 'Päämiehen osoite',
-      person2: 'Lapsi',
-      address2: 'Lapsen osoite'
+        'Rapporten listar huvudmän vars kylskåpsbarn enligt BIS bor på en annan adress. En del av dessa kan vara fel som borde korrigeras.',
+      person1: 'Huvudman',
+      address1: 'Huvudmannens adress',
+      person2: 'Barn',
+      address2: 'Barnets adress'
     },
     childAgeLanguage: {
-      title: 'Lasten kielet ja iät yksiköissä',
+      title: 'Barns språk och ålder i enheter',
       description:
-        'Raportti listaa lasten määriä yksiköissä kielen ja iän mukaan. Vain vastaanotetut paikat otetaan huomioon.'
+        'Rapporten listar antal barn i enheter enligt språk och ålder. Endast mottagna platser beaktas.'
     },
     childDocuments: {
-      title: 'Pedagogiset asiakirjat -raportti',
+      title: 'Rapport om pedagogiska dokument',
       description:
-        'Raportti näyttää pedagogisten asiakirjojen tämänhetkisen tilanteen valitsemissasi yksiköissä.',
-      info: 'Luvut kertovat moneltako lapselta löytyy joku valituista dokumenteista kyseisessä tilassa.',
+        'Rapporten visar det nuvarande läget för pedagogiska dokument i valda enheter.',
+      info: 'Siffrorna visar hur många barn som har något av de valda dokumenten i det givna tillståndet.',
       info2:
-        '"Ei asiakirjoja" ja "Lapsia yhteensä" sarakkeisiin lasketaan vain ne lapset, joille on mahdollista luoda joku valituista asiakirjoista.',
+        'I kolumnerna "Inga dokument" och "Barn totalt" räknas endast de barn för vilka det är möjligt att skapa något av de valda dokumenten.',
       filters: {
-        units: 'Yksiköt',
-        templates: 'Asiakirjat'
+        units: 'Enheter',
+        templates: 'Dokument'
       },
       table: {
-        unitOrGroup: 'Yksikkö/Ryhmä',
-        draft: 'Luonnos',
-        prepared: 'Laadittu',
-        completed: 'Valmis',
-        none: 'Ei asiakirjoja',
-        total: 'Lapsia yhteensä',
-        expand: 'Näytä ryhmät',
-        collapse: 'Piilota ryhmät'
+        unitOrGroup: 'Enhet/Grupp',
+        draft: 'Utkast',
+        prepared: 'Uppgjord',
+        completed: 'Färdig',
+        none: 'Inga dokument',
+        total: 'Barn totalt',
+        expand: 'Visa grupper',
+        collapse: 'Dölj grupper'
       },
       categories: {
-        VASU: 'Vasu',
-        LEOPS_HOJKS: 'Leops/Hojks',
-        OTHER: 'Muut asiakirjat'
+        VASU: 'Plan för småbarnspedagogik',
+        LEOPS_HOJKS: 'Leops/Individuellt program',
+        OTHER: 'Andra dokument'
       }
     },
     assistanceNeedsAndActions: {
-      title: 'Lasten tuen tarpeet ja tukitoimet',
+      title: 'Barns stödbehov och stödåtgärder',
       description:
-        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden ja tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
-      type: 'Tuen taso',
+        'Rapporten listar antal barn i enheter och grupper enligt stödbehovs grunder och stödåtgärder. Endast mottagna platser beaktas.',
+      type: 'Stödnivå',
       types: {
-        DAYCARE: 'varhaiskasvatuksessa',
-        PRESCHOOL: 'esiopetuksessa'
+        DAYCARE: 'i småbarnspedagogik',
+        PRESCHOOL: 'i förskoleundervisning'
       },
-      placementType: 'Sijoitustyyppi',
-      level: 'Tuen taso ja muut toimet',
-      showZeroRows: 'Näytä nollarivit',
+      placementType: 'Placeringstyp',
+      level: 'Stödnivå och andra åtgärder',
+      showZeroRows: 'Visa nollrader',
       groupingTypes: {
-        NO_GROUPING: 'Lapset',
-        AREA: 'Toimintayksiköt alueittain',
-        UNIT: 'Toimintayksiköt'
+        NO_GROUPING: 'Barn',
+        AREA: 'Verksamhetsenheter områdesvis',
+        UNIT: 'Verksamhetsenheter'
       },
-      basisMissing: 'Peruste puuttuu',
-      action: 'Tukitoimi',
-      actionMissing: 'Tukitoimi puuttuu',
-      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin',
+      basisMissing: 'Grund saknas',
+      action: 'Stödåtgärd',
+      actionMissing: 'Stödåtgärd saknas',
+      assistanceNeedVoucherCoefficient: 'Förhöjd SS-koefficient',
       daycareAssistanceNeedDecisions:
-        'Aktiiviset varhaiskasvatuksen tuen päätökset',
-      preschoolAssistanceNeedDecisions: 'Aktiiviset esiopetuksen tuen päätökset'
+        'Aktiva beslut om stöd i småbarnspedagogik',
+      preschoolAssistanceNeedDecisions:
+        'Aktiva beslut om stöd i förskoleundervisning'
     },
     occupancies: {
-      title: 'Täyttö- ja käyttöasteet',
+      title: 'Beläggnings- och utnyttjandegrader',
       description:
-        'Raportti tarjoaa tiedot yhden palvelualueen ja yhden kuukauden käyttö- tai täyttöasteista.',
+        'Rapporten erbjuder uppgifter om ett serviceområdes och en månads utnyttjande- eller beläggningsgrader.',
       filters: {
-        areaPlaceholder: 'Valitse palvelualue',
-        unitPlaceholder: 'Valitse yksikkö',
-        type: 'Tyyppi',
+        areaPlaceholder: 'Välj serviceområde',
+        unitPlaceholder: 'Välj enhet',
+        type: 'Typ',
         types: {
           UNITS: {
-            CONFIRMED: 'Vahvistettu täyttöaste yksikössä',
-            PLANNED: 'Suunniteltu täyttöaste yksikössä',
-            DRAFT: 'Hahmoteltu täyttöaste yksikössä',
-            REALIZED: 'Käyttöaste yksikössä'
+            CONFIRMED: 'Bekräftad beläggningsgrad i enhet',
+            PLANNED: 'Planerad beläggningsgrad i enhet',
+            DRAFT: 'Skisserad beläggningsgrad i enhet',
+            REALIZED: 'Utnyttjandegrad i enhet'
           },
           GROUPS: {
-            CONFIRMED: 'Vahvistettu täyttöaste ryhmissä',
-            PLANNED: 'Suunniteltu täyttöaste ryhmissä',
-            DRAFT: 'Hahmoteltu täyttöaste ryhmissä',
-            REALIZED: 'Käyttöaste ryhmissä'
+            CONFIRMED: 'Bekräftad beläggningsgrad i grupper',
+            PLANNED: 'Planerad beläggningsgrad i grupper',
+            DRAFT: 'Skisserad beläggningsgrad i grupper',
+            REALIZED: 'Utnyttjandegrad i grupper'
           }
         },
-        valueOnReport: 'Näytä tiedot',
+        valueOnReport: 'Visa uppgifter',
         valuesOnReport: {
-          percentage: 'Prosentteina',
-          headcount: 'Lukumääränä',
-          raw: 'Summa ja kasvattajamäärä erikseen'
+          percentage: 'I procent',
+          headcount: 'Som antal',
+          raw: 'Summa och antal uppfostrare separat'
         }
       },
-      unitsGroupedByArea: 'Toimintayksiköt alueittain',
-      average: 'Keskiarvo',
-      sumUnder3y: 'Alle 3v',
-      sumOver3y: 'Yli 3v',
+      unitsGroupedByArea: 'Verksamhetsenheter områdesvis',
+      average: 'Medelvärde',
+      sumUnder3y: 'Under 3 år',
+      sumOver3y: 'Över 3 år',
       sum: 'Summa',
-      caretakers: 'Kasvattajia',
-      missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
+      caretakers: 'Uppfostrare',
+      missingCaretakersLegend: 'antal uppfostrare saknas'
     },
     incompleteIncomes: {
-      title: 'Puuttuvat tulotiedot',
+      title: 'Inkomstuppgifter saknas',
       description:
-        'Raportti vanhemmista, joiden tulotiedot ovat vanhentuneet, mutta lapsella on vielä sijoitus aktiivinen.',
-      validFrom: 'Alkupäivämäärä',
-      fullName: 'Nimi',
-      daycareName: 'Päiväkoti',
-      careareaName: 'Palvelualue'
+        'Rapport om föräldrar vars inkomstuppgifter har föråldrats, men barnet har ännu en aktiv placering.',
+      validFrom: 'Startdatum',
+      fullName: 'Namn',
+      daycareName: 'Daghem',
+      careareaName: 'Serviceområde'
     },
     invoices: {
-      title: 'Laskujen täsmäytys',
+      title: 'Fakturaavstämning',
       description:
-        'Laskujen täsmäytysraportti laskutusjärjestelmään vertailua varten',
-      period: 'Laskutuskausi',
-      areaCode: 'Alue',
-      amountOfInvoices: 'Laskuja',
+        'Fakturaavstämningsrapport för jämförelse med faktureringssystemet',
+      period: 'Faktureringsperiod',
+      areaCode: 'Område',
+      amountOfInvoices: 'Fakturor',
       totalSumCents: 'Summa',
-      amountWithoutSSN: 'Hetuttomia',
-      amountWithoutAddress: 'Osoitteettomia',
-      amountWithZeroPrice: 'Nollalaskuja'
+      amountWithoutSSN: 'Utan personbeteckning',
+      amountWithoutAddress: 'Utan adress',
+      amountWithZeroPrice: 'Nollfakturor'
     },
     nekkuOrders: {
-      title: 'Nekku tilaukset',
-      description: 'Raportti toteutuneista Nekku tilauksista',
-      tooLongRange:
-        'Voit hakea raportin korkeintaan kuukauden kuukauden ajalta.',
-      sku: 'Tuotenumero',
-      quantity: 'Määrä',
-      mealTime: 'Ruoka-aika',
-      mealType: 'Ruokavalio',
+      title: 'Nekku beställningar',
+      description: 'Rapport om realiserade Nekku beställningar',
+      tooLongRange: 'Du kan hämta rapporten för högst en månads period.',
+      sku: 'Produktnummer',
+      quantity: 'Antal',
+      mealTime: 'Måltid',
+      mealType: 'Kost',
       mealTimeValues: {
-        BREAKFAST: 'Aamupala',
-        LUNCH: 'Lounas',
-        SNACK: 'Välipala',
-        DINNER: 'Päivällinen',
-        SUPPER: 'Iltapala'
+        BREAKFAST: 'Frukost',
+        LUNCH: 'Lunch',
+        SNACK: 'Mellanmål',
+        DINNER: 'Middag',
+        SUPPER: 'Kvällsmål'
       },
       mealTypeValues: {
-        DEFAULT: 'Seka',
-        VEGAN: 'Vegaani',
-        VEGETABLE: 'Kasvis'
+        DEFAULT: 'Blandat',
+        VEGAN: 'Vegan',
+        VEGETABLE: 'Vegetarisk'
       },
-      specialDiets: 'Erikoisruokavaliot',
-      nekkuOrderInfo: 'Tilausinfo',
-      nekkuOrderTime: 'Tilauksen ajankohta'
+      specialDiets: 'Specialkoster',
+      nekkuOrderInfo: 'Beställningsinfo',
+      nekkuOrderTime: 'Beställningstidpunkt'
     },
     startingPlacements: {
-      title: 'Varhaiskasvatuksessa aloittavat lapset',
-      description:
-        'Kelaan toimitettava raportti varhaiskasvatuksessa aloittavista lapsista.',
-      ssn: 'Hetu',
-      childLastName: 'Lapsen sukunimi',
-      childFirstName: 'Lapsen etunimi',
-      placementStart: 'Aloittaa varhaiskasvatuksessa',
-      reportFileName: 'alkavat_sijoitukset'
+      title: 'Barn som inleder småbarnspedagogik',
+      description: 'Rapport till FPA om barn som inleder småbarnspedagogik.',
+      ssn: 'Personbeteckning',
+      childLastName: 'Barnets efternamn',
+      childFirstName: 'Barnets förnamn',
+      placementStart: 'Inleder småbarnspedagogik',
+      reportFileName: 'inledande_placeringar'
     },
     voucherServiceProviders: {
-      title: 'Palveluseteliyksiköt',
+      title: 'Servicesedelenheter',
       description:
-        'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
+        'Servicesedelsummor för servicesedelenheter samt avgifter per barn.',
       filters: {
-        areaPlaceholder: 'Valitse palvelualue',
-        allAreas: 'Kaikki alueet',
-        unitPlaceholder: 'Hae yksikön nimellä',
-        separate: 'Perus- ja korotusosat erikseen'
+        areaPlaceholder: 'Välj serviceområde',
+        allAreas: 'Alla områden',
+        unitPlaceholder: 'Sök med enhetens namn',
+        separate: 'Grunddelar och förhöjningsdelar separat'
       },
-      locked: 'Raportti lukittu',
-      childCount: 'PS-lasten lkm',
-      sumBeforeAssistanceNeed: 'Perusosan summa / kk',
-      assistanceNeedSum: 'Korotusosan summa / kk',
-      unitVoucherSum: 'PS summa / kk',
-      average: 'Keskiarvo',
-      breakdown: 'Erittely'
+      locked: 'Rapporten låst',
+      childCount: 'Antal SS-barn',
+      sumBeforeAssistanceNeed: 'Grunddelens summa / mån',
+      assistanceNeedSum: 'Förhöjningsdelens summa / mån',
+      unitVoucherSum: 'SS summa / mån',
+      average: 'Medelvärde',
+      breakdown: 'Specifikation'
     },
     voucherServiceProviderUnit: {
-      title: 'Palvelusetelilapset yksikössä',
-      unitPageLink: 'Yksikön sivu',
-      month: 'Kuukausi',
-      total: 'Palvelusetelien summa valittuna kuukautena',
-      child: 'Lapsen nimi / synt. aika',
-      childFirstName: 'Etunimi',
-      childLastName: 'Sukunimi',
-      note: 'Huomio',
-      numberOfDays: 'Päivät',
-      start: 'Alkaen',
-      end: 'Päättyen',
-      serviceVoucherValue: 'Ps korkein arvo',
-      serviceVoucherRealizedValueBeforeAssistanceNeed: 'Perusosa / kk',
-      serviceVoucherRealizedAssistanceNeedValue: 'Korotusosa / kk',
-      serviceVoucherRealizedValue: 'Ps arvo / kk',
-      serviceVoucherFinalCoPayment: 'Omavastuu',
-      serviceNeed: 'Palveluntarve',
-      assistanceNeed: 'Tuen tarve',
-      partTime: 'Osa/Koko',
+      title: 'Servicesedelbarn i enhet',
+      unitPageLink: 'Enhetssida',
+      month: 'Månad',
+      total: 'Servicesedlarnas summa vald månad',
+      child: 'Barnets namn / födelsetid',
+      childFirstName: 'Förnamn',
+      childLastName: 'Efternamn',
+      note: 'Notering',
+      numberOfDays: 'Dagar',
+      start: 'Från och med',
+      end: 'Till och med',
+      serviceVoucherValue: 'SS högsta värde',
+      serviceVoucherRealizedValueBeforeAssistanceNeed: 'Grunddel / mån',
+      serviceVoucherRealizedAssistanceNeedValue: 'Förhöjningsdel / mån',
+      serviceVoucherRealizedValue: 'SS värde / mån',
+      serviceVoucherFinalCoPayment: 'Självrisk',
+      serviceNeed: 'Tjänstebehov',
+      assistanceNeed: 'Stödbehov',
+      partTime: 'Halv/Hel',
       type: {
-        NEW: 'Uusi päätös',
-        REFUND: 'Hyvitys',
-        CORRECTION: 'Korjaus'
+        NEW: 'Nytt beslut',
+        REFUND: 'Återbetalning',
+        CORRECTION: 'Korrigering'
       }
     },
     nonSsnChildren: {
-      title: 'Hetuttomat lapset',
+      title: 'Barn utan personbeteckning',
       description:
-        'Raportti hetuttomista sijoitetuista lapsista OID-tietojen tarkistamiseen',
-      childName: 'Lapsen nimi',
-      dateOfBirth: 'Syntymäpäivä',
-      personOid: 'Lapsen tietojen OID',
-      lastSentToVarda: 'Viety Vardaan viimeksi',
-      lastSentToKoski: 'Viety Koskeen viimeksi',
-      total: 'Yhteensä'
+        'Rapport om barn utan personbeteckning med placering för kontroll av OID-uppgifter',
+      childName: 'Barnets namn',
+      dateOfBirth: 'Födelsedag',
+      personOid: 'OID för barnets uppgifter',
+      lastSentToVarda: 'Senast exporterad till Varda',
+      lastSentToKoski: 'Senast exporterad till Koski',
+      total: 'Totalt'
     },
     placementCount: {
-      title: 'Sijoitusten määrä',
+      title: 'Antal placeringar',
       description:
-        'Raportti sijoitusten määrästä hakuehtojen mukaisissa yksiköissä annettuna päivämääränä',
-      noCareAreasFound: 'Ei sijoituksia sisältäviä palvelualueita',
-      examinationDate: 'Tarkastelupäivä',
-      careArea: 'Palvelualue',
-      daycaresByArea: 'Toimintayksiköt alueittain',
-      placementCount: 'Lapsia yhteensä',
-      calculatedPlacements: 'Laskennallinen määrä',
-      providerType: 'Järjestämismuoto',
-      placementType: 'Sijoitustyyppi',
-      placementsOver3: 'Vähintään 3v',
-      placementsUnder3: 'Alle 3v',
-      total: 'Yhteensä'
+        'Rapport om antal placeringar i enheter enligt sökkriterier på angivet datum',
+      noCareAreasFound: 'Inga serviceområden med placeringar',
+      examinationDate: 'Granskningsdag',
+      careArea: 'Serviceområde',
+      daycaresByArea: 'Verksamhetsenheter områdesvis',
+      placementCount: 'Barn totalt',
+      calculatedPlacements: 'Beräknat antal',
+      providerType: 'Arrangemangsform',
+      placementType: 'Placeringstyp',
+      placementsOver3: 'Minst 3 år',
+      placementsUnder3: 'Under 3 år',
+      total: 'Totalt'
     },
     placementGuarantee: {
-      title: 'Varhaiskasvatuspaikkatakuu',
+      title: 'Placeringsgaranti för småbarnspedagogik',
       description:
-        'Raportti näyttää varhaiskasvatuspaikkatakuulla olevat lapset'
+        'Rapporten visar barn med placeringsgaranti för småbarnspedagogik'
     },
     placementSketching: {
-      title: 'Esiopetuksen sijoitusten hahmotteluraportti',
+      title: 'Skissrapport för förskoleplaceringar',
       description:
-        'Raportti saapuneista esiopetushakemuksista sijoittamisen avuksi',
-      placementStartDate: 'Nykyisen sijoituksen tarkistuspäivä',
-      earliestPreferredStartDate: 'Aikaisin haettu aloituspäivä',
-      preferredUnit: 'Hakutoive',
-      currentUnit: 'Nykyinen yksikkö',
-      streetAddress: 'Osoite',
-      postalCode: 'Postinumero',
-      tel: 'Puhelu',
-      email: 'email',
-      dob: 'Syntymäaika',
-      serviceNeedOption: 'Palveluntarve',
-      assistanceNeed: 'Tuen tarve',
-      preparatory: 'Valmistava',
-      siblingBasis: 'Sisarusperuste',
-      connected: 'Liittyvä',
-      applicationStatus: 'Hakemuksen tila',
-      preferredStartDate: 'Toivottu aloituspäivä',
-      sentDate: 'Lähetyspäivä',
-      otherPreferredUnits: 'Muut hakutoiveet',
-      additionalInfo: 'Lisätiedot',
-      childMovingDate: 'Lapsen muuttopäivä',
-      childCorrectedStreetAddress: 'Lapsen uusi katuosoite',
-      childCorrectedPostalCode: 'Lapsen uusi postinumero',
-      childCorrectedCity: 'Lapsen uusi postitoimipaikka',
-      applicationSentDateRange: 'Hakemus lähetetty välillä'
+        'Rapport om inkomna förskoleansökningar för att underlätta placering',
+      placementStartDate: 'Granskningsdag för nuvarande placering',
+      earliestPreferredStartDate: 'Tidigast ansökt startdag',
+      preferredUnit: 'Ansökningsönskemål',
+      currentUnit: 'Nuvarande enhet',
+      streetAddress: 'Adress',
+      postalCode: 'Postnummer',
+      tel: 'Telefon',
+      email: 'e-post',
+      dob: 'Födelsetid',
+      serviceNeedOption: 'Tjänstebehov',
+      assistanceNeed: 'Stödbehov',
+      preparatory: 'Förberedande',
+      siblingBasis: 'Syskongrund',
+      connected: 'Kompletterande',
+      applicationStatus: 'Ansökningsstatus',
+      preferredStartDate: 'Önskad startdag',
+      sentDate: 'Sändningsdag',
+      otherPreferredUnits: 'Andra ansökningsönskemål',
+      additionalInfo: 'Tilläggsuppgifter',
+      childMovingDate: 'Barnets flyttdag',
+      childCorrectedStreetAddress: 'Barnets nya gatuadress',
+      childCorrectedPostalCode: 'Barnets nya postnummer',
+      childCorrectedCity: 'Barnets nya postanstalt',
+      applicationSentDateRange: 'Ansökan skickad mellan'
     },
     vardaChildErrors: {
-      title: 'Varda-lapsivirheet',
+      title: 'Varda-barnfel',
       ma003: {
-        include: 'Sisällytä MA003-virheet',
-        exclude: 'Piilota MA003-virheet',
-        only: 'Näytä vain MA003-virheet'
+        include: 'Inkludera MA003-fel',
+        exclude: 'Dölj MA003-fel',
+        only: 'Visa endast MA003-fel'
       },
-      description: 'Varda-lasten päivityksissä tapahtuneet virheet',
-      updated: 'Päivitetty viimeksi',
-      age: 'Ikä (päivää)',
-      child: 'Lapsi',
-      error: 'Virhe',
-      updateChild: 'Uudelleenvie'
+      description: 'Fel som uppstått vid uppdateringar av Varda-barn',
+      updated: 'Senast uppdaterad',
+      age: 'Ålder (dagar)',
+      child: 'Barn',
+      error: 'Fel',
+      updateChild: 'Återexportera'
     },
     vardaUnitErrors: {
-      title: 'Varda-yksikkövirheet',
-      description: 'Varda-yksiköiden päivityksissä tapahtuneet virheet',
-      age: 'Virheen ikä (päivää)',
-      unit: 'Yksikkö',
-      error: 'Virhe'
+      title: 'Varda-enhetsfel',
+      description: 'Fel som uppstått vid uppdateringar av Varda-enheter',
+      age: 'Felets ålder (dagar)',
+      unit: 'Enhet',
+      error: 'Fel'
     },
     titaniaErrors: {
-      title: 'Titania-virheet',
-      description: 'Titaniasta tuoduista vuorolistoista löydetyt virheet',
-      header: 'Titania-vienti',
-      date: 'Päivämäärä',
-      shift1: 'Ensimmäinen vuoro',
-      shift2: 'Päällekäinen vuoro'
+      title: 'Titania-fel',
+      description: 'Fel som hittats i scheman som importerats från Titania',
+      header: 'Titania-export',
+      date: 'Datum',
+      shift1: 'Första skiftet',
+      shift2: 'Överlappande skift'
     },
     sextet: {
-      title: 'Kuusikkovertailu',
+      title: 'Sextetjämförelse',
       description:
-        'Raportti vuoden toteutuneista läsnäolopäivistä yksiköittäin ja sijoitustyypeittäin',
-      placementType: 'Sijoitustyyppi',
-      year: 'Vuosi',
-      unitName: 'Yksikkö',
-      attendanceDays: 'Todelliset läsnäolopäivät'
+        'Rapport om årets realiserade närvarodagar enhetsvis och placer ingstypsvis',
+      placementType: 'Placeringstyp',
+      year: 'År',
+      unitName: 'Enhet',
+      attendanceDays: 'Verkliga närvarodagar'
     },
     invoiceGeneratorDiff: {
-      title: 'Laskugeneraattorien eroavaisuudet',
+      title: 'Fakturageneratorers skillnader',
       description:
-        'Työkalu uuden laskugeneraattorin analysointiin vs vanha laskugeneraattori',
-      report: 'Raportti laskugeneraattorien eroavaisuuksista'
+        'Verktyg för att analysera ny fakturagenerator kontra gammal fakturagenerator',
+      report: 'Rapport om fakturageneratorers skillnader'
     },
     futurePreschoolers: {
-      title: 'Tulevat esikoululaiset',
+      title: 'Framtida förskolebarn',
       description:
-        'Raportti tulevan vuoden esiopetuksen lapsista ja yksiköistä automaattisijoitustyökalua varten',
+        'Rapport om nästa års förskolebarn och enheter för automatisk placeringsverktyg',
       futurePreschoolersCount: (count: number) =>
         count === 1
-          ? `${count} tuleva esikoululainen`
-          : `${count} tulevaa esikoululaista`,
+          ? `${count} framtida förskolebarn`
+          : `${count} framtida förskolebarn`,
       preschoolUnitCount: (count: number) =>
         count === 1
-          ? `${count} esiopetusta antava yksikkö`
-          : `${count} esiopetusta antavaa yksikköä`,
+          ? `${count} enhet som erbjuder förskoleundervisning`
+          : `${count} enheter som erbjuder förskoleundervisning`,
       sourceUnitCount: (count: number) =>
         count === 1
-          ? `${count} tulevien esikoululaisten nykyinen yksikkö`
-          : `${count} tulevien esikoululaisten nykyistä yksikköä`
+          ? `${count} nuvarande enhet för framtida förskolebarn`
+          : `${count} nuvarande enheter för framtida förskolebarn`
     },
     meals: {
-      title: 'Ruokailijamäärät',
-      description:
-        'Laskee varauksiin perustuvat ruokailijamäärät yksikkökohtaisesti.',
-      wholeWeekLabel: 'Koko viikko',
+      title: 'Matgästantal',
+      description: 'Räknar matgästantal baserat på reservationer enhetsvis.',
+      wholeWeekLabel: 'Hela veckan',
       jamixSend: {
-        button: 'Lähetä uudelleen Jamixiin',
-        confirmationTitle: 'Lähetetäänkö ruokatilaukset uudelleen Jamixiin?'
+        button: 'Skicka om till Jamix',
+        confirmationTitle: 'Skicka matbeställningar om till Jamix?'
       },
       mealName: {
-        BREAKFAST: 'Aamupala',
-        LUNCH: 'Lounas',
-        LUNCH_PRESCHOOL: 'Lounas (esiopetus)',
-        SNACK: 'Välipala',
-        SUPPER: 'Päivällinen',
-        EVENING_SNACK: 'Iltapala'
+        BREAKFAST: 'Frukost',
+        LUNCH: 'Lunch',
+        LUNCH_PRESCHOOL: 'Lunch (förskola)',
+        SNACK: 'Mellanmål',
+        SUPPER: 'Middag',
+        EVENING_SNACK: 'Kvällsmål'
       },
       headings: {
-        mealName: 'Ateria',
-        mealId: 'Aterian tunniste',
-        mealCount: 'kpl-määrä',
-        dietId: 'Erityisruokavalion tunniste',
-        dietAbbreviation: 'Erv. lyhenne',
-        mealTextureId: 'Ruoan rakenteen tunniste',
-        mealTextureName: 'Ruoan rakenne',
-        additionalInfo: 'Lisätieto'
+        mealName: 'Måltid',
+        mealId: 'Måltidsidentifierare',
+        mealCount: 'antal st',
+        dietId: 'Specialkostidentifierare',
+        dietAbbreviation: 'Specialkostförkortning',
+        mealTextureId: 'Matstrukturidentifierare',
+        mealTextureName: 'Matstruktur',
+        additionalInfo: 'Tilläggsuppgift'
       }
     },
     preschoolAbsences: {
-      title: 'Esiopetuksen poissaoloraportti',
+      title: 'Frånvarorapport för förskoleundervisning',
       description:
-        'Raportti listaa esiopetuskauden lapsikohtaiset poissaolomäärät valitulle yksikölle ja ryhmälle',
-      firstName: 'Etunimi',
-      lastName: 'Sukunimi',
-      daycareName: 'Yksikkö',
-      groupName: 'Ryhmä',
-      hours: '(tuntia)',
-      total: 'Yhteensä',
+        'Rapporten listar barnvisa frånvaroantal för förskoleperioden för vald enhet och grupp',
+      firstName: 'Förnamn',
+      lastName: 'Efternamn',
+      daycareName: 'Enhet',
+      groupName: 'Grupp',
+      hours: '(timmar)',
+      total: 'Totalt',
       filters: {
         areaSelection: {
-          label: 'Alue:',
-          placeHolder: 'Valitse alue'
+          label: 'Område:',
+          placeHolder: 'Välj område'
         },
         daycareSelection: {
-          label: 'Esiopetusyksikkö:',
-          placeholder: 'Valitse yksikkö'
+          label: 'Förskoleanstalt:',
+          placeholder: 'Välj enhet'
         },
         groupSelection: {
-          label: 'Ryhmä:',
-          placeholder: 'Valitse ryhmä'
+          label: 'Grupp:',
+          placeholder: 'Välj grupp'
         },
         preschoolTerm: {
-          label: 'Esiopetuskausi:',
-          placeholder: 'Valitse esiopetuskausi'
+          label: 'Förskoleperiod:',
+          placeholder: 'Välj förskoleperiod'
         },
-        includeClosed: 'Näytä lopetetut yksiköt ja ryhmät'
+        includeClosed: 'Visa avslutade enheter och grupper'
       }
     },
     preschoolApplications: {
-      title: 'Ehdottava EO-raportti',
+      title: 'Rådgivande FU-rapport',
       description:
-        'Raportti näyttää ehdottavaan esiopetuspaikkapäätösprosessiin kuuluvat hakemukset',
+        'Rapporten visar ansökningar som hör till rådgivande förskoleplatsbeslutprocess',
       columns: {
-        applicationUnitName: 'Yksikkö',
-        childLastName: 'Sukunimi',
-        childFirstName: 'Etunimi',
-        childDateOfBirth: 'Syntymäaika',
-        childStreetAddress: 'Postiosoite',
-        childPostalCode: 'Posti\u00ADnro',
-        childPostalCodeFull: 'Postinumero',
-        currentUnitName: 'Nykyinen yksikkö',
-        isDaycareAssistanceNeed: 'Tuen tarve'
+        applicationUnitName: 'Enhet',
+        childLastName: 'Efternamn',
+        childFirstName: 'Förnamn',
+        childDateOfBirth: 'Födelsetid',
+        childStreetAddress: 'Postadress',
+        childPostalCode: 'Post\u00ADnr',
+        childPostalCodeFull: 'Postnummer',
+        currentUnitName: 'Nuvarande enhet',
+        isDaycareAssistanceNeed: 'Stödbehov'
       }
     },
     holidayPeriodAttendance: {
-      title: 'Lomakyselyraportti',
-      description: 'Yksikön läsnäolojen päivätason seuranta lomakyselyn aikana',
-      periodFilter: 'Lomakysely',
-      periodFilterPlaceholder: 'Valitse lomakysely',
-      unitFilter: 'Yksikkö',
-      groupFilter: 'Ryhmävalinta',
-      groupFilterPlaceholder: 'Koko yksikkö',
-      fetchButton: 'Hae',
-      dateColumn: 'Päivä',
-      presentColumn: 'Paikalla',
-      assistanceColumn: 'Paikallaolevista tukitoimelliset',
-      occupancyColumn: 'Paikalla yhteensä (kerroin)',
+      title: 'Semesterenkätrapport',
+      description:
+        'Enhetens dagsvis uppföljning av närvaro under semesterenkät',
+      periodFilter: 'Semesterenkät',
+      periodFilterPlaceholder: 'Välj semesterenkät',
+      unitFilter: 'Enhet',
+      groupFilter: 'Gruppval',
+      groupFilterPlaceholder: 'Hela enheten',
+      fetchButton: 'Hämta',
+      dateColumn: 'Dag',
+      presentColumn: 'Närvarande',
+      assistanceColumn: 'Närvarande med stödåtgärder',
+      occupancyColumn: 'Närvarande totalt (koefficient)',
       occupancyColumnInfo:
-        'Kertoimeen lasketaan kaikkien paikallaolevien lasten kerroin yhteensä. Kertoimeen vaikuttaa esimerkiksi lapsen ikä ja tuen tarve.',
-      staffColumn: 'Hlö. kunnan tarve',
-      absentColumn: 'Poissa',
-      noResponseColumn: 'Ei vastannut',
-      moreText: 'lisää'
+        'Koefficienten räknar alla närvarande barns koefficient totalt. Koefficienten påverkas till exempel av barnets ålder och stödbehov.',
+      staffColumn: 'Personalbehov',
+      absentColumn: 'Frånvarande',
+      noResponseColumn: 'Svarade inte',
+      moreText: 'mer'
     },
     holidayQuestionnaire: {
-      title: 'Poissaolokyselyraportti',
+      title: 'Frånvaroenkätrapport',
       description:
-        'Yksikön läsnäolojen päivätason seuranta poissaolokyselyn aikana',
-      questionnaireFilter: 'Poissaolokysely',
-      questionnaireFilterPlaceholder: 'Valitse poissaolokysely',
-      unitFilter: 'Yksikkö',
-      groupFilter: 'Ryhmävalinta',
-      groupFilterPlaceholder: 'Koko yksikkö',
-      fetchButton: 'Hae',
-      dateColumn: 'Päivä',
-      presentColumn: 'Paikalla',
-      assistanceColumn: 'Paikallaolevista tukitoimelliset',
-      occupancyColumn: 'Paikalla yhteensä (kerroin)',
+        'Enhetens dagsvis uppföljning av närvaro under frånvaroenkät',
+      questionnaireFilter: 'Frånvaroenkät',
+      questionnaireFilterPlaceholder: 'Välj frånvaroenkät',
+      unitFilter: 'Enhet',
+      groupFilter: 'Gruppval',
+      groupFilterPlaceholder: 'Hela enheten',
+      fetchButton: 'Hämta',
+      dateColumn: 'Dag',
+      presentColumn: 'Närvarande',
+      assistanceColumn: 'Närvarande med stödåtgärder',
+      occupancyColumn: 'Närvarande totalt (koefficient)',
       occupancyColumnInfo:
-        'Kertoimeen lasketaan kaikkien paikallaolevien lasten kerroin yhteensä. Kertoimeen vaikuttaa esimerkiksi lapsen ikä ja tuen tarve.',
-      staffColumn: 'Hlö. kunnan tarve',
-      absentColumn: 'Poissa',
-      noResponseColumn: 'Ei vastannut',
-      moreText: 'lisää'
+        'Koefficienten räknar alla närvarande barns koefficient totalt. Koefficienten påverkas till exempel av barnets ålder och stödbehov.',
+      staffColumn: 'Personalbehov',
+      absentColumn: 'Frånvarande',
+      noResponseColumn: 'Svarade inte',
+      moreText: 'mer'
     },
     tampereRegionalSurvey: {
-      title: 'Tampereen alueen seutuselvitys',
+      title: 'Tammerfors regionundersökning',
       description:
-        'Raportti kerää kunnan vuosittaiseen seutuselvitykseen tarvittavat tiedot ladattaviksi CSV-tiedostoiksi',
-      monthlyReport: 'Seutuselvityksen kuukausittaiset määrät',
-      ageStatisticsReport: 'Seutuselvityksen ikäjakaumat',
-      yearlyStatisticsReport: 'Seutuselvityksen vuosittaiset määrät',
+        'Rapporten samlar kommunens årliga regionundersökning uppgifter nedladdningsbara som CSV-filer',
+      monthlyReport: 'Regionundersökningens månatliga antal',
+      ageStatisticsReport: 'Regionundersökningens åldersfördelningar',
+      yearlyStatisticsReport: 'Regionundersökningens årliga antal',
       municipalVoucherReport:
-        'Seutuselvityksen palvelusetelien sijaintikuntakohtaiset määrät',
-      reportLabel: 'Seutuselvitys',
+        'Regionundersökningens servicesedlarnas antal kommunvis',
+      reportLabel: 'Regionundersökning',
       monthlyColumns: {
-        month: 'Kuukausi',
+        month: 'Månad',
         municipalOver3FullTimeCount:
-          '3v ja yli lasten määrä kokoaikaisessa varhaiskasvatuksessa',
+          'Antal barn 3 år och över i heldags småbarnspedagogik',
         municipalOver3PartTimeCount:
-          '3v ja yli lasten määrä osa-aikaisessa varhaiskasvatuksessa',
+          'Antal barn 3 år och över i halvdags småbarnspedagogik',
         municipalUnder3FullTimeCount:
-          'Alle 3v lasten määrä kokoaikaisessa varhaiskasvatuksessa',
+          'Antal barn under 3 år i heldags småbarnspedagogik',
         municipalUnder3PartTimeCount:
-          'Alle 3v lasten määrä osa-aikaisessa varhaiskasvatuksessa',
-        familyUnder3Count: 'Alle 3v lasten määrä perhepäivähoidossa',
-        familyOver3Count: '3v ja yli lasten määrä perhepäivähoidossa',
-        municipalShiftCareCount: 'Vuorohoidossa olevien määrä',
+          'Antal barn under 3 år i halvdags småbarnspedagogik',
+        familyUnder3Count: 'Antal barn under 3 år i familjedagvård',
+        familyOver3Count: 'Antal barn 3 år och över i familjedagvård',
+        municipalShiftCareCount: 'Antal i skiftvård',
         assistanceCount:
-          'Tehostetun ja erityisen tuen lapset / Eritystä tai kasvun ja oppimisen tukea tarvitsevat lapset',
-        statDay: '(tilanne kuun viimeinen päivä)'
+          'Barn med intensifierat och särskilt stöd / Barn som behöver särskilt eller tillväxt- och lärandestöd',
+        statDay: '(läget sista dagen i månaden)'
       },
       ageStatisticColumns: {
-        voucherUnder3Count: 'Alle 3v palvelusetelipaikkojen määrä',
-        voucherOver3Count: '3v ja yli palvelusetelipaikkojen määrä',
-        purchasedUnder3Count: 'Alle 3v ostopalvelupaikkojen määrä',
-        purchasedOver3Count: '3v ja yli ostopalvelupaikkojen määrä',
-        clubUnder3Count: 'Alle 3v kerhopaikkojen määrä',
-        clubOver3Count: '3v ja yli kerhopaikkojen määrä',
-        nonNativeLanguageUnder3Count: 'Alle 3v vieraskielisten määrä',
-        nonNativeLanguageOver3Count: '3v ja yli vieraskielisten määrä',
-        effectiveCareDaysUnder3Count: 'Alle 3v varhaiskasvatuksen hoitopäivät',
-        effectiveCareDaysOver3Count: '3v ja yli varhaiskasvatuksen hoitopäivät',
+        voucherUnder3Count: 'Antal servicesedelplatser under 3 år',
+        voucherOver3Count: 'Antal servicesedelplatser 3 år och över',
+        purchasedUnder3Count: 'Antal köpta tjänsteplatser under 3 år',
+        purchasedOver3Count: 'Antal köpta tjänsteplatser 3 år och över',
+        clubUnder3Count: 'Antal klubbplatser under 3 år',
+        clubOver3Count: 'Antal klubbplatser 3 år och över',
+        nonNativeLanguageUnder3Count: 'Antal med främmande språk under 3 år',
+        nonNativeLanguageOver3Count: 'Antal med främmande språk 3 år och över',
+        effectiveCareDaysUnder3Count:
+          'Småbarnspedagogikens vårddagar under 3 år',
+        effectiveCareDaysOver3Count:
+          'Småbarnspedagogikens vårddagar 3 år och över',
         effectiveFamilyDaycareDaysUnder3Count:
-          'Alle 3v perhepäivähoidon hoitopäivät',
+          'Familjedagvårdens vårddagar under 3 år',
         effectiveFamilyDaycareDaysOver3Count:
-          '3v ja yli perhepäivähoidon hoitopäivät',
-        languageStatDay: '(tilanne 30.11.)'
+          'Familjedagvårdens vårddagar 3 år och över',
+        languageStatDay: '(läget 30.11.)'
       },
       yearlyStatisticsColumns: {
-        voucherTotalCount: 'Palvelusetelien määrä',
-        voucherAssistanceCount: 'Tuen lasten määrä palveluseteliyksiköissä',
-        voucher5YearOldCount: '5-vuotiaat palveluseteliyksiköissä',
-        purchased5YearlOldCount: '5-vuotiaat ostopalveluyksiköissä',
-        municipal5YearOldCount: '5-vuotiaat kunnallisissa yksiköissä',
-        familyCare5YearOldCount: '5-vuotiaat perhepäivähoidossa',
-        club5YearOldCount: '5-vuotiaat kerhossa',
+        voucherTotalCount: 'Antal servicesedlar',
+        voucherAssistanceCount: 'Antal stödbarn i servicesedelenheter',
+        voucher5YearOldCount: '5-åringar i servicesedelenheter',
+        purchased5YearlOldCount: '5-åringar i köpta tjänsteenheter',
+        municipal5YearOldCount: '5-åringar i kommunala enheter',
+        familyCare5YearOldCount: '5-åringar i familjedagvård',
+        club5YearOldCount: '5-åringar i klubb',
         preschoolDaycareUnitCareCount:
-          'Täydentävän varhaiskasvatuksen lapset vaka-yksiköissä',
+          'Barn i kompletterande småbarnspedagogik i småbarnspedagogikenheter',
         preschoolDaycareSchoolCareCount:
-          'Täydentävän varhaiskasvatuksen lapset kouluissa',
+          'Barn i kompletterande småbarnspedagogik i skolor',
         preschoolDaycareFamilyCareCount:
-          'Täydentävän varhaiskasvatuksen lapset perhepäivähoidossa',
+          'Barn i kompletterande småbarnspedagogik i familjedagvård',
         preschoolDaycareUnitShiftCareCount:
-          'Täydentävän varhaiskasvatuksen vuorohoidon lapset vaka-yksiköissä',
+          'Barn i kompletterande småbarnspedagogik i skiftvård i småbarnspedagogikenheter',
         preschoolDaycareSchoolShiftCareCount:
-          'Täydentävän varhaiskasvatuksen vuorohoidon lapset kouluissa',
-        voucherGeneralAssistanceCount:
-          'Yleisen tuen lapsimäärä (palveluseteli)',
-        voucherSpecialAssistanceCount:
-          'Erityisen tuen lapsimäärä (palveluseteli)',
+          'Barn i kompletterande småbarnspedagogik i skiftvård i skolor',
+        voucherGeneralAssistanceCount: 'Antal allmänt stöd (servicesedel)',
+        voucherSpecialAssistanceCount: 'Antal särskilt stöd (servicesedel)',
         voucherEnhancedAssistanceCount:
-          'Tehostetun tuen lapsimäärä (palveluseteli)',
-        municipalGeneralAssistanceCount:
-          'Yleisen tuen lapsimäärä (kunnallinen)',
-        municipalSpecialAssistanceCount:
-          'Erityisen tuen lapsimäärä (kunnallinen)',
-        municipalEnhancedAssistanceCount:
-          'Tehostetun tuen lapsimäärä (kunnallinen)',
-        statDay: '(tilanne 15.12.)'
+          'Antal intensifierat stöd (servicesedel)',
+        municipalGeneralAssistanceCount: 'Antal allmänt stöd (kommunal)',
+        municipalSpecialAssistanceCount: 'Antal särskilt stöd (kommunal)',
+        municipalEnhancedAssistanceCount: 'Antal intensifierat stöd (kommunal)',
+        statDay: '(läget 15.12.)'
       },
       municipalVoucherColumns: {
-        statDay: '(tilanne 15.12.)',
-        municipality: 'Sijaintikunta',
-        under3VoucherCount: 'Alle 3v palvelusetelit',
-        over3VoucherCount: '3v ja yli palvelusetelit'
+        statDay: '(läget 15.12.)',
+        municipality: 'Belägenhetskommunen',
+        under3VoucherCount: 'Servicesedlar under 3 år',
+        over3VoucherCount: 'Servicesedlar 3 år och över'
       }
     },
     citizenDocumentResponseReport: {
-      title: 'Kuntalaisen asiakirjat',
+      title: 'Medborgarens dokument',
       description:
-        'Raportti listaa ryhmittäin kuntalaisten asiakirjojen uusimmat vastaukset kyllä/ei- tai monivalintakysymyksiin',
+        'Rapporten listar gruppvis medborgarnas dokuments senaste svar på ja/nej- eller flervalsfrågor',
       filters: {
-        unit: 'Yksikkö',
-        group: 'Ryhmä',
-        template: 'Asiakirja',
-        showBackupChildren: 'Näytä myös varasijoitettuna olevat'
+        unit: 'Enhet',
+        group: 'Grupp',
+        template: 'Dokument',
+        showBackupChildren: 'Visa även reservplacerade'
       },
       headers: {
-        name: 'Nimi',
-        answeredAt: 'Vastattu'
+        name: 'Namn',
+        answeredAt: 'Besvarad'
       },
-      noSentDocument: 'Ei lähetettyä asiakirjaa',
-      noAnswer: 'Ei vastattu'
+      noSentDocument: 'Inget skickat dokument',
+      noAnswer: 'Inte besvarad'
     }
   },
   unitEditor: {
-    submitNew: 'Luo yksikkö',
+    submitNew: 'Skapa enhet',
     title: {
-      contact: 'Yksikön yhteystiedot',
-      unitManager: 'Varhaiskasvatusyksikön johtajan yhteystiedot',
-      preschoolManager: 'Esiopetuksen johtajan yhteystiedot',
+      contact: 'Enhetens kontaktuppgifter',
+      unitManager: 'Småbarnspedagogiska enhetens ledares kontaktuppgifter',
+      preschoolManager: 'Förskoleundervisningens ledares kontaktuppgifter',
       decisionCustomization:
-        'Yksikön nimi päätöksellä ja ilmoitus paikan vastaanottamisesta',
-      mealOrderIntegration: 'Ruokatilausintegraatio',
-      mealtime: 'Yksikön ruokailuajat'
+        'Enhetens namn i beslut och meddelande om mottagande av plats',
+      mealOrderIntegration: 'Matbeställningsintegration',
+      mealtime: 'Enhetens måltidstider'
     },
     label: {
-      name: 'Yksikön nimi',
-      openingDate: 'Yksikön alkamispäivä',
-      closingDate: 'päättymispäivä',
-      area: 'Alue',
-      careTypes: 'Toimintamuodot',
-      dailyPreschoolTime: 'Opetusaika',
-      dailyPreparatoryTime: 'Opetusaika',
-      canApply: 'Näytä yksikkö',
-      providerType: 'Järjestämismuoto',
-      operationDays: 'Toimintapäivät',
-      shiftCareOperationDays: 'Vuorohoidon toimintapäivät',
+      name: 'Enhetens namn',
+      openingDate: 'Enhetens startdag',
+      closingDate: 'slutdag',
+      area: 'Område',
+      careTypes: 'Verksamhetsformer',
+      dailyPreschoolTime: 'Undervisningstid',
+      dailyPreparatoryTime: 'Undervisningstid',
+      canApply: 'Visa enhet',
+      providerType: 'Arrangemangsform',
+      operationDays: 'Verksamhetsdagar',
+      shiftCareOperationDays: 'Skiftvårdens verksamhetsdagar',
       operationDay: {
-        0: 'SU',
-        1: 'MA',
+        0: 'SÖ',
+        1: 'MÅ',
         2: 'TI',
-        3: 'KE',
+        3: 'ON',
         4: 'TO',
-        5: 'PE',
-        6: 'LA',
-        7: 'SU'
+        5: 'FR',
+        6: 'LÖ',
+        7: 'SÖ'
       },
-      shiftCare: 'Ilta- ja vuorohoito',
-      capacity: 'Yksikön laskennallinen lapsimäärä',
-      language: 'Yksikön kieli',
-      withSchool: 'Koulun yhteydessä',
-      ghostUnit: 'Haamuyksikkö',
-      integrations: 'Integraatiot',
-      invoicedByMunicipality: 'Laskutetaan eVakasta',
-      ophUnitOid: 'Toimipaikan OID',
-      ophOrganizerOid: 'Järjestäjän OID',
-      costCenter: 'Kustannuspaikka',
-      dwCostCenter: 'DW Kustannuspaikka',
-      financeDecisionHandler: 'Talouspäätösten käsittelijä',
-      additionalInfo: 'Lisätietoja yksiköstä',
-      phone: 'Yksikön puhelinnumero',
-      email: 'Yksikön sähköpostiosoite',
-      url: 'Yksikön URL-osoite',
-      visitingAddress: 'Käyntiosoite',
-      location: 'Karttakoordinaatit',
-      mailingAddress: 'Postiosoite',
+      shiftCare: 'Kvälls- och skiftvård',
+      capacity: 'Enhetens beräknade barnantal',
+      language: 'Enhetens språk',
+      withSchool: 'I anslutning till skola',
+      ghostUnit: 'Spökenhet',
+      integrations: 'Integrationer',
+      invoicedByMunicipality: 'Faktureras från eVaka',
+      ophUnitOid: 'Verksamhetsställets OID',
+      ophOrganizerOid: 'Anordnarens OID',
+      costCenter: 'Kostnadsställe',
+      dwCostCenter: 'DW Kostnadsställe',
+      financeDecisionHandler: 'Handläggare av ekonomibeslut',
+      additionalInfo: 'Tilläggsuppgifter om enheten',
+      phone: 'Enhetens telefonnummer',
+      email: 'Enhetens e-postadress',
+      url: 'Enhetens URL-adress',
+      visitingAddress: 'Besöksadress',
+      location: 'Kartkoordinater',
+      mailingAddress: 'Postadress',
       unitManager: {
-        name: 'Johtajan nimi',
-        phone: 'Johtajan puhelinnumero',
-        email: 'Johtajan sähköpostiosoite'
+        name: 'Ledarens namn',
+        phone: 'Ledarens telefonnummer',
+        email: 'Ledarens e-postadress'
       },
       preschoolManager: {
-        name: 'Esiopetuksen johtajan nimi',
-        phone: 'Esiopetuksen johtajan puhelinnumero',
-        email: 'Esiopetuksen johtajan sähköpostiosoite'
+        name: 'Förskoleundervisningens ledares namn',
+        phone: 'Förskoleundervisningens ledares telefonnummer',
+        email: 'Förskoleundervisningens ledares e-postadress'
       },
       decisionCustomization: {
-        daycareName: 'Yksikön nimi varhaiskasvatuspäätöksellä',
-        preschoolName: 'Yksikön nimi esiopetuspäätöksellä',
-        handler: 'Huoltajan ilmoituksen vastaanottaja',
-        handlerAddress: 'Ilmoituksen vastaanottajan osoite'
+        daycareName: 'Enhetens namn i småbarnspedagogikbeslut',
+        preschoolName: 'Enhetens namn i förskoleundervisningsbeslut',
+        handler: 'Mottagare av vårdnadshavarens meddelande',
+        handlerAddress: 'Meddelandemottagarens adress'
       },
-      businessId: 'Y-tunnus',
-      iban: 'Tilinumero',
-      providerId: 'Toimittajanumero',
-      partnerCode: 'Kumppanikoodi',
+      businessId: 'FO-nummer',
+      iban: 'Kontonummer',
+      providerId: 'Leverantörsnummer',
+      partnerCode: 'Partnerkod',
       mealTime: {
-        breakfast: 'Aamupala',
-        lunch: 'Lounas',
-        snack: 'Välipala',
-        supper: 'Päivällinen',
-        eveningSnack: 'Iltapala'
+        breakfast: 'Frukost',
+        lunch: 'Lunch',
+        snack: 'Mellanmål',
+        supper: 'Middag',
+        eveningSnack: 'Kvällsmål'
       },
-      nekkuMealReduction: 'Nekku-vähennysprosentti',
-      nekkuNoWeekendMealOrders: 'Ei Nekku-tilauksia viikonloppuisin'
+      nekkuMealReduction: 'Nekku-reduktionsprocent',
+      nekkuNoWeekendMealOrders: 'Inga Nekku-beställningar på helger'
     },
     info: {
-      varda: 'Käytetään Varda-integraatiossa',
-      koski: 'Käytetään Koski-integraatiossa'
+      varda: 'Används i Varda-integration',
+      koski: 'Används i Koski-integration'
     },
     field: {
-      applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
-      canApplyDaycare: 'Varhaiskasvatushaussa',
-      canApplyPreschool: 'Esiopetushaussa',
-      canApplyClub: 'Kerhohaussa',
-      providesShiftCare: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
-      shiftCareOpenOnHolidays: 'Vuorohoito on auki myös pyhäpäivinä',
-      capacity: 'henkilöä',
-      withSchool: 'Yksikkö sijaitsee koulun yhteydessä',
-      ghostUnit: 'Yksikkö on haamuyksikkö',
-      uploadToVarda: 'Yksikön tiedot lähetetään Vardaan',
-      uploadChildrenToVarda: 'Yksikön lasten tiedot lähetetään Vardaan',
-      uploadToKoski: 'Lähetetään Koski-palveluun',
-      invoicedByMunicipality: 'Laskutetaan eVakasta',
-      invoicingByEvaka: 'Yksikön laskutus tapahtuu eVakasta',
+      applyPeriod: 'När önskad startdag inom tidsperiod',
+      canApplyDaycare: 'I småbarnspedagogikansökan',
+      canApplyPreschool: 'I förskoleundervisningsansökan',
+      canApplyClub: 'I klubbansökan',
+      providesShiftCare: 'Enheten erbjuder kvälls- och skiftvård',
+      shiftCareOpenOnHolidays: 'Skiftvård är öppen även på helgdagar',
+      capacity: 'personer',
+      withSchool: 'Enheten är belägen i anslutning till skola',
+      ghostUnit: 'Enheten är en spökenhet',
+      uploadToVarda: 'Enhetens uppgifter skickas till Varda',
+      uploadChildrenToVarda: 'Enhetens barns uppgifter skickas till Varda',
+      uploadToKoski: 'Skickas till Koski-tjänsten',
+      invoicedByMunicipality: 'Faktureras från eVaka',
+      invoicingByEvaka: 'Enhetens fakturering sker från eVaka',
       decisionCustomization: {
         handler: [
-          'Palveluohjaus',
-          'Varhaiskasvatusyksikön johtaja',
+          'Servicehandledning',
+          'Småbarnspedagogiska enhetens ledare',
           'Ledare inom småbarnspedagogik',
           'Svenska bildningstjänster / Småbarnspedagogik'
         ]
       },
-      nekkuNoWeekendMealOrders: 'Nekku-tilauksia ei tehdä viikonlopuille'
+      nekkuNoWeekendMealOrders: 'Nekku-beställningar görs inte för helger'
     },
     placeholder: {
-      name: 'Anna yksikölle nimi',
-      area: 'Valitse alue',
-      financeDecisionHandler: 'Valitse työntekijä',
-      daycareType: 'Valitse tyyppi',
-      costCenter: '(eVakasta laskutettaessa pakollinen tieto)',
-      dwCostCenter: 'DW:tä varten kustannuspaikan tieto',
+      name: 'Ge enheten ett namn',
+      area: 'Välj område',
+      financeDecisionHandler: 'Välj anställd',
+      daycareType: 'Välj typ',
+      costCenter: '(obligatorisk uppgift vid fakturering från eVaka)',
+      dwCostCenter: 'Kostnadsställesuppgift för DW',
       additionalInfo:
-        'Voit kirjoittaa lisätietoja yksiköstä (ei näy kuntalaiselle)',
-      phone: 'esim. +358 40 555 5555',
-      email: 'etunimi.sukunimi@espoo.fi',
-      url: 'esim. https://www.espoo.fi/fi/toimipisteet/15585',
-      streetAddress: 'Kadunnimi esim. Koivu-Mankkaan tie 22 B 24',
-      postalCode: 'Postinumero',
-      postOffice: 'Toimipaikka',
-      location: 'esim. 60.223038, 24.692637',
+        'Du kan skriva tilläggsuppgifter om enheten (syns inte för medborgaren)',
+      phone: 't.ex. +358 40 555 5555',
+      email: 'fornamn.efternamn@esbo.fi',
+      url: 't.ex. https://www.esbo.fi/sv/verksamhetsstallen/15585',
+      streetAddress: 'Gatunamn t.ex. Björk-Mankans väg 22 B 24',
+      postalCode: 'Postnummer',
+      postOffice: 'Postanstalt',
+      location: 't.ex. 60.223038, 24.692637',
       manager: {
-        name: 'Etunimi Sukunimi'
+        name: 'Förnamn Efternamn'
       },
       decisionCustomization: {
-        name: 'esim. Aamunkoiton päiväkoti'
+        name: 't.ex. Morgonrodnans daghem'
       }
     },
     error: {
-      name: 'Nimi puuttuu',
-      area: 'Alue puuttuu',
-      careType: 'Toimintamuoto puuttuu',
-      dailyPreschoolTime: 'Esiopetusaika puuttuu tai on virheellinen',
+      name: 'Namn saknas',
+      area: 'Område saknas',
+      careType: 'Verksamhetsform saknas',
+      dailyPreschoolTime: 'Förskoletid saknas eller är felaktig',
       dailyPreparatoryTime:
-        'Valmistavan opetuksen aika puuttuu tai on virheellinen',
-      daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
-      capacity: 'Kapasiteetti on virheellinen',
-      costCenter: 'Kustannuspaikka puuttuu',
-      reservedOphUnitOid: 'Yksikön OPH OID on jo käytössä toisessa yksikössä',
-      url: 'URL-osoitteessa pitää olla https://- tai http://-etuliite',
+        'Förberedande undervisningstid saknas eller är felaktig',
+      daycareType: 'Småbarnspedagogiktyp saknas',
+      capacity: 'Kapaciteten är felaktig',
+      costCenter: 'Kostnadsställe saknas',
+      reservedOphUnitOid: 'Enhetens OPH OID används redan i en annan enhet',
+      url: 'URL-adressen måste ha https://- eller http://-prefix',
       visitingAddress: {
-        streetAddress: 'Käyntiosoitteen katuosoite puuttuu',
-        postalCode: 'Käyntiosoitteen postinumero puuttuu',
-        postOffice: 'Käyntiosoitteen postitoimipaikka puuttuu'
+        streetAddress: 'Besöksadressens gatuadress saknas',
+        postalCode: 'Besöksadressens postnummer saknas',
+        postOffice: 'Besöksadressens postanstalt saknas'
       },
-      location: 'Karttakoordinaatit ovat virheellisiä',
+      location: 'Kartkoordinaterna är felaktiga',
       unitManager: {
-        name: 'Johtajan nimi puuttuu',
-        phone: 'Johtajan puhelinnumero puuttuu',
-        email: 'Johtajan sähköposti puuttuu'
+        name: 'Ledarens namn saknas',
+        phone: 'Ledarens telefonnummer saknas',
+        email: 'Ledarens e-post saknas'
       },
-      cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa',
-      financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu',
-      ophUnitOid: 'Yksikön OID puuttuu',
-      ophOrganizerOid: 'Järjestäjän OID puuttuu',
-      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen',
-      businessId: 'Y-tunnus puuttuu',
-      iban: 'Tilinumero puuttuu',
-      providerId: 'Toimittajanumero puuttuu',
-      operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa',
+      cannotApplyToDifferentType: 'Ansökningstyp och serviceform stämmer inte',
+      financeDecisionHandler: 'Handläggare av ekonomibeslut saknas',
+      ophUnitOid: 'Enhetens OID saknas',
+      ophOrganizerOid: 'Anordnarens OID saknas',
+      openingDateIsAfterClosingDate: 'Startdagen är efter slutdagen',
+      businessId: 'FO-nummer saknas',
+      iban: 'Kontonummer saknas',
+      providerId: 'Leverantörsnummer saknas',
+      operationTimes: 'Felaktig anteckning i enhetens verksamhetstider',
       shiftCareOperationTimes:
-        'Virheellinen merkintä yksikön vuorohoidon toiminta-ajoissa',
-      mealTimes: 'Virheellinen merkintä yksikön ruokailuajoissa',
+        'Felaktig anteckning i enhetens skiftvårds verksamhetstider',
+      mealTimes: 'Felaktig anteckning i enhetens måltidstider',
       closingDateBeforeLastPlacementDate: (lastPlacementDate: LocalDate) =>
-        `Yksikössä on sijoituksia ${lastPlacementDate.format()} asti. Kaikki sijoitukset ja varasijoitukset tulee päättää yksikön päättymispäivään mennessä, mukaan lukien myös mahdolliset tulevaisuuden sijoitukset.`
+        `Enheten har placeringar fram till ${lastPlacementDate.format()}. Alla placeringar och reservplaceringar ska avslutas senast enhetens slutdag, inklusive eventuella framtida placeringar.`
     },
     warning: {
       onlyMunicipalUnitsShouldBeSentToVarda:
-        'Älä lähetä Vardaan muiden kuin kunnallisten ja kunnallisten ostopalveluyksiköiden tietoja.',
+        'Skicka inte till Varda andra än kommunala och kommunala köpta tjänsteenheters uppgifter.',
       handlerAddressIsMandatory:
-        'Ilmoituksen vastaanottajan osoite on pakollinen, jos yksikön järjestämismuodoksi on valittu kunnallinen, ostopalvelu tai palveluseteli.'
+        'Meddelandemottagarens adress är obligatorisk om enhetens arrangemangsform har valts som kommunal, köpt tjänst eller servicesedel.'
     },
-    closingDateModal: 'Aseta päättymispäivä'
+    closingDateModal: 'Ange slutdag'
   },
   fileUpload: {
     download: {
-      modalHeader: 'Tiedoston käsittely on kesken',
-      modalMessage:
-        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-      modalClose: 'Sulje'
+      modalHeader: 'Filbehandling pågår',
+      modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+      modalClose: 'Stäng'
     }
   },
   messages: {
-    inboxTitle: 'Viestit',
-    emptyInbox: 'Tämä kansio on tyhjä',
-    replyToThread: 'Vastaa viestiin',
-    archiveThread: 'Arkistoi viestiketju',
-    markUnread: 'Merkitse lukemattomaksi',
+    inboxTitle: 'Meddelanden',
+    emptyInbox: 'Den här mappen är tom',
+    replyToThread: 'Svara på meddelande',
+    archiveThread: 'Arkivera meddelandetråd',
+    markUnread: 'Markera som oläst',
     changeFolder: {
-      button: 'Vaihda kansiota',
-      modalTitle: 'Valitse kansio',
-      modalOk: 'Siirrä kansioon'
+      button: 'Byt mapp',
+      modalTitle: 'Välj mapp',
+      modalOk: 'Flytta till mapp'
     },
     unitList: {
-      title: 'Yksiköt'
+      title: 'Enheter'
     },
     sidePanel: {
-      municipalMessages: 'Kunnan tiedotteet',
-      serviceWorkerMessages: 'Palveluohjauksen viestit',
-      serviceWorkerFolders: 'Palveluohjauksen kansiot',
-      financeMessages: 'Taloushallinnon viestit',
-      financeFolders: 'Taloushallinnon kansiot',
-      ownMessages: 'Omat viestit',
-      groupsMessages: 'Ryhmien viestit',
+      municipalMessages: 'Kommunens meddelanden',
+      serviceWorkerMessages: 'Servicehandledningens meddelanden',
+      serviceWorkerFolders: 'Servicehandledningens mappar',
+      financeMessages: 'Ekonomiförvaltningens meddelanden',
+      financeFolders: 'Ekonomiförvaltningens mappar',
+      ownMessages: 'Egna meddelanden',
+      groupsMessages: 'Gruppernas meddelanden',
       noAccountAccess:
-        'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.'
+        'Meddelanden kan inte visas eftersom du inte har behörighet till gruppen. Be om tillstånd från din chef.'
     },
     messageBoxes: {
       names: {
-        received: 'Saapuneet',
-        sent: 'Lähetetyt',
-        drafts: 'Luonnokset',
-        copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto',
-        thread: 'Viestiketju'
+        received: 'Mottagna',
+        sent: 'Skickade',
+        drafts: 'Utkast',
+        copies: 'Ledarens/kommunens meddelanden',
+        archive: 'Arkiv',
+        thread: 'Meddelandetråd'
       },
-      receivers: 'Vastaanottajat',
-      newMessage: 'Uusi viesti'
+      receivers: 'Mottagare',
+      newMessage: 'Nytt meddelande'
     },
     messageList: {
       titles: {
-        received: 'Saapuneet viestit',
-        sent: 'Lähetetyt viestit',
-        drafts: 'Luonnokset',
-        copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto',
-        thread: 'Viestiketju'
+        received: 'Mottagna meddelanden',
+        sent: 'Skickade meddelanden',
+        drafts: 'Utkast',
+        copies: 'Ledarens/kommunens meddelanden',
+        archive: 'Arkiv',
+        thread: 'Meddelandetråd'
       }
     },
     types: {
-      MESSAGE: 'Viesti',
-      BULLETIN: 'Tiedote'
+      MESSAGE: 'Meddelande',
+      BULLETIN: 'Bulletin'
     },
     recipientSelection: {
-      title: 'Vastaanottajat',
-      childName: 'Nimi',
-      childDob: 'Syntymäaika',
-      receivers: 'Vastaanottajat',
-      confirmText: 'Lähetä viesti valituille',
-      starters: 'aloittavat lapset'
+      title: 'Mottagare',
+      childName: 'Namn',
+      childDob: 'Födelsetid',
+      receivers: 'Mottagare',
+      confirmText: 'Skicka meddelande till valda',
+      starters: 'barn som börjar'
     },
-    noTitle: 'Ei otsikkoa',
-    notSent: 'Ei lähetetty',
-    editDraft: 'Muokkaa luonnosta',
+    noTitle: 'Ingen rubrik',
+    notSent: 'Inte skickat',
+    editDraft: 'Redigera utkast',
     undo: {
-      info: 'Viesti lähetetty',
+      info: 'Meddelande skickat',
       secondsLeft: (s: number) =>
-        s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
+        s === 1 ? '1 sekund tid' : `${s} sekunder tid`
     },
-    sensitive: 'arkaluontoinen',
-    customer: 'Asiakas',
+    sensitive: 'känsligt',
+    customer: 'Kund',
     applicationTypes: {
-      PRESCHOOL: 'Esiopetushakemus',
-      DAYCARE: 'Varhaiskasvatushakemus',
-      CLUB: 'Kerhohakemus'
+      PRESCHOOL: 'Förskoleundervisningsansökan',
+      DAYCARE: 'Småbarnspedagogikansökan',
+      CLUB: 'Klubbansökan'
     },
-    application: 'Hakemus',
-    showApplication: 'Näytä hakemus',
+    application: 'Ansökan',
+    showApplication: 'Visa ansökan',
     messageEditor: {
-      message: 'Viesti',
-      newMessage: 'Uusi viesti',
+      message: 'Meddelande',
+      newMessage: 'Nytt meddelande',
       to: {
-        label: 'Vastaanottaja',
-        placeholder: 'Valitse ryhmä',
-        noOptions: 'Ei ryhmiä'
+        label: 'Mottagare',
+        placeholder: 'Välj grupp',
+        noOptions: 'Inga grupper'
       },
-      recipients: 'Vastaanottajat',
-      recipientCount: 'Vastaanottajia',
+      recipients: 'Mottagare',
+      recipientCount: 'Mottagare',
       manyRecipientsWarning: {
-        title: 'Viestillä on suuri määrä vastaanottajia.',
+        title: 'Meddelandet har ett stort antal mottagare.',
         text: (count: number) =>
-          `Tämä viesti on lähdössä ${count} vastaanottajalle. Oletko varma, että haluat lähettää viestin?`
+          `Detta meddelande är på väg till ${count} mottagare. Är du säker på att du vill skicka meddelandet?`
       },
       type: {
-        label: 'Viestin tyyppi',
-        message: 'Viesti',
-        bulletin: 'Tiedote (ei voi vastata)'
+        label: 'Meddelandetyp',
+        message: 'Meddelande',
+        bulletin: 'Bulletin (kan inte besvaras)'
       },
       flags: {
-        heading: 'Viestin lisämerkinnät',
+        heading: 'Meddelandets tilläggsmarkeringar',
         urgent: {
-          info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-          label: 'Kiireellinen'
+          info: 'Skicka meddelande som brådskande endast om du vill att vårdnadshavaren läser det under arbetsdagen.',
+          label: 'Brådskande'
         },
         sensitive: {
-          info: 'Arkaluontoisen viestin avaaminen vaatii kuntalaiselta vahvan tunnistautumisen.',
-          label: 'Arkaluontoinen',
+          info: 'Öppning av känsligt meddelande kräver stark autentisering från medborgaren.',
+          label: 'Känsligt',
           whyDisabled:
-            'Arkaluontoisen viestin voi lähettää vain henkilökohtaisesta käyttäjätilistä yksittäisen lapsen huoltajille.'
+            'Känsligt meddelande kan skickas endast från personligt användarkonto till en enskild barnets vårdnadshavare.'
         }
       },
-      sender: 'Lähettäjä',
-      selectPlaceholder: 'Valitse...',
+      sender: 'Avsändare',
+      selectPlaceholder: 'Välj...',
       filters: {
-        showFilters: 'Näytä lisävalinnat',
-        hideFilters: 'Piilota lisävalinnat',
-        yearOfBirth: 'Syntymävuosi',
-        placementType: 'Sijoitustyyppi',
+        showFilters: 'Visa tilläggsval',
+        hideFilters: 'Dölj tilläggsval',
+        yearOfBirth: 'Födelseår',
+        placementType: 'Placeringstyp',
         shiftCare: {
-          heading: 'Vuorohoito',
-          label: 'Vuorohoito',
-          intermittent: 'Satunnainen vuorohoito'
+          heading: 'Skiftvård',
+          label: 'Skiftvård',
+          intermittent: 'Tillfällig skiftvård'
         },
         familyDaycare: {
-          heading: 'Perhepäivähoito',
-          label: 'Perhepäivähoito'
+          heading: 'Familjedagvård',
+          label: 'Familjedagvård'
         }
       },
-      title: 'Otsikko',
-      setFolder: 'Siirrä kansioon',
-      deleteDraft: 'Hylkää luonnos',
-      send: 'Lähetä',
-      sending: 'Lähetetään'
+      title: 'Rubrik',
+      setFolder: 'Flytta till mapp',
+      deleteDraft: 'Kassera utkast',
+      send: 'Skicka',
+      sending: 'Skickar'
     }
   },
   pinCode: {
-    title: 'eVaka-mobiilin PIN-koodi',
-    title2: 'Aseta PIN-koodi',
+    title: 'eVaka-mobilens PIN-kod',
+    title2: 'Ange PIN-kod',
     text1:
-      'Tällä sivulla voit asettaa oman henkilökohtaisen PIN-koodisi eVaka-mobiilia varten. PIN-koodia käytetään eVaka-mobiilissa lukon',
-    text2: 'takana olevien tietojen tarkasteluun.',
-    text3: 'Huom!',
+      'På den här sidan kan du ange din egen personliga PIN-kod för eVaka-mobilen. PIN-koden används i eVaka-mobilen för att visa uppgifter som finns bakom låset',
+    text2: '.',
+    text3: 'Obs!',
     text4:
-      'Ethän luovuta PIN-koodiasi kenenkään toisen henkilön tietoon. Tarvittaessa voit vaihtaa PIN-koodin milloin vain.',
+      'Ge inte din PIN-kod till någon annan person. Vid behov kan du byta PIN-kod när som helst.',
     text5:
-      'PIN-koodin tulee sisältää neljä (4) numeroa. Yleisimmät numeroyhdistelmät (esim. 1234) eivät kelpaa.',
-    pinCode: 'PIN-koodi',
-    button: 'Tallenna PIN-koodi',
-    placeholder: '4 numeroa',
-    error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
-    locked: 'PIN-koodi on lukittu, vaihda se uuteen',
+      'PIN-koden ska innehålla fyra (4) siffror. De vanligaste sifferkombinationerna (t.ex. 1234) godkänns inte.',
+    pinCode: 'PIN-kod',
+    button: 'Spara PIN-kod',
+    placeholder: '4 siffror',
+    error: 'För enkel PIN-kod eller PIN-koden innehåller bokstäver',
+    locked: 'PIN-koden är låst, byt den till en ny',
     lockedLong:
-      'PIN-koodi on syötetty eVaka-mobiilissa 5 kertaa väärin, ja koodi on lukittu. Ole hyvä ja vaihda tilalle uusi PIN-koodi.',
-    link: 'eVaka-mobiilin PIN-koodi',
-    unsavedDataWarning: 'Et ole tallentanut PIN-koodia'
+      'PIN-koden har angetts fel 5 gånger i eVaka-mobilen och koden är låst. Vänligen byt till en ny PIN-kod.',
+    link: 'eVaka-mobilens PIN-kod',
+    unsavedDataWarning: 'Du har inte sparat PIN-koden'
   },
   employees: {
-    name: 'Nimi',
-    email: 'Sähköposti',
-    rights: 'Oikeudet',
-    lastLogin: 'Kirjautunut viimeksi',
-    employeeNumber: 'Henkilönumero',
-    temporary: 'Tilapäinen sijainen',
-    findByName: 'Etsi nimellä',
-    activate: 'Aktivoi',
-    activateConfirm: 'Haluatko palauttaa käyttäjän aktiiviseksi?',
-    deactivate: 'Deaktivoi',
-    deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
-    deleteConfirm: 'Haluatko poistaa käyttäjän?',
-    hideDeactivated: 'Näytä vain aktiiviset käyttäjät',
+    name: 'Namn',
+    email: 'E-post',
+    rights: 'Rättigheter',
+    lastLogin: 'Senast inloggad',
+    employeeNumber: 'Personalnummer',
+    temporary: 'Tillfällig vikarie',
+    findByName: 'Sök med namn',
+    activate: 'Aktivera',
+    activateConfirm: 'Vill du återställa användaren till aktiv?',
+    deactivate: 'Deaktivera',
+    deactivateConfirm: 'Vill du deaktivera användaren?',
+    deleteConfirm: 'Vill du ta bort användaren?',
+    hideDeactivated: 'Visa endast aktiva användare',
     editor: {
-      globalRoles: 'Järjestelmäroolit',
+      globalRoles: 'Systemroller',
       unitRoles: {
-        name: 'Yksikköroolit',
-        title: 'Luvitukset',
-        scheduledRolesTitle: 'Tulevat luvitukset',
-        unit: 'Yksikkö',
-        role: 'Rooli yksikössä',
-        startDate: 'Luvitus alkaa',
-        endDate: 'Luvitus päättyy',
-        deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
-        deleteAll: 'Poista kaikki luvitukset',
-        deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
-        addRoles: 'Lisää luvituksia',
-        addRolesModalTitle: 'Uusi luvitus',
-        units: 'Yksiköt',
+        name: 'Enhetsroller',
+        title: 'Behörigheter',
+        scheduledRolesTitle: 'Kommande behörigheter',
+        unit: 'Enhet',
+        role: 'Roll i enhet',
+        startDate: 'Behörighet börjar',
+        endDate: 'Behörighet slutar',
+        deleteConfirm: 'Vill du ta bort användarens behörighet?',
+        deleteAll: 'Ta bort alla behörigheter',
+        deleteAllConfirm: 'Vill du ta bort användarens alla behörigheter?',
+        addRoles: 'Lägg till behörigheter',
+        addRolesModalTitle: 'Ny behörighet',
+        units: 'Enheter',
         warnings: {
-          hasCurrent: 'Henkilöllä on jo luvituksia seuraavissa yksiköissä',
+          hasCurrent: 'Personen har redan behörigheter i följande enheter',
           hasScheduled:
-            'Henkilöllä on jo tulevia luvituksia seuraavissa yksiköissä',
+            'Personen har redan kommande behörigheter i följande enheter',
           currentEnding: (date: LocalDate) =>
-            `Päällekkäiset luvitukset korvataan ${date.format()} alkaen.`,
-          currentRemoved: 'Nämä luvitukset poistetaan.',
-          scheduledRemoved: 'Nämä tulevat luvitukset poistetaan.'
+            `Överlappande behörigheter ersätts från och med ${date.format()}.`,
+          currentRemoved: 'Dessa behörigheter tas bort.',
+          scheduledRemoved: 'Dessa kommande behörigheter tas bort.'
         }
       },
       mobile: {
-        title: 'Henkilökohtaiset mobiililaitteet',
-        name: 'Laitteen nimi',
-        nameless: 'Nimeämätön laite',
-        deleteConfirm: 'Haluatko poistaa käyttäjän mobiililaitteen parituksen?'
+        title: 'Personliga mobilenheter',
+        name: 'Enhetens namn',
+        nameless: 'Namnlös enhet',
+        deleteConfirm: 'Vill du ta bort användarens mobilenhetsparning?'
       }
     },
-    createNewSsnEmployee: 'Luo uusi hetullinen käyttäjä',
+    createNewSsnEmployee: 'Skapa ny användare med personbeteckning',
     newSsnEmployeeModal: {
-      title: 'Lisää uusi hetullinen käyttäjä',
-      createButton: 'Luo tunnus',
-      ssnConflict: 'Hetu on jo käytössä'
+      title: 'Lägg till ny användare med personbeteckning',
+      createButton: 'Skapa konto',
+      ssnConflict: 'Personbeteckning används redan'
     },
-    hasSsn: 'Hetullinen käyttäjä'
+    hasSsn: 'Användare med personbeteckning'
   },
   financeBasics: {
     fees: {
-      title: 'Asiakasmaksut',
-      add: 'Luo uudet asiakasmaksut',
-      thresholds: 'Tulorajat',
-      validDuring: 'Asiakasmaksut ajalle',
-      familySize: 'Perheen koko',
-      minThreshold: 'Vähimmäisbruttotulo €/kk',
-      maxThreshold: 'Korkeimman maksun bruttotuloraja €/kk',
-      maxFeeError: 'Enimmäismaksu ei täsmää',
-      thresholdIncrease: 'Tulorajan korotussumma, kun perhekoko > 6',
+      title: 'Kundavgifter',
+      add: 'Skapa nya kundavgifter',
+      thresholds: 'Inkomstgränser',
+      validDuring: 'Kundavgifter för period',
+      familySize: 'Familjens storlek',
+      minThreshold: 'Minimibruttoinkomst €/mån',
+      maxThreshold: 'Bruttoinkomstgräns för högsta avgift €/mån',
+      maxFeeError: 'Maximiavgiften stämmer inte',
+      thresholdIncrease: 'Inkomstgräns höjningssumma, när familjestorlek > 6',
       thresholdIncreaseInfo:
-        'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',
-      multiplier: 'Maksu %',
-      maxFee: 'Enimmäismaksu',
-      minFee: 'Pienin perittävä lapsikohtainen maksu',
-      siblingDiscounts: 'Sisaralennukset',
-      siblingDiscount2: 'Alennus% 1. sisarus',
-      siblingDiscount2Plus: 'Alennus% muut sisarukset',
-      temporaryFees: 'Tilapäisen varhaiskasvatuksen maksut',
-      temporaryFee: 'Perushinta',
-      temporaryFeePartDay: 'Osapäiväinen',
-      temporaryFeeSibling: 'Perushinta, toinen lapsi',
-      temporaryFeeSiblingPartDay: 'Osapäiväinen, toinen lapsi',
+        'Om familjens storlek är större än 6, höjs inkomstgränsen som ligger till grund för avgiftsbestämningen med höjningssumman för varje följande minderårigt barn i familjen.',
+      multiplier: 'Avgift %',
+      maxFee: 'Maximiavgift',
+      minFee: 'Lägsta avgift per barn',
+      siblingDiscounts: 'Syskonrabatter',
+      siblingDiscount2: 'Rabatt% 1:a syskon',
+      siblingDiscount2Plus: 'Rabatt% andra syskon',
+      temporaryFees: 'Avgifter för tillfällig småbarnspedagogik',
+      temporaryFee: 'Grundpris',
+      temporaryFeePartDay: 'Halvdags',
+      temporaryFeeSibling: 'Grundpris, andra barn',
+      temporaryFeeSiblingPartDay: 'Halvdags, andra barn',
       errors: {
         'date-overlap':
-          'Maksuasetukset menevät päällekkäin jonkin muun voimassaolevan asetuksen kanssa. Päivitä muiden maksuasetusten voimassaoloaika ensin.'
+          'Avgiftsinställningar överlappar med en annan giltig inställning. Uppdatera giltighetstiden för andra avgiftsinställningar först.'
       },
       modals: {
         editRetroactive: {
-          title: 'Haluatko varmasti muokata tietoja?',
-          text: 'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille, joita muutos koskee, luodaan takautuva maksu- tai arvopäätös.',
-          resolve: 'Muokkaa',
-          reject: 'Älä muokkaa'
+          title: 'Vill du verkligen redigera uppgifter?',
+          text: 'Vill du verkligen redigera redan använda avgiftsuppgifter? Om du redigerar uppgifter, skapas ett retroaktivt avgifts- eller värdebeslut för alla kunder som ändringen gäller.',
+          resolve: 'Redigera',
+          reject: 'Redigera inte'
         },
         saveRetroactive: {
-          title: 'Haluatko tallentaa maksuasetukset takautuvasti?',
-          text: 'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille, joihin muutos vaikuttaa, luodaan uusi takautuva maksu- tai arvopäätös.',
-          resolve: 'Tallenna',
-          reject: 'Peruuta'
+          title: 'Vill du spara avgiftsinställningar retroaktivt?',
+          text: 'Du håller på att spara avgiftsinställningar som gäller retroaktivt. Om du sparar uppgifter, skapas ett nytt retroaktivt avgifts- eller värdebeslut för alla kunder som ändringen påverkar.',
+          resolve: 'Spara',
+          reject: 'Avbryt'
         }
       }
     },
     serviceNeeds: {
-      title: 'Palveluntarpeet',
-      add: 'Lisää uusi palveluseteliarvo',
-      voucherValues: 'Palvelusetelien arvot',
-      validity: 'Voimassaoloaika',
+      title: 'Tjänstebehov',
+      add: 'Lägg till nytt servicesedelvärde',
+      voucherValues: 'Servicesedlarnas värden',
+      validity: 'Giltighetstid',
       baseValue: (
         <>
-          Perusarvo,
-          <br />
-          3v tai yli (€)
+          Grundvärde,
+          <br />3 år eller över (€)
         </>
       ),
       coefficient: (
         <>
-          Kerroin,
-          <br />
-          3v tai yli
+          Koefficient,
+          <br />3 år eller över
         </>
       ),
       value: (
         <>
-          Enimmäisarvo,
-          <br />
-          3v tai yli (€)
+          Maxvärde,
+          <br />3 år eller över (€)
         </>
       ),
       baseValueUnder3y: (
         <>
-          Perusarvo,
+          Grundvärde,
           <br />
-          alle 3v
+          under 3 år
         </>
       ),
       coefficientUnder3y: (
         <>
-          Kerroin,
+          Koefficient,
           <br />
-          alle 3v
+          under 3 år
         </>
       ),
       valueUnder3y: (
         <>
-          Enimmäisarvo,
+          Maxvärde,
           <br />
-          alle 3v (€)
+          under 3 år (€)
         </>
       ),
       errors: {
         'date-overlap':
-          'Voimassaolo ei voi alkaa ennen toisen palveluseteliarvon alkamispäivää',
+          'Giltighetstid kan inte börja före en annan servicesedels startdag',
         'end-date-overlap':
-          'Voimassaolo ei voi alkaa ennen edellisen palvelusetelin päättymispäivää seuraavaa päivää',
-        'date-gap': 'Voimassaolojen välissä ei voi olla aukkoja',
-        shouldNotHappen: 'Odottamaton virhe'
+          'Giltighetstid kan inte börja före dagen efter föregående servicesedels slutdag',
+        'date-gap': 'Det kan inte finnas luckor mellan giltighetstider',
+        shouldNotHappen: 'Oväntat fel'
       },
       modals: {
         deleteVoucherValue: {
-          title: 'Haluatko varmasti poistaa palveluseteliarvon?'
+          title: 'Vill du verkligen ta bort servicesedelvärdet?'
         }
       }
     }
   },
   documentTemplates: {
-    title: 'Asiakirjapohjat',
+    title: 'Dokumentmallar',
     documentTypes: {
-      PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
-      PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
-      HOJKS: 'HOJKS',
-      MIGRATED_VASU: 'Varhaiskasvatussuunnitelma (siirretty)',
-      MIGRATED_LEOPS: 'Esiopetuksen suunnitelma (siirretty)',
+      PEDAGOGICAL_REPORT: 'Pedagogisk redogörelse',
+      PEDAGOGICAL_ASSESSMENT: 'Pedagogisk bedömning',
+      HOJKS: 'Individuellt program',
+      MIGRATED_VASU: 'Plan för småbarnspedagogik (överförd)',
+      MIGRATED_LEOPS: 'Plan för förskoleundervisning (överförd)',
       MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION:
-        'Päätös tuesta varhaiskasvatuksessa (siirretty)',
+        'Beslut om stöd i småbarnspedagogik (överförd)',
       MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION:
-        'Päätös tuesta esiopetuksessa (siirretty)',
-      VASU: 'Varhaiskasvatussuunnitelma',
-      LEOPS: 'Esiopetuksen suunnitelma',
-      CITIZEN_BASIC: 'Huoltajan kanssa täytettävä asiakirja',
-      OTHER_DECISION: 'Päätösasiakirja',
-      OTHER: 'Muu lapsen asiakirja'
+        'Beslut om stöd i förskoleundervisning (överförd)',
+      VASU: 'Plan för småbarnspedagogik',
+      LEOPS: 'Plan för förskoleundervisning',
+      CITIZEN_BASIC: 'Dokument att fylla i tillsammans med vårdnadshavare',
+      OTHER_DECISION: 'Beslutsdokument',
+      OTHER: 'Annat barndokument'
     },
     documentTypeInfos: {
       CITIZEN_BASIC:
-        'Tämä on asiakirja, jonka sekä kuntalainen, että henkilökunta voivat täyttää. Halutessaan henkilökunta voi vastata kysymyksiin ensin, minkä jälkeen asiakirjan voi lähettää kuntalaiselle täytettäväksi eVakaan.',
+        'Detta är ett dokument som både medborgaren och personalen kan fylla i. Om personalen vill kan de svara på frågorna först, varefter dokumentet kan skickas till medborgaren för ifyllning i eVaka.',
       OTHER_DECISION:
-        'Tällä tehdään kaikki päätöspohjat hakemuksiin liittyviä päätöksiä lukuunottamatta',
-      OTHER: 'Työntekijän täyttämä lapsen pedagoginen asiakirja tai suunnitelma'
+        'Med detta skapas alla beslutsmallar förutom beslut relaterade till ansökningar',
+      OTHER: 'Personalens ifyllda barnets pedagogiska dokument eller plan'
     },
     languages: {
-      FI: 'Suomenkielinen',
-      SV: 'Ruotsinkielinen',
-      EN: 'Englanninkielinen'
+      FI: 'Finskspråkig',
+      SV: 'Svenskspråkig',
+      EN: 'Engelskspråkig'
     },
     templatesPage: {
-      add: 'Luo uusi',
-      name: 'Nimi',
-      type: 'Tyyppi',
-      language: 'Kieli',
-      validity: 'Voimassa',
-      documentCount: 'Dokumentteja',
-      status: 'Tila',
-      published: 'Julkaistu',
-      draft: 'Luonnos',
-      export: 'Vie tiedostoon',
-      import: 'Tuo tiedostosta',
+      add: 'Skapa ny',
+      name: 'Namn',
+      type: 'Typ',
+      language: 'Språk',
+      validity: 'Giltig',
+      documentCount: 'Dokument',
+      status: 'Status',
+      published: 'Publicerad',
+      draft: 'Utkast',
+      export: 'Exportera till fil',
+      import: 'Importera från fil',
       filters: {
-        validity: 'Voimassaolo',
-        active: 'Käytössä',
-        draft: 'Luonnos',
-        future: 'Tulossa käyttöön',
-        past: 'Päättyneet',
-        type: 'Asiakirjan tyyppi',
-        all: 'Kaikki',
-        language: 'Kieli'
+        validity: 'Giltighet',
+        active: 'I bruk',
+        draft: 'Utkast',
+        future: 'Kommande i bruk',
+        past: 'Avslutade',
+        type: 'Dokumenttyp',
+        all: 'Alla',
+        language: 'Språk'
       }
     },
     templateModal: {
-      title: 'Uusi asiakirjapohja',
-      name: 'Nimi',
-      type: 'Asiakirjan tyyppi',
-      placementTypes: 'Käytössä sijoituksilla',
-      language: 'Asiakirjan kieli',
-      confidential: 'Asiakirja on salassapidettävä',
-      confidentialityDuration: 'Salassapitoaika (vuotta)',
-      confidentialityBasis: ' Salassapitoperuste (metatiedot ja arkistointi)',
-      legalBasis: 'Salassapitoperuste / lakiviittaus (näkyy lomakkeella)',
-      validity: 'Voimassa ajalla',
-      processDefinitionNumber: 'Tehtäväluokka',
+      title: 'Ny dokumentmall',
+      name: 'Namn',
+      type: 'Dokumenttyp',
+      placementTypes: 'I bruk med placeringar',
+      language: 'Dokumentets språk',
+      confidential: 'Dokumentet är sekretessbelagt',
+      confidentialityDuration: 'Sekretessperiod (år)',
+      confidentialityBasis: 'Sekretessgrund (metadata och arkivering)',
+      legalBasis: 'Sekretessgrund / lagrefere ns (syns på formuläret)',
+      validity: 'Giltig under period',
+      processDefinitionNumber: 'Uppgiftsklass',
       processDefinitionNumberInfo:
-        'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos asiakirjaa ei arkistoida.',
-      archiveDurationMonths: 'Arkistointiaika (kuukautta)',
-      archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa',
-      endDecisionWhenUnitChanges: 'Päätös katkeaa, jos lapsi vaihtaa yksikköä'
+        'Uppgiftsklassnummer definierat i informationsstyrningsplan. Lämna tomt om dokumentet inte arkiveras.',
+      archiveDurationMonths: 'Arkiveringstid (månader)',
+      archiveExternally: 'Ska överföras till externt arkiv före radering',
+      endDecisionWhenUnitChanges: 'Beslut bryts om barnet byter enhet'
     },
     templateEditor: {
-      confidential: 'Salassapidettävä',
-      addSection: 'Uusi osio',
-      titleNewSection: 'Uusi osio',
-      titleEditSection: 'Muokkaa osiota',
-      sectionName: 'Otsikko',
-      infoText: 'Ohjeteksti',
-      addQuestion: 'Uusi osio',
-      titleNewQuestion: 'Uusi kysymys',
-      titleEditQuestion: 'Muokkaa kysymystä',
-      moveUp: 'Siirrä ylös',
-      moveDown: 'Siirrä alas',
-      readyToPublish: 'Valmis julkaistavaksi',
+      confidential: 'Sekretessbelagt',
+      addSection: 'Nytt avsnitt',
+      titleNewSection: 'Nytt avsnitt',
+      titleEditSection: 'Redigera avsnitt',
+      sectionName: 'Rubrik',
+      infoText: 'Instruktionstext',
+      addQuestion: 'Ny fråga',
+      titleNewQuestion: 'Ny fråga',
+      titleEditQuestion: 'Redigera fråga',
+      moveUp: 'Flytta upp',
+      moveDown: 'Flytta ner',
+      readyToPublish: 'Redo att publiceras',
       forceUnpublish: {
-        button: 'Peruuta julkaisu',
-        confirmationTitle: 'Haluatko varmasti perua julkaisun?',
+        button: 'Avbryt publicering',
+        confirmationTitle: 'Vill du verkligen avbryta publiceringen?',
         confirmationText:
-          'Kaikki tätä asiakirjapohjaa käyttävät asiakirjat poistetaan.'
+          'Alla dokument som använder denna dokumentmall kommer att tas bort.'
       }
     },
     questionTypes: {
-      TEXT: 'Tekstikenttä',
-      CHECKBOX: 'Rasti',
-      CHECKBOX_GROUP: 'Monivalinta',
-      RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)',
-      STATIC_TEXT_DISPLAY: 'Tekstikappale ilman kysymystä',
-      DATE: 'Päivämäärä',
-      GROUPED_TEXT_FIELDS: 'Nimettyjä tekstikenttiä'
+      TEXT: 'Textfält',
+      CHECKBOX: 'Kryssruta',
+      CHECKBOX_GROUP: 'Flerval',
+      RADIO_BUTTON_GROUP: 'Flerval (välj ett)',
+      STATIC_TEXT_DISPLAY: 'Textstycke utan fråga',
+      DATE: 'Datum',
+      GROUPED_TEXT_FIELDS: 'Namngivna textfält'
     },
     ...components.documentTemplates
   },
   settings: {
-    key: 'Asetus',
-    value: 'Arvo',
+    key: 'Inställning',
+    value: 'Värde',
     options: {
       DECISION_MAKER_NAME: {
-        title: 'Päätöksentekijän nimi',
-        description: 'Varhaiskasvatus- ja palvelusetelipäätökselle tuleva nimi'
+        title: 'Beslutsfattarens namn',
+        description:
+          'Namnet som kommer på småbarnspedagogik- och servicesedelbeslut'
       },
       DECISION_MAKER_TITLE: {
-        title: 'Päätöksentekijän titteli',
+        title: 'Beslutsfattarens titel',
         description:
-          'Varhaiskasvatus- ja palvelusetelipäätökselle tuleva titteli'
+          'Titeln som kommer på småbarnspedagogik- och servicesedelbeslut'
       }
     }
   },
   unitFeatures: {
     page: {
-      title: 'Yksiköille avatut toiminnot',
-      unit: 'Yksikkö',
-      selectAll: 'Valitse kaikki',
-      unselectAll: 'Poista kaikki',
-      providerType: 'Yksikön toimintamuoto',
-      careType: 'Yksikön hoitomuoto',
-      undo: 'Kumoa edellinen muutos'
+      title: 'Funktioner öppnade för enheter',
+      unit: 'Enhet',
+      selectAll: 'Välj alla',
+      unselectAll: 'Ta bort alla',
+      providerType: 'Enhetens verksamhetsform',
+      careType: 'Enhetens vårdform',
+      undo: 'Ångra föregående ändring'
     },
     pilotFeatures: {
-      MESSAGING: 'Viestintä',
-      MOBILE: 'Mobiili',
-      RESERVATIONS: 'Kuntalaisen kalenteri',
-      VASU_AND_PEDADOC: 'Pedagogiset asiakirjat ja pedagoginen dokumentointi',
-      MOBILE_MESSAGING: 'Mobiili­viestintä',
-      PLACEMENT_TERMINATION: 'Paikan irtisanominen',
-      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
-      PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
-      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset',
-      STAFF_ATTENDANCE_INTEGRATION: 'Työvuoro­suunnittelu­integraatio',
-      OTHER_DECISION: 'Muut päätökset',
-      CITIZEN_BASIC_DOCUMENT: 'Huoltajien täytettävät dokumentit'
+      MESSAGING: 'Meddelanden',
+      MOBILE: 'Mobil',
+      RESERVATIONS: 'Medborgarens kalender',
+      VASU_AND_PEDADOC: 'Pedagogiska dokument och pedagogisk dokumentation',
+      MOBILE_MESSAGING: 'Mobilmeddelanden',
+      PLACEMENT_TERMINATION: 'Uppsägning av plats',
+      REALTIME_STAFF_ATTENDANCE: 'Personalens realtidsnärvaro',
+      PUSH_NOTIFICATIONS: 'Mobilnotifieringar',
+      SERVICE_APPLICATIONS: 'Ansökningar om ändring av tjänstebehov',
+      STAFF_ATTENDANCE_INTEGRATION: 'Integration för arbetsturplanering',
+      OTHER_DECISION: 'Andra beslut',
+      CITIZEN_BASIC_DOCUMENT: 'Dokument att fyllas i av vårdnadshavare'
     }
   },
   roles: {
     adRoles: {
-      ADMIN: 'Pääkäyttäjä',
-      DIRECTOR: 'Hallinto',
-      MESSAGING: 'Viestintä',
-      REPORT_VIEWER: 'Raportointi',
-      FINANCE_ADMIN: 'Talous',
-      FINANCE_STAFF: 'Talouden työntekijä (ulkoinen)',
-      SERVICE_WORKER: 'Palveluohjaus',
-      SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
-      EARLY_CHILDHOOD_EDUCATION_SECRETARY: 'Varhaiskasvatussihteeri',
-      STAFF: 'Henkilökunta',
-      UNIT_SUPERVISOR: 'Johtaja'
+      ADMIN: 'Huvudanvändare',
+      DIRECTOR: 'Förvaltning',
+      MESSAGING: 'Meddelanden',
+      REPORT_VIEWER: 'Rapportering',
+      FINANCE_ADMIN: 'Ekonomi',
+      FINANCE_STAFF: 'Ekonomianställd (extern)',
+      SERVICE_WORKER: 'Servicehandledning',
+      SPECIAL_EDUCATION_TEACHER: 'Speciallärare',
+      EARLY_CHILDHOOD_EDUCATION_SECRETARY: 'Småbarnspedagogiksekreterare',
+      STAFF: 'Personal',
+      UNIT_SUPERVISOR: 'Ledare'
     }
   },
   welcomePage: {
-    text: 'Olet kirjautunut sisään Espoon kaupungin eVaka-palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
+    text: 'Du har loggat in på Esbo stads eVaka-tjänst. Ditt användarkonto har ännu inte tilldelats rättigheter som möjliggör användning av tjänsten. Nödvändiga användarrättigheter får du av din egen chef.'
   },
   validationErrors: {
     ...components.validationErrors,
     ...components.datePicker.validationErrors,
-    dateRangeNotLinear:
-      'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
-    timeRangeNotLinear: 'Tarkista järjestys',
-    guardianMustBeHeard: 'Huoltajaa on kuultava',
-    futureTime: 'Aika tulevaisuudessa'
+    dateRangeNotLinear: 'Tidsperiodens startdag ska vara före slutdagen.',
+    timeRangeNotLinear: 'Kontrollera ordningen',
+    guardianMustBeHeard: 'Vårdnadshavaren måste höras',
+    futureTime: 'Tid i framtiden'
   },
   holidayPeriods: {
-    confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',
-    createTitle: 'Luo uusi loma-aika',
-    editTitle: 'Muokkaa loma-aikaa',
-    period: 'Aikaväli',
-    reservationsOpenOn: 'Kysely avataan',
-    reservationDeadline: 'Varausten takaraja',
+    confirmDelete: 'Vill du verkligen ta bort semesterperioden?',
+    createTitle: 'Skapa ny semesterperiod',
+    editTitle: 'Redigera semesterperiod',
+    period: 'Tidsperiod',
+    reservationsOpenOn: 'Enkät öppnas',
+    reservationDeadline: 'Reservationernas sista dag',
     clearingAlert:
-      'Kuntalaisten jo tekemät varaukset pyyhitään valitulta aikaväliltä',
+      'Medborgarnas redan gjorda reservationer raderas för vald tidsperiod',
     confirmLabel:
-      'Ymmärrän, että tehdyt varaukset poistetaan välittömästi, eikä tätä voi enää perua.',
+      'Jag förstår att gjorda reservationer tas bort omedelbart och att detta inte längre kan ångras.',
     validationErrors: {
-      tooSoon: 'Loma-ajan voi luoda aikaisintaan 4 viikon päähän',
-      tooLong: 'Loma-aika voi olla enintään 15 viikkoa pitkä',
-      afterStart: 'Ei voi olla alkamisen jälkeen',
-      afterReservationsOpen: 'Ei voi olla avaamispäivän jälkeen'
+      tooSoon: 'Semesterperiod kan skapas tidigast 4 veckor framåt',
+      tooLong: 'Semesterperiod kan vara högst 15 veckor lång',
+      afterStart: 'Kan inte vara efter start',
+      afterReservationsOpen: 'Kan inte vara efter öppningsdagen'
     }
   },
-  holidayQuestionnaires: {
-    confirmDelete: 'Haluatko varmasti poistaa kyselyn?',
+  holidayQuestionnaire: {
+    confirmDelete: 'Vill du verkligen ta bort enkäten?',
     types: {
-      FIXED_PERIOD: 'Kiinteä kausi',
-      OPEN_RANGES: 'Avoin kausi'
+      FIXED_PERIOD: 'Fast period',
+      OPEN_RANGES: 'Öppen period'
     },
-    questionnaires: 'Poissaolokyselyt',
-    absenceType: 'Poissaolon tyyppi',
-    title: 'Otsikko',
-    description: 'Kyselyn selite kuntalaiselle',
-    descriptionLink: 'Lisätietolinkki',
-    active: 'Voimassa',
-    fixedPeriodOptionLabel: 'Kauden valinnan kysymys',
+    questionnaires: 'Frånvaroenkäter',
+    absenceType: 'Frånvarotyp',
+    title: 'Rubrik',
+    description: 'Enkätens förklaring för medborgaren',
+    descriptionLink: 'Tilläggsinfo-länk',
+    active: 'Giltig',
+    fixedPeriodOptionLabel: 'Periodens valfråga',
     fixedPeriodOptionLabelPlaceholder:
-      'Esim. Lapset ovat 8 viikkoa poissa aikavälillä',
-    fixedPeriodOptions: 'Kausien vaihtoehdot',
+      'T.ex. Barn är borta 8 veckor under tidsperioden',
+    fixedPeriodOptions: 'Periodens alternativ',
     fixedPeriodOptionsPlaceholder:
-      '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, pilkuilla tai rivinvaihdoilla erotettuna',
-    requiresStrongAuth: 'Vahva tunnistautuminen',
+      '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, separerade med kommatecken eller radbrytningar',
+    requiresStrongAuth: 'Stark autentisering',
     conditionContinuousPlacement:
-      'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus',
-    period: 'Poissaolokausi',
-    absenceTypeThreshold: 'Yhtenäisen poissaolon minimipituus',
-    days: 'päivää'
+      'Kan svara på enkät om barnet har kontinuerlig placering',
+    period: 'Frånvaroperiod',
+    absenceTypeThreshold: 'Minimilängd för sammanhängande frånvaro',
+    days: 'dagar'
+  },
+  holidayQuestionnaires: {
+    confirmDelete: 'Vill du verkligen ta bort enkäten?',
+    types: {
+      FIXED_PERIOD: 'Fast period',
+      OPEN_RANGES: 'Öppen period'
+    },
+    questionnaires: 'Frånvaroenkäter',
+    absenceType: 'Frånvarotyp',
+    title: 'Rubrik',
+    description: 'Enkätens förklaring för medborgaren',
+    descriptionLink: 'Tilläggsinfo-länk',
+    active: 'Giltig',
+    fixedPeriodOptionLabel: 'Periodens valfråga',
+    fixedPeriodOptionLabelPlaceholder:
+      'T.ex. Barn är borta 8 veckor under tidsperioden',
+    fixedPeriodOptions: 'Periodens alternativ',
+    fixedPeriodOptionsPlaceholder:
+      '30.5.2022-24.8.2022, 6.6.2022-31.8.2022, separerade med kommatecken eller radbrytningar',
+    requiresStrongAuth: 'Stark autentisering',
+    conditionContinuousPlacement:
+      'Kan svara på enkät om barnet har kontinuerlig placering',
+    period: 'Frånvaroperiod',
+    absenceTypeThreshold: 'Minimilängd för sammanhängande frånvaro',
+    days: 'dagar'
   },
   terms: {
-    term: 'Lukukausi',
-    finnishPreschool: 'Suomenkielinen esiopetus',
-    extendedTermStart: 'Pidennetty lukukausi alkaa',
-    applicationPeriodStart: 'Haku lukukaudelle alkaa',
-    termBreaks: 'Opetustauot',
-    addTerm: 'Lisää lukukausi',
-    confirmDelete: 'Haluatko varmasti poistaa lukukauden?',
+    term: 'Läsår',
+    finnishPreschool: 'Finskspråkig förskoleundervisning',
+    extendedTermStart: 'Förlängt läsår börjar',
+    applicationPeriodStart: 'Ansökan till läsåret börjar',
+    termBreaks: 'Undervisningsuppehåll',
+    addTerm: 'Lägg till läsår',
+    confirmDelete: 'Vill du verkligen ta bort läsåret?',
     extendedTermStartInfo:
-      'Aika, jolloin varhaiskasvatusmaksu määräytyy liittyvän varhaiskasvatuksen mukaan.',
+      'Tidpunkt då småbarnspedagogikavgiften bestäms enligt kompletterande småbarnspedagogik.',
     termBreaksInfo:
-      'Lisää tähän sellaiset ajat lukukauden aikana, jolloin opetusta ei tarjota, esim. joululomat.',
-    addTermBreak: 'Lisää taukojakso',
+      'Lägg till här sådana perioder under läsåret då undervisning inte erbjuds, t.ex. jullov.',
+    addTermBreak: 'Lägg till uppehållsperiod',
     validationErrors: {
       overlap:
-        'Tälle ajanjaksolle on jo päällekkäinen lukukausi. Yritä kirjata merkintä eri ajanjaksolle.',
+        'För denna tidsperiod finns redan ett överlappande läsår. Försök anteckna notering för en annan tidsperiod.',
       extendedTermOverlap:
-        'Tälle ajanjaksolle on jo päällekkäinen pidennetty lukukausi. Yritä kirjata merkintä eri aloituspäivälle',
+        'För denna tidsperiod finns redan ett överlappande förlängt läsår. Försök anteckna notering för ett annat startdatum',
       extendedTermStartAfter:
-        'Pidennetyn lukukauden aloituspäivämäärä ei voi olla lukukauden aloituspäivämäärän jälkeen.',
-      termBreaksOverlap: 'Päällekkäiset opetustauot eivät ole sallittua.'
+        'Det förlängda läsårets startdatum kan inte vara efter läsårets startdatum.',
+      termBreaksOverlap: 'Överlappande undervisningsuppehåll är inte tillåtet.'
     },
     modals: {
       editTerm: {
-        title: 'Haluatko varmasti muokata tietoja?',
-        text: 'Haluatko varmasti muokata jo alkanutta lukukautta?',
-        resolve: 'Muokkaa',
-        reject: 'Älä muokkaa'
+        title: 'Vill du verkligen redigera uppgifter?',
+        text: 'Vill du verkligen redigera ett redan påbörjat läsår?',
+        resolve: 'Redigera',
+        reject: 'Redigera inte'
       },
       deleteTerm: {
-        title: 'Haluatko varmasti poistaa lukukauden?'
+        title: 'Vill du verkligen ta bort läsåret?'
       }
     }
   },
   preferredFirstName: {
-    popupLink: 'Kutsumanimi',
-    title: 'Kutsumanimi',
+    popupLink: 'Tilltalsnamn',
+    title: 'Tilltalsnamn',
     description:
-      'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
-    select: 'Valitse kutsumanimi',
-    confirm: 'Vahvista'
+      'Du kan definiera ditt tilltalsnamn som används i eVaka. Tilltalsnamnet ska vara ett av dina förnamn. Om ditt namn har ändrats och du behöver uppdatera ditt nya namn i eVaka, kontakta Esbo HelpDesk.',
+    select: 'Välj tilltalsnamn',
+    confirm: 'Bekräfta'
   },
   metadata: {
-    title: 'Arkistoitava metadata',
-    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-    caseIdentifier: 'Asiatunnus',
-    processName: 'Asiaprosessi',
-    organization: 'Organisaatio',
-    archiveDurationMonths: 'Arkistointiaika',
-    primaryDocument: 'Ensisijainen asiakirja',
-    secondaryDocuments: 'Muut asiakirjat',
-    documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
-    createdAt: 'Laatimisajankohta',
-    createdBy: 'Laatija',
-    monthsUnit: 'kuukautta',
-    confidentiality: 'Julkisuus',
-    confidential: 'Salassapidettävä',
-    public: 'Julkinen',
-    notSet: 'Asettamatta',
-    confidentialityDuration: 'Salassapitoaika',
-    confidentialityBasis: 'Salassapitoperuste',
-    years: 'vuotta',
+    title: 'Arkiverbar metadata',
+    notFound: 'Dokumentet har ingen arkiverbar metadata',
+    caseIdentifier: 'Ärendebeteckning',
+    processName: 'Ärendeprocess',
+    organization: 'Organisation',
+    archiveDurationMonths: 'Arkiveringstid',
+    primaryDocument: 'Primärt dokument',
+    secondaryDocuments: 'Andra dokument',
+    documentId: 'Dokumentidentifierare',
+    name: 'Dokumentets namn',
+    createdAt: 'Upprättningstidpunkt',
+    createdBy: 'Upprättare',
+    monthsUnit: 'månader',
+    confidentiality: 'Offentlighet',
+    confidential: 'Sekretessbelagt',
+    public: 'Offentlig',
+    notSet: 'Ej angiven',
+    confidentialityDuration: 'Sekretessperiod',
+    confidentialityBasis: 'Sekretessgrund',
+    years: 'år',
     receivedBy: {
-      label: 'Saapumistapa',
-      PAPER: 'Paperilla',
-      ELECTRONIC: 'Sähköisesti'
+      label: 'Ankomsstsätt',
+      PAPER: 'På papper',
+      ELECTRONIC: 'Elektroniskt'
     },
     sfiDelivery: {
-      label: 'Suomi.fi -toimitukset',
+      label: 'Suomi.fi -leveranser',
       method: {
-        ELECTRONIC: 'Sähköisesti',
-        PAPER_MAIL: 'Postitse',
-        PENDING: 'Odottaa toimitusta'
+        ELECTRONIC: 'Elektroniskt',
+        PAPER_MAIL: 'Per post',
+        PENDING: 'Väntar på leverans'
       }
     },
-    history: 'Prosessin historia',
-    downloadPdf: 'Lataa PDF',
+    history: 'Processhistorik',
+    downloadPdf: 'Ladda ner PDF',
     states: {
-      INITIAL: 'Asian vireillepano / -tulo',
-      PREPARATION: 'Asian valmistelu',
-      DECIDING: 'Päätöksenteko',
-      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+      INITIAL: 'Ärendets anhängiggörande / -inkomst',
+      PREPARATION: 'Ärendets beredning',
+      DECIDING: 'Beslutsfattande',
+      COMPLETED: 'Verkställande / Avslutande / Stängning'
     }
   },
   systemNotifications: {
     title: {
-      CITIZENS: 'Kuntalaisille näkyvä ilmoitus',
-      EMPLOYEES: 'Henkilökunnalle näkyvä ilmoitus'
+      CITIZENS: 'Meddelande synligt för medborgare',
+      EMPLOYEES: 'Meddelande synligt för personal'
     },
-    noNotification: 'Ei ilmoitusta tällä hetkellä',
-    setNotification: 'Aseta ilmoitus',
-    text: 'Teksti',
-    textFi: 'Teksti suomeksi',
-    textSv: 'Teksti ruotsiksi',
-    textEn: 'Teksti englanniksi',
-    validTo: 'Poistuu näkyvistä'
+    noNotification: 'Inget meddelande för tillfället',
+    setNotification: 'Ange meddelande',
+    text: 'Text',
+    textFi: 'Text på finska',
+    textSv: 'Text på svenska',
+    textEn: 'Text på engelska',
+    validTo: 'Försvinner från vyn'
   },
   placementTool: {
-    title: 'Optimointityökalu',
+    title: 'Optimeringsverktyg',
     description:
-      'Voit luoda optimointityökalulla tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.',
-    preschoolTermNotification: 'Hakemukset luodaan seuravaan esiopetuskauteen:',
+      'Du kan skapa ansökningar i eVaka från placeringsförslag som producerats med optimeringsverktyget. Ansökningar skapas direkt i väntan på beslut.',
+    preschoolTermNotification: 'Ansökningar skapas för nästa förskoleperiod:',
     preschoolTermWarning:
-      'eVakasta puuttuu seuraavan esiopetuskauden määrittely. Esiopetuskausi tarvitaan hakemusten luontia varten.',
+      'eVaka saknar definition för nästa förskoleperiod. Förskoleperiod behövs för att skapa ansökningar.',
     validation: (count: number, existing: number) =>
-      `Olet tuomassa ${count} sijoitusta${existing > 0 ? ` (joista ${existing} löytyy jo järjestelmästä)` : ''}, jatka?`
+      `Du importerar ${count} placeringar${existing > 0 ? ` (varav ${existing} redan finns i systemet)` : ''}, fortsätt?`
   },
   outOfOffice: {
-    menu: 'Johtajan poissaolojakso',
-    title: 'Poissaolojakso',
+    menu: 'Ledarens frånvaroperiod',
+    title: 'Frånvaroperiod',
     description:
-      'Voit lisätä tänne tiedon esimerkiksi lomastasi. Lasten huoltajat näkevät poissaollessasi ilmoituksen, että et ole paikalla.',
-    header: 'Poissaolojakso',
-    noFutureOutOfOffice: 'Ei tulevia poissaoloja',
-    addOutOfOffice: 'Lisää poissaolojakso',
+      'Du kan lägga till information här om till exempel din semester. Barns vårdnadshavare ser ett meddelande under din frånvaro att du inte är på plats.',
+    header: 'Frånvaroperiod',
+    noFutureOutOfOffice: 'Inga kommande frånvaror',
+    addOutOfOffice: 'Lägg till frånvaroperiod',
     validationErrors: {
-      endBeforeToday: 'Ei voi päättyä menneisyydessä'
+      endBeforeToday: 'Kan inte sluta i det förflutna'
     }
   },
   components

@@ -1942,7 +1942,7 @@ export const fi = {
       noteModalTitle: 'Talouden oma muistiinpano',
       noteModalInfo: 'Muistiinpano ei tule näkyviin laskulle.',
       invoiceStatusHeader: 'Tila',
-      invoiceStatus: (status: InvoiceStatus | null) =>
+      invoiceStatus: (status: InvoiceStatus | null): React.ReactNode =>
         status === 'DRAFT'
           ? 'Laskuluonnoksella'
           : status
@@ -3083,16 +3083,16 @@ export const fi = {
     buttons: {
       checked: (count: number) =>
         count === 1 ? `${count} lasku valittu` : `${count} laskua valittu`,
-      sendInvoice: (count: number) =>
+      sendInvoice: (count: number): string =>
         count === 1 ? 'Siirrä valittu lasku' : 'Siirrä valitut laskut',
-      resendInvoice: (count: number) =>
+      resendInvoice: (count: number): string =>
         count === 1
           ? 'Lähetä valittu lasku uudelleen'
           : 'Lähetä valitut laskut uudelleen',
       createInvoices: 'Luo laskuluonnokset',
-      deleteInvoice: (count: number) =>
+      deleteInvoice: (count: number): string =>
         count === 1 ? 'Poista valittu lasku' : 'Poista valitut laskut',
-      checkAreaInvoices: (customRange: boolean) =>
+      checkAreaInvoices: (customRange: boolean): React.ReactNode =>
         customRange
           ? 'Valitse laskut valitulta aikaväliltä ja alueilta'
           : 'Valitse tämän kuun laskut valituilta alueilta',
@@ -3220,9 +3220,9 @@ export const fi = {
       label: 'Päätöksentekijä',
       error: 'Päätöksentekijöiden lataus epäonnistui, yritä uudelleen',
       default: 'Yksikön tiedoissa asetettu päätöksentekijä',
-      decisionCount: (count: number) =>
+      decisionCount: (count: number): React.ReactNode =>
         count === 1 ? '1 päätös valittu' : `${count} päätöstä valittu`,
-      resolve: (count: number) =>
+      resolve: (count: number): string =>
         count === 1 ? 'Vahvista ja luo päätös' : 'Vahvista ja luo päätökset'
     }
   },
@@ -3265,12 +3265,12 @@ export const fi = {
       annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
     },
     buttons: {
-      checked: (count: number) =>
+      checked: (count: number): React.ReactNode =>
         count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
-      createDecision: (count: number) =>
+      createDecision: (count: number): string =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
       ignoreDraft: 'Ohita luonnos',
-      unignoreDrafts: (count: number) =>
+      unignoreDrafts: (count: number): string =>
         count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
@@ -3357,10 +3357,10 @@ export const fi = {
     buttons: {
       checked: (count: number) =>
         count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
-      createDecision: (count: number) =>
+      createDecision: (count: number): string =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
       ignoreDraft: 'Ohita luonnos',
-      unignoreDrafts: (count: number) =>
+      unignoreDrafts: (count: number): string =>
         count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
@@ -3793,7 +3793,7 @@ export const fi = {
       attendancesTotal: 'Toteuma/kk'
     },
     legendTitle: 'Merkintöjen selitykset',
-    addAbsencesButton(numOfSelected: number) {
+    addAbsencesButton(numOfSelected: number): string {
       return numOfSelected === 1
         ? 'Lisää merkintä valitulle...'
         : 'Lisää merkinnät valituille...'
@@ -5096,7 +5096,7 @@ export const fi = {
     editDraft: 'Muokkaa luonnosta',
     undo: {
       info: 'Viesti lähetetty',
-      secondsLeft: (s: number) =>
+      secondsLeft: (s: number): React.ReactNode =>
         s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
     },
     sensitive: 'arkaluontoinen',

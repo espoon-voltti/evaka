@@ -4,6 +4,7 @@
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { ComponentLocalizationContextProvider } from 'lib-components/i18n'
 import { translations } from 'lib-customizations/employee'
@@ -26,7 +27,9 @@ export const I18nContextProvider = React.memo(function I18nContextProvider({
 }: {
   children: React.JSX.Element
 }) {
-  const [lang, setLang] = useState<Lang>('fi')
+  const [lang, setLang] = useState<Lang>(
+    isAutomatedTest ? defaultState.lang : 'sv'
+  )
 
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang])
 
