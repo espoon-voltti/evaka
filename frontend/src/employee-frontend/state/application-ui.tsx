@@ -114,8 +114,10 @@ const manualVersionNumber = 1 // override to force invalidation
 const versionHash = `${toSimpleHash(JSON.stringify(exampleFilters))}-${manualVersionNumber}`
 const localStorageKey = `application-search-filters:${versionHash}`
 
-export interface ApplicationSearchFilters
-  extends Omit<RawApplicationSearchFilters, 'startDate' | 'endDate'> {
+export interface ApplicationSearchFilters extends Omit<
+  RawApplicationSearchFilters,
+  'startDate' | 'endDate'
+> {
   startDate: LocalDate | null
   endDate: LocalDate | null
 }

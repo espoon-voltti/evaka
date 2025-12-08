@@ -124,8 +124,10 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaInputProps>(
 
 export default TextArea
 
-interface TextAreaFProps
-  extends Omit<TextAreaInputProps, 'value' | 'onChange'> {
+interface TextAreaFProps extends Omit<
+  TextAreaInputProps,
+  'value' | 'onChange'
+> {
   bind: BoundFormState<string>
 }
 

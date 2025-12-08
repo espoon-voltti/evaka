@@ -15,11 +15,10 @@ import type { AsyncButtonBehaviorProps } from './async-button-behavior'
 /**
  * Behavioral props for a mutate button.
  */
-export interface MutateButtonBehaviorProps<Arg, Data>
-  extends Omit<
-    AsyncButtonBehaviorProps<{ value: Data; arg: Arg }>,
-    'onClick' | 'onSuccess'
-  > {
+export interface MutateButtonBehaviorProps<Arg, Data> extends Omit<
+  AsyncButtonBehaviorProps<{ value: Data; arg: Arg }>,
+  'onClick' | 'onSuccess'
+> {
   mutation: MutationDescription<Arg, Data>
   onClick: () => Arg | typeof cancelMutation
   onSuccess?: (value: Data) => void

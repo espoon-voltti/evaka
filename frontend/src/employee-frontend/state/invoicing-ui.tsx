@@ -54,8 +54,10 @@ interface FeeDecisionSearchFiltersRaw {
   difference: FeeDecisionDifference[]
 }
 
-interface FeeDecisionSearchFilters
-  extends Omit<FeeDecisionSearchFiltersRaw, 'startDate' | 'endDate'> {
+interface FeeDecisionSearchFilters extends Omit<
+  FeeDecisionSearchFiltersRaw,
+  'startDate' | 'endDate'
+> {
   startDate: LocalDate | null
   endDate: LocalDate | null
 }
@@ -83,8 +85,10 @@ interface ValueDecisionSearchFiltersRaw {
   searchByStartDate: boolean
 }
 
-interface ValueDecisionSearchFilters
-  extends Omit<ValueDecisionSearchFiltersRaw, 'startDate' | 'endDate'> {
+interface ValueDecisionSearchFilters extends Omit<
+  ValueDecisionSearchFiltersRaw,
+  'startDate' | 'endDate'
+> {
   startDate: LocalDate | null
   endDate: LocalDate | null
 }
@@ -110,8 +114,10 @@ export interface InvoiceSearchFiltersRaw {
   useCustomDatesForInvoiceSending: boolean
 }
 
-export interface InvoiceSearchFilters
-  extends Omit<InvoiceSearchFiltersRaw, 'startDate' | 'endDate'> {
+export interface InvoiceSearchFilters extends Omit<
+  InvoiceSearchFiltersRaw,
+  'startDate' | 'endDate'
+> {
   startDate: LocalDate | null
   endDate: LocalDate | null
 }
@@ -136,8 +142,10 @@ export interface PaymentSearchFiltersRaw {
   paymentDateEnd: string
 }
 
-export interface PaymentSearchFilters
-  extends Omit<PaymentSearchFiltersRaw, 'paymentDateStart' | 'paymentDateEnd'> {
+export interface PaymentSearchFilters extends Omit<
+  PaymentSearchFiltersRaw,
+  'paymentDateStart' | 'paymentDateEnd'
+> {
   paymentDateStart: LocalDate | null
   paymentDateEnd: LocalDate | null
 }
@@ -161,11 +169,10 @@ export interface IncomeStatementSearchFiltersRaw {
   placementValidDate: string
 }
 
-export interface IncomeStatementSearchFilters
-  extends Omit<
-    IncomeStatementSearchFiltersRaw,
-    'sentStartDate' | 'sentEndDate' | 'placementValidDate'
-  > {
+export interface IncomeStatementSearchFilters extends Omit<
+  IncomeStatementSearchFiltersRaw,
+  'sentStartDate' | 'sentEndDate' | 'placementValidDate'
+> {
   sentStartDate: LocalDate | null
   sentEndDate: LocalDate | null
   placementValidDate: LocalDate | null
