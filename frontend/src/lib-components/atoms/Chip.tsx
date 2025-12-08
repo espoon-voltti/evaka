@@ -116,20 +116,20 @@ export const SelectionChip = React.memo(function SelectionChip({
             <FontAwesomeIcon icon={faCheck} />
           </IconWrapper>
         )}
-        <StyledLabel
+        <StyledSpan
           className={classNames({ disabled })}
           aria-hidden="true"
           onClick={preventDefault}
           translate={translate}
         >
           {text}
-        </StyledLabel>
+        </StyledSpan>
       </SelectionChipInnerWrapper>
     </SelectionChipWrapper>
   )
 })
 
-const StyledLabel = styled.label`
+const StyledSpan = styled.span`
   cursor: pointer;
   &.disabled {
     cursor: not-allowed;

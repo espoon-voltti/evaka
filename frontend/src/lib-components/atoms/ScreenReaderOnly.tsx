@@ -18,3 +18,20 @@ export const ScreenReaderOnly = isAutomatedTest
       height: 1px;
       overflow: hidden;
     `
+
+export const ScreenReaderOnlyInline = isAutomatedTest
+  ? styled.div`
+      display: none;
+    `
+  : styled.span`
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      border: 0;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      margin: -1px;
+      padding: 0;
+      white-space: nowrap; /* prevent line breaks */
+    `

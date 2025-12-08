@@ -662,7 +662,8 @@ export default {
       search: 'Haku',
       noResults: 'Ei tuloksia, valitse ensin lapsi tai lapsia',
       messageSendError: 'Viestin lähetys epäonnistui',
-      messageSentNotification: 'Viesti lähetetty'
+      messageSentNotification: 'Viesti lähetetty',
+      required: 'Pakollinen kenttä'
     },
     confirmDelete: {
       title: 'Haluatko varmasti poistaa viestiketjun?',
