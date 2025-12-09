@@ -705,12 +705,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
               </FixedSpaceColumn>
             </FixedSpaceRow>
             <Gap size="L" />
-            <Label>{t.income.grossIncome.otherIncome}</Label>
+            <Label htmlFor="other-income-input">
+              {t.income.grossIncome.otherIncome}
+            </Label>
             <Gap size="s" />
             {t.income.grossIncome.otherIncomeDescription}
             <Gap size="s" />
             <OtherIncomeWrapper>
               <MultiSelect
+                inputId="other-income-input"
                 value={formData.otherIncome}
                 options={otherIncomes}
                 getOptionId={identity}
