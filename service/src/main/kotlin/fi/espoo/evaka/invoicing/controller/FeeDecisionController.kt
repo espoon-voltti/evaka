@@ -312,13 +312,18 @@ class FeeDecisionController(
             .also { Audit.FeeDecisionRead.log(targetId = AuditId(id)) }
     }
 
+    data class FeeDecisionWithPermittedActions(
+        val data: FeeDecision,
+        val permittedActions: Set<Action.FeeDecision>,
+    )
+
     @GetMapping("/head-of-family/{id}")
     fun getHeadOfFamilyFeeDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-    ): List<FeeDecision> {
+    ): List<FeeDecisionWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -328,7 +333,20 @@ class FeeDecisionController(
                         Action.Person.READ_FEE_DECISIONS,
                         id,
                     )
-                    it.findFeeDecisionsForHeadOfFamily(id, null, null)
+                    val decisions = it.findFeeDecisionsForHeadOfFamily(id, null, null)
+                    val permittedActions =
+                        accessControl.getPermittedActions<FeeDecisionId, Action.FeeDecision>(
+                            it,
+                            user,
+                            clock,
+                            decisions.map(FeeDecision::id),
+                        )
+                    decisions.map { decision ->
+                        FeeDecisionWithPermittedActions(
+                            decision,
+                            permittedActions[decision.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
             .also {

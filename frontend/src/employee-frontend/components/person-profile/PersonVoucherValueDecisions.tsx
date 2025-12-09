@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
+import type { VoucherValueDecisionSummaryWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -66,83 +67,106 @@ export default React.memo(function PersonVoucherValueDecisions({ id }: Props) {
         />
       )}
       {renderResult(voucherValueDecisions, (voucherValueDecisions) => (
-        <Table data-qa="table-of-voucher-value-decisions">
-          <Thead>
-            <Tr>
-              <Th>{i18n.valueDecisions.table.validity}</Th>
-              <Th>{i18n.valueDecisions.table.number}</Th>
-              <Th>{i18n.valueDecisions.table.totalValue}</Th>
-              <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
-              <Th>{i18n.valueDecisions.table.createdAt}</Th>
-              <Th>{i18n.valueDecisions.table.sentAt}</Th>
-              <Th>{i18n.valueDecisions.table.status}</Th>
-              {featureFlags.archiveIntegration?.voucherValueDecisions && (
-                <Th>{i18n.personProfile.decision.archived}</Th>
-              )}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {orderBy(
-              voucherValueDecisions,
-              ['validFrom', 'sentAt'],
-              ['desc', 'desc']
-            ).map((decision) => {
-              const formattedRange = `${decision.validFrom.format()} - ${
-                decision.validTo?.format() ?? ''
-              }`
-
-              return (
-                <Tr
-                  key={decision.id}
-                  data-qa="table-voucher-value-decision-row"
-                >
-                  <Td>
-                    <PersonName person={decision.child} format="Last First" />
-                    <br />
-                    {decision.annullingDecision ? (
-                      <span>
-                        {i18n.valueDecisions.table.annullingDecision}{' '}
-                        {formattedRange}
-                      </span>
-                    ) : (
-                      <Link to={`/finance/value-decisions/${decision.id}`}>
-                        {formattedRange}
-                      </Link>
-                    )}
-                  </Td>
-                  <Td>{decision.decisionNumber}</Td>
-                  <Td>{formatCents(decision.voucherValue)}</Td>
-                  <Td>{formatCents(decision.finalCoPayment)}</Td>
-                  <Td>{decision.created.toLocalDate().format()}</Td>
-                  <Td data-qa="voucher-value-decision-sent-at">
-                    {decision.sentAt?.toLocalDate().format() ?? ''}
-                  </Td>
-                  <Td>{i18n.valueDecision.status[decision.status]}</Td>
-                  {featureFlags.archiveIntegration?.voucherValueDecisions && (
-                    <Td>
-                      {decision.archivedAt !== null ? (
-                        decision.archivedAt.toLocalDate().format()
-                      ) : (
-                        <MutateButton
-                          icon={faBoxArchive}
-                          text={i18n.personProfile.decision.archive}
-                          mutation={planArchiveVoucherValueDecisionMutation}
-                          onClick={() => ({ id: decision.id })}
-                          data-qa="archive-button"
-                          disabled={decision.status !== 'SENT'}
-                        />
-                      )}
-                    </Td>
-                  )}
-                </Tr>
-              )
-            })}
-          </Tbody>
-        </Table>
+        <PersonVoucherValueDecisionsTable
+          voucherValueDecisions={voucherValueDecisions}
+        />
       ))}
     </>
   )
 })
+
+const PersonVoucherValueDecisionsTable = ({
+  voucherValueDecisions
+}: {
+  voucherValueDecisions: VoucherValueDecisionSummaryWithPermittedActions[]
+}) => {
+  const { i18n } = useTranslation()
+  const archivedColumnVisible = useMemo(
+    () =>
+      featureFlags.archiveIntegration?.voucherValueDecisions &&
+      voucherValueDecisions.some(({ permittedActions }) =>
+        permittedActions.includes('ARCHIVE')
+      ),
+    [voucherValueDecisions]
+  )
+
+  return (
+    <Table data-qa="table-of-voucher-value-decisions">
+      <Thead>
+        <Tr>
+          <Th>{i18n.valueDecisions.table.validity}</Th>
+          <Th>{i18n.valueDecisions.table.number}</Th>
+          <Th>{i18n.valueDecisions.table.totalValue}</Th>
+          <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
+          <Th>{i18n.valueDecisions.table.createdAt}</Th>
+          <Th>{i18n.valueDecisions.table.sentAt}</Th>
+          <Th>{i18n.valueDecisions.table.status}</Th>
+          {archivedColumnVisible && (
+            <Th>{i18n.personProfile.decision.archived}</Th>
+          )}
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderBy(
+          voucherValueDecisions,
+          [
+            ({ data: decision }) => decision.validFrom,
+            ({ data: decision }) => decision.sentAt
+          ],
+          ['desc', 'desc']
+        ).map(({ data: decision, permittedActions }) => {
+          const formattedRange = `${decision.validFrom.format()} - ${
+            decision.validTo?.format() ?? ''
+          }`
+
+          return (
+            <Tr key={decision.id} data-qa="table-voucher-value-decision-row">
+              <Td>
+                <PersonName person={decision.child} format="Last First" />
+                <br />
+                {decision.annullingDecision ? (
+                  <span>
+                    {i18n.valueDecisions.table.annullingDecision}{' '}
+                    {formattedRange}
+                  </span>
+                ) : (
+                  <Link to={`/finance/value-decisions/${decision.id}`}>
+                    {formattedRange}
+                  </Link>
+                )}
+              </Td>
+              <Td>{decision.decisionNumber}</Td>
+              <Td>{formatCents(decision.voucherValue)}</Td>
+              <Td>{formatCents(decision.finalCoPayment)}</Td>
+              <Td>{decision.created.toLocalDate().format()}</Td>
+              <Td data-qa="voucher-value-decision-sent-at">
+                {decision.sentAt?.toLocalDate().format() ?? ''}
+              </Td>
+              <Td>{i18n.valueDecision.status[decision.status]}</Td>
+              {featureFlags.archiveIntegration?.voucherValueDecisions &&
+                permittedActions.includes('ARCHIVE') && (
+                  <Td>
+                    {decision.archivedAt !== null ? (
+                      decision.archivedAt.toLocalDate().format()
+                    ) : (
+                      <MutateButton
+                        icon={faBoxArchive}
+                        text={i18n.personProfile.decision.archive}
+                        mutation={planArchiveVoucherValueDecisionMutation}
+                        onClick={() => ({ id: decision.id })}
+                        data-qa="archive-button"
+                        disabled={decision.status !== 'SENT'}
+                      />
+                    )}
+                  </Td>
+                )}
+            </Tr>
+          )
+        })}
+      </Tbody>
+    </Table>
+  )
+}
 
 const StyledLabel = styled(Label)`
   margin-top: ${defaultMargins.xs};

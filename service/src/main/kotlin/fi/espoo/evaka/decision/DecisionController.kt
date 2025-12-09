@@ -39,13 +39,18 @@ class DecisionController(
     private val evakaEnv: EvakaEnv,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
+    data class DecisionWithPermittedActions(
+        val data: Decision,
+        val permittedActions: Set<Action.Decision>,
+    )
+
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam id: PersonId,
-    ): DecisionListResponse {
+    ): List<DecisionWithPermittedActions> {
         val decisions =
             db.connect { dbc ->
                 dbc.read {
@@ -63,11 +68,24 @@ class DecisionController(
                             clock,
                             Action.Decision.READ,
                         )
-                    it.getDecisionsByGuardian(id, filter)
+                    val decisions = it.getDecisionsByGuardian(id, filter)
+                    val permittedActions =
+                        accessControl.getPermittedActions<DecisionId, Action.Decision>(
+                            it,
+                            user,
+                            clock,
+                            decisions.map(Decision::id),
+                        )
+                    decisions.map { decision ->
+                        DecisionWithPermittedActions(
+                            decision,
+                            permittedActions[decision.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
         Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
-        return DecisionListResponse(decisions)
+        return decisions
     }
 
     @GetMapping("/units")
@@ -178,5 +196,3 @@ class DecisionController(
         }
     }
 }
-
-data class DecisionListResponse(val decisions: List<Decision>)
