@@ -408,6 +408,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         <ContentArea opaque>
           <div style={{ marginLeft: defaultMargins.s }}>
             <Checkbox
+              aria-required
               label={t.applications.editor.actions.hasVerified}
               checked={verified}
               onChange={setVerified}
@@ -417,6 +418,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             {hasOtherGuardian && (
               <>
                 <Checkbox
+                  aria-required
                   label={t.applications.editor.actions.allowOtherGuardianAccess}
                   checked={allowOtherGuardianAccess}
                   onChange={setAllowOtherGuardianAccess}
