@@ -224,7 +224,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             }
             inlineChildren
           >
-            <Label>
+            <Label id="daily-time-label">
               {t.applications.editor.serviceNeed.dailyTime
                 .usualArrivalAndDeparture[applicationType] + ' *'}
             </Label>
@@ -232,12 +232,17 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <Gap size="s" />
 
-          <FixedSpaceRow spacing="s">
+          <FixedSpaceRow
+            spacing="s"
+            role="group"
+            aria-labelledby="daily-time-label"
+          >
             <FixedSpaceColumn spacing="xs">
               <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
               <TimeInput
+                required
                 id="daily-time-starts"
                 value={formData.startTime}
                 data-qa="startTime-input"
@@ -254,6 +259,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
               <TimeInput
+                required
                 id="daily-time-ends"
                 value={formData.endTime}
                 data-qa="endTime-input"
