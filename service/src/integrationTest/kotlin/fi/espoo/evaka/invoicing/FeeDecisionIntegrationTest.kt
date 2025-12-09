@@ -2536,12 +2536,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
-        return feeDecisionController.getHeadOfFamilyFeeDecisions(
-            dbInstance(),
-            user,
-            RealEvakaClock(),
-            id,
-        )
+        return feeDecisionController
+            .getHeadOfFamilyFeeDecisions(dbInstance(), user, RealEvakaClock(), id)
+            .map { it.data }
     }
 
     private fun confirmDrafts(

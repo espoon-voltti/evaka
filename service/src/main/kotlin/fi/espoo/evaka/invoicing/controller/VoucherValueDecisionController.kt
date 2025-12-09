@@ -153,13 +153,18 @@ class VoucherValueDecisionController(
             .also { Audit.VoucherValueDecisionRead.log(targetId = AuditId(id)) }
     }
 
+    data class VoucherValueDecisionSummaryWithPermittedActions(
+        val data: VoucherValueDecisionSummary,
+        val permittedActions: Set<Action.VoucherValueDecision>,
+    )
+
     @GetMapping("/head-of-family/{headOfFamilyId}")
     fun getHeadOfFamilyVoucherValueDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId,
-    ): List<VoucherValueDecisionSummary> {
+    ): List<VoucherValueDecisionSummaryWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -169,7 +174,23 @@ class VoucherValueDecisionController(
                         Action.Person.READ_VOUCHER_VALUE_DECISIONS,
                         headOfFamilyId,
                     )
-                    it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
+                    val decisions = it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<
+                            VoucherValueDecisionId,
+                            Action.VoucherValueDecision,
+                        >(
+                            it,
+                            user,
+                            clock,
+                            decisions.map(VoucherValueDecisionSummary::id),
+                        )
+                    decisions.map { decision ->
+                        VoucherValueDecisionSummaryWithPermittedActions(
+                            decision,
+                            permittedActions[decision.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
             .also {

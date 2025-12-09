@@ -343,6 +343,14 @@ export interface FeeDecisionTypeRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.FeeDecisionWithPermittedActions
+*/
+export interface FeeDecisionWithPermittedActions {
+  data: FeeDecision
+  permittedActions: Action.FeeDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeThresholds
 */
 export interface FeeThresholds {
@@ -1152,6 +1160,14 @@ export interface VoucherValueDecisionSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionSummaryWithPermittedActions
+*/
+export interface VoucherValueDecisionSummaryWithPermittedActions {
+  data: VoucherValueDecisionSummary
+  permittedActions: Action.VoucherValueDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 */
 export type VoucherValueDecisionType =
@@ -1265,6 +1281,14 @@ export function deserializeJsonFeeDecisionSummary(json: JsonOf<FeeDecisionSummar
     headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionWithPermittedActions(json: JsonOf<FeeDecisionWithPermittedActions>): FeeDecisionWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonFeeDecision(json.data)
   }
 }
 
@@ -1573,5 +1597,13 @@ export function deserializeJsonVoucherValueDecisionSummary(json: JsonOf<VoucherV
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecisionSummaryWithPermittedActions(json: JsonOf<VoucherValueDecisionSummaryWithPermittedActions>): VoucherValueDecisionSummaryWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonVoucherValueDecisionSummary(json.data)
   }
 }

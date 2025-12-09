@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
 import type { ApplicationId } from './shared'
 import type { DaycareId } from './shared'
 import type { DecisionId } from './shared'
@@ -61,13 +62,6 @@ export interface DecisionDraftUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionListResponse
-*/
-export interface DecisionListResponse {
-  decisions: Decision[]
-}
-
-/**
 * Generated from fi.espoo.evaka.decision.DecisionStatus
 */
 export type DecisionStatus =
@@ -105,6 +99,14 @@ export interface DecisionUnit {
   streetAddress: string
 }
 
+/**
+* Generated from fi.espoo.evaka.decision.DecisionController.DecisionWithPermittedActions
+*/
+export interface DecisionWithPermittedActions {
+  data: Decision
+  permittedActions: Action.Decision[]
+}
+
 
 export function deserializeJsonDecision(json: JsonOf<Decision>): Decision {
   return {
@@ -137,9 +139,9 @@ export function deserializeJsonDecisionDraftUpdate(json: JsonOf<DecisionDraftUpd
 }
 
 
-export function deserializeJsonDecisionListResponse(json: JsonOf<DecisionListResponse>): DecisionListResponse {
+export function deserializeJsonDecisionWithPermittedActions(json: JsonOf<DecisionWithPermittedActions>): DecisionWithPermittedActions {
   return {
     ...json,
-    decisions: json.decisions.map(e => deserializeJsonDecision(e))
+    data: deserializeJsonDecision(json.data)
   }
 }

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'wouter'
 
-import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { DecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -28,10 +28,29 @@ interface Props {
 }
 
 const PersonDecisions = React.memo(function PersonDecisions({ id }: Props) {
-  const { i18n } = useTranslation()
-  const decisionsResponse = useQueryResult(decisionsByGuardianQuery({ id }))
+  const decisionsResult = useQueryResult(decisionsByGuardianQuery({ id }))
 
-  return renderResult(decisionsResponse, (decisionsResponse) => (
+  return renderResult(decisionsResult, (decisions) => (
+    <PersonDecisionsTable decisions={decisions} />
+  ))
+})
+
+const PersonDecisionsTable = ({
+  decisions
+}: {
+  decisions: DecisionWithPermittedActions[]
+}) => {
+  const { i18n } = useTranslation()
+  const archivedColumnVisible = useMemo(
+    () =>
+      featureFlags.archiveIntegration?.decisions &&
+      decisions.some(({ permittedActions }) =>
+        permittedActions.includes('ARCHIVE')
+      ),
+    [decisions]
+  )
+
+  return (
     <Table data-qa="table-of-decisions">
       <Thead>
         <Tr>
@@ -41,17 +60,20 @@ const PersonDecisions = React.memo(function PersonDecisions({ id }: Props) {
           <Th>{i18n.personProfile.decision.sentDate}</Th>
           <Th>{i18n.personProfile.application.type}</Th>
           <Th>{i18n.personProfile.decision.status}</Th>
-          {featureFlags.archiveIntegration?.decisions && (
+          {archivedColumnVisible && (
             <Th>{i18n.personProfile.decision.archived}</Th>
           )}
         </Tr>
       </Thead>
       <Tbody>
         {orderBy(
-          decisionsResponse.decisions,
-          ['startDate', 'preferredUnitName', 'childName'],
-          ['desc', 'desc']
-        ).map((decision: Decision) => (
+          decisions,
+          [
+            ({ data: decision }) => decision.startDate,
+            ({ data: decision }) => decision.childName
+          ],
+          ['desc']
+        ).map(({ data: decision, permittedActions }) => (
           <Tr key={decision.id} data-qa="table-decision-row">
             <NameTd data-qa="decision-child-name">
               <Link to={`/child-information/${decision.childId}`}>
@@ -75,30 +97,31 @@ const PersonDecisions = React.memo(function PersonDecisions({ id }: Props) {
             <StatusTd data-qa="decision-status">
               {i18n.personProfile.decision.statuses[decision.status]}
             </StatusTd>
-            {featureFlags.archiveIntegration?.decisions && (
-              <Td>
-                {decision.archivedAt !== null ? (
-                  decision.archivedAt.toLocalDate().format()
-                ) : (
-                  <MutateButton
-                    icon={faBoxArchive}
-                    text={i18n.personProfile.decision.archive}
-                    mutation={planArchiveDecisionMutation}
-                    onClick={() => ({ decisionId: decision.id })}
-                    data-qa="archive-button"
-                    disabled={
-                      decision.status !== 'ACCEPTED' &&
-                      decision.status !== 'REJECTED'
-                    }
-                  />
-                )}
-              </Td>
-            )}
+            {featureFlags.archiveIntegration?.decisions &&
+              permittedActions.includes('ARCHIVE') && (
+                <Td>
+                  {decision.archivedAt !== null ? (
+                    decision.archivedAt.toLocalDate().format()
+                  ) : (
+                    <MutateButton
+                      icon={faBoxArchive}
+                      text={i18n.personProfile.decision.archive}
+                      mutation={planArchiveDecisionMutation}
+                      onClick={() => ({ decisionId: decision.id })}
+                      data-qa="archive-button"
+                      disabled={
+                        decision.status !== 'ACCEPTED' &&
+                        decision.status !== 'REJECTED'
+                      }
+                    />
+                  )}
+                </Td>
+              )}
           </Tr>
         ))}
       </Tbody>
     </Table>
-  ))
-})
+  )
+}
 
 export default PersonDecisions

@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
-import type { FeeDecision } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -65,65 +65,87 @@ export default React.memo(function PersonFeeDecisions({ id }: Props) {
         />
       )}
       {renderResult(feeDecisions, (feeDecisions) => (
-        <Table data-qa="table-of-fee-decisions">
-          <Thead>
-            <Tr>
-              <Th>{i18n.feeDecisions.table.validity}</Th>
-              <Th>{i18n.feeDecisions.table.price}</Th>
-              <Th>{i18n.feeDecisions.table.number}</Th>
-              <Th>{i18n.feeDecisions.table.createdAt}</Th>
-              <Th>{i18n.feeDecisions.table.sentAt}</Th>
-              <Th>{i18n.feeDecisions.table.status}</Th>
-              {featureFlags.archiveIntegration?.feeDecisions && (
-                <Th>{i18n.personProfile.decision.archived}</Th>
-              )}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {orderBy(
-              feeDecisions,
-              ['validFrom', 'sentAt'],
-              ['desc', 'desc']
-            ).map((feeDecision: FeeDecision) => (
-              <Tr key={feeDecision.id} data-qa="table-fee-decision-row">
-                <Td>
-                  <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
-                    Maksupäätös {feeDecision.validDuring.format()}
-                  </Link>
-                </Td>
-                <Td>{formatCents(feeDecision.totalFee)}</Td>
-                <Td>{feeDecision.decisionNumber}</Td>
-                <DateTd>{feeDecision.created.toLocalDate().format()}</DateTd>
-                <DateTd data-qa="fee-decision-sent-at">
-                  {feeDecision.sentAt?.toLocalDate().format() ?? ''}
-                </DateTd>
-                <StatusTd>
-                  {i18n.feeDecision.status[feeDecision.status]}
-                </StatusTd>
-                {featureFlags.archiveIntegration?.feeDecisions && (
-                  <Td>
-                    {feeDecision.archivedAt !== null ? (
-                      feeDecision.archivedAt.toLocalDate().format()
-                    ) : (
-                      <MutateButton
-                        icon={faBoxArchive}
-                        text={i18n.personProfile.decision.archive}
-                        mutation={planArchiveFeeDecisionMutation}
-                        onClick={() => ({ id: feeDecision.id })}
-                        data-qa="archive-button"
-                        disabled={feeDecision.status !== 'SENT'}
-                      />
-                    )}
-                  </Td>
-                )}
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
+        <PersonFeeDecisionsTable feeDecisions={feeDecisions} />
       ))}
     </>
   )
 })
+
+const PersonFeeDecisionsTable = ({
+  feeDecisions
+}: {
+  feeDecisions: FeeDecisionWithPermittedActions[]
+}) => {
+  const { i18n } = useTranslation()
+  const archivedColumnVisible = useMemo(
+    () =>
+      featureFlags.archiveIntegration?.feeDecisions &&
+      feeDecisions.some(({ permittedActions }) =>
+        permittedActions.includes('ARCHIVE')
+      ),
+    [feeDecisions]
+  )
+
+  return (
+    <Table data-qa="table-of-fee-decisions">
+      <Thead>
+        <Tr>
+          <Th>{i18n.feeDecisions.table.validity}</Th>
+          <Th>{i18n.feeDecisions.table.price}</Th>
+          <Th>{i18n.feeDecisions.table.number}</Th>
+          <Th>{i18n.feeDecisions.table.createdAt}</Th>
+          <Th>{i18n.feeDecisions.table.sentAt}</Th>
+          <Th>{i18n.feeDecisions.table.status}</Th>
+          {archivedColumnVisible && (
+            <Th>{i18n.personProfile.decision.archived}</Th>
+          )}
+        </Tr>
+      </Thead>
+      <Tbody>
+        {orderBy(
+          feeDecisions,
+          [
+            ({ data: decision }) => decision.validFrom,
+            ({ data: decision }) => decision.sentAt
+          ],
+          ['desc', 'desc']
+        ).map(({ data: feeDecision, permittedActions }) => (
+          <Tr key={feeDecision.id} data-qa="table-fee-decision-row">
+            <Td>
+              <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
+                Maksupäätös {feeDecision.validDuring.format()}
+              </Link>
+            </Td>
+            <Td>{formatCents(feeDecision.totalFee)}</Td>
+            <Td>{feeDecision.decisionNumber}</Td>
+            <DateTd>{feeDecision.created.toLocalDate().format()}</DateTd>
+            <DateTd data-qa="fee-decision-sent-at">
+              {feeDecision.sentAt?.toLocalDate().format() ?? ''}
+            </DateTd>
+            <StatusTd>{i18n.feeDecision.status[feeDecision.status]}</StatusTd>
+            {featureFlags.archiveIntegration?.feeDecisions &&
+              permittedActions.includes('ARCHIVE') && (
+                <Td>
+                  {feeDecision.archivedAt !== null ? (
+                    feeDecision.archivedAt.toLocalDate().format()
+                  ) : (
+                    <MutateButton
+                      icon={faBoxArchive}
+                      text={i18n.personProfile.decision.archive}
+                      mutation={planArchiveFeeDecisionMutation}
+                      onClick={() => ({ id: feeDecision.id })}
+                      data-qa="archive-button"
+                      disabled={feeDecision.status !== 'SENT'}
+                    />
+                  )}
+                </Td>
+              )}
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
 
 const StyledLabel = styled(Label)`
   margin-top: ${defaultMargins.xs};

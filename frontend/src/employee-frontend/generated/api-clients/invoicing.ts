@@ -10,10 +10,10 @@ import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import type { FeeAlterationId } from 'lib-common/generated/api-types/shared'
 import type { FeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
-import type { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type { FeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import type { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import type { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
@@ -54,14 +54,14 @@ import type { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/genera
 import type { Uri } from 'lib-common/uri'
 import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import type { VoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
-import type { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionSummaryWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import type { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecisionResponse } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonFeeDecisionWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
@@ -74,7 +74,7 @@ import { deserializeJsonPagedPayments } from 'lib-common/generated/api-types/inv
 import { deserializeJsonPagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionResponse } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonVoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonVoucherValueDecisionSummaryWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { uri } from 'lib-common/uri'
 
 
@@ -226,12 +226,12 @@ export async function getHeadOfFamilyFeeDecisions(
   request: {
     id: PersonId
   }
-): Promise<FeeDecision[]> {
-  const { data: json } = await client.request<JsonOf<FeeDecision[]>>({
+): Promise<FeeDecisionWithPermittedActions[]> {
+  const { data: json } = await client.request<JsonOf<FeeDecisionWithPermittedActions[]>>({
     url: uri`/employee/fee-decisions/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonFeeDecision(e))
+  return json.map(e => deserializeJsonFeeDecisionWithPermittedActions(e))
 }
 
 
@@ -981,12 +981,12 @@ export async function getHeadOfFamilyVoucherValueDecisions(
   request: {
     headOfFamilyId: PersonId
   }
-): Promise<VoucherValueDecisionSummary[]> {
-  const { data: json } = await client.request<JsonOf<VoucherValueDecisionSummary[]>>({
+): Promise<VoucherValueDecisionSummaryWithPermittedActions[]> {
+  const { data: json } = await client.request<JsonOf<VoucherValueDecisionSummaryWithPermittedActions[]>>({
     url: uri`/employee/value-decisions/head-of-family/${request.headOfFamilyId}`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonVoucherValueDecisionSummary(e))
+  return json.map(e => deserializeJsonVoucherValueDecisionSummaryWithPermittedActions(e))
 }
 
 

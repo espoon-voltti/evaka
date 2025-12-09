@@ -5,14 +5,14 @@
 // GENERATED FILE: no manual modifications
 
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
-import type { DecisionListResponse } from 'lib-common/generated/api-types/decision'
 import type { DecisionUnit } from 'lib-common/generated/api-types/decision'
+import type { DecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
 import type { JsonOf } from 'lib-common/json'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonDecisionListResponse } from 'lib-common/generated/api-types/decision'
+import { deserializeJsonDecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
 import { uri } from 'lib-common/uri'
 
 
@@ -49,16 +49,16 @@ export async function getDecisionsByGuardian(
   request: {
     id: PersonId
   }
-): Promise<DecisionListResponse> {
+): Promise<DecisionWithPermittedActions[]> {
   const params = createUrlSearchParams(
     ['id', request.id]
   )
-  const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
+  const { data: json } = await client.request<JsonOf<DecisionWithPermittedActions[]>>({
     url: uri`/employee/decisions/by-guardian`.toString(),
     method: 'GET',
     params
   })
-  return deserializeJsonDecisionListResponse(json)
+  return json.map(e => deserializeJsonDecisionWithPermittedActions(e))
 }
 
 
