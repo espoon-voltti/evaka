@@ -554,13 +554,33 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works with distinctions param NO_OPEN_INCOME_STATEMENTS`() {
         val clock = RealEvakaClock()
         val decisionWithHandledStatement =
-            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1))
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_1,
+                partner = testAdult_2,
+                familyChildren = listOf(testChild_1),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
         val decisionWithOpenAdultStatement =
-            createFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf(testChild_2))
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_3,
+                partner = testAdult_4,
+                familyChildren = listOf(testChild_2),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
         val decisionWithFarAwayAndFutureOpenStatements =
-            createFeeDecisionsForFamily(testAdult_5, testAdult_6, listOf(testChild_3))
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_5,
+                partner = testAdult_6,
+                familyChildren = listOf(testChild_3),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
         val decisionWithOpenChildStatement =
-            createFeeDecisionsForFamily(testAdult_7, partner = null, listOf(testChild_4))
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_7,
+                partner = null,
+                familyChildren = listOf(testChild_4),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(
@@ -650,7 +670,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     personId = testAdult_6.id,
                     data =
                         IncomeStatementBody.HighestFee(
-                            clock.today().plusDays(1),
+                            clock.today().plusMonths(9),
                             clock.today().plusMonths(12),
                         ),
                     status = IncomeStatementStatus.SENT,
@@ -710,9 +730,19 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works with distinctions param NO_OPEN_INCOME_STATEMENTS for childless decisions`() {
         val clock = RealEvakaClock()
         val decisionWithHandledStatements =
-            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf())
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_1,
+                partner = testAdult_2,
+                familyChildren = listOf(),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
         val decisionWithOpenStatements =
-            createFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf())
+            createFeeDecisionsForFamily(
+                headOfFamily = testAdult_3,
+                partner = testAdult_4,
+                familyChildren = listOf(),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(listOf(decisionWithHandledStatements, decisionWithOpenStatements))
@@ -2505,12 +2535,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         headOfFamily: DevPerson,
         partner: DevPerson?,
         familyChildren: List<DevPerson>,
+        period: FiniteDateRange =
+            FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
     ): FeeDecision {
         return createFeeDecisionFixture(
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = headOfFamily.id,
-            period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+            period = period,
             children =
                 familyChildren.map {
                     createFeeDecisionChildFixture(
