@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -41,6 +42,8 @@ import java.util.UUID
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -1500,6 +1503,467 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `weak auth citizen sees redacted view of sensitive message from personal account to child`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content that should be hidden",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val weakAuthUser = AuthenticatedUser.Citizen(id = person1.id, CitizenAuthLevel.WEAK)
+        val threads = getAllCitizenMessageThreads(weakAuthUser)
+
+        assertEquals(1, threads.size)
+        assertTrue(threads[0] is CitizenMessageThread.Redacted)
+        val redacted = threads[0] as CitizenMessageThread.Redacted
+        assertEquals(employee1Account, redacted.sender?.id)
+        assertNotNull(redacted.sender)
+        assertNotNull(redacted.lastMessageSentAt)
+        assertTrue(redacted.hasUnreadMessages)
+    }
+
+    @Test
+    fun `only guardians and foster parents receive sensitive messages about their child`() {
+        val fosterParent = DevPerson(firstName = "Foster", lastName = "Parent")
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.getCitizenMessageAccount(fosterParent.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = testChild_1.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(placementStart, placementEnd),
+                    modifiedAt = HelsinkiDateTime.now(),
+                    modifiedBy = EvakaUserId(employee1.id.raw),
+                )
+            )
+        }
+
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val person1Threads = getAllCitizenMessageThreads(person1)
+        val person2Threads = getAllCitizenMessageThreads(person2)
+        val fosterParentUser =
+            AuthenticatedUser.Citizen(id = fosterParent.id, CitizenAuthLevel.STRONG)
+        val fosterParentThreads = getAllCitizenMessageThreads(fosterParentUser)
+
+        assertEquals(1, person1Threads.size)
+        assertEquals(1, person2Threads.size)
+        assertEquals(1, fosterParentThreads.size)
+
+        val nonGuardianUser =
+            AuthenticatedUser.Citizen(id = testAdult_5.id, CitizenAuthLevel.STRONG)
+        val nonGuardianThreads = getAllCitizenMessageThreads(nonGuardianUser)
+        assertEquals(0, nonGuardianThreads.size)
+    }
+
+    @Test
+    fun `strong auth citizen sees full content of sensitive message`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content that should be visible",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val threads = getAllCitizenMessageThreads(person1)
+
+        assertEquals(1, threads.size)
+        assertTrue(threads[0] is CitizenMessageThread.Regular)
+        val regular = threads[0] as CitizenMessageThread.Regular
+        assertEquals("Sensitive Title", regular.title)
+        assertEquals(MessageType.MESSAGE, regular.messageType)
+        assertTrue(regular.sensitive)
+        assertEquals(1, regular.messages.size)
+        assertEquals("Sensitive content that should be visible", regular.messages[0].content)
+        assertEquals(employee1Account, regular.messages[0].sender.id)
+    }
+
+    @Test
+    fun `strong auth citizen can mark sensitive message as read`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        assertEquals(1, unreadMessagesCount(person1))
+        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+
+        val threadId = getRegularMessageThreads(person1).first().id
+        markThreadRead(person1, threadId)
+
+        assertEquals(0, unreadMessagesCount(person1))
+        assertEquals(0, getUnreadReceivedMessages(person1Account, person1).size)
+    }
+
+    @Test
+    fun `strong auth citizen can archive sensitive message thread`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val threadsBeforeArchive = getAllCitizenMessageThreads(person1)
+        assertEquals(1, threadsBeforeArchive.size)
+
+        val threadId = threadsBeforeArchive.first().id
+        messageControllerCitizen.archiveThread(dbInstance(), person1, threadId)
+
+        val threadsAfterArchive = getAllCitizenMessageThreads(person1)
+        assertEquals(0, threadsAfterArchive.size)
+    }
+
+    @Test
+    fun `citizen can view sensitive message after placement ends`() {
+        val messageTime = HelsinkiDateTime.of(placementStart.plusDays(10), LocalTime.NOON)
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content during active placement",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+            now = messageTime,
+        )
+
+        val afterPlacementEnd = HelsinkiDateTime.of(placementEnd.plusDays(1), LocalTime.NOON)
+        val threads = getAllCitizenMessageThreads(person1, now = afterPlacementEnd)
+
+        assertEquals(1, threads.size)
+        assertTrue(threads[0] is CitizenMessageThread.Regular)
+        val regular = threads[0] as CitizenMessageThread.Regular
+        assertEquals("Sensitive Title", regular.title)
+        assertEquals("Sensitive content during active placement", regular.messages[0].content)
+        assertTrue(regular.sensitive)
+    }
+
+    @Test
+    fun `weak auth citizen sees redacted view of old sensitive messages after placement ends`() {
+        val messageTime = HelsinkiDateTime.of(placementStart.plusDays(10), LocalTime.NOON)
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content during active placement",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+            now = messageTime,
+        )
+
+        val afterPlacementEnd = HelsinkiDateTime.of(placementEnd.plusDays(1), LocalTime.NOON)
+        val weakAuthUser = AuthenticatedUser.Citizen(id = person1.id, CitizenAuthLevel.WEAK)
+        val threads = getAllCitizenMessageThreads(weakAuthUser, now = afterPlacementEnd)
+
+        assertEquals(1, threads.size)
+        assertTrue(threads[0] is CitizenMessageThread.Redacted)
+        val redacted = threads[0] as CitizenMessageThread.Redacted
+        assertNotNull(redacted.sender)
+        assertNotNull(redacted.lastMessageSentAt)
+    }
+
+    @Test
+    fun `sensitive message cannot be sent to child with ended placement`() {
+        val endedPlacementStart = LocalDate.now().minusMonths(2)
+        val endedPlacementEnd = LocalDate.now().minusDays(1)
+        val childWithEndedPlacement = DevPerson()
+        val guardianOfEndedPlacement = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(childWithEndedPlacement, DevPersonType.CHILD)
+            tx.insert(guardianOfEndedPlacement, DevPersonType.ADULT)
+            tx.insertGuardian(guardianOfEndedPlacement.id, childWithEndedPlacement.id)
+
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = childWithEndedPlacement.id,
+                        unitId = testDaycare.id,
+                        startDate = endedPlacementStart,
+                        endDate = endedPlacementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId1,
+                    startDate = endedPlacementStart,
+                    endDate = endedPlacementEnd,
+                )
+            )
+            tx.insert(
+                DevServiceNeed(
+                    confirmedBy = employee1.evakaUserId,
+                    placementId = placementId,
+                    startDate = endedPlacementStart,
+                    endDate = endedPlacementEnd,
+                    optionId = snDefaultDaycare.id,
+                )
+            )
+        }
+
+        val preflightResponse =
+            postNewThreadPreflightCheck(
+                user = employee1,
+                sender = employee1Account,
+                recipients = listOf(MessageRecipient.Child(childWithEndedPlacement.id)),
+            )
+        assertEquals(0, preflightResponse.numberOfRecipientAccounts)
+
+        val messageContentId =
+            postNewThread(
+                title = "Sensitive Title",
+                message = "Sensitive content",
+                messageType = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipients = listOf(MessageRecipient.Child(childWithEndedPlacement.id)),
+                user = employee1,
+                sensitive = true,
+            )
+        assertNull(messageContentId)
+    }
+
+    @Test
+    fun `citizen with strong auth can reply to sensitive message`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val thread = getRegularMessageThreads(person1).first()
+        val originalMessageId = thread.messages.first().id
+
+        replyToMessage(
+            person1,
+            originalMessageId,
+            setOf(employee1Account),
+            "Reply to sensitive message",
+        )
+
+        val threadsAfterReply = getRegularMessageThreads(person1)
+        assertEquals(1, threadsAfterReply.size)
+        val updatedThread = threadsAfterReply.first()
+        assertEquals(2, updatedThread.messages.size)
+        assertEquals("Reply to sensitive message", updatedThread.messages.last().content)
+        assertEquals(person1Account, updatedThread.messages.last().sender.id)
+
+        val employeeThreads = getEmployeeMessageThreads(employee1Account, employee1)
+        val employeeThread = employeeThreads.first { it.id == thread.id }
+        assertEquals(2, employeeThread.messages.size)
+        assertEquals("Reply to sensitive message", employeeThread.messages.last().content)
+    }
+
+    @Test
+    fun `weak auth citizen cannot reply to sensitive message`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val thread = getRegularMessageThreads(person1).first()
+        val messageId = thread.messages.first().id
+
+        val weakAuthUser = AuthenticatedUser.Citizen(id = person1.id, CitizenAuthLevel.WEAK)
+        val threads = getAllCitizenMessageThreads(weakAuthUser)
+        assertEquals(1, threads.size)
+        assertTrue(threads[0] is CitizenMessageThread.Redacted)
+
+        assertThrows<Forbidden> {
+            messageControllerCitizen.replyToThread(
+                dbInstance(),
+                weakAuthUser,
+                MockEvakaClock(readTime),
+                messageId,
+                ReplyToMessageBody(
+                    content = "Attempted reply",
+                    recipientAccountIds = setOf(employee1Account),
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `reply to sensitive message maintains thread sensitivity flag`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val thread = getRegularMessageThreads(person1).first()
+        assertTrue(thread.sensitive)
+        val originalMessageId = thread.messages.first().id
+
+        replyToMessage(person1, originalMessageId, setOf(employee1Account), "Citizen reply")
+
+        val threadsAfterCitizenReply = getRegularMessageThreads(person1)
+        val threadAfterCitizenReply = threadsAfterCitizenReply.first()
+        assertTrue(threadAfterCitizenReply.sensitive)
+
+        replyToMessage(
+            employee1,
+            employee1Account,
+            threadAfterCitizenReply.messages.last().id,
+            setOf(person1Account),
+            "Employee reply back",
+        )
+
+        val threadsAfterEmployeeReply = getRegularMessageThreads(person1)
+        val threadAfterEmployeeReply = threadsAfterEmployeeReply.first()
+        assertTrue(threadAfterEmployeeReply.sensitive)
+
+        val weakAuthUser = AuthenticatedUser.Citizen(id = person1.id, CitizenAuthLevel.WEAK)
+        val weakAuthThreads = getAllCitizenMessageThreads(weakAuthUser)
+        assertEquals(1, weakAuthThreads.size)
+        assertTrue(weakAuthThreads[0] is CitizenMessageThread.Redacted)
+    }
+
+    @Test
+    fun `cannot add new recipients when replying to sensitive message thread`() {
+        postNewThread(
+            title = "Sensitive Title",
+            message = "Sensitive content",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            user = employee1,
+            sensitive = true,
+        )
+
+        val thread = getRegularMessageThreads(person1).first()
+        val originalMessageId = thread.messages.first().id
+
+        assertThrows<Forbidden> {
+            replyToMessage(
+                person1,
+                originalMessageId,
+                setOf(employee1Account, person3Account),
+                "Attempted reply with new recipient",
+            )
+        }
+    }
+
+    @Test
+    fun `group account cannot send sensitive messages`() {
+        val exception =
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "Sensitive Title",
+                    message = "Sensitive content",
+                    messageType = MessageType.MESSAGE,
+                    sender = group1Account,
+                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = employee1,
+                    sensitive = true,
+                )
+            }
+        assertEquals(
+            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `finance account cannot send sensitive messages to child`() {
+        val exception =
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "Sensitive Title",
+                    message = "Sensitive content",
+                    messageType = MessageType.MESSAGE,
+                    sender = financeAccount,
+                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = financeAdmin,
+                    sensitive = true,
+                )
+            }
+        assertEquals(
+            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `municipal account cannot send sensitive messages`() {
+        val exception =
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "Sensitive Title",
+                    message = "Sensitive content",
+                    messageType = MessageType.MESSAGE,
+                    sender = messagerAccount,
+                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = messager,
+                    sensitive = true,
+                )
+            }
+        assertEquals(
+            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `service worker account cannot send sensitive messages`() {
+        val exception =
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "Sensitive Title",
+                    message = "Sensitive content",
+                    messageType = MessageType.MESSAGE,
+                    sender = serviceWorkerAccount,
+                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = serviceWorker,
+                    sensitive = true,
+                )
+            }
+        assertEquals(
+            "Sensitive messages are only allowed to be sent from personal accounts to a single child recipient or from financial account to a single citizen",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create messages preflight check returns recipient count`() {
         val response =
             postNewThreadPreflightCheck(
@@ -2344,6 +2808,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1)
             .data
             .filterIsInstance<CitizenMessageThread.Regular>()
+    }
+
+    private fun getAllCitizenMessageThreads(
+        user: AuthenticatedUser.Citizen,
+        now: HelsinkiDateTime = readTime,
+    ): List<CitizenMessageThread> {
+        return messageControllerCitizen
+            .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1)
+            .data
     }
 
     private fun getEmployeeMessageThreads(
