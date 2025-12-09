@@ -48,7 +48,7 @@ export default React.memo(function SiblingBasisSubSection({
           {formData.vtjSiblings.length > 0 && (
             <>
               <Gap />
-              <Label>
+              <Label id="sibling-basis-group-label">
                 {
                   t.applications.editor.unitPreference.siblingBasis.radioLabel[
                     applicationType
@@ -57,7 +57,10 @@ export default React.memo(function SiblingBasisSubSection({
                 *
               </Label>
               <Gap />
-              <FixedSpaceColumn>
+              <FixedSpaceColumn
+                role="group"
+                aria-labelledby="sibling-basis-group-label"
+              >
                 {formData.vtjSiblings.map((sibling) => (
                   <Radio
                     key={sibling.socialSecurityNumber}
