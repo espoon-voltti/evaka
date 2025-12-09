@@ -45,8 +45,7 @@ const components: Translations = {
   },
   datePicker: {
     placeholder: 'pp.kk.vvvv',
-    description:
-      'Kirjoita päivämäärä kenttään muodossa pp.kk.vvvv. Nuoli alas -näppäimellä pääset kuukausivalitsimeen.',
+    description: 'Kirjoita päivämäärä kenttään muodossa pp.kk.vvvv.',
     validationErrors: {
       validDate: 'Anna muodossa pp.kk.vvvv',
       dateTooEarly: 'Valitse myöhäisempi päivä',
