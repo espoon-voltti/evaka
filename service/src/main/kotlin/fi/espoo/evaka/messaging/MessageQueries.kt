@@ -1278,6 +1278,7 @@ data class ThreadWithParticipants(
     val threadId: MessageThreadId,
     val type: MessageType,
     val isCopy: Boolean,
+    val sensitive: Boolean,
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>,
     val applicationId: ApplicationId?,
@@ -1293,6 +1294,7 @@ SELECT
     t.id AS threadId,
     t.message_type AS type,
     t.is_copy,
+    t.sensitive,
     t.application_id,
     a.status AS application_status,
     (SELECT array_agg(m2.sender_id)) as senders,
@@ -1305,7 +1307,7 @@ SELECT
     LEFT JOIN message_thread_children mtc ON mtc.thread_id = t.id
     LEFT JOIN application a ON t.application_id = a.id
     WHERE m.id = ${bind(messageId)}
-    GROUP BY t.id, t.message_type, a.status
+    GROUP BY t.id, t.message_type, t.sensitive, a.status
 """
             )
         }
