@@ -107,6 +107,7 @@ export default React.memo(function SiblingBasisSubSection({
                     {t.applications.editor.unitPreference.siblingBasis.names} *
                   </Label>
                   <InputField
+                    required
                     value={formData.siblingName}
                     data-qa="siblingName-input"
                     onChange={(value) =>
@@ -130,6 +131,7 @@ export default React.memo(function SiblingBasisSubSection({
                     {t.applications.editor.unitPreference.siblingBasis.ssn} *
                   </Label>
                   <InputField
+                    required
                     value={formData.siblingSsn}
                     data-qa="siblingSsn-input"
                     onChange={(value) =>
