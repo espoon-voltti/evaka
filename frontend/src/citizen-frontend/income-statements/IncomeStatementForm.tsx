@@ -691,6 +691,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
                   data-qa="gross-monthly-income-estimate"
                   value={formData.estimatedMonthlyIncome}
                   onChange={onEstimatedMonthlyIncomeChange}
+                  required
                   hideErrorsBeforeTouched={!showFormErrors}
                   info={errorToInputInfo(
                     validate(
