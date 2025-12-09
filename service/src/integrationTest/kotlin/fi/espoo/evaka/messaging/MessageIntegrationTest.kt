@@ -2045,6 +2045,130 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `citizen cannot send message to group when NONE of selected children are in that group`() {
+        val groupId3 = GroupId(UUID.randomUUID())
+        val group3Account =
+            db.transaction { tx ->
+                tx.insert(
+                    DevDaycareGroup(
+                        id = groupId3,
+                        daycareId = testDaycare.id,
+                        startDate = placementStart,
+                        name = "Group 3",
+                    )
+                )
+                tx.createDaycareGroupMessageAccount(groupId3)
+            }
+
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+
+        assertThrows<BadRequest> {
+            postNewThread(
+                user = person2,
+                title = "title",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_2.id),
+                recipients = listOf(group3Account),
+            )
+        }
+    }
+
+    @Test
+    fun `citizen can send message to employee when ALL selected children are related to that employee`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+
+        postNewThread(
+            user = person2,
+            title = "title",
+            message = "content",
+            children = listOf(testChild_1.id, testChild_2.id),
+            recipients = listOf(employee1Account),
+        )
+
+        val threads = getRegularMessageThreads(person2)
+        assertEquals(1, threads.size)
+        assertEquals("title", threads[0].title)
+        assertEquals("content", threads[0].messages[0].content)
+    }
+
+    @Test
+    fun `citizen cannot send message to employee when only SOME selected children are related to that employee`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+            tx.insertGuardian(person2.id, testChild_8.id)
+        }
+
+        assertThrows<BadRequest> {
+            postNewThread(
+                user = person2,
+                title = "title",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_8.id),
+                recipients = listOf(employee1Account),
+            )
+        }
+    }
+
+    @Test
+    fun `citizen can send message with multiple children when all recipients are valid for ALL children`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+
+        postNewThread(
+            user = person2,
+            title = "title",
+            message = "content",
+            children = listOf(testChild_1.id, testChild_2.id),
+            recipients = listOf(employee1Account, group1Account),
+        )
+
+        val threads = getRegularMessageThreads(person2)
+        assertEquals(1, threads.size)
+        assertEquals("title", threads[0].title)
+        assertEquals("content", threads[0].messages[0].content)
+    }
+
+    @Test
+    fun `citizen can send message to groups when all selected children are in same unit`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+
+        postNewThread(
+            user = person2,
+            title = "title",
+            message = "content",
+            children = listOf(testChild_1.id, testChild_2.id),
+            recipients = listOf(group1Account, group2Account),
+        )
+
+        val threads = getRegularMessageThreads(person2)
+        assertEquals(1, threads.size)
+        assertEquals("title", threads[0].title)
+        assertEquals("content", threads[0].messages[0].content)
+    }
+
+    @Test
     fun `citizen cannot reply to a message if the related placement has ended`() {
         db.transaction { tx ->
             testChild_2.let {
@@ -2078,6 +2202,118 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = HelsinkiDateTime.of(placementEnd.plusDays(1), LocalTime.NOON),
             )
         }
+    }
+
+    @Test
+    fun `citizen can reply to thread with multiple children`() {
+        db.transaction { tx ->
+            testChild_2.let {
+                insertChild(tx, it, groupId2)
+                tx.insertGuardian(person2.id, it.id)
+            }
+        }
+
+        val threadId =
+            postNewThread(
+                user = person2,
+                title = "Message about both children",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_2.id),
+                recipients = listOf(employee1Account),
+            )
+
+        val threads = getRegularMessageThreads(person2)
+        assertEquals(1, threads.size)
+        assertEquals(threadId, threads[0].id)
+        assertEquals(
+            setOf(testChild_1.id, testChild_2.id),
+            threads[0].children.map { it.childId }.toSet(),
+        )
+
+        replyToMessage(
+            user = person2,
+            messageId = threads[0].messages[0].id,
+            recipientAccountIds = setOf(employee1Account),
+            content = "reply content",
+        )
+
+        val threadsAfterReply = getRegularMessageThreads(person2)
+        assertEquals(1, threadsAfterReply.size)
+        assertEquals(2, threadsAfterReply[0].messages.size)
+        assertEquals("reply content", threadsAfterReply[0].messages[1].content)
+        // Verify children association is preserved after reply
+        assertEquals(
+            setOf(testChild_1.id, testChild_2.id),
+            threadsAfterReply[0].children.map { it.childId }.toSet(),
+        )
+    }
+
+    @Test
+    fun `thread with multiple children remains accessible when only some children have active placements`() {
+        // Create child 2 with placement ending early
+        val child2PlacementEnd = placementStart.plusDays(10)
+        db.transaction { tx ->
+            tx.insert(testChild_2, DevPersonType.CHILD)
+            tx.insertGuardian(person2.id, testChild_2.id)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = child2PlacementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId2,
+                    startDate = placementStart,
+                    endDate = child2PlacementEnd,
+                )
+            )
+            tx.insert(
+                DevServiceNeed(
+                    confirmedBy = employee1.evakaUserId,
+                    placementId = placementId,
+                    startDate = placementStart,
+                    endDate = child2PlacementEnd,
+                    optionId = snDefaultDaycare.id,
+                    shiftCare = ShiftCareType.NONE,
+                )
+            )
+        }
+
+        // child 1 already exists with normal placement period (setup in @BeforeEach)
+        // person2 is already a guardian of child 1
+
+        // Send message while both placements are active
+        val threadId =
+            postNewThread(
+                user = person2,
+                title = "Message about both children",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_2.id),
+                recipients = listOf(employee1Account),
+                now = HelsinkiDateTime.of(placementStart.plusDays(5), LocalTime.NOON),
+            )
+
+        // After child 2's placement ends but child 1's is still active
+        val afterChild2PlacementEnds =
+            HelsinkiDateTime.of(child2PlacementEnd.plusDays(1), LocalTime.NOON)
+
+        // Thread should still be accessible for viewing
+        val threads = getRegularMessageThreads(person2, now = afterChild2PlacementEnds)
+        assertEquals(1, threads.size)
+        assertEquals(threadId, threads[0].id)
+        // Verify both children are still associated with the thread
+        assertEquals(
+            setOf(testChild_1.id, testChild_2.id),
+            threads[0].children.map { it.childId }.toSet(),
+        )
+        // Verify the message content is accessible
+        assertEquals(1, threads[0].messages.size)
+        assertEquals("content", threads[0].messages[0].content)
     }
 
     @Test
@@ -3150,6 +3386,225 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // Staff should only see area name in recipientNames
         assertEquals(listOf("Test Area"), staffCopy.recipientNames)
+    }
+
+    @Test
+    fun `message to multiple children with different guardians creates separate threads per guardian group`() {
+        val newChild1 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 1, 1),
+                ssn = "010118A9991",
+                firstName = "Child",
+                lastName = "One",
+            )
+        val newChild2 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 2, 1),
+                ssn = "010218A9992",
+                firstName = "Child",
+                lastName = "Two",
+            )
+
+        db.transaction { tx ->
+            insertChild(tx, newChild1, groupId1)
+            tx.insertGuardian(person1.id, newChild1.id)
+
+            insertChild(tx, newChild2, groupId1)
+            tx.insertGuardian(person2.id, newChild2.id)
+        }
+
+        val title = "Message to children with different guardians"
+        val content = "This message should create separate threads"
+        postNewThread(
+            title = title,
+            message = content,
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients =
+                listOf(MessageRecipient.Child(newChild1.id), MessageRecipient.Child(newChild2.id)),
+            recipientNames = listOf(testAdult_1.firstName, testAdult_2.firstName),
+            user = employee1,
+        )
+
+        db.read {
+            assertEquals(
+                2,
+                it.createQuery {
+                        sql(
+                            "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}"
+                        )
+                    }
+                    .exactlyOne<Int>(),
+            )
+        }
+
+        val guardian1Threads = getRegularMessageThreads(person1)
+        val guardian2Threads = getRegularMessageThreads(person2)
+
+        assertEquals(1, guardian1Threads.size)
+        assertEquals(1, guardian2Threads.size)
+        assertNotEquals(guardian1Threads[0].id, guardian2Threads[0].id)
+
+        assertEquals(title, guardian1Threads[0].title)
+        assertEquals(content, guardian1Threads[0].messages[0].content)
+
+        assertEquals(title, guardian2Threads[0].title)
+        assertEquals(content, guardian2Threads[0].messages[0].content)
+    }
+
+    @Test
+    fun `message to multiple children with overlapping guardians groups them correctly`() {
+        val child1 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 3, 1),
+                ssn = "010318A9993",
+                firstName = "Child",
+                lastName = "Three",
+            )
+        val child2 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 4, 1),
+                ssn = "010418A9994",
+                firstName = "Child",
+                lastName = "Four",
+            )
+
+        db.transaction { tx ->
+            insertChild(tx, child1, groupId1)
+            tx.insertGuardian(person1.id, child1.id)
+            tx.insertGuardian(person2.id, child1.id)
+
+            insertChild(tx, child2, groupId1)
+            tx.insertGuardian(person2.id, child2.id)
+            tx.insertGuardian(person3.id, child2.id)
+        }
+
+        val title = "Message to children with overlapping guardians"
+        val content = "This message tests guardian grouping"
+        postNewThread(
+            title = title,
+            message = content,
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients =
+                listOf(MessageRecipient.Child(child1.id), MessageRecipient.Child(child2.id)),
+            recipientNames =
+                listOf(testAdult_1.firstName, testAdult_2.firstName, testAdult_3.firstName),
+            user = employee1,
+        )
+
+        db.read {
+            assertEquals(
+                2,
+                it.createQuery {
+                        sql(
+                            "SELECT COUNT(DISTINCT id) FROM message_thread WHERE title = ${bind(title)}"
+                        )
+                    }
+                    .exactlyOne<Int>(),
+            )
+        }
+
+        val guardianAThreads = getRegularMessageThreads(person1)
+        val guardianBThreads = getRegularMessageThreads(person2)
+        val guardianCThreads = getRegularMessageThreads(person3)
+
+        assertEquals(1, guardianAThreads.size)
+        assertEquals(2, guardianBThreads.size)
+        assertEquals(1, guardianCThreads.size)
+
+        assertEquals(title, guardianAThreads[0].title)
+        assertEquals(content, guardianAThreads[0].messages[0].content)
+
+        assertEquals(title, guardianBThreads[0].title)
+        assertEquals(content, guardianBThreads[0].messages[0].content)
+        assertEquals(title, guardianBThreads[1].title)
+        assertEquals(content, guardianBThreads[1].messages[0].content)
+        assertNotEquals(guardianBThreads[0].id, guardianBThreads[1].id)
+
+        assertEquals(title, guardianCThreads[0].title)
+        assertEquals(content, guardianCThreads[0].messages[0].content)
+
+        val guardianBThreadIds = setOf(guardianBThreads[0].id, guardianBThreads[1].id)
+        assertTrue(guardianBThreadIds.contains(guardianAThreads[0].id))
+        assertTrue(guardianBThreadIds.contains(guardianCThreads[0].id))
+        assertNotEquals(guardianAThreads[0].id, guardianCThreads[0].id)
+    }
+
+    @Test
+    fun `citizen with multiple children can send message selecting subset of their children`() {
+        val child1 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 5, 1),
+                ssn = "010518A9995",
+                firstName = "Child",
+                lastName = "Five",
+            )
+        val child2 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 6, 1),
+                ssn = "010618A9996",
+                firstName = "Child",
+                lastName = "Six",
+            )
+        val child3 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 7, 1),
+                ssn = "010718A9997",
+                firstName = "Child",
+                lastName = "Seven",
+            )
+
+        db.transaction { tx ->
+            insertChild(tx, child1, groupId1)
+            tx.insertGuardian(person1.id, child1.id)
+
+            insertChild(tx, child2, groupId1)
+            tx.insertGuardian(person1.id, child2.id)
+
+            insertChild(tx, child3, groupId1)
+            tx.insertGuardian(person1.id, child3.id)
+        }
+
+        val title = "Message with subset of children"
+        val content = "This message is sent with only children 1 and 2 selected"
+
+        val threadId =
+            postNewThread(
+                user = person1,
+                title = title,
+                message = content,
+                recipients = listOf(group1Account),
+                children = listOf(child1.id, child2.id),
+            )
+
+        val employeeThreads = getEmployeeMessageThreads(group1Account, employee1)
+        val citizenThreads = getRegularMessageThreads(person1)
+
+        assertEquals(1, employeeThreads.size)
+        assertEquals(1, citizenThreads.size)
+        assertEquals(threadId, employeeThreads[0].id)
+        assertEquals(threadId, citizenThreads[0].id)
+
+        assertEquals(title, employeeThreads[0].title)
+        assertEquals(content, employeeThreads[0].messages[0].content)
+
+        assertEquals(title, citizenThreads[0].title)
+        assertEquals(content, citizenThreads[0].messages[0].content)
+
+        db.read { tx ->
+            val threadChildren =
+                tx.createQuery {
+                        sql(
+                            "SELECT child_id FROM message_thread_children WHERE thread_id = ${bind(threadId)}"
+                        )
+                    }
+                    .toList<ChildId>()
+            assertEquals(2, threadChildren.size)
+            assertTrue(threadChildren.contains(child1.id))
+            assertTrue(threadChildren.contains(child2.id))
+            assertTrue(!threadChildren.contains(child3.id))
+        }
     }
 }
 
