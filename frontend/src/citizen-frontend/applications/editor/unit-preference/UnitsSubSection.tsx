@@ -133,11 +133,11 @@ export default React.memo(function UnitsSubSection({
         </div>
       ) : (
         <>
-          <Label>
+          <Label id="language-selection-label">
             {t.applications.editor.unitPreference.units.languageFilter.label}
           </Label>
           <Gap size="xs" />
-          <FixedSpaceRow>
+          <FixedSpaceRow aria-labelledby="language-selection-label">
             <SelectionChip
               text={
                 t.applications.editor.unitPreference.units.languageFilter.fi
