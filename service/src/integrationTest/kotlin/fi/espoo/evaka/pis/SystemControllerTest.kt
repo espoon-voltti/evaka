@@ -231,6 +231,70 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `employee login fails if employee number is updated after login without employee number and duplicate exists`() {
+        val employeeId = EmployeeId(UUID.randomUUID())
+        val employeeNumber = "666666"
+
+        val externalId1 = ExternalId.of("evaka", "1")
+        val input1 =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId1,
+                employeeNumber = employeeNumber,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null,
+            )
+        val result1 = systemController.employeeLogin(dbInstance(), user, clock, input1)
+        val expected1 =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf(),
+                active = true,
+            )
+        assertEquals(expected1, result1.copy(id = employeeId))
+        assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result1.id) })
+        assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId1) })
+
+        val externalId2 = ExternalId.of("evaka", "2")
+        val input2 =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId2,
+                employeeNumber = null,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null,
+            )
+        val result2 = systemController.employeeLogin(dbInstance(), user, clock, input2)
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf(),
+                active = true,
+            )
+        assertEquals(expected, result2.copy(id = employeeId))
+        assertEquals(null, db.read { tx -> tx.getEmployeeNumber(result2.id) })
+        assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId2) })
+
+        val input3 =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId2,
+                employeeNumber = employeeNumber,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null,
+            )
+        assertThrows<Exception> {
+            systemController.employeeLogin(dbInstance(), user, clock, input3)
+        }
+    }
+
+    @Test
     fun `mobile identity endpoint can find a device by its token`() {
         val token = UUID.randomUUID()
         val deviceId = db.transaction { it.insertTestDevice(longTermToken = token) }
