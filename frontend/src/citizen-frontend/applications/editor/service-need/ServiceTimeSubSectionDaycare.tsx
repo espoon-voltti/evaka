@@ -131,7 +131,13 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     }
 
     return (
-      <FixedSpaceColumn>
+      <FixedSpaceColumn
+        role="group"
+        aria-labelledby="service-need-part-time-label"
+      >
+        <Label id="service-need-part-time-label">
+          {t.applications.editor.serviceNeed.partTime.label}
+        </Label>
         {placementTypes.includes('DAYCARE_PART_TIME') && (
           <Radio
             id="service-need-part-time-true"

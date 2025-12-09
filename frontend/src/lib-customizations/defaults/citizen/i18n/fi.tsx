@@ -1125,6 +1125,7 @@ export default {
           }
         },
         partTime: {
+          label: 'Valitse osa- tai kokopäiväinen varhaiskasvatus',
           true: 'Osapäiväinen (max 5h / pv, 25h / vko)',
           false: 'Kokopäiväinen'
         },

@@ -1159,6 +1159,7 @@ const en: Translations = {
           }
         },
         partTime: {
+          label: 'Select part-day or full-day early childhood education',
           true: 'Part-day (max 5h/day, 25h/week)',
           false: 'Full-day'
         },
