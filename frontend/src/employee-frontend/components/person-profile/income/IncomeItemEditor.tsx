@@ -196,7 +196,16 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
 
   const initialForm = useMemo(
     () =>
-      isUpdate(props) ? incomeFormFromIncome(props.baseIncome) : emptyIncome,
+      isUpdate(props)
+        ? incomeFormFromIncome(
+            omit(props.baseIncome, [
+              'createdAt',
+              'createdBy',
+              'modifiedAt',
+              'modifiedBy'
+            ])
+          )
+        : emptyIncome,
     [props]
   )
   const [editedIncome, setEditedIncome] = useState<IncomeForm>(initialForm)
