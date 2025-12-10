@@ -15,16 +15,18 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 export const LabelWithError = React.memo(function LabelWithError({
   label,
+  labelId,
   showError,
   errorText
 }: {
   label: string
+  labelId?: string
   showError: boolean
   errorText: string
 }) {
   return (
     <FixedSpaceRow aria-invalid={showError}>
-      <Label>{label}</Label>
+      <Label id={labelId}>{label}</Label>
       {showError ? <LabelError text={errorText} /> : null}
     </FixedSpaceRow>
   )
