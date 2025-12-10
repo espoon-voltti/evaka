@@ -964,7 +964,7 @@ export const fi = {
         acceptConfirmTitle: 'Haluatko varmasti tehdä myönteisen päätöksen?',
         retroactiveWarningTitle: 'Huom!',
         retroactiveWarningMessage:
-          'Olet tekemässä menneisyydessä alkavaa takautavaa päätöstä.',
+          'Olet tekemässä menneisyydessä alkavaa takautuvaa päätöstä.',
         validityPeriod: 'Myönnetään ajalle',
         reject: 'Tee kielteinen päätös',
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
