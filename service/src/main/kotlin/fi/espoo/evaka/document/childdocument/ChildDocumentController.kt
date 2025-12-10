@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -38,6 +39,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.JdbiException
+import org.postgresql.util.PSQLState
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -813,11 +816,28 @@ class ChildDocumentController(
 
                     body.endingDecisionIds?.isEmpty()?.let {
                         if (!it) {
-                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
-                                childId = document.child.id,
-                                endingDecisionIds = body.endingDecisionIds,
-                                endDate = body.validity.start.minusDays(1),
-                            )
+                            try {
+                                tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                    childId = document.child.id,
+                                    endingDecisionIds = body.endingDecisionIds,
+                                    endDate = body.validity.start.minusDays(1),
+                                )
+                            } catch (e: JdbiException) {
+                                when (e.psqlCause()?.sqlState) {
+                                    PSQLState.CHECK_VIOLATION.state -> {
+                                        val constraintName =
+                                            e.psqlCause()?.serverErrorMessage?.constraint
+                                        throw Conflict(
+                                            "Cannot end decisions: check constraint violation (constraint: $constraintName).",
+                                            "end-child-document-decision",
+                                        )
+                                    }
+
+                                    else -> {
+                                        throw e
+                                    }
+                                }
+                            }
                         }
                     }
 
