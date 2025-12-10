@@ -73,7 +73,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
-import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, Label, P } from 'lib-components/typography'
@@ -850,7 +850,21 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
             setConfirming(false)
           }}
           rejectLabel={i18n.common.cancel}
-        />
+        >
+          {validity.isValid() &&
+            validity.value().start.isBefore(LocalDate.todayInHelsinkiTz()) && (
+              <AlertBox
+                title={
+                  i18n.childInformation.childDocuments.decisions
+                    .retroactiveWarningTitle
+                }
+                message={
+                  i18n.childInformation.childDocuments.decisions
+                    .retroactiveWarningMessage
+                }
+              />
+            )}
+        </MutateFormModal>
       )}
     </FixedSpaceRow>
   )
