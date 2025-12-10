@@ -213,9 +213,12 @@ export default React.memo(function PersonalDetailsSection({
             <div>
               <PersonName person={user} format="First Last" />
             </div>
-            <Label>{t.personalDetails.detailsSection.preferredName}</Label>
+            <Label htmlFor="preferred-name-input">
+              {t.personalDetails.detailsSection.preferredName}
+            </Label>
             {editing ? (
               <SelectF
+                id="preferred-name-input"
                 bind={preferredNameState}
                 data-qa="preferred-name"
                 autoFocus={true}
@@ -232,10 +235,14 @@ export default React.memo(function PersonalDetailsSection({
               {!!streetAddress &&
                 `${streetAddress}, ${postalCode} ${postOffice}`}
             </div>
-            <Label>{t.personalDetails.detailsSection.phone}</Label>
+            <Label htmlFor="phone-input">
+              {t.personalDetails.detailsSection.phone}
+            </Label>
             <div data-qa="phone">
               {editing ? (
                 <InputFieldF
+                  required
+                  id="phone-input"
                   type="text"
                   width="m"
                   bind={phoneState}
@@ -254,10 +261,13 @@ export default React.memo(function PersonalDetailsSection({
                 </div>
               )}
             </div>
-            <Label>{t.personalDetails.detailsSection.backupPhone}</Label>
+            <Label htmlFor="backup-phone-input">
+              {t.personalDetails.detailsSection.backupPhone}
+            </Label>
             <div data-qa="backup-phone">
               {editing ? (
                 <InputFieldF
+                  id="backup-phone-input"
                   type="text"
                   width="m"
                   bind={backupPhoneState}
@@ -270,14 +280,18 @@ export default React.memo(function PersonalDetailsSection({
                 backupPhone
               )}
             </div>
-            <Label>{t.personalDetails.detailsSection.email}</Label>
+            <Label htmlFor="email-input">
+              {t.personalDetails.detailsSection.email}
+            </Label>
             {editing ? (
               <FixedSpaceColumn spacing="xs">
                 <div data-qa="email">
                   <InputFieldF
+                    id="email-input"
                     type="text"
                     width="m"
                     bind={emailState}
+                    required={!noEmailState.state}
                     readonly={noEmailState.state}
                     hideErrorsBeforeTouched
                     placeholder={t.personalDetails.detailsSection.email}
