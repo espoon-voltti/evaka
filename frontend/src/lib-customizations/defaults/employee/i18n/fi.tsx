@@ -987,6 +987,10 @@ export const fi = {
             end: 'Katkaistaan',
             keep: 'Ei katkaista'
           }
+        },
+        errors: {
+          conflict:
+            'Asiakkaalla on jo päätös alkaen samasta päivämäärästä. Mitätöi vanha päätös tai tee uusi päätös alkamaan myöhemmästä ajankohdasta.'
         }
       },
       editor: {
