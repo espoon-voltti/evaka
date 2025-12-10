@@ -889,7 +889,13 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
                 }
               />
             )}
-          {!!errorText && <ErrorBox wide message={errorText} />}
+          {!!errorText && (
+            <ErrorBox
+              wide
+              message={errorText}
+              data-qa="accept-decision-error"
+            />
+          )}
         </MutateFormModal>
       )}
     </FixedSpaceRow>
