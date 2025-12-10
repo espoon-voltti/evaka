@@ -1267,10 +1267,12 @@ const Accounting = React.memo(function Accounting({
       <H3 noMargin>{t.title}</H3>
       <Gap size="s" />
       <ListGrid>
-        <Label>{t.accountant} *</Label>
+        <Label htmlFor="accountant-name">{t.accountant} *</Label>
         <InputField
+          id="accountant-name"
           placeholder={t.accountantPlaceholder}
           data-qa="accountant-name"
+          required
           width="L"
           value={formData.name}
           onChange={onNameChange}
@@ -1281,10 +1283,12 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.phone} *</Label>
+        <Label htmlFor="accountant-phone">{t.phone} *</Label>
         <InputField
+          id="accountant-phone"
           placeholder={t.phonePlaceholder}
           data-qa="accountant-phone"
+          required
           width="L"
           value={formData.phone}
           onChange={onPhoneChange}
@@ -1295,10 +1299,12 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.email} *</Label>
+        <Label htmlFor="accountant-email">{t.email} *</Label>
         <InputField
+          id="accountant-email"
           placeholder={t.emailPlaceholder}
           data-qa="accountant-email"
+          required
           width="L"
           value={formData.email}
           onChange={onEmailChange}
@@ -1309,8 +1315,9 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.address}</Label>
+        <Label htmlFor="accountant-address">{t.address}</Label>
         <InputField
+          id="accountant-address"
           placeholder={t.addressPlaceholder}
           width="L"
           value={formData.address}
