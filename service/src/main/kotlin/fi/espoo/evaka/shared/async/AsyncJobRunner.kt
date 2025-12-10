@@ -48,6 +48,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     ) {
         fun withThrottleInterval(throttleInterval: Duration?) =
             copy(config = config.copy(throttleInterval = throttleInterval))
+
+        fun withConfig(config: AsyncJobPool.Config) = copy(config = config)
     }
 
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"

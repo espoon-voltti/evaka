@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.config
 
+import fi.espoo.evaka.ArchivalPoolEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -39,7 +40,7 @@ class AsyncJobConfig {
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
                 ),
                 AsyncJob.nightly,
-                AsyncJob.bulk,
+                AsyncJob.archival.withConfig(ArchivalPoolEnv.fromEnvironment(env).toPoolConfig()),
             ),
             jdbi,
             tracer,

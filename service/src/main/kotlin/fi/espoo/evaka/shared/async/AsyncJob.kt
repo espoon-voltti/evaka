@@ -631,9 +631,9 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(VardaUpdateChild::class),
             )
-        val bulk =
+        val archival =
             AsyncJobRunner.Pool(
-                AsyncJobPool.Id(AsyncJob::class, "bulk"),
+                AsyncJobPool.Id(AsyncJob::class, "archival"),
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
                     ArchiveDecision::class,
