@@ -697,11 +697,11 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             <Gap size="m" />
             <FixedSpaceRow>
               <FixedSpaceColumn>
-                <LightLabel htmlFor="estimated-monthly-income">
+                <LightLabel htmlFor="estimated-monthly-income-gross">
                   {t.income.grossIncome.estimatedMonthlyIncome} *
                 </LightLabel>
                 <InputField
-                  id="estimated-monthly-income"
+                  id="estimated-monthly-income-gross"
                   data-qa="gross-monthly-income-estimate"
                   value={formData.estimatedMonthlyIncome}
                   onChange={onEstimatedMonthlyIncomeChange}
@@ -1127,11 +1127,11 @@ const SelfEmployedIncomeSelection = React.memo(
           <Indent>
             <FixedSpaceFlexWrap>
               <FixedSpaceColumn>
-                <Label htmlFor="estimated-monthly-income">
+                <Label htmlFor="estimated-monthly-income-self-employed">
                   {t.income.selfEmployed.estimatedMonthlyIncome}
                 </Label>
                 <InputField
-                  id="estimated-monthly-income"
+                  id="estimated-monthly-income-self-employed"
                   value={formData.estimatedMonthlyIncome}
                   onFocus={() => onEstimationChange(true)}
                   onChange={onEstimatedMonthlyIncomeChange}
@@ -1147,13 +1147,15 @@ const SelfEmployedIncomeSelection = React.memo(
                   )}
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label htmlFor="income-start-date">
+              <FixedSpaceColumn
+                role="group"
+                aria-labelledby="income-date-range-label"
+              >
+                <Label id="income-date-range-label">
                   {t.income.selfEmployed.timeRange}
                 </Label>
                 <FixedSpaceRow>
                   <DatePicker
-                    id="income-start-date"
                     date={formData.incomeStartDate}
                     onFocus={() => onEstimationChange(true)}
                     onChange={onIncomeStartDateChange}
