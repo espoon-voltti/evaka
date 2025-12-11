@@ -520,47 +520,55 @@ const IncomeTypeSelection = React.memo(
               <Gap size="s" />
             </>
           )}
-          <LabelWithError
-            label={`${t.income.incomeType.title} *`}
-            showError={
-              showFormErrors &&
-              !formData.highestFeeSelected &&
-              !formData.grossSelected
-            }
-            errorText={t.income.errors.choose}
-          />
-          <Gap size="s" />
-          <Radio
-            label={t.income.incomeType.agreeToHighestFee}
-            data-qa="highest-fee-checkbox"
-            checked={formData.highestFeeSelected}
-            onChange={onSelectHighestFee}
-          />
-          {formData.highestFeeSelected && (
-            <>
-              <Gap size="s" />
-              <FeeInfo>{t.income.incomeType.highestFeeInfo}</FeeInfo>
-              <Gap size="s" />
-              {dateRange(true)}
-            </>
-          )}
-          <Gap size="s" />
-          <Radio
-            label={t.income.incomeType.grossIncome}
-            checked={formData.grossSelected}
-            data-qa="gross-income-checkbox"
-            onChange={onSelectGross}
-          />
-          {formData.grossSelected && (
-            <>
-              <Gap size="s" />
-              <FeeInfo>{t.income.incomeNotifyForPeriod}</FeeInfo>
-              <Gap size="s" />
-              {dateRange(false)}
-              <Gap size="s" />
-              <InfoBox message={t.income.incomeNotifyForPeriodInfo} noMargin />
-            </>
-          )}
+          <div role="group" aria-labelledby="income-type-label">
+            <LabelWithError
+              label={`${t.income.incomeType.title} *`}
+              labelId="income-type-label"
+              showError={
+                showFormErrors &&
+                !formData.highestFeeSelected &&
+                !formData.grossSelected
+              }
+              errorText={t.income.errors.choose}
+            />
+            <Gap size="s" />
+            <Radio
+              label={t.income.incomeType.agreeToHighestFee}
+              data-qa="highest-fee-checkbox"
+              name="income-type"
+              checked={formData.highestFeeSelected}
+              onChange={onSelectHighestFee}
+            />
+            {formData.highestFeeSelected && (
+              <>
+                <Gap size="s" />
+                <FeeInfo>{t.income.incomeType.highestFeeInfo}</FeeInfo>
+                <Gap size="s" />
+                {dateRange(true)}
+              </>
+            )}
+            <Gap size="s" />
+            <Radio
+              label={t.income.incomeType.grossIncome}
+              checked={formData.grossSelected}
+              name="income-type"
+              data-qa="gross-income-checkbox"
+              onChange={onSelectGross}
+            />
+            {formData.grossSelected && (
+              <>
+                <Gap size="s" />
+                <FeeInfo>{t.income.incomeNotifyForPeriod}</FeeInfo>
+                <Gap size="s" />
+                {dateRange(false)}
+                <Gap size="s" />
+                <InfoBox
+                  message={t.income.incomeNotifyForPeriodInfo}
+                  noMargin
+                />
+              </>
+            )}
+          </div>
         </FixedSpaceColumn>
       </ContentArea>
     )
@@ -616,30 +624,36 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         <Gap size="m" />
         {t.income.grossIncome.description}
         <Gap size="m" />
-        <LabelWithError
-          label={`${t.income.grossIncome.incomeSource} *`}
-          showError={showFormErrors && formData.incomeSource === null}
-          errorText={t.income.errors.choose}
-        />
-        <Gap size="s" />
-        <Radio
-          label={t.income.grossIncome.incomesRegisterConsent}
-          data-qa="incomes-register-consent-checkbox"
-          checked={formData.incomeSource === 'INCOMES_REGISTER'}
-          onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
-        />
-        <Gap size="s" />
-        <Radio
-          label={t.income.grossIncome.provideAttachments}
-          checked={formData.incomeSource === 'ATTACHMENTS'}
-          onChange={() => onIncomeSourceChange('ATTACHMENTS')}
-        />
-        <Gap size="s" />
-        <Radio
-          label={t.income.grossIncome.noIncome}
-          checked={formData.incomeSource === 'NO_INCOME'}
-          onChange={() => onIncomeSourceChange('NO_INCOME')}
-        />
+        <div role="group" aria-labelledby="income-source-label">
+          <LabelWithError
+            label={`${t.income.grossIncome.incomeSource} *`}
+            labelId="income-source-label"
+            showError={showFormErrors && formData.incomeSource === null}
+            errorText={t.income.errors.choose}
+          />
+          <Gap size="s" />
+          <Radio
+            label={t.income.grossIncome.incomesRegisterConsent}
+            data-qa="incomes-register-consent-checkbox"
+            name="income-source"
+            checked={formData.incomeSource === 'INCOMES_REGISTER'}
+            onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
+          />
+          <Gap size="s" />
+          <Radio
+            label={t.income.grossIncome.provideAttachments}
+            name="income-source"
+            checked={formData.incomeSource === 'ATTACHMENTS'}
+            onChange={() => onIncomeSourceChange('ATTACHMENTS')}
+          />
+          <Gap size="s" />
+          <Radio
+            label={t.income.grossIncome.noIncome}
+            name="income-source"
+            checked={formData.incomeSource === 'NO_INCOME'}
+            onChange={() => onIncomeSourceChange('NO_INCOME')}
+          />
+        </div>
         <Gap size="s" />
         <InfoBox
           message={t.income.grossIncome.attachmentsVerificationInfo}
@@ -683,14 +697,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             <Gap size="m" />
             <FixedSpaceRow>
               <FixedSpaceColumn>
-                <LightLabel htmlFor="estimated-monthly-income">
+                <LightLabel htmlFor="estimated-monthly-income-gross">
                   {t.income.grossIncome.estimatedMonthlyIncome} *
                 </LightLabel>
                 <InputField
-                  id="estimated-monthly-income"
+                  id="estimated-monthly-income-gross"
                   data-qa="gross-monthly-income-estimate"
                   value={formData.estimatedMonthlyIncome}
                   onChange={onEstimatedMonthlyIncomeChange}
+                  required
                   hideErrorsBeforeTouched={!showFormErrors}
                   info={errorToInputInfo(
                     validate(
@@ -704,12 +719,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
               </FixedSpaceColumn>
             </FixedSpaceRow>
             <Gap size="L" />
-            <Label>{t.income.grossIncome.otherIncome}</Label>
+            <Label htmlFor="other-income-input">
+              {t.income.grossIncome.otherIncome}
+            </Label>
             <Gap size="s" />
             {t.income.grossIncome.otherIncomeDescription}
             <Gap size="s" />
             <OtherIncomeWrapper>
               <MultiSelect
+                inputId="other-income-input"
                 value={formData.otherIncome}
                 options={otherIncomes}
                 getOptionId={identity}
@@ -746,25 +764,30 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           </>
         )}
         <Gap size="L" />
-        <LabelWithError
-          label={`${t.income.entrepreneurIncome.entrepreneurSelectTitle} *`}
-          showError={showFormErrors && entrepreneurSelected === null}
-          errorText={t.income.errors.choose}
-        />
-        <Gap size="s" />
-        <Radio
-          label={t.income.entrepreneurIncome.entrepreneurYes}
-          checked={entrepreneurSelected === true}
-          onChange={entrepreneurYes}
-          data-qa="entrepreneur-yes"
-        />
-        <Gap size="s" />
-        <Radio
-          label={t.income.entrepreneurIncome.entrepreneurNo}
-          checked={entrepreneurSelected === false}
-          onChange={entrepreneurNo}
-          data-qa="entrepreneur-no"
-        />
+        <div role="group" aria-labelledby="entrepreneur-select-label">
+          <LabelWithError
+            label={`${t.income.entrepreneurIncome.entrepreneurSelectTitle} *`}
+            labelId="entrepreneur-select-label"
+            showError={showFormErrors && entrepreneurSelected === null}
+            errorText={t.income.errors.choose}
+          />
+          <Gap size="s" />
+          <Radio
+            label={t.income.entrepreneurIncome.entrepreneurYes}
+            checked={entrepreneurSelected === true}
+            name="entrepreneur-selected"
+            onChange={entrepreneurYes}
+            data-qa="entrepreneur-yes"
+          />
+          <Gap size="s" />
+          <Radio
+            label={t.income.entrepreneurIncome.entrepreneurNo}
+            checked={entrepreneurSelected === false}
+            name="entrepreneur-selected"
+            onChange={entrepreneurNo}
+            data-qa="entrepreneur-no"
+          />
+        </div>
       </FixedSpaceColumn>
     </ContentArea>
   )
@@ -878,25 +901,32 @@ const EntrepreneurIncomeSelection = React.memo(
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <Gap size="L" />
-          <LabelWithError
-            label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}
-            showError={showFormErrors && formData.spouseWorksInCompany === null}
-            errorText={t.income.errors.choose}
-          />
-          <Gap size="s" />
-          <Radio
-            label={t.income.entrepreneurIncome.yes}
-            data-qa="entrepreneur-spouse-yes"
-            checked={formData.spouseWorksInCompany === true}
-            onChange={() => onSpouseWorksInCompanyChange(true)}
-          />
-          <Gap size="s" />
-          <Radio
-            label={t.income.entrepreneurIncome.no}
-            data-qa="entrepreneur-spouse-no"
-            checked={formData.spouseWorksInCompany === false}
-            onChange={() => onSpouseWorksInCompanyChange(false)}
-          />
+          <div role="group" aria-labelledby="spouse-works-in-company-label">
+            <LabelWithError
+              label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}
+              labelId="spouse-works-in-company-label"
+              showError={
+                showFormErrors && formData.spouseWorksInCompany === null
+              }
+              errorText={t.income.errors.choose}
+            />
+            <Gap size="s" />
+            <Radio
+              label={t.income.entrepreneurIncome.yes}
+              data-qa="entrepreneur-spouse-yes"
+              name="spouse-works-in-company"
+              checked={formData.spouseWorksInCompany === true}
+              onChange={() => onSpouseWorksInCompanyChange(true)}
+            />
+            <Gap size="s" />
+            <Radio
+              label={t.income.entrepreneurIncome.no}
+              data-qa="entrepreneur-spouse-no"
+              name="spouse-works-in-company"
+              checked={formData.spouseWorksInCompany === false}
+              onChange={() => onSpouseWorksInCompanyChange(false)}
+            />
+          </div>
           <Gap size="L" />
           <Label>{t.income.entrepreneurIncome.startupGrantLabel}</Label>
           <Gap size="s" />
@@ -925,100 +955,103 @@ const EntrepreneurIncomeSelection = React.memo(
           <Gap size="XL" />
           <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
           <Gap size="L" />
-          <LabelWithError
-            label={`${t.income.entrepreneurIncome.companyForm} *`}
-            showError={
-              showFormErrors &&
-              !formData.selfEmployed.selected &&
-              !formData.limitedCompany.selected &&
-              !formData.partnership &&
-              !formData.lightEntrepreneur
-            }
-            errorText={t.income.errors.chooseAtLeastOne}
-          />
-          <Gap size="s" />
-          <Checkbox
-            label={t.income.entrepreneurIncome.selfEmployed}
-            data-qa="entrepreneur-self-employed"
-            checked={formData.selfEmployed.selected}
-            onChange={onSelfEmployedSelectedChange}
-          />
-          {formData.selfEmployed.selected && (
-            <>
-              <Gap size="s" />
-              <SelfEmployedIncomeSelection
-                formData={formData.selfEmployed}
-                showFormErrors={showFormErrors}
-                onChange={onSelfEmployedChange}
-                attachmentHandler={attachmentHandler}
-              />
-            </>
-          )}
-          <Gap size="m" />
-          <Checkbox
-            label={t.income.entrepreneurIncome.limitedCompany}
-            data-qa="entrepreneur-llc"
-            checked={formData.limitedCompany.selected}
-            onChange={onLimitedCompanySelectedChange}
-          />
-          {formData.limitedCompany.selected && (
-            <>
-              <Gap size="s" />
-              <LimitedCompanyIncomeSelection
-                formData={formData.limitedCompany}
-                showFormErrors={showFormErrors}
-                onChange={onLimitedCompanyChange}
-                attachmentHandler={attachmentHandler}
-              />
-            </>
-          )}
-          <Gap size="m" />
-          <Checkbox
-            label={t.income.entrepreneurIncome.partnership}
-            data-qa="entrepreneur-partnership"
-            checked={formData.partnership}
-            onChange={onPartnershipChange}
-          />
-          {formData.partnership && (
-            <>
-              <Gap size="s" />
-              <Indent>
-                <P noMargin>{t.income.entrepreneurIncome.partnershipInfo}</P>
-                <AttachmentSection
-                  attachmentType="PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP"
+          <div role="group" aria-labelledby="company-form-label">
+            <LabelWithError
+              label={`${t.income.entrepreneurIncome.companyForm} *`}
+              labelId="company-form-label"
+              showError={
+                showFormErrors &&
+                !formData.selfEmployed.selected &&
+                !formData.limitedCompany.selected &&
+                !formData.partnership &&
+                !formData.lightEntrepreneur
+              }
+              errorText={t.income.errors.chooseAtLeastOne}
+            />
+            <Gap size="s" />
+            <Checkbox
+              label={t.income.entrepreneurIncome.selfEmployed}
+              data-qa="entrepreneur-self-employed"
+              checked={formData.selfEmployed.selected}
+              onChange={onSelfEmployedSelectedChange}
+            />
+            {formData.selfEmployed.selected && (
+              <>
+                <Gap size="s" />
+                <SelfEmployedIncomeSelection
+                  formData={formData.selfEmployed}
                   showFormErrors={showFormErrors}
+                  onChange={onSelfEmployedChange}
                   attachmentHandler={attachmentHandler}
                 />
-                <AttachmentSection
-                  attachmentType="ACCOUNTANT_REPORT_PARTNERSHIP"
+              </>
+            )}
+            <Gap size="m" />
+            <Checkbox
+              label={t.income.entrepreneurIncome.limitedCompany}
+              data-qa="entrepreneur-llc"
+              checked={formData.limitedCompany.selected}
+              onChange={onLimitedCompanySelectedChange}
+            />
+            {formData.limitedCompany.selected && (
+              <>
+                <Gap size="s" />
+                <LimitedCompanyIncomeSelection
+                  formData={formData.limitedCompany}
                   showFormErrors={showFormErrors}
+                  onChange={onLimitedCompanyChange}
                   attachmentHandler={attachmentHandler}
                 />
-              </Indent>
-            </>
-          )}
-          <Gap size="m" />
-          <Checkbox
-            label={t.income.entrepreneurIncome.lightEntrepreneur}
-            data-qa="entrepreneur-light-entrepreneur"
-            checked={formData.lightEntrepreneur}
-            onChange={onLightEntrepreneurChange}
-          />
-          {formData.lightEntrepreneur && (
-            <>
-              <Gap size="s" />
-              <Indent>
-                <P noMargin>
-                  {t.income.entrepreneurIncome.lightEntrepreneurInfo}
-                </P>
-                <AttachmentSection
-                  attachmentType="SALARY"
-                  showFormErrors={showFormErrors}
-                  attachmentHandler={attachmentHandler}
-                />
-              </Indent>
-            </>
-          )}
+              </>
+            )}
+            <Gap size="m" />
+            <Checkbox
+              label={t.income.entrepreneurIncome.partnership}
+              data-qa="entrepreneur-partnership"
+              checked={formData.partnership}
+              onChange={onPartnershipChange}
+            />
+            {formData.partnership && (
+              <>
+                <Gap size="s" />
+                <Indent>
+                  <P noMargin>{t.income.entrepreneurIncome.partnershipInfo}</P>
+                  <AttachmentSection
+                    attachmentType="PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP"
+                    showFormErrors={showFormErrors}
+                    attachmentHandler={attachmentHandler}
+                  />
+                  <AttachmentSection
+                    attachmentType="ACCOUNTANT_REPORT_PARTNERSHIP"
+                    showFormErrors={showFormErrors}
+                    attachmentHandler={attachmentHandler}
+                  />
+                </Indent>
+              </>
+            )}
+            <Gap size="m" />
+            <Checkbox
+              label={t.income.entrepreneurIncome.lightEntrepreneur}
+              data-qa="entrepreneur-light-entrepreneur"
+              checked={formData.lightEntrepreneur}
+              onChange={onLightEntrepreneurChange}
+            />
+            {formData.lightEntrepreneur && (
+              <>
+                <Gap size="s" />
+                <Indent>
+                  <P noMargin>
+                    {t.income.entrepreneurIncome.lightEntrepreneurInfo}
+                  </P>
+                  <AttachmentSection
+                    attachmentType="SALARY"
+                    showFormErrors={showFormErrors}
+                    attachmentHandler={attachmentHandler}
+                  />
+                </Indent>
+              </>
+            )}
+          </div>
           {(formData.limitedCompany.selected ||
             formData.selfEmployed.selected ||
             formData.partnership) && (
@@ -1094,11 +1127,11 @@ const SelfEmployedIncomeSelection = React.memo(
           <Indent>
             <FixedSpaceFlexWrap>
               <FixedSpaceColumn>
-                <Label htmlFor="estimated-monthly-income">
+                <Label htmlFor="estimated-monthly-income-self-employed">
                   {t.income.selfEmployed.estimatedMonthlyIncome}
                 </Label>
                 <InputField
-                  id="estimated-monthly-income"
+                  id="estimated-monthly-income-self-employed"
                   value={formData.estimatedMonthlyIncome}
                   onFocus={() => onEstimationChange(true)}
                   onChange={onEstimatedMonthlyIncomeChange}
@@ -1114,13 +1147,15 @@ const SelfEmployedIncomeSelection = React.memo(
                   )}
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label htmlFor="income-start-date">
+              <FixedSpaceColumn
+                role="group"
+                aria-labelledby="income-date-range-label"
+              >
+                <Label id="income-date-range-label">
                   {t.income.selfEmployed.timeRange}
                 </Label>
                 <FixedSpaceRow>
                   <DatePicker
-                    id="income-start-date"
                     date={formData.incomeStartDate}
                     onFocus={() => onEstimationChange(true)}
                     onChange={onIncomeStartDateChange}
@@ -1232,10 +1267,12 @@ const Accounting = React.memo(function Accounting({
       <H3 noMargin>{t.title}</H3>
       <Gap size="s" />
       <ListGrid>
-        <Label>{t.accountant} *</Label>
+        <Label htmlFor="accountant-name">{t.accountant} *</Label>
         <InputField
+          id="accountant-name"
           placeholder={t.accountantPlaceholder}
           data-qa="accountant-name"
+          required
           width="L"
           value={formData.name}
           onChange={onNameChange}
@@ -1246,10 +1283,12 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.phone} *</Label>
+        <Label htmlFor="accountant-phone">{t.phone} *</Label>
         <InputField
+          id="accountant-phone"
           placeholder={t.phonePlaceholder}
           data-qa="accountant-phone"
+          required
           width="L"
           value={formData.phone}
           onChange={onPhoneChange}
@@ -1260,10 +1299,12 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.email} *</Label>
+        <Label htmlFor="accountant-email">{t.email} *</Label>
         <InputField
+          id="accountant-email"
           placeholder={t.emailPlaceholder}
           data-qa="accountant-email"
+          required
           width="L"
           value={formData.email}
           onChange={onEmailChange}
@@ -1274,8 +1315,9 @@ const Accounting = React.memo(function Accounting({
           )}
         />
 
-        <Label>{t.address}</Label>
+        <Label htmlFor="accountant-address">{t.address}</Label>
         <InputField
+          id="accountant-address"
           placeholder={t.addressPlaceholder}
           width="L"
           value={formData.address}

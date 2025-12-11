@@ -452,15 +452,12 @@ export class AsyncButton extends Element {
 export class Checkable extends Element {
   readonly #input = this.locator.locator('input')
 
-  // check and uncheck are forced because an <svg> element hides the <input>
-  // and intercepts pointer events
-
   async check() {
-    await this.#input.check({ force: true })
+    await this.#input.check()
   }
 
   async uncheck() {
-    await this.#input.uncheck({ force: true })
+    await this.#input.uncheck()
   }
 
   get checked(): Promise<boolean> {

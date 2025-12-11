@@ -116,10 +116,11 @@ const ChildIncome = React.memo(function ChildIncome({
 
       <Gap size="L" />
 
-      <Label>{t.income.childIncome.additionalInfo}</Label>
+      <Label htmlFor="other-info">{t.income.childIncome.additionalInfo}</Label>
 
       <OtherInfoContainer>
         <TextArea
+          id="other-info"
           placeholder={t.income.childIncome.write}
           value={formData.otherInfo}
           onChange={onOtherInfoChanged}
