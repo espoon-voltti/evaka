@@ -521,6 +521,8 @@ fun Database.Read.fetchApplicationSummaries(
                 COALESCE((a.document -> 'additionalDetails' ->> 'allergyType'), '') != ''
             ) as additionalInfo,
             (a.document -> 'apply' ->> 'siblingBasis')::boolean as siblingBasis,
+            sib.sibling_name,
+            sib.sibling_unit_name,
             COALESCE(a.document -> 'careDetails' ->> 'assistanceNeeded', a.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
             club_care.was_on_club_care AS was_on_club_care,
             (a.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
@@ -606,6 +608,14 @@ fun Database.Read.fetchApplicationSummaries(
             JOIN daycare ON pd.unit_id = daycare.id
             WHERE pd.application_id = a.id
         ) pd ON true
+        LEFT JOIN LATERAL (
+            SELECT sud.name as sibling_unit_name, sibling.last_name || ' ' || sibling.first_name as sibling_name
+            FROM person sibling
+            JOIN placement supl ON sibling.id = supl.child_id
+            JOIN daycare sud ON supl.unit_id = sud.id
+            WHERE sibling.social_security_number = (a.document -> 'apply' ->> 'siblingSsn')
+                AND daterange(supl.start_date, supl.end_date, '[]') @> ${bind(today)}
+        ) sib ON (a.document -> 'apply' ->> 'siblingBasis')::boolean
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
         $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
         """
@@ -650,6 +660,8 @@ fun Database.Read.fetchApplicationSummaries(
                     serviceWorkerNote =
                         if (canReadServiceWorkerNotes) column("service_worker_note") else "",
                     siblingBasis = column("siblingBasis"),
+                    siblingName = column("sibling_name"),
+                    siblingUnitName = column("sibling_unit_name"),
                     assistanceNeed = column("assistanceNeed"),
                     wasOnClubCare = column("was_on_club_care"),
                     wasOnDaycare = column("wasOnDaycare"),

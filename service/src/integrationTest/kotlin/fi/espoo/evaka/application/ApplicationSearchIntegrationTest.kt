@@ -322,6 +322,57 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(applicationId_1, summary.data[0].id)
     }
 
+    @Test
+    fun `application summary has details of sibling basis`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = now.today().minusMonths(12),
+                        endDate = now.today().plusMonths(6),
+                    )
+                )
+                tx.insertTestApplication(
+                    childId = testChild_4.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0.fromApplication2(
+                            validDaycareApplication.copy(
+                                childId = testChild_4.id,
+                                guardianId = testAdult_1.id,
+                                type = ApplicationType.DAYCARE,
+                                form =
+                                    validDaycareApplication.form.copy(
+                                        preferences =
+                                            validDaycareApplication.form.preferences.copy(
+                                                siblingBasis =
+                                                    SiblingBasis(
+                                                        siblingSsn = testChild_2.ssn!!,
+                                                        siblingName = "does not matter",
+                                                        siblingUnit = "does not matter",
+                                                    )
+                                            )
+                                    ),
+                            )
+                        ),
+                )
+            }
+        val summary =
+            getApplicationSummaries(
+                    type = ApplicationTypeToggle.ALL,
+                    status = ApplicationStatusOption.entries.toSet(),
+                )
+                .data
+                .first { it.id == applicationId }
+        assertEquals(true, summary.siblingBasis)
+        assertEquals("${testChild_2.lastName} ${testChild_2.firstName}", summary.siblingName)
+        assertEquals(testDaycare.name, summary.siblingUnitName)
+    }
+
     private fun getApplicationSummaries(
         page: Int? = null,
         sortBy: ApplicationSortColumn? = null,

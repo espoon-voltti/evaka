@@ -36,7 +36,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Bold, H1, Italic, Light } from 'lib-components/typography'
+import { Bold, H1, Italic, LabelLike, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
 import {
@@ -630,6 +630,7 @@ export const BasisFragment = React.memo(function BasisFragment({
 }: {
   application: ApplicationSummary
 }) {
+  const { i18n } = useTranslation()
   return (
     <>
       {application.additionalInfo && (
@@ -640,11 +641,35 @@ export const BasisFragment = React.memo(function BasisFragment({
         />
       )}
       {application.siblingBasis && (
-        <RoundIcon
-          content="S"
-          color={applicationBasisColors.SIBLING_BASIS}
-          size="s"
-        />
+        <Tooltip
+          width="large"
+          tooltip={
+            <div>
+              <WhiteLabelLike>
+                {i18n.applications.list.siblingBasis}
+              </WhiteLabelLike>
+              <Gap size="xs" />
+              {application.siblingName === null ? (
+                <div>{i18n.applications.list.siblingNotFound}</div>
+              ) : (
+                <FixedSpaceColumn spacing="xxs">
+                  <WhiteLabelLike>{application.siblingName}</WhiteLabelLike>
+                  {application.siblingUnitName === null ? (
+                    <div>{i18n.applications.list.noValidPlacement}</div>
+                  ) : (
+                    <div>{application.siblingUnitName}</div>
+                  )}
+                </FixedSpaceColumn>
+              )}
+            </div>
+          }
+        >
+          <RoundIcon
+            content="S"
+            color={applicationBasisColors.SIBLING_BASIS}
+            size="s"
+          />
+        </Tooltip>
       )}
       {application.assistanceNeed && (
         <RoundIcon
@@ -714,4 +739,8 @@ const AlignRight = styled.div`
   display: flex;
   justify-content: flex-end;
   width: 100%;
+`
+
+const WhiteLabelLike = styled(LabelLike)`
+  color: ${(p) => p.theme.colors.grayscale.g0};
 `
