@@ -172,3 +172,27 @@ export const AlertBox = React.memo(function AlertBox({
     />
   )
 })
+
+export const ErrorBox = React.memo(function ErrorBox({
+  title,
+  message,
+  wide,
+  thin,
+  noMargin,
+  ...props
+}: AlertBoxProps) {
+  const { colors } = useTheme()
+  return (
+    <MessageBox
+      title={title}
+      message={message}
+      icon={faExclamation}
+      color={colors.status.danger}
+      width={wide ? '100%' : 'fit-content'}
+      thin={thin}
+      noMargin={noMargin}
+      data-qa={props['data-qa']}
+      role="alert"
+    />
+  )
+})

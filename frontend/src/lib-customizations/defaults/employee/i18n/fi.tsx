@@ -961,7 +961,7 @@ export const fi = {
         acceptConfirmTitle: 'Haluatko varmasti tehdä myönteisen päätöksen?',
         retroactiveWarningTitle: 'Huom!',
         retroactiveWarningMessage:
-          'Olet tekemässä menneisyydessä alkavaa takautavaa päätöstä.',
+          'Olet tekemässä menneisyydessä alkavaa takautuvaa päätöstä.',
         validityPeriod: 'Myönnetään ajalle',
         reject: 'Tee kielteinen päätös',
         rejectConfirmTitle: 'Haluatko varmasti tehdä kielteisen päätöksen?',
@@ -987,6 +987,10 @@ export const fi = {
             end: 'Katkaistaan',
             keep: 'Ei katkaista'
           }
+        },
+        errors: {
+          conflict:
+            'Asiakkaalla on jo päätös alkaen samasta päivämäärästä. Mitätöi vanha päätös tai tee uusi päätös alkamaan myöhemmästä ajankohdasta.'
         }
       },
       editor: {
