@@ -97,6 +97,7 @@ export default React.memo(function ChildSubSection({
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
+              required
               date={formData.childMoveDate}
               data-qa="childMoveDate-input"
               onChange={(value) =>
@@ -120,6 +121,7 @@ export default React.memo(function ChildSubSection({
                   {t.applications.editor.contactInfo.street + ' *'}
                 </Label>
                 <InputField
+                  required
                   id="child-future-street"
                   value={formData.childFutureStreet}
                   data-qa="childFutureStreet-input"
@@ -149,6 +151,7 @@ export default React.memo(function ChildSubSection({
                   {t.applications.editor.contactInfo.postalCode + ' *'}
                 </Label>
                 <InputField
+                  required
                   id="child-future-postal-code"
                   value={formData.childFuturePostalCode}
                   data-qa="childFuturePostalCode-input"
@@ -176,6 +179,7 @@ export default React.memo(function ChildSubSection({
                   {t.applications.editor.contactInfo.postOffice + ' *'}
                 </Label>
                 <InputField
+                  required
                   id="child-future-post-office"
                   value={formData.childFuturePostOffice}
                   data-qa="childFuturePostOffice-input"
