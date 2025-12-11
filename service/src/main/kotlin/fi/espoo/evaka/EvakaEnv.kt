@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.FromAddress
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.async.AsyncJobPool
 import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.Nightly
@@ -732,6 +733,23 @@ data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
             ChildDocumentArchivalEnv(
                 delayDays = env.lookup("evaka.child_document_archival_delay_days") ?: 30,
                 limit = env.lookup("evaka.child_document_archival_limit") ?: 0,
+            )
+    }
+}
+
+data class ArchivalPoolEnv(val poolThrottleIntervalSeconds: Long, val poolConcurrency: Int) {
+    fun toPoolConfig() =
+        AsyncJobPool.Config(
+            concurrency = this.poolConcurrency,
+            throttleInterval = Duration.ofSeconds(this.poolThrottleIntervalSeconds),
+        )
+
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ArchivalPoolEnv(
+                poolThrottleIntervalSeconds =
+                    env.lookup<Long?>("evaka.archival_pool_throttle_interval_seconds") ?: 0,
+                poolConcurrency = env.lookup<Int?>("evaka.archival_pool_concurrency") ?: 4,
             )
     }
 }
