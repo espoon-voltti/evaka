@@ -3741,12 +3741,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:24.10.1":
-  version: 24.10.1
-  resolution: "@types/node@npm:24.10.1"
+"@types/node@npm:*, @types/node@npm:24.10.2":
+  version: 24.10.2
+  resolution: "@types/node@npm:24.10.2"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/ddac8c97be5f7401e31ea0e9316c6e864993c6cd06689b7f9874ecfb576ef8349f2d14298248a08b94a6dd029570a46a285cddc4d50e524817f1a3730b29a86e
+  checksum: 10/75b34e33087dc707aa76723f7269cd66acd2fae4272d127544ad20f295e7537dbd1e4a4405717b3093aeae2ff8ae35283fdec826a4f593273e326bb3deae588d
   languageName: node
   linkType: hard
 
@@ -6409,7 +6409,7 @@ __metadata:
     "@types/leaflet": "npm:1.9.21"
     "@types/linkify-it": "npm:5.0.0"
     "@types/lodash": "npm:4.17.21"
-    "@types/node": "npm:24.10.1"
+    "@types/node": "npm:24.10.2"
     "@types/punycode": "npm:2.1.4"
     "@types/react": "npm:19.2.7"
     "@types/react-dom": "npm:19.2.3"

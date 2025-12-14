@@ -1559,12 +1559,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:24.10.1, @types/node@npm:>=13.7.0":
-  version: 24.10.1
-  resolution: "@types/node@npm:24.10.1"
+"@types/node@npm:*, @types/node@npm:24.10.2, @types/node@npm:>=13.7.0":
+  version: 24.10.2
+  resolution: "@types/node@npm:24.10.2"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/ddac8c97be5f7401e31ea0e9316c6e864993c6cd06689b7f9874ecfb576ef8349f2d14298248a08b94a6dd029570a46a285cddc4d50e524817f1a3730b29a86e
+  checksum: 10/75b34e33087dc707aa76723f7269cd66acd2fae4272d127544ad20f295e7537dbd1e4a4405717b3093aeae2ff8ae35283fdec826a4f593273e326bb3deae588d
   languageName: node
   linkType: hard
 
@@ -3516,7 +3516,7 @@ __metadata:
     "@types/express-session": "npm:1.18.2"
     "@types/jsonwebtoken": "npm:9.0.10"
     "@types/lodash": "npm:4.17.21"
-    "@types/node": "npm:24.10.1"
+    "@types/node": "npm:24.10.2"
     "@types/node-forge": "npm:1.3.14"
     "@types/pump": "npm:1.1.3"
     "@types/split2": "npm:4.2.3"
