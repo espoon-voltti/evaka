@@ -150,6 +150,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 serviceNeedOption: partTimeOptions[0] ?? null
               })
             }
+            name="service-need-part-time-radio"
           />
         )}
         {formData.partTime && partTimeOptions.length > 0 && (
@@ -167,6 +168,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`part-time-option-${opt.id}`}
+                  name="part-time-sub-radio"
                 />
               ))}
             </FixedSpaceColumn>
@@ -178,6 +180,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           checked={!formData.partTime}
           data-qa="partTime-input-false"
           onChange={() => updateServiceNeed(false)}
+          name="service-need-part-time-radio"
         />
         {!formData.partTime && fullTimeOptions.length > 0 && (
           <SubRadios>
@@ -194,6 +197,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`full-time-option-${opt.id}`}
+                  name="full-time-sub-radio"
                 />
               ))}
             </FixedSpaceColumn>
