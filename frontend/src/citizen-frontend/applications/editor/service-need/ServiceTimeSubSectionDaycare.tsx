@@ -219,7 +219,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   function renderServiceNeedDailyTimeSelection() {
     return (
       featureFlags.daycareApplication.dailyTimes && (
-        <>
+        <div role="group" aria-labelledby="daily-time-label">
           <ExpandingInfo
             info={
               t.applications.editor.serviceNeed.dailyTime.instructions[
@@ -236,11 +236,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <Gap size="s" />
 
-          <FixedSpaceRow
-            spacing="s"
-            role="group"
-            aria-labelledby="daily-time-label"
-          >
+          <FixedSpaceRow spacing="s">
             <FixedSpaceColumn spacing="xs">
               <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
@@ -273,7 +269,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
-        </>
+        </div>
       )
     )
   }
