@@ -68,6 +68,7 @@ export default React.memo(function OtherPartnerSubSection({
                     t.applications.editor.contactInfo.firstNamePlaceholder
                   }
                   width="L"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -92,6 +93,7 @@ export default React.memo(function OtherPartnerSubSection({
                     t.applications.editor.contactInfo.lastNamePlaceholder
                   }
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -117,6 +119,7 @@ export default React.memo(function OtherPartnerSubSection({
                   }
                   placeholder={t.applications.editor.contactInfo.ssnPlaceholder}
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
             </AdaptiveFlex>
