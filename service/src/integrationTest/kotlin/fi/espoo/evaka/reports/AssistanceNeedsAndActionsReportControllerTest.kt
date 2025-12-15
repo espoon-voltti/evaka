@@ -106,8 +106,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -123,8 +121,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -140,8 +136,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
             ),
@@ -173,8 +167,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -190,8 +182,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -207,8 +197,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
             ),
@@ -552,8 +540,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
-                    daycareAssistanceNeedDecisionCount = 2,
-                    preschoolAssistanceNeedDecisionCount = 1,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -569,8 +555,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -586,8 +570,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
             ),
@@ -730,8 +712,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 preschoolAssistanceCounts = emptyMap(),
                 otherAssistanceMeasureCounts = emptyMap(),
                 assistanceNeedVoucherCoefficientCount = 0,
-                daycareAssistanceNeedDecisionCount = 0,
-                preschoolAssistanceNeedDecisionCount = 0,
                 unitProviderType = ProviderType.MUNICIPAL,
             )
 
@@ -750,8 +730,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -767,8 +745,6 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
-                    daycareAssistanceNeedDecisionCount = 0,
-                    preschoolAssistanceNeedDecisionCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
                 ),
                 getEmptyGroupExpectation(groups[2]),
