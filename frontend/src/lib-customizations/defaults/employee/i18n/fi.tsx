@@ -4393,10 +4393,7 @@ export const fi = {
       basisMissing: 'Peruste puuttuu',
       action: 'Tukitoimi',
       actionMissing: 'Tukitoimi puuttuu',
-      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin',
-      daycareAssistanceNeedDecisions:
-        'Aktiiviset varhaiskasvatuksen tuen päätökset',
-      preschoolAssistanceNeedDecisions: 'Aktiiviset esiopetuksen tuen päätökset'
+      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin'
     },
     occupancies: {
       title: 'Täyttö- ja käyttöasteet',

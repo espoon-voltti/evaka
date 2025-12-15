@@ -177,8 +177,6 @@ interface GroupingDataByGroup {
   otherActionCount: number
   noActionCount: number
   assistanceNeedVoucherCoefficientCount: number
-  daycareAssistanceNeedDecisionCount: number
-  preschoolAssistanceNeedDecisionCount: number
 }
 
 const emptyGroupingDataByGroup = (
@@ -221,9 +219,7 @@ const emptyGroupingDataByGroup = (
   ),
   otherActionCount: 0,
   noActionCount: 0,
-  assistanceNeedVoucherCoefficientCount: 0,
-  daycareAssistanceNeedDecisionCount: 0,
-  preschoolAssistanceNeedDecisionCount: 0
+  assistanceNeedVoucherCoefficientCount: 0
 })
 
 interface GroupingDataByChild {
@@ -232,8 +228,6 @@ interface GroupingDataByChild {
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
-  daycareAssistanceNeedDecisionCount: number
-  preschoolAssistanceNeedDecisionCount: number
 }
 
 const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
@@ -263,9 +257,7 @@ const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
     CHILD_DISCUSSION_OFFERED: 0,
     CHILD_DISCUSSION_HELD: 0,
     CHILD_DISCUSSION_COUNSELING: 0
-  },
-  daycareAssistanceNeedDecisionCount: 0,
-  preschoolAssistanceNeedDecisionCount: 0
+  }
 })
 
 const resolveGroupingType = (
@@ -959,13 +951,7 @@ const ReportByGroupTable = ({
             noActionCount: groupData.noActionCount + row.noActionCount,
             assistanceNeedVoucherCoefficientCount:
               groupData.assistanceNeedVoucherCoefficientCount +
-              row.assistanceNeedVoucherCoefficientCount,
-            daycareAssistanceNeedDecisionCount:
-              groupData.daycareAssistanceNeedDecisionCount +
-              row.daycareAssistanceNeedDecisionCount,
-            preschoolAssistanceNeedDecisionCount:
-              groupData.preschoolAssistanceNeedDecisionCount +
-              row.preschoolAssistanceNeedDecisionCount
+              row.assistanceNeedVoucherCoefficientCount
           }
           return data
         },
@@ -1040,18 +1026,6 @@ const ReportByGroupTable = ({
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
             value: (row) => row.noActionCount
-          },
-          {
-            label:
-              i18n.reports.assistanceNeedsAndActions
-                .daycareAssistanceNeedDecisions,
-            value: (row) => row.daycareAssistanceNeedDecisionCount
-          },
-          {
-            label:
-              i18n.reports.assistanceNeedsAndActions
-                .preschoolAssistanceNeedDecisions,
-            value: (row) => row.preschoolAssistanceNeedDecisionCount
           }
         ]}
         filename={filename}
@@ -1114,18 +1088,6 @@ const ReportByGroupTable = ({
                 }
               </Th>
             )}
-            <Th>
-              {
-                i18n.reports.assistanceNeedsAndActions
-                  .daycareAssistanceNeedDecisions
-              }
-            </Th>
-            <Th>
-              {
-                i18n.reports.assistanceNeedsAndActions
-                  .preschoolAssistanceNeedDecisions
-              }
-            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -1179,8 +1141,6 @@ const ReportByGroupTable = ({
                   {report.showAssistanceNeedVoucherCoefficient && (
                     <Td>{data.assistanceNeedVoucherCoefficientCount}</Td>
                   )}
-                  <Td>{data.daycareAssistanceNeedDecisionCount}</Td>
-                  <Td>{data.preschoolAssistanceNeedDecisionCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -1224,8 +1184,6 @@ const ReportByGroupTable = ({
                     {report.showAssistanceNeedVoucherCoefficient && (
                       <Td>{row.assistanceNeedVoucherCoefficientCount}</Td>
                     )}
-                    <Td>{row.daycareAssistanceNeedDecisionCount}</Td>
-                    <Td>{row.preschoolAssistanceNeedDecisionCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -1281,18 +1239,6 @@ const ReportByGroupTable = ({
                 )}
               </Td>
             )}
-            <Td>
-              {reducePropertySum(
-                filteredRows,
-                (r) => r.daycareAssistanceNeedDecisionCount
-              )}
-            </Td>
-            <Td>
-              {reducePropertySum(
-                filteredRows,
-                (r) => r.preschoolAssistanceNeedDecisionCount
-              )}
-            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>
@@ -1379,13 +1325,7 @@ const ReportByChildTable = ({
               groupData.otherAssistanceMeasureCounts,
               row.otherAssistanceMeasureCounts,
               add
-            ),
-            daycareAssistanceNeedDecisionCount:
-              groupData.daycareAssistanceNeedDecisionCount +
-              row.daycareAssistanceNeedDecisionCount,
-            preschoolAssistanceNeedDecisionCount:
-              groupData.preschoolAssistanceNeedDecisionCount +
-              row.preschoolAssistanceNeedDecisionCount
+            )
           }
           return data
         },
@@ -1472,18 +1412,6 @@ const ReportByChildTable = ({
                 ? row.assistanceNeedVoucherCoefficient
                 : null,
             exclude: !report.showAssistanceNeedVoucherCoefficient
-          },
-          {
-            label:
-              i18n.reports.assistanceNeedsAndActions
-                .daycareAssistanceNeedDecisions,
-            value: (row) => row.daycareAssistanceNeedDecisionCount
-          },
-          {
-            label:
-              i18n.reports.assistanceNeedsAndActions
-                .preschoolAssistanceNeedDecisions,
-            value: (row) => row.preschoolAssistanceNeedDecisionCount
           }
         ]}
         filename={filename}
@@ -1534,18 +1462,6 @@ const ReportByChildTable = ({
                 }
               </Th>
             )}
-            <Th>
-              {
-                i18n.reports.assistanceNeedsAndActions
-                  .daycareAssistanceNeedDecisions
-              }
-            </Th>
-            <Th>
-              {
-                i18n.reports.assistanceNeedsAndActions
-                  .preschoolAssistanceNeedDecisions
-              }
-            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -1592,8 +1508,6 @@ const ReportByChildTable = ({
                   ))}
                   <Td />
                   {report.showAssistanceNeedVoucherCoefficient && <Td />}
-                  <Td>{data.daycareAssistanceNeedDecisionCount}</Td>
-                  <Td>{data.preschoolAssistanceNeedDecisionCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -1664,8 +1578,6 @@ const ReportByChildTable = ({
                           : '-'}
                       </Td>
                     )}
-                    <Td>{row.daycareAssistanceNeedDecisionCount}</Td>
-                    <Td>{row.preschoolAssistanceNeedDecisionCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -1710,18 +1622,6 @@ const ReportByChildTable = ({
                 }
               </Td>
             )}
-            <Td>
-              {reducePropertySum(
-                filteredRows,
-                (r) => r.daycareAssistanceNeedDecisionCount
-              )}
-            </Td>
-            <Td>
-              {reducePropertySum(
-                filteredRows,
-                (r) => r.preschoolAssistanceNeedDecisionCount
-              )}
-            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>
