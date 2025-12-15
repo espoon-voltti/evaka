@@ -248,6 +248,7 @@ export default React.memo(function GuardianSubSection({
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
+              required
               date={formData.guardianMoveDate}
               data-qa="guardianMoveDate-input"
               onChange={(value) => updateFormData({ guardianMoveDate: value })}
@@ -285,6 +286,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="L"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -310,6 +312,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -335,6 +338,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
             </AdaptiveFlex>
