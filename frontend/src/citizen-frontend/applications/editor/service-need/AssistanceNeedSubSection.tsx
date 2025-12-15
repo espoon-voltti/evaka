@@ -78,12 +78,13 @@ export default React.memo(function AssistanceNeedSubSection({
       {formData.assistanceNeeded && (
         <>
           <Gap size="s" />
-          <Label>
+          <Label htmlFor="assistanceDescription-input">
             {t.applications.editor.serviceNeed.assistanceNeedLabel + ' *'}
           </Label>
           <NarrowTextArea
             value={formData.assistanceDescription}
             data-qa="assistanceDescription-input"
+            id="assistanceDescription-input"
             onChange={(value) =>
               updateFormData({ assistanceDescription: value })
             }
