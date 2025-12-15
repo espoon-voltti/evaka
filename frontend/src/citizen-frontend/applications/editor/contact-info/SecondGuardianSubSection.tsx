@@ -67,8 +67,8 @@ export default React.memo(function SecondGuardianSubSection({
                     .secondGuardianInfoPreschoolSeparated
                 }
               </P>
-              <FixedSpaceColumn>
-                <Label>
+              <FixedSpaceColumn aria-labelledby="second-guardian-agreement-label">
+                <Label id="second-guardian-agreement-label">
                   {
                     t.applications.editor.contactInfo
                       .secondGuardianAgreementStatus.label
