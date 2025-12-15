@@ -891,9 +891,32 @@ const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
             .title
         }
       </H1>
-      {i18n.childInformation.childDocuments.decisions.otherValidDecisions.description(
-        validity
+      <div>
+        {
+          i18n.childInformation.childDocuments.decisions.otherValidDecisions
+            .description1
+        }
+      </div>
+      {validity.start.isBefore(LocalDate.todayInHelsinkiTz()) ? (
+        <AlertBox
+          title={
+            i18n.childInformation.childDocuments.decisions
+              .retroactiveWarningTitle
+          }
+          message={
+            i18n.childInformation.childDocuments.decisions
+              .retroactiveWarningMessage
+          }
+        />
+      ) : (
+        <Gap />
       )}
+      <div>
+        {i18n.childInformation.childDocuments.decisions.otherValidDecisions.description2(
+          validity
+        )}
+      </div>
+      <Gap />
       <Label>
         {
           i18n.childInformation.childDocuments.decisions.otherValidDecisions
