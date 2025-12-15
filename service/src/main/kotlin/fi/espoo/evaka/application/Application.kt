@@ -58,6 +58,8 @@ data class ApplicationSummary(
     val additionalInfo: Boolean,
     val serviceWorkerNote: String,
     val siblingBasis: Boolean,
+    val siblingName: String?,
+    val siblingUnitName: String?,
     val assistanceNeed: Boolean,
     val wasOnClubCare: Boolean? = null,
     val wasOnDaycare: Boolean? = null,

@@ -331,6 +331,8 @@ export interface ApplicationSummary {
   serviceNeed: ServiceNeedOption | null
   serviceWorkerNote: string
   siblingBasis: boolean
+  siblingName: string | null
+  siblingUnitName: string | null
   startDate: LocalDate | null
   status: ApplicationStatus
   streetAddress: string | null
