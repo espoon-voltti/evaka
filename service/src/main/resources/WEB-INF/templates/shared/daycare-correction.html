@@ -45,14 +45,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </div>
 
     <div class="col-row" th:text="#{address.title}"></div>
-    <br />
+    <br/>
     <div class="col-row" th:if="#{address.title.2} != ''" th:text="#{address.title.2}"></div>
     <div class="row">
         <div class="col-row" th:if="#{address.street.value} != ''">
             <div class="left" th:text="#{address.street.caption}"></div>
             <div class="right" th:text="#{address.street.value}"></div>
         </div>
-        <div class="col-row">
+        <div class="col-row" th:if="#{address.opening.value} != ''">
             <div class="left" th:text="#{address.opening.caption}"></div>
             <div class="right" th:text="#{address.opening.value}"></div>
         </div>
