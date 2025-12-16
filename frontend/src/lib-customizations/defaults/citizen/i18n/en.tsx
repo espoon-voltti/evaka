@@ -762,8 +762,7 @@ const en: Translations = {
                 >
                   Messages service of Suomi.fi
                 </a>{' '}
-                or by post if the applicant has not taken in use the Messages
-                service of Suomi.fi.
+                .
               </P>
               <P>
                 The client fees for municipal early childhood education and the
@@ -827,8 +826,7 @@ const en: Translations = {
                 March. If your child is given a place in a club, you will
                 receive a decision in April or May. The decision will cover one
                 operating period (from August until the end of May). The
-                decision will be sent to the Suomi.fi service or by post if you
-                have not activated the service.
+                decision will be sent to the Suomi.fi service.
               </P>
               <P>
                 You can also submit a club application outside of the
@@ -1192,14 +1190,6 @@ const en: Translations = {
                   rel="noreferrer"
                 >
                   Suomi.fi Messages
-                </a>{' '}
-                service or by post if you do not use the{' '}
-                <a
-                  href="https://www.suomi.fi/messages"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Suomi.fi messages
                 </a>{' '}
                 service.
               </P>

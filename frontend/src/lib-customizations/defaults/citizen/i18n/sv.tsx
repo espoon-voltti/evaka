@@ -816,8 +816,7 @@ const sv: Translations = {
                 Om ditt barn får en klubbplats, du får beslutet om det under
                 april-maj. Beslutet fattas för en verksamhetsperiod för perioden
                 (augusti till slutet av maj). Beslut om klubbplats kommer till
-                Suomi.fi-tjänsten eller per post om du inte har tagit det
-                service.
+                Suomi.fi-tjänsten.
               </P>
               <P>
                 En klubbansökan kan också lämnas in utanför ansökningsperioden
@@ -1158,8 +1157,7 @@ const sv: Translations = {
               <P>
                 Du får ett separat skriftligt beslut om platsen inom
                 småbarnspedagogiken. Beslutet kommer till tjänsten
-                Suomi.fi-meddelanden eller per post om du inte har tagit
-                tjänsten Suomi.fi-meddelanden i bruk.
+                Suomi.fi-meddelanden.
               </P>
             </>
           ),

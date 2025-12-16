@@ -1171,8 +1171,7 @@ export default {
                 >
                   Suomi.fi-viestit
                 </a>{' '}
-                -palveluun tai postitse, mikäli et ole ottanut Suomi.fi-viestit
-                -palvelua käyttöön.
+                -palveluun.
               </P>
             </>
           ),
