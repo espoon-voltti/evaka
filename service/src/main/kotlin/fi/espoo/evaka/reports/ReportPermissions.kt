@@ -224,7 +224,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         )
                     },
                     Report.TITANIA_ERRORS.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_TITANIA_ERRORS)
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_TITANIA_ERRORS)
                     },
                     Report.UNITS.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_UNITS_REPORT)
