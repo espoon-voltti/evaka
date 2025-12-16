@@ -815,7 +815,8 @@ const customizations: CitizenCustomizations = {
             assistanceNeed: 'Stödbehov',
             assistanceNeeded: {
               DAYCARE: 'Barnet behöver stöd för utvecklingen eller lärandet',
-              PRESCHOOL: 'Välj detta alternativ om barnet behöver stöd för sin utveckling, sitt lärande och/eller sitt välbefinnande under',
+              PRESCHOOL:
+                'Välj detta alternativ om barnet behöver stöd för sin utveckling, sitt lärande och/eller sitt välbefinnande under',
               CLUB: 'Barnet behöver stöd för utvecklingen eller lärandet'
             },
             assistanceNeedInstructions: {
@@ -832,11 +833,12 @@ const customizations: CitizenCustomizations = {
                   småbarnspedagogiken. Kryssa för denna punkt också om det finns
                   någon annan särskild anledning som direkt påverkar ordnandet
                   av förskoleundervisningen och vid vilken enhet
-                  förskoleundervisningen bör ordnas för barnet. Om barnet
-                  har behov av stöd för lärande och/eller deltagande i
+                  förskoleundervisningen bör ordnas för barnet. Om barnet har
+                  behov av stöd för lärande och/eller deltagande i
                   förskoleundervisningen, kommer specialläraren inom
-                  småbarnspedagogik att. På så sätt kan vi ta hänsyn till barnets
-                  behov och anvisa barnet en lämplig plats inom förskoleundervisningen.
+                  småbarnspedagogik att. På så sätt kan vi ta hänsyn till
+                  barnets behov och anvisa barnet en lämplig plats inom
+                  förskoleundervisningen.
                 </P>
               )
             },
@@ -1383,7 +1385,8 @@ const customizations: CitizenCustomizations = {
             assistanceNeed: 'Need for support',
             assistanceNeeded: {
               DAYCARE: 'My child needs support for development or learning',
-              PRESCHOOL: 'Select this option if the child needs support for their development, learning and/or wellbeing during the pre-primary education year',
+              PRESCHOOL:
+                'Select this option if the child needs support for their development, learning and/or wellbeing during the pre-primary education year',
               CLUB: 'My child needs support for development or learning'
             },
             assistanceNeedInstructions: {
@@ -1401,10 +1404,11 @@ const customizations: CitizenCustomizations = {
                   has another special reason that directly affects the provision
                   of pre-primary education or the unit in which their
                   pre-primary education should be provided. If a child needs
-                  support for learning and/or participation in pre-primary education,
-                  the early childhood special education teacher will contact you.
-                  This will ensure that your child’s needs are taken into account and
-                  your child is given a placein a suitable pre-primary education unit.
+                  support for learning and/or participation in pre-primary
+                  education, the early childhood special education teacher will
+                  contact you. This will ensure that your child’s needs are
+                  taken into account and your child is given a placein a
+                  suitable pre-primary education unit.
                 </P>
               )
             },
