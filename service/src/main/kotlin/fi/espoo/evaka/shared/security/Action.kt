@@ -285,7 +285,6 @@ sealed interface Action {
         READ_RAW_REPORT(HasGlobalRole(ADMIN, REPORT_VIEWER)),
         READ_SEXTET_REPORT(HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER)),
         READ_UNITS_REPORT(HasGlobalRole(ADMIN)),
-        READ_TITANIA_ERRORS(HasGlobalRole(ADMIN)),
         READ_VARDA_REPORT(HasGlobalRole(ADMIN)),
         READ_TAMPERE_REGIONAL_SURVEY_REPORT(HasGlobalRole(ADMIN)),
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
@@ -2294,7 +2293,8 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
-        READ_STAFF_EMPLOYEE_NUMBER(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit());
+        READ_STAFF_EMPLOYEE_NUMBER(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_TITANIA_ERRORS(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

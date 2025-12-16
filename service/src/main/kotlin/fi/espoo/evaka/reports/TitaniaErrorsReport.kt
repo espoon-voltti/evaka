@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.TitaniaConflictId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -13,6 +14,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.time.LocalTime
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -30,14 +33,15 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
     ): List<TitaniaErrorReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_TITANIA_ERRORS,
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_TITANIA_ERRORS,
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getTitaniaErrors()
+                    it.getTitaniaErrors(filter)
                 }
             }
             .also { Audit.TitaniaReportRead.log() }
@@ -52,11 +56,11 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
+                    accessControl.requireAuthorizationFilter(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_TITANIA_ERRORS,
+                        Action.Unit.READ_TITANIA_ERRORS,
                     )
                     tx.deleteTitaniaError(conflictId)
                 }
@@ -65,11 +69,20 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
     }
 }
 
-fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
+fun Database.Read.getTitaniaErrors(
+    filter: AccessControlFilter<DaycareId>
+): List<TitaniaErrorReportRow> {
     val dbRows =
         createQuery {
                 sql(
                     """
+            WITH daycare_acls AS (
+                SELECT te.employee_id, d.name as unit_name
+                FROM titania_errors te
+                LEFT JOIN daycare_acl da ON te.employee_id = da.employee_id
+                LEFT JOIN daycare d ON da.daycare_id = d.id
+                WHERE ${predicate(filter.forTable("d"))}
+            )
             SELECT
                 te.request_time,
                 emp.first_name,
@@ -84,18 +97,13 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
                 COALESCE(emp_units.unit_names, 'Ei luvituksia') as unit_names
             FROM titania_errors te
             JOIN employee emp ON te.employee_id = emp.id
-            LEFT JOIN (
+            JOIN (
                 SELECT
                     employee_id,
-                    STRING_AGG(dc.name, ', ') as unit_names
-                    FROM daycare_acl acl
-                    JOIN daycare dc ON dc.id = acl.daycare_id
-                    WHERE acl.employee_id IN (
-                        SELECT employee_id
-                        FROM titania_errors
-                    )
+                    STRING_AGG(unit_name, ', ' ORDER BY unit_name) as unit_names
+                    FROM daycare_acls
                     GROUP BY employee_id
-            ) emp_units on emp_units.employee_id = te.employee_id
+            ) emp_units ON te.employee_id = emp_units.employee_id
             ORDER BY request_time, unit_names, last_name, first_name, shift_date;
             """
                 )
@@ -114,7 +122,7 @@ fun Database.Read.getTitaniaErrors(): List<TitaniaErrorReportRow> {
                             unitEntry.key,
                             unitEntry.value
                                 .groupBy {
-                                    if (it.employeeNumber != "") it.employeeNumber
+                                    if (it.employeeNumber != null) it.employeeNumber
                                     else it.lastName + it.firstName
                                 }
                                 .map { employeeEntry ->
