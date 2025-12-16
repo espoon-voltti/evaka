@@ -794,17 +794,9 @@ const en: Translations = {
                 Children attend pre-primary education in the year preceding the
                 start of their compulsory education. Pre-primary education is
                 free of charge. Enrolment for pre-primary education in the
-                2024–2025 school year takes place on 9–19 January 2024. Finnish
-                and swedish pre-primary education begins on 8 August 2024. The
+                2026–2027 school year takes place between 8 and 20 January 2026. Finnish
+                and Swedish pre-primary education begins on 13 August 2026. The
                 decisions will be sent to the{' '}
-                <a
-                  href="https://www.suomi.fi/messages"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Suomi.fi Messages
-                </a>{' '}
-                service or by post, if the applicant does not use the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
                   target="_blank"
@@ -816,14 +808,6 @@ const en: Translations = {
               </P>
               <P>
                 The decisions will be sent to the{' '}
-                <a
-                  href="https://www.suomi.fi/messages"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Suomi.fi Messages
-                </a>{' '}
-                service or by post, if the applicant does not use the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
                   target="_blank"
@@ -1084,7 +1068,7 @@ const en: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Finnish and Swedish-language pre-primary education starts on 8 August 2024.'
+              'Finnish and Swedish pre-primary education starts on 13 August 2026.'
             ],
             CLUB: [
               'Clubs follow pre-primary education work and vacation times.'

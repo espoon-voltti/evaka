@@ -752,8 +752,7 @@ const sv: Translations = {
                 >
                   Suomi.fi
                 </a>
-                -meddelanden, eller per post om du inte tagit i bruk
-                meddelandetjänsten i Suomi.fi.
+                -meddelanden.
               </P>
               <P>
                 Klientavgiften inom den kommunala småbarnspedagogiken och för
@@ -784,8 +783,8 @@ const sv: Translations = {
               <P>
                 Barn deltar i förskoleundervisning året innan läroplikten
                 inleds. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                till förskoleundervisningen 2024–2025 är 9.–19.1.2024. Förskolan
-                börjar i 8.8.2024. Beslutet delges inom mars i{' '}
+                till förskoleundervisningen 2026–2027 är 8.–20.1.2026. Förskolan
+                börjar i 13.8.2026. Beslutet delges inom mars i{' '}
                 <a
                   href="https://www.suomi.fi/meddelanden"
                   target="_blank"
@@ -793,14 +792,6 @@ const sv: Translations = {
                 >
                   Suomi.fi-meddelandetjänsten
                 </a>{' '}
-                eller per post om du inte tagit i bruk{' '}
-                <a
-                  href="https://www.suomi.fi/meddelanden"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  meddelandetjänsten i Suomi.fi
-                </a>
                 .
               </P>
               <P>
@@ -813,8 +804,7 @@ const sv: Translations = {
                 >
                   Suomi.fi
                 </a>
-                -meddelanden, eller per post om du inte tagit i bruk
-                meddelandetjänsten i Suomi.fi.
+                -meddelanden.
               </P>
               <P fitted={true}>* Informationen markerad med en stjärna krävs</P>
             </>
@@ -1060,7 +1050,7 @@ const sv: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 8 augusti 2024.'
+              'Den finskspråkiga och den svenskspråkiga förskoleundervisningen börjar den 13 augusti 2026.'
             ],
             CLUB: [
               'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'

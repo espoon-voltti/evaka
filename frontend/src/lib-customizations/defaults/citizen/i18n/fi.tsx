@@ -762,8 +762,7 @@ export default {
                 >
                   Suomi.fi-viestit
                 </a>{' '}
-                -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
-                -palvelua käyttöön.
+                -palveluun.
               </P>
               <P>
                 Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
@@ -790,9 +789,9 @@ export default {
             <>
               <P>
                 Esiopetukseen osallistutaan oppivelvollisuuden alkamista
-                edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden 2024–2025
-                esiopetukseen ilmoittaudutaan 9.–19.1.2024. Suomen- ja
-                ruotsinkielinen esiopetus alkaa 8.8.2024.
+                edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden 2026–2027
+                esiopetukseen ilmoittaudutaan 8.–20.1.2026. Suomen- ja
+                ruotsinkielinen esiopetus alkaa 13.8.2026.
               </P>
               <P>
                 Päätökset tulevat{' '}
@@ -803,8 +802,7 @@ export default {
                 >
                   Suomi.fi-viestit
                 </a>{' '}
-                -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
-                -palvelua käyttöön.
+                -palveluun.
               </P>
               <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
             </>
@@ -1049,7 +1047,7 @@ export default {
           info: {
             DAYCARE: [] as React.ReactNode[],
             PRESCHOOL: [
-              'Suomen- ja ruotsinkielinen esiopetus alkaa 8.8.2024. Jos tarvitsette varhaiskasvatusta 1.8.2024 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+              'Suomen- ja ruotsinkielinen esiopetus alkaa 13.8.2026. Jos tarvitsette varhaiskasvatusta elokuussa ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
             ],
             CLUB: [
               'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
