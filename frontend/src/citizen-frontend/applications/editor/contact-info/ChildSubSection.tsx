@@ -95,8 +95,11 @@ export default React.memo(function ChildSubSection({
         <>
           <Gap size="m" />
           <FixedSpaceColumn spacing="xs">
-            <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
+            <Label htmlFor="child-move-date">
+              {t.applications.editor.contactInfo.moveDate + ' *'}
+            </Label>
             <DatePicker
+              id="child-move-date"
               required
               date={formData.childMoveDate}
               data-qa="childMoveDate-input"

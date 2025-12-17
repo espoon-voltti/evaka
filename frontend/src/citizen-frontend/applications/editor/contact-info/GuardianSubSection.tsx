@@ -246,8 +246,11 @@ export default React.memo(function GuardianSubSection({
             </>
           )}
           <FixedSpaceColumn spacing="xs">
-            <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
+            <Label htmlFor="guardian-move-date">
+              {t.applications.editor.contactInfo.moveDate + ' *'}
+            </Label>
             <DatePicker
+              id="guardian-move-date"
               required
               date={formData.guardianMoveDate}
               data-qa="guardianMoveDate-input"
