@@ -607,9 +607,10 @@ export default {
       childStartsInfo: (
         firstName: string,
         startDate: string,
-        unitName: string
+        unitName: string,
+        calendarOpenDate: string
       ) =>
-        `${firstName} aloittaa ${startDate} yksikössä ${unitName}. Läsnäolojen ilmoittaminen aukeaa kuukautta etukäteen.`
+        `${firstName} aloittaa ${startDate} yksikössä ${unitName}. Läsnäolojen ilmoittaminen aukeaa ${calendarOpenDate}.`
     }
   },
   messages: {
