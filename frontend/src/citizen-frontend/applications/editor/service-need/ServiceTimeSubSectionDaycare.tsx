@@ -131,7 +131,13 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     }
 
     return (
-      <FixedSpaceColumn>
+      <FixedSpaceColumn
+        role="group"
+        aria-labelledby="service-need-part-time-label"
+      >
+        <Label id="service-need-part-time-label">
+          {t.applications.editor.serviceNeed.partTime.label}
+        </Label>
         {placementTypes.includes('DAYCARE_PART_TIME') && (
           <Radio
             id="service-need-part-time-true"
@@ -144,6 +150,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 serviceNeedOption: partTimeOptions[0] ?? null
               })
             }
+            name="service-need-part-time-radio"
           />
         )}
         {formData.partTime && partTimeOptions.length > 0 && (
@@ -161,6 +168,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`part-time-option-${opt.id}`}
+                  name="part-time-sub-radio"
                 />
               ))}
             </FixedSpaceColumn>
@@ -172,6 +180,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           checked={!formData.partTime}
           data-qa="partTime-input-false"
           onChange={() => updateServiceNeed(false)}
+          name="service-need-part-time-radio"
         />
         {!formData.partTime && fullTimeOptions.length > 0 && (
           <SubRadios>
@@ -188,6 +197,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                   checked={formData.serviceNeedOption?.id === opt.id}
                   onChange={() => updateFormData({ serviceNeedOption: opt })}
                   data-qa={`full-time-option-${opt.id}`}
+                  name="full-time-sub-radio"
                 />
               ))}
             </FixedSpaceColumn>
@@ -209,7 +219,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   function renderServiceNeedDailyTimeSelection() {
     return (
       featureFlags.daycareApplication.dailyTimes && (
-        <>
+        <div role="group" aria-labelledby="daily-time-label">
           <ExpandingInfo
             info={
               t.applications.editor.serviceNeed.dailyTime.instructions[
@@ -218,7 +228,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             }
             inlineChildren
           >
-            <Label>
+            <Label id="daily-time-label">
               {t.applications.editor.serviceNeed.dailyTime
                 .usualArrivalAndDeparture[applicationType] + ' *'}
             </Label>
@@ -232,6 +242,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
               <TimeInput
+                required
                 id="daily-time-starts"
                 value={formData.startTime}
                 data-qa="startTime-input"
@@ -248,6 +259,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
               <TimeInput
+                required
                 id="daily-time-ends"
                 value={formData.endTime}
                 data-qa="endTime-input"
@@ -257,7 +269,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
-        </>
+        </div>
       )
     )
   }

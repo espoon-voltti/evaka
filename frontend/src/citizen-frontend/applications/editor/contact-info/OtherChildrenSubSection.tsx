@@ -40,57 +40,61 @@ export default React.memo(function OtherChildrenSubSection({
     <>
       <H3>{t.applications.editor.contactInfo.otherChildrenTitle}</H3>
       <P>{t.applications.editor.contactInfo.otherChildrenInfo}</P>
-      <P>{t.applications.editor.contactInfo.otherChildrenChoiceInfo}</P>
-      {formData.vtjSiblings.map((child, index) => (
-        <React.Fragment key={`known-other-child-${index}`}>
-          <Gap size="s" />
-          <Checkbox
-            label={`${formatPersonName(child, 'First Last')}, ${
-              child.socialSecurityNumber || ''
-            }`}
-            translate="no"
-            checked={child.selected}
-            onChange={(checked) =>
+      <div role="group" aria-labelledby="other-children-choice-info-label">
+        <label id="other-children-choice-info-label">
+          {t.applications.editor.contactInfo.otherChildrenChoiceInfo}
+        </label>
+        {formData.vtjSiblings.map((child, index) => (
+          <React.Fragment key={`known-other-child-${index}`}>
+            <Gap size="s" />
+            <Checkbox
+              label={`${formatPersonName(child, 'First Last')}, ${
+                child.socialSecurityNumber || ''
+              }`}
+              translate="no"
+              checked={child.selected}
+              onChange={(checked) =>
+                updateFormData({
+                  vtjSiblings: formData.vtjSiblings.map((old) =>
+                    old.socialSecurityNumber === child.socialSecurityNumber
+                      ? {
+                          ...old,
+                          selected: checked
+                        }
+                      : old
+                  )
+                })
+              }
+            />
+          </React.Fragment>
+        ))}
+        <Gap size="s" />
+        <Checkbox
+          checked={formData.otherChildrenExists}
+          data-qa="otherChildrenExists-input"
+          label={t.applications.editor.contactInfo.areExtraChildren}
+          inputRef={otherChildrenExistsRef}
+          onChange={(checked) => {
+            updateFormData({
+              otherChildrenExists: checked
+            })
+            if (formData.otherChildren.length === 0) {
               updateFormData({
-                vtjSiblings: formData.vtjSiblings.map((old) =>
-                  old.socialSecurityNumber === child.socialSecurityNumber
-                    ? {
-                        ...old,
-                        selected: checked
-                      }
-                    : old
-                )
+                otherChildren: [
+                  {
+                    firstName: '',
+                    lastName: '',
+                    socialSecurityNumber: ''
+                  }
+                ]
               })
             }
-          />
-        </React.Fragment>
-      ))}
-      <Gap size="s" />
-      <Checkbox
-        checked={formData.otherChildrenExists}
-        data-qa="otherChildrenExists-input"
-        label={t.applications.editor.contactInfo.areExtraChildren}
-        inputRef={otherChildrenExistsRef}
-        onChange={(checked) => {
-          updateFormData({
-            otherChildrenExists: checked
-          })
-          if (formData.otherChildren.length === 0) {
-            updateFormData({
-              otherChildren: [
-                {
-                  firstName: '',
-                  lastName: '',
-                  socialSecurityNumber: ''
-                }
-              ]
-            })
-          }
-          if (checked) {
-            focusElementAfterDelay('extra-child-first-name-0')
-          }
-        }}
-      />
+            if (checked) {
+              focusElementAfterDelay('extra-child-first-name-0')
+            }
+          }}
+        />
+      </div>
       {formData.otherChildrenExists && (
         <>
           <Gap size="m" />

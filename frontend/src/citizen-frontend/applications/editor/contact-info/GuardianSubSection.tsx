@@ -128,7 +128,8 @@ export default React.memo(function GuardianSubSection({
             <>
               <FixedSpaceColumn spacing="xs">
                 <Label htmlFor="guardian-email">
-                  {t.applications.editor.contactInfo.email + ' *'}
+                  {t.applications.editor.contactInfo.email}
+                  {formData.noGuardianEmail ? '' : ' *'}
                 </Label>
                 <InputField
                   id="guardian-email"
@@ -147,11 +148,13 @@ export default React.memo(function GuardianSubSection({
                   hideErrorsBeforeTouched={!verificationRequested}
                   placeholder={t.applications.editor.contactInfo.email}
                   width="L"
-                  required={true}
+                  required={!formData.noGuardianEmail}
+                  readonly={formData.noGuardianEmail}
                 />
                 <Gap size="xs" />
                 <Label htmlFor="verify-guardian-email">
-                  {t.applications.editor.contactInfo.verifyEmail + ' *'}
+                  {t.applications.editor.contactInfo.verifyEmail}
+                  {formData.noGuardianEmail ? '' : ' *'}
                 </Label>
                 <InputField
                   id="verify-guardian-email"
@@ -170,7 +173,8 @@ export default React.memo(function GuardianSubSection({
                   hideErrorsBeforeTouched={!verificationRequested}
                   placeholder={t.applications.editor.contactInfo.verifyEmail}
                   width="L"
-                  required={true}
+                  required={!formData.noGuardianEmail}
+                  readonly={formData.noGuardianEmail}
                 />
               </FixedSpaceColumn>
               <div>
@@ -242,8 +246,12 @@ export default React.memo(function GuardianSubSection({
             </>
           )}
           <FixedSpaceColumn spacing="xs">
-            <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
+            <Label htmlFor="guardian-move-date">
+              {t.applications.editor.contactInfo.moveDate + ' *'}
+            </Label>
             <DatePicker
+              id="guardian-move-date"
+              required
               date={formData.guardianMoveDate}
               data-qa="guardianMoveDate-input"
               onChange={(value) => updateFormData({ guardianMoveDate: value })}
@@ -281,6 +289,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="L"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -306,6 +315,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn spacing="xs">
@@ -331,6 +341,7 @@ export default React.memo(function GuardianSubSection({
                   }
                   readonly={formData.guardianFutureAddressEqualsChild}
                   width="m"
+                  required
                 />
               </FixedSpaceColumn>
             </AdaptiveFlex>

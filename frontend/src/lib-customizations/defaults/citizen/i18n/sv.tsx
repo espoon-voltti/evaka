@@ -1129,6 +1129,7 @@ const sv: Translations = {
           }
         },
         partTime: {
+          label: 'Välj deldags- eller heldagssmåbarnspedagogik',
           true: 'Deldag (max 5h/dag, 25h/vecka)',
           false: 'Heldag'
         },

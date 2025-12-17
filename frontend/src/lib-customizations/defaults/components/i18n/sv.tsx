@@ -46,8 +46,7 @@ const components: Translations = {
   },
   datePicker: {
     placeholder: 'dd.mm.åååå',
-    description:
-      'Skriv in datumet i formatet dd.mm.åååå. Du kan komma till månadsväljaren med pil ned-tangenten.',
+    description: 'Skriv in datumet i formatet dd.mm.åååå.',
     validationErrors: {
       validDate: 'Ange i format dd.mm.åååå',
       dateTooEarly: 'Välj ett senare datum',

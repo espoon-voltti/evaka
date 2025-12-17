@@ -133,26 +133,28 @@ export default React.memo(function UnitsSubSection({
         </div>
       ) : (
         <>
-          <Label>
-            {t.applications.editor.unitPreference.units.languageFilter.label}
-          </Label>
-          <Gap size="xs" />
-          <FixedSpaceRow>
-            <SelectionChip
-              text={
-                t.applications.editor.unitPreference.units.languageFilter.fi
-              }
-              selected={displayFinnish}
-              onChange={setDisplayFinnish}
-            />
-            <SelectionChip
-              text={
-                t.applications.editor.unitPreference.units.languageFilter.sv
-              }
-              selected={displaySwedish}
-              onChange={setDisplaySwedish}
-            />
-          </FixedSpaceRow>
+          <div role="group" aria-labelledby="language-selection-label">
+            <Label id="language-selection-label">
+              {t.applications.editor.unitPreference.units.languageFilter.label}
+            </Label>
+            <Gap size="xs" />
+            <FixedSpaceRow>
+              <SelectionChip
+                text={
+                  t.applications.editor.unitPreference.units.languageFilter.fi
+                }
+                selected={displayFinnish}
+                onChange={setDisplayFinnish}
+              />
+              <SelectionChip
+                text={
+                  t.applications.editor.unitPreference.units.languageFilter.sv
+                }
+                selected={displaySwedish}
+                onChange={setDisplaySwedish}
+              />
+            </FixedSpaceRow>
+          </div>
 
           <Gap size="m" />
 
