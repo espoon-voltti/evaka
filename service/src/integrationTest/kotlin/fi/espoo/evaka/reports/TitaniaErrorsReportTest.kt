@@ -125,6 +125,33 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
         assert(employees.contains("Neljäs Niilo"))
     }
 
+    @Test
+    fun `should show each ACL only once for the employee`() {
+
+        insertTestDataWithSecondRequest()
+
+        val adminResult =
+            titaniaErrorsReport.getTitaniaErrorsReport(
+                dbInstance(),
+                admin.user,
+                MockEvakaClock(2025, 12, 12, 12, 0, 0),
+            )
+
+        val units = adminResult.first().units.map { it.unitName }
+        assertEquals(2, units.size)
+        assert(units.contains("Yksikkö"))
+        assert(units.contains("Kaksikko, Yksikkö"))
+
+        val supervisorResult =
+            titaniaErrorsReport.getTitaniaErrorsReport(
+                dbInstance(),
+                supervisor.user,
+                MockEvakaClock(2025, 12, 12, 12, 0, 0),
+            )
+
+        assertEquals("Yksikkö", supervisorResult.first().units.first().unitName)
+    }
+
     fun insertTestData() {
         db.transaction { tx ->
             tx.insert(area)
@@ -189,6 +216,34 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
                 LocalTime.of(9, 30),
                 LocalTime.of(8, 30),
                 LocalTime.of(10, 0),
+            )
+        }
+    }
+
+    fun insertTestDataWithSecondRequest() {
+        insertTestDataWithFourthEmployee()
+
+        db.transaction { tx ->
+            insertTitaniaError(
+                tx,
+                HelsinkiDateTime.of(LocalDate.of(2025, 12, 10), LocalTime.of(12, 0)),
+                LocalDate.of(2025, 12, 11),
+                employee.id,
+                LocalTime.of(9, 0),
+                LocalTime.of(12, 30),
+                LocalTime.of(12, 0),
+                LocalTime.of(14, 30),
+            )
+
+            insertTitaniaError(
+                tx,
+                HelsinkiDateTime.of(LocalDate.of(2025, 12, 10), LocalTime.of(12, 0)),
+                LocalDate.of(2025, 12, 11),
+                fourthEmployee.id,
+                LocalTime.of(9, 0),
+                LocalTime.of(12, 30),
+                LocalTime.of(12, 0),
+                LocalTime.of(14, 30),
             )
         }
     }
