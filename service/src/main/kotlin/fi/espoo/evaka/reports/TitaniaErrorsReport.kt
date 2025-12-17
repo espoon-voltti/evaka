@@ -77,7 +77,7 @@ fun Database.Read.getTitaniaErrors(
                 sql(
                     """
             WITH daycare_acls AS (
-                SELECT te.employee_id, d.name as unit_name
+                SELECT DISTINCT te.employee_id, d.name as unit_name
                 FROM titania_errors te
                 LEFT JOIN daycare_acl da ON te.employee_id = da.employee_id
                 LEFT JOIN daycare d ON da.daycare_id = d.id
