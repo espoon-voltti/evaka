@@ -217,6 +217,10 @@ export default React.memo(function EmployeesPage() {
                             )
                           )
                         ].join(', ')
+                    },
+                    {
+                      label: i18n.employees.lastLogin,
+                      value: (row) => row.lastLogin?.format()
                     }
                   ]}
                   filename={`Käyttäjät-${HelsinkiDateTime.now().format()}.csv`}
