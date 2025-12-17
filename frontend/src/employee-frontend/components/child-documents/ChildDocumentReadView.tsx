@@ -7,6 +7,7 @@ import isEqual from 'lodash/isEqual'
 import React, { useMemo, useState } from 'react'
 import { useSearchParams, useLocation } from 'wouter'
 
+import type { Failure } from 'lib-common/api'
 import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {
@@ -73,7 +74,11 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
-import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import {
+  AlertBox,
+  ErrorBox,
+  InfoBox
+} from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, Label, P } from 'lib-components/typography'
@@ -527,6 +532,13 @@ const ChildDocumentReadViewInner = React.memo(
                         endingDecisionIds: endingDecisionsForm.value()
                       }
                     })}
+                    onFailure={(failure) => {
+                      if (failure.errorCode === 'end-child-document-decision') {
+                        return i18n.childInformation.childDocuments.decisions
+                          .errors.conflict
+                      }
+                      return i18n.common.error.unknown
+                    }}
                     data-qa="confirm-other-decisions-button"
                   />
                 ) : (
@@ -772,6 +784,7 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
   const { i18n, lang } = useTranslation()
 
   const [confirming, setConfirming] = React.useState(false)
+  const [errorText, setErrorText] = React.useState('')
   const [decisionsWithSameTemplate, setDecisionsWithSameTemplate] =
     React.useState<AcceptedChildDecisions[]>([])
 
@@ -843,11 +856,21 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
             }
           })}
           resolveLabel={i18n.common.confirm}
+          resolveDisabled={!form.isValid() || !!errorText}
           onSuccess={() => {
             setConfirming(false)
+            setErrorText('')
           }}
           rejectAction={() => {
             setConfirming(false)
+            setErrorText('')
+          }}
+          onFailure={(failure: Failure<unknown>) => {
+            setErrorText(
+              failure.errorCode === 'end-child-document-decision'
+                ? i18n.childInformation.childDocuments.decisions.errors.conflict
+                : i18n.common.error.unknown
+            )
           }}
           rejectLabel={i18n.common.cancel}
         >
@@ -864,6 +887,13 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
                 }
               />
             )}
+          {!!errorText && (
+            <ErrorBox
+              wide
+              message={errorText}
+              data-qa="accept-decision-error"
+            />
+          )}
         </MutateFormModal>
       )}
     </FixedSpaceRow>

@@ -1332,6 +1332,78 @@ describe('Employee - Child documents', () => {
       .decisionChildDocuments(1)
       .validity.assertTextEquals('02.02.2023 - 08.02.2023')
   })
+
+  test('Error is shown when accepting decision with conflicting validity period', async () => {
+    const template = await Fixture.documentTemplate({
+      type: 'OTHER_DECISION',
+      endDecisionWhenUnitChanges: true,
+      published: true
+    }).save()
+
+    // Create first decision that is already accepted starting today
+    await Fixture.childDocument({
+      templateId: template.id,
+      childId: testChild2.id,
+      status: 'COMPLETED',
+      content: {
+        answers: []
+      },
+      publishedAt: now,
+      publishedBy: evakaUserId(director.id),
+      publishedContent: {
+        answers: []
+      },
+      decisionMaker: director.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: new DateRange(now.toLocalDate(), null),
+        createdBy: director.id,
+        modifiedBy: director.id
+      })
+      .save()
+
+    // Unit supervisor creates a second decision document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDecisionDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.proposeDecision(director)
+    const documentUrl = page.url
+    await page.close()
+
+    // Director attempts to accept the second decision with same start date
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, director)
+    await page.goto(documentUrl)
+    childDocument = new ChildDocumentPage(page)
+
+    // Try to accept with conflicting validity (same start date as existing decision)
+    const conflictingValidity = new DateRange(now.toLocalDate(), null)
+    await childDocument.acceptDecision(conflictingValidity)
+
+    // Confirmation modal should display the error
+    const modal = childDocument.sendingConfirmationModal
+    const errorBox = modal.find('[data-qa*="accept-decision-error"]')
+    await errorBox.waitUntilVisible()
+
+    // The OK button should be disabled due to the error
+    const okButton = modal.findByDataQa('modal-okBtn')
+    await okButton.assertDisabled(true)
+
+    // Cancel the modal
+    await modal.findByDataQa('modal-cancelBtn').click()
+    await modal.waitUntilHidden()
+
+    // Status should still be decision proposal (not accepted)
+    await childDocument.status.assertTextEquals('Päätösesitys')
+  })
 })
 
 describe('Employee - Child documents - unit groups page', () => {

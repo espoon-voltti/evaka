@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react'
 
+import type { Failure } from 'lib-common/api'
 import type { MutationDescription } from 'lib-common/query'
 import { type cancelMutation } from 'lib-common/query'
 
@@ -14,6 +15,7 @@ import { useTranslations } from '../i18n'
 import { FixedSpaceRow } from '../layout/flex-helpers'
 import type { BaseProps } from '../utils'
 
+import { ErrorBox } from './MessageBoxes'
 import type { ModalType } from './modals/BaseModal'
 import { MutateFormModal } from './modals/FormModal'
 
@@ -45,6 +47,7 @@ export type ConfirmedMutationProps<Arg, Data> = BaseProps & {
   confirmLabel?: string
   cancelLabel?: string
   onSuccess?: (value: Data) => void
+  onFailure?: (error: Failure<unknown>) => string
   modalIcon?: IconDefinition
   modalType?: ModalType
   'data-qa-modal'?: string
@@ -62,6 +65,7 @@ function ConfirmedMutation_<Arg, Data>(
     onClick,
     confirmLabel,
     onSuccess,
+    onFailure,
     cancelLabel,
     modalIcon,
     modalType,
@@ -78,6 +82,7 @@ function ConfirmedMutation_<Arg, Data>(
     e.stopPropagation()
     setConfirming(true)
   }
+  const [errorText, setErrorText] = useState('')
   return (
     <div className={className}>
       {(props.buttonStyle === undefined || props.buttonStyle === 'BUTTON') && (
@@ -115,22 +120,32 @@ function ConfirmedMutation_<Arg, Data>(
           text={confirmationText}
           resolveMutation={mutation}
           resolveAction={onClick}
-          resolveDisabled={needsExtraConfirmation && !extraConfirmation}
+          resolveDisabled={
+            (needsExtraConfirmation && !extraConfirmation) || !!errorText
+          }
           resolveLabel={confirmLabel ?? i18n.common.confirm}
           onSuccess={(value) => {
             setConfirming(false)
             setExtraConfirmation(false)
+            setErrorText('')
             if (onSuccess) onSuccess(value)
+          }}
+          onFailure={(failure) => {
+            if (onFailure) {
+              setErrorText(onFailure(failure))
+            }
           }}
           rejectAction={() => {
             setConfirming(false)
             setExtraConfirmation(false)
+            setErrorText('')
           }}
           rejectLabel={cancelLabel ?? i18n.common.cancel}
           icon={modalIcon}
           type={modalType}
           data-qa={dataQaModal}
         >
+          {!!errorText && <ErrorBox wide noMargin message={errorText} />}
           {!!extraConfirmationCheckboxText && (
             <FixedSpaceRow justifyContent="center">
               <Checkbox
