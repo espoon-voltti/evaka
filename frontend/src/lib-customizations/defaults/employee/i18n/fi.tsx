@@ -829,7 +829,7 @@ export const fi = {
             'Lapsikohtainen tuki ja vanhan mallinen pidennetty ov - muu (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
           CHILD_SUPPORT_2_AND_OLD_EXTENDED_COMPULSORY_EDUCATION:
             'Lapsikohtainen tuki ja vanhan mallinen pidennetty ov - kehitysvamma 2 (Koskeen, käytössä siirtymäkautena 1.8.2025 - 31.7.2026)',
-          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot'
+          GROUP_SUPPORT: 'Ryhmäkohtaiset tukimuodot (ei käytössä)'
         },
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',

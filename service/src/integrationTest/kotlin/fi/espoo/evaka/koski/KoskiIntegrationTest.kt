@@ -538,8 +538,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 testPeriod2027(2L to 3L),
                 PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
             )
-        val groupSupport =
-            TestCase(testPeriod2027(4L to 5L), PreschoolAssistanceLevel.GROUP_SUPPORT)
         val childSupportWithEce2 =
             TestCase(
                 testPeriod2027(6L to 7L),
@@ -547,7 +545,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
         db.transaction { tx ->
-            listOf(childSupport, childSupportWithEce, groupSupport, childSupportWithEce2).forEach {
+            listOf(childSupport, childSupportWithEce, childSupportWithEce2).forEach {
                 tx.insert(
                     DevPreschoolAssistance(
                         modifiedBy = testDecisionMaker_1.toEvakaUser(),
