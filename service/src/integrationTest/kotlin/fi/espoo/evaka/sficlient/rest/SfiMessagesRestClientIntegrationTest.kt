@@ -29,18 +29,8 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 SfiPrintingEnv(
                     billingId = "billing-username",
                     billingPassword = Sensitive("billing-password"),
-                    // dummy fields only used by the SOAP implementation
-                    enabled = true,
-                    forcePrintForElectronicUser = false,
-                    printingProvider = "",
                 ),
-            contactPerson =
-                SfiContactPersonEnv(
-                    email = "test@example.com",
-                    // dummy fields only used by the SOAP implementation
-                    phone = "",
-                    name = "",
-                ),
+            contactPerson = SfiContactPersonEnv(email = "test@example.com"),
             contactOrganization =
                 SfiContactOrganizationEnv(
                     name = "eVaka Espoo",
