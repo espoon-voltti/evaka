@@ -577,7 +577,8 @@ const CreationModal = React.memo(function CreationModal({
         options: templates.map((t) => ({
           domValue: t.id,
           value: t.id,
-          label: t.name
+          // label: t.name
+          label: `${t.name} (${t.validity.start.format()} ->)` // TODO differentiate templates with same name
         }))
       },
       confirmation: !requireConfirmation
