@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import type {
   ApplicationSortColumn,
@@ -36,8 +36,21 @@ export default React.memo(function ApplicationsPage() {
     confirmedSearchFilters: searchFilters,
     page,
     placementMode,
-    setPlacementMode
+    setPlacementMode,
+    savedScrollPosition,
+    setSavedScrollPosition
   } = useContext(ApplicationUIContext)
+
+  // Restore scroll position when returning from placement plan
+  useEffect(() => {
+    if (savedScrollPosition !== null) {
+      // Use setTimeout to ensure DOM is fully rendered before scrolling
+      setTimeout(() => {
+        window.scrollTo(0, savedScrollPosition)
+        setSavedScrollPosition(null)
+      }, 100)
+    }
+  }, [savedScrollPosition, setSavedScrollPosition])
 
   const applications = useQueryResult(
     searchFilters
@@ -88,7 +101,7 @@ export default React.memo(function ApplicationsPage() {
   )
 
   return (
-    <Container data-qa="applications-page">
+    <Container wide data-qa="applications-page">
       <ContentArea opaque>
         <Gap size="xs" />
         <ApplicationFilters />
@@ -125,7 +138,7 @@ export default React.memo(function ApplicationsPage() {
             searchFilters?.status === 'WAITING_PLACEMENT'
           ) {
             return (
-              <ContentArea opaque={false}>
+              <ContentArea opaque={false} paddingHorizontal="zero">
                 <PlacementDesktop applicationSummaries={applications} />
               </ContentArea>
             )

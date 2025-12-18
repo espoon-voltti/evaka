@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import type { ReactNode } from 'react'
 import React from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
@@ -15,31 +15,53 @@ import { desktopMin } from '../breakpoints'
 import type { SpacingSize } from '../white-space'
 import { defaultMargins, Gap, isSpacingSize } from '../white-space'
 
-export const Container = styled.div<{ verticalMargin?: string }>`
+export const Container = styled.div<{
+  verticalMargin?: string
+  wide?: boolean
+}>`
   margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}
     auto;
   position: relative;
 
-  @media screen and (min-width: 1024px) {
-    max-width: 960px;
-    width: 960px;
-  }
-  @media screen and (max-width: 1215px) {
-    max-width: 1152px;
-    width: auto;
-  }
-  @media screen and (max-width: 1407px) {
-    max-width: 1344px;
-    width: auto;
-  }
-  @media screen and (min-width: 1216px) {
-    max-width: 1152px;
-    width: 1152px;
-  }
-  @media screen and (min-width: 1408px) {
-    max-width: 1344px;
-    width: 1344px;
-  }
+  ${({ wide }) =>
+    wide
+      ? css`
+          /* When wide=true: use all available width with responsive margins, max 1600px, centered */
+          /* 16px margins for screens up to 1200px */
+          width: calc(100% - 32px);
+          max-width: 1568px; /* 1600px - 32px for margins */
+          margin-left: auto;
+          margin-right: auto;
+
+          /* 32px margins for screens wider than 1200px */
+          @media screen and (min-width: 1200px) {
+            width: calc(100% - 64px);
+            max-width: 1536px; /* 1600px - 64px for margins */
+          }
+        `
+      : css`
+          /* When wide=false: original behavior */
+          @media screen and (min-width: 1024px) {
+            max-width: 960px;
+            width: 960px;
+          }
+          @media screen and (max-width: 1215px) {
+            max-width: 1152px;
+            width: auto;
+          }
+          @media screen and (max-width: 1407px) {
+            max-width: 1344px;
+            width: auto;
+          }
+          @media screen and (min-width: 1216px) {
+            max-width: 1152px;
+            width: 1152px;
+          }
+          @media screen and (min-width: 1408px) {
+            max-width: 1344px;
+            width: 1344px;
+          }
+        `}
 `
 
 const spacing = (

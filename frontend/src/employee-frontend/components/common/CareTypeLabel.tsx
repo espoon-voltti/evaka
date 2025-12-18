@@ -21,7 +21,7 @@ export type CareTypeLabel =
   | 'school-shift-care'
   | 'connected-daycare'
 
-const placementTypeToCareTypeLabel = (
+export const placementTypeToCareTypeLabel = (
   type: PlacementType | 'backup-care' | 'connected-daycare'
 ): CareTypeLabel => {
   switch (type) {

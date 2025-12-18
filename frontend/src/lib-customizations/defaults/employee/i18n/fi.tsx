@@ -114,6 +114,17 @@ export const fi = {
       'school-shift-care': 'Koululaisten vuorohoito',
       'connected-daycare': 'Liittyvä'
     },
+    careTypeLabelsShort: {
+      club: 'Kerho',
+      preschool: 'Esiopetus',
+      daycare: 'Vaka',
+      daycare5yo: 'Vaka',
+      preparatory: 'Valmistava',
+      'backup-care': 'Varasijoitus',
+      temporary: 'Tilapäinen',
+      'school-shift-care': 'Koul. vuoroh.',
+      'connected-daycare': 'Liittyvä'
+    },
     providerType: {
       MUNICIPAL: 'Kunnallinen',
       PURCHASED: 'Ostopalvelu',
@@ -375,12 +386,13 @@ export const fi = {
       showUnit: 'Näytä yksikkö',
       hideUnit: 'Piilota yksikkö',
       other: 'Muu',
+      addToOtherUnit: 'Hahmottele muuhun yksikköön',
       birthDate: 'Syntymäaika',
       dueDate: 'Lakisääteisyys',
       preferredStartDate: 'Toivottu aloitus',
       transfer: 'Siirto',
       toPlacementPlan: 'Sijoita',
-      checkApplication: 'Tarkista hakemus',
+      checkApplication: 'Tarkista',
       occupancies: 'Täyttöasteet',
       occupancyTypes: {
         confirmed: 'Vahvistettu',

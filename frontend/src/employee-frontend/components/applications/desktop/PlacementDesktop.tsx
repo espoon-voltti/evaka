@@ -289,7 +289,7 @@ const PlacementDesktopValidated = React.memo(
             {occupancyPeriodStart.addMonths(3).format()}
           </div>
         </FixedSpaceRow>
-        <FixedSpaceRow>
+        <ColumnsContainer spacing="L">
           <DaycaresColumn ref={daycareListRef}>
             <div>
               {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
@@ -357,7 +357,7 @@ const PlacementDesktopValidated = React.memo(
                 ))}
             </ApplicationsList>
           </ApplicationsColumn>
-        </FixedSpaceRow>
+        </ColumnsContainer>
       </FixedSpaceColumn>
     )
   }
@@ -442,31 +442,37 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
   )
 })
 
+const ColumnsContainer = styled(FixedSpaceRow)`
+  min-width: 0;
+  align-items: flex-start;
+`
+
 const DaycaresColumn = styled.div`
-  width: 47%;
+  width: 450px;
+  flex-shrink: 0;
   padding: ${defaultMargins.xxs};
   padding-right: ${defaultMargins.s};
   max-height: 90vh;
   overflow-y: auto;
+
+  @media (min-width: 1600px) {
+    width: 550px;
+  }
 `
 
 const ApplicationsColumn = styled.div`
-  width: 53%;
+  flex: 1;
+  min-width: 0;
   padding: ${defaultMargins.xxs};
   padding-right: ${defaultMargins.s};
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
 `
 
 const ApplicationsList = styled(FixedSpaceColumn).attrs({
   justifyContent: 'stretch'
 })`
   flex-grow: 1;
-  margin-left: auto;
-  min-width: 480px;
-  max-width: 600px;
-
-  @media (max-width: 1407px) {
-    max-width: 480px;
-  }
+  width: 100%;
 `
