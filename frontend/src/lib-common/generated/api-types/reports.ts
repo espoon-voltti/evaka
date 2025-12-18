@@ -112,6 +112,7 @@ export interface AssistanceNeedsAndActionsReportRow {
   assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
+  documentDecisionCounts: Partial<Record<string, number>>
   groupId: GroupId
   groupName: string
   noActionCount: number
@@ -135,6 +136,7 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
   childId: PersonId
   childLastName: string
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
+  documentDecisionCounts: Partial<Record<string, number>>
   groupId: GroupId
   groupName: string
   otherAction: string

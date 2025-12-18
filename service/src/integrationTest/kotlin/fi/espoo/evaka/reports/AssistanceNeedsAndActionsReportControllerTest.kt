@@ -107,6 +107,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -122,6 +123,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -137,6 +139,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             groupReport.rows,
@@ -168,6 +171,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -183,6 +187,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -198,6 +203,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             emptyGroupReport.rows,
@@ -232,6 +238,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -250,6 +257,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -268,6 +276,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             childReport.rows,
@@ -302,6 +311,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -320,6 +330,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -338,6 +349,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             emptyChildReport.rows,
@@ -529,6 +541,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -544,6 +557,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -559,6 +573,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             groupReport.rows,
@@ -591,6 +606,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -609,6 +625,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -627,6 +644,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             childReport.rows,
@@ -695,6 +713,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 otherAssistanceMeasureCounts = emptyMap(),
                 assistanceNeedVoucherCoefficientCount = 0,
                 unitProviderType = ProviderType.MUNICIPAL,
+                documentDecisionCounts = emptyMap(),
             )
 
         assertEquals(
@@ -713,6 +732,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 1,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -728,6 +748,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficientCount = 0,
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 getEmptyGroupExpectation(groups[2]),
             ),
@@ -774,6 +795,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -792,6 +814,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -810,6 +833,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAssistanceMeasureCounts = emptyMap(),
                     assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                     unitProviderType = ProviderType.MUNICIPAL,
+                    documentDecisionCounts = emptyMap(),
                 ),
             ),
             preschoolDaycareChildReport.rows,

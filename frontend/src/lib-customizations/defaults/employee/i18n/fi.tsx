@@ -4385,6 +4385,7 @@ export const fi = {
       placementType: 'Sijoitustyyppi',
       level: 'Tuen taso ja muut toimet',
       showZeroRows: 'Näytä nollarivit',
+      decisionDocuments: 'Näytä päätösasiakirjat',
       groupingTypes: {
         NO_GROUPING: 'Lapset',
         AREA: 'Toimintayksiköt alueittain',
