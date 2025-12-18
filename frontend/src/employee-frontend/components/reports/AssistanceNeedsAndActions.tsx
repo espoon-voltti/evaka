@@ -37,6 +37,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -73,6 +74,7 @@ interface PlacementTypeWithLabel {
 
 type AssistanceNeedsAndActionsReportFilters = {
   date: LocalDate | null
+  includeDecisions: boolean
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   preschoolAssistanceLevels: PreschoolAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
@@ -83,6 +85,8 @@ const types = ['DAYCARE', 'PRESCHOOL'] as const
 type Type = (typeof types)[number]
 
 type GroupingType = 'NO_GROUPING' | 'AREA' | 'UNIT'
+
+type DocumentDecisionCounts = Record<string, number>
 
 const daycareColumns = [
   ...daycareAssistanceLevels,
@@ -165,7 +169,10 @@ const rowFilter =
               type as OtherAssistanceMeasureType
             )
         )
-        .some(([_, count]) => count > 0))
+        .some(([_, count]) => count > 0) ||
+      Object.entries(
+        (row.documentDecisionCounts ?? {}) as DocumentDecisionCounts
+      ).some(([_, count]) => count > 0))
 
 interface GroupingDataByGroup {
   name: string
@@ -177,6 +184,7 @@ interface GroupingDataByGroup {
   otherActionCount: number
   noActionCount: number
   assistanceNeedVoucherCoefficientCount: number
+  documentDecisionCounts: DocumentDecisionCounts
 }
 
 const emptyGroupingDataByGroup = (
@@ -219,7 +227,8 @@ const emptyGroupingDataByGroup = (
   ),
   otherActionCount: 0,
   noActionCount: 0,
-  assistanceNeedVoucherCoefficientCount: 0
+  assistanceNeedVoucherCoefficientCount: 0,
+  documentDecisionCounts: {}
 })
 
 interface GroupingDataByChild {
@@ -228,6 +237,7 @@ interface GroupingDataByChild {
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
+  documentDecisionCounts: DocumentDecisionCounts
 }
 
 const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
@@ -257,7 +267,8 @@ const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
     CHILD_DISCUSSION_OFFERED: 0,
     CHILD_DISCUSSION_HELD: 0,
     CHILD_DISCUSSION_COUNSELING: 0
-  }
+  },
+  documentDecisionCounts: {}
 })
 
 const resolveGroupingType = (
@@ -313,6 +324,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz(),
+      includeDecisions: false,
       daycareAssistanceLevels: [],
       preschoolAssistanceLevels: [],
       otherAssistanceMeasureTypes: [],
@@ -716,6 +728,30 @@ export default React.memo(function AssistanceNeedsAndActions() {
         )}
 
         <FilterRow>
+          <FilterLabel>
+            {i18n.reports.assistanceNeedsAndActions.showOnReport}
+          </FilterLabel>
+          <Wrapper>
+            <Radio
+              label={i18n.reports.assistanceNeedsAndActions.basicView}
+              name="report-view"
+              checked={filters.includeDecisions === false}
+              onChange={() => {
+                setFilters({ ...filters, includeDecisions: false })
+              }}
+            />
+            <Radio
+              label={i18n.reports.assistanceNeedsAndActions.decisionDocuments}
+              name="report-view"
+              checked={filters.includeDecisions === true}
+              onChange={() => {
+                setFilters({ ...filters, includeDecisions: true })
+              }}
+            />
+          </Wrapper>
+        </FilterRow>
+
+        <FilterRow>
           <FilterLabel />
           <Wrapper>
             <Checkbox
@@ -863,6 +899,7 @@ const ReportByGroup = (props: ReportTableProps) => {
     props.filters.date !== null
       ? assistanceNeedsAndActionsReportQuery({
           date: props.filters.date,
+          includeDecisions: props.filters.includeDecisions,
           daycareAssistanceLevels:
             props.columnFilters.type === 'DAYCARE'
               ? props.selectedDaycareColumns
@@ -908,6 +945,16 @@ const ReportByGroupTable = ({
   const { i18n } = useTranslation()
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
+  const documentDecisionKeys = useMemo(() => {
+    const keys = new Set<string>()
+    report.rows.forEach((row) => {
+      Object.keys(
+        (row.documentDecisionCounts ?? {}) as DocumentDecisionCounts
+      ).forEach((key) => keys.add(key))
+    })
+    return Array.from(keys).sort()
+  }, [report.rows])
+
   const { filteredRows, groupData, groupKeyFn } = useMemo(() => {
     const filteredRows = report.rows.filter(
       rowFilter(filters, rowFilters, columnFilters)
@@ -951,7 +998,12 @@ const ReportByGroupTable = ({
             noActionCount: groupData.noActionCount + row.noActionCount,
             assistanceNeedVoucherCoefficientCount:
               groupData.assistanceNeedVoucherCoefficientCount +
-              row.assistanceNeedVoucherCoefficientCount
+              row.assistanceNeedVoucherCoefficientCount,
+            documentDecisionCounts: mergeWith(
+              groupData.documentDecisionCounts,
+              row.documentDecisionCounts ?? {},
+              add
+            ) as DocumentDecisionCounts
           }
           return data
         },
@@ -1026,7 +1078,14 @@ const ReportByGroupTable = ({
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
             value: (row) => row.noActionCount
-          }
+          },
+          ...documentDecisionKeys.map((decisionKey) => ({
+            label: decisionKey,
+            value: (row: AssistanceNeedsAndActionsReportRow) =>
+              ((row.documentDecisionCounts ?? {}) as DocumentDecisionCounts)[
+                decisionKey
+              ] ?? 0
+          }))
         ]}
         filename={filename}
       />
@@ -1080,6 +1139,9 @@ const ReportByGroupTable = ({
               </Th>
             )}
             <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+            {documentDecisionKeys.map((decisionKey) => (
+              <Th key={decisionKey}>{decisionKey}</Th>
+            ))}
             {report.showAssistanceNeedVoucherCoefficient && (
               <Th>
                 {
@@ -1138,6 +1200,11 @@ const ReportByGroupTable = ({
                     <Td>{data.otherActionCount}</Td>
                   )}
                   <Td>{data.noActionCount}</Td>
+                  {documentDecisionKeys.map((decisionKey) => (
+                    <Td key={decisionKey}>
+                      {(data.documentDecisionCounts ?? {})[decisionKey] ?? 0}
+                    </Td>
+                  ))}
                   {report.showAssistanceNeedVoucherCoefficient && (
                     <Td>{data.assistanceNeedVoucherCoefficientCount}</Td>
                   )}
@@ -1181,6 +1248,14 @@ const ReportByGroupTable = ({
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
+                    {documentDecisionKeys.map((decisionKey) => (
+                      <Td key={decisionKey}>
+                        {(
+                          (row.documentDecisionCounts ??
+                            {}) as DocumentDecisionCounts
+                        )[decisionKey] ?? 0}
+                      </Td>
+                    ))}
                     {report.showAssistanceNeedVoucherCoefficient && (
                       <Td>{row.assistanceNeedVoucherCoefficientCount}</Td>
                     )}
@@ -1231,6 +1306,17 @@ const ReportByGroupTable = ({
               </Td>
             )}
             <Td>{reducePropertySum(filteredRows, (r) => r.noActionCount)}</Td>
+            {documentDecisionKeys.map((decisionKey) => (
+              <Td key={decisionKey}>
+                {reducePropertySum(
+                  filteredRows,
+                  (r) =>
+                    (
+                      (r.documentDecisionCounts ?? {}) as DocumentDecisionCounts
+                    )[decisionKey] ?? 0
+                )}
+              </Td>
+            ))}
             {report.showAssistanceNeedVoucherCoefficient && (
               <Td>
                 {reducePropertySum(
@@ -1251,6 +1337,7 @@ const ReportByChild = (props: ReportTableProps) => {
     props.filters.date !== null
       ? assistanceNeedsAndActionsReportByChildQuery({
           date: props.filters.date,
+          includeDecisions: props.filters.includeDecisions,
           daycareAssistanceLevels:
             props.columnFilters.type === 'DAYCARE'
               ? props.selectedDaycareColumns
@@ -1296,6 +1383,16 @@ const ReportByChildTable = ({
   const { i18n } = useTranslation()
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
+  const documentDecisionKeys = useMemo(() => {
+    const keys = new Set<string>()
+    report.rows.forEach((row) => {
+      Object.keys(
+        (row.documentDecisionCounts ?? {}) as DocumentDecisionCounts
+      ).forEach((key) => keys.add(key))
+    })
+    return Array.from(keys).sort()
+  }, [report.rows])
+
   const { filteredRows, groupData, groupKeyFn } = useMemo(() => {
     const filteredRows = report.rows.filter(
       rowFilter(filters, rowFilters, columnFilters)
@@ -1325,7 +1422,12 @@ const ReportByChildTable = ({
               groupData.otherAssistanceMeasureCounts,
               row.otherAssistanceMeasureCounts,
               add
-            )
+            ),
+            documentDecisionCounts: mergeWith(
+              groupData.documentDecisionCounts,
+              row.documentDecisionCounts ?? {},
+              add
+            ) as DocumentDecisionCounts
           }
           return data
         },
@@ -1412,7 +1514,14 @@ const ReportByChildTable = ({
                 ? row.assistanceNeedVoucherCoefficient
                 : null,
             exclude: !report.showAssistanceNeedVoucherCoefficient
-          }
+          },
+          ...documentDecisionKeys.map((decisionKey) => ({
+            label: decisionKey,
+            value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
+              ((row.documentDecisionCounts ?? {}) as DocumentDecisionCounts)[
+                decisionKey
+              ] ?? 0
+          }))
         ]}
         filename={filename}
       />
@@ -1454,6 +1563,9 @@ const ReportByChildTable = ({
               </Th>
             ))}
             <Th>{i18n.reports.assistanceNeedsAndActions.action}</Th>
+            {documentDecisionKeys.map((decisionKey) => (
+              <Th key={decisionKey}>{decisionKey}</Th>
+            ))}
             {report.showAssistanceNeedVoucherCoefficient && (
               <Th>
                 {
@@ -1507,6 +1619,11 @@ const ReportByChildTable = ({
                     </Td>
                   ))}
                   <Td />
+                  {documentDecisionKeys.map((decisionKey) => (
+                    <Td key={decisionKey}>
+                      {(data.documentDecisionCounts ?? {})[decisionKey] ?? 0}
+                    </Td>
+                  ))}
                   {report.showAssistanceNeedVoucherCoefficient && <Td />}
                 </Tr>
               )}
@@ -1570,7 +1687,14 @@ const ReportByChildTable = ({
                           </span>
                         )}
                     </Td>
-
+                    {documentDecisionKeys.map((decisionKey) => (
+                      <Td key={decisionKey}>
+                        {(
+                          (row.documentDecisionCounts ??
+                            {}) as DocumentDecisionCounts
+                        )[decisionKey] ?? 0}
+                      </Td>
+                    ))}
                     {report.showAssistanceNeedVoucherCoefficient && (
                       <Td>
                         {row.assistanceNeedVoucherCoefficient > 1
@@ -1613,6 +1737,17 @@ const ReportByChildTable = ({
               </Td>
             ))}
             <Td />
+            {documentDecisionKeys.map((decisionKey) => (
+              <Td key={decisionKey}>
+                {reducePropertySum(
+                  filteredRows,
+                  (r) =>
+                    (
+                      (r.documentDecisionCounts ?? {}) as DocumentDecisionCounts
+                    )[decisionKey] ?? 0
+                )}
+              </Td>
+            ))}
             {report.showAssistanceNeedVoucherCoefficient && (
               <Td>
                 {
