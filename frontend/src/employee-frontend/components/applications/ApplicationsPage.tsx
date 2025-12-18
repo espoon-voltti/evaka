@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useContext, useEffect, useState } from 'react'
 
 import type {
@@ -31,6 +32,7 @@ export default React.memo(function ApplicationsPage() {
   const [sortBy, setSortBy] =
     useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
+  const queryClient = useQueryClient()
 
   const {
     confirmedSearchFilters: searchFilters,
@@ -40,6 +42,23 @@ export default React.memo(function ApplicationsPage() {
     savedScrollPosition,
     setSavedScrollPosition
   } = useContext(ApplicationUIContext)
+
+  // Listen for application verification events from other tabs
+  useEffect(() => {
+    const channel = new BroadcastChannel('evaka-application-updates')
+
+    channel.onmessage = () => {
+      // Invalidate the applications query to refetch the list
+      void queryClient.invalidateQueries({
+        queryKey: getApplicationSummariesQuery.prefix,
+        type: 'all'
+      })
+    }
+
+    return () => {
+      channel.close()
+    }
+  }, [queryClient])
 
   // Restore scroll position when returning from placement plan
   useEffect(() => {
