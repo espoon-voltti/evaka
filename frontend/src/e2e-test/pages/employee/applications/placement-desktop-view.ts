@@ -40,6 +40,7 @@ export class ApplicationCard extends Element {
   dueDate: Element
   preferredStartDate: Element
   unitPreferences: ElementCollection
+  addOtherUnitButton: Element
   draftPlacementCombobox: Combobox
   toPlacementPlanButton: Element
   constructor(private root: Element) {
@@ -51,6 +52,7 @@ export class ApplicationCard extends Element {
     this.toPlacementPlanButton = this.root.findByDataQa(
       'to-placement-plan-button'
     )
+    this.addOtherUnitButton = this.root.findByDataQa('add-other-unit-button')
     this.draftPlacementCombobox = new Combobox(
       this.root.findByDataQa('draft-placement-combobox')
     )
