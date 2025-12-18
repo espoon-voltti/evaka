@@ -224,7 +224,7 @@ export const fullDaycareForm = ({
       preferredStartDate: '16.08.2021',
       urgent: true,
       startTime: '09:00',
-      endTime: '17:00',
+      endTime: '14:00',
       partTime: true,
       shiftCare: true,
       assistanceNeeded: true,
@@ -348,7 +348,7 @@ export const fullDaycareForm = ({
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
-    assertEquals('17:00', res.form.preferences.serviceNeed?.endTime)
+    assertEquals('14:00', res.form.preferences.serviceNeed?.endTime)
     assertTrue(res.form.preferences.serviceNeed?.shiftCare)
     assertTrue(res.form.preferences.serviceNeed?.partTime)
     assertEquals('Anna Karhula', res.form.preferences.siblingBasis?.siblingName)

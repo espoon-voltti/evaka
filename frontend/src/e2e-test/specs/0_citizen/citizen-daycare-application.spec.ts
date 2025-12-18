@@ -239,6 +239,20 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
   })
 
+  test('An error message is shown if part time is chosen and daily hours exceed 5 hours', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+
+    await editorPage.fillData(
+      minimalDaycareForm({ otherGuardianAgreementStatus: 'AGREED' }).form
+    )
+    await editorPage.setPartTime(true)
+    await editorPage.assertPartTimeErrorIsShown(true)
+  })
+
   test('Previously selected preferred units exists', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(

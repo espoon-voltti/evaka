@@ -177,6 +177,7 @@ const components: Translations = {
       'Voit hakea täydentävää varhaiskasvatusta lapsen esiopetuksen alkamisesta alkaen.',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
+    exceedsMaxDuration: 'Maksimi varhaiskasvatusaika ylittyy',
     dateTooEarly: 'Valitse myöhäisempi päivä',
     dateTooLate: 'Valitse aikaisempi päivä',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',

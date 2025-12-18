@@ -28,6 +28,7 @@ export type ErrorKey =
   | 'dateTooLate'
   | 'timeFormat'
   | 'timeRequired'
+  | 'exceedsMaxDuration'
   | 'unitNotSelected'
   | 'preferredStartDate'
   | 'connectedPreferredStartDate'
@@ -96,6 +97,30 @@ export const email = (
 
 export const time = (val: string, err: ErrorKey = 'timeFormat') =>
   val.length > 0 && !TIME_REGEXP.test(val) ? err : undefined
+
+export const validDuration = (
+  maxDurationInMinutes: number,
+  startTime: string,
+  endTime: string,
+  err: ErrorKey = 'exceedsMaxDuration'
+) => {
+  if (maxDurationInMinutes < 0) {
+    return err
+  }
+  if (
+    (startTime.length > 0 && !TIME_REGEXP.test(startTime)) ||
+    (endTime.length > 0 && !TIME_REGEXP.test(endTime))
+  ) {
+    return 'timeFormat'
+  }
+  const [startHours, startMinutes] = startTime.split(':').map(Number)
+  const [endHours, endMinutes] = endTime.split(':').map(Number)
+  const startTotalMinutes = startHours * 60 + startMinutes
+  const endTotalMinutes = endHours * 60 + endMinutes
+  return endTotalMinutes - startTotalMinutes > maxDurationInMinutes
+    ? err
+    : undefined
+}
 
 export const validInt = (val: string, err: ErrorKey = 'integerFormat') =>
   regexp(val, /^[0-9]+$/, err)

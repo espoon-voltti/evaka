@@ -269,6 +269,17 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
+
+          <Gap size="s" />
+
+          {errors.partTimeLimit && (
+            <AlertBox
+              message={t.validationErrors[errors.partTimeLimit]}
+              thin
+              noMargin
+              data-qa="part-time-limit-error"
+            />
+          )}
         </div>
       )
     )

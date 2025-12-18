@@ -181,6 +181,7 @@ const components: Translations = {
       'Du kan ansöka om kompletterande förskoleutbildning från början av ditt barns förskoleutbildning',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
+    exceedsMaxDuration: 'Överstiger maximal tid för småbarnspedagogik',
     dateTooEarly: 'Välj ett senare datum',
     dateTooLate: 'Välj ett tidigare datum',
     unitNotSelected: 'Välj minst en enhet',
