@@ -303,6 +303,7 @@ export default React.memo(function ApplicationPage() {
             applicationStatus={application.value.application.status}
             editing={editing}
             setEditing={setEditing}
+            application={application.value.application}
             editedApplication={editedApplication}
             errors={Object.keys(validationErrors).length > 0}
           />

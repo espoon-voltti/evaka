@@ -625,6 +625,22 @@ export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
   )
 })
 
+export function hasBasisIndicators(application: ApplicationSummary): boolean {
+  return (
+    application.additionalInfo ||
+    application.siblingBasis ||
+    application.assistanceNeed ||
+    application.wasOnClubCare ||
+    application.wasOnDaycare ||
+    application.continuation ||
+    application.extendedCare ||
+    application.duplicateApplication ||
+    application.urgent ||
+    ((application.urgent || application.extendedCare) &&
+      application.attachmentCount > 0)
+  )
+}
+
 export const BasisFragment = React.memo(function BasisFragment({
   application
 }: {

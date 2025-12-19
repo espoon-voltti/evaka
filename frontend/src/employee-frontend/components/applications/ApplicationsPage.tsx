@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import React, { useContext, useEffect, useState } from 'react'
 
 import type {
   ApplicationSortColumn,
@@ -31,13 +32,44 @@ export default React.memo(function ApplicationsPage() {
   const [sortBy, setSortBy] =
     useState<ApplicationSortColumn>('APPLICATION_TYPE')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
+  const queryClient = useQueryClient()
 
   const {
     confirmedSearchFilters: searchFilters,
     page,
     placementMode,
-    setPlacementMode
+    setPlacementMode,
+    savedScrollPosition,
+    setSavedScrollPosition
   } = useContext(ApplicationUIContext)
+
+  // Listen for application verification events from other tabs
+  useEffect(() => {
+    const channel = new BroadcastChannel('evaka-application-updates')
+
+    channel.onmessage = () => {
+      // Invalidate the applications query to refetch the list
+      void queryClient.invalidateQueries({
+        queryKey: getApplicationSummariesQuery.prefix,
+        type: 'all'
+      })
+    }
+
+    return () => {
+      channel.close()
+    }
+  }, [queryClient])
+
+  // Restore scroll position when returning from placement plan
+  useEffect(() => {
+    if (savedScrollPosition !== null) {
+      // Use setTimeout to ensure DOM is fully rendered before scrolling
+      setTimeout(() => {
+        window.scrollTo(0, savedScrollPosition)
+        setSavedScrollPosition(null)
+      }, 100)
+    }
+  }, [savedScrollPosition, setSavedScrollPosition])
 
   const applications = useQueryResult(
     searchFilters
@@ -88,7 +120,7 @@ export default React.memo(function ApplicationsPage() {
   )
 
   return (
-    <Container data-qa="applications-page">
+    <Container wide data-qa="applications-page">
       <ContentArea opaque>
         <Gap size="xs" />
         <ApplicationFilters />
@@ -125,7 +157,7 @@ export default React.memo(function ApplicationsPage() {
             searchFilters?.status === 'WAITING_PLACEMENT'
           ) {
             return (
-              <ContentArea opaque={false}>
+              <ContentArea opaque={false} paddingHorizontal="zero">
                 <PlacementDesktop applicationSummaries={applications} />
               </ContentArea>
             )

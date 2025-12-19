@@ -20,7 +20,6 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { MutateIconOnlyButton } from 'lib-components/atoms/buttons/MutateIconOnlyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
@@ -28,8 +27,9 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H3, LabelLike, Light } from 'lib-components/typography'
+import { H3, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faChevronDown, faChevronRight } from 'lib-icons'
 import { faHeart } from 'lib-icons'
 import { faEye } from 'lib-icons'
 import {
@@ -39,14 +39,16 @@ import {
   faSection
 } from 'lib-icons'
 import { faUndo } from 'lib-icons'
-import { faCheck, faPen, faTimes } from 'lib-icons'
+import { faCheck, faFile, faPen, faTimes } from 'lib-icons'
 
+import { ApplicationUIContext } from '../../../state/application-ui'
 import { useTranslation } from '../../../state/i18n'
 import { isPartDayPlacement } from '../../../utils/placements'
-import { CareTypeChip } from '../../common/CareTypeLabel'
+import { placementTypeToCareTypeLabel } from '../../common/CareTypeLabel'
 import {
   BasisFragment,
   DateOfBirthInfo,
+  hasBasisIndicators,
   ServiceWorkerNoteModal
 } from '../ApplicationsList'
 import {
@@ -78,6 +80,11 @@ export default React.memo(function ApplicationCard({
   const { i18n } = useTranslation()
   const { colors } = useTheme()
   const [, navigate] = useLocation()
+  const {
+    toggleApplicationExpanded,
+    isApplicationExpanded,
+    setSavedScrollPosition
+  } = React.useContext(ApplicationUIContext)
 
   const {
     mutateAsync: upsertApplicationPlacementDraft,
@@ -89,6 +96,7 @@ export default React.memo(function ApplicationCard({
   )
 
   const [editingNote, setEditingNote] = useState(false)
+  const [addingOtherUnit, setAddingOtherUnit] = useState(false)
 
   const unitRows = useMemo(
     () => [
@@ -103,6 +111,23 @@ export default React.memo(function ApplicationCard({
     [application.preferredUnits, application.placementDraft]
   )
 
+  const expanded = isApplicationExpanded(application.id)
+
+  const draftPlacementUnit = useMemo(
+    () =>
+      unitRows.find(
+        (u) =>
+          application.placementDraft &&
+          application.placementDraft.unit.id === u.id
+      ),
+    [unitRows, application.placementDraft]
+  )
+
+  const showBasisIndicators = useMemo(
+    () => hasBasisIndicators(application),
+    [application]
+  )
+
   return (
     <Card
       $placed={application.placementDraft !== null}
@@ -115,132 +140,210 @@ export default React.memo(function ApplicationCard({
           onClose={() => setEditingNote(false)}
         />
       )}
-      <FixedSpaceColumn spacing="s">
-        <FixedSpaceRow alignItems="flex-start" justifyContent="space-between">
-          <FixedSpaceRow alignItems="center" spacing="xs">
-            <PlacementCircle
-              type={
-                isPartDayPlacement(application.placementType) ? 'half' : 'full'
+      <HeaderContainer>
+        <HeaderRow justifyContent="space-between" alignItems="center">
+          <HeaderLeftContent>
+            <ExpandToggle
+              onClick={() => toggleApplicationExpanded(application.id)}
+            >
+              <IconOnlyButton
+                icon={expanded ? faChevronDown : faChevronRight}
+                aria-label={expanded ? i18n.common.close : i18n.common.open}
+              />
+              <ChildNameHeading
+                noMargin
+                $limitedWidth={!expanded && !!draftPlacementUnit}
+                data-qa="child-name"
+              >
+                {application.lastName} {application.firstName}
+              </ChildNameHeading>
+            </ExpandToggle>
+            {!expanded && draftPlacementUnit && (
+              <CollapsedPlacementInline>
+                <UnitRow
+                  application={application}
+                  unit={draftPlacementUnit}
+                  unitVisible={shownDaycares.some(
+                    (d) => d.id === draftPlacementUnit.id
+                  )}
+                  lastRow
+                  readonly
+                  onUpsertApplicationPlacementSuccess={() => undefined}
+                  onDeleteApplicationPlacementSuccess={() => undefined}
+                  onMutateApplicationPlacementFailure={() => undefined}
+                  onAddOrHighlightDaycare={onAddOrHighlightDaycare}
+                />
+              </CollapsedPlacementInline>
+            )}
+          </HeaderLeftContent>
+          <HeaderRightContent>
+            <Tooltip
+              tooltip={
+                application.serviceWorkerNote ? (
+                  <span>{application.serviceWorkerNote}</span>
+                ) : (
+                  <i>{i18n.applications.list.addNote}</i>
+                )
               }
-              label={
-                application.serviceNeed !== null
-                  ? application.serviceNeed.nameFi
-                  : i18n.placement.type[application.placementType]
-              }
-            />
+            >
+              <IconOnlyButton
+                icon={
+                  application.serviceWorkerNote
+                    ? fasCommentAltLines
+                    : faCommentAlt
+                }
+                onClick={() => setEditingNote(true)}
+                aria-label={
+                  application.serviceWorkerNote
+                    ? i18n.common.edit
+                    : i18n.applications.list.addNote
+                }
+                data-qa="service-worker-note"
+              />
+            </Tooltip>
             <a
               href={`/employee/applications/${application.id}`}
               target="_blank"
               rel="noreferrer"
             >
-              <H3
-                noMargin
-                style={{ color: colors.main.m1 }}
-                data-qa="child-name"
-              >
-                {application.lastName} {application.firstName}
-              </H3>
+              <IconOnlyButton
+                icon={faFile}
+                aria-label={i18n.common.open}
+                data-qa="open-application-button"
+              />
             </a>
-          </FixedSpaceRow>
-          <FixedSpaceRow spacing="L" alignItems="center">
-            <CareTypeChip type={application.placementType} />
-            <FixedSpaceRow spacing="xs" alignItems="center">
-              <Tooltip
-                tooltip={
-                  application.serviceWorkerNote ? (
-                    <span>{application.serviceWorkerNote}</span>
-                  ) : (
-                    <i>{i18n.applications.list.addNote}</i>
-                  )
-                }
+            {application.checkedByAdmin ? (
+              <Button
+                appearance="button"
+                text={i18n.applications.placementDesktop.toPlacementPlan}
+                data-qa="to-placement-plan-button"
+                onClick={() => {
+                  // Save current scroll position before navigating
+                  setSavedScrollPosition(window.scrollY)
+                  navigate(`/applications/${application.id}/placement`)
+                }}
+              />
+            ) : (
+              <a
+                href={`/employee/applications/${application.id}`}
+                target="_blank"
+                rel="noreferrer"
               >
-                <IconOnlyButton
-                  icon={
-                    application.serviceWorkerNote
-                      ? fasCommentAltLines
-                      : faCommentAlt
-                  }
-                  onClick={() => setEditingNote(true)}
-                  aria-label={
-                    application.serviceWorkerNote
-                      ? i18n.common.edit
-                      : i18n.applications.list.addNote
-                  }
-                  data-qa="service-worker-note"
+                <Button
+                  appearance="button"
+                  text={i18n.applications.placementDesktop.checkApplication}
+                  primary
                 />
-              </Tooltip>
-            </FixedSpaceRow>
-          </FixedSpaceRow>
-        </FixedSpaceRow>
-
-        <DatesAndBasisArea justifyContent="space-between" alignItems="center">
-          <FixedSpaceRow>
-            <DateCol>
-              <Tooltip
-                tooltip={i18n.applications.placementDesktop.birthDate}
-                delayed
-              >
-                <DateOfBirthInfo application={application} />
-              </Tooltip>
-            </DateCol>
-            <DateCol>
-              <Tooltip
-                tooltip={i18n.applications.placementDesktop.dueDate}
-                delayed
-              >
+              </a>
+            )}
+          </HeaderRightContent>
+        </HeaderRow>
+        {!expanded && draftPlacementUnit && (
+          <CollapsedPlacementSeparateRow>
+            <UnitRow
+              application={application}
+              unit={draftPlacementUnit}
+              unitVisible={shownDaycares.some(
+                (d) => d.id === draftPlacementUnit.id
+              )}
+              lastRow
+              readonly
+              onUpsertApplicationPlacementSuccess={() => undefined}
+              onDeleteApplicationPlacementSuccess={() => undefined}
+              onMutateApplicationPlacementFailure={() => undefined}
+              onAddOrHighlightDaycare={onAddOrHighlightDaycare}
+            />
+          </CollapsedPlacementSeparateRow>
+        )}
+      </HeaderContainer>
+      {expanded && (
+        <ExpandedContentWrapper>
+          <DatesAndBasisArea>
+            <DatesGrid>
+              <GridItem>
                 <FixedSpaceRow spacing="xs" alignItems="center">
-                  <RoundIcon
-                    content={faSection}
-                    color={colors.grayscale.g15}
-                    textColor={colors.grayscale.g100}
-                    size="m"
+                  <PlacementCircle
+                    type={
+                      isPartDayPlacement(application.placementType)
+                        ? 'half'
+                        : 'full'
+                    }
+                    label={
+                      application.serviceNeed !== null
+                        ? application.serviceNeed.nameFi
+                        : i18n.placement.type[application.placementType]
+                    }
+                    size={24}
                   />
-                  <div data-qa="due-date">
-                    {application.transferApplication ? (
-                      <Light>
-                        {i18n.applications.placementDesktop.transfer}
-                      </Light>
-                    ) : (
-                      (application.dueDate?.format() ?? '-')
-                    )}
-                  </div>
+                  <span>
+                    {
+                      i18n.common.careTypeLabelsShort[
+                        placementTypeToCareTypeLabel(application.placementType)
+                      ]
+                    }
+                  </span>
                 </FixedSpaceRow>
-              </Tooltip>
-            </DateCol>
-            <DateCol>
-              <Tooltip
-                tooltip={i18n.applications.placementDesktop.preferredStartDate}
-                delayed
-              >
-                <FixedSpaceRow spacing="xs" alignItems="center">
-                  <RoundIcon
-                    content={faHeart}
-                    color={colors.grayscale.g15}
-                    textColor={colors.grayscale.g100}
-                    size="m"
-                  />
-                  <div data-qa="preferred-start-date">
-                    {application.startDate?.format() ?? '-'}
-                  </div>
-                </FixedSpaceRow>
-              </Tooltip>
-            </DateCol>
-          </FixedSpaceRow>
-          <FixedSpaceRow
-            spacing="xs"
-            alignItems="center"
-            justifyContent="flex-end"
-            style={{ flexGrow: 1 }}
-          >
-            <BasisFragment application={application} />
-          </FixedSpaceRow>
-        </DatesAndBasisArea>
-
-        <FixedSpaceColumn spacing="xs">
-          <LabelLike>
-            {i18n.applications.placementDesktop.preferences}
-          </LabelLike>
-          <FixedSpaceColumn spacing="zero">
+              </GridItem>
+              <GridItem>
+                <Tooltip
+                  tooltip={i18n.applications.placementDesktop.birthDate}
+                  delayed
+                >
+                  <DateOfBirthInfo application={application} />
+                </Tooltip>
+              </GridItem>
+              <GridItem>
+                <Tooltip
+                  tooltip={i18n.applications.placementDesktop.dueDate}
+                  delayed
+                >
+                  <FixedSpaceRow spacing="xs" alignItems="center">
+                    <RoundIcon
+                      content={faSection}
+                      color={colors.grayscale.g15}
+                      textColor={colors.grayscale.g100}
+                      size="m"
+                    />
+                    <div data-qa="due-date">
+                      {application.transferApplication ? (
+                        <Light>
+                          {i18n.applications.placementDesktop.transfer}
+                        </Light>
+                      ) : (
+                        (application.dueDate?.format() ?? '-')
+                      )}
+                    </div>
+                  </FixedSpaceRow>
+                </Tooltip>
+              </GridItem>
+              <GridItem>
+                <Tooltip
+                  tooltip={
+                    i18n.applications.placementDesktop.preferredStartDate
+                  }
+                  delayed
+                >
+                  <FixedSpaceRow spacing="xs" alignItems="center">
+                    <RoundIcon
+                      content={faHeart}
+                      color={colors.grayscale.g15}
+                      textColor={colors.grayscale.g100}
+                      size="m"
+                    />
+                    <div data-qa="preferred-start-date">
+                      {application.startDate?.format() ?? '-'}
+                    </div>
+                  </FixedSpaceRow>
+                </Tooltip>
+              </GridItem>
+            </DatesGrid>
+            {showBasisIndicators && (
+              <BasisWrapper>
+                <BasisFragment application={application} />
+              </BasisWrapper>
+            )}
+          </DatesAndBasisArea>
+          <FixedSpaceColumn spacing="zero" style={{ flexGrow: 1, minWidth: 0 }}>
             {unitRows.map((unit, index) => (
               <UnitRow
                 key={unit.id}
@@ -260,68 +363,64 @@ export default React.memo(function ApplicationCard({
                 onAddOrHighlightDaycare={onAddOrHighlightDaycare}
               />
             ))}
+            <div style={{ padding: defaultMargins.xs }}>
+              {addingOtherUnit ? (
+                <FixedSpaceRow spacing="XL" justifyContent="space-between">
+                  <Combobox
+                    data-qa="draft-placement-combobox"
+                    items={allUnits}
+                    selectedItem={null}
+                    onChange={(unit) => {
+                      if (unit) {
+                        onAddOrHighlightDaycare(unit)
+                        upsertApplicationPlacementDraft({
+                          applicationId: application.id,
+                          previousUnitId:
+                            application.placementDraft?.unit?.id ?? null,
+                          body: { unitId: unit.id, startDate: null }
+                        })
+                          .then(({ startDate }) => {
+                            onUpsertApplicationPlacementSuccess(
+                              application.id,
+                              unit,
+                              startDate
+                            )
+                            setAddingOtherUnit(false)
+                          })
+                          .catch(onMutateApplicationPlacementFailure)
+                      }
+                    }}
+                    placeholder={
+                      i18n.applications.placementDesktop
+                        .createPlacementDraftToOtherUnit
+                    }
+                    getItemLabel={(unit) => unit.name}
+                    disabled={updatePending || deletePending}
+                    fullWidth
+                  />
+                  <Button
+                    appearance="inline"
+                    text={i18n.common.cancel}
+                    onClick={() => {
+                      setAddingOtherUnit(false)
+                    }}
+                    data-qa="cancel-add-other-unit-button"
+                  />
+                </FixedSpaceRow>
+              ) : (
+                <Button
+                  appearance="inline"
+                  text={i18n.applications.placementDesktop.addToOtherUnit}
+                  onClick={() => {
+                    setAddingOtherUnit(true)
+                  }}
+                  data-qa="add-other-unit-button"
+                />
+              )}
+            </div>
           </FixedSpaceColumn>
-        </FixedSpaceColumn>
-
-        <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <div style={{ width: '360px' }}>
-            {application.checkedByAdmin && (
-              <Combobox
-                data-qa="draft-placement-combobox"
-                items={allUnits}
-                selectedItem={null}
-                onChange={(unit) => {
-                  if (unit) {
-                    onAddOrHighlightDaycare(unit)
-                    upsertApplicationPlacementDraft({
-                      applicationId: application.id,
-                      previousUnitId:
-                        application.placementDraft?.unit?.id ?? null,
-                      body: { unitId: unit.id, startDate: null }
-                    })
-                      .then(({ startDate }) =>
-                        onUpsertApplicationPlacementSuccess(
-                          application.id,
-                          unit,
-                          startDate
-                        )
-                      )
-                      .catch(onMutateApplicationPlacementFailure)
-                  }
-                }}
-                placeholder={
-                  i18n.applications.placementDesktop
-                    .createPlacementDraftToOtherUnit
-                }
-                getItemLabel={(unit) => unit.name}
-                disabled={updatePending || deletePending}
-                fullWidth
-              />
-            )}
-          </div>
-          {application.checkedByAdmin ? (
-            <Button
-              appearance="button"
-              text={i18n.applications.placementDesktop.toPlacementPlan}
-              data-qa="to-placement-plan-button"
-              onClick={() =>
-                navigate(`/applications/${application.id}/placement`)
-              }
-            />
-          ) : (
-            <a
-              href={`/employee/applications/${application.id}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Button
-                appearance="button"
-                text={i18n.applications.placementDesktop.checkApplication}
-              />
-            </a>
-          )}
-        </FixedSpaceRow>
-      </FixedSpaceColumn>
+        </ExpandedContentWrapper>
+      )}
     </Card>
   )
 })
@@ -331,6 +430,7 @@ const UnitRow = React.memo(function UnitRow({
   unit,
   unitVisible,
   lastRow,
+  readonly,
   onUpsertApplicationPlacementSuccess,
   onDeleteApplicationPlacementSuccess,
   onMutateApplicationPlacementFailure,
@@ -340,6 +440,7 @@ const UnitRow = React.memo(function UnitRow({
   unit: PreferredUnit
   unitVisible: boolean
   lastRow: boolean
+  readonly?: boolean
   onUpsertApplicationPlacementSuccess: (
     applicationId: ApplicationId,
     unit: PreferredUnit,
@@ -365,120 +466,133 @@ const UnitRow = React.memo(function UnitRow({
       alignItems="center"
       data-qa="unit-preference"
     >
-      <UnitRowName alignItems="center" spacing="xs">
-        <UnitRowLink
-          data-qa="unit-preference-title"
-          onClick={
-            unitVisible ? () => onAddOrHighlightDaycare(unit) : undefined
-          }
-        >
-          {preferenceIndex >= 0
-            ? `${preferenceIndex + 1}. ${unit.name}`
-            : `${i18n.applications.placementDesktop.other}: ${unit.name}`}
-        </UnitRowLink>
-        {!unitVisible && application.placementDraft !== null && (
-          <Tooltip
-            tooltip={i18n.applications.placementDesktop.showUnit}
-            delayed
-          >
-            <IconOnlyButton
-              icon={faEye}
-              aria-label={i18n.applications.placementDesktop.showUnit}
-              onClick={() => onAddOrHighlightDaycare(unit)}
-            />
-          </Tooltip>
-        )}
-      </UnitRowName>
+      <UnitRowLink
+        data-qa="unit-preference-title"
+        onClick={
+          unitVisible
+            ? () => {
+                onAddOrHighlightDaycare(unit)
+              }
+            : undefined
+        }
+      >
+        {preferenceIndex >= 0
+          ? `${preferenceIndex + 1}. ${unit.name}`
+          : `${i18n.applications.placementDesktop.other}: ${unit.name}`}
+      </UnitRowLink>
 
       {application.placementDraft &&
         placedHere &&
-        (editingDate ? (
-          <DateEditor
-            applicationId={application.id}
-            placementDraft={application.placementDraft}
-            onUpsertApplicationPlacementSuccess={
-              onUpsertApplicationPlacementSuccess
-            }
-            onClose={() => setEditingDate(false)}
-          />
+        (readonly ? (
+          <PlacementDateSpan data-qa="placement-date">
+            {application.placementDraft.startDate.format()} –
+          </PlacementDateSpan>
         ) : (
-          <FixedSpaceRow spacing="m">
-            {/*minWidth attempts to keep the date from jumping between read and edit*/}
-            <FixedSpaceRow spacing="s" style={{ minWidth: '178px' }}>
-              <span data-qa="placement-date">
-                {application.placementDraft.startDate.format()} –
-              </span>
-              <IconOnlyButton
-                data-qa="edit-placement-date-button"
-                icon={faPen}
-                onClick={() => setEditingDate(true)}
-                aria-label={i18n.common.edit}
-              />
-            </FixedSpaceRow>
-            <Tooltip
-              tooltip={i18n.applications.placementDesktop.cancelPlacementDraft}
-              delayed
-            >
-              <MutateIconOnlyButton
-                icon={faUndo}
-                aria-label={
-                  i18n.applications.placementDesktop.cancelPlacementDraft
+          <PlacementControlsWrapper>
+            {editingDate ? (
+              <DateEditor
+                applicationId={application.id}
+                placementDraft={application.placementDraft}
+                onUpsertApplicationPlacementSuccess={
+                  onUpsertApplicationPlacementSuccess
                 }
-                data-qa="cancel-placement-draft-button"
-                mutation={deleteApplicationPlacementDraftMutation}
-                onClick={() =>
-                  application.placementDraft
-                    ? {
-                        applicationId: application.id,
-                        previousUnitId: application.placementDraft.unit.id
+                onClose={() => setEditingDate(false)}
+              />
+            ) : (
+              <PlacementDraftControls
+                spacing="m"
+                justifyContent="space-between"
+              >
+                <FixedSpaceRow spacing="s">
+                  <PlacementDateSpan data-qa="placement-date">
+                    {application.placementDraft.startDate.format()} –
+                  </PlacementDateSpan>
+                  <IconOnlyButton
+                    data-qa="edit-placement-date-button"
+                    icon={faPen}
+                    onClick={() => {
+                      setEditingDate(true)
+                    }}
+                    aria-label={i18n.common.edit}
+                  />
+                </FixedSpaceRow>
+                <Tooltip
+                  tooltip={
+                    i18n.applications.placementDesktop.cancelPlacementDraft
+                  }
+                  delayed
+                >
+                  <span>
+                    <MutateIconOnlyButton
+                      icon={faUndo}
+                      aria-label={
+                        i18n.applications.placementDesktop.cancelPlacementDraft
                       }
-                    : cancelMutation
-                }
-                onSuccess={() =>
-                  onDeleteApplicationPlacementSuccess(application.id)
-                }
-                onFailure={onMutateApplicationPlacementFailure}
-                successTimeout={0}
-              />
-            </Tooltip>
-          </FixedSpaceRow>
+                      data-qa="cancel-placement-draft-button"
+                      mutation={deleteApplicationPlacementDraftMutation}
+                      onClick={() =>
+                        application.placementDraft
+                          ? {
+                              applicationId: application.id,
+                              previousUnitId: application.placementDraft.unit.id
+                            }
+                          : cancelMutation
+                      }
+                      onSuccess={() =>
+                        onDeleteApplicationPlacementSuccess(application.id)
+                      }
+                      onFailure={onMutateApplicationPlacementFailure}
+                      successTimeout={0}
+                    />
+                  </span>
+                </Tooltip>
+              </PlacementDraftControls>
+            )}
+          </PlacementControlsWrapper>
         ))}
 
-      {application.placementDraft === null &&
+      {!readonly &&
+        application.placementDraft?.unit.id !== unit.id &&
         (unitVisible ? (
-          <MutateButton
-            appearance="inline"
-            text={i18n.applications.placementDesktop.createPlacementDraft}
-            data-qa="create-placement-draft-button"
-            icon={faArrowLeft}
-            mutation={upsertApplicationPlacementDraftMutation}
-            onClick={() => ({
-              applicationId: application.id,
-              previousUnitId: null,
-              body: {
-                unitId: unit.id,
-                startDate: null
+          <span>
+            <MutateIconOnlyButton
+              aria-label={
+                i18n.applications.placementDesktop.createPlacementDraft
               }
-            })}
-            onSuccess={({ startDate }) => {
-              onAddOrHighlightDaycare(unit)
-              onUpsertApplicationPlacementSuccess(
-                application.id,
-                unit,
-                startDate
-              )
-            }}
-            onFailure={onMutateApplicationPlacementFailure}
-            successTimeout={0}
-          />
+              data-qa="create-placement-draft-button"
+              icon={faArrowLeft}
+              mutation={upsertApplicationPlacementDraftMutation}
+              onClick={() => ({
+                applicationId: application.id,
+                previousUnitId: null,
+                body: {
+                  unitId: unit.id,
+                  startDate: null
+                }
+              })}
+              onSuccess={({ startDate }) => {
+                onAddOrHighlightDaycare(unit)
+                onUpsertApplicationPlacementSuccess(
+                  application.id,
+                  unit,
+                  startDate
+                )
+              }}
+              onFailure={onMutateApplicationPlacementFailure}
+              successTimeout={0}
+            />
+          </span>
         ) : (
-          <Button
-            appearance="inline"
-            icon={faEye}
-            text={i18n.applications.placementDesktop.show}
-            data-qa="show-unit-button"
-            onClick={() => onAddOrHighlightDaycare(unit)}
-          />
+          <span>
+            <IconOnlyButton
+              icon={faEye}
+              aria-label={i18n.applications.placementDesktop.show}
+              data-qa="show-unit-button"
+              onClick={() => {
+                onAddOrHighlightDaycare(unit)
+              }}
+            />
+          </span>
         ))}
     </UnitRowContainer>
   )
@@ -513,28 +627,32 @@ const DateEditor = React.memo(function DateEditor({
         locale={lang}
       />
       <FixedSpaceRow spacing="xs" alignItems="center">
-        <MutateIconOnlyButton
-          data-qa="save-placement-date-button"
-          icon={faCheck}
-          mutation={upsertApplicationPlacementDraftMutation}
-          onClick={() => ({
-            applicationId: applicationId,
-            previousUnitId: placementDraft.unit.id,
-            body: { unitId: placementDraft.unit.id, startDate: date }
-          })}
-          onSuccess={({ startDate }) => {
-            onUpsertApplicationPlacementSuccess(
-              applicationId,
-              placementDraft.unit,
-              startDate
-            )
-            onClose()
-          }}
-          aria-label={i18n.common.edit}
-        />
+        <span>
+          <MutateIconOnlyButton
+            data-qa="save-placement-date-button"
+            icon={faCheck}
+            mutation={upsertApplicationPlacementDraftMutation}
+            onClick={() => ({
+              applicationId: applicationId,
+              previousUnitId: placementDraft.unit.id,
+              body: { unitId: placementDraft.unit.id, startDate: date }
+            })}
+            onSuccess={({ startDate }) => {
+              onUpsertApplicationPlacementSuccess(
+                applicationId,
+                placementDraft.unit,
+                startDate
+              )
+              onClose()
+            }}
+            aria-label={i18n.common.edit}
+          />
+        </span>
         <IconOnlyButton
           icon={faTimes}
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+          }}
           aria-label={i18n.common.cancel}
         />
       </FixedSpaceRow>
@@ -543,29 +661,141 @@ const DateEditor = React.memo(function DateEditor({
 })
 
 const Card = styled.div<{ $placed: boolean }>`
-  flex-grow: 1;
+  width: 100%;
+  min-width: 630px;
   border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   border-left: 4px solid
     ${(p) =>
       p.$placed ? p.theme.colors.grayscale.g15 : p.theme.colors.main.m3};
   border-radius: 4px;
-  padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-const DatesAndBasisArea = styled(FixedSpaceRow)`
-  background-color: ${(p) => p.theme.colors.grayscale.g4};
-  padding: ${defaultMargins.xs};
+const HeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.xs};
+  padding: ${defaultMargins.s} ${defaultMargins.s} ${defaultMargins.s} 0;
 `
 
-const DateCol = styled.div`
-  width: 120px;
+const ExpandToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+  padding: ${defaultMargins.s} ${defaultMargins.xs} ${defaultMargins.s}
+    ${defaultMargins.s};
+  margin: -${defaultMargins.s} -${defaultMargins.xs} -${defaultMargins.s} 0;
+`
+
+const HeaderRow = styled(FixedSpaceRow)`
+  @media (max-width: 1400px) {
+    flex-direction: row;
+    align-items: center !important;
+  }
+`
+
+const HeaderLeftContent = styled(FixedSpaceRow).attrs({
+  alignItems: 'center'
+})`
+  flex: 1;
+  min-width: 0;
+  margin-right: ${defaultMargins.s};
+`
+
+const HeaderRightContent = styled(FixedSpaceRow).attrs({
+  alignItems: 'center'
+})``
+
+const CollapsedPlacementInline = styled.div`
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  @media (max-width: 1400px) {
+    display: none;
+  }
+`
+
+const CollapsedPlacementSeparateRow = styled.div`
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  display: none;
+
+  @media (max-width: 1400px) {
+    display: block;
+  }
+`
+
+const breakpoint1600 = '1600px'
+const breakpoint1300 = '1300px'
+
+const ExpandedContentWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  min-width: 0;
+  gap: ${defaultMargins.s};
+  padding: 0 ${defaultMargins.s} ${defaultMargins.s} 42px;
+
+  @media (max-width: ${breakpoint1300}) {
+    flex-direction: column;
+  }
+`
+
+const BasisWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: ${defaultMargins.s} ${defaultMargins.s};
+`
+
+const DatesAndBasisArea = styled(FixedSpaceColumn)`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  padding: ${defaultMargins.s};
+  flex-shrink: 1;
+  min-width: 0;
+`
+
+const DatesGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${defaultMargins.xs} ${defaultMargins.s};
+  min-width: 0;
+
+  @media (max-width: ${breakpoint1300}) {
+    /* Below 1300px: horizontal row layout */
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-flow: column;
+    gap: ${defaultMargins.xs};
+  }
+
+  @media (min-width: ${breakpoint1600}) {
+    /* Above 1600px: 2x2 grid layout */
+    grid-template-columns: 1fr 1fr;
+  }
+
+  > * {
+    min-width: 0;
+    overflow: hidden;
+  }
+`
+
+const GridItem = styled.div`
+  width: 133px;
+  overflow: hidden;
 `
 
 const UnitRowContainer = styled(FixedSpaceRow)<{
   $placedHere: boolean
   $last: boolean
 }>`
+  width: 100%;
+  min-width: 0;
   height: 40px;
   padding: 0 ${defaultMargins.xs};
   border-left: 4px solid transparent;
@@ -584,16 +814,11 @@ const UnitRowContainer = styled(FixedSpaceRow)<{
           `}
 `
 
-const UnitRowName = styled(FixedSpaceRow)`
-  max-width: 180px;
-  @media (min-width: 1407px) {
-    max-width: 300px;
-  }
-`
-
 const UnitRowLink = styled.span<{
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent) => void
 }>`
+  margin-right: 36px;
+  flex: 1 1 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -604,4 +829,36 @@ const UnitRowLink = styled.span<{
           color: ${p.theme.colors.main.m1};
         `
       : ''}
+`
+
+const PlacementControlsWrapper = styled.div`
+  flex-shrink: 0;
+
+  @media (min-width: ${breakpoint1300}) {
+    width: 226px;
+  }
+`
+
+const PlacementDraftControls = styled(FixedSpaceRow)`
+  width: 100%;
+  padding-left: 8px;
+`
+
+const PlacementDateSpan = styled.span`
+  white-space: nowrap;
+  flex-shrink: 0;
+`
+
+const ChildNameHeading = styled(H3)<{ $limitedWidth: boolean }>`
+  color: ${(p) => p.theme.colors.main.m2};
+  flex: ${(p) => (p.$limitedWidth ? 1 : 'none')};
+  min-width: 0;
+  max-width: ${(p) => (p.$limitedWidth ? '236px' : 'none')};
+  word-wrap: break-word;
+  white-space: normal;
+
+  @media (max-width: 1400px) {
+    flex: 1;
+    max-width: none;
+  }
 `

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -32,6 +32,7 @@ type Props = {
   applicationStatus: ApplicationStatus
   editing: boolean
   setEditing: (v: boolean) => void
+  application: ApplicationDetails
   editedApplication: ApplicationDetails
   errors: boolean
 }
@@ -40,23 +41,36 @@ export default React.memo(function ApplicationActionsBar({
   applicationStatus,
   editing,
   setEditing,
+  application,
   editedApplication,
   errors
 }: Props) {
   const { i18n } = useTranslation()
 
   const [confidential, setConfidential] = useState<boolean | null>(null)
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null)
+
+  // Initialize broadcast channel
+  useEffect(() => {
+    broadcastChannelRef.current = new BroadcastChannel(
+      'evaka-application-updates'
+    )
+
+    return () => {
+      broadcastChannelRef.current?.close()
+    }
+  }, [])
 
   const actions = [
     {
       id: 'set-verified',
       enabled:
         !editing &&
-        !editedApplication.checkedByAdmin &&
+        !application.checkedByAdmin &&
         applicationStatus === 'WAITING_PLACEMENT',
       component: (
         <FixedSpaceRow spacing="X3L">
-          {editedApplication.confidential === null && (
+          {application.confidential === null && (
             <FixedSpaceColumn spacing="xs">
               <Label>{i18n.application.selectConfidentialityLabel} *</Label>
               <FixedSpaceRow spacing="XL">
@@ -78,13 +92,18 @@ export default React.memo(function ApplicationActionsBar({
           <MutateButton
             mutation={setApplicationVerifiedMutation}
             onClick={() => ({
-              applicationId: editedApplication.id,
+              applicationId: application.id,
               confidential: confidential
             })}
             disabled={
-              editedApplication.confidential === null && confidential === null
+              application.confidential === null && confidential === null
             }
-            onSuccess={() => undefined}
+            onSuccess={() => {
+              // Notify other tabs that this application has been verified
+              broadcastChannelRef.current?.postMessage({
+                applicationId: application.id
+              })
+            }}
             text={i18n.applications.actions.setVerified}
             primary
             data-qa="set-verified-btn"
