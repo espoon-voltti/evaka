@@ -22,6 +22,8 @@ import net.logstash.logback.composite.JsonProviders
 import net.logstash.logback.encoder.AccessEventCompositeJsonEncoder
 import org.springframework.core.env.Environment
 
+private object AccessLogging
+
 fun defaultAccessLoggingValve(env: Environment) =
     LogbackValve().apply {
         filename = "we-use-programmatic-config.xml"
@@ -33,6 +35,7 @@ fun defaultAccessLoggingValve(env: Environment) =
                 val staticFields =
                     arrayOf(
                         "type" to "app-requests-received",
+                        "loggerName" to AccessLogging::class.java.name,
                         "version" to 1,
                         "appBuild" to System.getenv("APP_BUILD"),
                         "appCommit" to System.getenv("APP_COMMIT"),
