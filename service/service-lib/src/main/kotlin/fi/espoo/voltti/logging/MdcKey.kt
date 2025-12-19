@@ -15,7 +15,9 @@ enum class MdcKey(val key: String) {
     SECONDARY_USER_ID_HASH("secondaryUserIdHash"),
     TRACE_ID("traceId"),
     USER_ID("userId"),
-    USER_ID_HASH("userIdHash");
+    USER_ID_HASH("userIdHash"),
+    HTTP_ROUTE("httpRoute"),
+    HTTP_PATH_PARAM("httpPathParam");
 
     fun get(): String? = MDC.get(this.key)
 

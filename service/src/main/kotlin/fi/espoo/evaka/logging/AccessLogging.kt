@@ -14,7 +14,10 @@ import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply
 import com.fasterxml.jackson.core.JsonGenerator
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
+import fi.espoo.evaka.shared.logging.getBestMatchingPattern
+import fi.espoo.evaka.shared.logging.getPathVariables
 import fi.espoo.voltti.logging.JsonLoggingConfig
+import fi.espoo.voltti.logging.MdcKey
 import java.time.Instant
 import java.time.ZoneOffset
 import net.logstash.logback.composite.AbstractJsonProvider
@@ -28,7 +31,8 @@ fun defaultAccessLoggingValve(env: Environment) =
     LogbackValve().apply {
         filename = "we-use-programmatic-config.xml"
 
-        val outputJson = env.activeProfiles.contains("production")
+        val outputJson =
+            env.activeProfiles.contains("production") || env.activeProfiles.contains("json-logging")
 
         val encoder =
             if (outputJson) {
@@ -46,12 +50,21 @@ fun defaultAccessLoggingValve(env: Environment) =
                 createJsonEncoder { event ->
                     val user = event.request.getAuthenticatedUser()
                     val timestamp = Instant.ofEpochMilli(event.timeStamp).atOffset(ZoneOffset.UTC)
+
+                    val httpRoute = event.request.getBestMatchingPattern() ?: ""
+
+                    val pathParams =
+                        event.request.getPathVariables().map { (name, value) ->
+                            "${MdcKey.HTTP_PATH_PARAM.key}.$name" to value
+                        }
+
                     sequenceOf(
                         *staticFields,
                         "@timestamp" to timestamp,
                         "clientIp" to event.remoteHost,
                         "contentLength" to event.contentLength,
                         "httpMethod" to event.method,
+                        "httpRoute" to httpRoute,
                         "path" to event.requestURI,
                         "queryString" to event.queryString,
                         "responseTime" to event.elapsedTime,
@@ -59,7 +72,7 @@ fun defaultAccessLoggingValve(env: Environment) =
                         "traceId" to event.getRequestHeader("X-Request-ID"),
                         "userIdHash" to user?.rawIdHash?.toString(),
                         "userId" to user?.rawId().toString(),
-                    )
+                    ) + pathParams
                 }
             } else {
                 createPatternLayoutEncoder("common")
