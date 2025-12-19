@@ -79,7 +79,8 @@ enum class PreschoolAssistanceLevel(
         minStartDate = LocalDate.of(2025, 8, 1),
         maxEndDate = LocalDate.of(2026, 7, 31),
     ),
-    GROUP_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1));
+    // deprecated, never used
+    GROUP_SUPPORT(minStartDate = LocalDate.of(2025, 8, 1), maxEndDate = LocalDate.of(2025, 7, 31));
 
     override val sqlType: String = "preschool_assistance_level"
 }
