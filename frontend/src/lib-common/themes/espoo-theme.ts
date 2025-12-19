@@ -29,7 +29,7 @@ const theme: Theme = {
     },
     status: {
       danger: '#ff4f57',
-      warning: '#ff8e31',
+      warning: '#f06c00',
       success: '#70c673',
       info: blueColors.m2
     },
