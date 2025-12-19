@@ -14,14 +14,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <include resource="fi/espoo/voltti/logging/logback/default-appender-sanitized.xml"/>
     <include resource="fi/espoo/voltti/logging/logback/vtj-appender.xml"/>
 
-    <springProfile name="!production">
+    <springProfile name="!production &amp; !json-logging">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="VOLTTI_AUDIT_APPENDER"/>
             <appender-ref ref="VOLTTI_VTJ_APPENDER"/>
         </root>
     </springProfile>
-    <springProfile name="production">
+    <springProfile name="production | json-logging">
         <root level="INFO">
             <appender-ref ref="VOLTTI_DEFAULT_APPENDER_SANITIZED"/>
             <appender-ref ref="VOLTTI_AUDIT_APPENDER"/>
