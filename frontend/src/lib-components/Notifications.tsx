@@ -323,6 +323,7 @@ function useReloadNotification(
         children: <ReloadNotification title={title} buttonText={buttonText} />,
         onClose
       })
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate: reset flag after showing notification
       setShow(false)
     }
   }, [addNotification, buttonText, onClose, show, theme.colors.main.m1, title])

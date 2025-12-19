@@ -27,74 +27,107 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
       usedServiceMinutes > serviceNeedMinutes
   )
   const [summaryExplicitlyClosed, setSummaryExplicitlyClosed] = useState(false)
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
+  const [state, setState] = useState<{
+    summaryInfoOpen: boolean
+    prevChildSummaries: MonthlyTimeSummary[]
+  }>(() => ({
+    summaryInfoOpen: childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    ),
+    prevChildSummaries: childSummaries
+  }))
+
+  if (
+    !summaryExplicitlyClosed &&
+    state.prevChildSummaries !== childSummaries &&
     childSummaries.some(
       ({ reservedMinutes, serviceNeedMinutes }) =>
         reservedMinutes > serviceNeedMinutes
     )
-  )
+  ) {
+    setState({
+      summaryInfoOpen: true,
+      prevChildSummaries: childSummaries
+    })
+  }
 
   const toggleSummaryInfo = useCallback(() => {
-    setSummaryInfoOpen((prev) => {
-      const newState = !prev
+    setState((prev) => {
+      const newState = !prev.summaryInfoOpen
       if (!newState) {
         setSummaryExplicitlyClosed(true)
       }
-      return newState
+      return { ...prev, summaryInfoOpen: newState }
     })
   }, [])
 
-  useEffect(() => {
-    if (
-      !summaryExplicitlyClosed &&
-      childSummaries.some(
-        ({ reservedMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes
-      )
-    ) {
-      setSummaryInfoOpen(true)
-    }
-  }, [childSummaries, summaryExplicitlyClosed])
-
-  return { summaryInfoOpen, displayAlert, toggleSummaryInfo }
+  return {
+    summaryInfoOpen: state.summaryInfoOpen,
+    displayAlert,
+    toggleSummaryInfo
+  }
 }
 
 export function useMonthlySummaryInfo(
   childSummaries: MonthlyTimeSummary[],
   selectedMonthData: { month: number; year: number }
 ) {
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
-    childSummaries.some(
-      ({ reservedMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes
-    )
-  )
-  const [displayAlert, setDisplayAlert] = useState(false)
-
-  useEffect(() => {
-    setDisplayAlert(
-      childSummaries.some(
-        ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes ||
-          usedServiceMinutes > serviceNeedMinutes
-      )
-    )
-
+  const [state, setState] = useState<{
+    summaryInfoOpen: boolean
+    displayAlert: boolean
+    prevChildSummaries: MonthlyTimeSummary[]
+    prevMonth: number
+    prevYear: number
+  }>(() => {
     const tooManyReservedMinutes = childSummaries.some(
       ({ reservedMinutes, serviceNeedMinutes }) =>
         reservedMinutes > serviceNeedMinutes
     )
-
-    if (tooManyReservedMinutes) {
-      setSummaryInfoOpen(true)
+    return {
+      summaryInfoOpen: tooManyReservedMinutes,
+      displayAlert: childSummaries.some(
+        ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes ||
+          usedServiceMinutes > serviceNeedMinutes
+      ),
+      prevChildSummaries: childSummaries,
+      prevMonth: selectedMonthData.month,
+      prevYear: selectedMonthData.year
     }
-  }, [childSummaries, selectedMonthData.month, selectedMonthData.year])
+  })
+
+  if (
+    state.prevChildSummaries !== childSummaries ||
+    state.prevMonth !== selectedMonthData.month ||
+    state.prevYear !== selectedMonthData.year
+  ) {
+    const tooManyReservedMinutes = childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+    setState({
+      summaryInfoOpen: tooManyReservedMinutes ? true : state.summaryInfoOpen,
+      displayAlert: childSummaries.some(
+        ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes ||
+          usedServiceMinutes > serviceNeedMinutes
+      ),
+      prevChildSummaries: childSummaries,
+      prevMonth: selectedMonthData.month,
+      prevYear: selectedMonthData.year
+    })
+  }
 
   const toggleSummaryInfo = useCallback(() => {
-    setSummaryInfoOpen((prev) => !prev)
+    setState((prev) => ({ ...prev, summaryInfoOpen: !prev.summaryInfoOpen }))
   }, [])
 
-  return { summaryInfoOpen, displayAlert, toggleSummaryInfo }
+  return {
+    summaryInfoOpen: state.summaryInfoOpen,
+    displayAlert: state.displayAlert,
+    toggleSummaryInfo
+  }
 }
 
 function useReservationsRange(
@@ -121,6 +154,7 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
   // removing duplicates and sorting by date
   useEffect(() => {
     if (fetchedReservations.isSuccess) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate: accumulating async query results from external API
       setReservations((prevReservations) => {
         if (prevReservations.isSuccess) {
           const extendedReservations = {
