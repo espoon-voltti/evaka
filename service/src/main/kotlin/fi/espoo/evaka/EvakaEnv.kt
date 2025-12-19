@@ -454,22 +454,6 @@ data class SfiEnv(
 }
 
 data class SfiPrintingEnv(
-    /**
-     * If false, real paper messages are never sent. If true, real paper messages may be sent.
-     *
-     * Even if printing is disabled, printing provider and billing id are marked as required fields
-     * by Suomi.fi.
-     */
-    val enabled: Boolean,
-    /** Force messages to be sent on paper, even if the recipient has a digital mailbox. */
-    val forcePrintForElectronicUser: Boolean,
-    /**
-     * Name of printing provider.
-     *
-     * The organization sending requests to the Messages API must have a printing agreement with the
-     * provider.
-     */
-    val printingProvider: String,
     /** Billing ID sent to the printing provider */
     val billingId: String,
     /** Billing password, if required by the printing provider */
@@ -478,11 +462,6 @@ data class SfiPrintingEnv(
     companion object {
         fun fromEnvironment(env: Environment) =
             SfiPrintingEnv(
-                enabled = env.lookup("evaka.integration.sfi.printing.enabled") ?: false,
-                forcePrintForElectronicUser =
-                    env.lookup("evaka.integration.sfi.printing.force_print_for_electronic_user")
-                        ?: false,
-                printingProvider = env.lookup("evaka.integration.sfi.printing.provider"),
                 billingId = env.lookup("evaka.integration.sfi.printing.billing.id"),
                 billingPassword =
                     env.lookup<String?>("evaka.integration.sfi.printing.billing.password")
@@ -491,14 +470,10 @@ data class SfiPrintingEnv(
     }
 }
 
-data class SfiContactPersonEnv(val name: String?, val email: String?, val phone: String?) {
+data class SfiContactPersonEnv(val email: String?) {
     companion object {
         fun fromEnvironment(env: Environment) =
-            SfiContactPersonEnv(
-                name = env.lookup("evaka.integration.sfi.contact_person.name"),
-                phone = env.lookup("evaka.integration.sfi.contact_person.phone"),
-                email = env.lookup("evaka.integration.sfi.contact_person.email"),
-            )
+            SfiContactPersonEnv(email = env.lookup("evaka.integration.sfi.contact_person.email"))
     }
 }
 
