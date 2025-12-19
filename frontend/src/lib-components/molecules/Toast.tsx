@@ -10,18 +10,17 @@ import { faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
-import { tabletMin } from '../breakpoints'
-import { FixedSpaceRow } from '../layout/flex-helpers'
 import { modalZIndex } from '../layout/z-helpers'
 import { defaultMargins } from '../white-space'
+
+const toastWidthPx = '360px'
+const toastBreakpoint = `calc(${toastWidthPx} + ${defaultMargins.s} * 2 + 16px)`
 
 export interface Props {
   icon: IconDefinition
   iconColor: string
   onClick?: () => void
   onClose?: () => void
-  offsetTop?: string
-  offsetTopDesktop?: string
   children?: React.ReactNode
   'data-qa'?: string
   closeLabel: string
@@ -36,25 +35,32 @@ export default React.memo(function Toast({
   'data-qa': dataQa,
   closeLabel
 }: Props) {
+  function handleOnClose(e: React.MouseEvent<HTMLButtonElement>) {
+    onClose?.()
+    e.stopPropagation()
+  }
+
   return (
-    <ToastRoot role="dialog" showPointer={!!onClick} data-qa={dataQa}>
-      <FixedSpaceRow alignItems="center">
-        <RoundIcon
-          content={icon}
-          color={iconColor}
-          size="L"
-          onClick={onClick}
-        />
-        <ToastContent onClick={onClick}>{children}</ToastContent>
+    <ToastRoot
+      role="dialog"
+      showPointer={!!onClick}
+      onClick={onClick}
+      data-qa={dataQa}
+    >
+      <ToastContainer>
+        <RoundIcon content={icon} color={iconColor} size="L" />
+        <div>{children}</div>
         {onClose && (
-          <CloseButton
-            data-qa="toast-close-button"
-            icon={faTimes}
-            onClick={onClose}
-            aria-label={closeLabel}
-          />
+          <CloseButtonWrapper>
+            <CloseButton
+              data-qa="toast-close-button"
+              icon={faTimes}
+              onClick={handleOnClose}
+              aria-label={closeLabel}
+            />
+          </CloseButtonWrapper>
         )}
-      </FixedSpaceRow>
+      </ToastContainer>
     </ToastRoot>
   )
 })
@@ -62,11 +68,9 @@ export default React.memo(function Toast({
 const ToastRoot = styled.div<{
   showPointer: boolean
 }>`
-  width: 100%;
-  @media (min-width: ${tabletMin}) {
-    right: 16px;
-    width: 480px;
-    max-width: 360px;
+  max-width: ${toastWidthPx};
+  @media (max-width: ${toastBreakpoint}) {
+    max-width: 100%;
   }
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
@@ -77,11 +81,27 @@ const ToastRoot = styled.div<{
   pointer-events: auto;
 `
 
-const ToastContent = styled.div`
-  flex-grow: 1;
+const CloseButtonWrapper = styled.div`
+  align-self: flex-start;
+  @media (max-width: ${toastBreakpoint}) {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
 `
 
 const CloseButton = styled(IconOnlyButton)`
-  align-self: flex-start;
   color: ${(p) => p.theme.colors.main.m2};
+`
+
+const ToastContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: ${defaultMargins.s};
+  align-items: center;
+  position: relative;
+  @media (max-width: ${toastBreakpoint}) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `
