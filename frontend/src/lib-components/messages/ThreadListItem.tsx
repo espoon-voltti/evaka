@@ -5,6 +5,7 @@
 import styled from 'styled-components'
 
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
+import { desktopMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
@@ -97,7 +98,14 @@ export const ThreadContainer = styled.div`
   min-width: 300px;
   max-width: 100%;
   min-height: 500px;
-  overflow-y: auto;
+
+  @media (max-width: ${desktopMin}) {
+    overflow-y: visible;
+  }
+
+  @media (min-width: ${desktopMin}) {
+    overflow-y: auto;
+  }
 
   a {
     text-decoration: underline;
