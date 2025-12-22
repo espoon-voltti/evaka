@@ -364,6 +364,61 @@ export default React.memo(function AssistanceNeedsAndActions() {
   const [columnFilters, setColumnFilters] =
     useState<ColumnFilters>(emptyColumnFilters)
 
+  const careAreaSelectedItem = useMemo(
+    () =>
+      rowFilters.careArea !== ''
+        ? {
+            label: rowFilters.careArea,
+            value: rowFilters.careArea
+          }
+        : {
+            label: i18n.common.all,
+            value: ''
+          },
+    [rowFilters.careArea, i18n.common.all]
+  )
+
+  const providerTypeSelectedItem = useMemo(
+    () =>
+      rowFilters.providerType !== ''
+        ? {
+            label:
+              i18n.reports.common.unitProviderTypes[rowFilters.providerType],
+            value: rowFilters.providerType
+          }
+        : {
+            label: i18n.common.all,
+            value: ''
+          },
+    [
+      rowFilters.providerType,
+      i18n.reports.common.unitProviderTypes,
+      i18n.common.all
+    ]
+  )
+
+  const unitSelectedItem = useMemo(
+    () =>
+      sortedUnits.map((units) =>
+        rowFilters.unit &&
+        units.some(
+          (u) =>
+            (rowFilters.providerType === '' ||
+              u.providerType === rowFilters.providerType) &&
+            u.id === rowFilters.unit?.id
+        )
+          ? {
+              label: rowFilters.unit.name,
+              value: rowFilters.unit
+            }
+          : {
+              label: i18n.common.all,
+              value: null
+            }
+      ),
+    [sortedUnits, rowFilters.unit, rowFilters.providerType, i18n.common.all]
+  )
+
   const selectedDaycareColumns = useMemo(
     () =>
       columnFilters.type === 'DAYCARE'
@@ -443,7 +498,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
           <DatePicker
             date={filters.date}
             onChange={(date) => {
-              setFilters({ ...filters, date })
+              setFilters((prev) => ({ ...prev, date }))
               setRowFilters(emptyRowFilters)
             }}
             locale="fi"
@@ -464,23 +519,15 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 ]}
                 onChange={(option) =>
                   option
-                    ? setRowFilters({
-                        ...rowFilters,
-                        careArea: option.value
-                      })
+                    ? setRowFilters((prev) => ({
+                        ...prev,
+                        careArea: option.value,
+                        providerType: '',
+                        unit: null
+                      }))
                     : undefined
                 }
-                selectedItem={
-                  rowFilters.careArea !== ''
-                    ? {
-                        label: rowFilters.careArea,
-                        value: rowFilters.careArea
-                      }
-                    : {
-                        label: i18n.common.all,
-                        value: ''
-                      }
-                }
+                selectedItem={careAreaSelectedItem}
                 placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                 getItemLabel={(item) => item.label}
                 data-qa="care-area-filter"
@@ -506,27 +553,14 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   ]}
                   onChange={(option) =>
                     option
-                      ? setRowFilters({
-                          ...rowFilters,
+                      ? setRowFilters((prev) => ({
+                          ...prev,
                           providerType: option.value as ProviderType,
                           unit: null
-                        })
+                        }))
                       : undefined
                   }
-                  selectedItem={
-                    rowFilters.providerType !== ''
-                      ? {
-                          label:
-                            i18n.reports.common.unitProviderTypes[
-                              rowFilters.providerType
-                            ],
-                          value: rowFilters.providerType
-                        }
-                      : {
-                          label: i18n.common.all,
-                          value: ''
-                        }
-                  }
+                  selectedItem={providerTypeSelectedItem}
                   getItemLabel={(item) => item.label}
                   data-qa="provider-type-filter"
                 />
@@ -535,42 +569,34 @@ export default React.memo(function AssistanceNeedsAndActions() {
             <FilterRow>
               <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
               <Wrapper>
-                <Combobox
-                  items={[
-                    { value: null, label: i18n.common.all },
-                    ...units
-                      .filter(
-                        (u) =>
-                          rowFilters.providerType === '' ||
-                          rowFilters.providerType === u.providerType
-                      )
-                      .map((unit) => ({
-                        value: unit,
-                        label: unit.name
-                      }))
-                  ]}
-                  onChange={(option) =>
-                    option
-                      ? setRowFilters({
-                          ...rowFilters,
-                          unit: option.value
-                        })
-                      : undefined
-                  }
-                  selectedItem={
-                    rowFilters.unit
-                      ? {
-                          label: rowFilters.unit.name,
-                          value: rowFilters.unit
-                        }
-                      : {
-                          label: i18n.common.all,
-                          value: null
-                        }
-                  }
-                  getItemLabel={(item) => item.label}
-                  data-qa="unit-filter"
-                />
+                {renderResult(unitSelectedItem, (selectedItem) => (
+                  <Combobox
+                    items={[
+                      { value: null, label: i18n.common.all },
+                      ...units
+                        .filter(
+                          (u) =>
+                            rowFilters.providerType === '' ||
+                            rowFilters.providerType === u.providerType
+                        )
+                        .map((unit) => ({
+                          value: unit,
+                          label: unit.name
+                        }))
+                    ]}
+                    onChange={(option) =>
+                      option
+                        ? setRowFilters((prev) => ({
+                            ...prev,
+                            unit: option.value
+                          }))
+                        : undefined
+                    }
+                    selectedItem={selectedItem}
+                    getItemLabel={(item) => item.label}
+                    data-qa="unit-filter"
+                  />
+                ))}
               </Wrapper>
             </FilterRow>
           </>
@@ -589,10 +615,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 [(item) => item.label]
               )}
               onChange={(selectedItems) =>
-                setFilters({
-                  ...filters,
+                setFilters((prev) => ({
+                  ...prev,
                   placementTypes: selectedItems
-                })
+                }))
               }
               value={filters.placementTypes}
               getOptionId={(o) => o.value}
@@ -611,10 +637,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
               items={types}
               onChange={(option) =>
                 option
-                  ? setColumnFilters({
-                      ...columnFilters,
+                  ? setColumnFilters((prev) => ({
+                      ...prev,
                       type: option
-                    })
+                    }))
                   : undefined
               }
               selectedItem={columnFilters.type}
@@ -636,8 +662,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 <MultiSelect
                   options={daycareColumns}
                   onChange={(selectedItems) =>
-                    setFilters({
-                      ...filters,
+                    setFilters((prev) => ({
+                      ...prev,
                       daycareAssistanceLevels: selectedItems.filter(
                         (item): item is DaycareAssistanceLevel =>
                           daycareAssistanceLevels.includes(
@@ -650,7 +676,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                             item as OtherAssistanceMeasureType
                           )
                       )
-                    })
+                    }))
                   }
                   value={[
                     ...filters.daycareAssistanceLevels,
@@ -666,10 +692,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
             <AssistanceActionOptionFilterRow
               optionsResult={daycareAssistanceActionOptionsResult}
               onChange={(selectedOptions) =>
-                setColumnFilters({
-                  ...columnFilters,
+                setColumnFilters((prev) => ({
+                  ...prev,
                   daycareAssistanceActionOptions: selectedOptions
-                })
+                }))
               }
               value={columnFilters.daycareAssistanceActionOptions}
             />
@@ -686,8 +712,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 <MultiSelect
                   options={preschoolColumns}
                   onChange={(selectedItems) =>
-                    setFilters({
-                      ...filters,
+                    setFilters((prev) => ({
+                      ...prev,
                       preschoolAssistanceLevels: selectedItems.filter(
                         (item): item is PreschoolAssistanceLevel =>
                           preschoolAssistanceLevels.includes(
@@ -700,7 +726,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                             item as OtherAssistanceMeasureType
                           )
                       )
-                    })
+                    }))
                   }
                   value={[
                     ...filters.preschoolAssistanceLevels,
@@ -716,10 +742,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
             <AssistanceActionOptionFilterRow
               optionsResult={preschoolAssistanceActionOptionsResult}
               onChange={(selectedOptions) =>
-                setColumnFilters({
-                  ...columnFilters,
+                setColumnFilters((prev) => ({
+                  ...prev,
                   preschoolAssistanceActionOptions: selectedOptions
-                })
+                }))
               }
               value={columnFilters.preschoolAssistanceActionOptions}
             />
@@ -747,7 +773,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
               label={i18n.reports.assistanceNeedsAndActions.showZeroRows}
               checked={rowFilters.showZeroRows}
               onChange={(showZeroRows) =>
-                setRowFilters({ ...rowFilters, showZeroRows })
+                setRowFilters((prev) => ({ ...prev, showZeroRows }))
               }
               data-qa="zero-rows-checkbox"
             />
