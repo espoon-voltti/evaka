@@ -23,7 +23,7 @@ import { unitsReportQuery } from './queries'
 
 const CheckboxTh = styled(Th)``
 
-export default React.memo(function MissingHeadOfFamily() {
+export default React.memo(function Units() {
   const { i18n } = useTranslation()
 
   const rows = useQueryResult(unitsReportQuery()).map((units) =>
@@ -73,6 +73,9 @@ export default React.memo(function MissingHeadOfFamily() {
                   ? i18n.common.yes
                   : i18n.common.no,
                 invoicedByMunicipality: r.invoicedByMunicipality
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                providesShiftCare: r.providesShiftCare
                   ? i18n.common.yes
                   : i18n.common.no
               }))}
@@ -155,6 +158,10 @@ export default React.memo(function MissingHeadOfFamily() {
                   value: (row) => row.address
                 },
                 {
+                  label: i18n.reports.units.postOffice,
+                  value: (row) => row.postOffice
+                },
+                {
                   label: i18n.reports.units.unitManagerName,
                   value: (row) => row.unitManagerName
                 },
@@ -163,8 +170,28 @@ export default React.memo(function MissingHeadOfFamily() {
                   value: (row) => row.unitManagerPhone
                 },
                 {
+                  label: i18n.reports.units.unitManagerEmail,
+                  value: (row) => row.unitManagerEmail
+                },
+                {
+                  label: i18n.reports.units.preschoolManagerName,
+                  value: (row) => row.preschoolManagerName
+                },
+                {
+                  label: i18n.reports.units.preschoolManagerPhone,
+                  value: (row) => row.preschoolManagerPhone
+                },
+                {
+                  label: i18n.reports.units.preschoolManagerEmail,
+                  value: (row) => row.preschoolManagerEmail
+                },
+                {
                   label: i18n.reports.units.capacity,
                   value: (row) => row.capacity
+                },
+                {
+                  label: i18n.reports.units.providesShiftCare,
+                  value: (row) => row.providesShiftCare
                 }
               ]}
               filename="Yksiköt.csv"
@@ -202,9 +229,15 @@ export default React.memo(function MissingHeadOfFamily() {
                   </CheckboxTh>
                   <Th>{i18n.reports.units.costCenter}</Th>
                   <Th>{i18n.reports.units.address}</Th>
+                  <Th>{i18n.reports.units.postOffice}</Th>
                   <Th>{i18n.reports.units.unitManagerName}</Th>
                   <Th>{i18n.reports.units.unitManagerPhone}</Th>
+                  <Th>{i18n.reports.units.unitManagerEmail}</Th>
+                  <Th>{i18n.reports.units.preschoolManagerName}</Th>
+                  <Th>{i18n.reports.units.preschoolManagerPhone}</Th>
+                  <Th>{i18n.reports.units.preschoolManagerEmail}</Th>
                   <Th>{i18n.reports.units.capacity}</Th>
+                  <Th>{i18n.reports.units.providesShiftCare}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -260,9 +293,17 @@ export default React.memo(function MissingHeadOfFamily() {
                     </Td>
                     <Td>{row.costCenter}</Td>
                     <Td>{row.address}</Td>
+                    <Td>{row.postOffice}</Td>
                     <Td>{row.unitManagerName}</Td>
                     <Td>{row.unitManagerPhone}</Td>
+                    <Td>{row.unitManagerEmail}</Td>
+                    <Td>{row.preschoolManagerName}</Td>
+                    <Td>{row.preschoolManagerPhone}</Td>
+                    <Td>{row.preschoolManagerEmail}</Td>
                     <Td>{row.capacity}</Td>
+                    <Td>
+                      <StaticCheckBox checked={row.providesShiftCare} />
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
