@@ -154,6 +154,7 @@ export interface Translations {
     connectedPreferredStartDate: string
     timeFormat: string
     timeRequired: string
+    exceedsMaxDuration: string
     dateTooEarly: string
     dateTooLate: string
     unitNotSelected: string

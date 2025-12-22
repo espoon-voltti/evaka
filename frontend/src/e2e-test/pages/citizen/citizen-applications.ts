@@ -178,6 +178,7 @@ class CitizenApplicationEditor {
   #preferredStartDateWarning: Element
   #preferredStartDateInfo: Element
   #preferredUnitsInput: TextInput
+  #partTimeLimitError: Element
   saveAsDraftButton: Element
   modalOkBtn: Element
   guardianPhoneInput: TextInput
@@ -205,6 +206,7 @@ class CitizenApplicationEditor {
     this.#preferredUnitsInput = new TextInput(
       page.find('[data-qa="preferredUnits-input"] input')
     )
+    this.#partTimeLimitError = page.findByDataQa('part-time-limit-error')
     this.saveAsDraftButton = page.findByDataQa('save-as-draft-btn')
     this.modalOkBtn = page.findByDataQa('modal-okBtn')
     this.guardianPhoneInput = new TextInput(
@@ -435,6 +437,14 @@ class CitizenApplicationEditor {
       return
     }
     await this.#preferredStartDateInfo.assertTextEquals(infoText)
+  }
+
+  async setPartTime(partTime: boolean) {
+    await this.selectBooleanRadio('partTime', partTime)
+  }
+
+  async assertPartTimeErrorIsShown(visible: boolean) {
+    await waitUntilEqual(() => this.#partTimeLimitError.visible, visible)
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {
