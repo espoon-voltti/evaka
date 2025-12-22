@@ -17,7 +17,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import { tabletMin } from 'lib-components/breakpoints'
+import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { H1 } from 'lib-components/typography'
@@ -202,7 +202,14 @@ const Container = styled.div`
   max-width: 400px;
   min-height: 500px;
   background-color: ${colors.grayscale.g0};
-  overflow-y: auto;
+
+  @media (max-width: ${desktopMin}) {
+    overflow-y: visible;
+  }
+
+  @media (min-width: ${desktopMin}) {
+    overflow-y: auto;
+  }
 
   @media (max-width: 750px) {
     min-width: 50%;
