@@ -1176,8 +1176,14 @@ export interface UnitsReportRow {
   name: string
   ophOrganizerOid: string | null
   ophUnitOid: string | null
+  postOffice: string
   preschoolApply: boolean
+  preschoolManagerEmail: string
+  preschoolManagerName: string
+  preschoolManagerPhone: string
   providerType: ProviderType
+  providesShiftCare: boolean
+  unitManagerEmail: string
   unitManagerName: string
   unitManagerPhone: string
   uploadChildrenToVarda: boolean
