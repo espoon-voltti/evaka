@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
+import fi.espoo.evaka.shared.logging.RouteLoggingInterceptor
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
 import io.opentelemetry.api.trace.Tracer
@@ -34,6 +35,7 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.function.ServerRequest
 
@@ -73,6 +75,10 @@ class SpringMvcConfig(
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverter(convertFrom<String, ExternalId> { ExternalId.parse(it) })
         registry.addConverter(convertFrom<String, Id<*>> { Id<DatabaseTable>(UUID.fromString(it)) })
+    }
+
+    override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(RouteLoggingInterceptor())
     }
 
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
