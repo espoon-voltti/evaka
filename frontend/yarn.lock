@@ -6474,7 +6474,7 @@ __metadata:
     react-day-picker: "npm:9.12.0"
     react-dom: "npm:19.2.3"
     react-focus-lock: "npm:2.13.7"
-    react-focus-on: "npm:3.10.1"
+    react-focus-on: "npm:3.10.2"
     react-image-crop: "npm:11.0.10"
     react-leaflet: "npm:5.0.0"
     react-select: "npm:5.10.2"
@@ -9870,9 +9870,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-on@npm:3.10.1":
-  version: 3.10.1
-  resolution: "react-focus-on@npm:3.10.1"
+"react-focus-on@npm:3.10.2":
+  version: 3.10.2
+  resolution: "react-focus-on@npm:3.10.2"
   dependencies:
     aria-hidden: "npm:^1.2.5"
     react-focus-lock: "npm:^2.13.7"
@@ -9886,7 +9886,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/1da0c78a03b76933b7e336b52c3f7cfdbf40a40131d7861a04fcd846b8ebc64ea6db6c579e22a4087c751f73c62c6fb28303c0e9ed7768b0892e9c9d9324fdd4
+  checksum: 10/bc2bbe0aea02b8542455d29ee96a503059c8231e7cca026c01bf2c0978343d38ab804af1e9531c458f72ee7a5567de5b463bc9f8d2bd9695effb32d2560bffef
   languageName: node
   linkType: hard
 
