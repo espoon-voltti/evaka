@@ -15,7 +15,7 @@ ktlint = "1.8.0"
 ktlint-gradle = "14.0.1"
 mockito = "5.21.0"
 owasp = "12.1.9"
-spring-boot = "3.5.9"
+spring-boot = "4.0.1"
 versions = "0.53.0"
 
 [libraries]
