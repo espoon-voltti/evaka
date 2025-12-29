@@ -147,7 +147,12 @@ enum class CareType : DatabaseEnum {
     override val sqlType: String = "care_types"
 }
 
-data class UnitStub(val id: DaycareId, val name: String, val careTypes: List<CareType>)
+data class UnitStub(
+    val id: DaycareId,
+    val name: String,
+    val careTypes: List<CareType>,
+    val closingDate: LocalDate?,
+)
 
 data class UnitFeatures(
     val id: DaycareId,

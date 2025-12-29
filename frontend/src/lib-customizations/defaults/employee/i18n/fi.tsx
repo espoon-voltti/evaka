@@ -3597,7 +3597,9 @@ export const fi = {
     paymentDate: 'Maksupäivä',
     paymentFreeTextPlaceholder: 'Haku maksun numerolla',
     incomeStatementSent: 'Tuloselvitys lähetetty',
-    incomeStatementPlacementValidDate: 'Sijoitus voimassa'
+    incomeStatementPlacementValidDate: 'Sijoitus voimassa',
+    showClosedUnits: 'Näytä suljetut yksiköt',
+    hideClosedUnits: 'Piilota suljetut yksiköt'
   },
   valueDecision: {
     title: {

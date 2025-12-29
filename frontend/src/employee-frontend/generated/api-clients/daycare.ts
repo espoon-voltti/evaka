@@ -65,6 +65,7 @@ import { deserializeJsonScheduledDaycareAclRow } from 'lib-common/generated/api-
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitOperationPeriod } from 'lib-common/generated/api-types/daycare'
+import { deserializeJsonUnitStub } from 'lib-common/generated/api-types/daycare'
 import { uri } from 'lib-common/uri'
 
 
@@ -543,7 +544,7 @@ export async function getUnits(
     method: 'GET',
     params
   })
-  return json
+  return json.map(e => deserializeJsonUnitStub(e))
 }
 
 
