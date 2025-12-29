@@ -4322,8 +4322,14 @@ export const fi = {
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       costCenter: 'Kustannuspaikka',
       address: 'Käyntiosoite',
+      postOffice: 'Postitoimipaikka',
       unitManagerName: 'Yksikön johtaja',
       unitManagerPhone: 'Johtajan puh.',
+      unitManagerEmail: 'Johtajan sähköposti',
+      preschoolManagerName: 'Yksikön esiopetuksen johtaja',
+      preschoolManagerPhone: 'Esiopetuksen johtajan puh.',
+      preschoolManagerEmail: 'Esiopetuksen Johtajan sähköposti',
+      providesShiftCare: 'Tarjoaa vuorohoitoa',
       capacity: 'Laskennallinen kapasiteetti'
     },
     childrenInDifferentAddress: {
