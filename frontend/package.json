@@ -63,7 +63,7 @@
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.1.19",
     "tslib": "2.8.1",
-    "wouter": "3.8.1"
+    "wouter": "3.9.0"
   },
   "devDependencies": {
     "@eslint/compat": "2.0.0",
