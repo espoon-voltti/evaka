@@ -1544,6 +1544,27 @@ class ApplicationStateService(
             }
         }
 
+        if (application.preferences.serviceNeed?.partTime == true) {
+            val maxPartTimeDailyMinutes = 300 // 5 hours, max part-time daily duration
+            val TIME_REGEXP = "^(?:[0-1][0-9]|2[0-3]):[0-5][0-9]\$".toRegex()
+            val startTime = application.preferences.serviceNeed.startTime
+            val endTime = application.preferences.serviceNeed.endTime
+
+            if (!TIME_REGEXP.matches(startTime) || !TIME_REGEXP.matches(endTime)) {
+                throw BadRequest("Daycare start time or end time is not in valid format")
+            }
+
+            val startHours = startTime.substringBefore(":").toInt()
+            val startMinutes = startTime.substringAfter(":").toInt()
+            val endHours = endTime.substringBefore(":").toInt()
+            val endMinutes = endTime.substringAfter(":").toInt()
+            val totalMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes)
+
+            if (totalMinutes > maxPartTimeDailyMinutes) {
+                throw BadRequest("Part-time daycare cannot exceed 5 hours per day")
+            }
+        }
+
         val unitIds = application.preferences.preferredUnits.map { it.id }
 
         if (unitIds.isEmpty()) {

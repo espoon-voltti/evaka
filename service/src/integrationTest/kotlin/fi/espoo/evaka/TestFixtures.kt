@@ -628,6 +628,8 @@ fun Database.Transaction.insertApplication(
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
     transferApplication: Boolean = false,
     preferredUnit: DevDaycare = testDaycare,
+    startTime: String = "09:00",
+    endTime: String = "14:00",
 ): ApplicationDetails {
     val application =
         ApplicationDetails(
@@ -680,8 +682,8 @@ fun Database.Transaction.insertApplication(
                                     null
                                 } else {
                                     ServiceNeed(
-                                        startTime = "09:00",
-                                        endTime = "15:00",
+                                        startTime = startTime,
+                                        endTime = endTime,
                                         shiftCare = false,
                                         partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
                                         serviceNeedOption = serviceNeedOption,
