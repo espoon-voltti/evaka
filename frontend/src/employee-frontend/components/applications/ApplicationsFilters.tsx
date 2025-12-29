@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect } from 'react'
+import React, {
+  Fragment,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -13,6 +19,7 @@ import type {
 import { applicationStatusOptions } from 'lib-common/generated/api-types/application'
 import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import type { AreaId, DaycareId } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -28,11 +35,6 @@ import { unitsQuery } from '../../queries'
 import type { VoucherApplicationFilter } from '../../state/application-ui'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
-import type {
-  ApplicationDateType,
-  ApplicationSummaryStatusOptions,
-  ApplicationDistinctions
-} from '../common/Filters'
 import {
   Filters,
   ApplicationDistinctionsFilter,
@@ -43,6 +45,12 @@ import {
   TransferApplicationsFilter,
   ApplicationOpenIcon
 } from '../common/Filters'
+import type {
+  ApplicationDateType,
+  ApplicationSummaryStatusOptions,
+  ApplicationDistinctions
+} from '../common/Filters'
+import type { UnitFilterMenuItem } from '../common/Filters'
 
 export default React.memo(function ApplicationFilters() {
   const { i18n } = useTranslation()
@@ -55,6 +63,8 @@ export default React.memo(function ApplicationFilters() {
     clearSearchFilters
   } = useContext(ApplicationUIContext)
 
+  const [showClosedUnits, setShowClosedUnits] = useState(false)
+
   const allUnits = useQueryResult(
     unitsQuery({
       areaIds: searchFilters.area.length > 0 ? searchFilters.area : null,
@@ -62,6 +72,42 @@ export default React.memo(function ApplicationFilters() {
       from: null
     })
   )
+
+  const today = useMemo(() => LocalDate.todayInHelsinkiTz(), [])
+
+  const filteredUnits = useMemo(() => {
+    const units = allUnits.getOrElse([])
+    if (showClosedUnits) {
+      return units
+    }
+    return units.filter(
+      (unit) => !unit.closingDate || unit.closingDate.isAfter(today)
+    )
+  }, [allUnits, showClosedUnits, today])
+
+  // Remove closed units from selected units when showClosedUnits is false
+  useEffect(() => {
+    if (!showClosedUnits && allUnits.isSuccess) {
+      const filteredUnitIds = filteredUnits.map((unit) => unit.id)
+
+      setSearchFilters((prevFilters) => ({
+        ...prevFilters,
+        units: prevFilters.units.filter((unitId) =>
+          filteredUnitIds.includes(unitId)
+        )
+      }))
+    }
+  }, [allUnits.isSuccess, showClosedUnits, filteredUnits, setSearchFilters])
+
+  const unitFilterMenuItems: UnitFilterMenuItem[] = [
+    {
+      id: 'toggle-closed-units',
+      label: showClosedUnits
+        ? i18n.filters.hideClosedUnits
+        : i18n.filters.showClosedUnits,
+      onClick: () => setShowClosedUnits(!showClosedUnits)
+    }
+  ]
 
   useEffect(() => {
     if (
@@ -189,10 +235,11 @@ export default React.memo(function ApplicationFilters() {
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
-            units={allUnits.getOrElse([])}
+            units={filteredUnits}
             selectedUnits={searchFilters.units}
             onChange={changeUnits}
             data-qa="unit-selector"
+            menuItems={unitFilterMenuItems}
           />
           <Gap size="m" />
           <ApplicationDistinctionsFilter

@@ -267,7 +267,7 @@ fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery {
             sql(
                 """
-SELECT id, name, type as care_types
+SELECT id, name, type as care_types, closing_date
 FROM daycare
 WHERE id = ${bind(daycareId)}
 """

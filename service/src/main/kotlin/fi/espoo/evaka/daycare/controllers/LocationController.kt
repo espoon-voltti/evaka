@@ -115,7 +115,7 @@ private fun Database.Read.getUnits(
     return createQuery {
             sql(
                 """
-SELECT unit.id, unit.name, unit.type as care_types
+SELECT unit.id, unit.name, unit.type as care_types, unit.closing_date
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
 WHERE (${bind(areaIdsParam)}::uuid[] IS NULL OR area.id = ANY(${bind(areaIdsParam)}))

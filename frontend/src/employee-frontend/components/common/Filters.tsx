@@ -70,6 +70,7 @@ import { UserContext } from '../../state/user'
 import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 
+import EllipsisMenu from './EllipsisMenu'
 import { FlexRow } from './styled/containers'
 
 interface Props {
@@ -1176,18 +1177,27 @@ function getOptionLabel(option: Option) {
   return option.name
 }
 
+export interface UnitFilterMenuItem {
+  id: string
+  label: string
+  onClick: () => void
+  disabled?: boolean
+}
+
 interface MultiUnitsProps {
   units: Option[]
   selectedUnits: DaycareId[]
   onChange: (v: DaycareId[]) => void
   'data-qa': string
+  menuItems?: UnitFilterMenuItem[]
 }
 
 export function MultiSelectUnitFilter({
   units,
   selectedUnits,
   onChange,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  menuItems
 }: MultiUnitsProps) {
   const { i18n } = useTranslation()
   const value = useMemo(
@@ -1202,14 +1212,21 @@ export function MultiSelectUnitFilter({
     <div data-qa={dataQa}>
       <Label>{i18n.filters.unit}</Label>
       <Gap size="xs" />
-      <MultiSelect
-        placeholder={i18n.filters.unitPlaceholder}
-        value={value}
-        options={units}
-        onChange={handleChange}
-        getOptionId={getOptionId}
-        getOptionLabel={getOptionLabel}
-      />
+      <FixedSpaceRow spacing="xs" alignItems="center">
+        <div style={{ flex: 1 }}>
+          <MultiSelect
+            placeholder={i18n.filters.unitPlaceholder}
+            value={value}
+            options={units}
+            onChange={handleChange}
+            getOptionId={getOptionId}
+            getOptionLabel={getOptionLabel}
+          />
+        </div>
+        {menuItems && menuItems.length > 0 && (
+          <EllipsisMenu items={menuItems} data-qa={`${dataQa}-menu`} />
+        )}
+      </FixedSpaceRow>
     </div>
   )
 }
