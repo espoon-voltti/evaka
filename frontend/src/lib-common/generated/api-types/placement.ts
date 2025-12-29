@@ -200,6 +200,14 @@ export interface PlacementDraftChild {
 }
 
 /**
+* Generated from fi.espoo.evaka.placement.PlacementDraftSummary
+*/
+export interface PlacementDraftSummary {
+  startDate: LocalDate
+  unit: PlacementDraftUnit
+}
+
+/**
 * Generated from fi.espoo.evaka.placement.PlacementDraftUnit
 */
 export interface PlacementDraftUnit {
@@ -249,10 +257,12 @@ export interface PlacementPlanDetails {
 */
 export interface PlacementPlanDraft {
   child: PlacementDraftChild
+  dueDate: LocalDate | null
   guardianHasRestrictedDetails: boolean
   period: FiniteDateRange
-  placementDraftUnit: PlacementDraftUnit | null
+  placementDraft: PlacementDraftSummary | null
   placements: PlacementSummary[]
+  preferredStartDate: LocalDate
   preferredUnits: PlacementDraftUnit[]
   preschoolDaycarePeriod: FiniteDateRange | null
   type: PlacementType
@@ -506,6 +516,14 @@ export function deserializeJsonPlacementDraftChild(json: JsonOf<PlacementDraftCh
 }
 
 
+export function deserializeJsonPlacementDraftSummary(json: JsonOf<PlacementDraftSummary>): PlacementDraftSummary {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
 export function deserializeJsonPlacementPlanChild(json: JsonOf<PlacementPlanChild>): PlacementPlanChild {
   return {
     ...json,
@@ -528,8 +546,11 @@ export function deserializeJsonPlacementPlanDraft(json: JsonOf<PlacementPlanDraf
   return {
     ...json,
     child: deserializeJsonPlacementDraftChild(json.child),
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     period: FiniteDateRange.parseJson(json.period),
+    placementDraft: (json.placementDraft != null) ? deserializeJsonPlacementDraftSummary(json.placementDraft) : null,
     placements: json.placements.map(e => deserializeJsonPlacementSummary(e)),
+    preferredStartDate: LocalDate.parseIso(json.preferredStartDate),
     preschoolDaycarePeriod: (json.preschoolDaycarePeriod != null) ? FiniteDateRange.parseJson(json.preschoolDaycarePeriod) : null
   }
 }

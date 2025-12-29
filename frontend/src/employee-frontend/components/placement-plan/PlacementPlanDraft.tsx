@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { useLocation } from 'wouter'
 
 import type { Result, Success } from 'lib-common/api'
@@ -26,15 +26,20 @@ import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { Bold, H1, H2, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import { faLink } from 'lib-icons'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faHeart, faLink, faPen, faSection } from 'lib-icons'
 
 import {
   createPlacementPlan,
@@ -71,6 +76,19 @@ const FloatRight = styled.div`
 `
 const WarningContainer = styled.div`
   margin: 5px 0;
+`
+
+const ApplicationDatesSection = styled.section`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  padding: ${defaultMargins.s} calc(${defaultMargins.X3L} + ${defaultMargins.s})
+    ${defaultMargins.s} ${defaultMargins.s};
+  border-radius: 4px;
+  width: fit-content;
+`
+
+const DateLabel = styled(Label)`
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
 export interface PlacementSummaryWithOverlaps extends PlacementSummary {
@@ -130,6 +148,7 @@ export type DaycarePlacementPlanForm =
 export default React.memo(function PlacementPlanDraft() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const { i18n } = useTranslation()
+  const { colors } = useTheme()
   const [, navigate] = useLocation()
   const [placementPlanDraft, setPlacementPlanDraft] = useState<
     Result<PlacementPlanDraftWithOverlaps>
@@ -182,7 +201,7 @@ export default React.memo(function PlacementPlanDraft() {
         setPlacementPlanDraft(withoutOldPlacements)
         if (withoutOldPlacements.isSuccess) {
           const preselectedUnit =
-            withoutOldPlacements.value.placementDraftUnit?.id ?? null
+            withoutOldPlacements.value.placementDraft?.unit?.id ?? null
           if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
             setFormState({
               unitId: preselectedUnit,
@@ -431,6 +450,59 @@ export default React.memo(function PlacementPlanDraft() {
               <>
                 <Gap size="XL" />
                 <Placements placements={placementPlanDraft.placements} />
+              </>
+            )}
+            {placementPlanDraft.placementDraft && (
+              <>
+                <Gap size="XL" />
+                <H2 noMargin>{i18n.placementDraft.applicationDatesTitle}</H2>
+                <Gap size="s" />
+                <ApplicationDatesSection>
+                  <FixedSpaceRow spacing="XXL">
+                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                      <RoundIcon
+                        content={faPen}
+                        color={colors.grayscale.g15}
+                        textColor={colors.grayscale.g100}
+                        size="m"
+                      />
+                      <FixedSpaceColumn spacing="xxs">
+                        <DateLabel>{i18n.placementDraft.drafted}</DateLabel>
+                        <span data-qa="drafted-date">
+                          {placementPlanDraft.placementDraft.startDate.format()}
+                        </span>
+                      </FixedSpaceColumn>
+                    </FixedSpaceRow>
+                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                      <RoundIcon
+                        content={faSection}
+                        color={colors.grayscale.g15}
+                        textColor={colors.grayscale.g100}
+                        size="m"
+                      />
+                      <FixedSpaceColumn spacing="xxs">
+                        <DateLabel>{i18n.placementDraft.dueDate}</DateLabel>
+                        <span data-qa="due-date">
+                          {placementPlanDraft.dueDate?.format() ?? '-'}
+                        </span>
+                      </FixedSpaceColumn>
+                    </FixedSpaceRow>
+                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                      <RoundIcon
+                        content={faHeart}
+                        color={colors.grayscale.g15}
+                        textColor={colors.grayscale.g100}
+                        size="m"
+                      />
+                      <FixedSpaceColumn spacing="xxs">
+                        <DateLabel>{i18n.placementDraft.preferred}</DateLabel>
+                        <span data-qa="preferred-start-date">
+                          {placementPlanDraft.preferredStartDate.format()}
+                        </span>
+                      </FixedSpaceColumn>
+                    </FixedSpaceRow>
+                  </FixedSpaceRow>
+                </ApplicationDatesSection>
               </>
             )}
             <Gap size="XL" />

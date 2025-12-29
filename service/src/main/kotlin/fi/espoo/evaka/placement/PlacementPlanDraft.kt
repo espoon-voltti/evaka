@@ -12,13 +12,17 @@ import java.time.LocalDate
 data class PlacementPlanDraft(
     val type: PlacementType,
     val child: PlacementDraftChild,
+    val preferredStartDate: LocalDate,
+    val dueDate: LocalDate?,
     val preferredUnits: List<PlacementDraftUnit>,
-    val placementDraftUnit: PlacementDraftUnit?,
+    val placementDraft: PlacementDraftSummary?,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
     val placements: List<PlacementSummary>,
     val guardianHasRestrictedDetails: Boolean,
 )
+
+data class PlacementDraftSummary(val unit: PlacementDraftUnit, val startDate: LocalDate)
 
 data class PlacementDraftChild(
     val id: ChildId,
