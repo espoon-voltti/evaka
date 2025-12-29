@@ -61,7 +61,7 @@ class VoucherValueDecisionGeneratorV2Test {
                 placement =
                     VoucherValueDecisionPlacement(
                         unitId = voucherBasis.placement!!.unitId,
-                        type = voucherBasis.placement!!.placementType,
+                        type = voucherBasis.placement.placementType,
                     ),
                 serviceNeed =
                     VoucherValueDecisionServiceNeed(

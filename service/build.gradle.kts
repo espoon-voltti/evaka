@@ -83,6 +83,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.postgresql:postgresql")
+    implementation("org.checkerframework:checker-qual")
 
     // JDBI
     implementation("org.jdbi:jdbi3-core")

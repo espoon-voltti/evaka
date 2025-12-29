@@ -1722,7 +1722,7 @@ fun Database.Transaction.insert(
             sql(
                 """     
 INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient, modified_at, modified_by)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy?.id)})
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy.id)})
 """
             )
         }

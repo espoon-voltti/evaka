@@ -173,12 +173,8 @@ class AssistanceDecisionMigrationService(asyncJobRunner: AsyncJobRunner<AsyncJob
 
         if (!decision.status.isDecided())
             throw IllegalStateException("Decision ${decision.id} is not in a decided state")
-        val childId =
-            decision.child?.id
-                ?: throw IllegalStateException("Decision ${decision.id} has no child")
-        val decisionNumber =
-            decision.decisionNumber
-                ?: throw IllegalStateException("Decision ${decision.id} has no decision number")
+        val childId = decision.child.id
+        val decisionNumber = decision.decisionNumber
         val decisionMaker =
             decision.form.decisionMakerEmployeeId
                 ?: throw IllegalStateException("Decision ${decision.id} has no decision maker")

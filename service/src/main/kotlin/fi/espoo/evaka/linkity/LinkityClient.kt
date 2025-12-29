@@ -57,10 +57,7 @@ class LinkityHttpClient(private val env: LinkityEnv, private val jsonMapper: Jso
                     )
                 }
 
-                response.body?.string()?.let { json -> jsonMapper.readValue<List<Shift?>>(json) }
-                    ?: throw IllegalStateException(
-                        "Failed to fetch shifts from Linkity: empty response"
-                    )
+                response.body.string().let { json -> jsonMapper.readValue<List<Shift?>>(json) }
             }
 
         // Linkity seems to sometimes return nulls in the list, filter them out

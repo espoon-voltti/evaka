@@ -156,14 +156,14 @@ class SfiMessagesRestClient(
         jsonMapper.writeValueAsString(value).toRequestBody(jsonMediaType)
 
     private inline fun <reified T : Any> jsonResponseBody(response: Response) =
-        response.body?.let { body ->
+        response.body.let { body ->
             if (body.contentType() == null || body.contentType() == jsonMediaType)
                 jsonMapper.readValue<T>(body.charStream())
             else
                 error(
                     "Expected JSON response body ${T::class}, got ${body.contentType()} with length ${body.contentLength()} (${body.string()})"
                 )
-        } ?: error("Expected JSON response body ${T::class}, got nothing")
+        }
 
     private fun getAccessToken(password: Sensitive<String>): String {
         logger.info { "Requesting a new access token" }

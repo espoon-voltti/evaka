@@ -844,7 +844,7 @@ class MealReportTests {
         )
         assertEquals(
             3,
-            report?.meals?.size,
+            report.meals.size,
             "Expected three meals orders based on the children's reservations",
         )
     }
