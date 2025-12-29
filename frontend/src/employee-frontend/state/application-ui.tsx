@@ -73,7 +73,6 @@ interface UIState {
   occupancyPeriodStart: LocalDate
   setOccupancyPeriodStart: (date: LocalDate) => void
 
-  expandedApplications: Map<ApplicationId, boolean>
   toggleApplicationExpanded: (applicationId: ApplicationId) => void
   isApplicationExpanded: (applicationId: ApplicationId) => boolean
 
@@ -172,7 +171,6 @@ const defaultState: UIState = {
   occupancyPeriodStart: LocalDate.todayInHelsinkiTz(),
   setOccupancyPeriodStart: () => undefined,
 
-  expandedApplications: new Map(),
   toggleApplicationExpanded: () => undefined,
   isApplicationExpanded: () => true,
 
@@ -271,9 +269,9 @@ export const ApplicationUIContextProvider = React.memo(
         ].includes(confirmedSearchFilters.status)
       : false
 
-    const [expandedApplications, setExpandedApplications] = useState<
-      Map<ApplicationId, boolean>
-    >(new Map())
+    const [collapsedApplications, setCollapsedApplications] = useState<
+      Set<ApplicationId>
+    >(new Set())
 
     const [savedScrollPosition, setSavedScrollPosition] = useState<
       number | null
@@ -281,10 +279,14 @@ export const ApplicationUIContextProvider = React.memo(
 
     const toggleApplicationExpanded = useCallback(
       (applicationId: ApplicationId) => {
-        setExpandedApplications((prev) => {
-          const newMap = new Map(prev)
-          newMap.set(applicationId, !prev.get(applicationId))
-          return newMap
+        setCollapsedApplications((prev) => {
+          const newSet = new Set(prev)
+          if (newSet.has(applicationId)) {
+            newSet.delete(applicationId)
+          } else {
+            newSet.add(applicationId)
+          }
+          return newSet
         })
       },
       []
@@ -292,10 +294,9 @@ export const ApplicationUIContextProvider = React.memo(
 
     const isApplicationExpanded = useCallback(
       (applicationId: ApplicationId) => {
-        const value = expandedApplications.get(applicationId)
-        return value === undefined ? true : value
+        return !collapsedApplications.has(applicationId)
       },
-      [expandedApplications]
+      [collapsedApplications]
     )
 
     const value = useMemo(
@@ -317,7 +318,6 @@ export const ApplicationUIContextProvider = React.memo(
         setPlacementDesktopDaycares,
         occupancyPeriodStart,
         setOccupancyPeriodStart,
-        expandedApplications,
         toggleApplicationExpanded,
         isApplicationExpanded,
         savedScrollPosition,
@@ -339,7 +339,6 @@ export const ApplicationUIContextProvider = React.memo(
         setPlacementDesktopDaycares,
         occupancyPeriodStart,
         setOccupancyPeriodStart,
-        expandedApplications,
         toggleApplicationExpanded,
         isApplicationExpanded,
         savedScrollPosition
