@@ -3837,6 +3837,10 @@ export const fi = {
     placementOverlapError:
       'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
     createPlacementDraft: 'Luo sijoitussuunnitelma',
+    applicationDatesTitle: 'Hahmoteltu sijoitus',
+    drafted: 'Hahmoteltu',
+    dueDate: 'Lakisääteisyys',
+    preferred: 'Toivottu',
     datesTitle: 'Nyt luotava sijoitussuunnitelma',
     type: 'Sijoitustyyppi',
     date: 'Sijoituspäivämäärä',

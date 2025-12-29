@@ -182,8 +182,9 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val placementPlanDraft = getPlacementPlanDraft(application.id)
         assertEquals(
             PlacementDraftUnit(daycare2.id, daycare2.name),
-            placementPlanDraft.placementDraftUnit,
+            placementPlanDraft.placementDraft?.unit,
         )
+        assertEquals(newStartDate, placementPlanDraft.placementDraft?.startDate)
 
         // Remove placement draft unit
         deleteApplicationPlacementDraft(application.id)

@@ -76,18 +76,24 @@ class PlacementPlanService(
 
         val startDate = maxOf(minStartDate, form.preferences.preferredStartDate!!)
 
-        val placementDraftUnit =
+        val placementDraft =
             tx.createQuery {
                     sql(
                         """
-            SELECT d.id, d.name
+            SELECT d.id, d.name, pd.start_date
             FROM placement_draft pd
             JOIN daycare d ON d.id = pd.unit_id
             WHERE pd.application_id = ${bind(applicationId)}
         """
                     )
                 }
-                .exactlyOneOrNull<PlacementDraftUnit>()
+                .map {
+                    PlacementDraftSummary(
+                        unit = PlacementDraftUnit(column("id"), column("name")),
+                        startDate = column("start_date"),
+                    )
+                }
+                .exactlyOneOrNull()
 
         return when (application.type) {
             ApplicationType.PRESCHOOL -> {
@@ -134,8 +140,10 @@ class PlacementPlanService(
                 PlacementPlanDraft(
                     child = child,
                     type = type,
+                    preferredStartDate = application.form.preferences.preferredStartDate,
+                    dueDate = application.dueDate,
                     preferredUnits = preferredUnits,
-                    placementDraftUnit = placementDraftUnit,
+                    placementDraft = placementDraft,
                     period = period,
                     preschoolDaycarePeriod = preschoolDaycarePeriod,
                     placements = placements,
@@ -159,8 +167,10 @@ class PlacementPlanService(
                 PlacementPlanDraft(
                     child = child,
                     type = type,
+                    preferredStartDate = application.form.preferences.preferredStartDate,
+                    dueDate = application.dueDate,
                     preferredUnits = preferredUnits,
-                    placementDraftUnit = placementDraftUnit,
+                    placementDraft = placementDraft,
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,
@@ -176,8 +186,10 @@ class PlacementPlanService(
                 PlacementPlanDraft(
                     child = child,
                     type = type,
+                    preferredStartDate = application.form.preferences.preferredStartDate,
+                    dueDate = application.dueDate,
                     preferredUnits = preferredUnits,
-                    placementDraftUnit = placementDraftUnit,
+                    placementDraft = placementDraft,
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,

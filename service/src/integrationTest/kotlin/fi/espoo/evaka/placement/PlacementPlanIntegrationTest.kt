@@ -101,6 +101,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.DAYCARE,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
         )
         createPlacementPlanAndAssert(
@@ -128,6 +130,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.DAYCARE,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
             guardianHasRestrictedDetails = true,
         )
@@ -156,6 +160,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.DAYCARE_PART_TIME,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
         )
         createPlacementPlanAndAssert(
@@ -182,6 +188,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
         )
         createPlacementPlanAndAssert(
@@ -210,6 +218,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL_DAYCARE,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
             preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultDaycareEndDate),
         )
@@ -252,6 +262,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL_CLUB,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
             preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultClubEndDate),
         )
@@ -284,6 +296,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL_DAYCARE,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, svebiEndDate),
             preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultDaycareEndDate),
             preferredUnits = listOf(daycareSvebi),
@@ -317,6 +331,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PREPARATORY,
+            preferredStartDate = preferredStartDate,
+            dueDate = LocalDate.of(2019, 5, 1),
             period = FiniteDateRange(preferredStartDate, defaultEndDate),
         )
         createPlacementPlanAndAssert(
@@ -572,6 +588,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         applicationId: ApplicationId,
         type: PlacementType,
         child: DevPerson = testChild_1,
+        preferredStartDate: LocalDate,
+        dueDate: LocalDate? = null,
         preferredUnits: List<DevDaycare> = listOf(daycare1, daycare2),
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
@@ -595,9 +613,11 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         lastName = child.lastName,
                         dob = child.dateOfBirth,
                     ),
+                preferredStartDate = preferredStartDate,
+                dueDate = dueDate,
                 preferredUnits =
                     preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) },
-                placementDraftUnit = null,
+                placementDraft = null,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
                 placements = placements,

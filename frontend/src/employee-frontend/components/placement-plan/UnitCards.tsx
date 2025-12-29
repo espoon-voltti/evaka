@@ -54,11 +54,11 @@ export default React.memo(function UnitCards({
   return (
     <FlexContainer data-qa="placement-list">
       {[
-        ...(placementPlanDraft.placementDraftUnit &&
+        ...(placementPlanDraft.placementDraft &&
         !placementPlanDraft.preferredUnits.some(
-          (u) => u.id === placementPlanDraft.placementDraftUnit?.id
+          (u) => u.id === placementPlanDraft.placementDraft?.unit?.id
         )
-          ? [placementPlanDraft.placementDraftUnit]
+          ? [placementPlanDraft.placementDraft.unit]
           : []),
         ...placementPlanDraft.preferredUnits,
         ...additionalUnits
