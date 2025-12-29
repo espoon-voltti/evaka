@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import React, {
   Fragment,
   useContext,
@@ -88,16 +89,25 @@ export default React.memo(function ApplicationFilters() {
   // Remove closed units from selected units when showClosedUnits is false
   useEffect(() => {
     if (!showClosedUnits && allUnits.isSuccess) {
-      const filteredUnitIds = filteredUnits.map((unit) => unit.id)
+      const filteredUnitIds = new Set(filteredUnits.map((unit) => unit.id))
+      const newUnits = searchFilters.units.filter((unitId) =>
+        filteredUnitIds.has(unitId)
+      )
 
-      setSearchFilters((prevFilters) => ({
-        ...prevFilters,
-        units: prevFilters.units.filter((unitId) =>
-          filteredUnitIds.includes(unitId)
-        )
-      }))
+      if (!isEqual(newUnits, searchFilters.units)) {
+        setSearchFilters((prevFilters) => ({
+          ...prevFilters,
+          units: newUnits
+        }))
+      }
     }
-  }, [allUnits.isSuccess, showClosedUnits, filteredUnits, setSearchFilters])
+  }, [
+    allUnits.isSuccess,
+    showClosedUnits,
+    filteredUnits,
+    searchFilters.units,
+    setSearchFilters
+  ])
 
   const unitFilterMenuItems: UnitFilterMenuItem[] = [
     {
