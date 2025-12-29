@@ -14,7 +14,7 @@ fun Throwable.psqlCause(): PSQLException? {
     while (cause != null && cause !is PSQLException) {
         cause = cause.cause
     }
-    return cause as? PSQLException
+    return cause
 }
 
 fun mapPSQLException(e: Exception): Exception {

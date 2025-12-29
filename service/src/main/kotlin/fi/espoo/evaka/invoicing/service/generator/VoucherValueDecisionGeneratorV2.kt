@@ -194,7 +194,7 @@ private fun getVoucherBases(
             *assistanceNeedCoefficients.toTypedArray(),
         ) +
             startOf3YoCoefficient +
-            activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+            activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null

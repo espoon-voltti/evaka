@@ -47,7 +47,7 @@ class DvvModificationsServiceIntegrationTest :
         db.read {
             assertEquals(1, updated)
             assertEquals("102", it.getNextDvvModificationToken())
-            val createdDvvModificationToken = it.getDvvModificationToken("101")!!
+            val createdDvvModificationToken = it.getDvvModificationToken("101")
             assertEquals("101", createdDvvModificationToken.token)
             assertEquals("102", createdDvvModificationToken.nextToken)
             assertEquals(1, createdDvvModificationToken.ssnsSent)

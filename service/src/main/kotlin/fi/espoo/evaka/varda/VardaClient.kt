@@ -351,7 +351,7 @@ class VardaClient(
         return httpClient.executeAuthenticated(req) { response ->
             if (!response.isSuccessful) {
                 val message =
-                    "request failed $method $url: status=${response.code} body=${response.body?.string()}"
+                    "request failed $method $url: status=${response.code} body=${response.body.string()}"
                 logger.error { message }
                 error(message)
             }
@@ -360,7 +360,7 @@ class VardaClient(
             if (Unit is R) {
                 Unit
             } else {
-                jsonMapper.readValue(response.body?.string()!!)
+                jsonMapper.readValue(response.body.string())
             }
         }
     }
@@ -419,7 +419,7 @@ class VardaClient(
                 if (!response.isSuccessful) {
                     error { "Failed to get Varda API token: status=${response.code}" }
                 }
-                val body = response.body?.string() ?: error("Varda API token response body is null")
+                val body = response.body.string()
                 jsonMapper.readTree(body).get("token").asText()
             }
         logger.info { "Successfully fetched new Varda API token with rate wait of $rate" }
@@ -429,7 +429,7 @@ class VardaClient(
 
     private fun isVardaTokenError(response: Response): Boolean =
         response.code == 403 &&
-            response.body?.let { body ->
+            response.body.let { body ->
                 jsonMapper.readTree(body.string()).get("errors")?.any {
                     it.get("error_code").asText() == "PE007"
                 }

@@ -65,6 +65,6 @@ class SärmäHttpClient(private val archiveEnv: ArchiveEnv?) : ArchivalClient {
             httpClient
                 .newCall(Request.Builder().url(endpointUrl).post(requestBody).build())
                 .execute()
-        return Pair(response.code, response.body?.string())
+        return Pair(response.code, response.body.string())
     }
 }

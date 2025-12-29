@@ -235,7 +235,6 @@ class PlacementPlanService(
                         PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
                         PlacementType.PRESCHOOL_CLUB -> PlacementType.PRESCHOOL
                         PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
-                        else -> error("Invalid placement plan type")
                     }
                 preschoolPeriods.map { it to preschoolPlacementType } +
                     (preschoolDaycarePeriod?.let { period ->
