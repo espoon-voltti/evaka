@@ -1102,42 +1102,6 @@ export class AssistanceSection extends Section {
     await this.#otherAssistanceMeasureRows.assertCount(count)
   }
 
-  async waitUntilAssistanceNeedDecisionsLoaded() {
-    await this.page
-      .findByDataQa('table-of-assistance-need-decisions')
-      .waitUntilVisible()
-  }
-
-  async assertAssistanceNeedDecisionCount(count: number) {
-    const rows = this.page.findAllByDataQa('table-assistance-need-decision-row')
-    await rows.assertCount(count)
-  }
-
-  async assistanceNeedDecisions(nth: number) {
-    const row = this.page
-      .findByDataQa('table-of-assistance-need-decisions')
-      .findAllByDataQa('table-assistance-need-decision-row')
-      .nth(nth)
-
-    return {
-      date: await row.findByDataQa('assistance-need-decision-date').text,
-      unitName: await row.findByDataQa('assistance-need-decision-unit-name')
-        .text,
-      sentDate: await row.findByDataQa('assistance-need-decision-sent-date')
-        .text,
-      decisionMadeDate: await row.findByDataQa(
-        'assistance-need-decision-made-date'
-      ).text,
-      status: await row
-        .findByDataQa('decision-status')
-        .getAttribute('data-qa-status'),
-      actionCount: await row
-        .findByDataQa('assistance-need-decision-actions')
-        .findAll('button')
-        .count()
-    }
-  }
-
   readonly assistanceNeedVoucherCoefficientCount = () =>
     this.page
       .findByDataQa('table-of-assistance-need-voucher-coefficients')
