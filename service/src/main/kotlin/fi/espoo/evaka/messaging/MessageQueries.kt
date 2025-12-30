@@ -466,19 +466,30 @@ fun Database.Transaction.insertThreadsWithMessages(
     serviceWorkerAccountName: String,
     financeAccountName: String,
 ): List<Pair<MessageThreadId, MessageId>> =
-    prepareBatch(1..count) { // range is *inclusive*
-            sql(
-                """
-WITH new_thread AS (
-    INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy, application_id) VALUES (${bind(type)}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}, ${bind(applicationId)}) RETURNING id
+    if (count == 0) emptyList()
+    else {
+        createQuery {
+                sql(
+                    """
+WITH new_threads AS (
+    INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy, application_id)
+    SELECT
+        ${bind(type)},
+        ${bind(title)},
+        ${bind(urgent)},
+        ${bind(sensitive)},
+        ${bind(isCopy)},
+        ${bind(applicationId)}
+    FROM generate_series(1, ${bind(count)})
+    RETURNING id
 )
 INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
 SELECT
     ${bind(now)},
     ${bind(contentId)},
-    new_thread.id,
+    new_threads.id,
     ${bind(senderId)},
-    CASE 
+    CASE
         WHEN name_view.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
         WHEN name_view.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
         WHEN name_view.type = 'FINANCE' THEN ${bind(financeAccountName)}
@@ -486,14 +497,14 @@ SELECT
     END,
     NULL,
     ${bind(recipientNames)}
-FROM message_account_view name_view, new_thread
-WHERE name_view.id = ${bind(senderId)}
+FROM new_threads
+JOIN message_account_view name_view ON name_view.id = ${bind(senderId)}
 RETURNING id, thread_id
 """
-            )
-        }
-        .executeAndReturn()
-        .toList { columnPair("thread_id", "id") }
+                )
+            }
+            .toList { columnPair("thread_id", "id") }
+    }
 
 fun Database.Transaction.insertThread(
     type: MessageType,
