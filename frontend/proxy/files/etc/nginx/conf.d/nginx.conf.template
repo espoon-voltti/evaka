@@ -171,7 +171,6 @@ server {
   # a location bloc as it overrides the parent headers
   add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
   add_header X-Content-Type-Options nosniff;
-  add_header X-XSS-Protection '1; mode=block';
   add_header X-DNS-Prefetch-Control off;
   add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"$httpScheme://$host/api/csp"}]}';
 
@@ -355,7 +354,6 @@ server {
 
     add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
     add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection '1; mode=block';
     add_header X-DNS-Prefetch-Control off;
 
     rewrite ^ $httpScheme://{{ .Env.SERVICE_DOMAIN }}$uri?lang=sv redirect;
