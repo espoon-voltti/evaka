@@ -212,23 +212,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendAssistanceNeedDecisionEmail(
-        val decisionId: AssistanceNeedDecisionId,
-        val guardianId: PersonId,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class CreateAssistanceNeedDecisionPdf(val decisionId: AssistanceNeedDecisionId) :
-        AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class SendAssistanceNeedDecisionSfiMessage(val decisionId: AssistanceNeedDecisionId) :
-        AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class CreateChildDocumentPdf(val documentId: ChildDocumentId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -241,29 +224,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendAssistanceNeedPreschoolDecisionEmail(
-        val decisionId: AssistanceNeedPreschoolDecisionId,
-        val guardianId: PersonId,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class SendCalendarEventDigestEmail(
         val parentId: PersonId,
         val language: Language,
         val events: List<CalendarEventId>,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class CreateAssistanceNeedPreschoolDecisionPdf(
-        val decisionId: AssistanceNeedPreschoolDecisionId
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class SendAssistanceNeedPreschoolDecisionSfiMessage(
-        val decisionId: AssistanceNeedPreschoolDecisionId
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -509,17 +473,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null,
     ) : AsyncJob
 
-    data class MigrateDaycareAssistanceDecision(val decisionId: AssistanceNeedDecisionId) :
-        AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class MigratePreschoolAssistanceDecision(
-        val decisionId: AssistanceNeedPreschoolDecisionId
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class MigrateMunicipalMessageThreads(val batchSize: Int) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -530,8 +483,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Id(AsyncJob::class, "main"),
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
-                    CreateAssistanceNeedDecisionPdf::class,
-                    CreateAssistanceNeedPreschoolDecisionPdf::class,
                     CreateChildDocumentPdf::class,
                     CreateExpiredIncome::class,
                     DeleteAttachment::class,
@@ -542,9 +493,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     GenerateFinanceDecisions::class,
                     InitializeFamilyFromApplication::class,
                     InvoiceCorrectionMigration::class,
-                    MigrateDaycareAssistanceDecision::class,
                     MigrateMunicipalMessageThreads::class,
-                    MigratePreschoolAssistanceDecision::class,
                     NotifyDecisionCreated::class,
                     NotifyFeeDecisionApproved::class,
                     NotifyFeeDecisionPdfGenerated::class,
@@ -553,8 +502,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     PlacementTool::class,
                     PlacementToolFromSSN::class,
                     RunScheduledJob::class,
-                    SendAssistanceNeedDecisionSfiMessage::class,
-                    SendAssistanceNeedPreschoolDecisionSfiMessage::class,
                     SendChildDocumentDecisionSfiMessage::class,
                     SendDecision::class,
                     SendJamixOrder::class,
@@ -583,8 +530,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                 setOf(
                     SendAbsenceApplicationDecidedEmail::class,
                     SendApplicationEmail::class,
-                    SendAssistanceNeedDecisionEmail::class,
-                    SendAssistanceNeedPreschoolDecisionEmail::class,
                     SendCalendarEventDigestEmail::class,
                     SendChildDocumentNotificationEmail::class,
                     SendConfirmationCodeEmail::class,

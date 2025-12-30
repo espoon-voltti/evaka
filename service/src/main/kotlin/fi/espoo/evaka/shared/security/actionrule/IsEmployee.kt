@@ -5,8 +5,6 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationNoteId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DatabaseTable
@@ -313,72 +311,6 @@ SELECT EXISTS (
     WHERE decision_maker = ${bind(ctx.user.id)}
 )
                                 """
-                                    )
-                                }
-                                .exactlyOne<Boolean>()
-                                .let { isPermitted ->
-                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
-                                    else DatabaseActionRule.Deferred.None
-                                }
-                        }
-
-                        else -> {
-                            DatabaseActionRule.Deferred.None
-                        }
-                    }
-            },
-        )
-
-    fun andIsDecisionMakerForAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { employee, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_decision
-WHERE decision_maker_employee_id = ${bind(employee.id)}
-AND sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { employee, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_preschool_decision
-WHERE decision_maker_employee_id = ${bind(employee.id)}
-AND sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun andIsDecisionMakerForAnyAssistanceNeedDecision() =
-        DatabaseActionRule.Unscoped(
-            this,
-            object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
-                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                    Pair(user, now)
-
-                override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee> =
-                    when (ctx.user) {
-                        is AuthenticatedUser.Employee -> {
-                            ctx.tx
-                                .createQuery {
-                                    sql(
-                                        """
-SELECT EXISTS (
-    SELECT 1
-    FROM assistance_need_decision
-    WHERE decision_maker_employee_id = ${bind(ctx.user.id)}
-    AND sent_for_decision IS NOT NULL
-)
-                                """
-                                            .trimIndent()
                                     )
                                 }
                                 .exactlyOne<Boolean>()

@@ -7,7 +7,6 @@ package fi.espoo.evaka.caseprocess
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.setApplicationProcessId
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionProcessId
@@ -15,8 +14,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessType
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -54,14 +51,6 @@ fun migrateProcessMetadata(
 
     runBatches("voucher value decision", tracer) {
         migrateVoucherValueDecisionMetadata(dbc, batchSize, metadata)
-    }
-
-    runBatches("assistance need daycare decision", tracer) {
-        migrateAssistanceNeedDecisionDaycare(dbc, batchSize, metadata)
-    }
-
-    runBatches("assistance need preschool decision", tracer) {
-        migrateAssistanceNeedDecisionPreschool(dbc, batchSize, metadata)
     }
 
     runBatches("child document", tracer) {
@@ -321,224 +310,6 @@ private fun migrateVoucherValueDecisionMetadata(
                     userId = systemInternalUser,
                 )
             }
-            migratedCount++
-        }
-        migratedCount
-    }
-}
-
-private data class AssistaceNeedDaycareDecisionData(
-    val id: AssistanceNeedDecisionId,
-    val createdAt: HelsinkiDateTime,
-    val createdBy: EmployeeId?,
-    val sentForDecision: LocalDate?,
-    val decisionMakerEmployeeId: EmployeeId?,
-    val decisionMade: LocalDate?,
-    val status: AssistanceNeedDecisionStatus,
-    val documentKey: String?,
-)
-
-private fun migrateAssistanceNeedDecisionDaycare(
-    dbc: Database.Connection,
-    batchSize: Int,
-    metadata: CaseProcessMetadataService,
-): Int {
-    val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    return dbc.transaction { tx ->
-        val assistanceNeedDecisions =
-            tx.createQuery {
-                    sql(
-                        """
-                        SELECT
-                            id,
-                            created_at,
-                            created_by,
-                            sent_for_decision,
-                            decision_made,
-                            decision_maker_employee_id,
-                            status,
-                            document_key
-                        FROM assistance_need_decision
-                        WHERE process_id IS NULL
-                        ORDER BY created_at
-                        LIMIT ${bind(batchSize)}
-                        """
-                    )
-                }
-                .toList<AssistaceNeedDaycareDecisionData>()
-
-        var migratedCount = 0
-        assistanceNeedDecisions.forEach { decision ->
-            val process =
-                metadata.getProcessParams(
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE,
-                    decision.createdAt.year,
-                )
-            if (process == null) {
-                logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_DAYCARE" }
-                return@forEach
-            }
-            val processId = tx.insertCaseProcess(process, migrated = true).id
-            tx.execute {
-                sql(
-                    "UPDATE assistance_need_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
-                )
-            }
-            val createdBy =
-                if (decision.createdBy != null) {
-                    tx.upsertEmployeeUser(decision.createdBy)
-                    EvakaUserId(decision.createdBy.raw)
-                } else {
-                    systemInternalUser
-                }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.INITIAL,
-                now = decision.createdAt,
-                userId = createdBy,
-            )
-
-            if (decision.sentForDecision == null) return@forEach
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.PREPARATION,
-                now = HelsinkiDateTime.of(decision.sentForDecision, LocalTime.MIDNIGHT),
-                userId = systemInternalUser,
-            )
-
-            if (decision.decisionMade == null) return@forEach
-            val decisionMaker =
-                if (decision.decisionMakerEmployeeId != null) {
-                    tx.upsertEmployeeUser(decision.decisionMakerEmployeeId)
-                    EvakaUserId(decision.decisionMakerEmployeeId.raw)
-                } else {
-                    systemInternalUser
-                }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.DECIDING,
-                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId = decisionMaker,
-            )
-
-            if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
-                return@forEach
-            }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.COMPLETED,
-                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId = systemInternalUser,
-            )
-            migratedCount++
-        }
-        migratedCount
-    }
-}
-
-private data class AssistanceNeedPreschoolDecisionData(
-    val id: AssistanceNeedPreschoolDecisionId,
-    val createdAt: HelsinkiDateTime,
-    val createdBy: EmployeeId?,
-    val sentForDecision: LocalDate?,
-    val decisionMakerEmployeeId: EmployeeId?,
-    val decisionMade: LocalDate?,
-    val status: AssistanceNeedDecisionStatus,
-    val documentKey: String?,
-)
-
-private fun migrateAssistanceNeedDecisionPreschool(
-    dbc: Database.Connection,
-    batchSize: Int,
-    metadata: CaseProcessMetadataService,
-): Int {
-    val systemInternalUser = AuthenticatedUser.SystemInternalUser.evakaUserId
-    return dbc.transaction { tx ->
-        val assistanceNeedPreschoolDecisions =
-            tx.createQuery {
-                    sql(
-                        """
-                        SELECT
-                            id,
-                            created_at,
-                            created_by,
-                            sent_for_decision,
-                            decision_made,
-                            decision_maker_employee_id,
-                            status,
-                            document_key
-                        FROM assistance_need_preschool_decision
-                        WHERE process_id IS NULL
-                        ORDER BY created_at
-                        LIMIT ${bind(batchSize)}
-                        """
-                    )
-                }
-                .toList<AssistanceNeedPreschoolDecisionData>()
-
-        var migratedCount = 0
-        assistanceNeedPreschoolDecisions.forEach { decision ->
-            val process =
-                metadata.getProcessParams(
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL,
-                    decision.createdAt.year,
-                )
-            if (process == null) {
-                logger.warn { "Missing metadata config for ASSISTANCE_NEED_DECISION_PRESCHOOL" }
-                return@forEach
-            }
-            val processId = tx.insertCaseProcess(process, migrated = true).id
-            tx.execute {
-                sql(
-                    "UPDATE assistance_need_preschool_decision SET process_id = ${bind(processId)} WHERE id = ${bind(decision.id)}"
-                )
-            }
-            val createdBy =
-                if (decision.createdBy != null) {
-                    tx.upsertEmployeeUser(decision.createdBy)
-                    EvakaUserId(decision.createdBy.raw)
-                } else {
-                    systemInternalUser
-                }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.INITIAL,
-                now = decision.createdAt,
-                userId = createdBy,
-            )
-
-            if (decision.sentForDecision == null) return@forEach
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.PREPARATION,
-                now = HelsinkiDateTime.of(decision.sentForDecision, LocalTime.MIDNIGHT),
-                userId = systemInternalUser,
-            )
-
-            if (decision.decisionMade == null) return@forEach
-            val decisionMaker =
-                if (decision.decisionMakerEmployeeId != null) {
-                    tx.upsertEmployeeUser(decision.decisionMakerEmployeeId)
-                    EvakaUserId(decision.decisionMakerEmployeeId.raw)
-                } else {
-                    systemInternalUser
-                }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.DECIDING,
-                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId = decisionMaker,
-            )
-
-            if (!decision.status.isDecided() || decision.documentKey.isNullOrEmpty()) {
-                return@forEach
-            }
-            tx.insertCaseProcessHistoryRow(
-                processId = processId,
-                state = CaseProcessState.COMPLETED,
-                now = HelsinkiDateTime.of(decision.decisionMade, LocalTime.MIDNIGHT),
-                userId = systemInternalUser,
-            )
             migratedCount++
         }
         migratedCount

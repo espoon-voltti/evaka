@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController
 
 enum class Report {
     APPLICATIONS,
-    ASSISTANCE_NEED_DECISIONS,
     ASSISTANCE_NEEDS_AND_ACTIONS,
     ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD,
     ATTENDANCE_RESERVATION,
@@ -79,20 +78,6 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 setOfNotNull(
                     Report.APPLICATIONS.takeIf {
                         permittedActionsForSomeUnit.contains(Action.Unit.READ_APPLICATIONS_REPORT)
-                    },
-                    Report.ASSISTANCE_NEED_DECISIONS.takeIf {
-                        accessControl.isPermittedForSomeTarget(
-                            tx,
-                            user,
-                            clock,
-                            Action.AssistanceNeedDecision.READ_IN_REPORT,
-                        ) ||
-                            accessControl.isPermittedForSomeTarget(
-                                tx,
-                                user,
-                                clock,
-                                Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT,
-                            )
                     },
                     Report.ASSISTANCE_NEEDS_AND_ACTIONS.takeIf {
                         permittedActionsForSomeUnit.contains(

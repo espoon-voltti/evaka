@@ -296,36 +296,13 @@ JOIN assistance_action_option option ON option.id = option_id
             )
         }
 
+    // No longer supported, exports empty CSV with header row only
     val getAssistanceNeedDaycareDecisions =
-        csvQuery<BiAssistanceNeedDaycareDecision> {
-            sql(
-                """
-SELECT
-    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
-    lower(validity_period) AS valid_from, upper(validity_period) - 1 AS valid_to,
-    status,
-    'ASSISTANCE_ENDS' = ANY(assistance_levels) AS assistance_ends,
-    'ASSISTANCE_SERVICES_FOR_TIME' = ANY(assistance_levels) AS assistance_services_for_time,
-    'ENHANCED_ASSISTANCE' = ANY(assistance_levels) AS enhanced_assistance,
-    'SPECIAL_ASSISTANCE' = ANY(assistance_levels) AS special_assistance
-FROM assistance_need_decision
-WHERE status != 'DRAFT'
-"""
-            )
-        }
+        csvQuery<BiAssistanceNeedDaycareDecision> { sql("SELECT NULL WHERE FALSE") }
 
+    // No longer supported, exports empty CSV with header row only
     val getAssistanceNeedPreschoolDecisions =
-        csvQuery<BiAssistanceNeedPreschoolDecision> {
-            sql(
-                """
-SELECT
-    id, created_at as created, updated_at as updated, child_id AS child, selected_unit AS unit,
-    type, valid_from, status
-FROM assistance_need_preschool_decision
-WHERE status != 'DRAFT'
-"""
-            )
-        }
+        csvQuery<BiAssistanceNeedPreschoolDecision> { sql("SELECT NULL WHERE FALSE") }
 }
 
 private fun printEspooBiCsvField(value: Any?): String =

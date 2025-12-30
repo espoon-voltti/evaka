@@ -11,8 +11,6 @@ import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -313,84 +311,6 @@ AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedDecision(
-        hidePastAssistance: Boolean,
-        cfg: ChildAclConfig = ChildAclConfig(),
-    ) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_decision ad
-""" +
-                    if (hidePastAssistance)
-                        """
-WHERE CASE
-        WHEN EXISTS (
-            SELECT true
-            FROM placement p
-            WHERE p.child_id = ad.child_id
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
-                AND p.start_date <=  ${bind(now.toLocalDate())})
-            THEN EXISTS (
-                SELECT true
-                FROM PLACEMENT p
-                WHERE p.child_id = ad.child_id
-                AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
-        ELSE TRUE
-     END
-AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
-
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(
-        hidePastAssistance: Boolean,
-        cfg: ChildAclConfig = ChildAclConfig(),
-    ) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_decision ad
-WHERE ad.status = 'ACCEPTED'""" +
-                    if (hidePastAssistance)
-                        """
-AND CASE
-        WHEN EXISTS (
-            SELECT true
-            FROM placement p
-            WHERE p.child_id = ad.child_id
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
-                AND p.start_date <=  ${bind(now.toLocalDate())})
-            THEN EXISTS (
-                SELECT true
-                FROM PLACEMENT p
-                WHERE p.child_id = ad.child_id
-                AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
-        ELSE TRUE
-     END
-AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}
-            """
-                    else ""
-            )
-        }
-
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT apd.id, child_id
-FROM assistance_need_preschool_decision apd
-WHERE apd.status = 'ACCEPTED'
-            """
-            )
-        }
-
     fun inPlacementUnitOfChildOfDaycareAssistance(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig(),
@@ -484,38 +404,6 @@ WHERE CASE
      END
 AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
-            )
-        }
-
-    fun inSelectedUnitOfAssistanceNeedDecision(cfg: ChildAclConfig = ChildAclConfig()) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_decision ad
-"""
-            )
-        }
-
-    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_preschool_decision ad
-            """
-            )
-        }
-
-    fun inSelectedUnitOfAssistanceNeedPreschoolDecision(cfg: ChildAclConfig = ChildAclConfig()) =
-        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_preschool_decision ad
-            """
             )
         }
 

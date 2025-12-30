@@ -6,8 +6,6 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
@@ -119,52 +117,6 @@ SELECT attachment.id
 FROM attachment
 JOIN evaka_user ON uploaded_by = evaka_user.id
 WHERE evaka_user.type = 'EMPLOYEE'
-            """
-            )
-        }
-
-    fun andIsDecisionMakerForAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { employee, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_decision
-WHERE decision_maker_employee_id = ${bind(employee.id)}
-AND sent_for_decision IS NOT NULL
-            """
-            )
-        }
-
-    fun andIsDecisionMakerForPreschoolAssistanceNeedDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { employee, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_preschool_decision
-WHERE decision_maker_employee_id = ${bind(employee.id)}
-AND sent_for_decision IS NOT NULL
-            """
-            )
-        }
-
-    fun andAssistanceNeedDecisionHasBeenSent() =
-        rule<AssistanceNeedDecisionId> { _, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_decision
-WHERE sent_for_decision IS NOT NULL
-            """
-            )
-        }
-
-    fun andAssistanceNeedPreschoolDecisionHasBeenSent() =
-        rule<AssistanceNeedPreschoolDecisionId> { _, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_preschool_decision
-WHERE sent_for_decision IS NOT NULL
             """
             )
         }

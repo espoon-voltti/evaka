@@ -8,8 +8,6 @@ import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchiveProcessType
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.CaseProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -162,28 +160,6 @@ fun Database.Read.getCaseProcessByChildDocumentId(documentId: ChildDocumentId): 
         ?.let { processId -> getCaseProcess(processId) }
 }
 
-fun Database.Read.getCaseProcessByAssistanceNeedDecisionId(
-    decisionId: AssistanceNeedDecisionId
-): CaseProcess? {
-    return createQuery {
-            sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
-        }
-        .exactlyOneOrNull<CaseProcessId?>()
-        ?.let { processId -> getCaseProcess(processId) }
-}
-
-fun Database.Read.getCaseProcessByAssistanceNeedPreschoolDecisionId(
-    decisionId: AssistanceNeedPreschoolDecisionId
-): CaseProcess? {
-    return createQuery {
-            sql(
-                "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
-            )
-        }
-        .exactlyOneOrNull<CaseProcessId?>()
-        ?.let { processId -> getCaseProcess(processId) }
-}
-
 fun Database.Read.getCaseProcessByApplicationId(applicationId: ApplicationId): CaseProcess? {
     return createQuery {
             sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
@@ -218,30 +194,6 @@ fun Database.Transaction.deleteProcessById(processId: CaseProcessId) {
 
 fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
     tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
-        .exactlyOneOrNull<CaseProcessId?>()
-        ?.also { processId -> tx.deleteProcessById(processId) }
-}
-
-fun deleteProcessByAssistanceNeedDecisionId(
-    tx: Database.Transaction,
-    decisionId: AssistanceNeedDecisionId,
-) {
-    tx.createQuery {
-            sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
-        }
-        .exactlyOneOrNull<CaseProcessId?>()
-        ?.also { processId -> tx.deleteProcessById(processId) }
-}
-
-fun deleteCaseProcessByAssistanceNeedPreschoolDecisionId(
-    tx: Database.Transaction,
-    decisionId: AssistanceNeedPreschoolDecisionId,
-) {
-    tx.createQuery {
-            sql(
-                "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
-            )
-        }
         .exactlyOneOrNull<CaseProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }

@@ -25,14 +25,6 @@ import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOptionCategory
-import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
-import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
-import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
@@ -163,7 +155,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.Translatable
 import fi.espoo.evaka.shared.domain.UiLanguage
@@ -189,7 +180,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
@@ -1312,26 +1302,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc -> dbc.transaction { tx -> assistanceActions.forEach { tx.insert(it) } } }
     }
 
-    @PostMapping("/assistance-need-decisions")
-    fun createAssistanceNeedDecisions(
-        db: Database,
-        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
-        }
-    }
-
-    @PostMapping("/assistance-need-preschool-decisions")
-    fun createAssistanceNeedPreschoolDecisions(
-        db: Database,
-        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> assistanceNeedDecisions.forEach { tx.insert(it) } }
-        }
-    }
-
     @PostMapping("/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficients(
         db: Database,
@@ -1442,8 +1412,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         clubApplicationReceived,
         daycareApplicationReceived,
         preschoolApplicationReceived,
-        assistanceNeedDecisionNotification,
-        assistanceNeedPreschoolDecisionNotification,
         missingReservationsNotification,
         messageNotification,
         pedagogicalDocumentNotification,
@@ -1482,14 +1450,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
 
                 EmailMessageFilter.preschoolApplicationReceived -> {
                     emailMessageProvider.preschoolApplicationReceived(Language.fi, true)
-                }
-
-                EmailMessageFilter.assistanceNeedDecisionNotification -> {
-                    emailMessageProvider.assistanceNeedDecisionNotification(Language.fi)
-                }
-
-                EmailMessageFilter.assistanceNeedPreschoolDecisionNotification -> {
-                    emailMessageProvider.assistanceNeedPreschoolDecisionNotification(Language.fi)
                 }
 
                 EmailMessageFilter.missingReservationsNotification -> {
@@ -2063,95 +2023,6 @@ data class DevDaycareGroupPlacement(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
 )
-
-data class DevAssistanceNeedDecision(
-    val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long? = null,
-    val childId: ChildId,
-    val validityPeriod: DateRange,
-    val endDateNotKnown: Boolean = false,
-    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
-    val language: OfficialLanguage = OfficialLanguage.FI,
-    val decisionMade: LocalDate? = null,
-    val sentForDecision: LocalDate? = null,
-    @Nested("selected_unit") val selectedUnit: DaycareId? = null,
-    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee? = null,
-    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee? = null,
-    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee? = null,
-    val pedagogicalMotivation: String? = null,
-    @Nested("structural_motivation_opt")
-    val structuralMotivationOptions: StructuralMotivationOptions =
-        StructuralMotivationOptions(false, false, false, false, false, false),
-    val structuralMotivationDescription: String? = null,
-    val careMotivation: String? = null,
-    @Nested("service_opt")
-    val serviceOptions: ServiceOptions = ServiceOptions(false, false, false, false, false),
-    val servicesMotivation: String? = null,
-    val expertResponsibilities: String? = null,
-    val guardiansHeardOn: LocalDate? = null,
-    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian> = emptySet(),
-    val viewOfGuardians: String? = null,
-    val otherRepresentativeHeard: Boolean = false,
-    val otherRepresentativeDetails: String? = null,
-    val assistanceLevels: Set<AssistanceLevel> = emptySet(),
-    val motivationForDecision: String? = null,
-    val unreadGuardianIds: List<PersonId>? = null,
-    val annulmentReason: String = "",
-)
-
-data class DevAssistanceNeedPreschoolDecision(
-    val id: AssistanceNeedPreschoolDecisionId =
-        AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
-    val decisionNumber: Long = 999,
-    val childId: ChildId,
-    val form: AssistanceNeedPreschoolDecisionForm,
-    val status: AssistanceNeedDecisionStatus = AssistanceNeedDecisionStatus.DRAFT,
-    val annulmentReason: String = "",
-    val sentForDecision: LocalDate? = null,
-    val decisionMade: LocalDate? = null,
-    val unreadGuardianIds: Set<PersonId>? = null,
-)
-
-val emptyAssistanceNeedPreschoolDecisionForm =
-    AssistanceNeedPreschoolDecisionForm(
-        language = OfficialLanguage.FI,
-        type = AssistanceNeedPreschoolDecisionType.NEW,
-        validFrom = LocalDate.of(2019, 1, 1),
-        validTo = null,
-        extendedCompulsoryEducation = false,
-        extendedCompulsoryEducationInfo = "",
-        grantedAssistanceService = false,
-        grantedInterpretationService = false,
-        grantedAssistiveDevices = false,
-        grantedServicesBasis = "",
-        selectedUnit = null,
-        primaryGroup = "",
-        decisionBasis = "",
-        basisDocumentPedagogicalReport = false,
-        basisDocumentPsychologistStatement = false,
-        basisDocumentSocialReport = false,
-        basisDocumentDoctorStatement = false,
-        basisDocumentPedagogicalReportDate = null,
-        basisDocumentPsychologistStatementDate = null,
-        basisDocumentSocialReportDate = null,
-        basisDocumentDoctorStatementDate = null,
-        basisDocumentOtherOrMissing = false,
-        basisDocumentOtherOrMissingInfo = "",
-        basisDocumentsInfo = "",
-        guardiansHeardOn = null,
-        guardianInfo = emptySet(),
-        otherRepresentativeHeard = false,
-        otherRepresentativeDetails = "",
-        viewOfGuardians = "",
-        preparer1EmployeeId = null,
-        preparer1Title = "",
-        preparer1PhoneNumber = "",
-        preparer2EmployeeId = null,
-        preparer2Title = "",
-        preparer2PhoneNumber = "",
-        decisionMakerEmployeeId = null,
-        decisionMakerTitle = "",
-    )
 
 data class DevChildAttendance(
     val childId: ChildId,

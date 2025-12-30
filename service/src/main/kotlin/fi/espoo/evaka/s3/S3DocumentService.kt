@@ -33,8 +33,6 @@ class S3DocumentService(
         DocumentLocation(
             bucket =
                 when (key) {
-                    is DocumentKey.AssistanceNeedDecision -> env.data
-                    is DocumentKey.AssistanceNeedPreschoolDecision -> env.data
                     is DocumentKey.Attachment -> env.attachments
                     is DocumentKey.ChildDocument -> env.data
                     is DocumentKey.ChildImage -> env.data

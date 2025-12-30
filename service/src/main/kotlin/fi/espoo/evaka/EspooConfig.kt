@@ -196,7 +196,6 @@ class EspooConfig {
             unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
             maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
             useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
-            assistanceDecisionMakerRoles = null,
             preschoolAssistanceDecisionMakerRoles = null,
             requestedStartUpperLimit = 14,
             postOffice = "ESPOO",
@@ -230,20 +229,6 @@ class EspooConfig {
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
                             archiveDurationMonths = 10 * 12,
-                        )
-                    }
-
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE -> {
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.03",
-                            archiveDurationMonths = 120 * 12,
-                        )
-                    }
-
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL -> {
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "12.06.04",
-                            archiveDurationMonths = 120 * 12,
                         )
                     }
 
