@@ -344,17 +344,28 @@ fun Database.Transaction.insertMessageContent(
 fun Database.Transaction.insertRecipients(
     messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>
 ) {
-    val rows: Sequence<Pair<MessageId, MessageAccountId>> =
-        messageRecipientsPairs.asSequence().flatMap { (messageId, recipients) ->
-            recipients.map { recipient -> Pair(messageId, recipient) }
+    val rows =
+        messageRecipientsPairs.flatMap { (messageId, recipients) ->
+            recipients.map { recipient -> messageId to recipient }
         }
-    executeBatch(rows) {
-        sql(
-            """
+    if (rows.isEmpty()) return
+
+    rows.chunked(500).forEach { chunk ->
+        val messageIds = chunk.map { it.first }
+        val recipientIds = chunk.map { it.second }
+
+        createUpdate {
+                sql(
+                    """
 INSERT INTO message_recipients (message_id, recipient_id)
-VALUES (${bind { (messageId, _) -> messageId }}, ${bind { (_, accountId) -> accountId }})
+SELECT * FROM UNNEST(
+    ${bind(messageIds)}::uuid[],
+    ${bind(recipientIds)}::uuid[]
+)
 """
-        )
+                )
+            }
+            .execute()
     }
 }
 
