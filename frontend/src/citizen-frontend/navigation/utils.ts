@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sum from 'lodash/sum'
-import sumBy from 'lodash/sumBy'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 
@@ -15,8 +14,6 @@ import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'
-import { assistanceDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries'
-import { assistanceNeedPreschoolDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries-preschool'
 import { applicationNotificationsQuery } from '../decisions/queries'
 
 const empty = {}
@@ -63,24 +60,12 @@ export function useChildrenWithOwnPage() {
 
 export function useUnreadDecisions() {
   const loggedIn = useUser() !== undefined
-  const { data: unreadDaycareAssistanceDecisionCounts = [] } = useQuery(
-    assistanceDecisionUnreadCountsQuery(),
-    { enabled: loggedIn }
-  )
-  const { data: unreadPreschoolAssistanceDecisionCounts = [] } = useQuery(
-    assistanceNeedPreschoolDecisionUnreadCountsQuery(),
-    { enabled: loggedIn }
-  )
   const { data: decisionWaitingConfirmationCount = 0 } = useQuery(
     applicationNotificationsQuery(),
     { enabled: loggedIn }
   )
 
-  return (
-    decisionWaitingConfirmationCount +
-    sumBy(unreadDaycareAssistanceDecisionCounts, ({ count }) => count) +
-    sumBy(unreadPreschoolAssistanceDecisionCounts, ({ count }) => count)
-  )
+  return decisionWaitingConfirmationCount
 }
 
 export const isPersonalDetailsIncomplete = (user: User) => !user.email

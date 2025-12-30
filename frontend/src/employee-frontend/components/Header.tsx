@@ -215,10 +215,9 @@ export default React.memo(function Header() {
     [accounts, unreadCountsByAccount]
   )
 
-  const {
-    assistanceNeedDecisionCounts,
-    childDocumentDecisionNotificationCount
-  } = useContext(ReportNotificationContext)
+  const { childDocumentDecisionNotificationCount } = useContext(
+    ReportNotificationContext
+  )
 
   const profileIsActive = useIsRouteActive(['/profile', '/child-information'])
 
@@ -296,11 +295,7 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {combine(
-                    assistanceNeedDecisionCounts,
-                    childDocumentDecisionNotificationCount
-                  )
-                    .map(([n1, n2]) => n1 + n2)
+                  {childDocumentDecisionNotificationCount
                     .map((unread) =>
                       unread > 0 ? (
                         <UnreadCount key="-" data-qa="notifications">

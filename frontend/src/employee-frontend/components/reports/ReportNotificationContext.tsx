@@ -5,29 +5,19 @@
 import React, { createContext, useContext } from 'react'
 
 import type { Result } from 'lib-common/api'
-import { Loading, Success, wrapResult } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { featureFlags } from 'lib-customizations/employee'
 
-import { getAssistanceNeedDecisionsReportUnreadCount } from '../../generated/api-clients/reports'
 import { childDocumentDecisionsReportNotificationCountQuery } from '../../queries'
 import { UserContext } from '../../state/user'
 
-const getAssistanceNeedDecisionsReportUnreadCountResult = wrapResult(
-  getAssistanceNeedDecisionsReportUnreadCount
-)
-
 export interface ReportNotificationState {
   childDocumentDecisionNotificationCount: Result<number>
-  assistanceNeedDecisionCounts: Result<number>
-  refreshAssistanceNeedDecisionCounts: () => void
 }
 
 const defaultState: ReportNotificationState = {
-  childDocumentDecisionNotificationCount: Loading.of(),
-  assistanceNeedDecisionCounts: Loading.of(),
-  refreshAssistanceNeedDecisionCounts: () => undefined
+  childDocumentDecisionNotificationCount: Loading.of()
 }
 
 export const ReportNotificationContext =
@@ -53,21 +43,10 @@ export const ReportNotificationContextProvider = React.memo(
       }
     )
 
-    const [assistanceNeedDecisionCounts, refreshAssistanceNeedDecisionCounts] =
-      useApiState(
-        () =>
-          user?.accessibleFeatures.assistanceNeedDecisionsReport
-            ? getAssistanceNeedDecisionsReportUnreadCountResult()
-            : Promise.resolve(Success.of(0)),
-        [user]
-      )
-
     return (
       <ReportNotificationContext.Provider
         value={{
-          childDocumentDecisionNotificationCount,
-          assistanceNeedDecisionCounts,
-          refreshAssistanceNeedDecisionCounts
+          childDocumentDecisionNotificationCount
         }}
       >
         {children}

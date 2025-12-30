@@ -20,8 +20,6 @@ import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
 import { NewAbsenceApplicationPage } from './children/sections/absence-applications/NewAbsenceApplicationPage'
 import NewServiceApplicationPage from './children/sections/service-need-and-daily-service-time/NewServiceApplicationPage'
-import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
-import AssistancePreschoolDecisionPage from './decisions/assistance-decision-page/AssistancePreschoolDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
@@ -70,11 +68,6 @@ const routes: CitizenRoute[] = [
   {
     path: '/decisions/by-application/:applicationId',
     component: DecisionResponseList
-  },
-  { path: '/decisions/assistance/:id', component: AssistanceDecisionPage },
-  {
-    path: '/decisions/assistance-preschool/:id',
-    component: AssistancePreschoolDecisionPage
   },
   { path: '/messages/:threadId', component: MessagesPage, auth: 'WEAK' },
   { path: '/messages', component: MessagesPage, auth: 'WEAK' },
