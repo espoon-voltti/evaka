@@ -114,7 +114,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person6Account: MessageAccountId
     private lateinit var person7Account: MessageAccountId
     private lateinit var serviceWorkerAccount: MessageAccountId
-    private lateinit var messagerAccount: MessageAccountId
+    private lateinit var municipalAccount: MessageAccountId
     private lateinit var financeAccount: MessageAccountId
 
     @BeforeEach
@@ -257,7 +257,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             serviceWorkerAccount =
                 tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
             tx.insert(DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager"))
-            messagerAccount = tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
+            municipalAccount = tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
             tx.insert(DevEmployee(id = financeAdmin.id, firstName = "Finance", lastName = "Admin"))
             financeAccount = tx.upsertEmployeeMessageAccount(financeAdmin.id, AccountType.FINANCE)
         }
@@ -763,7 +763,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         title = "Sensitive Title",
                         message = "Sensitive content",
                         messageType = MessageType.MESSAGE,
-                        sender = messagerAccount,
+                        sender = municipalAccount,
                         recipients = listOf(MessageRecipient.Child(testChild_1.id)),
                         user = messager,
                         sensitive = true,
@@ -1300,7 +1300,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val folder1 = DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Eteläinen")
             val folder2 = DevMessageThreadFolder(owner = serviceWorkerAccount, name = "Pohjoinen")
             val folderOther =
-                DevMessageThreadFolder(owner = messagerAccount, name = "Toisen käyttäjän kansio")
+                DevMessageThreadFolder(owner = municipalAccount, name = "Toisen käyttäjän kansio")
             db.transaction { tx ->
                 tx.insert(folder1)
                 tx.insert(folder2)
@@ -1935,7 +1935,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "Vappu",
                 message = "Vappuna paistaa aurinko",
                 messageType = MessageType.BULLETIN,
-                sender = messagerAccount,
+                sender = municipalAccount,
                 recipients =
                     listOf(
                         MessageRecipient.Child(testChild_1.id),
@@ -1964,7 +1964,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "Vappu",
                 message = "Vappuna paistaa aurinko",
                 messageType = MessageType.BULLETIN,
-                sender = messagerAccount,
+                sender = municipalAccount,
                 recipients =
                     listOf(
                         MessageRecipient.Child(testChild_1.id),
@@ -1997,7 +1997,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "Vappu",
                 message = "Vappuna paistaa aurinko",
                 messageType = MessageType.BULLETIN,
-                sender = messagerAccount,
+                sender = municipalAccount,
                 recipients =
                     listOf(
                         MessageRecipient.Child(testChild_1.id),
@@ -2025,7 +2025,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val response =
                 postNewThreadPreflightCheck(
                     user = messager,
-                    sender = messagerAccount,
+                    sender = municipalAccount,
                     recipients =
                         listOf(
                             MessageRecipient.Child(testChild_1.id),
@@ -2166,7 +2166,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "Bulletin to whole area",
                 message = "This bulletin is sent to whole area",
                 messageType = MessageType.BULLETIN,
-                sender = messagerAccount,
+                sender = municipalAccount,
                 recipients = listOf(MessageRecipient.Area(testArea.id)),
                 recipientNames = allRecipientNames,
                 user = messager,
@@ -2727,7 +2727,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val folder1 = DevMessageThreadFolder(owner = financeAccount, name = "Eteläinen")
             val folder2 = DevMessageThreadFolder(owner = financeAccount, name = "Pohjoinen")
             val folderOther =
-                DevMessageThreadFolder(owner = messagerAccount, name = "Toisen käyttäjän kansio")
+                DevMessageThreadFolder(owner = municipalAccount, name = "Toisen käyttäjän kansio")
             db.transaction { tx ->
                 tx.insert(folder1)
                 tx.insert(folder2)
@@ -2949,6 +2949,70 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // then
             assertEquals(0, getMessageCopies(employee1, group1Account, readTime).size)
+        }
+
+        @Test
+        fun `municipal bulletin can be sent to 100 recipients and all can see it`() {
+            val guardianAccounts = mutableListOf<MessageAccountId>()
+
+            db.transaction { tx ->
+                repeat(100) { i ->
+                    val child = DevPerson()
+                    val guardian = DevPerson(firstName = "Guardian$i", lastName = "Test")
+                    tx.insert(guardian, DevPersonType.ADULT)
+                    val guardianAccount = tx.getCitizenMessageAccount(guardian.id)
+                    guardianAccounts.add(guardianAccount)
+
+                    insertChild(tx, child, groupId1)
+                    tx.insertGuardian(guardian.id, child.id)
+                }
+            }
+
+            postNewThread(
+                title = "Municipal Bulletin",
+                message = "Important announcement to 100 families",
+                messageType = MessageType.BULLETIN,
+                sender = municipalAccount,
+                recipients = listOf(MessageRecipient.Area(testArea.id)),
+                user = messager,
+                now = sendTime,
+            )
+
+            guardianAccounts.forEach { guardianAccount ->
+                val threads =
+                    db.read {
+                        it.getThreads(
+                            accountId = guardianAccount,
+                            folderId = null,
+                            pageSize = 20,
+                            page = 1,
+                            municipalAccountName = "Municipal Account",
+                            serviceWorkerAccountName = "Service Worker",
+                            financeAccountName = "Finance",
+                        )
+                    }
+                assertEquals(1, threads.data.size)
+                val thread = threads.data.first()
+                assertEquals("Municipal Bulletin", thread.title)
+                assertEquals(MessageType.BULLETIN, thread.type)
+                assertEquals(1, thread.messages.size)
+                assertEquals(
+                    "Important announcement to 100 families",
+                    thread.messages.first().content,
+                )
+            }
+
+            val sentMessages =
+                db.read {
+                    it.getMessagesSentByAccount(
+                        accountId = municipalAccount,
+                        pageSize = 20,
+                        page = 1,
+                    )
+                }
+            assertEquals(1, sentMessages.data.size)
+            assertEquals("Municipal Bulletin", sentMessages.data.first().threadTitle)
+            assertEquals(MessageType.BULLETIN, sentMessages.data.first().type)
         }
     }
 
