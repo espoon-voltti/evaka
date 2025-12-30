@@ -21,7 +21,6 @@ data class EmployeeFeatures(
     val documentTemplates: Boolean,
     val personalMobileDevice: Boolean,
     val pinCode: Boolean,
-    val assistanceNeedDecisionsReport: Boolean,
     val createDraftInvoices: Boolean,
     val createPlacements: Boolean,
     val submitPatuReport: Boolean,

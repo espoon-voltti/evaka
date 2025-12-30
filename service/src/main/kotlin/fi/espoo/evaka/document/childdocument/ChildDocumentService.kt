@@ -129,7 +129,7 @@ class ChildDocumentService(
 
             val documentLocation =
                 documentClient.locate(
-                    DocumentKey.AssistanceNeedDecision(
+                    DocumentKey.ChildDocument(
                         tx.getChildDocumentKey(documentId)
                             ?: throw IllegalStateException(
                                 "Decision pdf has not yet been generated"

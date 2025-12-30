@@ -20,8 +20,6 @@ val generatedFiles =
                 generateEnum<Action.ApplicationNote>(),
                 generateEnum<Action.AssistanceAction>(),
                 generateEnum<Action.AssistanceFactor>(),
-                generateEnum<Action.AssistanceNeedDecision>(),
-                generateEnum<Action.AssistanceNeedPreschoolDecision>(),
                 generateEnum<Action.AssistanceNeedVoucherCoefficient>(),
                 generateEnum<Action.BackupCare>(),
                 generateEnum<Action.BackupPickup>(),

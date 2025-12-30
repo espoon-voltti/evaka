@@ -5,8 +5,6 @@
 package fi.espoo.evaka.s3
 
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildImageId
@@ -17,18 +15,6 @@ import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 sealed interface DocumentKey {
     val value: String
-
-    data class AssistanceNeedDecision(override val value: String) : DocumentKey {
-        constructor(
-            id: AssistanceNeedDecisionId
-        ) : this("assistance-need-decisions/assistance_need_decision_$id.pdf")
-    }
-
-    data class AssistanceNeedPreschoolDecision(override val value: String) : DocumentKey {
-        constructor(
-            id: AssistanceNeedPreschoolDecisionId
-        ) : this("assistance-need-preschool-decisions/assistance_need_preschool_decision_$id.pdf")
-    }
 
     data class Attachment(override val value: String) : DocumentKey {
         constructor(id: AttachmentId) : this(id.toString())

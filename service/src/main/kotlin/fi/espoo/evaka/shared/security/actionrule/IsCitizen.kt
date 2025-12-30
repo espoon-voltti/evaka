@@ -7,8 +7,6 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.AbsenceApplicationId
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
@@ -341,54 +339,6 @@ SELECT placement.id
 FROM placement
 JOIN foster_parent fp ON placement.child_id = fp.child_id AND fp.valid_during @> ${bind(now.toLocalDate())}
 WHERE parent_id = ${bind(userId)}
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun guardianOfChildOfAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { citizenId, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_decision ad
-WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = ad.child_id)
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun fosterParentOfChildOfAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { citizenId, now ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_decision ad
-WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun guardianOfChildOfAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { citizenId, _ ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_preschool_decision ad
-WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = ad.child_id)
-            """
-                    .trimIndent()
-            )
-        }
-
-    fun fosterParentOfChildOfAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { citizenId, now ->
-            sql(
-                """
-SELECT id
-FROM assistance_need_preschool_decision ad
-WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
             """
                     .trimIndent()
             )

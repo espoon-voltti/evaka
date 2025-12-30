@@ -8,9 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.syncApplicationOtherGuardians
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
-import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
-import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
@@ -28,14 +25,11 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
@@ -47,13 +41,11 @@ import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.emptyAssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -62,7 +54,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
-import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -473,88 +464,6 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     financeAccountName = "Espoon asiakasmaksut",
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
-        }
-
-        assertCleanedUpPeople(testDate, setOf())
-    }
-
-    @Test
-    fun `adult with assistance need decision is not cleaned up`() {
-        db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
-            tx.insert(
-                DevAssistanceNeedDecision(
-                    decisionNumber = 999,
-                    childId = testChild_1.id,
-                    validityPeriod = DateRange.ofMonth(2019, Month.JANUARY),
-                    status = AssistanceNeedDecisionStatus.ACCEPTED,
-                    language = OfficialLanguage.FI,
-                    decisionMade = null,
-                    sentForDecision = null,
-                    selectedUnit = null,
-                    preparedBy1 = null,
-                    preparedBy2 = null,
-                    decisionMaker = null,
-                    pedagogicalMotivation = null,
-                    structuralMotivationOptions =
-                        StructuralMotivationOptions(false, false, false, false, false, false),
-                    structuralMotivationDescription = null,
-                    careMotivation = null,
-                    serviceOptions = ServiceOptions(false, false, false, false, false),
-                    servicesMotivation = null,
-                    expertResponsibilities = null,
-                    guardiansHeardOn = null,
-                    guardianInfo = emptySet(),
-                    viewOfGuardians = null,
-                    otherRepresentativeHeard = false,
-                    otherRepresentativeDetails = null,
-                    assistanceLevels = emptySet(),
-                    motivationForDecision = null,
-                    unreadGuardianIds = null,
-                    annulmentReason = "",
-                    endDateNotKnown = false,
-                )
-            )
-        }
-
-        assertCleanedUpPeople(testDate, setOf())
-    }
-
-    @Test
-    fun `adult with assistance need preschool decision is not cleaned up`() {
-        db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
-            val employeeId = EmployeeId(UUID.randomUUID())
-            tx.insert(
-                DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Supervisor")
-            )
-            val docId = AssistanceNeedPreschoolDecisionId(UUID.randomUUID())
-            tx.insert(
-                DevAssistanceNeedPreschoolDecision(
-                    id = docId,
-                    decisionNumber = 999,
-                    childId = testChild_1.id,
-                    form =
-                        emptyAssistanceNeedPreschoolDecisionForm.copy(
-                            selectedUnit = testDaycare.id,
-                            preparer1EmployeeId = employeeId,
-                            decisionMakerEmployeeId = employeeId,
-                        ),
-                    status = AssistanceNeedDecisionStatus.ACCEPTED,
-                    decisionMade = LocalDate.of(2019, 5, 1),
-                    unreadGuardianIds = emptySet(),
-                )
-            )
-            tx.createUpdate {
-                    sql(
-                        "INSERT INTO assistance_need_preschool_decision_guardian(assistance_need_decision_id, person_id) VALUES(${bind(docId)}, ${bind(testAdult_1.id)})"
-                    )
-                }
-                .execute()
         }
 
         assertCleanedUpPeople(testDate, setOf())
