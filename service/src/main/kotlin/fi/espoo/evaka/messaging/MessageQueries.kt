@@ -372,17 +372,28 @@ SELECT * FROM UNNEST(
 fun Database.Transaction.insertMessageThreadChildren(
     childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
 ) {
-    val rows: Sequence<Pair<MessageThreadId, ChildId>> =
-        childrenThreadPairs.asSequence().flatMap { (children, threadId) ->
-            children.map { childId -> Pair(threadId, childId) }
+    val rows =
+        childrenThreadPairs.flatMap { (children, threadId) ->
+            children.map { childId -> threadId to childId }
         }
-    executeBatch(rows) {
-        sql(
-            """
+    if (rows.isEmpty()) return
+
+    rows.chunked(500).forEach { chunk ->
+        val threadIds = chunk.map { it.first }
+        val childIds = chunk.map { it.second }
+
+        createUpdate {
+                sql(
+                    """
 INSERT INTO message_thread_children (thread_id, child_id)
-VALUES (${bind { (threadId, _) -> threadId }}, ${bind { (_, childId) -> childId }})
+SELECT * FROM UNNEST(
+    ${bind(threadIds)}::uuid[],
+    ${bind(childIds)}::uuid[]
+)
 """
-        )
+                )
+            }
+            .execute()
     }
 }
 
