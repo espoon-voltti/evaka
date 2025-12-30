@@ -15,8 +15,10 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
+import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
@@ -31,6 +33,124 @@ import org.springframework.beans.factory.annotation.Autowired
 class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var rawReportController: RawReportController
+
+    @Test
+    fun `caretakers realized from staff attendance`() {
+        val user =
+            db.transaction { tx ->
+                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+                tx.insert(admin)
+                admin.user
+            }
+        val today = LocalDate.of(2025, 12, 30)
+        val yesterday = today.minusDays(1)
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 33)))
+        db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
+            tx.insertServiceNeedOption(snDefaultDaycare)
+
+            tx.insert(DevPerson(), DevPersonType.CHILD).also { childId ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = yesterday,
+                            endDate = today,
+                        )
+                    )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = yesterday,
+                        endDate = today,
+                    )
+                )
+            }
+
+            tx.insertTestStaffAttendance(groupId = groupId, date = yesterday, count = 0.5)
+            tx.insertTestStaffAttendance(groupId = groupId, date = today, count = 0.8)
+        }
+
+        assertThat(
+                rawReportController.getRawReport(dbInstance(), user, clock, yesterday, yesterday)
+            )
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(yesterday, 0.5))
+        assertThat(rawReportController.getRawReport(dbInstance(), user, clock, today, today))
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(today, 0.8))
+        assertThat(rawReportController.getRawReport(dbInstance(), user, clock, yesterday, today))
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(yesterday, 0.5), Tuple(today, 0.8))
+    }
+
+    @Test
+    fun `caretakers realized from staff attendance realtime`() {
+        val user =
+            db.transaction { tx ->
+                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+                tx.insert(admin)
+                admin.user
+            }
+        val today = LocalDate.of(2025, 12, 30)
+        val yesterday = today.minusDays(1)
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 33)))
+        db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
+            tx.insertServiceNeedOption(snDefaultDaycare)
+
+            tx.insert(DevPerson(), DevPersonType.CHILD).also { childId ->
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = unitId,
+                            startDate = yesterday,
+                            endDate = today,
+                        )
+                    )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = yesterday,
+                        endDate = today,
+                    )
+                )
+            }
+
+            tx.insert(DevEmployee()).also { employeeId ->
+                tx.insert(
+                    DevStaffAttendance(
+                        employeeId = employeeId,
+                        groupId = groupId,
+                        arrived = HelsinkiDateTime.of(yesterday, LocalTime.of(20, 0)),
+                        departed = HelsinkiDateTime.of(today, LocalTime.of(6, 0)),
+                        modifiedAt = null,
+                        modifiedBy = null,
+                    )
+                )
+            }
+        }
+
+        assertThat(
+                rawReportController.getRawReport(dbInstance(), user, clock, yesterday, yesterday)
+            )
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(yesterday, 0.5))
+        assertThat(rawReportController.getRawReport(dbInstance(), user, clock, today, today))
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(today, 0.8))
+        assertThat(rawReportController.getRawReport(dbInstance(), user, clock, yesterday, today))
+            .extracting({ it.day }, { it.caretakersRealized })
+            .containsExactly(Tuple(yesterday, 1.3), Tuple(today, 1.3))
+    }
 
     @Test
     fun `service need works`() {
