@@ -71,7 +71,7 @@ fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow>
             sql(
                 """
 WITH realtime_attendances AS (
-    SELECT sar.group_id, ROUND(SUM(EXTRACT(EPOCH FROM (
+    SELECT sar.group_id, t::date AS date, ROUND(SUM(EXTRACT(EPOCH FROM (
             LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
         )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient), 1) AS realized_caretakers
     FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
@@ -87,7 +87,7 @@ WITH realtime_attendances AS (
         WHERE departed IS NOT NULL
           AND tstzrange(arrived, departed) && tstzrange(${bind(rangeStart)}, ${bind(rangeEnd)})
     ) sar ON (tstzrange(sar.arrived, sar.departed) && tstzrange(t::timestamp AT TIME ZONE 'Europe/Helsinki', (t::date+1)::timestamp AT TIME ZONE 'Europe/Helsinki'))
-    GROUP BY sar.group_id
+    GROUP BY 1, 2
 )
 SELECT
     t::date as day,
@@ -160,7 +160,7 @@ JOIN person p ON p.id = pl.child_id
 LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
 LEFT JOIN daycare_group dg on dg.id = dgp.daycare_group_id
 LEFT JOIN daycare_caretaker dc on dg.id = dc.group_id AND daterange(dc.start_date, dc.end_date, '[]') @> t::date
-LEFT JOIN realtime_attendances sar ON dg.id = sar.group_id
+LEFT JOIN realtime_attendances sar ON dg.id = sar.group_id AND sar.date = t::date
 LEFT JOIN staff_attendance sa on dg.id = sa.group_id AND sa.date = t::date
 LEFT JOIN backup_care bc on bc.child_id = p.id AND daterange(bc.start_date, bc.end_date, '[]') @> t::date
 LEFT JOIN daycare bcu on bc.unit_id = bcu.id
