@@ -72,10 +72,9 @@ fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow>
                 """
 WITH realtime_attendances AS (
     SELECT sar.group_id, ROUND(SUM(EXTRACT(EPOCH FROM (
-            LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
+            LEAST(sar.departed, ${bind(rangeEnd)}) - GREATEST(sar.arrived, ${bind(rangeStart)})
         )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient), 1) AS realized_caretakers
-    FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
-    JOIN (
+    FROM (
         SELECT group_id, arrived, departed, occupancy_coefficient
         FROM staff_attendance_realtime
         WHERE departed IS NOT NULL
@@ -86,7 +85,7 @@ WITH realtime_attendances AS (
         FROM staff_attendance_external
         WHERE departed IS NOT NULL
           AND tstzrange(arrived, departed) && tstzrange(${bind(rangeStart)}, ${bind(rangeEnd)})
-    ) sar ON (tstzrange(sar.arrived, sar.departed) && tstzrange(t::timestamp AT TIME ZONE 'Europe/Helsinki', (t::date+1)::timestamp AT TIME ZONE 'Europe/Helsinki'))
+    ) sar
     GROUP BY sar.group_id
 )
 SELECT
