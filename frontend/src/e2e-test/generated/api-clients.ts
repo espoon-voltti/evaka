@@ -31,8 +31,6 @@ import type { DevApplicationWithForm } from './api-types'
 import type { DevAssistanceAction } from './api-types'
 import type { DevAssistanceActionOption } from './api-types'
 import type { DevAssistanceFactor } from './api-types'
-import type { DevAssistanceNeedDecision } from './api-types'
-import type { DevAssistanceNeedPreschoolDecision } from './api-types'
 import type { DevAssistanceNeedVoucherCoefficient } from './api-types'
 import type { DevBackupCare } from './api-types'
 import type { DevBackupPickup } from './api-types'
@@ -465,48 +463,6 @@ export async function createAssistanceFactors(
       url: uri`/assistance-factors`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevAssistanceFactor[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceNeedDecisions
-*/
-export async function createAssistanceNeedDecisions(
-  request: {
-    body: DevAssistanceNeedDecision[]
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/assistance-need-decisions`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevAssistanceNeedDecision[]>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceNeedPreschoolDecisions
-*/
-export async function createAssistanceNeedPreschoolDecisions(
-  request: {
-    body: DevAssistanceNeedPreschoolDecision[]
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/assistance-need-preschool-decisions`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<DevAssistanceNeedPreschoolDecision[]>
     })
     return json
   } catch (e) {

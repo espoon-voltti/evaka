@@ -8,7 +8,6 @@ import type { AbsenceType } from './absence'
 import type { ApplicationId } from './shared'
 import type { ApplicationStatus } from './application'
 import type { AreaId } from './shared'
-import type { AssistanceNeedDecisionStatus } from './assistanceneed'
 import type { ChildDocumentType } from './document'
 import type { DaycareAssistanceLevel } from './assistance'
 import type { DaycareId } from './shared'
@@ -34,7 +33,6 @@ import type { ServiceNeedOption } from './application'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import type { TitaniaErrorsId } from './shared'
-import type { UUID } from '../../types'
 import type { VoucherValueDecisionId } from './shared'
 import { deserializeJsonDocumentContent } from './document'
 
@@ -69,23 +67,6 @@ export interface ApplicationsReportRow {
   unitId: DaycareId
   unitName: string
   unitProviderType: ProviderType
-}
-
-/**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReportRow
-*/
-export interface AssistanceNeedDecisionsReportRow {
-  careAreaName: string
-  childName: string
-  decisionMade: LocalDate | null
-  decisionNumber: number
-  expired: boolean
-  id: UUID
-  isOpened: boolean | null
-  preschool: boolean
-  sentForDecision: LocalDate
-  status: AssistanceNeedDecisionStatus
-  unitName: string
 }
 
 /**
@@ -922,7 +903,6 @@ export interface RegionalSurveyReportYearlyStatisticsResult {
 */
 export type Report =
   | 'APPLICATIONS'
-  | 'ASSISTANCE_NEED_DECISIONS'
   | 'ASSISTANCE_NEEDS_AND_ACTIONS'
   | 'ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD'
   | 'ATTENDANCE_RESERVATION'
@@ -1238,15 +1218,6 @@ export interface YearlyStatisticsResult {
   voucherGeneralAssistanceCount: number
   voucherSpecialAssistanceCount: number
   voucherTotalCount: number
-}
-
-
-export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<AssistanceNeedDecisionsReportRow>): AssistanceNeedDecisionsReportRow {
-  return {
-    ...json,
-    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
-    sentForDecision: LocalDate.parseIso(json.sentForDecision)
-  }
 }
 
 

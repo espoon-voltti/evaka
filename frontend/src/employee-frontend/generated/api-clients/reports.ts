@@ -8,7 +8,6 @@ import type { ApplicationStatus } from 'lib-common/generated/api-types/applicati
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import type { AreaId } from 'lib-common/generated/api-types/shared'
-import type { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import type { AssistanceNeedsAndActionsReport } from 'lib-common/generated/api-types/reports'
 import type { AssistanceNeedsAndActionsReportByChild } from 'lib-common/generated/api-types/reports'
 import type { AttendanceReservationReportByChildBody } from 'lib-common/generated/api-types/reports'
@@ -90,7 +89,6 @@ import type { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/rep
 import YearMonth from 'lib-common/year-month'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
@@ -137,30 +135,6 @@ export async function getApplicationsReport(
     url: uri`/employee/reports/applications`.toString(),
     method: 'GET',
     params
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReport
-*/
-export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeedDecisionsReportRow[]> {
-  const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionsReportRow[]>>({
-    url: uri`/employee/reports/assistance-need-decisions`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonAssistanceNeedDecisionsReportRow(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReportUnreadCount
-*/
-export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<number> {
-  const { data: json } = await client.request<JsonOf<number>>({
-    url: uri`/employee/reports/assistance-need-decisions/unread-count`.toString(),
-    method: 'GET'
   })
   return json
 }
