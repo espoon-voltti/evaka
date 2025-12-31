@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.autoconfigure.AutoConfigurations
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
@@ -90,7 +90,7 @@ class KeyManagerConfigTest {
         }
     }
 
-    @Configuration
+    @TestConfiguration
     @Import(KeyManagerConfig::class)
     class KeyManagerTestConfig {
         @Bean fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env)

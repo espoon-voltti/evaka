@@ -8,9 +8,9 @@ import fi.espoo.evaka.shared.db.Database
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.HealthIndicator
+import org.springframework.boot.health.contributor.AbstractHealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

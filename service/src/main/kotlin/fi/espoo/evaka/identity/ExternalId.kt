@@ -15,6 +15,12 @@ import tools.jackson.databind.util.StdConverter
  */
 @JsonSerialize(converter = ExternalId.ToJson::class)
 @JsonDeserialize(converter = ExternalId.FromJson::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    converter = ExternalId.ToJsonJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    converter = ExternalId.FromJsonJackson2::class
+)
 data class ExternalId private constructor(val namespace: String, val value: String) {
     override fun toString(): String = "$namespace:$value"
 
@@ -37,6 +43,15 @@ data class ExternalId private constructor(val namespace: String, val value: Stri
     }
 
     class ToJson : StdConverter<ExternalId, String>() {
+        override fun convert(value: ExternalId): String = value.toString()
+    }
+
+    class FromJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<String, ExternalId>() {
+        override fun convert(value: String): ExternalId = parse(value)
+    }
+
+    class ToJsonJackson2 : com.fasterxml.jackson.databind.util.StdConverter<ExternalId, String>() {
         override fun convert(value: ExternalId): String = value.toString()
     }
 }

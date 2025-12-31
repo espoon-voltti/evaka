@@ -56,6 +56,9 @@ data class ServiceNeed(
     val partWeek: Boolean,
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+        using = ServiceNeedConfirmationDeserializerJackson2::class
+    )
     val confirmed: ServiceNeedConfirmation?,
     val updated: HelsinkiDateTime,
 )

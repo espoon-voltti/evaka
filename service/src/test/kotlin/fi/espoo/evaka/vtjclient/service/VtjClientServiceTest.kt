@@ -345,12 +345,12 @@ class VtjClientServiceTest {
         marker.writeTo(mockGenerator)
 
         argumentCaptor<String>().apply {
-            verify(mockGenerator, times(3)).writeFieldName(capture())
+            verify(mockGenerator, times(3)).writePOJOProperty(capture(), any())
             assertThat(allValues).contains("meta", "status", "targetId")
         }
 
         argumentCaptor<Any>().apply {
-            verify(mockGenerator, times(3)).writeObject(capture())
+            verify(mockGenerator, times(3)).writePOJOProperty(any(), capture())
             assertThat(allValues)
                 .contains(
                     mapOf("queryName" to query.type.queryName),

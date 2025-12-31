@@ -15,7 +15,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
-import tools.jackson.databind.JsonMappingException
+import tools.jackson.databind.DatabindException
 
 private val logger = KotlinLogging.logger {}
 
@@ -106,7 +106,7 @@ inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, 
                 try {
                     jsonColumn<T?>("state")
                 } catch (exc: UnableToProduceResultException) {
-                    if (exc.cause is JsonMappingException) {
+                    if (exc.cause is DatabindException) {
                         null
                     } else {
                         throw exc

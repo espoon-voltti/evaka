@@ -133,9 +133,9 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
 private val jsonMapper = defaultJsonMapperBuilder().build()
 
 private fun typeSerializerFor(clazz: KClass<*>): TypeSerializer? =
-    jsonMapper.serializerProviderInstance.findTypeSerializer(
-        jsonMapper.typeFactory.constructType(clazz.java)
-    )
+    jsonMapper
+        ._serializationContext()
+        .findTypeSerializer(jsonMapper.typeFactory.constructType(clazz.java))
 
 fun TypeSerializer.discriminantValue(clazz: KClass<*>): String =
-    typeIdResolver.idFromValueAndType(null, clazz.java)
+    typeIdResolver.idFromValueAndType(jsonMapper._serializationContext(), null, clazz.java)

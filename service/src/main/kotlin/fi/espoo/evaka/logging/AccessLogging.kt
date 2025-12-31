@@ -89,14 +89,14 @@ fun Context.createJsonEncoder(
     collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>
 ) =
     AccessEventCompositeJsonEncoder().apply {
-        this.jsonFactoryDecorator = JsonLoggingConfig()
+        this.addDecorator(JsonLoggingConfig())
         this.providers =
             JsonProviders<IAccessEvent>().apply {
                 addProvider(
                     object : AbstractJsonProvider<IAccessEvent>() {
                         override fun writeTo(generator: JsonGenerator, event: IAccessEvent) {
                             collectFields(event).forEach { (name, value) ->
-                                generator.writeObjectField(name, value)
+                                generator.writePOJOProperty(name, value)
                             }
                         }
                     }

@@ -30,3 +30,26 @@ class ServiceNeedConfirmationDeserializer :
         return ServiceNeedConfirmation(confirmed.userId, confirmed.name!!, confirmed.at)
     }
 }
+
+class ServiceNeedConfirmationDeserializerJackson2 :
+    com.fasterxml.jackson.databind.deser.std.StdDeserializer<ServiceNeedConfirmation>(
+        ServiceNeedConfirmation::class.java
+    ) {
+
+    private data class ServiceNeedConfirmationNullableFields(
+        val userId: EvakaUserId?,
+        val name: String?,
+        val at: HelsinkiDateTime?,
+    )
+
+    override fun deserialize(
+        jp: com.fasterxml.jackson.core.JsonParser,
+        ctxt: com.fasterxml.jackson.databind.DeserializationContext,
+    ): ServiceNeedConfirmation? {
+        val confirmed = jp.readValueAs(ServiceNeedConfirmationNullableFields::class.java)
+        if (confirmed.userId == null) {
+            return null
+        }
+        return ServiceNeedConfirmation(confirmed.userId, confirmed.name!!, confirmed.at)
+    }
+}

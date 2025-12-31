@@ -54,7 +54,7 @@ import io.opentelemetry.api.trace.Tracer
 import java.net.URI
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

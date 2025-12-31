@@ -384,6 +384,11 @@ typealias SfiMessageEventId = Id<DatabaseTable.SfiMessageEvent>
 
 @JsonSerialize(converter = Id.ToJson::class)
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(converter = Id.ToJsonJackson2::class)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    converter = Id.FromJsonJackson2::class,
+    keyUsing = Id.KeyFromJsonJackson2::class,
+)
 data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     override fun toString(): String = raw.toString()
 
@@ -400,5 +405,20 @@ data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     class KeyFromJson : KeyDeserializer() {
         override fun deserializeKey(key: String, ctxt: DeserializationContext): Any =
             Id<DatabaseTable>(UUID.fromString(key))
+    }
+
+    class FromJsonJackson2<T> : com.fasterxml.jackson.databind.util.StdConverter<UUID, Id<*>>() {
+        override fun convert(value: UUID): Id<DatabaseTable> = Id(value)
+    }
+
+    class ToJsonJackson2 : com.fasterxml.jackson.databind.util.StdConverter<Id<*>, UUID>() {
+        override fun convert(value: Id<*>): UUID = value.raw
+    }
+
+    class KeyFromJsonJackson2 : com.fasterxml.jackson.databind.KeyDeserializer() {
+        override fun deserializeKey(
+            key: String,
+            ctxt: com.fasterxml.jackson.databind.DeserializationContext,
+        ): Any = Id<DatabaseTable>(UUID.fromString(key))
     }
 }

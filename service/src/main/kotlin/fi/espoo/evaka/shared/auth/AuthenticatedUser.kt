@@ -18,6 +18,12 @@ import tools.jackson.databind.annotation.JsonSerialize
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
 @JsonDeserialize(using = AuthenticatedUserJsonDeserializer::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    using = AuthenticatedUserJsonSerializerJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    using = AuthenticatedUserJsonDeserializerJackson2::class
+)
 sealed class AuthenticatedUser {
     open val isAdmin = false
 

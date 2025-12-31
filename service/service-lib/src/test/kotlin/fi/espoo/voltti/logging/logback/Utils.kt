@@ -13,11 +13,10 @@ import net.logstash.logback.encoder.CompositeJsonEncoder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.slf4j.LoggerFactory
-import tools.jackson.core.JsonFactory
-import tools.jackson.core.JsonGenerator
+import tools.jackson.core.json.JsonFactory
+import tools.jackson.core.json.JsonWriteFeature
 import tools.jackson.core.type.TypeReference
 import tools.jackson.databind.JsonNode
-import tools.jackson.databind.MappingJsonFactory
 import tools.jackson.databind.json.JsonMapper
 
 // DSL
@@ -213,7 +212,5 @@ fun Any.asMap(jsonMapper: JsonMapper = mapper): Map<String, Any> =
 private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): JsonNode =
     mapper.readTree(encoder.encode(this))
 
-@Suppress("DEPRECATION")
-private val factory =
-    MappingJsonFactory().enable(JsonGenerator.Feature.ESCAPE_NON_ASCII) as JsonFactory
+private val factory = JsonFactory.builder().enable(JsonWriteFeature.ESCAPE_NON_ASCII).build()
 private val mapper = JsonMapper(factory)

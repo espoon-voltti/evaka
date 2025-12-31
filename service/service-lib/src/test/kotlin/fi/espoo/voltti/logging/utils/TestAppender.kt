@@ -13,7 +13,6 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import net.logstash.logback.argument.StructuredArgument
 import org.json.JSONObject
-import tools.jackson.core.JsonFactory
 import tools.jackson.databind.json.JsonMapper
 
 const val appenderName = "TestAppender"
@@ -50,9 +49,9 @@ class TestAppender : AppenderBase<ILoggingEvent>() {
             .let { args ->
                 StringWriter().use { sw ->
                     val pw = PrintWriter(sw, true)
-                    JsonFactory().createGenerator(pw).use { generator ->
+                    val mapper = JsonMapper()
+                    mapper.createGenerator(pw).use { generator ->
                         generator.run {
-                            codec = JsonMapper()
                             writeStartObject()
                             args.writeTo(this)
                             writeEndObject()

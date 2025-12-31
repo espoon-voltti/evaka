@@ -20,7 +20,6 @@ data class DvvModification(
     val muutospv: String,
     val henkilotunnus: String,
     val tietoryhmat: List<DvvInfoGroup>,
-    val ajanTasalla: Boolean,
 )
 
 @JsonTypeInfo(

@@ -420,7 +420,7 @@ class VardaClient(
                     error { "Failed to get Varda API token: status=${response.code}" }
                 }
                 val body = response.body.string()
-                jsonMapper.readTree(body).get("token").asText()
+                jsonMapper.readTree(body).get("token").asString()
             }
         logger.info { "Successfully fetched new Varda API token with rate wait of $rate" }
         token = newToken
@@ -431,7 +431,7 @@ class VardaClient(
         response.code == 403 &&
             response.body.let { body ->
                 jsonMapper.readTree(body.string()).get("errors")?.any {
-                    it.get("error_code").asText() == "PE007"
+                    it.get("error_code").asString() == "PE007"
                 }
             } ?: false
 }

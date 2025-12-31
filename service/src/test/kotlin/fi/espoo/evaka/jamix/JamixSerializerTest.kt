@@ -10,7 +10,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.node.ObjectNode
 
 class JamixSerializerTest {
 
@@ -77,7 +76,7 @@ class JamixSerializerTest {
                         put("textureID", 1234)
                     }
                 )
-                set<ObjectNode>("mealOrderRows", rows)
+                set("mealOrderRows", rows)
             }
 
         assertEquals(expectedJson, actualJson)

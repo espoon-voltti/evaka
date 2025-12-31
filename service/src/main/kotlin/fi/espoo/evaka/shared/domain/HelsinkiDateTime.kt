@@ -28,6 +28,12 @@ fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from
 /** A timestamp in Europe/Helsinki timezone */
 @JsonSerialize(converter = HelsinkiDateTime.ToJson::class)
 @JsonDeserialize(converter = HelsinkiDateTime.FromJson::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    converter = HelsinkiDateTime.ToJsonJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    converter = HelsinkiDateTime.FromJsonJackson2::class
+)
 data class HelsinkiDateTime private constructor(private val instant: Instant) :
     Comparable<HelsinkiDateTime> {
     val year: Int
@@ -179,6 +185,16 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     }
 
     class ToJson : StdConverter<HelsinkiDateTime, ZonedDateTime>() {
+        override fun convert(value: HelsinkiDateTime): ZonedDateTime = value.toZonedDateTime()
+    }
+
+    class FromJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<ZonedDateTime, HelsinkiDateTime>() {
+        override fun convert(value: ZonedDateTime): HelsinkiDateTime = value.toHelsinkiDateTime()
+    }
+
+    class ToJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<HelsinkiDateTime, ZonedDateTime>() {
         override fun convert(value: HelsinkiDateTime): ZonedDateTime = value.toZonedDateTime()
     }
 }

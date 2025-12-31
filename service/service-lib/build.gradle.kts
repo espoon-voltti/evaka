@@ -37,6 +37,4 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert")
 }
 
-ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
-}
+ktlint { version.set(libs.versions.ktlint.asProvider().get()) }

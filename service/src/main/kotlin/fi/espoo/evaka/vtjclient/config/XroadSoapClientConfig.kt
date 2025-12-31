@@ -12,6 +12,8 @@ import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.helpers.DefaultValidationEventHandler
+import javax.net.ssl.KeyManager
+import javax.net.ssl.TrustManager
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -58,7 +60,7 @@ class XroadSoapClientConfig {
         WebServiceTemplate().apply {
             setMarshaller(marshaller)
             unmarshaller = marshaller
-            defaultUri = xRoadEnv.address
+            setDefaultUri(xRoadEnv.address)
             // don't rely on HTTP status to indicate fault (will not work), check the message
             setCheckConnectionForFault(false)
             setMessageSender(messageSender)
@@ -95,7 +97,7 @@ class XroadSoapClientConfig {
     @ConditionalOnMissingBean(WebServiceMessageSender::class)
     fun httpsMessageSender(trustManagersFactoryBean: TrustManagersFactoryBean) =
         HttpsUrlConnectionMessageSender().apply {
-            setTrustManagers(trustManagersFactoryBean.`object`)
+            setTrustManagers(trustManagersFactoryBean.`object` ?: emptyArray<TrustManager>())
             // We skip FQDN matching to cert CN/subject alternative names and just trust the
             // certificate.
             // The trust store must only contain end-entity certificates (no CA certificates)
@@ -112,8 +114,8 @@ class XroadSoapClientConfig {
         keyManagersFactoryBean: KeyManagersFactoryBean,
     ) =
         HttpsUrlConnectionMessageSender().apply {
-            setTrustManagers(trustManagersFactoryBean.`object`)
-            setKeyManagers(keyManagersFactoryBean.`object`)
+            setTrustManagers(trustManagersFactoryBean.`object` ?: emptyArray<TrustManager>())
+            setKeyManagers(keyManagersFactoryBean.`object` ?: emptyArray<KeyManager>())
             // We skip FQDN matching to cert CN/subject alternative names and just trust the
             // certificate.
             // The trust store must only contain end-entity certificates (no CA certificates)
@@ -131,7 +133,7 @@ class XroadSoapClientConfig {
         object : SoapRequestAdapter {
             override fun createCallback(query: VTJQuery) = WebServiceMessageCallback {
                 val marsh = marshaller.jaxbContext.createMarshaller()
-                val headerResult = (it as SoapMessage).soapHeader.result
+                val headerResult = (it as SoapMessage).soapHeader?.result
 
                 marsh.apply {
                     marshal(factory.createId(MdcKey.TRACE_ID.get() ?: ""), headerResult)

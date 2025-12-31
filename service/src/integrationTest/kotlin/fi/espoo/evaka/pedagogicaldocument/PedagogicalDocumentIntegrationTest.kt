@@ -171,7 +171,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         http
             .get("/citizen/pedagogical-documents/unread-count")
             .asUser(user)
-            .responseObject<Map<ChildId, Int>>(jsonMapper)
+            .responseObject<Map<ChildId, Int>>(jackson2JsonMapper)
             .third
             .get()
 
@@ -521,7 +521,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .upload("/employee/attachments/pedagogical-documents/$id")
                 .add(FileDataPart(File(pngFile.toURI()), name = "file"))
                 .asUser(employee)
-                .responseObject<AttachmentId>(jsonMapper)
+                .responseObject<AttachmentId>(jackson2JsonMapper)
 
         return result.get()
     }

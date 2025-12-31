@@ -15,10 +15,10 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.AutoConfigurations.of
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.oxm.jaxb.Jaxb2Marshaller
@@ -126,7 +126,7 @@ class XroadSoapClientConfigTest {
     private val AssertableApplicationContext.mockTrustBean: TrustManagersFactoryBean
         get() = getBean(CommonSoapClientTestConfig::class.java).trustBean
 
-    @Configuration
+    @TestConfiguration
     @Import(CommonSoapClientTestConfig::class)
     class PrivateKeyBeansProvidingTestConfig {
 
@@ -140,7 +140,7 @@ class XroadSoapClientConfigTest {
             }
     }
 
-    @Configuration
+    @TestConfiguration
     @Import(XroadSoapClientConfig::class)
     class CommonSoapClientTestConfig {
 

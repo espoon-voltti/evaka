@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
-import tools.jackson.databind.JsonMappingException
+import tools.jackson.databind.DatabindException
 
 private val vardaPlacementTypes =
     listOf(
@@ -259,7 +259,7 @@ inline fun <reified T> Database.Read.getVardaUpdateState(
                 try {
                     jsonColumn<T?>("state")
                 } catch (exc: UnableToProduceResultException) {
-                    if (exc.cause is JsonMappingException) {
+                    if (exc.cause is DatabindException) {
                         null
                     } else {
                         throw exc
