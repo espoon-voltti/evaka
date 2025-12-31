@@ -19,10 +19,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
+import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -63,6 +65,8 @@ class RawReportController(private val accessControl: AccessControl) {
 
 fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
     val holidays = getHolidays(FiniteDateRange(from, to))
+    val rangeStart = HelsinkiDateTime.of(from, LocalTime.MIN)
+    val rangeEnd = HelsinkiDateTime.of(to.plusDays(1), LocalTime.MIN)
     return createQuery {
             sql(
                 """
@@ -75,11 +79,13 @@ WITH realtime_attendances AS (
         SELECT group_id, arrived, departed, occupancy_coefficient
         FROM staff_attendance_realtime
         WHERE departed IS NOT NULL
+            AND tstzrange(arrived, departed) && tstzrange(${bind(rangeStart)}, ${bind(rangeEnd)})
             AND type = ANY ('{"PRESENT", "OVERTIME", "JUSTIFIED_CHANGE"}')
         UNION ALL
         SELECT group_id, arrived, departed, occupancy_coefficient
         FROM staff_attendance_external
         WHERE departed IS NOT NULL
+          AND tstzrange(arrived, departed) && tstzrange(${bind(rangeStart)}, ${bind(rangeEnd)})
     ) sar ON (tstzrange(sar.arrived, sar.departed) && tstzrange(t::timestamp AT TIME ZONE 'Europe/Helsinki', (t::date+1)::timestamp AT TIME ZONE 'Europe/Helsinki'))
     GROUP BY sar.group_id
 )
