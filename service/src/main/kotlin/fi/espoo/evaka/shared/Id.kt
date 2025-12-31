@@ -30,14 +30,6 @@ sealed interface DatabaseTable {
 
     sealed class AssistanceFactor : DatabaseTable
 
-    sealed class AssistanceNeedDecision : DatabaseTable
-
-    sealed class AssistanceNeedDecisionGuardian : DatabaseTable
-
-    sealed class AssistanceNeedPreschoolDecision : DatabaseTable
-
-    sealed class AssistanceNeedPreschoolDecisionGuardian : DatabaseTable
-
     sealed class AssistanceNeedVoucherCoefficient : DatabaseTable
 
     sealed class Attachment : DatabaseTable
@@ -214,15 +206,6 @@ typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
 
 typealias AssistanceFactorId = Id<DatabaseTable.AssistanceFactor>
-
-typealias AssistanceNeedDecisionGuardianId = Id<DatabaseTable.AssistanceNeedDecisionGuardian>
-
-typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
-
-typealias AssistanceNeedPreschoolDecisionGuardianId =
-    Id<DatabaseTable.AssistanceNeedPreschoolDecisionGuardian>
-
-typealias AssistanceNeedPreschoolDecisionId = Id<DatabaseTable.AssistanceNeedPreschoolDecision>
 
 typealias AssistanceNeedVoucherCoefficientId = Id<DatabaseTable.AssistanceNeedVoucherCoefficient>
 

@@ -309,13 +309,6 @@ class SystemController(
                                     Action.Global.PERSONAL_MOBILE_DEVICE_PAGE
                                 ),
                             pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
-                            assistanceNeedDecisionsReport =
-                                accessControl.isPermittedForSomeTarget(
-                                    tx,
-                                    user,
-                                    clock,
-                                    Action.AssistanceNeedDecision.READ_IN_REPORT,
-                                ),
                             createDraftInvoices =
                                 permittedGlobalActions.contains(
                                     Action.Global.CREATE_DRAFT_INVOICES

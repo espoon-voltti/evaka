@@ -204,11 +204,6 @@ interface BaseFeatureFlags {
   voucherValueSeparation: boolean
 
   /**
-   * Enable language selection for assistance need decisions
-   */
-  assistanceNeedDecisionsLanguageSelect: boolean
-
-  /**
    * Enable extended period start date -field when creating or editing preschool terms
    */
   extendedPreschoolTerm: boolean

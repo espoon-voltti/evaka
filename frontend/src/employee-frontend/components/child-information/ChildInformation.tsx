@@ -196,11 +196,7 @@ const components = {
   }),
   assistance: section({
     component: Assistance,
-    requireOneOfPermittedActions: [
-      'READ_ASSISTANCE',
-      'READ_ASSISTANCE_NEED_DECISIONS',
-      'READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS'
-    ],
+    requireOneOfPermittedActions: ['READ_ASSISTANCE'],
     title: (i18n) => i18n.childInformation.assistance.title,
     dataQa: 'assistance-collapsible'
   }),

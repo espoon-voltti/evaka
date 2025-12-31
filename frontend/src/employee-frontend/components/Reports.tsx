@@ -116,10 +116,9 @@ const Report = React.memo(function Report(props: ReportProps) {
 
 export default React.memo(function Reports() {
   const { i18n } = useTranslation()
-  const {
-    assistanceNeedDecisionCounts,
-    childDocumentDecisionNotificationCount
-  } = useContext(ReportNotificationContext)
+  const { childDocumentDecisionNotificationCount } = useContext(
+    ReportNotificationContext
+  )
 
   const permittedReports = useQueryResult(permittedReportsQuery())
   const permittedReportsSet = useMemo(
@@ -485,28 +484,6 @@ export default React.memo(function Reports() {
                       icon={faDatabase}
                       i18n={i18n.reports.raw}
                     />
-                  )
-                }
-              : null,
-            reports.has('ASSISTANCE_NEED_DECISIONS')
-              ? {
-                  name: i18n.reports.assistanceNeedDecisions.title,
-                  item: (
-                    <Report
-                      path="/reports/assistance-need-decisions"
-                      color={colors.main.m2}
-                      icon={faHandHolding}
-                      i18n={i18n.reports.assistanceNeedDecisions}
-                    >
-                      {assistanceNeedDecisionCounts
-                        .map(
-                          (unread) =>
-                            unread > 0 && (
-                              <UnreadCount key="unread">{unread}</UnreadCount>
-                            )
-                        )
-                        .getOrElse(null)}
-                    </Report>
                   )
                 }
               : null,

@@ -37,8 +37,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
@@ -792,116 +790,6 @@ RETURNING id
             val counts = insertAssistanceActionOptionRefs(it, row.actions)
             assert(counts.size == row.actions.size)
         }
-
-fun Database.Transaction.insert(
-    decision: DevAssistanceNeedPreschoolDecision
-): AssistanceNeedPreschoolDecisionId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO assistance_need_preschool_decision (
-    id, decision_number, child_id, status, annulment_reason, language, type, valid_from, valid_to,
-    extended_compulsory_education, extended_compulsory_education_info, 
-    granted_assistance_service, granted_interpretation_service, 
-    granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
-    decision_basis, basis_document_pedagogical_report, basis_document_psychologist_statement, 
-    basis_document_social_report, basis_document_doctor_statement, basis_document_other_or_missing, 
-    basis_document_other_or_missing_info, basis_documents_info, guardians_heard_on, other_representative_heard, 
-    other_representative_details, view_of_guardians, preparer_1_employee_id, preparer_1_title, preparer_1_phone_number, 
-    preparer_2_employee_id, preparer_2_title, preparer_2_phone_number, 
-    decision_maker_employee_id, decision_maker_title, 
-    sent_for_decision, decision_made, unread_guardian_ids
-) VALUES (
-    ${bind(decision.id)}, ${bind(decision.decisionNumber)}, ${bind(decision.childId)}, ${bind(decision.status)}, ${bind(decision.annulmentReason)},
-    ${bind(decision.form.language)}, ${bind(decision.form.type)}, ${bind(decision.form.validFrom)}, ${bind(decision.form.validTo)}, ${bind(decision.form.extendedCompulsoryEducation)},
-    ${bind(decision.form.extendedCompulsoryEducationInfo)}, ${bind(decision.form.grantedAssistanceService)}, ${bind(decision.form.grantedInterpretationService)}, 
-    ${bind(decision.form.grantedAssistiveDevices)}, ${bind(decision.form.grantedServicesBasis)}, ${bind(decision.form.selectedUnit)},
-    ${bind(decision.form.primaryGroup)}, ${bind(decision.form.decisionBasis)}, ${bind(decision.form.basisDocumentPedagogicalReport)},
-    ${bind(decision.form.basisDocumentPsychologistStatement)}, ${bind(decision.form.basisDocumentSocialReport)}, ${bind(decision.form.basisDocumentDoctorStatement)},
-    ${bind(decision.form.basisDocumentOtherOrMissing)}, ${bind(decision.form.basisDocumentOtherOrMissingInfo)}, ${bind(decision.form.basisDocumentsInfo)},
-    ${bind(decision.form.guardiansHeardOn)}, ${bind(decision.form.otherRepresentativeHeard)}, ${bind(decision.form.otherRepresentativeDetails)},
-    ${bind(decision.form.viewOfGuardians)}, ${bind(decision.form.preparer1EmployeeId)}, ${bind(decision.form.preparer1Title)},
-    ${bind(decision.form.preparer1PhoneNumber)}, ${bind(decision.form.preparer2EmployeeId)}, ${bind(decision.form.preparer2Title)},
-    ${bind(decision.form.preparer2PhoneNumber)}, ${bind(decision.form.decisionMakerEmployeeId)}, ${bind(decision.form.decisionMakerTitle)}, 
-    ${bind(decision.sentForDecision)}, ${bind(decision.decisionMade)}, ${bind(decision.unreadGuardianIds)}
-)
-"""
-            )
-        }
-        .execute()
-
-    decision.form.guardianInfo.forEach { guardian ->
-        createUpdate {
-                sql(
-                    """
-INSERT INTO assistance_need_preschool_decision_guardian (id, assistance_need_decision_id, person_id, is_heard, details)
-VALUES (${bind(guardian.id)}, ${bind(decision.id)}, ${bind(guardian.personId)}, ${bind(guardian.isHeard)}, ${bind(guardian.details)})
-"""
-                )
-            }
-            .execute()
-    }
-
-    return decision.id
-}
-
-fun Database.Transaction.insert(data: DevAssistanceNeedDecision): AssistanceNeedDecisionId {
-    val id =
-        createQuery {
-                sql(
-                    """
-INSERT INTO assistance_need_decision (
-  id, decision_number, child_id, validity_period, end_date_not_known, status, language, decision_made, sent_for_decision,
-  selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
-  structural_motivation_opt_special_group, structural_motivation_opt_small_group,
-  structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
-  structural_motivation_opt_additional_staff, structural_motivation_description, care_motivation,
-  service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
-  service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
-  expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-  assistance_levels, motivation_for_decision, decision_maker_employee_id,
-  decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
-  preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
-)
-VALUES (
-    ${bind(data.id)}, ${if (data.decisionNumber == null) insertDefault() else bind(data.decisionNumber)}, ${bind(data.childId)}, ${bind(data.validityPeriod)}, ${bind(data.endDateNotKnown)}, ${bind(data.status)},
-    ${bind(data.language)}, ${bind(data.decisionMade)}, ${bind(data.sentForDecision)}, ${bind(data.selectedUnit)}, ${bind(data.pedagogicalMotivation)},
-    ${bind(data.structuralMotivationOptions.smallerGroup)}, ${bind(data.structuralMotivationOptions.specialGroup)}, ${bind(data.structuralMotivationOptions.smallGroup)},
-    ${bind(data.structuralMotivationOptions.groupAssistant)}, ${bind(data.structuralMotivationOptions.childAssistant)}, ${bind(data.structuralMotivationOptions.additionalStaff)},
-    ${bind(data.structuralMotivationDescription)}, ${bind(data.careMotivation)}, ${bind(data.serviceOptions.consultationSpecialEd)},
-    ${bind(data.serviceOptions.partTimeSpecialEd)}, ${bind(data.serviceOptions.fullTimeSpecialEd)}, ${bind(data.serviceOptions.interpretationAndAssistanceServices)},
-    ${bind(data.serviceOptions.specialAides)}, ${bind(data.servicesMotivation)}, ${bind(data.expertResponsibilities)}, ${bind(data.guardiansHeardOn)},
-    ${bind(data.viewOfGuardians)}, ${bind(data.otherRepresentativeHeard)}, ${bind(data.otherRepresentativeDetails)}, ${bind(data.assistanceLevels)},
-    ${bind(data.motivationForDecision)}, ${bind(data.decisionMaker?.employeeId)}, ${bind(data.decisionMaker?.title)}, ${bind(data.preparedBy1?.employeeId)},
-    ${bind(data.preparedBy1?.title)}, ${bind(data.preparedBy2?.employeeId)}, ${bind(data.preparedBy2?.title)}, ${bind(data.preparedBy1?.phoneNumber)},
-    ${bind(data.preparedBy2?.phoneNumber)}, ${bind(data.unreadGuardianIds)}, ${bind(data.annulmentReason)}
-)
-RETURNING id
-"""
-                )
-            }
-            .exactlyOne<AssistanceNeedDecisionId>()
-
-    executeBatch(data.guardianInfo) {
-        sql(
-            """
-        INSERT INTO assistance_need_decision_guardian (
-            assistance_need_decision_id,
-            person_id,
-            is_heard,
-            details
-        ) VALUES (
-            ${bind(id)},
-            ${bind { it.personId }},
-            ${bind { it.isHeard }},
-            ${bind { it.details }}
-        )
-"""
-        )
-    }
-
-    return id
-}
 
 fun Database.Transaction.insertTestStaffAttendance(
     id: StaffAttendanceId = StaffAttendanceId(UUID.randomUUID()),

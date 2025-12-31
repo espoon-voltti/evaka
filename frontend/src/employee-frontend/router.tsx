@@ -21,10 +21,6 @@ import ApplicationsPage from './components/applications/ApplicationsPage'
 import ChildDocumentEditView from './components/child-documents/ChildDocumentEditView'
 import ChildDocumentReadView from './components/child-documents/ChildDocumentReadView'
 import ChildInformation from './components/child-information/ChildInformation'
-import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
-import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
-import AssistanceNeedPreschoolDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionEditPage'
-import AssistanceNeedPreschoolDecisionReadPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionReadPage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
 import TemplateEditorPage from './components/document-templates/template-editor/TemplateEditorPage'
@@ -53,9 +49,6 @@ import PersonalMobileDevicesPage from './components/personal-mobile-devices/Pers
 import PlacementDraftPage from './components/placement-plan/PlacementPlanDraft'
 import PlacementToolPage from './components/placement-tool/PlacementToolPage'
 import ReportApplications from './components/reports/Applications'
-import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
-import AssistanceNeedDecisionsReportDecision from './components/reports/AssistanceNeedDecisionsReportDecision'
-import AssistanceNeedDecisionsReportPreschoolDecision from './components/reports/AssistanceNeedDecisionsReportPreschoolDecision'
 import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import AttendanceReservation from './components/reports/AttendanceReservation'
 import AttendanceReservationByChild from './components/reports/AttendanceReservationByChild'
@@ -177,30 +170,6 @@ const routes: EmployeeRoute[] = [
     path: '/child-information/:id',
     component: ChildInformation,
     title: 'childInformation'
-  },
-  {
-    path: '/child-information/:childId/assistance-need-decision/:id',
-    component: AssistanceNeedDecisionPage,
-    title: 'assistanceNeedDecision',
-    hideDefaultTitle: true
-  },
-  {
-    path: '/child-information/:childId/assistance-need-decision/:id/edit',
-    component: AssistanceNeedDecisionEditPage,
-    title: 'assistanceNeedDecision',
-    hideDefaultTitle: true
-  },
-  {
-    path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
-    component: AssistanceNeedPreschoolDecisionReadPage,
-    title: 'assistanceNeedPreschoolDecision',
-    hideDefaultTitle: true
-  },
-  {
-    path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
-    component: AssistanceNeedPreschoolDecisionEditPage,
-    title: 'assistanceNeedPreschoolDecision',
-    hideDefaultTitle: true
   },
   { path: '/applications', component: ApplicationsPage, title: 'applications' },
   {
@@ -362,21 +331,6 @@ const routes: EmployeeRoute[] = [
     title: 'reports'
   },
   { path: '/reports/raw', component: ReportRaw, title: 'reports' },
-  {
-    path: '/reports/assistance-need-decisions/:id',
-    component: AssistanceNeedDecisionsReportDecision,
-    title: 'reports'
-  },
-  {
-    path: '/reports/assistance-need-preschool-decisions/:decisionId',
-    component: AssistanceNeedDecisionsReportPreschoolDecision,
-    title: 'reports'
-  },
-  {
-    path: '/reports/assistance-need-decisions',
-    component: AssistanceNeedDecisionsReport,
-    title: 'reports'
-  },
   {
     path: '/reports/family-daycare-meal-count',
     component: FamilyDaycareMealCount,

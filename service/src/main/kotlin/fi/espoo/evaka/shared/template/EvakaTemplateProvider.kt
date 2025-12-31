@@ -74,9 +74,4 @@ class EvakaTemplateProvider : ITemplateProvider {
     override fun getPreschoolDecisionPath(): String = "preschool/decision"
 
     override fun getPreparatoryDecisionPath(): String = "preparatory/decision"
-
-    override fun getAssistanceNeedDecisionPath(): String = "assistance-need/decision"
-
-    override fun getAssistanceNeedPreschoolDecisionPath(): String =
-        "assistance-need-preschool/decision"
 }
