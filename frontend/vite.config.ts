@@ -212,12 +212,12 @@ export default defineConfig(async (): Promise<UserConfig> => {
       }
     },
     server: {
-      port: 9099,
+      port: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10),
       warmup: {
         clientFiles: ['src/**/index.html']
       },
       proxy: {
-        '/api': 'http://localhost:3000'
+        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`
       }
     },
     resolve: {

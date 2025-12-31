@@ -39,6 +39,16 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
   }
 }
 
+const instance = env('EVAKA_INSTANCE', (value) => parseInt(value, 10)) ?? 0
+const frontendPort = 9099 + instance
+const idpPort = 9090 + instance
+
+const baseUrl =
+  env('BASE_URL', (url) => url) ?? `http://localhost:${frontendPort}`
+const devApiGwUrl = env('DEV_API_URL', (url) => url) ?? `${baseUrl}/api/dev-api`
+export const dummyIdpUrl =
+  env('DUMMY_IDP_URL', (url) => url) ?? `http://localhost:${idpPort}`
+
 const supervisorAad = '123dc92c-278b-4cea-9e54-2cc7e41555f3'
 const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
 const serviceWorkerAad = '00000000-0000-0000-0001-000000000000'
@@ -49,9 +59,6 @@ const staffAad = '00000000-0000-0000-0005-000000000000'
 const specialEducationTeacher = '00000000-0000-0000-0006-000000000000'
 const reportViewerAad = '00000000-0000-0000-0007-000000000000'
 
-const baseUrl = env('BASE_URL', (url) => url)
-const browserUrl = baseUrl ?? 'http://localhost:9099'
-
 const config = {
   playwright: {
     ci: env('CI', parseBoolean) ?? false,
@@ -60,16 +67,16 @@ const config = {
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
   },
-  apiUrl: `${browserUrl}/api`,
-  adminUrl: `${browserUrl}/employee/applications`,
-  employeeUrl: `${browserUrl}/employee`,
-  employeeLoginUrl: `${browserUrl}/employee/login`,
-  devApiGwUrl: `${baseUrl ?? 'http://localhost:3000'}/api/dev-api`,
-  enduserUrl: browserUrl,
-  mobileBaseUrl: browserUrl,
-  mobileUrl: `${browserUrl}/employee/mobile`,
-  enduserMessagesUrl: `${browserUrl}/messages`,
-  enduserLoginUrl: `${browserUrl}/login`,
+  apiUrl: `${baseUrl}/api`,
+  adminUrl: `${baseUrl}/employee/applications`,
+  employeeUrl: `${baseUrl}/employee`,
+  employeeLoginUrl: `${baseUrl}/employee/login`,
+  devApiGwUrl,
+  enduserUrl: baseUrl,
+  mobileBaseUrl: baseUrl,
+  mobileUrl: `${baseUrl}/employee/mobile`,
+  enduserMessagesUrl: `${baseUrl}/messages`,
+  enduserLoginUrl: `${baseUrl}/login`,
 
   // TODO: Remove these
   supervisorAad,
