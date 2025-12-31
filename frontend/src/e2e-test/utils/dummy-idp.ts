@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const baseUrl = 'http://localhost:9090'
+import { dummyIdpUrl } from '../config'
 
 export async function upsertDummyIdpUser(user: {
   ssn: string
@@ -11,7 +11,7 @@ export async function upsertDummyIdpUser(user: {
   surname: string
   comment?: string
 }): Promise<void> {
-  const res = await fetch(`${baseUrl}/idp/users`, {
+  const res = await fetch(`${dummyIdpUrl}/idp/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

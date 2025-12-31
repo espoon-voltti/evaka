@@ -9,7 +9,7 @@ evaka:
     min_date: "2020-03-01"
   max_attachments_per_user: 100
   local_s3:
-    url: "https://localhost:9876"
+    url: "https://localhost:${EVAKA_S3_PORT:9876}"
     access_key_id: "foo"
     secret_access_key: "bar"
 

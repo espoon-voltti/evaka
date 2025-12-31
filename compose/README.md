@@ -178,6 +178,34 @@ git push --delete origin playwright-test
 To dump local database run `./db.sh dump` and restore it with `./db.sh restore`.
 Optional dump name can be given to script, example `./db.sh dump my.dump`.
 
+## Running Multiple Instances
+
+If you work with multiple git worktrees and need to run several eVaka instances concurrently, you can use the `evaka-env.sh` shell activation script. Each instance uses offset ports to avoid conflicts.
+
+**Setup:** Add to your `.bashrc` or `.zshrc`:
+
+```bash
+source /path/to/evaka/compose/evaka-env.sh
+```
+
+**Usage:**
+
+```bash
+evaka use 1              # Activate instance 1
+docker compose up -d     # Uses project "evaka-1" automatically
+pm2 start                # Uses ~/.pm2-evaka-1 automatically
+evaka status             # Show current port configuration
+evaka deactivate         # Return to default instance
+```
+
+After activation, your prompt shows `(evaka:1) $` and all port-related environment variables are set. Access instance 1 at http://localhost:9100.
+
+| Service | Default | Instance 1 |
+|---------|---------|------------|
+| PostgreSQL | 5432 | 5433 |
+| Redis | 6379 | 6380 |
+| Frontend | 9099 | 9100 |
+
 ## Troubleshooting
 
 ### Database
