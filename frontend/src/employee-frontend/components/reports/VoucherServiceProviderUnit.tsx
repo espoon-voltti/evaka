@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import orderBy from 'lodash/orderBy'
-import range from 'lodash/range'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useSearchParams } from 'wouter'
@@ -51,6 +50,12 @@ import { renderResult } from '../async-rendering'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
 import ReportDownload from './ReportDownload'
+import {
+  maxYear,
+  minYear,
+  monthOptions,
+  yearOptions
+} from './VoucherServiceProviders'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { serviceVoucherReportForUnitQuery } from './queries'
 
@@ -114,13 +119,6 @@ const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
 const StyledTh = styled(Th)`
   white-space: nowrap;
 `
-
-const monthOptions = range(1, 13)
-
-const now = HelsinkiDateTime.now()
-const minYear = now.year - 4
-const maxYear = now.year
-const yearOptions = range(maxYear, minYear - 1, -1)
 
 type SortOption = 'child' | 'group' | 'assistanceNeedCoefficient'
 const sortOptions: Record<
