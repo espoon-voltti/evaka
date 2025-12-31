@@ -71,6 +71,7 @@ export const StyledTd = styled(Td)<StyledTdProps>`
 export const DayTd = styled(StyledTd)`
   padding: 0;
   vertical-align: top;
+  max-width: 110px;
 `
 
 export const DayTr = styled(Tr)<TrProps>`
