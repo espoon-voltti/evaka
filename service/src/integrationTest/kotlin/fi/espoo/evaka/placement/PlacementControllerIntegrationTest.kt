@@ -106,7 +106,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
+                .responseObject<PlacementResponse>(jackson2JsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -906,7 +906,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
+                .responseObject<PlacementResponse>(jackson2JsonMapper)
 
         val groupPlacementsAfter =
             result.get().placements.single { it.daycare.id == daycareId }.groupPlacements
@@ -944,7 +944,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/employee/children/$childId/placements")
                 .asUser(unitSupervisor)
-                .responseObject<PlacementResponse>(jsonMapper)
+                .responseObject<PlacementResponse>(jackson2JsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -977,7 +977,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, forbidden, _) =
             http
                 .put("/employee/placements/$restrictedId")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -986,7 +986,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, allowed, _) =
             http
                 .put("/employee/placements/$allowedId")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1022,7 +1022,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/$allowedId")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1059,7 +1059,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/${testPlacement.id}")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1085,7 +1085,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/$daycareId")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1126,7 +1126,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/${testPlacement.id}")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1155,7 +1155,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/${testPlacement.id}")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1193,7 +1193,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             http
                 .put("/employee/placements/${testPlacement.id}")
-                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .objectBody(bodyObject = body, mapper = jackson2JsonMapper)
                 .asUser(unitSupervisor)
                 .response()
 
@@ -1232,7 +1232,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         return http
             .post("/employee/placements/$placementId/group-placements")
             .asUser(unitSupervisor)
-            .objectBody(bodyObject = groupPlacement, mapper = jsonMapper)
+            .objectBody(bodyObject = groupPlacement, mapper = jackson2JsonMapper)
             .response()
     }
 
@@ -1280,7 +1280,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         return http
             .get("/employee/children/$childId/placements")
             .asUser(serviceWorker)
-            .responseObject<PlacementResponse>(jsonMapper)
+            .responseObject<PlacementResponse>(jackson2JsonMapper)
             .third
             .get()
             .placements

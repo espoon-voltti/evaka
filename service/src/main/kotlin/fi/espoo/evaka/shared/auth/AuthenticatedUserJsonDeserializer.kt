@@ -4,20 +4,20 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.ValueDeserializer
 
-class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
+class AuthenticatedUserJsonDeserializer : ValueDeserializer<AuthenticatedUser>() {
     private data class AllFields(
         val type: AuthenticatedUserType? = null,
         val id: UUID? = null,
-        val globalRoles: Set<UserRole> = emptySet(),
-        val allScopedRoles: Set<UserRole> = emptySet(),
+        val globalRoles: Set<UserRole>? = emptySet(),
+        val allScopedRoles: Set<UserRole>? = emptySet(),
         val employeeId: EmployeeId? = null,
     )
 
@@ -35,7 +35,7 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
             AuthenticatedUserType.employee -> {
                 AuthenticatedUser.Employee(
                     EmployeeId(user.id!!),
-                    user.globalRoles + user.allScopedRoles,
+                    (user.globalRoles ?: emptySet()) + (user.allScopedRoles ?: emptySet()),
                 )
             }
 

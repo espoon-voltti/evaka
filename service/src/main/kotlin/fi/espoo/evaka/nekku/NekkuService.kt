@@ -4,7 +4,6 @@
 package fi.espoo.evaka.nekku
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.NekkuEnv
@@ -50,6 +49,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import org.jdbi.v3.json.Json
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

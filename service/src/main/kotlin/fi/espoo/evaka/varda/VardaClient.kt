@@ -6,8 +6,6 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.common.util.concurrent.RateLimiter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
@@ -18,6 +16,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 
@@ -420,7 +420,7 @@ class VardaClient(
                     error { "Failed to get Varda API token: status=${response.code}" }
                 }
                 val body = response.body.string()
-                jsonMapper.readTree(body).get("token").asText()
+                jsonMapper.readTree(body).get("token").asString()
             }
         logger.info { "Successfully fetched new Varda API token with rate wait of $rate" }
         token = newToken
@@ -431,7 +431,7 @@ class VardaClient(
         response.code == 403 &&
             response.body.let { body ->
                 jsonMapper.readTree(body.string()).get("errors")?.any {
-                    it.get("error_code").asText() == "PE007"
+                    it.get("error_code").asString() == "PE007"
                 }
             } ?: false
 }

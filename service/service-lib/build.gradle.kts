@@ -28,7 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Jackson
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.module:jackson-module-kotlin")
 
     // Auth0 JWT
     implementation("com.auth0:java-jwt")
@@ -37,6 +37,4 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert")
 }
 
-ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
-}
+ktlint { version.set(libs.versions.ktlint.asProvider().get()) }

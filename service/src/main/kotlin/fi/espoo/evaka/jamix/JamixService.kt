@@ -5,8 +5,6 @@
 package fi.espoo.evaka.jamix
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
@@ -45,6 +43,8 @@ import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 

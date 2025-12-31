@@ -284,7 +284,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .get("/employee-mobile/units/$unitId")
                 .asUser(mobileUser)
                 .withMockedTime(now)
-                .responseObject<UnitInfo>(jsonMapper)
+                .responseObject<UnitInfo>(jackson2JsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -299,7 +299,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
                 .asUser(mobileUser)
                 .withMockedTime(now)
-                .responseObject<List<UnitStats>>(jsonMapper)
+                .responseObject<List<UnitStats>>(jackson2JsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

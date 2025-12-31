@@ -145,7 +145,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             http
                 .get("/employee/reports/family-conflicts", listOf("from" to from, "to" to to))
                 .asUser(testUser)
-                .responseObject<List<FamilyConflictReportRow>>(jsonMapper)
+                .responseObject<List<FamilyConflictReportRow>>(jackson2JsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())

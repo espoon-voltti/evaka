@@ -15,7 +15,7 @@ dependencies {
         api(libs.fuel.jackson)
         api("com.github.mwiede:jsch:2.27.7")
         api("com.google.guava:guava:33.5.0-jre")
-        api("com.networknt:json-schema-validator:2.0.1")
+        api("com.networknt:json-schema-validator:3.0.0")
         api("com.zaxxer:HikariCP:7.0.2")
         api("io.github.oshai:kotlin-logging-jvm:7.0.13")
         api("io.kotest:kotest-property:6.0.7")
@@ -23,7 +23,7 @@ dependencies {
         api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.2")
-        api("net.logstash.logback:logstash-logback-encoder:8.1")
+        api("net.logstash.logback:logstash-logback-encoder:9.0")
         api("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0")
         api("org.apache.commons:commons-csv:1.14.1")
         api("org.apache.commons:commons-text:1.15.0")
@@ -57,6 +57,7 @@ dependencies {
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.20.1"))
+    api(platform("tools.jackson:jackson-bom:3.0.1"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.3.2"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.57.0"))
     api(platform("io.netty:netty-bom:4.2.9.Final"))

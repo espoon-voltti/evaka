@@ -6,7 +6,6 @@ package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.Attachment
@@ -28,6 +27,7 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 data class Message(
     val id: MessageId,

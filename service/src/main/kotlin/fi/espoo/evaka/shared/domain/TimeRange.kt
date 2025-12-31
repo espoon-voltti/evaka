@@ -4,18 +4,18 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import tools.jackson.core.JsonGenerator
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 
 /** `end` is exclusive */
 @JsonSerialize(using = TimeRangeJsonSerializer::class)
@@ -187,16 +187,15 @@ data class TimeRange(
 
 private data class SerializableTimeRange(val start: LocalTime, val end: LocalTime)
 
-class TimeRangeJsonSerializer : JsonSerializer<TimeRange>() {
-    override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
-        return serializers.defaultSerializeValue(
-            SerializableTimeRange(value.start.inner, value.end.inner),
-            gen,
-        )
+class TimeRangeJsonSerializer : ValueSerializer<TimeRange>() {
+    override fun serialize(value: TimeRange?, gen: JsonGenerator?, ctxt: SerializationContext?) {
+        if (value == null || gen == null || ctxt == null) return
+        val serializer = ctxt.findValueSerializer(SerializableTimeRange::class.java)
+        serializer.serialize(SerializableTimeRange(value.start.inner, value.end.inner), gen, ctxt)
     }
 }
 
-class TimeRangeJsonDeserializer : JsonDeserializer<TimeRange>() {
+class TimeRangeJsonDeserializer : ValueDeserializer<TimeRange>() {
     override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeRange {
         val value = parser.readValueAs(SerializableTimeRange::class.java)
         return TimeRange(value.start, value.end)
