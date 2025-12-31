@@ -1544,7 +1544,11 @@ class ApplicationStateService(
             }
         }
 
-        if (application.preferences.serviceNeed?.partTime == true) {
+        if (
+            application.preferences.serviceNeed?.partTime == true &&
+                application.preferences.serviceNeed.startTime.isNotEmpty() &&
+                application.preferences.serviceNeed.endTime.isNotEmpty()
+        ) {
             val maxPartTimeDailyMinutes = 300 // 5 hours, max part-time daily duration
             val TIME_REGEXP = "^(?:[0-1][0-9]|2[0-3]):[0-5][0-9]\$".toRegex()
             val startTime = application.preferences.serviceNeed.startTime
