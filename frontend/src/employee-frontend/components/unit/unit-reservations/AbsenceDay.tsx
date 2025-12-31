@@ -43,6 +43,7 @@ export default React.memo(function AbsenceDay({ type, staffCreated }: Props) {
 
 const AbsenceTooltip = styled(Tooltip)`
   display: flex;
+  flex-direction: column;
   justify-content: space-evenly;
   padding: 8px;
   gap: 8px;

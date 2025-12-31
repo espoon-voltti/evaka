@@ -198,7 +198,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                 />
               </FixedSpaceRow>
               {legendVisible && (
-                <FixedSpaceRow alignItems="flex-start" spacing="XL">
+                <FixedSpaceColumn alignItems="flex-start" spacing="XL">
                   <LabelValueList
                     spacing="small"
                     horizontalSpacing="small"
@@ -208,7 +208,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   <FixedSpaceColumn spacing="xs">
                     <AbsenceLegend icons showAdditionalLegendItems />
                   </FixedSpaceColumn>
-                </FixedSpaceRow>
+                </FixedSpaceColumn>
               )}
             </div>
             {realtimeStaffAttendanceEnabled &&
