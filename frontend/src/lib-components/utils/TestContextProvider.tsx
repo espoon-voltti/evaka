@@ -161,6 +161,7 @@ export const testTranslations: Translations = {
     connectedPreferredStartDate: '',
     timeFormat: '',
     timeRequired: '',
+    exceedsMaxDuration: '',
     dateTooEarly: '',
     dateTooLate: '',
     unitNotSelected: '',

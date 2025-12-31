@@ -528,6 +528,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
+    fun `sendApplication - Part-time daycare application isn't sent if daily hours exceed maximum`() {
+        db.transaction { tx ->
+            tx.insertApplication(
+                appliedType = PlacementType.DAYCARE_PART_TIME,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13),
+                endTime = "15:00",
+            )
+        }
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.sendApplication(tx, serviceWorker, clock, applicationId)
+            }
+        }
+    }
+
+    @Test
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given

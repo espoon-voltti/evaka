@@ -14,7 +14,8 @@ import {
   requiredSelection,
   ssn,
   TIME_REGEXP,
-  validate
+  validate,
+  validDuration
 } from 'lib-common/form-validation'
 import type {
   ApplicationAttachment,
@@ -27,6 +28,10 @@ import type { Term } from './ApplicationEditor'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
+} & {
+  serviceNeed: ErrorsOf<ApplicationFormData['serviceNeed']> & {
+    partTimeLimit?: ErrorKey
+  }
 }
 
 export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
@@ -137,6 +142,8 @@ export const validateApplication = (
   const siblingSelected =
     form.unitPreference.vtjSiblings.find((s) => s.selected) !== undefined
 
+  const maxPartTimeDailyMinutes = 300 // 5 hours, max part-time daily duration
+
   return {
     serviceNeed: {
       preferredStartDate: validate(
@@ -187,6 +194,17 @@ export const validateApplication = (
           form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.endTime, 'timeRequired') ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
+          : undefined,
+      partTimeLimit:
+        apiData.type === 'DAYCARE' &&
+        featureFlags.daycareApplication.dailyTimes &&
+        form.serviceNeed.partTime
+          ? validDuration(
+              maxPartTimeDailyMinutes,
+              form.serviceNeed.startTime,
+              form.serviceNeed.endTime,
+              'exceedsMaxDuration'
+            )
           : undefined,
       assistanceDescription: form.serviceNeed.assistanceNeeded
         ? required(form.serviceNeed.assistanceDescription)
