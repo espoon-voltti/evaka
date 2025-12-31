@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.PredicateSql
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -1771,34 +1772,117 @@ private fun Iterable<MessageRecipient>.childIds() =
 private fun Iterable<MessageRecipient>.citizenIds() =
     filterIsInstance<MessageRecipient.Citizen>().map { it.id }
 
+private data class SenderAccount(
+    val type: AccountType,
+    val daycareGroupId: GroupId?,
+    val employeeId: EmployeeId?,
+)
+
 fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
-): List<Pair<MessageAccountId, ChildId?>> {
+): Set<Pair<MessageAccountId, ChildId?>> {
     val (starterRecipients, currentRecipients) = recipients.partition { it.isStarter() }
 
-    val filterPredicates =
-        PredicateSql.allNotNull(
-            if (filters?.yearsOfBirth?.isNotEmpty() == true) {
-                PredicateSql {
-                    where("date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})")
-                }
-            } else null,
-            if (filters?.shiftCare == true && filters.intermittentShiftCare) {
-                PredicateSql {
-                    where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])")
-                }
-            } else if (filters?.shiftCare == true) {
-                PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
-            } else if (filters?.intermittentShiftCare == true) {
-                PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type") }
-            } else null,
-            if (filters?.familyDaycare == true) {
-                PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
-            } else null,
+    val senderAccount =
+        createQuery {
+                sql(
+                    "SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}"
+                )
+            }
+            .mapTo<SenderAccount>()
+            .exactlyOne()
+
+    if (
+        senderAccount.type == AccountType.SERVICE_WORKER ||
+            senderAccount.type == AccountType.FINANCE
+    ) {
+        return createQuery {
+                sql(
+                    """
+                    SELECT acc.id AS account_id
+                    FROM person p
+                    JOIN message_account acc ON p.id = acc.person_id
+                    WHERE p.id = ANY(${bind(currentRecipients.citizenIds())})
+                    """
+                )
+            }
+            .toSet { column<MessageAccountId>("account_id") to null }
+    }
+
+    val currentRecipientsPredicate =
+        PredicateSql.anyNotNull(
+            currentRecipients
+                .areaIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
+            currentRecipients
+                .unitIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
+            currentRecipients
+                .groupIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("pl.group_id = ANY(${bind(it)})") } },
+            currentRecipients
+                .childIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
         )
+
+    val starterRecipientsPredicate =
+        PredicateSql.anyNotNull(
+            starterRecipients
+                .areaIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("d.care_area_id = ANY(${bind(it)})") } },
+            starterRecipients
+                .unitIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("pl.unit_id = ANY(${bind(it)})") } },
+            starterRecipients
+                .groupIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("dgp.daycare_group_id = ANY(${bind(it)})") } },
+            starterRecipients
+                .childIds()
+                .takeIf { it.isNotEmpty() }
+                ?.let { PredicateSql { where("pl.child_id = ANY(${bind(it)})") } },
+        )
+
+    val yearOfBirthFilter =
+        if (filters?.yearsOfBirth?.isNotEmpty() == true) {
+            PredicateSql {
+                where("date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})")
+            }
+        } else null
+
+    val filterByShiftCare = filters?.shiftCare == true || filters?.intermittentShiftCare == true
+    val shiftCareJoin =
+        QuerySql {
+                sql(
+                    """LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}"""
+                )
+            }
+            .takeIf { filterByShiftCare }
+    val shiftCareFilter =
+        if (filters?.shiftCare == true && filters.intermittentShiftCare) {
+            PredicateSql { where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])") }
+        } else if (filters?.shiftCare == true) {
+            PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
+        } else if (filters?.intermittentShiftCare == true) {
+            PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type") }
+        } else null
+    val familyDaycareFilter =
+        if (filters?.familyDaycare == true) {
+            PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
+        } else null
+
+    val currentFilterPredicates =
+        PredicateSql.allNotNull(yearOfBirthFilter, shiftCareFilter, familyDaycareFilter)
+    val starterFilterPredicates = PredicateSql.allNotNull(yearOfBirthFilter, familyDaycareFilter)
 
     val placementPredicate = { col: String ->
         if (filters?.placementTypes?.isNotEmpty() == true) {
@@ -1808,91 +1892,107 @@ fun Database.Read.getMessageAccountsForRecipients(
         } else PredicateSql.alwaysTrue()
     }
 
+    val currentSenderPredicate =
+        when (senderAccount.type) {
+            AccountType.MUNICIPAL -> {
+                PredicateSql.alwaysTrue()
+            }
+
+            AccountType.GROUP -> {
+                PredicateSql { where("pl.group_id = ${bind(senderAccount.daycareGroupId)}") }
+            }
+
+            AccountType.PERSONAL -> {
+                PredicateSql {
+                    where(
+                        """
+                        pl.group_id IS NOT NULL AND
+                        EXISTS (
+                            SELECT FROM employee_child_daycare_acl(${bind(date)}) acl
+                            WHERE acl.child_id = pl.child_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
+                        )
+                        """
+                    )
+                }
+            }
+
+            else -> {
+                PredicateSql.alwaysFalse()
+            }
+        }
+
+    val starterSenderPredicate =
+        when (senderAccount.type) {
+            AccountType.MUNICIPAL -> {
+                PredicateSql.alwaysTrue()
+            }
+
+            AccountType.GROUP -> {
+                PredicateSql {
+                    where("dgp.daycare_group_id = ${bind(senderAccount.daycareGroupId)}")
+                }
+            }
+
+            AccountType.PERSONAL -> {
+                PredicateSql {
+                    where(
+                        """
+                        dgp.daycare_group_id IS NOT NULL AND
+                        EXISTS (
+                            SELECT FROM daycare_acl acl
+                            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = ${bind(senderAccount.employeeId)}
+                        )
+                        """
+                    )
+                }
+            }
+
+            else -> {
+                PredicateSql.alwaysFalse()
+            }
+        }
+
     return createQuery {
             sql(
                 """
-WITH sender AS (
-    SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}
-), current_children AS (
+WITH current_children AS (
     SELECT DISTINCT pl.child_id
     FROM realized_placement_all(${bind(date)}) pl
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
-    LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-    JOIN sender ON TRUE
-    WHERE (d.care_area_id = ANY(${bind(currentRecipients.areaIds())})
-        OR pl.unit_id = ANY(${bind(currentRecipients.unitIds())})
-        OR pl.group_id = ANY(${bind(currentRecipients.groupIds())})
-        OR pl.child_id = ANY(${bind(currentRecipients.childIds())}))
-    AND ${predicate(filterPredicates.and(placementPredicate("placement_type")))}
-    AND (sender.type = 'MUNICIPAL'::message_account_type OR pl.group_id IS NOT NULL)
-    AND (
-        EXISTS (
-            SELECT 1
-            FROM child_daycare_acl(${bind(date)})
-            JOIN mobile_device_daycare_acl_view USING (daycare_id)
-            WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
-                AND child_id = pl.child_id
-        ) OR EXISTS (
-            SELECT 1
-            FROM employee_child_daycare_acl(${bind(date)})
-            WHERE employee_id = (SELECT sender.employee_id FROM sender)
-                AND child_id = pl.child_id
-        ) OR EXISTS (
-            SELECT 1
-            FROM sender
-            WHERE pl.group_id = sender.daycare_group_id
-        ) OR EXISTS (
-            SELECT 1
-            FROM sender
-            WHERE type = 'MUNICIPAL'
-        )
-    )
-    AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+    ${subqueryNotNull(shiftCareJoin)}
+    WHERE
+        ${predicate(currentRecipientsPredicate)} AND
+        ${predicate(currentFilterPredicates)} AND
+        ${predicate(placementPredicate("placement_type"))} AND
+        ${predicate(currentSenderPredicate)} AND
+        'MESSAGING' = ANY(d.enabled_pilot_features)
 ), starting_children AS (
     SELECT DISTINCT pl.child_id
     FROM placement pl
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id
     LEFT JOIN person p ON p.id = pl.child_id
-    LEFT JOIN service_need sn ON false
-    JOIN sender ON TRUE
-    WHERE (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)})
-        AND NOT EXISTS (
+    WHERE
+        (pl.start_date > ${bind(date)} OR dgp.start_date > ${bind(date)}) AND
+        NOT EXISTS (
             SELECT
             FROM daycare_group_placement earlier_dgp
-            JOIN placement earlier_p ON earlier_dgp.daycare_placement_id = earlier_p.id
+            JOIN placement earlier_pl ON earlier_dgp.daycare_placement_id = earlier_pl.id
             WHERE
-                earlier_p.child_id = pl.child_id AND
+                earlier_pl.child_id = pl.child_id AND
                 earlier_dgp.daycare_group_id = dgp.daycare_group_id AND
                 earlier_dgp.end_date < dgp.start_date AND
                 earlier_dgp.end_date >= ${bind(date)}
-        )
-        AND (d.care_area_id = ANY(${bind(starterRecipients.areaIds())})
-            OR pl.unit_id = ANY(${bind(starterRecipients.unitIds())})
-            OR dgp.daycare_group_id = ANY(${bind(starterRecipients.groupIds())})
-            OR pl.child_id = ANY(${bind(starterRecipients.childIds())}))
-    AND ${predicate(filterPredicates.and(placementPredicate("type")))}
-    AND (sender.type = 'MUNICIPAL'::message_account_type OR dgp.daycare_group_id IS NOT NULL)
-    AND (
-        EXISTS (
-            SELECT 1
-            FROM daycare_acl_view acl
-            WHERE acl.daycare_id = pl.unit_id AND acl.employee_id = (SELECT sender.employee_id FROM sender)
-        ) OR EXISTS (
-            SELECT 1
-            FROM sender
-            WHERE dgp.daycare_group_id = sender.daycare_group_id
-        ) OR EXISTS (
-            SELECT 1
-            FROM sender
-            WHERE type = 'MUNICIPAL'
-        )
-    )
-    AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+        ) AND
+        ${predicate(starterRecipientsPredicate)} AND
+        ${predicate(starterFilterPredicates)} AND
+        ${predicate(placementPredicate("type"))} AND
+        ${predicate(starterSenderPredicate)} AND
+        'MESSAGING' = ANY(d.enabled_pilot_features)
 ), children AS (
     SELECT child_id FROM current_children
-    UNION
+    UNION ALL
     SELECT child_id FROM starting_children
 )
 SELECT acc.id AS account_id, c.child_id
@@ -1900,23 +2000,16 @@ FROM children c
 JOIN guardian g ON g.child_id = c.child_id
 JOIN message_account acc ON g.guardian_id = acc.person_id
 
-UNION
+UNION ALL
 
 SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> ${bind(date)}
 JOIN message_account acc ON fp.parent_id = acc.person_id
-
-UNION
-
-SELECT acc.id AS account_id, NULL as child_id
-FROM person p
-JOIN message_account acc ON p.id = acc.person_id
-WHERE p.id = ANY(${bind(currentRecipients.citizenIds())})
 """
             )
         }
-        .toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
+        .toSet { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
 }
 
 fun Database.Transaction.markEmailNotificationAsSent(
