@@ -1429,7 +1429,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `service workers cannot send messages to children`() {
-            // when a message thread related to an application is created
             assertThrows<BadRequest> {
                 postNewThread(
                     title = "title",
@@ -1437,6 +1436,51 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = serviceWorker,
+                    relatedApplicationId = ApplicationId(UUID.randomUUID()),
+                )
+            }
+        }
+
+        @Test
+        fun `service workers cannot send messages to areas`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = serviceWorkerAccount,
+                    recipients = listOf(MessageRecipient.Area(testArea.id)),
+                    user = serviceWorker,
+                    relatedApplicationId = ApplicationId(UUID.randomUUID()),
+                )
+            }
+        }
+
+        @Test
+        fun `service workers cannot send messages to units`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = serviceWorkerAccount,
+                    recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
+                    user = serviceWorker,
+                    relatedApplicationId = ApplicationId(UUID.randomUUID()),
+                )
+            }
+        }
+
+        @Test
+        fun `service workers cannot send messages to groups`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = serviceWorkerAccount,
+                    recipients = listOf(MessageRecipient.Group(groupId1)),
                     user = serviceWorker,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
@@ -2717,6 +2761,48 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
                     recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = financeAdmin,
+                )
+            }
+        }
+
+        @Test
+        fun `finance cannot send messages to areas`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = financeAccount,
+                    recipients = listOf(MessageRecipient.Area(testArea.id)),
+                    user = financeAdmin,
+                )
+            }
+        }
+
+        @Test
+        fun `finance cannot send messages to units`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = financeAccount,
+                    recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
+                    user = financeAdmin,
+                )
+            }
+        }
+
+        @Test
+        fun `finance cannot send messages to groups`() {
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = financeAccount,
+                    recipients = listOf(MessageRecipient.Group(groupId1)),
                     user = financeAdmin,
                 )
             }
