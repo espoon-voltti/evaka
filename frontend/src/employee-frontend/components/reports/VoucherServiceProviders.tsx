@@ -58,13 +58,13 @@ const LockedDate = styled(FixedSpaceRow)`
   margin-bottom: ${defaultMargins.xs};
 `
 
-const monthOptions = range(1, 13)
+export const monthOptions = range(1, 13)
 
 const now = HelsinkiDateTime.now()
-const minYear = now.year - 4
+export const minYear = now.year - 4
 // Max year is next year if current date is in December and current year otherwise
-const maxYear = now.year + (now.month === 12 ? 1 : 0)
-const yearOptions = range(maxYear, minYear - 1, -1)
+export const maxYear = now.year + (now.month === 12 ? 1 : 0)
+export const yearOptions = range(maxYear, minYear - 1, -1)
 
 function getFilename(year: number, month: number, areaName: string) {
   const time = LocalDate.of(year, month, 1).formatExotic('yyyy-MM')
