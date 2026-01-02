@@ -149,7 +149,7 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             .containsExactly(Tuple(today, 0.8))
         assertThat(rawReportController.getRawReport(dbInstance(), user, clock, yesterday, today))
             .extracting({ it.day }, { it.caretakersRealized })
-            .containsExactly(Tuple(yesterday, 1.3), Tuple(today, 1.3))
+            .containsExactly(Tuple(yesterday, 0.5), Tuple(today, 0.8))
     }
 
     @Test
