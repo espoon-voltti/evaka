@@ -79,13 +79,16 @@ class TestDataSource(pool: HikariDataSource) : DataSource by pool
 private val globalLock = object {}
 private var testDataSource: TestDataSource? = null
 
+private val dbPort = System.getenv("EVAKA_DATABASE_PORT")?.toIntOrNull() ?: 5432
+private val dbUrl = "jdbc:postgresql://localhost:$dbPort/evaka_it"
+
 fun getTestDataSource(): TestDataSource =
     synchronized(globalLock) {
         testDataSource
             ?: TestDataSource(
                     HikariDataSource(
                             HikariConfig().apply {
-                                jdbcUrl = "jdbc:postgresql://localhost:5432/evaka_it"
+                                jdbcUrl = dbUrl
                                 username = "evaka_it"
                                 password = "evaka_it"
                             }
@@ -100,7 +103,7 @@ fun getTestDataSource(): TestDataSource =
                                 .validateMigrationNaming(true)
                                 .dataSource(
                                     PGSimpleDataSource().apply {
-                                        setUrl("jdbc:postgresql://localhost:5432/evaka_it")
+                                        setUrl(dbUrl)
                                         user = "evaka_migration_local"
                                         password = "flyway"
                                     }
