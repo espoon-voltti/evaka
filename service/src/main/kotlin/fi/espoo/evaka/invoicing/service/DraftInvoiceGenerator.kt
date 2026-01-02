@@ -51,9 +51,7 @@ object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
 }
 
 data class InvoiceGeneratorConfig(
-    val dailyFeeDivisorOperationalDaysOverride: Int?,
     val freeAbsenceGivesADailyRefund: Boolean,
-    val freeSickLeaveOnContractDays: Boolean,
     val maxContractDaySurplusThreshold: Int?,
     val temporaryDaycarePartDayAbsenceGivesADailyRefund: Boolean,
     val unplannedAbsencesAreContractSurplusDays: Boolean,
@@ -62,10 +60,7 @@ data class InvoiceGeneratorConfig(
     companion object {
         fun fromFeatureConfig(featureConfig: FeatureConfig) =
             InvoiceGeneratorConfig(
-                dailyFeeDivisorOperationalDaysOverride =
-                    featureConfig.dailyFeeDivisorOperationalDaysOverride,
                 freeAbsenceGivesADailyRefund = featureConfig.freeAbsenceGivesADailyRefund,
-                freeSickLeaveOnContractDays = featureConfig.freeSickLeaveOnContractDays,
                 maxContractDaySurplusThreshold = featureConfig.maxContractDaySurplusThreshold,
                 temporaryDaycarePartDayAbsenceGivesADailyRefund =
                     featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund,
@@ -822,26 +817,12 @@ class DraftInvoiceGenerator(
 
             val allSickLeaves =
                 operationalDays.all { date -> hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) }
-            val atLeastOneSickLeave =
-                operationalDays.any { date -> hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) }
-            val allSickLeavesOrPlannedAbsences =
-                operationalDays.all { date ->
-                    hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) ||
-                        hasAbsenceOnDate(date, AbsenceType.PLANNED_ABSENCE)
-                }
             val atLeast11SickLeaves =
                 operationalDays.count { date -> hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) } >=
                     11
             val allAbsences = operationalDays.all { date -> hasAbsenceOnDate(date) }
 
             if (allSickLeaves) {
-                FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
-            } else if (
-                config.freeSickLeaveOnContractDays &&
-                    atLeastOneSickLeave &&
-                    allSickLeavesOrPlannedAbsences
-            ) { // freeSickLeaveOnContractDays: The month becomes free if it has at least one
-                // sick leave, and a sick leave or planned absence on all days
                 FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
             } else if (atLeast11SickLeaves) {
                 FullMonthAbsenceType.SICK_LEAVE_11
@@ -855,8 +836,6 @@ class DraftInvoiceGenerator(
         val dailyFeeDivisor =
             if (config.useContractDaysAsDailyFeeDivisor && contractDaysPerMonth != null) {
                 contractDaysPerMonth
-            } else if (config.dailyFeeDivisorOperationalDaysOverride != null) {
-                config.dailyFeeDivisorOperationalDaysOverride
             } else {
                 invoiceInput.businessDayCount
             }

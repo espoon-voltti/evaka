@@ -246,8 +246,6 @@ val testFeatureConfig =
     FeatureConfig(
         valueDecisionCapacityFactorEnabled = false,
         citizenReservationThresholdHours = 150,
-        dailyFeeDivisorOperationalDaysOverride = null,
-        freeSickLeaveOnContractDays = false,
         freeAbsenceGivesADailyRefund = true,
         alwaysUseDaycareFinanceDecisionHandler = false,
         paymentNumberSeriesStart = 9000000000,

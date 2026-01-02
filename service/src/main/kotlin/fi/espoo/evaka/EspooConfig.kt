@@ -190,8 +190,6 @@ class EspooConfig {
         FeatureConfig(
             valueDecisionCapacityFactorEnabled = false,
             citizenReservationThresholdHours = 150,
-            dailyFeeDivisorOperationalDaysOverride = null,
-            freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
             freeAbsenceGivesADailyRefund = true,
             alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
             paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
