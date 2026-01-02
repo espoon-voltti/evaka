@@ -7,18 +7,10 @@ package fi.espoo.evaka
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
-import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration
 import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration
 
 @SpringBootApplication(
-    exclude =
-        [
-            DataSourceAutoConfiguration::class,
-            SecurityAutoConfiguration::class,
-            SecurityFilterAutoConfiguration::class,
-            TransactionAutoConfiguration::class,
-        ]
+    exclude = [DataSourceAutoConfiguration::class, TransactionAutoConfiguration::class]
 )
 class Main
 
