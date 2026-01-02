@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -262,6 +263,7 @@ class MessageService(
             threadId,
             type,
             isCopy,
+            sensitive,
             previousSenders,
             previousRecipients,
             applicationId,
@@ -280,6 +282,10 @@ class MessageService(
         if (!previousParticipants.containsAll(recipientAccountIds))
             throw Forbidden("Not authorized to widen the audience")
         if (user is AuthenticatedUser.Citizen) {
+            if (sensitive && user.authLevel == CitizenAuthLevel.WEAK)
+                throw Forbidden(
+                    "Weak authentication insufficient for replying to sensitive messages"
+                )
             val isApplication = applicationId != null
             if (
                 applicationStatus in
