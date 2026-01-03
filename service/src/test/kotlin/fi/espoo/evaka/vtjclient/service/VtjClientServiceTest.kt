@@ -7,7 +7,6 @@ package fi.espoo.evaka.vtjclient.service
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.Appender
-import com.fasterxml.jackson.core.JsonGenerator
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.VtjEnv
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -48,6 +47,7 @@ import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
 import org.springframework.ws.client.core.WebServiceMessageCallback
 import org.springframework.ws.client.core.WebServiceTemplate
+import tools.jackson.core.JsonGenerator
 
 const val STATUS_CREATE_QUERY = "creating request"
 const val STATUS_RESPONSE_RECEIVED = "response received"
@@ -345,12 +345,12 @@ class VtjClientServiceTest {
         marker.writeTo(mockGenerator)
 
         argumentCaptor<String>().apply {
-            verify(mockGenerator, times(3)).writeFieldName(capture())
+            verify(mockGenerator, times(3)).writePOJOProperty(capture(), any())
             assertThat(allValues).contains("meta", "status", "targetId")
         }
 
         argumentCaptor<Any>().apply {
-            verify(mockGenerator, times(3)).writeObject(capture())
+            verify(mockGenerator, times(3)).writePOJOProperty(any(), capture())
             assertThat(allValues)
                 .contains(
                     mapOf("queryName" to query.type.queryName),

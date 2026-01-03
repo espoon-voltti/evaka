@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.sficlient.rest
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.s3.Document
@@ -21,6 +20,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import tools.jackson.module.kotlin.readValue
 
 class Config(env: SfiEnv) {
     val urls =

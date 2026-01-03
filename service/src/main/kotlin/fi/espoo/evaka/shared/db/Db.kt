@@ -22,8 +22,8 @@ import org.jdbi.v3.core.mapper.ColumnMapperFactory
 import org.jdbi.v3.core.mapper.ColumnMappers
 import org.jdbi.v3.core.mapper.RowMapperFactory
 import org.jdbi.v3.core.mapper.SingleColumnMapper
-import org.jdbi.v3.jackson2.Jackson2Config
-import org.jdbi.v3.jackson2.Jackson2Plugin
+import org.jdbi.v3.jackson3.Jackson3Config
+import org.jdbi.v3.jackson3.Jackson3Plugin
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.util.PGobject
 
@@ -67,8 +67,8 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi
         .installPlugin(KotlinPlugin())
         .installPlugin(PostgresPlugin())
-        .installPlugin(Jackson2Plugin())
-    jdbi.getConfig(Jackson2Config::class.java).mapper = jsonMapper
+        .installPlugin(Jackson3Plugin())
+    jdbi.getConfig(Jackson3Config::class.java).mapper = jsonMapper
     jdbi.getConfig(ColumnMappers::class.java).coalesceNullPrimitivesToDefaults = false
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)

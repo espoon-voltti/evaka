@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.linkity
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.espoo.EspooAsyncJob
@@ -18,6 +17,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 private val MAX_DRIFT: Duration = Duration.ofMinutes(5)

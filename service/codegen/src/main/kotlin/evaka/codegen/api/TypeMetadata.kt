@@ -4,7 +4,6 @@
 
 package evaka.codegen.api
 
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
@@ -13,6 +12,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.starProjectedType
+import tools.jackson.databind.jsontype.TypeSerializer
 
 /** Immutable metadata about Kotlin classes and their TS representations */
 @JvmInline
@@ -133,9 +133,9 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
 private val jsonMapper = defaultJsonMapperBuilder().build()
 
 private fun typeSerializerFor(clazz: KClass<*>): TypeSerializer? =
-    jsonMapper.serializerProviderInstance.findTypeSerializer(
-        jsonMapper.typeFactory.constructType(clazz.java)
-    )
+    jsonMapper
+        ._serializationContext()
+        .findTypeSerializer(jsonMapper.typeFactory.constructType(clazz.java))
 
 fun TypeSerializer.discriminantValue(clazz: KClass<*>): String =
-    typeIdResolver.idFromValueAndType(null, clazz.java)
+    typeIdResolver.idFromValueAndType(jsonMapper._serializationContext(), null, clazz.java)

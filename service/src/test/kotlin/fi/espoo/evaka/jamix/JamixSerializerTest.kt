@@ -4,13 +4,12 @@
 
 package fi.espoo.evaka.jamix
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import tools.jackson.databind.json.JsonMapper
 
 class JamixSerializerTest {
 
@@ -77,7 +76,7 @@ class JamixSerializerTest {
                         put("textureID", 1234)
                     }
                 )
-                set<ObjectNode>("mealOrderRows", rows)
+                set("mealOrderRows", rows)
             }
 
         assertEquals(expectedJson, actualJson)

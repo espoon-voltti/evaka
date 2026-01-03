@@ -795,7 +795,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .post("/employee/placements")
             .asUser(serviceWorker)
             .withMockedTime(now)
-            .objectBody(body, mapper = jsonMapper)
+            .objectBody(body, mapper = jackson2JsonMapper)
             .response()
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
 
@@ -803,7 +803,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .get("/employee/children/$childId/placements")
                 .asUser(serviceWorker)
-                .responseObject<PlacementResponse>(jsonMapper)
+                .responseObject<PlacementResponse>(jackson2JsonMapper)
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
@@ -817,8 +817,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .put("/employee/placements/$id")
             .asUser(serviceWorker)
             .withMockedTime(now)
-            .objectBody(body, mapper = jsonMapper)
-            .responseObject<Placement>(jsonMapper)
+            .objectBody(body, mapper = jackson2JsonMapper)
+            .responseObject<Placement>(jackson2JsonMapper)
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -852,7 +852,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .post("/employee/parentships")
             .asUser(serviceWorker)
             .withMockedTime(now)
-            .objectBody(body, mapper = jsonMapper)
+            .objectBody(body, mapper = jackson2JsonMapper)
             .response()
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -871,7 +871,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
                 .withMockedTime(now)
                 .asUser(financeWorker)
-                .responseObject<PagedVoucherValueDecisionSummaries>(jsonMapper)
+                .responseObject<PagedVoucherValueDecisionSummaries>(jackson2JsonMapper)
         return data.get()
     }
 
@@ -885,13 +885,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .jsonBody("""{"page": 0, "pageSize": 100, "statuses": ["DRAFT"]}""")
                 .withMockedTime(now)
                 .asUser(financeWorker)
-                .responseObject<PagedVoucherValueDecisionSummaries>(jsonMapper)
+                .responseObject<PagedVoucherValueDecisionSummaries>(jackson2JsonMapper)
                 .also { (_, res, _) -> assertEquals(200, res.statusCode) }
 
         val decisionIds = data.get().data.map { it.id }
         http
             .post("/employee/value-decisions/send")
-            .objectBody(decisionIds, mapper = jsonMapper)
+            .objectBody(decisionIds, mapper = jackson2JsonMapper)
             .withMockedTime(now)
             .asUser(financeWorker)
             .response()
@@ -899,7 +899,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(expectedStatusCode, res.statusCode)
                 if (expectedStatusCode == 400) {
                     val responseJson = res.body().asString("application/json")
-                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").textValue()
+                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").asString()
                     assertEquals(expectedErrorCode, errorCode)
                 }
             }
@@ -943,7 +943,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     ) {
         http
             .post("/employee/value-decisions/mark-sent")
-            .objectBody(decisionIds, mapper = jsonMapper)
+            .objectBody(decisionIds, mapper = jackson2JsonMapper)
             .withMockedTime(now)
             .asUser(financeWorker)
             .response()
@@ -951,7 +951,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(expectedStatusCode, res.statusCode)
                 if (expectedStatusCode == 400) {
                     val responseJson = res.body().asString("application/json")
-                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").textValue()
+                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").asString()
                     assertEquals(expectedErrorCode, errorCode)
                 }
             }

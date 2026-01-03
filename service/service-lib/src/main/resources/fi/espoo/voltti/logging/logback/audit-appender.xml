@@ -20,7 +20,7 @@ Audit appender logback configuration provided for import
             <onMatch>NEUTRAL</onMatch>
         </filter>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <jsonFactoryDecorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
+            <decorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
             <includeTags>false</includeTags>
             <excludeMdcKeyName>spanExportable</excludeMdcKeyName>
             <excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>
@@ -38,13 +38,13 @@ Audit appender logback configuration provided for import
             </fieldNames>
             <customFields>
                 {
-                    "type": "app-audit-events",
-                    "appBuild": "${APP_BUILD}",
-                    "appCommit": "${APP_COMMIT}",
-                    "appName": "${appName}",
-                    "env": "${VOLTTI_ENV}",
-                    "hostIp": "${HOST_IP}",
-                    "version": 1
+                "type": "app-audit-events",
+                "appBuild": "${APP_BUILD}",
+                "appCommit": "${APP_COMMIT}",
+                "appName": "${appName}",
+                "env": "${VOLTTI_ENV}",
+                "hostIp": "${HOST_IP}",
+                "version": 1
                 }
             </customFields>
             <timeZone>UTC</timeZone>

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.util.stream.Stream
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import tools.jackson.module.kotlin.readValue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PasswordTest {
