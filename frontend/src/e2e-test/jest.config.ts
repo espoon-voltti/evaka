@@ -8,6 +8,7 @@ const config: Config.InitialOptions = {
   displayName: 'e2e-test',
   preset: 'ts-jest',
   testEnvironment: './jest-environment.cjs',
-  testRunner: 'jest-circus/runner'
+  testRunner: 'jest-circus/runner',
+  testPathIgnorePatterns: ['\\.pw\\.spec\\.ts$']
 }
 export default config

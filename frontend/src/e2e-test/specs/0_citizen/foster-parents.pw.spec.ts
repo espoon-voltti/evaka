@@ -1,0 +1,472 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId, randomId } from 'lib-common/id-type'
+import LocalTime from 'lib-common/local-time'
+
+import config from '../../config'
+import {
+  execSimpleApplicationActions,
+  runPendingAsyncJobs
+} from '../../dev-api'
+import {
+  Fixture,
+  testAdult,
+  testCareArea,
+  testDaycare
+} from '../../dev-api/fixtures'
+import {
+  createFosterParent,
+  createMessageAccounts,
+  getApplicationDecisions,
+  resetServiceState
+} from '../../generated/api-clients'
+import type { DevPerson } from '../../generated/api-types'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import { CitizenChildPage } from '../../pages/citizen/citizen-children'
+import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
+import MessagesPage from '../../pages/employee/messages/messages-page'
+import { test } from '../../playwright'
+import { waitUntilEqual } from '../../utils'
+import { minimalDaycareForm } from '../../utils/application-forms'
+import type { Page } from '../../utils/page'
+import { employeeLogin, enduserLogin } from '../../utils/user'
+
+const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
+const mockedDate = mockedNow.toLocalDate()
+
+test.use({
+  evakaOptions: {
+    mockedTime: mockedNow
+  }
+})
+
+test.describe('Foster parents', () => {
+  let activeRelationshipPage: Page
+  let activeRelationshipHeader: CitizenHeader
+  let fosterParent: DevPerson
+  let fosterChild: DevPerson
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    const employee = await Fixture.employee().save()
+
+    fosterParent = await testAdult.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    fosterChild = await Fixture.person({ ssn: '120220A995L' }).saveChild({
+      updateMockVtj: true
+    })
+    await createFosterParent({
+      body: [
+        {
+          id: randomId(),
+          childId: fosterChild.id,
+          parentId: fosterParent.id,
+          validDuring: new DateRange(mockedDate, mockedDate),
+          modifiedAt: mockedNow,
+          modifiedBy: evakaUserId(employee.id)
+        }
+      ]
+    })
+
+    activeRelationshipPage = evaka
+    await enduserLogin(activeRelationshipPage, testAdult)
+    activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
+  })
+
+  test('Foster parent can create a daycare application and accept a daycare decision', async ({
+    newEvakaPage
+  }) => {
+    const applicationsPage = new CitizenApplicationsPage(activeRelationshipPage)
+
+    await activeRelationshipHeader.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fosterChild.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+
+    const applicationForm = minimalDaycareForm().form
+    await editorPage.fillData(applicationForm)
+    await editorPage.assertChildAddress(
+      `${fosterChild.streetAddress ?? ''}, ${fosterChild.postalCode ?? ''} ${
+        fosterChild.postOffice ?? ''
+      }`
+    )
+    await editorPage.verifyAndSend({ hasOtherGuardian: false })
+
+    await applicationsPage.assertApplicationIsListed(
+      applicationId,
+      'Varhaiskasvatushakemus',
+      applicationForm.serviceNeed?.preferredStartDate ?? '',
+      'Lähetetty'
+    )
+
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL',
+        'CONFIRM_DECISION_MAILED'
+      ],
+      mockedNow
+    )
+
+    const citizenDecisionsPage = new CitizenDecisionsPage(
+      activeRelationshipPage
+    )
+    const decisions = await getApplicationDecisions({ applicationId })
+    const decisionId = decisions[0].id
+    await activeRelationshipHeader.selectTab('decisions')
+    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      applicationId,
+      1
+    )
+    await responsePage.acceptDecision(decisionId)
+    await responsePage.assertDecisionStatus(decisionId, 'Vahvistettu')
+    await responsePage.assertPageTitle(0)
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+    await endedRelationshipHeader.selectTab('applications')
+    await endedRelationshipPage
+      .findByDataQa('applications-list')
+      .assertAttributeEquals('data-isloading', 'false')
+    await endedRelationshipPage
+      .findByDataQa(`child-${fosterChild.id}`)
+      .waitUntilHidden()
+  })
+
+  test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async ({
+    newEvakaPage
+  }) => {
+    const fosterChildNoSsn = await Fixture.person({ ssn: null }).saveChild()
+    const employee = await Fixture.employee().save()
+
+    await createFosterParent({
+      body: [
+        {
+          id: randomId(),
+          childId: fosterChildNoSsn.id,
+          parentId: fosterParent.id,
+          validDuring: new DateRange(mockedDate, mockedDate),
+          modifiedAt: mockedNow,
+          modifiedBy: evakaUserId(employee.id)
+        }
+      ]
+    })
+    await activeRelationshipPage.reload()
+    const applicationsPage = new CitizenApplicationsPage(activeRelationshipPage)
+
+    await activeRelationshipHeader.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fosterChildNoSsn.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+
+    const applicationForm = minimalDaycareForm().form
+    await editorPage.fillData(applicationForm)
+    await editorPage.assertChildAddress(
+      `${fosterChildNoSsn.streetAddress ?? ''}, ${fosterChildNoSsn.postalCode ?? ''} ${
+        fosterChildNoSsn.postOffice ?? ''
+      }`
+    )
+    await editorPage.verifyAndSend({ hasOtherGuardian: false })
+
+    await applicationsPage.assertApplicationIsListed(
+      applicationId,
+      'Varhaiskasvatushakemus',
+      applicationForm.serviceNeed?.preferredStartDate ?? '',
+      'Lähetetty'
+    )
+
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL',
+        'CONFIRM_DECISION_MAILED'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
+
+    const citizenDecisionsPage = new CitizenDecisionsPage(
+      activeRelationshipPage
+    )
+    const decisions = await getApplicationDecisions({ applicationId })
+    const decisionId = decisions[0].id
+    await activeRelationshipHeader.selectTab('decisions')
+    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      applicationId,
+      1
+    )
+    await responsePage.acceptDecision(decisionId)
+    await responsePage.assertDecisionStatus(decisionId, 'Vahvistettu')
+    await responsePage.assertPageTitle(0)
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+    await endedRelationshipHeader.selectTab('applications')
+    await endedRelationshipPage
+      .findByDataQa('applications-list')
+      .assertAttributeEquals('data-isloading', 'false')
+    await endedRelationshipPage
+      .findByDataQa(`child-${fosterChildNoSsn.id}`)
+      .waitUntilHidden()
+  })
+
+  test('Foster parent can receive and reply to messages', async ({
+    newEvakaPage
+  }) => {
+    const unitId = testDaycare.id
+    const group = await Fixture.daycareGroup({ daycareId: unitId }).save()
+    const placementFixture = await Fixture.placement({
+      childId: fosterChild.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placementFixture.id,
+      daycareGroupId: group.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unitId)
+      .save()
+    await createMessageAccounts()
+    let unitSupervisorPage = await newEvakaPage({
+      mockedTime: mockedNow.subMinutes(1)
+    })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    let messagesPage = new MessagesPage(unitSupervisorPage)
+    const message = {
+      title: 'Message title',
+      content: 'Message content'
+    }
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage(message)
+    await runPendingAsyncJobs(mockedNow)
+
+    await activeRelationshipPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(
+      activeRelationshipPage,
+      'desktop'
+    )
+    await citizenMessagesPage.assertThreadContent(message)
+    const reply = 'Message reply'
+    await citizenMessagesPage.replyToFirstThread(reply)
+    await runPendingAsyncJobs(mockedNow.addMinutes(1))
+    await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+
+    unitSupervisorPage = await newEvakaPage({
+      mockedTime: mockedNow.addMinutes(1)
+    })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+    messagesPage = new MessagesPage(unitSupervisorPage)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.receivedMessage.click()
+    await messagesPage.assertMessageContent(1, reply)
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    await endedRelationshipPage.goto(config.enduserMessagesUrl)
+    const endedCitizenMessagesPage = new CitizenMessagesPage(
+      endedRelationshipPage,
+      'desktop'
+    )
+    await endedCitizenMessagesPage.openFirstThread()
+    await endedCitizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
+  })
+
+  test('Foster parent can read a pedagogical document', async ({
+    newEvakaPage
+  }) => {
+    await Fixture.placement({
+      childId: fosterChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    const document = await Fixture.pedagogicalDocument({
+      childId: fosterChild.id,
+      description: 'e2e test description',
+      createdAt: mockedNow,
+      modifiedAt: mockedNow
+    }).save()
+    await activeRelationshipPage.reload()
+
+    await activeRelationshipHeader.openChildPage(fosterChild.id)
+    const childPage = new CitizenChildPage(activeRelationshipPage)
+    await childPage.openCollapsible('pedagogical-documents')
+    const pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(
+      activeRelationshipPage
+    )
+    await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
+      document.id,
+      mockedNow.toLocalDate().format(),
+      document.description
+    )
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+    await endedRelationshipHeader.assertNoChildrenTab()
+  })
+
+  test('Foster parent can terminate a daycare placement', async ({
+    newEvakaPage
+  }) => {
+    const endDate = mockedDate.addYears(1)
+    await Fixture.placement({
+      childId: fosterChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: endDate
+    }).save()
+    await activeRelationshipPage.reload()
+
+    await activeRelationshipHeader.openChildPage(fosterChild.id)
+    const childPage = new CitizenChildPage(activeRelationshipPage)
+    await childPage.openCollapsible('termination')
+
+    await childPage.assertTerminatedPlacementCount(0)
+    await childPage.assertTerminatablePlacementCount(1)
+    await childPage.togglePlacement(
+      `Varhaiskasvatus, ${testDaycare.name}, voimassa ${endDate.format()}`
+    )
+    await childPage.fillTerminationDate(mockedDate)
+    await childPage.submitTermination()
+    await childPage.assertTerminatablePlacementCount(0)
+
+    await childPage.assertTerminatedPlacementCount(1)
+    await waitUntilEqual(
+      () => childPage.getTerminatedPlacements(),
+      [
+        `Varhaiskasvatus, ${
+          testDaycare.name
+        }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      ]
+    )
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+    await endedRelationshipHeader.assertNoChildrenTab()
+  })
+
+  test('Foster parent can create a repeating reservation', async ({
+    newEvakaPage
+  }) => {
+    await Fixture.placement({
+      childId: fosterChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await activeRelationshipPage.reload()
+    const firstReservationDay = mockedDate.addDays(14)
+
+    await activeRelationshipHeader.selectTab('calendar')
+    const calendarPage = new CitizenCalendarPage(
+      activeRelationshipPage,
+      'desktop'
+    )
+    const reservationsModal = await calendarPage.openReservationModal()
+    await reservationsModal.createRepeatingDailyReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      '08:00',
+      '16:00'
+    )
+
+    await calendarPage.assertDay(firstReservationDay, [
+      {
+        childIds: [fosterChild.id],
+        text: '08:00–16:00'
+      }
+    ])
+
+    const endedRelationshipPage = await newEvakaPage({
+      mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await enduserLogin(endedRelationshipPage, testAdult)
+    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+    await endedRelationshipHeader.assertNoTab('calendar')
+  })
+
+  test('Foster parent can see calendar events for foster children', async () => {
+    const placement = await Fixture.placement({
+      childId: fosterChild.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    const daycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id,
+      name: 'Group 1'
+    }).save()
+    await Fixture.groupPlacement({
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1),
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placement.id
+    }).save()
+    const groupEventId = randomId<CalendarEventId>()
+    await Fixture.calendarEvent({
+      id: groupEventId,
+      title: 'Group-wide event',
+      description: 'Whole group',
+      period: new FiniteDateRange(mockedDate, mockedDate),
+      modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
+    }).save()
+    await Fixture.calendarEventAttendee({
+      calendarEventId: groupEventId,
+      unitId: testDaycare.id,
+      groupId: daycareGroup.id
+    }).save()
+    await activeRelationshipPage.reload()
+    await activeRelationshipHeader.selectTab('calendar')
+    const calendarPage = new CitizenCalendarPage(
+      activeRelationshipPage,
+      'desktop'
+    )
+    await calendarPage.assertEventCount(mockedDate, 1)
+    const dayView = await calendarPage.openDayView(mockedDate)
+    await dayView.assertEvent(fosterChild.id, groupEventId, {
+      title: 'Group-wide event / Group 1',
+      description: 'Whole group'
+    })
+  })
+})
