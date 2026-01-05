@@ -71,7 +71,12 @@ export default React.memo(function DateRangePickerLowLevel({
   )
 
   return (
-    <FixedSpaceRow data-qa={dataQa} aria-labelledby={ariaId} role="group">
+    <FixedSpaceRow
+      data-qa={dataQa}
+      aria-labelledby={ariaId}
+      role="group"
+      flexWrap="wrap"
+    >
       <DatePickerLowLevel
         value={start}
         onChange={handleChangeStart}
