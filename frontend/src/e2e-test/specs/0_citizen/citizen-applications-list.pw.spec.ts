@@ -20,42 +20,43 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-import '../../jest'
 
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 })
 
-async function openApplicationsPage(citizen: DevPerson) {
-  const page = await Page.open({
-    mockedTime: now,
-    citizenCustomizations: {
-      featureFlags: {
-        showMetadataToCitizen: true
-      }
-    }
-  })
+async function openApplicationsPage(page: Page, citizen: DevPerson) {
   await enduserLogin(page, citizen)
   const header = new CitizenHeader(page)
   await header.selectTab('applications')
   const applicationsPage = new CitizenApplicationsPage(page)
   return {
-    page,
     header,
     applicationsPage
   }
 }
 
-describe('Citizen applications list', () => {
-  test('Citizen sees their children and applications', async () => {
+test.describe('Citizen applications list', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: now,
+      citizenCustomizations: {
+        featureFlags: {
+          showMetadataToCitizen: true
+        }
+      }
+    }
+  })
+
+  test('Citizen sees their children and applications', async ({ evaka }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -66,7 +67,7 @@ describe('Citizen applications list', () => {
       true
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
     const child = testChild
     await applicationsPage.assertChildIsShown(
@@ -81,7 +82,9 @@ describe('Citizen applications list', () => {
     )
   })
 
-  test('Guardian sees their children and applications made by the other guardian', async () => {
+  test('Guardian sees their children and applications made by the other guardian', async ({
+    evaka
+  }) => {
     const child = await Fixture.person({ ssn: '010116A9219' }).saveChild({
       updateMockVtj: true
     })
@@ -102,7 +105,10 @@ describe('Citizen applications list', () => {
       true
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(otherGuardian)
+    const { applicationsPage } = await openApplicationsPage(
+      evaka,
+      otherGuardian
+    )
 
     await applicationsPage.assertChildIsShown(
       child.id,
@@ -116,7 +122,9 @@ describe('Citizen applications list', () => {
     )
   })
 
-  test('Citizen sees application that is waiting for decision acceptance', async () => {
+  test('Citizen sees application that is waiting for decision acceptance', async ({
+    evaka
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -136,9 +144,9 @@ describe('Citizen applications list', () => {
       ],
       now
     )
-    const { page, applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
-    await page.reload()
+    await evaka.reload()
     await applicationsPage.assertApplicationIsListed(
       application.id,
       'Varhaiskasvatushakemus',
@@ -147,7 +155,7 @@ describe('Citizen applications list', () => {
     )
   })
 
-  test('Citizen can cancel a draft application', async () => {
+  test('Citizen can cancel a draft application', async ({ evaka }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -159,13 +167,13 @@ describe('Citizen applications list', () => {
       'CREATED'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })
 
-  test('Citizen can cancel a sent application', async () => {
+  test('Citizen can cancel a sent application', async ({ evaka }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -177,13 +185,15 @@ describe('Citizen applications list', () => {
       'SENT'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })
 
-  test('Citizen can open and view draft application has no metadata', async () => {
+  test('Citizen can open and view draft application has no metadata', async ({
+    evaka
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -195,12 +205,14 @@ describe('Citizen applications list', () => {
       'CREATED'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
     await applicationsPage.assertApplicationHasNoMetadata(application.id)
   })
 
-  test('Citizen can open and view sent application metadata', async () => {
+  test('Citizen can open and view sent application metadata', async ({
+    evaka
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -212,7 +224,7 @@ describe('Citizen applications list', () => {
       'SENT'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(testAdult)
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
 
     await applicationsPage.viewApplicationMetadata(application.id)
   })

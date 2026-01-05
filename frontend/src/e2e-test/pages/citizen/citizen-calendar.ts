@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
 import uniq from 'lodash/uniq'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
