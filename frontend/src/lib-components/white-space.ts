@@ -8,6 +8,7 @@ import { tabletMin } from './breakpoints'
 
 export type SpacingSize =
   | 'zero'
+  | 'x3s'
   | 'xxs'
   | 'xs'
   | 's'
@@ -22,6 +23,7 @@ export type SpacingSize =
 export function isSpacingSize(x: unknown): x is SpacingSize {
   return (
     x === 'zero' ||
+    x === 'x3s' ||
     x === 'xxs' ||
     x === 'xs' ||
     x === 's' ||
@@ -37,6 +39,7 @@ export function isSpacingSize(x: unknown): x is SpacingSize {
 
 export const defaultMargins: Record<SpacingSize, string> = {
   zero: '0px',
+  x3s: '2px',
   xxs: '4px',
   xs: '8px',
   s: '16px',
