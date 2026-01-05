@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 

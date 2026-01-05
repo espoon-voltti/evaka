@@ -10,7 +10,7 @@ import type {
 } from 'playwright'
 import playwright from 'playwright'
 
-import type { EvakaBrowserContextOptions } from './browser'
+import { initScript, type EvakaBrowserContextOptions } from './browser'
 import config from './config'
 import { setTestMode } from './generated/api-clients'
 
@@ -135,30 +135,6 @@ function configurePage(page: Page) {
   })
 }
 
-const initScript = (options: EvakaBrowserContextOptions) => {
-  const override = (key: keyof EvakaBrowserContextOptions) => {
-    const value = options[key]
-    return value
-      ? `window.evaka.${key} = JSON.parse('${JSON.stringify(value)}')`
-      : ''
-  }
-  const { mockedTime } = options
-
-  return `
-window.evaka = window.evaka ?? {}
-window.evaka.automatedTest = true
-${
-  mockedTime
-    ? `window.evaka.mockedTime = new Date('${mockedTime.toString()}')`
-    : ''
-}
-${override('citizenCustomizations')}
-${override('commonCustomizations')}
-${override('employeeCustomizations')}
-${override('employeeMobileCustomizations')}
-  `
-}
-
 export async function newBrowserContext(
   options?: BrowserContextOptions & EvakaBrowserContextOptions
 ): Promise<BrowserContext> {
@@ -178,14 +154,6 @@ export async function newBrowserContext(
   })
   ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
-  await ctx.addInitScript({
-    content: initScript({
-      mockedTime,
-      citizenCustomizations,
-      employeeCustomizations,
-      employeeMobileCustomizations,
-      commonCustomizations
-    })
-  })
+  await ctx.addInitScript({ content: initScript(options ?? {}) })
   return ctx
 }

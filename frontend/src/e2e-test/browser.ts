@@ -37,6 +37,30 @@ export interface EvakaBrowserContextOptions {
   commonCustomizations?: DeepPartial<JsonOf<CommonCustomizations>>
 }
 
+export const initScript = (options: EvakaBrowserContextOptions) => {
+  const override = (key: keyof EvakaBrowserContextOptions) => {
+    const value = options[key]
+    return value
+      ? `window.evaka.${key} = JSON.parse('${JSON.stringify(value)}')`
+      : ''
+  }
+  const { mockedTime } = options
+
+  return `
+window.evaka = window.evaka ?? {}
+window.evaka.automatedTest = true
+${
+  mockedTime
+    ? `window.evaka.mockedTime = new Date('${mockedTime.toString()}')`
+    : ''
+}
+${override('citizenCustomizations')}
+${override('commonCustomizations')}
+${override('employeeCustomizations')}
+${override('employeeMobileCustomizations')}
+  `
+}
+
 export async function captureTextualDownload(
   download: Download
 ): Promise<string> {
