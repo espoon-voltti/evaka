@@ -90,6 +90,7 @@ export const AttachmentSection = React.memo(function AttachmentSection({
         ref={(el) => attachmentHandler.setElement(attachmentType, el)}
         data-qa={attachmentSectionDataQa(attachmentType)}
         {...fileUploadProps(attachmentType)}
+        getDownloadUrl={getAttachmentUrl}
       />
     </>
   )
