@@ -337,9 +337,9 @@ export default React.memo(function MessageEditor({
               onSuccess={onClose}
               data-qa="send-message-btn"
               data-qa-modal="many-recipients-warning"
-              confirmationTitle={
-                i18n.messages.messageEditor.manyRecipientsWarning.title
-              }
+              confirmationTitle={i18n.messages.messageEditor.manyRecipientsWarning.title(
+                preflightResult.value.numberOfRecipientAccounts
+              )}
               confirmationText={i18n.messages.messageEditor.manyRecipientsWarning.text(
                 preflightResult.value.numberOfRecipientAccounts
               )}
