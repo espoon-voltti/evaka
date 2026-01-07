@@ -243,6 +243,17 @@ const StyledButton = styled.button`
   ${bottomNavClickableStyles}
 `
 
+const ResponsiveLanguageRow = styled(FixedSpaceRow)`
+  @media (max-width: 335px) {
+    > * {
+      margin-right: ${defaultMargins.x3s};
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+`
+
 const ChildrenLink = React.memo(function ChildrenLink({
   toggleChildrenMenu,
   closeMenu
@@ -355,7 +366,7 @@ const Menu = React.memo(function Menu({
   return (
     <ModalAccessibilityWrapper>
       <MenuContainer>
-        <FixedSpaceRow spacing="xs" justifyContent="flex-end">
+        <ResponsiveLanguageRow spacing="xs" justifyContent="flex-end">
           {langs.map((l) => (
             <SelectionChip
               key={l}
@@ -364,7 +375,7 @@ const Menu = React.memo(function Menu({
               onChange={() => setLang(l)}
             />
           ))}
-        </FixedSpaceRow>
+        </ResponsiveLanguageRow>
         <Separator />
         <DropDownLink
           data-qa="sub-nav-menu-applications"

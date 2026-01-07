@@ -83,12 +83,22 @@ const GridContainer = styled.div<{
 const GridLabel = styled(LabelLike)<{ index: number }>`
   grid-column: 1;
   grid-row: ${({ index }) => index};
+
+  @media (max-width: 475px) {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
 `
 
 const Value = styled.div<{ index: number; width?: string }>`
   grid-column: 2;
   grid-row: ${({ index }) => index};
   ${({ width }) => width && `width: ${width};`};
+
+  @media (max-width: 475px) {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
 `
 
 const OnlyValue = styled.div<{ index: number; width?: string }>`
