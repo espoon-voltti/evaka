@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
 import fi.espoo.evaka.application.utils.exhaust
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.JsonSerializer
+import tools.jackson.databind.SerializerProvider
 
 // Custom serializer to avoid Jackson serializing "fields" that are actually helper functions (e.g.
 // isAdmin)

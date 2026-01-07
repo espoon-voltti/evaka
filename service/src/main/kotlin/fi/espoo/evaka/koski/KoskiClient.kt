@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.koski
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
@@ -23,6 +21,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 

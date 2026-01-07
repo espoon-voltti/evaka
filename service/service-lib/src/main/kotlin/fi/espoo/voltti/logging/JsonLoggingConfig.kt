@@ -4,10 +4,10 @@
 
 package fi.espoo.voltti.logging
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
 import net.logstash.logback.decorate.JsonFactoryDecorator
+import tools.jackson.core.JsonFactory
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.SerializationFeature
 
 class JsonLoggingConfig : JsonFactoryDecorator {
     override fun decorate(factory: JsonFactory): JsonFactory =

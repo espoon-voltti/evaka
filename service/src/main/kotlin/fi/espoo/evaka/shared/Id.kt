@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.shared
 
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.KeyDeserializer
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.util.StdConverter
 import java.util.UUID
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.KeyDeserializer
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.util.StdConverter
 
 sealed interface DatabaseTable {
     sealed class Absence : DatabaseTable

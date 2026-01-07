@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.varda
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.pis.updateOphPersonOid
@@ -23,6 +22,7 @@ import java.time.Duration
 import java.time.LocalDate
 import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

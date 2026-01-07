@@ -4,9 +4,6 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.util.StdConverter
 import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.Clock
 import java.time.DayOfWeek
@@ -20,6 +17,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAmount
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.util.StdConverter
 
 val europeHelsinki: ZoneId = ZoneId.of("Europe/Helsinki")
 

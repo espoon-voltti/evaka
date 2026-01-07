@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.nekku
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -27,6 +25,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 fun assertOrdersListEquals(
     expected: List<NekkuClient.NekkuOrders>,
