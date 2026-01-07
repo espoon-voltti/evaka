@@ -833,7 +833,6 @@ export interface RawReportRow {
   capacityFactor: number
   careArea: string
   caretakersPlanned: number | null
-  caretakersRealized: number | null
   childId: PersonId
   costCenter: string | null
   dateOfBirth: LocalDate
