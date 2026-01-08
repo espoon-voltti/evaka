@@ -481,7 +481,7 @@ export const fi = {
       sending: 'Lähetetään',
       recipientCount: 'Vastaanottajia',
       manyRecipientsWarning: {
-        title: 'Viestillä on suuri määrä vastaanottajia.',
+        title: (count: number) => `Viestillä on ${count} vastaanottajaa.`,
         text: (count: number) =>
           `Tämä viesti on lähdössä ${count} vastaanottajalle. Oletko varma, että haluat lähettää viestin?`
       }

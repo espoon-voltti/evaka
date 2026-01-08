@@ -935,7 +935,9 @@ export default React.memo(function MessageEditor({
             <InfoModal
               type="warning"
               icon={faQuestion}
-              title={i18n.messages.messageEditor.manyRecipientsWarning.title}
+              title={i18n.messages.messageEditor.manyRecipientsWarning.title(
+                preflightResult.value.numberOfRecipientAccounts
+              )}
               text={i18n.messages.messageEditor.manyRecipientsWarning.text(
                 preflightResult.value.numberOfRecipientAccounts
               )}
