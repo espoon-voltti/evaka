@@ -102,7 +102,10 @@ enum class ScheduledJob(
     ),
     EndOfDayStaffAttendanceUpkeep(
         ScheduledJobs::endOfDayStaffAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
+        ScheduledJobSettings(
+            enabled = true,
+            schedule = JobSchedule.cron("0 55 * * * *"),
+        ), // every hour at minute 55
     ),
     EndOfDayReservationUpkeep(
         ScheduledJobs::endOfDayReservationUpkeep,

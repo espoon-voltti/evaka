@@ -460,6 +460,43 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure 12h after arrival for overnight attendance when arrival is 1 minute before plan start`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
+        val arrival = now.atStartOfDay().minusHours(4)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1.id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.OTHER_WORK,
+                modifiedAt = now,
+                modifiedBy = employee1.evakaUserId,
+            )
+
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1.id,
+                    startTime = arrival.plusMinutes(1),
+                    endTime = plannedDeparture,
+                )
+            )
+
+            tx.addMissingStaffAttendanceDepartures(now, systemUser.evakaUserId)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                arrival.plusHours(12),
+                staffAttendances.first { it.employeeId == employee1.id }.departed,
+            )
+        }
+    }
+
+    @Test
     fun `addMissingStaffAttendanceDeparture won't add a departure for today's arrival with a planned departure in the future`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().plusHours(8)
