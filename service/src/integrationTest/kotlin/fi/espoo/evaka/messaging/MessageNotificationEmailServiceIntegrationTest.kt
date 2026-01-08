@@ -70,7 +70,12 @@ class MessageNotificationEmailServiceIntegrationTest :
     private val employee =
         AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
+    private val serviceWorkerId = EmployeeId(UUID.randomUUID())
+    private val serviceWorker =
+        AuthenticatedUser.Employee(id = serviceWorkerId, roles = setOf(UserRole.SERVICE_WORKER))
+
     private lateinit var clock: MockEvakaClock
+    private lateinit var serviceWorkerAccount: MessageAccountId
 
     @BeforeEach
     fun beforeEach() {
@@ -118,6 +123,10 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.insert(DevEmployee(id = employeeId))
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+
+            tx.insert(DevEmployee(id = serviceWorkerId))
+            serviceWorkerAccount =
+                tx.upsertEmployeeMessageAccount(serviceWorkerId, AccountType.SERVICE_WORKER)
         }
     }
 
@@ -259,50 +268,28 @@ class MessageNotificationEmailServiceIntegrationTest :
                         ),
                 )
             }
-        val employeeAccount =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
-                    )
-                    .first()
-            }
 
         postNewThread(
-            sender = employeeAccount,
-            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-            user = employee,
+            sender = serviceWorkerAccount,
+            recipients = listOf(MessageRecipient.Citizen(guardian.id)),
+            user = serviceWorker,
             clock = clock,
             relatedApplicationId = applicationId,
         )
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
-        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(setOf(guardian.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
-            getEmailFor(testPersonFi).content.subject,
+            getEmailFor(guardian).content.subject,
         )
         assertTrue(
-            getEmailFor(testPersonFi)
+            getEmailFor(guardian)
                 .content
                 .text
                 .contains(
                     "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä"
                 )
-        )
-
-        assertEquals(
-            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress.address,
-        )
-
-        assertEquals(
-            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress.address,
         )
     }
 
