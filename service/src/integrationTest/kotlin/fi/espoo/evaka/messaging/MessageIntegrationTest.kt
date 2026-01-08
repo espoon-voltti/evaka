@@ -1488,6 +1488,31 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         @Test
+        fun `non-service worker accounts cannot have a related application`() {
+            val applicationId =
+                db.transaction { tx ->
+                    tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        type = ApplicationType.DAYCARE,
+                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    )
+                }
+
+            assertThrows<BadRequest> {
+                postNewThread(
+                    title = "title",
+                    message = "content",
+                    messageType = MessageType.MESSAGE,
+                    sender = employee1Account,
+                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    user = employee1,
+                    relatedApplicationId = applicationId,
+                )
+            }
+        }
+
+        @Test
         fun `service workers cannot send messages to a citizen who has not sent the application identified by related application id`() {
             val applicationId =
                 db.transaction { tx ->
