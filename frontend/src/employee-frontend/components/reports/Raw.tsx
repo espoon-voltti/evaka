@@ -166,10 +166,6 @@ export default React.memo(function Raw() {
                 value: (row) => mapFloat(row.caretakersPlanned)
               },
               {
-                label: 'Henkilökuntaa läsnä',
-                value: (row) => mapFloat(row.caretakersRealized)
-              },
-              {
                 label: 'Varahoidossa yksikössä',
                 value: (row) => row.backupUnitId
               },
