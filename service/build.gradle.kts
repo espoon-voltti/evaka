@@ -163,6 +163,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.ws:spring-ws-test")
     testImplementation("com.networknt:json-schema-validator")
+    testImplementation("com.squareup.okhttp3:mockwebserver")
 
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
