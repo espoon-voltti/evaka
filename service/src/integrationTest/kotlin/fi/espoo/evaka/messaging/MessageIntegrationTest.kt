@@ -3128,6 +3128,89 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Nested
+    inner class RecipientGrouping {
+
+        @Test
+        fun `municipal bulletin hides recipients from other recipients`() {
+            postNewThread(
+                title = "Municipal Bulletin",
+                message = "Important announcement",
+                messageType = MessageType.BULLETIN,
+                sender = municipalAccount,
+                recipients = listOf(MessageRecipient.Group(groupId1)),
+                user = messager,
+                now = sendTime,
+            )
+
+            val threads = getRegularMessageThreads(person1)
+            assertEquals(1, threads.size)
+            val message = threads.first().messages.first()
+            assertTrue(message.recipients.isEmpty())
+        }
+
+        @Test
+        fun `non-municipal message shows only co-guardians as recipients`() {
+            // Setup: testChild_1 has guardians person1 and person2
+            //        testChild_3 has guardians person2 and person3
+            // Send message to both children
+            postNewThread(
+                title = "Group Message",
+                message = "Message from group",
+                messageType = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipients =
+                    listOf(
+                        MessageRecipient.Child(testChild_1.id),
+                        MessageRecipient.Child(testChild_3.id),
+                    ),
+                user = employee1,
+                now = sendTime,
+            )
+
+            // person1 should see themselves and person2 (co-guardian of testChild_1)
+            val person1Threads = getRegularMessageThreads(person1)
+            assertEquals(1, person1Threads.size)
+            val person1Recipients = person1Threads.first().messages.first().recipients
+            assertEquals(
+                setOf(person1Account, person2Account),
+                person1Recipients.map { it.id }.toSet(),
+            )
+
+            // person2 is guardian of both children, so gets 2 threads (one per child's guardian
+            // group)
+            val person2Threads = getRegularMessageThreads(person2)
+            assertEquals(2, person2Threads.size)
+            // One thread with person1 (for testChild_1)
+            val person2ThreadWithPerson1 =
+                person2Threads.find { thread ->
+                    thread.messages.first().recipients.any { it.id == person1Account }
+                }!!
+            assertEquals(
+                setOf(person1Account, person2Account),
+                person2ThreadWithPerson1.messages.first().recipients.map { it.id }.toSet(),
+            )
+            // One thread with person3 (for testChild_3)
+            val person2ThreadWithPerson3 =
+                person2Threads.find { thread ->
+                    thread.messages.first().recipients.any { it.id == person3Account }
+                }!!
+            assertEquals(
+                setOf(person2Account, person3Account),
+                person2ThreadWithPerson3.messages.first().recipients.map { it.id }.toSet(),
+            )
+
+            // person3 should see themselves and person2 (co-guardian of testChild_3)
+            val person3Threads = getRegularMessageThreads(person3)
+            assertEquals(1, person3Threads.size)
+            val person3Recipients = person3Threads.first().messages.first().recipients
+            assertEquals(
+                setOf(person2Account, person3Account),
+                person3Recipients.map { it.id }.toSet(),
+            )
+        }
+    }
+
+    @Nested
     inner class Attachments {
 
         @Test
