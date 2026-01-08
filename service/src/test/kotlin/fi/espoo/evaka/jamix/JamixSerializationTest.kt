@@ -11,15 +11,13 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import tools.jackson.databind.json.JsonMapper
 
-class JamixSerializerTest {
+class JamixSerializationTest {
 
     private lateinit var jsonMapper: JsonMapper
-    private lateinit var serializer: JacksonJamixSerializer
 
     @BeforeEach
     fun setup() {
         jsonMapper = defaultJsonMapperBuilder().build()
-        serializer = JacksonJamixSerializer(jsonMapper)
     }
 
     @Test
@@ -49,7 +47,7 @@ class JamixSerializerTest {
             )
 
         // Act
-        val serialized = serializer.serialize(order)
+        val serialized = jsonMapper.writeValueAsString(order)
 
         // Assert
         // Convert serialized string to JsonNode for comparison
