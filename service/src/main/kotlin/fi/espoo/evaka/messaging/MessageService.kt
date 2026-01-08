@@ -125,8 +125,14 @@ class MessageService(
                 ?: throw NotFound("Folder not found")
         }
 
+        val senderAccount = tx.getSenderAccount(sender)
         val messageRecipients =
-            tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
+            tx.getMessageAccountsForRecipients(
+                senderAccount,
+                recipients,
+                filters,
+                now.toLocalDate(),
+            )
         if (messageRecipients.isEmpty()) return null to 0
 
         val recipientCount = messageRecipients.map { pair -> pair.first }.toSet().size

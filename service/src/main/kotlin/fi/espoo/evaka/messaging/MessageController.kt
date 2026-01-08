@@ -586,7 +586,7 @@ class MessageController(
                             0
                         } else {
                             tx.getMessageAccountsForRecipients(
-                                    accountId = accountId,
+                                    senderAccount = tx.getSenderAccount(accountId),
                                     recipients = body.recipients,
                                     filters = body.filters,
                                     date = clock.today(),

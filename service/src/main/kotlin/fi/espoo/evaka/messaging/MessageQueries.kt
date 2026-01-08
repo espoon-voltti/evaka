@@ -1772,28 +1772,30 @@ private fun Iterable<MessageRecipient>.childIds() =
 private fun Iterable<MessageRecipient>.citizenIds() =
     filterIsInstance<MessageRecipient.Citizen>().map { it.id }
 
-private data class SenderAccount(
+data class SenderAccount(
+    val id: MessageAccountId,
     val type: AccountType,
     val daycareGroupId: GroupId?,
     val employeeId: EmployeeId?,
 )
 
+fun Database.Read.getSenderAccount(accountId: MessageAccountId): SenderAccount {
+    return createQuery {
+            sql(
+                "SELECT id, type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}"
+            )
+        }
+        .mapTo<SenderAccount>()
+        .exactlyOne()
+}
+
 fun Database.Read.getMessageAccountsForRecipients(
-    accountId: MessageAccountId,
+    senderAccount: SenderAccount,
     recipients: Set<MessageRecipient>,
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
 ): Set<Pair<MessageAccountId, ChildId?>> {
     val (starterRecipients, currentRecipients) = recipients.partition { it.isStarter() }
-
-    val senderAccount =
-        createQuery {
-                sql(
-                    "SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}"
-                )
-            }
-            .mapTo<SenderAccount>()
-            .exactlyOne()
 
     if (
         senderAccount.type == AccountType.SERVICE_WORKER ||
