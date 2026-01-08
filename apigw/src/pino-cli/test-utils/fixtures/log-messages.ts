@@ -60,7 +60,6 @@ export const validPinoAccessLogMessage: PinoAccessLog = {
       'strict-transport-security': 'max-age=15552000; includeSubDomains',
       'x-download-options': 'noopen',
       'x-content-type-options': 'nosniff',
-      'x-xss-protection': '1; mode=block',
       'x-content-length': '19924',
       'set-cookie':
         'nuora.local.sid=s%3AdtmQbMKjkuf2SAllngYu5_esQ9kr7WE9.%2Bx9t0JU5wGadEPEyfm7r0FqiuWOcIrYOvwIjIabuGN8; Path=/; Expires=Wed, 30 Jan 2019 11:56:43 GMT; HttpOnly'
