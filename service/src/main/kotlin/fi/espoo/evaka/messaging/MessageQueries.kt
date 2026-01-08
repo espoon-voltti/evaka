@@ -371,10 +371,10 @@ SELECT * FROM UNNEST(
 }
 
 fun Database.Transaction.insertMessageThreadChildren(
-    childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
+    childrenThreadPairs: List<Pair<MessageThreadId, Set<ChildId>>>
 ) {
-    val rows =
-        childrenThreadPairs.flatMap { (children, threadId) ->
+    val rows: List<Pair<MessageThreadId, ChildId>> =
+        childrenThreadPairs.flatMap { (threadId, children) ->
             children.map { childId -> threadId to childId }
         }
     if (rows.isEmpty()) return
