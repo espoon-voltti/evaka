@@ -8,16 +8,14 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.invoicing.testFeeThresholds
-import fi.espoo.evaka.messaging.AccountType
+import fi.espoo.evaka.messaging.createServiceWorkerMessageAccount
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.getUnreadMessagesCountsCitizen
-import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PreschoolTermId
@@ -70,8 +68,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var accessCpontrol: AccessControl
 
     private val clock = MockEvakaClock(2021, 1, 7, 12, 0)
-    final val employee =
-        DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Test", lastName = "Employee")
+    final val employee = DevEmployee(firstName = "Test", lastName = "Employee")
     private val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
     val defaultServiceNeedOption =
         ServiceNeedOption(
@@ -221,7 +218,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             MockPersonDetailsService.addPersons(adult, child)
             MockPersonDetailsService.addDependants(adult, child)
-            tx.upsertEmployeeMessageAccount(employee.id, AccountType.SERVICE_WORKER)
+            tx.createServiceWorkerMessageAccount()
         }
     }
 

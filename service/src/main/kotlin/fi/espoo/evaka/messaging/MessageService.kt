@@ -100,7 +100,7 @@ class MessageService(
                 serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                 financeAccountName = featureConfig.financeMessageAccountName,
             )
-        tx.insertMessageThreadChildren(listOf(children to threadId))
+        tx.insertMessageThreadChildren(listOf(threadId to children))
         tx.insertRecipients(listOf(messageId to recipients))
         asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
         return CitizenMessageSent(messageId, threadId, contentId)
@@ -125,8 +125,14 @@ class MessageService(
                 ?: throw NotFound("Folder not found")
         }
 
+        val senderAccount = tx.getSenderAccount(sender)
         val messageRecipients =
-            tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
+            tx.getMessageAccountsForRecipients(
+                senderAccount,
+                recipients,
+                filters,
+                now.toLocalDate(),
+            )
         if (messageRecipients.isEmpty()) return null to 0
 
         val recipientCount = messageRecipients.map { pair -> pair.first }.toSet().size
@@ -136,18 +142,25 @@ class MessageService(
                 tx.getStaffCopyRecipients(sender, recipients, now.toLocalDate())
             } else emptySet()
 
-        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId?>>> =
-            if (type == MessageType.BULLETIN) {
-                // bulletins cannot be replied to so there is no need to group threads
-                // for families
+        // Child set can be empty, and in that case the message thread will not be associated with
+        // any children
+        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
+            if (type == MessageType.BULLETIN && senderAccount.type == AccountType.MUNICIPAL) {
+                // Bulletins from municipal accounts get a single thread with no associated
+                // children. This is a performance optimization: Creating a single thread avoids
+                // creating
+                // duplicate message_thread and message, as well as all message_thread_children
+                // rows.
+                listOf(messageRecipients.map { it.first }.toSet() to emptySet())
+            } else if (type == MessageType.BULLETIN) {
+                // Bulletins cannot be replied to so there is no need to group threads for families
                 messageRecipients
                     .groupBy { (accountId, _) -> accountId }
                     .map { (accountId, pairs) ->
-                        setOf(accountId) to pairs.map { (_, childId) -> childId }.toSet()
+                        setOf(accountId) to pairs.mapNotNull { (_, childId) -> childId }.toSet()
                     }
             } else {
-                // groupings where all the parents can read the messages of all the
-                // children
+                // Groupings where all the parents can read the messages of all the children
                 messageRecipients
                     .groupBy { (_, childId) -> childId }
                     .mapValues { (_, accountChildPairs) ->
@@ -156,12 +169,11 @@ class MessageService(
                     .toList()
                     .groupBy { (_, accounts) -> accounts }
                     .mapValues { (_, childAccountPairs) ->
-                        childAccountPairs.map { it.first }.toSet()
+                        childAccountPairs.mapNotNull { it.first }.toSet()
                     }
                     .toList()
             }
-        // for each recipient group, create a thread, message and message_recipients
-        // while re-using
+        // For each recipient group, create a thread, message and message_recipients while re-using
         // content
         val contentId = tx.insertMessageContent(content = msg.content, sender = sender)
         tx.reAssociateMessageAttachments(attachmentIds = attachments, messageContentId = contentId)
@@ -183,9 +195,10 @@ class MessageService(
                 financeAccountName = featureConfig.financeMessageAccountName,
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
+
         tx.insertMessageThreadChildren(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
-                recipients.second.filterNotNull().toSet() to ids.first
+                ids.first to recipients.second
             }
         )
         tx.upsertSenderThreadParticipants(

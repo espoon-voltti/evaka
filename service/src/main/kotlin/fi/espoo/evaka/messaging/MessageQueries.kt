@@ -371,10 +371,10 @@ SELECT * FROM UNNEST(
 }
 
 fun Database.Transaction.insertMessageThreadChildren(
-    childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
+    childrenThreadPairs: List<Pair<MessageThreadId, Set<ChildId>>>
 ) {
-    val rows =
-        childrenThreadPairs.flatMap { (children, threadId) ->
+    val rows: List<Pair<MessageThreadId, ChildId>> =
+        childrenThreadPairs.flatMap { (threadId, children) ->
             children.map { childId -> threadId to childId }
         }
     if (rows.isEmpty()) return
@@ -800,39 +800,38 @@ SELECT
     COALESCE(m.sent_at, m.created) AS sent_at,
     mc.content,
     mr_self.read_at,
-    (
-        SELECT jsonb_build_object(
-            'id', mav.id,
-            'name', CASE 
-                WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
-                WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
-                WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
-                ELSE mav.name 
-            END,
-            'type', mav.type,
-            'personId', mav.person_id
-        )
-        FROM message_account_view mav
-        WHERE mav.id = m.sender_id
+    jsonb_build_object(
+        'id', sender.id,
+        'name', CASE
+            WHEN sender.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
+            WHEN sender.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+            WHEN sender.type = 'FINANCE' THEN ${bind(financeAccountName)}
+            ELSE sender.name
+        END,
+        'type', sender.type,
+        'personId', sender.person_id
     ) AS sender,
-    (
-        SELECT jsonb_agg(
-            jsonb_build_object(
-                'id', mav.id,
-                'name', CASE
-                    WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)} 
-                    WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
-                    WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
-                    ELSE mav.name
-                END,
-                'type', mav.type,
-                'personId', mav.person_id
+    CASE
+        WHEN sender.type = 'MUNICIPAL' THEN '[]'::jsonb -- do not leak recipients for municipal messages
+        ELSE (
+            SELECT jsonb_agg(
+                jsonb_build_object(
+                    'id', mav.id,
+                    'name', CASE
+                        WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
+                        WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+                        WHEN mav.type = 'FINANCE' THEN ${bind(financeAccountName)}
+                        ELSE mav.name
+                    END,
+                    'type', mav.type,
+                    'personId', mav.person_id
+                )
             )
+            FROM message_recipients mr
+            JOIN message_account_view mav ON mav.id = mr.recipient_id
+            WHERE mr.message_id = m.id
         )
-        FROM message_recipients mr
-        JOIN message_account_view mav ON mav.id = mr.recipient_id
-        WHERE mr.message_id = m.id
-    ) AS recipients,
+    END AS recipients,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
         FROM attachment a
@@ -840,6 +839,7 @@ SELECT
     ), '[]'::jsonb) AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
+JOIN message_account_view sender ON sender.id = m.sender_id
 LEFT JOIN message_recipients mr_self ON mr_self.message_id = m.id AND mr_self.recipient_id = ${bind(accountId)}
 WHERE
     m.thread_id = ANY(${bind(threadIds)}) AND
@@ -1772,28 +1772,30 @@ private fun Iterable<MessageRecipient>.childIds() =
 private fun Iterable<MessageRecipient>.citizenIds() =
     filterIsInstance<MessageRecipient.Citizen>().map { it.id }
 
-private data class SenderAccount(
+data class SenderAccount(
+    val id: MessageAccountId,
     val type: AccountType,
     val daycareGroupId: GroupId?,
     val employeeId: EmployeeId?,
 )
 
+fun Database.Read.getSenderAccount(accountId: MessageAccountId): SenderAccount {
+    return createQuery {
+            sql(
+                "SELECT id, type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}"
+            )
+        }
+        .mapTo<SenderAccount>()
+        .exactlyOne()
+}
+
 fun Database.Read.getMessageAccountsForRecipients(
-    accountId: MessageAccountId,
+    senderAccount: SenderAccount,
     recipients: Set<MessageRecipient>,
     filters: MessageController.PostMessageFilters?,
     date: LocalDate,
 ): Set<Pair<MessageAccountId, ChildId?>> {
     val (starterRecipients, currentRecipients) = recipients.partition { it.isStarter() }
-
-    val senderAccount =
-        createQuery {
-                sql(
-                    "SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}"
-                )
-            }
-            .mapTo<SenderAccount>()
-            .exactlyOne()
 
     if (
         senderAccount.type == AccountType.SERVICE_WORKER ||

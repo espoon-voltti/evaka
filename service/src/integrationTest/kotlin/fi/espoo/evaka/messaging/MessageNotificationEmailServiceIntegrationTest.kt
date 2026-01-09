@@ -238,6 +238,13 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `notifications related to an application are sent to citizens`() {
+        val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+        val serviceWorkerAccount =
+            db.transaction { tx ->
+                tx.insert(serviceWorker)
+                tx.createServiceWorkerMessageAccount()
+            }
+
         val guardian = testPersons.first()
         val applicationId =
             db.transaction { tx ->
@@ -259,50 +266,28 @@ class MessageNotificationEmailServiceIntegrationTest :
                         ),
                 )
             }
-        val employeeAccount =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
-                    )
-                    .first()
-            }
 
         postNewThread(
-            sender = employeeAccount,
-            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-            user = employee,
+            sender = serviceWorkerAccount,
+            recipients = listOf(MessageRecipient.Citizen(guardian.id)),
+            user = serviceWorker.user,
             clock = clock,
             relatedApplicationId = applicationId,
         )
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
-        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(setOf(guardian.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
-            getEmailFor(testPersonFi).content.subject,
+            getEmailFor(guardian).content.subject,
         )
         assertTrue(
-            getEmailFor(testPersonFi)
+            getEmailFor(guardian)
                 .content
                 .text
                 .contains(
                     "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä"
                 )
-        )
-
-        assertEquals(
-            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress.address,
-        )
-
-        assertEquals(
-            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress.address,
         )
     }
 
