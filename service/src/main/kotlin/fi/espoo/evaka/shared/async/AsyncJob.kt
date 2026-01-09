@@ -520,6 +520,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class MigrateMunicipalMessageThreads(val batchSize: Int) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -539,6 +543,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     InitializeFamilyFromApplication::class,
                     InvoiceCorrectionMigration::class,
                     MigrateDaycareAssistanceDecision::class,
+                    MigrateMunicipalMessageThreads::class,
                     MigratePreschoolAssistanceDecision::class,
                     NotifyDecisionCreated::class,
                     NotifyFeeDecisionApproved::class,
