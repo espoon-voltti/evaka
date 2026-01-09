@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.fasterxml.jackson.module.kotlin.jsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.setAttribute
 import fi.espoo.voltti.auth.getDecodedJwt
@@ -16,6 +14,8 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpFilter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import tools.jackson.module.kotlin.jsonMapper
+import tools.jackson.module.kotlin.readValue
 
 private const val ATTR_USER = "evaka.user"
 

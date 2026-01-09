@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.util.StdConverter
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.placement.PlacementType
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.util.StdConverter
 
 interface InvoiceProductProvider {
     val products: List<ProductWithName>
@@ -28,12 +28,27 @@ interface InvoiceProductProvider {
 
 @JsonSerialize(converter = ProductKey.ToJson::class)
 @JsonDeserialize(converter = ProductKey.FromJson::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    converter = ProductKey.ToJsonJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    converter = ProductKey.FromJsonJackson2::class
+)
 data class ProductKey(val value: String) {
     class FromJson : StdConverter<String, ProductKey>() {
         override fun convert(value: String): ProductKey = ProductKey(value)
     }
 
     class ToJson : StdConverter<ProductKey, String>() {
+        override fun convert(value: ProductKey): String = value.value
+    }
+
+    class FromJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<String, ProductKey>() {
+        override fun convert(value: String): ProductKey = ProductKey(value)
+    }
+
+    class ToJsonJackson2 : com.fasterxml.jackson.databind.util.StdConverter<ProductKey, String>() {
         override fun convert(value: ProductKey): String = value.value
     }
 }

@@ -7,4 +7,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+	<suppress>
+		<notes>
+			False positive: CVE-2022-31691 targets Spring Tools (STS4) and related VSCode extensions via SnakeYAML in YAML editors, not spring-boot-devtools.
+			Devtools is used only in development and not shipped to production.
+		</notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring-boot-devtools@.*$</packageUrl>
+		<cve>CVE-2022-31691</cve>
+	</suppress>
 </suppressions>

@@ -554,7 +554,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .post("/employee/payments/search")
                 .asUser(financeUser)
                 .jsonBody(jsonMapper.writeValueAsString(params))
-                .responseObject<PagedPayments>(jsonMapper)
+                .responseObject<PagedPayments>(jackson2JsonMapper)
         assertEquals(200, response.statusCode)
         return result.get()
     }

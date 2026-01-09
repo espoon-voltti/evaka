@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.reports.patu
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.reports.RawReportRow
 import io.github.oshai.kotlinlogging.KotlinLogging
+import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 

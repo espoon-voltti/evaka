@@ -642,7 +642,11 @@ inline fun <reified T> Environment.lookup(key: String, vararg deprecatedKeys: St
 
 private val logger = KotlinLogging.logger {}
 
-fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz: Class<T>): T? =
+fun <T> Environment.lookup(
+    key: String,
+    deprecatedKeys: Array<out String>,
+    clazz: Class<out T>,
+): T? =
     deprecatedKeys
         .asSequence()
         .mapNotNull { legacyKey ->

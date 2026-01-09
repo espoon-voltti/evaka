@@ -11,60 +11,65 @@ Sanitized default appender logback configuration provided for import
 -->
 
 <included>
-  <conversionRule
-    conversionWord="stacktrace"
-    converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
+    <conversionRule
+            conversionWord="stacktrace"
+            class="net.logstash.logback.stacktrace.ShortenedThrowableConverter"/>
 
-  <appender name="VOLTTI_DEFAULT_APPENDER_SANITIZED" class="ch.qos.logback.core.ConsoleAppender">
-    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-      <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
-        <marker>AUDIT_EVENT</marker>
-        <marker>VTJ_EVENT</marker>
-      </evaluator>
-      <onMismatch>NEUTRAL</onMismatch>
-      <onMatch>DENY</onMatch>
-    </filter>
-    <!-- With a Composite encoder, desired fields need to be explicitly defined -->
-    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-      <jsonFactoryDecorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
-      <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
-        <!--Hide social security numbers from logs-->
-        <valueMasker class="fi.espoo.voltti.logging.SsnMasker" />
-      </jsonGeneratorDecorator>
-      <providers>
-        <logLevel><fieldName>logLevel</fieldName></logLevel>
-        <loggerName><fieldName>loggerName</fieldName></loggerName>
-        <throwableClassName><fieldName>exception</fieldName></throwableClassName>
-        <timestamp>
-          <fieldName>@timestamp</fieldName>
-          <timeZone>UTC</timeZone>
-          <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
-        </timestamp>
-        <pattern>
-          <omitEmptyFields>true</omitEmptyFields>
-          <pattern>
-            {
-            "message": "%message",
-            "stackTrace": "%stacktrace",
-            "type": "app-misc",
-            "appBuild": "${APP_BUILD}",
-            "appCommit": "${APP_COMMIT}",
-            "appName": "${appName}",
-            "env": "${VOLTTI_ENV}",
-            "hostIp": "${HOST_IP}",
-            "httpMethod": "%mdc{httpMethod}",
-            "path": "%mdc{path}",
-            "queryString": "%mdc{queryString}",
-            "userIdHash": "%mdc{userIdHash}",
-            "secondaryUserIdHash": "%mdc{secondaryUserIdHash}",
-            "spanId": "%mdc{spanId}",
-            "traceId": "%mdc{traceId}",
-            "version": 1
-            }
-          </pattern>
-        </pattern>
-        <arguments />
-      </providers>
-    </encoder>
-  </appender>
+    <appender name="VOLTTI_DEFAULT_APPENDER_SANITIZED" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>AUDIT_EVENT</marker>
+                <marker>VTJ_EVENT</marker>
+            </evaluator>
+            <onMismatch>NEUTRAL</onMismatch>
+            <onMatch>DENY</onMatch>
+        </filter>
+        <!-- With a Composite encoder, desired fields need to be explicitly defined -->
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <decorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                <!--Hide social security numbers from logs-->
+                <valueMasker class="fi.espoo.voltti.logging.SsnMasker"/>
+            </decorator>
+            <providers>
+                <logLevel>
+                    <fieldName>logLevel</fieldName>
+                </logLevel>
+                <loggerName>
+                    <fieldName>loggerName</fieldName>
+                </loggerName>
+                <throwableClassName>
+                    <fieldName>exception</fieldName>
+                </throwableClassName>
+                <timestamp>
+                    <fieldName>@timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
+                </timestamp>
+                <pattern>
+                    <omitEmptyFields>true</omitEmptyFields>
+                    <pattern>
+                        {
+                        "message": "%message",
+                        "stackTrace": "%stacktrace",
+                        "type": "app-misc",
+                        "appBuild": "${APP_BUILD}",
+                        "appCommit": "${APP_COMMIT}",
+                        "appName": "${appName}",
+                        "env": "${VOLTTI_ENV}",
+                        "hostIp": "${HOST_IP}",
+                        "httpMethod": "%mdc{httpMethod}",
+                        "path": "%mdc{path}",
+                        "queryString": "%mdc{queryString}",
+                        "userIdHash": "%mdc{userIdHash}",
+                        "secondaryUserIdHash": "%mdc{secondaryUserIdHash}",
+                        "spanId": "%mdc{spanId}",
+                        "traceId": "%mdc{traceId}",
+                        "version": 1
+                        }
+                    </pattern>
+                </pattern>
+                <arguments/>
+            </providers>
+        </encoder>
+    </appender>
 </included>

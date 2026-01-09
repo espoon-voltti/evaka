@@ -4,11 +4,11 @@
 
 package fi.espoo.voltti.logging
 
-import com.fasterxml.jackson.core.JsonStreamContext
 import net.logstash.logback.mask.ValueMasker
+import tools.jackson.core.TokenStreamContext
 
 class SsnMasker : ValueMasker {
-    override fun mask(context: JsonStreamContext?, value: Any?): Any {
+    override fun mask(context: TokenStreamContext?, value: Any?): Any {
         return if (value is String) {
             value.replace(
                 Regex(

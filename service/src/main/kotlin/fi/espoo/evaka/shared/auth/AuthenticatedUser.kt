@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.google.common.hash.HashCode
 import com.google.common.hash.Hashing
 import fi.espoo.evaka.pis.EmployeeRoles
@@ -15,9 +13,17 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
 @JsonDeserialize(using = AuthenticatedUserJsonDeserializer::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    using = AuthenticatedUserJsonSerializerJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    using = AuthenticatedUserJsonDeserializerJackson2::class
+)
 sealed class AuthenticatedUser {
     open val isAdmin = false
 

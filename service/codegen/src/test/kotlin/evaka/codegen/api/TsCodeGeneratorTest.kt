@@ -5,13 +5,13 @@
 package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import java.time.LocalDate
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 private val dummyFile = TsProject.LibCommon / "file.ts"
 

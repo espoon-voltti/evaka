@@ -6,18 +6,6 @@ package fi.espoo.evaka.shared.config
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.DatabindContext
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
@@ -25,24 +13,15 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.superclasses
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.DatabindContext
+import tools.jackson.databind.JavaType
+import tools.jackson.databind.cfg.EnumFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.jsontype.impl.TypeIdResolverBase
+import tools.jackson.module.kotlin.KotlinModule
 
 fun defaultJsonMapperBuilder(): JsonMapper.Builder =
-    JsonMapper.builder()
-        .addModules(
-            KotlinModule.Builder()
-                // Without this, Kotlin singletons are not actually singletons when deserialized.
-                // For example, a sealed class `sealed class Foo` where one variant is `object
-                // OneVariant: Foo()`
-                .enable(KotlinFeature.SingletonSupport)
-                .build(),
-            JavaTimeModule(),
-            Jdk8Module(),
-            ParameterNamesModule(),
-        )
-        // We never want to serialize timestamps as numbers but use ISO formats instead.
-        // Our custom types (e.g. HelsinkiDateTime) already have custom serializers that handle
-        // this, but it's still a good idea to ensure global defaults are sane.
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    JsonMapper.builder().addModules(KotlinModule.Builder().build())
 
 @Configuration
 class JacksonConfig {
@@ -50,11 +29,9 @@ class JacksonConfig {
     @Bean
     fun jsonMapper(): JsonMapper =
         defaultJsonMapperBuilder()
-            // Disabled by default in Spring Boot autoconfig
-            .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-            // Disabled by default in Spring Boot autoconfig
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+            .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+            .disable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+            .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
             .build()
 }
 
@@ -90,10 +67,14 @@ class SealedSubclassSimpleName : TypeIdResolverBase() {
         mapping = mappingOf(bt.rawClass.kotlin)
     }
 
-    override fun idFromValue(value: Any): String? = mapping[value.javaClass.kotlin]
+    override fun idFromValue(ctxt: DatabindContext, value: Any): String? =
+        mapping[value.javaClass.kotlin]
 
-    override fun idFromValueAndType(value: Any?, suggestedType: Class<*>): String? =
-        mapping[(value?.javaClass ?: suggestedType).kotlin]
+    override fun idFromValueAndType(
+        ctxt: DatabindContext,
+        value: Any?,
+        suggestedType: Class<*>,
+    ): String? = mapping[(value?.javaClass ?: suggestedType).kotlin]
 
     override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.CUSTOM
 

@@ -28,11 +28,7 @@ import org.jdbi.v3.json.Json
 
 data class CheckboxGroupAnswerContent(val optionId: String, val extra: String = "")
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type",
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     abstract val questionId: String
     abstract val answer: Answer

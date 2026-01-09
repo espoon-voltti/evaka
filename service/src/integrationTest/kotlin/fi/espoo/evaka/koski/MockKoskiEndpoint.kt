@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.koski
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.google.common.collect.Multimaps
 import com.google.common.collect.SetMultimap
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+import tools.jackson.databind.json.JsonMapper
 
 private typealias PersonOid = String
 

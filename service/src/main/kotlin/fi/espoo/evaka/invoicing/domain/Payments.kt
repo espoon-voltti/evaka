@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.data.deletePaymentDraftsByDateRange
 import fi.espoo.evaka.invoicing.data.insertPaymentDrafts
@@ -26,6 +25,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import org.jdbi.v3.core.mapper.Nested
+import tools.jackson.databind.json.JsonMapper
 
 val logger = KotlinLogging.logger {}
 

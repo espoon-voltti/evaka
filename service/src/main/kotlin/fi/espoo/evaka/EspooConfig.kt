@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
@@ -55,7 +54,7 @@ import io.opentelemetry.api.trace.Tracer
 import java.net.URI
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -63,6 +62,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import tools.jackson.databind.json.JsonMapper
 
 @Configuration
 @Profile("espoo_evaka")

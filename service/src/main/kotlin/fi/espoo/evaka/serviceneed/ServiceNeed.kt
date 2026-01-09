@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.serviceneed
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.invoicing.domain.SiblingDiscount
 import fi.espoo.evaka.placement.PlacementType
@@ -27,6 +26,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import tools.jackson.databind.annotation.JsonDeserialize
 
 @ConstList("shiftCareType")
 enum class ShiftCareType : DatabaseEnum {
@@ -56,6 +56,9 @@ data class ServiceNeed(
     val partWeek: Boolean,
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+        using = ServiceNeedConfirmationDeserializerJackson2::class
+    )
     val confirmed: ServiceNeedConfirmation?,
     val updated: HelsinkiDateTime,
 )

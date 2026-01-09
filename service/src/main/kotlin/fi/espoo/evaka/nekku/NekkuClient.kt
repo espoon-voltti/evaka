@@ -6,8 +6,6 @@ package fi.espoo.evaka.nekku
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.NekkuEnv
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
@@ -16,6 +14,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.jdbi.v3.json.Json
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 

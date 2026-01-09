@@ -4,18 +4,24 @@
 
 package fi.espoo.evaka.shared.domain
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.LocalTime
+import tools.jackson.core.JsonGenerator
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 
 @JsonSerialize(using = TimeIntervalJsonSerializer::class)
 @JsonDeserialize(using = TimeIntervalJsonDeserializer::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(
+    using = TimeIntervalJsonSerializerJackson2::class
+)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    using = TimeIntervalJsonDeserializerJackson2::class
+)
 data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEndpoint.End?) {
     constructor(
         start: TimeRangeEndpoint,
@@ -51,11 +57,31 @@ data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEn
 
 private data class SerializableTimeInterval(val start: LocalTime, val end: LocalTime?)
 
-class TimeIntervalJsonSerializer : JsonSerializer<TimeInterval>() {
+class TimeIntervalJsonSerializer : ValueSerializer<TimeInterval>() {
+    override fun serialize(value: TimeInterval?, gen: JsonGenerator?, ctxt: SerializationContext?) {
+        if (value == null || gen == null || ctxt == null) return
+        val serializer = ctxt.findValueSerializer(SerializableTimeInterval::class.java)
+        serializer.serialize(
+            SerializableTimeInterval(value.start.inner, value.end?.inner),
+            gen,
+            ctxt,
+        )
+    }
+}
+
+class TimeIntervalJsonDeserializer : ValueDeserializer<TimeInterval>() {
+    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeInterval {
+        val value = parser.readValueAs(SerializableTimeInterval::class.java)
+        return TimeInterval(value.start, value.end)
+    }
+}
+
+class TimeIntervalJsonSerializerJackson2 :
+    com.fasterxml.jackson.databind.JsonSerializer<TimeInterval>() {
     override fun serialize(
         value: TimeInterval,
-        gen: JsonGenerator,
-        serializers: SerializerProvider,
+        gen: com.fasterxml.jackson.core.JsonGenerator,
+        serializers: com.fasterxml.jackson.databind.SerializerProvider,
     ) {
         return serializers.defaultSerializeValue(
             SerializableTimeInterval(value.start.inner, value.end?.inner),
@@ -64,8 +90,12 @@ class TimeIntervalJsonSerializer : JsonSerializer<TimeInterval>() {
     }
 }
 
-class TimeIntervalJsonDeserializer : JsonDeserializer<TimeInterval>() {
-    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeInterval {
+class TimeIntervalJsonDeserializerJackson2 :
+    com.fasterxml.jackson.databind.JsonDeserializer<TimeInterval>() {
+    override fun deserialize(
+        parser: com.fasterxml.jackson.core.JsonParser,
+        ctx: com.fasterxml.jackson.databind.DeserializationContext,
+    ): TimeInterval {
         val value = parser.readValueAs(SerializableTimeInterval::class.java)
         return TimeInterval(value.start, value.end)
     }

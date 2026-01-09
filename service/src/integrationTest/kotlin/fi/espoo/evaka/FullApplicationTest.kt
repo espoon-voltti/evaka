@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
@@ -19,6 +17,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.getTestDataSource
+import fi.espoo.evaka.shared.config.jackson2JsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -39,6 +38,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.json.JsonMapper
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -51,6 +52,13 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     protected val jsonMapper: JsonMapper =
         defaultJsonMapperBuilder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build()
+
+    protected val jackson2JsonMapper: com.fasterxml.jackson.databind.json.JsonMapper =
+        jackson2JsonMapperBuilder()
+            .disable(
+                com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
+            )
             .build()
 
     private lateinit var jdbi: Jdbi

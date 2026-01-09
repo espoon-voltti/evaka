@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
-import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.context.request.WebRequest
@@ -79,10 +79,14 @@ class SpringMvcConfig(
         configurer.defaultContentType(MediaType.APPLICATION_JSON, MediaType.ALL)
     }
 
-    override fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+    override fun configureMessageConverters(builder: HttpMessageConverters.ServerBuilder) {
         // If the response body is a string, we want it to be converted as JSON, not directly
-        // serialized as string
-        converters.removeIf { it is StringHttpMessageConverter }
+        // serialized as string (unless the caller expects text/plain)
+        builder.withStringConverter(
+            StringHttpMessageConverter().apply {
+                supportedMediaTypes = listOf(MediaType.TEXT_PLAIN)
+            }
+        )
     }
 
     private fun WebRequest.getDatabaseInstance(): Database =

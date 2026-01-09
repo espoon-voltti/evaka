@@ -4,13 +4,13 @@
 
 package fi.espoo.evaka.shared.data
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.util.StdConverter
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 import java.util.Objects
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.util.StdConverter
 
 /**
  * An immutable data structure that is conceptually similar to a `Set<LocalDate>` but provides batch
@@ -18,6 +18,10 @@ import java.util.Objects
  */
 @JsonSerialize(converter = DateSet.ToJson::class)
 @JsonDeserialize(converter = DateSet.FromJson::class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(converter = DateSet.ToJsonJackson2::class)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
+    converter = DateSet.FromJsonJackson2::class
+)
 class DateSet private constructor(ranges: List<FiniteDateRange>) :
     RangeBasedSet<LocalDate, FiniteDateRange, DateSet>(ranges) {
     override fun List<FiniteDateRange>.toThis(): DateSet = if (isEmpty()) EMPTY else DateSet(this)
@@ -96,6 +100,16 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
     }
 
     class ToJson : StdConverter<DateSet, List<FiniteDateRange>>() {
+        override fun convert(value: DateSet): List<FiniteDateRange> = value.ranges().toList()
+    }
+
+    class FromJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<List<FiniteDateRange>, DateSet>() {
+        override fun convert(value: List<FiniteDateRange>): DateSet = DateSet.of(value)
+    }
+
+    class ToJsonJackson2 :
+        com.fasterxml.jackson.databind.util.StdConverter<DateSet, List<FiniteDateRange>>() {
         override fun convert(value: DateSet): List<FiniteDateRange> = value.ranges().toList()
     }
 }

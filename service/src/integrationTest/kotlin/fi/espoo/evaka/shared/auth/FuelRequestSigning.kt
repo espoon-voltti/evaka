@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.github.kittinunf.fuel.core.Request
 import java.security.KeyFactory
 import java.security.interfaces.RSAPrivateKey
@@ -14,6 +13,7 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Clock
 import java.time.ZonedDateTime
 import org.bouncycastle.util.encoders.Base64
+import tools.jackson.module.kotlin.jsonMapper
 
 fun Request.asUser(user: AuthenticatedUser): Request {
     this.header("Authorization", "Bearer $emptyJwt")

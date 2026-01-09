@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pedagogicaldocument
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
@@ -52,6 +51,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.module.kotlin.readValue
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var pedagogicalDocumentController: PedagogicalDocumentController
@@ -171,7 +171,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         http
             .get("/citizen/pedagogical-documents/unread-count")
             .asUser(user)
-            .responseObject<Map<ChildId, Int>>(jsonMapper)
+            .responseObject<Map<ChildId, Int>>(jackson2JsonMapper)
             .third
             .get()
 
@@ -521,7 +521,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .upload("/employee/attachments/pedagogical-documents/$id")
                 .add(FileDataPart(File(pngFile.toURI()), name = "file"))
                 .asUser(employee)
-                .responseObject<AttachmentId>(jsonMapper)
+                .responseObject<AttachmentId>(jackson2JsonMapper)
 
         return result.get()
     }

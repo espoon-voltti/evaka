@@ -6,7 +6,6 @@ package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ForceCodeGenType
 import kotlin.reflect.KClass
@@ -19,6 +18,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmName
+import tools.jackson.databind.jsontype.TypeSerializer
 
 sealed interface TsRepresentation<TypeArgs> {
     fun getTypeArgs(typeArgs: List<KTypeProjection>): TypeArgs =

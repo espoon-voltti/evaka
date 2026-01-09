@@ -50,7 +50,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             http
                 .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -85,7 +85,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             http
                 .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -119,7 +119,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             http
                 .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
 
         assertEquals(0, result.get().size)
     }
@@ -148,7 +148,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             http
                 .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
 
         assertEquals(0, result.get().size)
     }

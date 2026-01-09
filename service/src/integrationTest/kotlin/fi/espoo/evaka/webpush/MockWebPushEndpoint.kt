@@ -37,7 +37,9 @@ class MockWebPushEndpoint {
                         headers =
                             request.headerNames
                                 .asSequence()
-                                .mapNotNull { name -> request.getHeader(name)?.let { name to it } }
+                                .mapNotNull { name ->
+                                    request.getHeader(name)?.let { name.lowercase() to it }
+                                }
                                 .toMap(),
                         body = body.readAllBytes(),
                     )

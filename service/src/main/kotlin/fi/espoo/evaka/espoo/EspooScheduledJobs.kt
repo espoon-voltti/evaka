@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.espoo
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.espoo.bi.EspooBiTable
@@ -24,6 +23,7 @@ import fi.espoo.evaka.shared.job.ScheduledJobDefinition
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
+import tools.jackson.databind.json.JsonMapper
 
 enum class EspooScheduledJob(
     val fn: (EspooScheduledJobs, Database.Connection, EvakaClock) -> Unit,

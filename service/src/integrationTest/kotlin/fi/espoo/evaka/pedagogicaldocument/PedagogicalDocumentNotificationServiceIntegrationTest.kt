@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pedagogicaldocument
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
@@ -46,6 +45,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.module.kotlin.readValue
 
 class PedagogicalDocumentNotificationServiceIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {

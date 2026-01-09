@@ -5,12 +5,12 @@
 package fi.espoo.evaka.holidayperiod
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.reservations.ReservationEnabledPlacementRange
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
