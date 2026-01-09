@@ -70,12 +70,7 @@ class MessageNotificationEmailServiceIntegrationTest :
     private val employee =
         AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
-    private val serviceWorkerId = EmployeeId(UUID.randomUUID())
-    private val serviceWorker =
-        AuthenticatedUser.Employee(id = serviceWorkerId, roles = setOf(UserRole.SERVICE_WORKER))
-
     private lateinit var clock: MockEvakaClock
-    private lateinit var serviceWorkerAccount: MessageAccountId
 
     @BeforeEach
     fun beforeEach() {
@@ -123,10 +118,6 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.insert(DevEmployee(id = employeeId))
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
-
-            tx.insert(DevEmployee(id = serviceWorkerId))
-            serviceWorkerAccount =
-                tx.upsertEmployeeMessageAccount(serviceWorkerId, AccountType.SERVICE_WORKER)
         }
     }
 
@@ -247,6 +238,13 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `notifications related to an application are sent to citizens`() {
+        val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+        val serviceWorkerAccount =
+            db.transaction { tx ->
+                tx.insert(serviceWorker)
+                tx.createServiceWorkerMessageAccount()
+            }
+
         val guardian = testPersons.first()
         val applicationId =
             db.transaction { tx ->
@@ -272,7 +270,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         postNewThread(
             sender = serviceWorkerAccount,
             recipients = listOf(MessageRecipient.Citizen(guardian.id)),
-            user = serviceWorker,
+            user = serviceWorker.user,
             clock = clock,
             relatedApplicationId = applicationId,
         )

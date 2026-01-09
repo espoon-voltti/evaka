@@ -181,10 +181,19 @@ WHERE acc.id = ${bind(accountId)}
         }
 }
 
-fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
-    return createUpdate {
-            sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
-        }
+fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.MUNICIPAL)
+
+fun Database.Transaction.createServiceWorkerMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.SERVICE_WORKER)
+
+fun Database.Transaction.createFinanceMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.FINANCE)
+
+private fun Database.Transaction.createSingletonMessageAccount(
+    accountType: AccountType
+): MessageAccountId {
+    return createUpdate { sql("INSERT INTO message_account (type) VALUES (${bind(accountType)})") }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 }
@@ -226,14 +235,11 @@ RETURNING id
         .exactlyOne<MessageAccountId>()
 }
 
-fun Database.Transaction.upsertEmployeeMessageAccount(
-    employeeId: EmployeeId,
-    accountType: AccountType = AccountType.PERSONAL,
-): MessageAccountId {
+fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     return createQuery {
             sql(
                 """
-INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(accountType)})
+INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(AccountType.PERSONAL)})
 ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
 RETURNING id
 """

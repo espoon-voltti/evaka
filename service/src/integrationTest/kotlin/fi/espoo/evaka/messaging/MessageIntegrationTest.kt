@@ -76,18 +76,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             roles = setOf(UserRole.UNIT_SUPERVISOR),
         )
     private val serviceWorker =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
+        DevEmployee(
+            firstName = "Service",
+            lastName = "Worker",
             roles = setOf(UserRole.SERVICE_WORKER),
         )
     private val messager =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
+        DevEmployee(
+            firstName = "Municipal",
+            lastName = "Messager",
             roles = setOf(UserRole.MESSAGING),
         )
     private val financeAdmin =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
+        DevEmployee(
+            firstName = "Finance",
+            lastName = "Admin",
             roles = setOf(UserRole.FINANCE_ADMIN),
         )
     private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
@@ -251,15 +254,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
 
-            tx.insert(
-                DevEmployee(id = serviceWorker.id, firstName = "Service", lastName = "Worker")
-            )
-            serviceWorkerAccount =
-                tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
-            tx.insert(DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager"))
-            municipalAccount = tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
-            tx.insert(DevEmployee(id = financeAdmin.id, firstName = "Finance", lastName = "Admin"))
-            financeAccount = tx.upsertEmployeeMessageAccount(financeAdmin.id, AccountType.FINANCE)
+            tx.insert(serviceWorker)
+            serviceWorkerAccount = tx.createServiceWorkerMessageAccount()
+            tx.insert(messager)
+            municipalAccount = tx.createMunicipalMessageAccount()
+            tx.insert(financeAdmin)
+            financeAccount = tx.createFinanceMessageAccount()
         }
     }
 
@@ -745,7 +745,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         messageType = MessageType.MESSAGE,
                         sender = financeAccount,
                         recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-                        user = financeAdmin,
+                        user = financeAdmin.user,
                         sensitive = true,
                     )
                 }
@@ -765,7 +765,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         messageType = MessageType.MESSAGE,
                         sender = municipalAccount,
                         recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-                        user = messager,
+                        user = messager.user,
                         sensitive = true,
                     )
                 }
@@ -785,7 +785,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         messageType = MessageType.MESSAGE,
                         sender = serviceWorkerAccount,
                         recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-                        user = serviceWorker,
+                        user = serviceWorker.user,
                         sensitive = true,
                     )
                 }
@@ -1238,7 +1238,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = applicationId,
                 )
 
@@ -1281,7 +1281,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                user = serviceWorker,
+                user = serviceWorker.user,
                 relatedApplicationId = applicationId,
             )
             val thread = getRegularMessageThreads(person1)[0]
@@ -1292,7 +1292,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person1,
                 now = clock.now(),
             )
-            assertEquals(1, unreadMessagesCount(serviceWorkerAccount, serviceWorker))
+            assertEquals(1, unreadMessagesCount(serviceWorkerAccount, serviceWorker.user))
         }
 
         @Test
@@ -1320,7 +1320,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = folder2.name,
                     ),
                 ),
-                getFolders(serviceWorker).toSet(),
+                getFolders(serviceWorker.user).toSet(),
             )
 
             val applicationId =
@@ -1339,20 +1339,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                user = serviceWorker,
+                user = serviceWorker.user,
                 relatedApplicationId = applicationId,
                 initialFolder = folder1.id,
             )
 
             assertEquals(
                 1,
-                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker.user).data.size,
             )
             val threadId =
-                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.first().id
+                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker.user)
+                    .data
+                    .first()
+                    .id
             assertEquals(
                 0,
-                getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker).data.size,
+                getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker.user).data.size,
             )
 
             val thread = getRegularMessageThreads(person1)[0]
@@ -1371,22 +1374,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unreadCopyCount = 0,
                     unreadCountByFolder = mapOf(folder1.id to 1),
                 ),
-                unreadMessagesCounts(serviceWorkerAccount, serviceWorker),
+                unreadMessagesCounts(serviceWorkerAccount, serviceWorker.user),
             )
             assertEquals(
                 1,
-                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker.user).data.size,
             )
             assertEquals(
                 2,
-                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker)
+                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker.user)
                     .data
                     .first()
                     .messages
                     .size,
             )
 
-            moveThreadToFolder(serviceWorkerAccount, threadId, folder2.id, serviceWorker)
+            moveThreadToFolder(serviceWorkerAccount, threadId, folder2.id, serviceWorker.user)
 
             assertEquals(
                 UnreadCountByAccount(
@@ -1395,19 +1398,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unreadCopyCount = 0,
                     unreadCountByFolder = mapOf(folder2.id to 1),
                 ),
-                unreadMessagesCounts(serviceWorkerAccount, serviceWorker),
+                unreadMessagesCounts(serviceWorkerAccount, serviceWorker.user),
             )
             assertEquals(
                 0,
-                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker).data.size,
+                getMessagesInFolder(serviceWorkerAccount, folder1.id, serviceWorker.user).data.size,
             )
             assertEquals(
                 1,
-                getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker).data.size,
+                getMessagesInFolder(serviceWorkerAccount, folder2.id, serviceWorker.user).data.size,
             )
 
             assertThrows<NotFound> {
-                moveThreadToFolder(serviceWorkerAccount, threadId, folderOther.id, serviceWorker)
+                moveThreadToFolder(
+                    serviceWorkerAccount,
+                    threadId,
+                    folderOther.id,
+                    serviceWorker.user,
+                )
             }
         }
 
@@ -1421,7 +1429,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = null,
                 )
             }
@@ -1436,7 +1444,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
             }
@@ -1451,7 +1459,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Area(testArea.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
             }
@@ -1466,7 +1474,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
             }
@@ -1481,7 +1489,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Group(groupId1)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
             }
@@ -1532,7 +1540,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
                     recipients = listOf(MessageRecipient.Citizen(testAdult_2.id)),
-                    user = serviceWorker,
+                    user = serviceWorker.user,
                     relatedApplicationId = applicationId,
                 )
             }
@@ -2014,7 +2022,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         MessageRecipient.Child(testChild_8.id),
                     ),
                 filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 
@@ -2047,7 +2055,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         shiftCare = true,
                         intermittentShiftCare = true,
                     ),
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 
@@ -2076,7 +2084,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         MessageRecipient.Child(testChild_8.id),
                     ),
                 filters = MessageController.PostMessageFilters(familyDaycare = true),
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 
@@ -2093,7 +2101,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun `preflight check takes into account recipient filtering`() {
             val response =
                 postNewThreadPreflightCheck(
-                    user = messager,
+                    user = messager.user,
                     sender = municipalAccount,
                     recipients =
                         listOf(
@@ -2238,7 +2246,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = municipalAccount,
                 recipients = listOf(MessageRecipient.Area(testArea.id)),
                 recipientNames = allRecipientNames,
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 
@@ -2735,7 +2743,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
                 recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                user = financeAdmin,
+                user = financeAdmin.user,
             )
 
             assertThrows<BadRequest> {
@@ -2749,11 +2757,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             MessageRecipient.Citizen(testAdult_1.id),
                             MessageRecipient.Citizen(testAdult_2.id),
                         ),
-                    user = financeAdmin,
+                    user = financeAdmin.user,
                 )
             }
 
-            assertEquals(1, getSentMessages(financeAccount, financeAdmin).size)
+            assertEquals(1, getSentMessages(financeAccount, financeAdmin.user).size)
         }
 
         @Test
@@ -2764,7 +2772,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
                 recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                user = financeAdmin,
+                user = financeAdmin.user,
             )
             val thread = getRegularMessageThreads(person1)[0]
             replyToMessage(
@@ -2774,7 +2782,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person1,
                 now = clock.now(),
             )
-            assertEquals(1, unreadMessagesCount(financeAccount, financeAdmin))
+            assertEquals(1, unreadMessagesCount(financeAccount, financeAdmin.user))
         }
 
         @Test
@@ -2786,7 +2794,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
                     recipients = listOf(MessageRecipient.Child(testChild_1.id)),
-                    user = financeAdmin,
+                    user = financeAdmin.user,
                 )
             }
         }
@@ -2800,7 +2808,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
                     recipients = listOf(MessageRecipient.Area(testArea.id)),
-                    user = financeAdmin,
+                    user = financeAdmin.user,
                 )
             }
         }
@@ -2814,7 +2822,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
                     recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
-                    user = financeAdmin,
+                    user = financeAdmin.user,
                 )
             }
         }
@@ -2828,7 +2836,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
                     recipients = listOf(MessageRecipient.Group(groupId1)),
-                    user = financeAdmin,
+                    user = financeAdmin.user,
                 )
             }
         }
@@ -2858,7 +2866,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = folder2.name,
                     ),
                 ),
-                getFolders(financeAdmin).toSet(),
+                getFolders(financeAdmin.user).toSet(),
             )
 
             postNewThread(
@@ -2867,14 +2875,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
                 recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
-                user = financeAdmin,
+                user = financeAdmin.user,
                 initialFolder = folder1.id,
             )
 
-            assertEquals(1, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
+            assertEquals(
+                1,
+                getMessagesInFolder(financeAccount, folder1.id, financeAdmin.user).data.size,
+            )
             val threadId =
-                getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.first().id
-            assertEquals(0, getMessagesInFolder(financeAccount, folder2.id, financeAdmin).data.size)
+                getMessagesInFolder(financeAccount, folder1.id, financeAdmin.user).data.first().id
+            assertEquals(
+                0,
+                getMessagesInFolder(financeAccount, folder2.id, financeAdmin.user).data.size,
+            )
 
             val thread = getRegularMessageThreads(person1)[0]
             replyToMessage(
@@ -2892,19 +2906,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unreadCopyCount = 0,
                     unreadCountByFolder = mapOf(folder1.id to 1),
                 ),
-                unreadMessagesCounts(financeAccount, financeAdmin),
+                unreadMessagesCounts(financeAccount, financeAdmin.user),
             )
-            assertEquals(1, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
+            assertEquals(
+                1,
+                getMessagesInFolder(financeAccount, folder1.id, financeAdmin.user).data.size,
+            )
             assertEquals(
                 2,
-                getMessagesInFolder(financeAccount, folder1.id, financeAdmin)
+                getMessagesInFolder(financeAccount, folder1.id, financeAdmin.user)
                     .data
                     .first()
                     .messages
                     .size,
             )
 
-            moveThreadToFolder(financeAccount, threadId, folder2.id, financeAdmin)
+            moveThreadToFolder(financeAccount, threadId, folder2.id, financeAdmin.user)
 
             assertEquals(
                 UnreadCountByAccount(
@@ -2913,13 +2930,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unreadCopyCount = 0,
                     unreadCountByFolder = mapOf(folder2.id to 1),
                 ),
-                unreadMessagesCounts(financeAccount, financeAdmin),
+                unreadMessagesCounts(financeAccount, financeAdmin.user),
             )
-            assertEquals(0, getMessagesInFolder(financeAccount, folder1.id, financeAdmin).data.size)
-            assertEquals(1, getMessagesInFolder(financeAccount, folder2.id, financeAdmin).data.size)
+            assertEquals(
+                0,
+                getMessagesInFolder(financeAccount, folder1.id, financeAdmin.user).data.size,
+            )
+            assertEquals(
+                1,
+                getMessagesInFolder(financeAccount, folder2.id, financeAdmin.user).data.size,
+            )
 
             assertThrows<NotFound> {
-                moveThreadToFolder(financeAccount, threadId, folderOther.id, financeAdmin)
+                moveThreadToFolder(financeAccount, threadId, folderOther.id, financeAdmin.user)
             }
         }
     }
@@ -2959,17 +2982,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             // when the author himself replies to the bulletin, it succeeds
-            //
-            // NOTE: This will not be implemented for now, because author
-            //       replying to their own message (without other replies)
-            //       lacks spec. It would be bad UX to only allow replies
-            //       to own bulletin only. (Date 25.11.2021)
             replyToMessage(
                 sender = employee1Account,
                 user = employee1,
                 messageId = thread.messages.last().id,
                 recipientAccountIds = setOf(person1Account),
                 content = "Nauttikaa siitä",
+                now = sendTime.plusMinutes(5),
             )
 
             // then the recipient can see it
@@ -3039,7 +3058,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(0, getMessageCopies(employee1, group2Account, readTime).size)
 
             // no copy for service worker
-            assertEquals(0, getMessageCopies(serviceWorker, serviceWorkerAccount, readTime).size)
+            assertEquals(
+                0,
+                getMessageCopies(serviceWorker.user, serviceWorkerAccount, readTime).size,
+            )
         }
 
         @Test
@@ -3085,7 +3107,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.BULLETIN,
                 sender = municipalAccount,
                 recipients = listOf(MessageRecipient.Area(testArea.id)),
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 
@@ -3138,7 +3160,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.BULLETIN,
                 sender = municipalAccount,
                 recipients = listOf(MessageRecipient.Group(groupId1)),
-                user = messager,
+                user = messager.user,
                 now = sendTime,
             )
 

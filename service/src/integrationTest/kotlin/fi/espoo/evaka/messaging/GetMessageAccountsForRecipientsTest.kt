@@ -1691,7 +1691,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                 )
 
                 tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
-                tx.upsertEmployeeMessageAccount(supervisor.id, AccountType.PERSONAL)
+                tx.upsertEmployeeMessageAccount(supervisor.id)
             }
 
         val parentGroup1AccountId = db.read { tx -> tx.getCitizenMessageAccount(parentGroup1.id) }
@@ -1871,7 +1871,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     )
                 )
 
-                tx.upsertEmployeeMessageAccount(municipalEmployee.id, AccountType.MUNICIPAL)
+                tx.createMunicipalMessageAccount()
             }
 
         val parent1AccountId = db.read { tx -> tx.getCitizenMessageAccount(parent1.id) }
