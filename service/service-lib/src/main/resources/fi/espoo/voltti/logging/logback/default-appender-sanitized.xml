@@ -26,7 +26,6 @@ Sanitized default appender logback configuration provided for import
         </filter>
         <!-- With a Composite encoder, desired fields need to be explicitly defined -->
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <decorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
             <decorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
                 <!--Hide social security numbers from logs-->
                 <valueMasker class="fi.espoo.voltti.logging.SsnMasker"/>

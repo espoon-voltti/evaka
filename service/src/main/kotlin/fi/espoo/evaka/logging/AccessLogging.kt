@@ -13,7 +13,6 @@ import ch.qos.logback.core.encoder.Encoder
 import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
-import fi.espoo.voltti.logging.JsonLoggingConfig
 import java.time.Instant
 import java.time.ZoneOffset
 import net.logstash.logback.composite.AbstractJsonProvider
@@ -89,7 +88,6 @@ fun Context.createJsonEncoder(
     collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>
 ) =
     AccessEventCompositeJsonEncoder().apply {
-        this.addDecorator(JsonLoggingConfig())
         this.providers =
             JsonProviders<IAccessEvent>().apply {
                 addProvider(

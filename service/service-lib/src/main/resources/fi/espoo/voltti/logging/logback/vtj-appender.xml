@@ -20,7 +20,6 @@ VTJ query appender logback configuration provided for import
             <onMatch>NEUTRAL</onMatch>
         </filter>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <decorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
             <includeTags>false</includeTags>
             <excludeMdcKeyName>spanExportable</excludeMdcKeyName>
             <excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>

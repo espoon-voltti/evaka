@@ -22,7 +22,6 @@ Default appender logback configuration provided for import
         </filter>
         <!-- With a Composite encoder, desired fields need to be explicitly defined -->
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <decorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
             <providers>
                 <logLevel>
                     <fieldName>logLevel</fieldName>
