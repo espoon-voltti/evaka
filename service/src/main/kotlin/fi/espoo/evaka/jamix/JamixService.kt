@@ -5,11 +5,6 @@
 package fi.espoo.evaka.jamix
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Method
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.daycare.domain.Language
@@ -26,6 +21,7 @@ import fi.espoo.evaka.reports.mealReportData
 import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.OkHttpClientFactory
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -37,11 +33,15 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
+import fi.espoo.evaka.shared.utils.executeWithRetriesForString
 import fi.espoo.evaka.specialdiet.*
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.readValue
@@ -57,7 +57,7 @@ class JamixService(
     private val emailEnv: EmailEnv,
     private val emailClient: EmailClient,
 ) {
-    private val client = env?.let { JamixHttpClient(it, jsonMapper) }
+    private val client = env?.let { JamixClient(it, jsonMapper) }
 
     init {
         asyncJobRunner.registerHandler(::sendOrder)
@@ -374,10 +374,12 @@ private fun getChildInfos(
     }
 }
 
-interface JamixClient {
-    data class Customer(val customerId: Int, val customerNumber: Int)
+class JacksonJamixSerializer(private val jsonMapper: JsonMapper) {
+    fun serialize(value: Any?): String = jsonMapper.writeValueAsString(value)
+}
 
-    fun getCustomers(): List<Customer>
+class JamixClient(private val env: JamixEnv, private val jsonMapper: JsonMapper) {
+    data class Customer(val customerId: Int, val customerNumber: Int)
 
     data class MealOrder(
         val customerID: Int,
@@ -394,57 +396,43 @@ interface JamixClient {
         val textureID: Int?,
     )
 
-    fun createMealOrder(order: MealOrder)
-
-    fun getDiets(): List<JamixSpecialDiet>
-
-    fun getTextures(): List<JamixTexture>
-}
-
-class JacksonJamixSerializer(private val jsonMapper: JsonMapper) {
-    fun serialize(value: Any?): String = jsonMapper.writeValueAsString(value)
-}
-
-class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMapper) : JamixClient {
-    private val fuel = FuelManager()
     private val serializer = JacksonJamixSerializer(jsonMapper)
 
-    override fun getCustomers(): List<JamixClient.Customer> =
-        request(Method.GET, env.url.resolve("customers"))
+    private val httpClient =
+        OkHttpClientFactory.builder()
+            .timeouts(
+                connectTimeout = Duration.ofSeconds(120),
+                readTimeout = Duration.ofSeconds(120),
+                writeTimeout = Duration.ofSeconds(120),
+            )
+            .addInterceptor(basicAuthInterceptor(env.user, env.password.value))
+            .build()
 
-    override fun createMealOrder(order: JamixClient.MealOrder): Unit =
-        request(Method.POST, env.url.resolve("v2/mealorders"), order)
+    fun getCustomers(): List<Customer> = getRequest("customers")
 
-    override fun getDiets(): List<JamixSpecialDiet> = request(Method.GET, env.url.resolve("diets"))
+    fun createMealOrder(order: MealOrder) {
+        postRequest("v2/mealorders", order)
+    }
 
-    override fun getTextures(): List<JamixTexture> =
-        request(Method.GET, env.url.resolve("textures"))
+    fun getDiets(): List<JamixSpecialDiet> = getRequest("diets")
 
-    private inline fun <reified R> request(method: Method, url: URI, body: Any? = null): R {
-        val (request, response, result) =
-            fuel
-                .request(method, url.toString())
-                .timeout(120000)
-                .timeoutRead(120000)
-                .authentication()
-                .basic(env.user, env.password.value)
-                .let { if (body != null) it.jsonBody(serializer.serialize(body)) else it }
-                .responseString()
-        return when (result) {
-            is Result.Success -> {
-                if (Unit is R) {
-                    Unit
-                } else {
-                    jsonMapper.readValue(result.get())
-                }
-            }
+    fun getTextures(): List<JamixTexture> = getRequest("textures")
 
-            is Result.Failure -> {
-                error(
-                    "failed to request ${request.method} ${request.url}: status=${response.statusCode} error=${result.error.errorData.decodeToString()}"
-                )
-            }
+    private inline fun <reified R> getRequest(endpoint: String): R {
+        val url = env.url.resolve(endpoint).toString()
+        val request = Request.Builder().url(url).get().build()
+
+        return httpClient.executeWithRetriesForString(request).let { response ->
+            jsonMapper.readValue(response)
         }
+    }
+
+    private fun postRequest(endpoint: String, body: Any?) {
+        val url = env.url.resolve(endpoint).toString()
+        val jsonBody = serializer.serialize(body).toRequestBody("application/json".toMediaType())
+        val request = Request.Builder().url(url).post(jsonBody).build()
+
+        httpClient.executeWithRetriesForString(request)
     }
 }
 
