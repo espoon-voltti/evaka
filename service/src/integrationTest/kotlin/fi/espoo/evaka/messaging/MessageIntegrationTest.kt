@@ -2553,7 +2553,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             val groupAccount =
                 db.transaction { tx -> tx.createDaycareGroupMessageAccount(group.id) }
-            val municipalAccount = db.transaction { tx -> tx.createMunicipalMessageAccount() }
 
             // Message thread beyond employee access limit (1 week before daycare group acl
             // creation)
