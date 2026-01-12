@@ -54,3 +54,5 @@ management:
   endpoint:
     health:
       enabled: true
+      probes:
+        enabled: false
