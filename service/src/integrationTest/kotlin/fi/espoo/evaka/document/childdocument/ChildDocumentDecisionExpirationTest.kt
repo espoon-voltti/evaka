@@ -161,7 +161,7 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `decision expires if placement unit changes`() {
+    fun `decision expires if placement unit has changed today`() {
         setup(placementEnd = yesterday)
         db.transaction { tx ->
             tx.insert(
@@ -175,6 +175,23 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
         runJobAndExpect(true)
+    }
+
+    @Test
+    fun `decision does not re-expire if placement unit has changed already earlier and expiration has been manually reverted`() {
+        setup(placementEnd = yesterday.minusDays(1))
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare2.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = yesterday,
+                    endDate = today.plusMonths(6),
+                )
+            )
+        }
+        runJobAndExpect(false)
     }
 
     @Test
