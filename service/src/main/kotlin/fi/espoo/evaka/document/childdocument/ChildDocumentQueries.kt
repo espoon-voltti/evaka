@@ -622,14 +622,16 @@ fun Database.Transaction.endExpiredChildDocumentDecisions(
             LEFT JOIN placement current_placement ON cd.child_id = current_placement.child_id AND
                 daterange(current_placement.start_date, current_placement.end_date, '[]') @> ${bind(today)}
             LEFT JOIN daycare current_unit ON current_unit.id = current_placement.unit_id
-            LEFT JOIN daycare decision_unit ON decision_unit.id = cdd.daycare_id
+            LEFT JOIN placement yesterday_placement ON cd.child_id = yesterday_placement.child_id AND
+                daterange(yesterday_placement.start_date, yesterday_placement.end_date, '[]') @> ${bind(yesterday)}
+            LEFT JOIN daycare yesterday_unit ON yesterday_unit.id = yesterday_placement.daycare_id
             WHERE cdd.status = 'ACCEPTED'
                 AND (cdd.valid_from <= ${bind(yesterday)})
                 AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(yesterday)})
                 AND (
                     (current_placement.id IS NULL) OR 
                     (NOT (current_placement.type = ANY(dt.placement_types))) OR 
-                    (dt.end_decision_when_unit_changes = TRUE AND cdd.daycare_id IS NOT NULL AND decision_unit.name <> current_unit.name)
+                    (dt.end_decision_when_unit_changes = TRUE AND cdd.daycare_id IS NOT NULL AND yesterday_unit.name <> current_unit.name)
                 )
         )
         UPDATE child_document_decision cdd
