@@ -586,7 +586,7 @@ class MessageController(
                             0
                         } else {
                             tx.getMessageAccountsForRecipients(
-                                    accountId = accountId,
+                                    senderAccount = tx.getSenderAccount(accountId),
                                     recipients = body.recipients,
                                     filters = body.filters,
                                     date = clock.today(),
@@ -702,6 +702,12 @@ class MessageController(
                         ) {
                             throw BadRequest(
                                 "Service worker message accounts can only send messages to citizens with sent applications"
+                            )
+                        }
+                    } else {
+                        if (body.relatedApplicationId != null) {
+                            throw BadRequest(
+                                "Only service worker message accounts can have a related application"
                             )
                         }
                     }

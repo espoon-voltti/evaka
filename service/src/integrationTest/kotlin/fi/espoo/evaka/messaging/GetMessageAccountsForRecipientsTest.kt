@@ -177,7 +177,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val areaAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = areaRecipients,
                     filters = null,
                     date = today,
@@ -191,7 +191,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val currentUnitAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id, false)),
                     filters = null,
                     date = today,
@@ -205,7 +205,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val starterUnitAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id, true)),
                     filters = null,
                     date = today,
@@ -218,7 +218,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val currentGroupAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Group(group.id, false)),
                     filters = null,
                     date = today,
@@ -232,7 +232,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val starterGroupAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Group(group.id, true)),
                     filters = null,
                     date = today,
@@ -246,7 +246,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val childAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = childRecipients,
                     filters = null,
                     date = today,
@@ -476,7 +476,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val recipientMessageAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = areaRecipients,
                     filters = postMessageFilter,
                     date = today,
@@ -550,7 +550,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts2018 =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter2018,
                     date = today,
@@ -565,7 +565,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts2019And2020 =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter2019And2020,
                     date = today,
@@ -712,7 +712,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -857,7 +857,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1005,7 +1005,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1146,7 +1146,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1283,7 +1283,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1386,7 +1386,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1517,7 +1517,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1611,7 +1611,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filter,
                     date = today,
@@ -1691,7 +1691,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                 )
 
                 tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
-                tx.upsertEmployeeMessageAccount(supervisor.id, AccountType.PERSONAL)
+                tx.upsertEmployeeMessageAccount(supervisor.id)
             }
 
         val parentGroup1AccountId = db.read { tx -> tx.getCitizenMessageAccount(parentGroup1.id) }
@@ -1700,7 +1700,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = null,
                     date = today,
@@ -1794,7 +1794,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = groupAccountId,
+                    senderAccount = tx.getSenderAccount(groupAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = null,
                     date = today,
@@ -1871,7 +1871,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
                     )
                 )
 
-                tx.upsertEmployeeMessageAccount(municipalEmployee.id, AccountType.MUNICIPAL)
+                tx.createMunicipalMessageAccount()
             }
 
         val parent1AccountId = db.read { tx -> tx.getCitizenMessageAccount(parent1.id) }
@@ -1880,7 +1880,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = municipalAccountId,
+                    senderAccount = tx.getSenderAccount(municipalAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = null,
                     date = today,
@@ -1950,7 +1950,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Child(child.id)),
                     filters = null,
                     date = today,
@@ -2034,7 +2034,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Child(child.id)),
                     filters = null,
                     date = today,
@@ -2123,7 +2123,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = null,
                     date = today,
@@ -2207,7 +2207,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accountsViaBackupUnit =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(backupDaycare.id)),
                     filters = null,
                     date = today,
@@ -2224,7 +2224,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accountsViaBackupGroup =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Group(backupGroup.id)),
                     filters = null,
                     date = today,
@@ -2289,7 +2289,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id)),
                     filters = null,
                     date = today,
@@ -2354,7 +2354,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id)),
                     filters = null,
                     date = today,
@@ -2434,7 +2434,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val starterAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id, starter = true)),
                     filters = null,
                     date = today,
@@ -2542,7 +2542,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val starterAccounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Unit(daycare.id, starter = true)),
                     filters = null,
                     date = today,
@@ -2608,7 +2608,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = emptySet(),
                     filters = null,
                     date = today,
@@ -2643,7 +2643,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(emptyArea.id)),
                     filters = null,
                     date = today,
@@ -2703,7 +2703,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = filterExcludingAllChildren,
                     date = today,
@@ -2767,7 +2767,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accountsWithNullFilter =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters = null,
                     date = today,
@@ -2777,7 +2777,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accountsWithDefaultFilter =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients = setOf(MessageRecipient.Area(area.id)),
                     filters =
                         MessageController.PostMessageFilters(
@@ -2928,7 +2928,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients =
                         setOf(
                             MessageRecipient.Area(area1.id),
@@ -3002,7 +3002,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients =
                         setOf(
                             MessageRecipient.Area(area.id),
@@ -3096,7 +3096,7 @@ class GetMessageAccountsForRecipientsTest : PureJdbiTest(resetDbBeforeEach = tru
         val accounts =
             db.read { tx ->
                 tx.getMessageAccountsForRecipients(
-                    accountId = employeeAccountId,
+                    senderAccount = tx.getSenderAccount(employeeAccountId),
                     recipients =
                         setOf(
                             MessageRecipient.Unit(daycare.id, starter = false),
