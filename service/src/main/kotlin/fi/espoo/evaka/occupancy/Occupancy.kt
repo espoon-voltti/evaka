@@ -10,8 +10,11 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPlannedCaretakersForGroups
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.SpeculatedPlacement
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -695,7 +698,11 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
                 placementDrafts.map { it.childId } +
                 placementPlans.map { it.childId })
             .toSet()
-    val childOperationalDates = this.getOperationalDatesForChildren(range, childIds)
+
+    val ignoreChildOperationDays = type in listOf(OccupancyType.DRAFT, OccupancyType.PLANNED)
+    val childOperationalDates =
+        if (ignoreChildOperationDays) emptyMap()
+        else this.getOperationalDatesForChildren(range, childIds)
 
     val childBirthdays =
         this.createQuery {
@@ -833,6 +840,9 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
     val placementsAndPlans =
         (placements + placementPlans + placementDrafts).groupBy { it.groupingId }
 
+    val clubTerms = getClubTerms()
+    val preschoolTerms = getPreschoolTerms()
+
     return caretakerCounts.map { (key, countsForKey) ->
         val occupancies =
             countsForKey
@@ -843,14 +853,29 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                         (placementsAndPlans[key.groupingId] ?: listOf())
                             .filter { it.period.includes(date) }
                             .filter {
-                                val serviceNeedIsKnown =
-                                    serviceNeeds[it.placementId]?.any { sn ->
-                                        sn.period.includes(date)
-                                    } ?: false
-                                val ignoreChildOperationDays =
-                                    !serviceNeedIsKnown && type != OccupancyType.REALIZED
                                 ignoreChildOperationDays ||
                                     childOperationalDates[it.childId]?.contains(date) == true
+                            }
+                            .filter {
+                                // filter out term breaks
+                                when (it.type) {
+                                    PlacementType.PRESCHOOL,
+                                    PlacementType.PREPARATORY -> {
+                                        preschoolTerms.none { term ->
+                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                        }
+                                    }
+
+                                    PlacementType.CLUB -> {
+                                        clubTerms.none { term ->
+                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                        }
+                                    }
+
+                                    else -> {
+                                        true
+                                    }
+                                }
                             }
                             .filterNot {
                                 childWasAbsentWholeDay(
