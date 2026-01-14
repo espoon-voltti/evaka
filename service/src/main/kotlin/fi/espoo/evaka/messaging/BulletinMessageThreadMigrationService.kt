@@ -181,7 +181,7 @@ WHERE
             sql(
                 """
 DELETE FROM message_thread_children
-WHERE message_thread_id = ANY(${bind(group.map { it.threadId })})
+WHERE thread_id = ANY(${bind(group.map { it.threadId })})
 """
             )
         }
