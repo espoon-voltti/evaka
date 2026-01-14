@@ -150,12 +150,27 @@ WHERE message_id = ANY(${bind(messageIdsToDelete)})
             )
         }
 
+        // Consolidate reiceiver's message_thread_participant entries to the kept thread
         execute {
             sql(
                 """
 UPDATE message_thread_participant
 SET thread_id = ${bind(toKeep.threadId)}
-WHERE thread_id = ANY(${bind(threadIdsToDelete)})
+WHERE
+    thread_id = ANY(${bind(threadIdsToDelete)}) AND
+    last_received_timestamp IS NOT NULL
+"""
+            )
+        }
+
+        // Delete sender's message_thread_participant entries from deleted threads
+        execute {
+            sql(
+                """
+DELETE FROM message_thread_participant
+WHERE
+    thread_id = ANY(${bind(threadIdsToDelete)}) AND
+    last_sent_timestamp IS NOT NULL
 """
             )
         }
