@@ -495,6 +495,7 @@ export class AssistanceNeedsAndActionsReport {
   assistanceActionOptionSelect: MultiSelect
   placementTypeSelect: MultiSelect
   zeroRowsCheckbox: Checkbox
+  includeDecisionsCheckbox: Checkbox
 
   constructor(private page: Page) {
     this.needsAndActionsHeader = page.findByDataQa(
@@ -524,6 +525,9 @@ export class AssistanceNeedsAndActionsReport {
     )
     this.zeroRowsCheckbox = new Checkbox(
       this.page.findByDataQa('zero-rows-checkbox')
+    )
+    this.includeDecisionsCheckbox = new Checkbox(
+      this.page.findByDataQa('include-decisions-checkbox')
     )
   }
 

@@ -45,6 +45,7 @@ class AssistanceNeedsAndActionsReportController(
         @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
         @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
         @RequestParam placementTypes: List<PlacementType> = emptyList(),
+        @RequestParam includeDecisions: Boolean = false,
     ): AssistanceNeedsAndActionsReport {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -68,6 +69,7 @@ class AssistanceNeedsAndActionsReportController(
                                 preschoolAssistanceLevels,
                                 otherAssistanceMeasureTypes,
                                 placementPredicate,
+                                includeDecisions,
                             ),
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
@@ -100,8 +102,7 @@ class AssistanceNeedsAndActionsReportController(
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
         val assistanceNeedVoucherCoefficientCount: Int,
-        val daycareAssistanceNeedDecisionCount: Int,
-        val preschoolAssistanceNeedDecisionCount: Int,
+        @Json val documentDecisionCounts: Map<String, Int>,
     )
 
     @GetMapping("/employee/reports/assistance-needs-and-actions/by-child")
@@ -114,6 +115,7 @@ class AssistanceNeedsAndActionsReportController(
         @RequestParam preschoolAssistanceLevels: List<PreschoolAssistanceLevel> = emptyList(),
         @RequestParam otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType> = emptyList(),
         @RequestParam placementTypes: List<PlacementType> = emptyList(),
+        @RequestParam includeDecisions: Boolean = false,
     ): AssistanceNeedsAndActionsReportByChild {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -137,6 +139,7 @@ class AssistanceNeedsAndActionsReportController(
                                 preschoolAssistanceLevels,
                                 otherAssistanceMeasureTypes,
                                 placementPredicate,
+                                includeDecisions,
                             ),
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
@@ -172,8 +175,7 @@ class AssistanceNeedsAndActionsReportController(
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
         val assistanceNeedVoucherCoefficient: BigDecimal,
-        val daycareAssistanceNeedDecisionCount: Int,
-        val preschoolAssistanceNeedDecisionCount: Int,
+        @Json val documentDecisionCounts: Map<String, Int>,
     )
 }
 
@@ -186,6 +188,7 @@ private fun Database.Read.getReportRows(
     preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
     placementPredicate: Predicate,
+    includeDecisions: Boolean,
 ) =
     createQuery {
             sql(
@@ -289,33 +292,34 @@ WITH action_counts AS (
     AND vc.validity_period @> ${bind(date)}
     AND ${predicate(placementPredicate.forTable("pl"))}
     GROUP BY daycare_group_id
-), daycare_assistance_need_decision_count AS (
-    SELECT dgp.daycare_group_id,
-           count(decision.id) AS count
-    FROM daycare_group_placement dgp
-    JOIN placement pl ON pl.id = dgp.daycare_placement_id
-    JOIN assistance_need_decision decision ON
-        pl.child_id = decision.child_id
-        AND decision.status = 'ACCEPTED'
-    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
-    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-    AND decision.validity_period @> ${bind(date)}
-    AND ${predicate(placementPredicate.forTable("pl"))}
-    GROUP BY dgp.daycare_group_id
-), preschool_assistance_need_decision_count AS (
-    SELECT dgp.daycare_group_id,
-           count(decision.id) AS count
-    FROM daycare_group_placement dgp
-    JOIN placement pl ON pl.id = dgp.daycare_placement_id
-    JOIN assistance_need_preschool_decision decision ON
-        pl.child_id = decision.child_id
-        AND decision.status = 'ACCEPTED'
-    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
-    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-    AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
-    AND ${predicate(placementPredicate.forTable("pl"))}
-    GROUP BY dgp.daycare_group_id
 )
+${if (includeDecisions)
+""", document_decision_counts AS (
+    SELECT
+        daycare_group_id,
+        jsonb_object_agg(template_name, count) AS document_decision_count
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            dt.name AS template_name,
+            count(DISTINCT cd.id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN child_document cd ON cd.child_id = pl.child_id
+        JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+        JOIN document_template dt ON dt.id = cd.template_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND cd.type IN ('OTHER_DECISION', 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION', 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION')
+        AND cdd.status = 'ACCEPTED'
+        AND daterange(cdd.valid_from, cdd.valid_to, '[]') @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
+        GROUP BY 1, 2
+    ) decision_stats
+    GROUP BY daycare_group_id
+)"""
+    else ""
+}
 
 SELECT
     ca.name AS care_area_name,
@@ -331,8 +335,7 @@ SELECT
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
     coalesce(assistance_need_voucher_coefficient_counts.count, 0) AS assistance_need_voucher_coefficient_count,
-    coalesce(dand.count, 0) AS daycare_assistance_need_decision_count,
-    coalesce(pand.count, 0) AS preschool_assistance_need_decision_count
+    ${if (includeDecisions) "coalesce(ddc.document_decision_count, '{}')" else "'{}'"} AS document_decision_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -341,8 +344,11 @@ LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_
 LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
 LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id
-LEFT JOIN daycare_assistance_need_decision_count dand ON g.id = dand.daycare_group_id
-LEFT JOIN preschool_assistance_need_decision_count pand ON g.id = pand.daycare_group_id
+${if (includeDecisions)
+    """
+LEFT JOIN document_decision_counts ddc ON g.id = ddc.daycare_group_id"""
+    else ""
+}
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
@@ -358,6 +364,7 @@ private fun Database.Read.getReportRowsByChild(
     preschoolAssistanceLevels: List<PreschoolAssistanceLevel>,
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
     placementPredicate: Predicate,
+    includeDecisions: Boolean,
 ) =
     createQuery {
             sql(
@@ -458,35 +465,36 @@ WITH actions AS (
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND vc.validity_period @> ${bind(date)}
         AND ${predicate(placementPredicate.forTable("pl"))}
-), daycare_assistance_need_decision_count AS (
-    SELECT dgp.daycare_group_id,
-           pl.child_id,
-           count(decision.id) AS count
-    FROM daycare_group_placement dgp
-    JOIN placement pl ON pl.id = dgp.daycare_placement_id
-    JOIN assistance_need_decision decision ON
-        pl.child_id = decision.child_id
-        AND decision.status = 'ACCEPTED'
-    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
-    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-    AND decision.validity_period @> ${bind(date)}
-    AND ${predicate(placementPredicate.forTable("pl"))}
-    GROUP BY dgp.daycare_group_id, pl.child_id
-), preschool_assistance_need_decision_count AS (
-    SELECT dgp.daycare_group_id,
-           pl.child_id,
-           count(decision.id) AS count
-    FROM daycare_group_placement dgp
-    JOIN placement pl ON pl.id = dgp.daycare_placement_id
-    JOIN assistance_need_preschool_decision decision ON
-        pl.child_id = decision.child_id
-        AND decision.status = 'ACCEPTED'
-    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
-    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-    AND daterange(decision.valid_from, decision.valid_to, '[]') @> ${bind(date)}
-    AND ${predicate(placementPredicate.forTable("pl"))}
-    GROUP BY dgp.daycare_group_id, pl.child_id
-) 
+)
+${if (includeDecisions)
+    """, document_decision_counts AS (
+    SELECT
+        daycare_group_id,
+        child_id,
+        jsonb_object_agg(template_name, count) AS document_decision_count
+    FROM (
+        SELECT
+            dgp.daycare_group_id,
+            pl.child_id,
+            dt.name AS template_name,
+            count(DISTINCT cd.id) AS count
+        FROM daycare_group_placement dgp
+        JOIN placement pl ON pl.id = dgp.daycare_placement_id
+        JOIN child_document cd ON cd.child_id = pl.child_id
+        JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+        JOIN document_template dt ON dt.id = cd.template_id
+        WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND cd.type IN ('OTHER_DECISION', 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION', 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION')
+        AND cdd.status = 'ACCEPTED'
+        AND daterange(cdd.valid_from, cdd.valid_to, '[]') @> ${bind(date)}
+        AND ${predicate(placementPredicate.forTable("pl"))}
+        GROUP BY 1, 2, 3
+    ) decision_stats
+    GROUP BY daycare_group_id, child_id
+    )"""
+    else ""
+}
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -504,8 +512,7 @@ SELECT
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
     coalesce(assistance_need_voucher_coefficient.coefficient, 1.0) AS assistance_need_voucher_coefficient,
-    coalesce(dand.count, 0) AS daycare_assistance_need_decision_count,
-    coalesce(pand.count, 0) AS preschool_assistance_need_decision_count
+    ${if (includeDecisions) "coalesce(ddc.document_decision_count, '{}')" else "'{}'"} AS document_decision_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -522,8 +529,11 @@ LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_cou
     AND child.id = other_assistance_measure_counts.child_id
 LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_coefficient.daycare_group_id 
    AND child.id = assistance_need_voucher_coefficient.child_id
-LEFT JOIN daycare_assistance_need_decision_count dand ON g.id = dand.daycare_group_id AND child.id = dand.child_id
-LEFT JOIN preschool_assistance_need_decision_count pand ON g.id = pand.daycare_group_id AND child.id = pand.child_id
+${if (includeDecisions)
+    """
+LEFT JOIN document_decision_counts ddc ON g.id = ddc.daycare_group_id AND child.id = ddc.child_id"""
+    else ""
+}
 WHERE ${predicate(unitFilter.forTable("u"))}
 AND ${predicate(placementPredicate.forTable("p"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name

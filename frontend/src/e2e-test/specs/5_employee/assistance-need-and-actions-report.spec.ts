@@ -107,15 +107,13 @@ describe('Assistance need and actions report', () => {
     const report = new AssistanceNeedsAndActionsReport(page)
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1\t0\t0'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
       )
   })
   test('Column filters', async () => {
@@ -156,7 +154,7 @@ describe('Assistance need and actions report', () => {
     const report = new AssistanceNeedsAndActionsReport(page)
 
     await report.needsAndActionsHeader.assertTextEquals(
-      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tVAKA 1\tVAKA 2\tVAKA 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tVAKA 1\tVAKA 2\tVAKA 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN'
     )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
@@ -164,7 +162,7 @@ describe('Assistance need and actions report', () => {
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst('Kuljetusetu')
     await report.assistanceActionOptionSelect.fillAndSelectFirst('Vaka 2')
     await report.needsAndActionsHeader.assertTextEquals(
-      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN'
     )
 
     await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
@@ -175,17 +173,17 @@ describe('Assistance need and actions report', () => {
       'Lapsen kotoutumisen tuki'
     )
     await report.needsAndActionsHeader.assertTextEquals(
-      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 2\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 2\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN'
     )
     await report.assistanceActionOptionSelect.fillAndSelectFirst('Eskari 1')
     await report.assistanceActionOptionSelect.fillAndSelectFirst('Eskari 3')
     await report.needsAndActionsHeader.assertTextEquals(
-      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tERITYINEN TUKI ILMAN PIDENNETTYÄ OPPIVELVOLLISUUTTA\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tESKARI 1\tESKARI 3\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN'
     )
 
     await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
     await report.needsAndActionsHeader.assertTextEquals(
-      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN\tAKTIIVISET VARHAISKASVATUKSEN TUEN PÄÄTÖKSET\tAKTIIVISET ESIOPETUKSEN TUEN PÄÄTÖKSET'
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tTEHOSTETTU TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tVAKA 2\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tKOROTETTU PS-KERROIN'
     )
   })
   test('Counts actions only if child has selected assistance', async () => {
@@ -229,15 +227,13 @@ describe('Assistance need and actions report', () => {
     await report.typeSelect.fillAndSelectFirst('esiopetuksessa')
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0\t0\t0'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
     )
@@ -246,20 +242,18 @@ describe('Assistance need and actions report', () => {
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
 
     await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0\t0\t0'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t1\t0\t0\t0')
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t1\t0\t0\t0')
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
     )
@@ -268,7 +262,7 @@ describe('Assistance need and actions report', () => {
     )
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0')
+      .assertTextEquals('Superkeskus\n' + '\t\t0\t0\t0\t0\t0')
   })
   test('Shows actions only if child has selected assistance', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
@@ -314,7 +308,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-'
       )
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
@@ -322,7 +316,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-'
       )
     await report.preschoolAssistanceLevelSelect.fillAndSelectFirst(
       'Tehostettu tuki'
@@ -333,14 +327,14 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-'
       )
 
     await report.typeSelect.fillAndSelectFirst('varhaiskasvatuksessa')
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\ta test assistance action option\t-'
       )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
@@ -348,7 +342,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\ta test assistance action option\t-'
       )
     await report.daycareAssistanceLevelSelect.fillAndSelectFirst(
       'Yleinen tuki, ei päätöstä'
@@ -359,7 +353,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-'
       )
   })
   test('Shows assistance decision counts', async () => {
@@ -428,16 +422,459 @@ describe('Assistance need and actions report', () => {
     const report = new AssistanceNeedsAndActionsReport(page)
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1\t1\t1'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5\t1\t1'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
       )
+  })
+
+  test('Shows document decision counts aggregated by template name', async () => {
+    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
+
+    // Create two document templates with different names to test dynamic columns
+    const template1 = await Fixture.documentTemplate({
+      name: 'Special Support Decision',
+      type: 'OTHER_DECISION',
+      validity: validDuring.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true,
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'Section 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'TEXT',
+                label: 'Question 1',
+                infoText: '',
+                multiline: false
+              }
+            ]
+          }
+        ]
+      }
+    }).save()
+
+    const template2 = await Fixture.documentTemplate({
+      name: 'Pedagogical Assessment',
+      type: 'OTHER_DECISION',
+      validity: validDuring.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true,
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'Section 1',
+            infoText: '',
+            questions: [
+              {
+                id: 'q1',
+                type: 'TEXT',
+                label: 'Question 1',
+                infoText: '',
+                multiline: false
+              }
+            ]
+          }
+        ]
+      }
+    }).save()
+
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+
+    const child2 = await Fixture.person({
+      id: randomId<PersonId>(),
+      ssn: '030515A901X',
+      firstName: 'Toinen',
+      lastName: 'Lapsi',
+      dateOfBirth: LocalDate.of(2015, 5, 3)
+    }).saveChild()
+
+    const placement2 = await Fixture.placement({
+      childId: child2.id,
+      unitId: unitId,
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: testDaycareGroup.id,
+      daycarePlacementId: placement2.id,
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    await Fixture.daycareAssistance({
+      childId: child2.id,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+
+    await Fixture.childDocument({
+      childId,
+      templateId: template1.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test answer'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: validDuring.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    await Fixture.childDocument({
+      childId: child2.id,
+      templateId: template2.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test answer'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: validDuring.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+    await report.includeDecisionsCheckbox.check()
+
+    await report.needsAndActionsHeader.assertText((text) => {
+      return (
+        text.includes('SPECIAL SUPPORT DECISION') &&
+        text.includes('PEDAGOGICAL ASSESSMENT')
+      )
+    })
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tPEDAGOGICAL ASSESSMENT\tSPECIAL SUPPORT DECISION\tKOROTETTU PS-KERROIN'
+    )
+    // Group row should show 1 for each decision column
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals(
+        'Superkeskus\n' + '\t\t2\t0\t0\t0\t0\t0\t0\t0\t0\t1\t1\t0'
+      )
+
+    // Verify both children appear in child view
+    await report.selectCareAreaFilter('Superkeskus')
+    await report.openUnit('Alkuräjähdyksen päiväkoti')
+    await report.childRows.assertCount(2)
+  })
+
+  test('Excludes rejected and expired document decisions from counts', async () => {
+    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
+    const expiredRange = new FiniteDateRange(
+      mockedTime.subMonths(2),
+      mockedTime.subMonths(1)
+    )
+
+    const templateNameActive = 'Active Support Decision'
+    const templateNameRejected = 'Rejected Support Decision'
+    const templateNameExpired = 'Expired Support Decision'
+
+    const template1 = await Fixture.documentTemplate({
+      name: templateNameActive,
+      type: 'OTHER_DECISION',
+      validity: validDuring.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true
+    }).save()
+
+    const template2 = await Fixture.documentTemplate({
+      name: templateNameRejected,
+      type: 'OTHER_DECISION',
+      validity: validDuring.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true
+    }).save()
+
+    const template3 = await Fixture.documentTemplate({
+      name: templateNameExpired,
+      type: 'OTHER_DECISION',
+      validity: expiredRange.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true
+    }).save()
+
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+
+    // Accepted decision
+    await Fixture.childDocument({
+      childId,
+      templateId: template1.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: validDuring.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    // Rejected decision - should not show in report
+    await Fixture.childDocument({
+      childId,
+      templateId: template2.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'REJECTED',
+        validity: null,
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: null
+      })
+      .save()
+
+    // Expired decision - should not show in report
+    await Fixture.childDocument({
+      childId,
+      templateId: template3.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: expiredRange.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+    await report.includeDecisionsCheckbox.check()
+
+    await report.needsAndActionsHeader.assertText((text) =>
+      text.includes(templateNameActive.toUpperCase())
+    )
+    await report.needsAndActionsHeader.assertText(
+      (text) => !text.includes(templateNameRejected.toUpperCase())
+    )
+    await report.needsAndActionsHeader.assertText(
+      (text) => !text.includes(templateNameExpired.toUpperCase())
+    )
+  })
+
+  test('Aggregates multiple document decisions with same template name', async () => {
+    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
+
+    const templateName = 'Support Decision'
+    // Create two templates with the same name but different validity periods,
+    // referring to a case of document "continuity" when templates are updated / changed
+    const template1 = await Fixture.documentTemplate({
+      name: templateName,
+      type: 'OTHER_DECISION',
+      validity: validDuring.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true
+    }).save()
+
+    const templateValidEarlier = new FiniteDateRange(
+      mockedTime.subMonths(4),
+      mockedTime.subMonths(2)
+    )
+    const child2placementDateRange = new FiniteDateRange(
+      mockedTime.subMonths(2),
+      mockedTime.addMonths(1)
+    )
+    const template2 = await Fixture.documentTemplate({
+      name: templateName,
+      type: 'OTHER_DECISION',
+      validity: templateValidEarlier.asDateRange(),
+      published: true,
+      endDecisionWhenUnitChanges: true
+    }).save()
+
+    const child2 = await Fixture.person({
+      id: randomId<PersonId>(),
+      ssn: '080214A9122',
+      firstName: 'Second',
+      lastName: 'Child',
+      dateOfBirth: LocalDate.of(2014, 2, 8)
+    }).saveChild()
+
+    const placement2 = await Fixture.placement({
+      childId: child2.id,
+      unitId: unitId,
+      startDate: child2placementDateRange.start,
+      endDate: child2placementDateRange.end
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: testDaycareGroup.id,
+      daycarePlacementId: placement2.id,
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+
+    await Fixture.daycareAssistance({
+      childId: child2.id,
+      validDuring: child2placementDateRange,
+      level: 'GENERAL_SUPPORT'
+    }).save()
+
+    await Fixture.childDocument({
+      childId,
+      templateId: template1.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: validDuring.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    await Fixture.childDocument({
+      childId: child2.id,
+      templateId: template2.id,
+      status: 'COMPLETED',
+      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+      publishedBy: evakaUserId(admin.id),
+      publishedContent: {
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      },
+      decisionMaker: admin.id
+    })
+      .withDecision({
+        status: 'ACCEPTED',
+        validity: child2placementDateRange.asDateRange(),
+        createdBy: admin.id,
+        modifiedBy: admin.id,
+        daycareId: unitId
+      })
+      .save()
+
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-needs-and-actions`
+    )
+    const report = new AssistanceNeedsAndActionsReport(page)
+    await report.includeDecisionsCheckbox.check()
+
+    await report.needsAndActionsHeader.assertTextEquals(
+      'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tSUPPORT DECISION\tKOROTETTU PS-KERROIN'
+    )
+
+    // Group row should show count of 2 for the decisions with the same template name
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t2\t0\t0\t0\t0\t0\t0\t0\t0\t2\t0')
+
+    await report.selectCareAreaFilter('Superkeskus')
+    await report.openUnit('Alkuräjähdyksen päiväkoti')
+    await report.childRows.assertCount(2)
   })
 
   test('Provider type filtering works', async () => {
@@ -477,9 +914,9 @@ describe('Assistance need and actions report', () => {
     }).save()
 
     const municipalAndTotalGroupRowExpectation =
-      'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0'
+      'Superkeskus\n' + '\t\t1\t0\t0\t0\t0\t0\t0\t0\t0\t0'
     const voucherGroupRowExpectation =
-      'Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0'
+      'Superkeskus\n' + '\t\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0'
     await page.goto(
       `${config.employeeUrl}/reports/assistance-needs-and-actions`
     )
@@ -516,7 +953,7 @@ describe('Assistance need and actions report', () => {
     await report.childRows
       .nth(0)
       .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-\t0\t0'
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-'
       )
 
     await report.providerTypeSelect.fillAndSelectFirst('Palveluseteli')
@@ -625,23 +1062,18 @@ describe('Assistance need and actions report', () => {
     const report = new AssistanceNeedsAndActionsReport(page)
 
     const anteroRow =
-      'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5\t1\t1'
-    const lisaRow =
-      'Lisä Lapsi\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-\t0\t0'
+      'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
+    const lisaRow = 'Lisä Lapsi\tKosmiset Vakiot\t10\t1\t0\t0\t0\t0\t0\t0\t\t-'
 
     //Group view count check
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t2\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1\t1\t1'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t2\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
     await report.placementTypeSelect.click()
     await report.placementTypeSelect.selectItem('DAYCARE')
     await report.needsAndActionsRows
       .nth(0)
-      .assertTextEquals(
-        'Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1\t1\t1'
-      )
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
 
     //Child view row checks
     await report.selectCareAreaFilter('Superkeskus')
