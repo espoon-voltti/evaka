@@ -569,3 +569,4 @@ V570__mark_migrated_assistance_decisions_as_read.sql
 V571__application_senttime.sql
 V572__daycare_group_timestamps.sql
 V573__group_support_removal.sql
+V574__message_account_constraints.sql
