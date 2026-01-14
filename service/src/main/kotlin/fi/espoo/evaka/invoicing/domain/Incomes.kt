@@ -85,8 +85,8 @@ fun decisionIncomesEqual(income1: DecisionIncome?, income2: DecisionIncome?): Bo
 data class IncomeValue(
     val amount: Int,
     val coefficient: IncomeCoefficient,
-    val multiplier: Int,
-    val monthlyAmount: Int,
+    val multiplier: Int = 1,
+    val monthlyAmount: Int = 0,
 )
 
 enum class IncomeEffect : DatabaseEnum {
