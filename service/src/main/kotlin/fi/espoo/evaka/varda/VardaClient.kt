@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.google.common.util.concurrent.RateLimiter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.net.URLEncoder
@@ -235,7 +234,7 @@ class VardaClient(
 ) : VardaReadClient, VardaWriteClient, VardaUnitClient {
     private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
-    val rateLimiter: RateLimiter = RateLimiter.create(ratePerSec)
+    val rateLimiter = StrictRateLimiter(ratePerSec)
 
     override fun getOrCreateHenkilo(
         body: VardaReadClient.GetOrCreateHenkiloRequest
