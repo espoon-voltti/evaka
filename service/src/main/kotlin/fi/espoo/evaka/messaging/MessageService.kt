@@ -137,11 +137,6 @@ class MessageService(
 
         val recipientCount = messageRecipients.map { pair -> pair.first }.toSet().size
 
-        val staffCopyRecipients =
-            if (type == MessageType.BULLETIN) {
-                tx.getStaffCopyRecipients(sender, recipients, now.toLocalDate())
-            } else emptySet()
-
         // Child set can be empty, and in that case the message thread will not be associated with
         // any children
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
@@ -212,38 +207,40 @@ class MessageService(
                 ids.second to recipients.first
             }
         )
+
+        val staffCopyRecipients =
+            if (type == MessageType.BULLETIN) {
+                tx.getStaffCopyRecipients(sender, recipients, now.toLocalDate())
+            } else emptySet()
+
         if (staffCopyRecipients.isNotEmpty()) {
-            // a separate copy for staff
-            val staffThreadAndMessageIds =
+            // Create one thread and message, and set all matching staff accounts as recipients
+            val (staffThreadId, staffMessageId) =
                 tx.insertThreadsWithMessages(
-                    staffCopyRecipients.size,
-                    now,
-                    type = type,
-                    title = msg.title,
-                    urgent = msg.urgent,
-                    sensitive = false,
-                    isCopy = true,
-                    contentId = contentId,
-                    senderId = sender,
-                    recipientNames = recipientNames,
-                    applicationId = relatedApplication,
-                    municipalAccountName = featureConfig.municipalMessageAccountName,
-                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
-                    financeAccountName = featureConfig.financeMessageAccountName,
-                )
-            val staffRecipientsWithMessageIds =
-                staffThreadAndMessageIds.zip(other = staffCopyRecipients)
+                        1,
+                        now,
+                        type = type,
+                        title = msg.title,
+                        urgent = msg.urgent,
+                        sensitive = false,
+                        isCopy = true,
+                        contentId = contentId,
+                        senderId = sender,
+                        recipientNames = recipientNames,
+                        applicationId = relatedApplication,
+                        municipalAccountName = featureConfig.municipalMessageAccountName,
+                        serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                        financeAccountName = featureConfig.financeMessageAccountName,
+                    )
+                    .first()
             tx.upsertSenderThreadParticipants(
                 senderId = sender,
-                threadIds = staffThreadAndMessageIds.map { (threadId, _) -> threadId },
+                threadIds = listOf(staffThreadId),
                 now = now,
             )
-            tx.insertRecipients(
-                staffRecipientsWithMessageIds.map { (ids, recipient) ->
-                    ids.second to setOf(recipient)
-                }
-            )
+            tx.insertRecipients(listOf(staffMessageId to staffCopyRecipients))
         }
+
         asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
         if (relatedApplication != null) {
             tx.createApplicationNote(
