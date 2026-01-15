@@ -14,6 +14,10 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
@@ -21,16 +25,10 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -43,52 +41,51 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
+    private val clock = MockEvakaClock(2023, 6, 1, 8, 0)
+    private val today = clock.today()
+
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val decisionMaker = DevEmployee()
+    private val adult = DevPerson(email = "test@example.com")
+    private val child = DevPerson()
     private val applicationId = ApplicationId(UUID.randomUUID())
-    private val childId = testChild_1.id
-    private val guardianId = testAdult_6.id
-    private val unitId = testDaycare.id
-    private val startDate = LocalDate.now()
+    private val startDate = today
     private val endDate = startDate.plusYears(1)
 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_6, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(decisionMaker)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
 
             tx.insertTestApplication(
                 id = applicationId,
                 status = ApplicationStatus.WAITING_CONFIRMATION,
                 confidential = true,
-                childId = childId,
-                guardianId = guardianId,
+                childId = child.id,
+                guardianId = adult.id,
                 type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                document = DaycareFormV0.fromApplication2(getValidDaycareApplication(daycare)),
             )
         }
     }
 
     @Test
     fun `Pending decision newer than one week does not get reminder email`() {
-        createPendingDecision(LocalDate.now(), null, null, 0)
+        createPendingDecision(today, null, null, 0)
         runPendingDecisionEmailAsyncJobs()
         assertEquals(0, MockEmailClient.emails.size)
     }
 
     @Test
     fun `Pending decision older than one week sends reminder email`() {
+        createPendingDecision(today.minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL)
         createPendingDecision(
-            LocalDate.now().minusDays(8),
-            null,
-            null,
-            0,
-            type = DecisionType.PRESCHOOL,
-        )
-        createPendingDecision(
-            LocalDate.now().minusDays(8),
+            today.minusDays(8),
             null,
             null,
             0,
@@ -101,7 +98,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(1, sentMails.size)
         assertEmail(
             sentMails.first(),
-            testAdult_6.email!!,
+            adult.email!!,
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             "kirjautumalla osoitteeseen <a",
@@ -111,28 +108,21 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week with sent reminder less than week ago does not send a new one`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, HelsinkiDateTime.now(), 1)
+        createPendingDecision(today.minusDays(8), null, clock.now(), 1)
         runPendingDecisionEmailAsyncJobs()
         assertEquals(0, MockEmailClient.emails.size)
     }
 
-    val eightDaySeconds: Long = 60L * 60L * 24L * 8L
-
     @Test
     fun `Pending decision older than one week with sent reminder older than one week sends a new email`() {
-        createPendingDecision(
-            LocalDate.now().minusDays(16),
-            null,
-            HelsinkiDateTime.now().minusSeconds(eightDaySeconds),
-            1,
-        )
+        createPendingDecision(today.minusDays(16), null, clock.now().minusDays(8), 1)
         runPendingDecisionEmailAsyncJobs()
 
         val sentMails = MockEmailClient.emails
         assertEquals(1, sentMails.size)
         assertEmail(
             sentMails.first(),
-            testAdult_6.email!!,
+            adult.email!!,
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             "kirjautumalla osoitteeseen <a",
@@ -142,7 +132,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week but already two reminders does not send third`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, null, 2)
+        createPendingDecision(today.minusDays(8), null, null, 2)
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -150,14 +140,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already two reminders should not send reminder`() {
-        createPendingDecision(
-            LocalDate.now().minusDays(8),
-            null,
-            HelsinkiDateTime.from(
-                LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)
-            ),
-            2,
-        )
+        createPendingDecision(today.minusDays(8), null, clock.now().minusDays(8), 2)
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -165,7 +148,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than two months does not send an email`() {
-        createPendingDecision(LocalDate.now().minusMonths(2), null, null, 0)
+        createPendingDecision(today.minusMonths(2), null, null, 0)
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -199,12 +182,12 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                 TestDecision(
                     applicationId = applicationId,
                     status = DecisionStatus.PENDING,
-                    createdBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    unitId = unitId,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
                     type = type,
                     startDate = startDate,
                     endDate = endDate,
-                    resolvedBy = testDecisionMaker_1.id.raw,
+                    resolvedBy = decisionMaker.id.raw,
                     sentDate = sentDate,
                     resolved = resolved,
                     pendingDecisionEmailSent = pendingDecisionEmailSent,
@@ -214,8 +197,8 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         }
     }
 
-    private fun runPendingDecisionEmailAsyncJobs(clock: EvakaClock = RealEvakaClock()): Int {
-        scheduledJobs.sendPendingDecisionReminderEmails(db, clock)
-        return asyncJobRunner.runPendingJobsSync(clock)
+    private fun runPendingDecisionEmailAsyncJobs(testClock: EvakaClock = clock): Int {
+        scheduledJobs.sendPendingDecisionReminderEmails(db, testClock)
+        return asyncJobRunner.runPendingJobsSync(testClock)
     }
 }
