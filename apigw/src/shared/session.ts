@@ -41,6 +41,10 @@ function logoutKey(token: LogoutToken['value']) {
   return `slo:${token}`
 }
 
+function userSessionsKey(userIdHash: string) {
+  return `usess:${userIdHash}`
+}
+
 export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
@@ -237,13 +241,24 @@ export function sessionSupport<T extends SessionType>(
   }
 
   async function saveUser(req: express.Request, user: EvakaSessionUser) {
+    const userIdHash = createSha256Hash(user.id)
+
     req.session.passport = { user }
     req.session.evaka = {
       user,
-      userIdHash: createSha256Hash(user.id)
+      userIdHash: userIdHash
     }
     await save(req)
     req.user = user
+
+    if (req.session.id && user.authType === 'citizen-weak') {
+      const key = userSessionsKey(userIdHash)
+      await redisClient
+        .multi()
+        .sAdd(key, req.session.id)
+        .expire(key, config.sessionTimeoutMinutes * 60)
+        .exec()
+    }
   }
 
   function getUser(req: express.Request): EvakaSessionUser | undefined {
