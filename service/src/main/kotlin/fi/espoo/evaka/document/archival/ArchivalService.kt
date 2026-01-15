@@ -250,13 +250,16 @@ fun validateArchivability(decision: Decision) {
 }
 
 fun validateArchivability(feeDecision: FeeDecisionDetailed) {
-    if (feeDecision.status != FeeDecisionStatus.SENT) {
+    if (feeDecision.status !in setOf(FeeDecisionStatus.SENT, FeeDecisionStatus.ANNULLED)) {
         throw BadRequest("Fee decision must be in SENT status to be archived")
     }
 }
 
 fun validateArchivability(voucherValueDecision: VoucherValueDecisionDetailed) {
-    if (voucherValueDecision.status != VoucherValueDecisionStatus.SENT) {
+    if (
+        voucherValueDecision.status !in
+            setOf(VoucherValueDecisionStatus.SENT, VoucherValueDecisionStatus.ANNULLED)
+    ) {
         throw BadRequest("Voucher value decision must be in SENT status to be archived")
     }
 }
