@@ -155,7 +155,10 @@ const PersonVoucherValueDecisionsTable = ({
                         mutation={planArchiveVoucherValueDecisionMutation}
                         onClick={() => ({ id: decision.id })}
                         data-qa="archive-button"
-                        disabled={decision.status !== 'SENT'}
+                        disabled={
+                          decision.status !== 'SENT' &&
+                          decision.status !== 'ANNULLED'
+                        }
                       />
                     )}
                   </Td>
