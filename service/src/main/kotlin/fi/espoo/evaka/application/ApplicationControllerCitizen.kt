@@ -80,7 +80,8 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Person.READ_APPLICATIONS,
                         user.id,
                     )
-                    val allApplications = tx.fetchApplicationSummariesForCitizen(user.id)
+                    val allApplications =
+                        tx.fetchApplicationSummariesForCitizen(user.id, clock.today())
                     val allPermittedActions: Map<ApplicationId, Set<Action.Citizen.Application>> =
                         accessControl.getPermittedActions(
                             tx,

@@ -799,7 +799,8 @@ fun Database.Read.fetchApplicationSummariesForChild(
         .toList<PersonApplicationSummary>()
 
 fun Database.Read.fetchApplicationSummariesForCitizen(
-    citizenId: PersonId
+    citizenId: PersonId,
+    today: LocalDate,
 ): List<CitizenApplicationSummary> =
     createQuery {
             val useDecisionDateAsStartDate =
@@ -832,10 +833,13 @@ SELECT
 FROM application a
 WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
     SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = ${bind(citizenId)}
-))
+)) AND (
+    EXISTS (SELECT FROM guardian WHERE guardian_id = ${bind(citizenId)} AND child_id = a.child_id) OR
+    EXISTS (SELECT FROM foster_parent WHERE parent_id = ${bind(citizenId)} AND child_id = a.child_id AND valid_during @> ${bind(today)})
+)
 AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
 ORDER BY sentDate DESC
-                """
+"""
             )
         }
         .toList()
@@ -1540,7 +1544,10 @@ SELECT COUNT(*)
 FROM application a
 JOIN person guardian ON a.guardian_id = guardian.id
 JOIN person child ON a.child_id = child.id
-WHERE (a.guardian_id = ${bind(citizenId)} OR (
+WHERE ((a.guardian_id = ${bind(citizenId)} AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = a.child_id AND valid_during @> ${bind(today)})
+)) OR (
     a.allow_other_guardian_access IS TRUE
     AND EXISTS (
         SELECT FROM application_other_guardian aog

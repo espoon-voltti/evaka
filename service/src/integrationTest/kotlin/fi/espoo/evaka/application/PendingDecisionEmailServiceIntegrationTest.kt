@@ -17,12 +17,15 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFosterParent
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -61,6 +64,8 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             tx.insert(decisionMaker)
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
+
+            tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
 
             tx.insertTestApplication(
                 id = applicationId,
@@ -154,6 +159,69 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(0, sentMails.size)
     }
 
+    @Test
+    fun `Non-guardian does not receive pending decision email`() {
+        val nonGuardian = DevPerson(email = "non-guardian@example.com")
+        val nonGuardianChild = DevPerson()
+        val nonGuardianApplicationId = ApplicationId(UUID.randomUUID())
+
+        createApplicationAndDecision(
+            adult = nonGuardian,
+            child = nonGuardianChild,
+            applicationId = nonGuardianApplicationId,
+            createGuardianship = false,
+        )
+
+        runPendingDecisionEmailAsyncJobs()
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
+    fun `Foster parent receives pending decision email`() {
+        val fosterParent = DevPerson(email = "foster@example.com")
+        val fosterChild = DevPerson()
+        val fosterApplicationId = ApplicationId(UUID.randomUUID())
+
+        createApplicationAndDecision(
+            adult = fosterParent,
+            child = fosterChild,
+            applicationId = fosterApplicationId,
+            createGuardianship = false,
+            fosterParentValidDuring = DateRange(today.minusYears(1), today.plusYears(1)),
+        )
+
+        runPendingDecisionEmailAsyncJobs()
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(1, sentMails.size)
+        assertEmail(
+            sentMails.first(),
+            fosterParent.email!!,
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
+            "kirjautumalla osoitteeseen <a",
+            "kirjautumalla osoitteeseen https",
+        )
+    }
+
+    @Test
+    fun `Expired foster parent does not receive pending decision email`() {
+        val expiredFosterParent = DevPerson(email = "expired-foster@example.com")
+        val fosterChild = DevPerson()
+        val expiredFosterApplicationId = ApplicationId(UUID.randomUUID())
+
+        createApplicationAndDecision(
+            adult = expiredFosterParent,
+            child = fosterChild,
+            applicationId = expiredFosterApplicationId,
+            createGuardianship = false,
+            fosterParentValidDuring = DateRange(today.minusYears(2), today.minusYears(1)),
+        )
+
+        runPendingDecisionEmailAsyncJobs()
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
     private fun assertEmail(
         email: Email?,
         expectedToAddress: String,
@@ -200,5 +268,61 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     private fun runPendingDecisionEmailAsyncJobs(testClock: EvakaClock = clock): Int {
         scheduledJobs.sendPendingDecisionReminderEmails(db, testClock)
         return asyncJobRunner.runPendingJobsSync(testClock)
+    }
+
+    private fun createApplicationAndDecision(
+        adult: DevPerson,
+        child: DevPerson,
+        applicationId: ApplicationId,
+        createGuardianship: Boolean = true,
+        fosterParentValidDuring: DateRange? = null,
+    ) {
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+
+            if (createGuardianship) {
+                tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+            }
+
+            if (fosterParentValidDuring != null) {
+                tx.insert(
+                    DevFosterParent(
+                        parentId = adult.id,
+                        childId = child.id,
+                        validDuring = fosterParentValidDuring,
+                        modifiedAt = clock.now(),
+                        modifiedBy = EvakaUserId(decisionMaker.id.raw),
+                    )
+                )
+            }
+
+            tx.insertTestApplication(
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
+                childId = child.id,
+                guardianId = adult.id,
+                type = ApplicationType.DAYCARE,
+                document = DaycareFormV0.fromApplication2(getValidDaycareApplication(daycare)),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = applicationId,
+                    status = DecisionStatus.PENDING,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = startDate,
+                    endDate = endDate,
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = today.minusDays(8),
+                    resolved = null,
+                    pendingDecisionEmailSent = null,
+                    pendingDecisionEmailsSentCount = 0,
+                )
+            )
+        }
     }
 }

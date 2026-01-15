@@ -68,7 +68,13 @@ AND (d.sent_date < ${bind(today)} - INTERVAL '1 week' AND d.sent_date > ${bind(t
 AND d.pending_decision_emails_sent_count < 2
 AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < ${bind(today)} - INTERVAL '1 week'))
 SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
-FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
+FROM pending_decisions
+JOIN application ON pending_decisions.application_id = application.id
+WHERE EXISTS (
+    SELECT FROM guardian WHERE guardian_id = application.guardian_id AND child_id = application.child_id
+) OR EXISTS (
+    SELECT FROM foster_parent WHERE parent_id = application.guardian_id AND child_id = application.child_id AND valid_during @> ${bind(today)}
+)
 GROUP BY application.guardian_id
 """
                             )

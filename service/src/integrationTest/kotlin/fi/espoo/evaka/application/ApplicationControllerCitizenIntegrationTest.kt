@@ -6,9 +6,12 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.decision.DecisionStatus
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.insertApplication as insertTestApplication
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -18,8 +21,10 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -255,6 +260,133 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         assertEquals(1, result.size)
         assertEquals(1, result[0].applicationSummaries.size)
         assertEquals(ApplicationType.DAYCARE, result[0].applicationSummaries[0].type)
+    }
+
+    @Test
+    fun `getGuardianApplications does not return children for non-guardians`() {
+        val nonGuardian = DevPerson(ssn = "040180-1232")
+        val nonGuardianChild = DevPerson(ssn = "040617A123U")
+
+        db.transaction { tx ->
+            tx.insert(nonGuardian, DevPersonType.ADULT)
+            tx.insert(nonGuardianChild, DevPersonType.CHILD)
+
+            tx.insertTestApplication(
+                guardianId = nonGuardian.id,
+                childId = nonGuardianChild.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(
+                        createTestApplicationDetails(nonGuardian, nonGuardianChild)
+                    ),
+            )
+        }
+
+        val result =
+            applicationControllerCitizen.getGuardianApplications(
+                db = dbInstance(),
+                user = AuthenticatedUser.Citizen(nonGuardian.id, CitizenAuthLevel.STRONG),
+                clock = clock,
+            )
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `application notification count is non-zero for guardian with pending decision`() {
+        val guardian = DevPerson(ssn = "030180-1232")
+        val guardianChild = DevPerson(ssn = "030617A123U")
+        val applicationId = ApplicationId(UUID.randomUUID())
+
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(guardianChild, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = guardianChild.id))
+
+            tx.insertTestApplication(
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
+                childId = guardianChild.id,
+                guardianId = guardian.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(
+                        createTestApplicationDetails(guardian, guardianChild)
+                    ),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = applicationId,
+                    status = DecisionStatus.PENDING,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = clock.today(),
+                )
+            )
+        }
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                db = dbInstance(),
+                user = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
+                clock = clock,
+            )
+
+        assertEquals(1, notificationCount)
+    }
+
+    @Test
+    fun `application notification count is zero for non-guardian`() {
+        val nonGuardian = DevPerson(ssn = "020180-1232")
+        val nonGuardianChild = DevPerson(ssn = "020617A123U")
+        val applicationId = ApplicationId(UUID.randomUUID())
+
+        db.transaction { tx ->
+            tx.insert(nonGuardian, DevPersonType.ADULT)
+            tx.insert(nonGuardianChild, DevPersonType.CHILD)
+
+            tx.insertTestApplication(
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
+                childId = nonGuardianChild.id,
+                guardianId = nonGuardian.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(
+                        createTestApplicationDetails(nonGuardian, nonGuardianChild)
+                    ),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = applicationId,
+                    status = DecisionStatus.PENDING,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = clock.today(),
+                )
+            )
+        }
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                db = dbInstance(),
+                user = AuthenticatedUser.Citizen(nonGuardian.id, CitizenAuthLevel.STRONG),
+                clock = clock,
+            )
+
+        assertEquals(0, notificationCount)
     }
 
     private fun createTestApplicationDetails(
