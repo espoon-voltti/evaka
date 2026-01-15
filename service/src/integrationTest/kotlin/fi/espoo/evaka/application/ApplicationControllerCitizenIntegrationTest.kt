@@ -10,16 +10,15 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getApplicationStatus
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,17 +34,23 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private val clock = MockEvakaClock(2020, 1, 1, 12, 0)
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val adult = DevPerson(ssn = "010180-1232")
+    private val child = DevPerson(ssn = "010617A123U")
+    private val decisionMaker = DevEmployee()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDecisionMaker_1)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.RAW_ROW)
+            tx.insert(decisionMaker)
         }
-        MockPersonDetailsService.addPersons(testAdult_1, testChild_1)
-        MockPersonDetailsService.addDependants(testAdult_1, testChild_1)
+        MockPersonDetailsService.addPersons(adult, child)
+        MockPersonDetailsService.addDependants(adult, child)
     }
 
     @Test
@@ -53,15 +58,16 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val applicationDetails =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    guardian = testAdult_1,
-                    child = testChild_1,
+                    guardian = adult,
+                    child = child,
                     appliedType = PlacementType.DAYCARE,
+                    preferredUnit = daycare,
                 )
             }
 
         applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
             db = dbInstance(),
-            user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
             clock = clock,
             applicationId = applicationDetails.id,
         )
@@ -74,15 +80,15 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val application =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        guardian = testAdult_1,
-                        child = testChild_1,
+                        guardian = adult,
+                        child = child,
                         appliedType = PlacementType.DAYCARE,
+                        preferredUnit = daycare,
                     )
                     .also {
                         stateService.sendApplication(
                             tx = tx,
-                            user =
-                                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                            user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                             clock = clock,
                             applicationId = it.id,
                         )
@@ -91,7 +97,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
         applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
             db = dbInstance(),
-            user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+            user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
             clock = clock,
             applicationId = application.id,
         )
@@ -106,15 +112,15 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val application =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        guardian = testAdult_1,
-                        child = testChild_1,
+                        guardian = adult,
+                        child = child,
                         appliedType = PlacementType.DAYCARE,
+                        preferredUnit = daycare,
                     )
                     .also {
                         stateService.sendApplication(
                             tx = tx,
-                            user =
-                                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                            user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                             clock = clock,
                             applicationId = it.id,
                         )
@@ -122,7 +128,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             tx = tx,
                             user =
                                 AuthenticatedUser.Employee(
-                                    testDecisionMaker_1.id,
+                                    decisionMaker.id,
                                     setOf(UserRole.SERVICE_WORKER),
                                 ),
                             clock = clock,
@@ -134,7 +140,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         assertThrows<BadRequest> {
             applicationControllerCitizen.deleteOrCancelUnprocessedApplication(
                 db = dbInstance(),
-                user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                 clock = clock,
                 applicationId = application.id,
             )
