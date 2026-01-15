@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
@@ -102,22 +102,47 @@ export default React.memo(function ApplicationPage() {
   const [searchParams] = useSearchParams()
   const creatingNew = searchParams.get('create') === 'true'
   const [editing, setEditing] = useState(creatingNew)
-  const [editedApplication, setEditedApplication] =
-    useState<ApplicationDetails>()
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({})
+  const [editedApplicationState, setEditedApplicationState] = useState<{
+    editedApplication: ApplicationDetails | undefined
+    prevApplicationData: ApplicationDetails | undefined
+  }>({
+    editedApplication: undefined,
+    prevApplicationData: undefined
+  })
 
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
-  const editedApplicationInitialized = editedApplication !== undefined
-  useEffect(() => {
-    if (application.isSuccess) {
-      if (!editedApplicationInitialized) {
-        setEditedApplication(application.value.application)
-      }
-    }
-  }, [application, i18n, editedApplicationInitialized])
+  // getDerivedStateFromProps pattern: initialize editedApplication when application loads
+  if (
+    application.isSuccess &&
+    editedApplicationState.editedApplication === undefined &&
+    editedApplicationState.prevApplicationData !== application.value.application
+  ) {
+    setEditedApplicationState({
+      editedApplication: application.value.application,
+      prevApplicationData: application.value.application
+    })
+  }
+
+  const editedApplication = editedApplicationState.editedApplication
+  const setEditedApplication = useCallback(
+    (
+      appOrUpdater:
+        | ApplicationDetails
+        | undefined
+        | ((
+            prev: ApplicationDetails | undefined
+          ) => ApplicationDetails | undefined)
+    ) =>
+      setEditedApplicationState((prev) => ({
+        ...prev,
+        editedApplication:
+          typeof appOrUpdater === 'function'
+            ? appOrUpdater(prev.editedApplication)
+            : appOrUpdater
+      })),
+    []
+  )
 
   useTitle(
     application.map(
@@ -178,18 +203,37 @@ export default React.memo(function ApplicationPage() {
   // this is used because text inputs become too sluggish without it
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
 
-  useEffect(() => {
-    if (debouncedEditedApplication && units.isSuccess) {
-      setValidationErrors(
-        validateApplication(
-          debouncedEditedApplication,
-          units.value,
-          terms,
-          i18n
-        )
-      )
-    }
-  }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
+  // getDerivedStateFromProps pattern for validation
+  const [validationState, setValidationState] = useState<{
+    errors: Record<string, string>
+    prevApp: ApplicationDetails | undefined
+    prevUnitsSuccess: boolean
+  }>({
+    errors: {},
+    prevApp: undefined,
+    prevUnitsSuccess: false
+  })
+
+  if (
+    debouncedEditedApplication &&
+    units.isSuccess &&
+    (validationState.prevApp !== debouncedEditedApplication ||
+      !validationState.prevUnitsSuccess)
+  ) {
+    const errors = validateApplication(
+      debouncedEditedApplication,
+      units.value,
+      terms,
+      i18n
+    )
+    setValidationState({
+      errors,
+      prevApp: debouncedEditedApplication,
+      prevUnitsSuccess: true
+    })
+  }
+
+  const validationErrors = validationState.errors
 
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&

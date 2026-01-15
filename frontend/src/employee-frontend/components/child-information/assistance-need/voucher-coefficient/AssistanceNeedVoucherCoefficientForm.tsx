@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
@@ -132,17 +126,13 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
         }
   )
 
-  const [warning, setWarning] = useState<string>()
-
   const updateFormState: UpdateStateFn<Form> = (values) => {
     const newState = { ...form, ...values }
     setForm(newState)
   }
 
-  useEffect(() => {
-    setWarning(undefined)
-
-    if (!form.start || !form.end) return
+  const warning = useMemo(() => {
+    if (!form.start || !form.end) return undefined
 
     const validityPeriod = new FiniteDateRange(form.start, form.end)
 
@@ -161,9 +151,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
         t.form.errors.upcomingOverlap
     ].find((warning): warning is string => !!warning)
 
-    if (overlapWarning) {
-      setWarning(overlapWarning)
-    }
+    return overlapWarning
   }, [form, props, t])
 
   const coefficientError = useMemo(() => {

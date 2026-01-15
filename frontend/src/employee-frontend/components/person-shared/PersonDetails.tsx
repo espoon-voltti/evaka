@@ -107,43 +107,39 @@ export default React.memo(function PersonDetails({
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
+  const { uiMode, toggleUiMode, clearUiMode} = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
-  const [form, setForm] = useState<Form>({
-    firstName: '',
-    lastName: '',
-    dateOfBirth: LocalDate.todayInSystemTz(),
-    email: '',
-    phone: '',
-    backupPhone: '',
-    streetAddress: '',
-    postalCode: '',
-    postOffice: '',
-    municipalityOfResidence: '',
-    invoiceRecipientName: '',
-    invoicingStreetAddress: '',
-    invoicingPostalCode: '',
-    invoicingPostOffice: '',
-    forceManualFeeDecisions: false,
-    ophPersonOid: ''
+  const [formState, setFormState] = useState<{
+    form: Form
+    prevEditing: boolean
+    prevPersonId: PersonId | undefined
+  }>({
+    form: {
+      firstName: '',
+      lastName: '',
+      dateOfBirth: LocalDate.todayInSystemTz(),
+      email: '',
+      phone: '',
+      backupPhone: '',
+      streetAddress: '',
+      postalCode: '',
+      postOffice: '',
+      municipalityOfResidence: '',
+      invoiceRecipientName: '',
+      invoicingStreetAddress: '',
+      invoicingPostalCode: '',
+      invoicingPostOffice: '',
+      forceManualFeeDecisions: false,
+      ophPersonOid: ''
+    },
+    prevEditing: editing,
+    prevPersonId: person.id
   })
-  const emailIsValid = useMemo<boolean>(
-    () => form.email === '' || isEmailValid(form.email),
-    [form.email]
-  )
-  const { mutate: disableSsnAdding, isPending: disablingSsn } =
-    useMutation(disableSsnMutation)
 
-  const [showSsnAddingDisabledInfo, setShowSsnAddingDisabledInfo] =
-    useState(false)
-  const toggleShowSsnAddingDisabledInfo = useCallback(
-    () => setShowSsnAddingDisabledInfo((state) => !state),
-    [setShowSsnAddingDisabledInfo]
-  )
-
-  useEffect(() => {
-    if (editing) {
-      setForm({
+  // getDerivedStateFromProps: sync form when entering edit mode or person changes
+  if (editing && (!formState.prevEditing || formState.prevPersonId !== person.id)) {
+    setFormState({
+      form: {
         firstName: person.firstName || '',
         lastName: person.lastName || '',
         dateOfBirth: person.dateOfBirth,
@@ -160,9 +156,39 @@ export default React.memo(function PersonDetails({
         invoicingPostOffice: person.invoicingPostOffice ?? '',
         forceManualFeeDecisions: person.forceManualFeeDecisions ?? false,
         ophPersonOid: person.ophPersonOid ?? ''
-      })
-    }
-  }, [person, editing])
+      },
+      prevEditing: editing,
+      prevPersonId: person.id
+    })
+  } else if (formState.prevEditing !== editing) {
+    setFormState({
+      ...formState,
+      prevEditing: editing
+    })
+  }
+
+  const form = formState.form
+  const setForm = useCallback(
+    (newForm: Form) =>
+      setFormState((prev) => ({
+        ...prev,
+        form: newForm
+      })),
+    []
+  )
+  const emailIsValid = useMemo<boolean>(
+    () => form.email === '' || isEmailValid(form.email),
+    [form.email]
+  )
+  const { mutate: disableSsnAdding, isPending: disablingSsn } =
+    useMutation(disableSsnMutation)
+
+  const [showSsnAddingDisabledInfo, setShowSsnAddingDisabledInfo] =
+    useState(false)
+  const toggleShowSsnAddingDisabledInfo = useCallback(
+    () => setShowSsnAddingDisabledInfo((state) => !state),
+    [setShowSsnAddingDisabledInfo]
+  )
 
   // clear ui mode when dismounting component
   useEffect(() => clearUiMode, []) // eslint-disable-line react-hooks/exhaustive-deps
