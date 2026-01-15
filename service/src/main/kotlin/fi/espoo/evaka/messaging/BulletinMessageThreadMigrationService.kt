@@ -150,7 +150,7 @@ WHERE message_id = ANY(${bind(messageIdsToDelete)})
             )
         }
 
-        // Consolidate reiceiver's message_thread_participant entries to the kept thread
+        // Consolidate receiver's message_thread_participant entries to the kept thread
         execute {
             sql(
                 """
