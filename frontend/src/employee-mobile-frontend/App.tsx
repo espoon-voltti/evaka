@@ -73,7 +73,6 @@ import { unitInfoQuery } from './units/queries'
 
 export default function App() {
   const { i18n } = useTranslation()
-  const { apiVersion } = useContext(UserContext)
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -91,7 +90,7 @@ export default function App() {
               <UserContextProvider>
                 <ServiceWorkerContextProvider>
                   <NotificationsContextProvider>
-                    <Notifications apiVersion={apiVersion} />
+                    <NotificationsWrapper />
                     <RememberContextProvider>
                       <Router base="/employee/mobile">
                         <Switch>
@@ -132,6 +131,11 @@ export default function App() {
       </I18nContextProvider>
     </QueryClientProvider>
   )
+}
+
+function NotificationsWrapper() {
+  const { apiVersion } = useContext(UserContext)
+  return <Notifications apiVersion={apiVersion} />
 }
 
 // This implements the default behavior from styled-components v5
