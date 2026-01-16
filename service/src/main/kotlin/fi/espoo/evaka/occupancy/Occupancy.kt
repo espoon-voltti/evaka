@@ -10,8 +10,11 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPlannedCaretakersForGroups
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.SpeculatedPlacement
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -683,7 +686,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
             listOf()
         }
 
-    val placementPlans =
+    val placementPlans: List<OccupancyInput> =
         if (type == OccupancyType.PLANNED || type == OccupancyType.DRAFT) {
             this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId })
         } else {
@@ -695,6 +698,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
                 placementDrafts.map { it.childId } +
                 placementPlans.map { it.childId })
             .toSet()
+
     val childOperationalDates = this.getOperationalDatesForChildren(range, childIds)
 
     val childBirthdays =
@@ -833,6 +837,9 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
     val placementsAndPlans =
         (placements + placementPlans + placementDrafts).groupBy { it.groupingId }
 
+    val clubTerms = getClubTerms()
+    val preschoolTerms = getPreschoolTerms()
+
     return caretakerCounts.map { (key, countsForKey) ->
         val occupancies =
             countsForKey
@@ -843,14 +850,33 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                         (placementsAndPlans[key.groupingId] ?: listOf())
                             .filter { it.period.includes(date) }
                             .filter {
-                                val serviceNeedIsKnown =
-                                    serviceNeeds[it.placementId]?.any { sn ->
-                                        sn.period.includes(date)
-                                    } ?: false
-                                val ignoreChildOperationDays =
-                                    !serviceNeedIsKnown && type != OccupancyType.REALIZED
+                                // Operational days can be calculated only for placements, not
+                                // placement plans
+                                val ignoreChildOperationDays = it.placementId == null
+
                                 ignoreChildOperationDays ||
                                     childOperationalDates[it.childId]?.contains(date) == true
+                            }
+                            .filter {
+                                // filter out term breaks
+                                when (it.type) {
+                                    PlacementType.PRESCHOOL,
+                                    PlacementType.PREPARATORY -> {
+                                        preschoolTerms.none { term ->
+                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                        }
+                                    }
+
+                                    PlacementType.CLUB -> {
+                                        clubTerms.none { term ->
+                                            term.scheduleType(date) == ScheduleType.TERM_BREAK
+                                        }
+                                    }
+
+                                    else -> {
+                                        true
+                                    }
+                                }
                             }
                             .filterNot {
                                 childWasAbsentWholeDay(
@@ -919,25 +945,46 @@ private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecima
 private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
     unitIds: Collection<DaycareId>,
-): List<Placement> {
-    return this.createQuery {
-            sql(
-                """
+): List<SpeculatedPlacement> {
+    data class PlacementPlanRow(
+        val childId: ChildId,
+        val unitId: DaycareId,
+        val type: PlacementType,
+        val familyUnitPlacement: Boolean,
+        val period: FiniteDateRange,
+        val preschoolDaycareStartDate: LocalDate?,
+        val preschoolDaycareEndDate: LocalDate?,
+    ) {
+        fun toSpeculatedPlacement(
+            type: PlacementType = this.type,
+            period: FiniteDateRange = this.period,
+        ): SpeculatedPlacement =
+            SpeculatedPlacement(
+                childId = this.childId,
+                unitId = this.unitId,
+                type = type,
+                period = period,
+                familyUnitPlacement = this.familyUnitPlacement,
+            )
+    }
+
+    val placementPlans =
+        this.createQuery {
+                sql(
+                    """
 SELECT
-    u.id AS grouping_id,
-    p.id AS placement_id,
     a.child_id,
-    p.unit_id,
-    p.type,
+    pp.unit_id,
+    pp.type,
     u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement,
-    daterange(p.start_date, p.end_date, '[]') AS period,
-    preschool_daycare_start_date,
-    preschool_daycare_end_date
-FROM placement_plan p
-JOIN application a ON p.application_id = a.id
-JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(${bind(unitIds)})
-WHERE NOT p.deleted AND (
-    daterange(p.start_date, p.end_date, '[]') && ${bind(period)}
+    daterange(pp.start_date, pp.end_date, '[]') AS period,
+    pp.preschool_daycare_start_date,
+    pp.preschool_daycare_end_date
+FROM placement_plan pp
+JOIN application a ON pp.application_id = a.id
+JOIN daycare u ON pp.unit_id = u.id AND u.id = ANY(${bind(unitIds)})
+WHERE NOT pp.deleted AND (
+    daterange(pp.start_date, pp.end_date, '[]') && ${bind(period)}
     OR (
         preschool_daycare_start_date IS NOT NULL
         AND preschool_daycare_end_date IS NOT NULL
@@ -945,41 +992,41 @@ WHERE NOT p.deleted AND (
     )
 )
 """
-            )
-        }
-        .toList<PlacementPlan>()
-        .flatMap { placementPlan ->
-            // If the placement plan has preschool daycare dates set it means that the placement
-            // plan could in reality
-            // be split into parts with and without preschool daycare, so take that into account.
-            if (
-                placementPlan.preschoolDaycareStartDate == null ||
-                    placementPlan.preschoolDaycareEndDate == null
-            ) {
-                listOf(placementPlan.placement)
-            } else {
-                val preschoolDaycarePeriod =
-                    FiniteDateRange(
-                        placementPlan.preschoolDaycareStartDate,
-                        placementPlan.preschoolDaycareEndDate,
-                    )
-                val onlyPreschoolPeriods =
-                    placementPlan.placement.period.complement(preschoolDaycarePeriod)
-
-                onlyPreschoolPeriods.map {
-                    placementPlan.placement.copy(
-                        type =
-                            when (placementPlan.placement.type) {
-                                PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
-                                PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
-                                PlacementType.PRESCHOOL_CLUB -> PlacementType.PRESCHOOL
-                                else -> placementPlan.placement.type
-                            },
-                        period = it,
-                    )
-                } + placementPlan.placement.copy(period = preschoolDaycarePeriod)
+                )
             }
+            .toList<PlacementPlanRow>()
+
+    return placementPlans.flatMap { placementPlan ->
+        // If the placement plan has preschool daycare dates set it means that the placement
+        // plan could in reality
+        // be split into parts with and without preschool daycare, so take that into account.
+        if (
+            placementPlan.preschoolDaycareStartDate == null ||
+                placementPlan.preschoolDaycareEndDate == null
+        ) {
+            listOf(placementPlan.toSpeculatedPlacement())
+        } else {
+            val preschoolDaycarePeriod =
+                FiniteDateRange(
+                    placementPlan.preschoolDaycareStartDate,
+                    placementPlan.preschoolDaycareEndDate,
+                )
+            val onlyPreschoolPeriods = placementPlan.period.complement(preschoolDaycarePeriod)
+
+            onlyPreschoolPeriods.map {
+                placementPlan.toSpeculatedPlacement(
+                    type =
+                        when (placementPlan.type) {
+                            PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
+                            PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
+                            PlacementType.PRESCHOOL_CLUB -> PlacementType.PRESCHOOL
+                            else -> placementPlan.type
+                        },
+                    period = it,
+                )
+            } + placementPlan.toSpeculatedPlacement(period = preschoolDaycarePeriod)
         }
+    }
 }
 
 private fun childWasAbsentWholeDay(
@@ -1000,12 +1047,6 @@ data class Placement(
     override val familyUnitPlacement: Boolean,
     override val period: FiniteDateRange,
 ) : OccupancyInput
-
-private data class PlacementPlan(
-    @Nested val placement: Placement,
-    val preschoolDaycareStartDate: LocalDate?,
-    val preschoolDaycareEndDate: LocalDate?,
-)
 
 data class ServiceNeed(
     val placementId: PlacementId,

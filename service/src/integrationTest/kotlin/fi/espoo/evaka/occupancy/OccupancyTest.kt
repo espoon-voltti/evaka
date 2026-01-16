@@ -11,10 +11,13 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.clubTerms
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.preschoolTerm2023
+import fi.espoo.evaka.preschoolTerms
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -63,7 +66,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val today = LocalDate.of(2020, 1, 16) // Thursday
+    private val today = LocalDate.of(2021, 1, 14) // Thursday
 
     private val careArea1 = DevCareArea(name = "1", shortName = "1")
     private val careArea2 = DevCareArea(name = "2", shortName = "2")
@@ -85,6 +88,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction {
             it.insertServiceNeedOptions()
+            clubTerms.forEach { term -> it.insert(term) }
+            preschoolTerms.forEach { term -> it.insert(term) }
 
             it.insert(careArea1)
             it.insert(careArea2)
@@ -855,6 +860,33 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.read { tx ->
             getAndAssertOccupancyInUnit(tx, daycareInArea1.id, OccupancyType.CONFIRMED, today, 0.5)
+        }
+    }
+
+    @Test
+    fun `preschool occupancy is zero during term break`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(6).minusMonths(5))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1.id,
+                type = PlacementType.PRESCHOOL,
+                startDate = preschoolTerm2023.finnishPreschool.start,
+                endDate = preschoolTerm2023.finnishPreschool.end,
+            )
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(
+                tx = tx,
+                unitId = daycareInArea1.id,
+                type = OccupancyType.CONFIRMED,
+                date = preschoolTerm2023.termBreaks.ranges().first().start,
+                expectedSum = 0.0,
+            )
         }
     }
 

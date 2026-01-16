@@ -208,11 +208,11 @@ describe('Employee - Units', () => {
     const unitCalendarPage = await unitPage.openCalendarPage()
     await unitCalendarPage.selectPeriod('3 months')
     await unitCalendarPage.occupancies.assertConfirmed(
-      'Min. 14,3 %',
+      'Min. 0,0 %',
       'Max. 14,3 %'
     )
     await unitCalendarPage.occupancies.assertPlanned(
-      'Min. 14,3 %',
+      'Min. 0,0 %',
       'Max. 14,3 %'
     )
   })
