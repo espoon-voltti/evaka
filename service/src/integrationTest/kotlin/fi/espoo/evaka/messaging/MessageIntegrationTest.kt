@@ -601,6 +601,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 originalMessageId,
                 setOf(employee1Account),
                 "Reply to sensitive message",
+                now = sendTime.plusSeconds(1),
             )
 
             val threadsAfterReply = getRegularMessageThreads(person1)
@@ -666,7 +667,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertTrue(thread.sensitive)
             val originalMessageId = thread.messages.first().id
 
-            replyToMessage(person1, originalMessageId, setOf(employee1Account), "Citizen reply")
+            replyToMessage(
+                person1,
+                originalMessageId,
+                setOf(employee1Account),
+                "Citizen reply",
+                now = sendTime.plusSeconds(1),
+            )
 
             val threadsAfterCitizenReply = getRegularMessageThreads(person1)
             val threadAfterCitizenReply = threadsAfterCitizenReply.first()
@@ -678,6 +685,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 threadAfterCitizenReply.messages.last().id,
                 setOf(person1Account),
                 "Employee reply back",
+                now = sendTime.plusSeconds(2),
             )
 
             val threadsAfterEmployeeReply = getRegularMessageThreads(person1)
