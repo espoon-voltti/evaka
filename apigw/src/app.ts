@@ -85,14 +85,26 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     createProxy({ getUserHeader: (_) => integrationUserHeader })
   )
 
-  const citizenSessions = sessionSupport('citizen', redisClient, config.citizen)
+  const citizenSessions = sessionSupport(
+    'citizen',
+    redisClient,
+    config.citizen,
+    Math.max(
+      config.citizen.sessionTimeoutMinutes,
+      config.employee.sessionTimeoutMinutes
+    )
+  )
   const citizenProxy = createProxy({
     getUserHeader: (req) => citizenSessions.getUserHeader(req)
   })
   const employeeSessions = sessionSupport(
     'employee',
     redisClient,
-    config.employee
+    config.employee,
+    Math.max(
+      config.citizen.sessionTimeoutMinutes,
+      config.employee.sessionTimeoutMinutes
+    )
   )
   const employeeProxy = createProxy({
     getUserHeader: (req) => employeeSessions.getUserHeader(req)
