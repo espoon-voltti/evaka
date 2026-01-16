@@ -24,10 +24,18 @@ export interface RedisClient extends RedisCommands {
   ping(): Promise<string>
 
   multi(): RedisTransaction
+
+  sAdd(key: string, members: string | string[]): Promise<number>
+
+  sMembers(key: string): Promise<string[]>
+
+  sRem(key: string, members: string | string[]): Promise<number>
 }
 
 export interface RedisTransaction extends RedisCommands {
   incr(key: string): RedisTransaction
+
+  sAdd(key: string, members: string | string[]): RedisTransaction
 
   expire(key: string, seconds: number): RedisTransaction
 

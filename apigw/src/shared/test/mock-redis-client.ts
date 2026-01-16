@@ -7,6 +7,7 @@ import type { RedisClient, RedisTransaction } from '../redis-client.ts'
 export class MockRedisClient implements RedisClient {
   private time: number
   private db: Record<string, { value: string; expires: number | null }>
+  private sets: Record<string, { members: Set<string>; expires: number | null }>
 
   isReady: boolean
 
@@ -14,12 +15,18 @@ export class MockRedisClient implements RedisClient {
     this.isReady = true
     this.time = 0
     this.db = {}
+    this.sets = {}
   }
 
   advanceTime(amount: number) {
     this.time += amount
     this.db = Object.fromEntries(
       Object.entries(this.db).filter(([, record]) => {
+        return record.expires === null || record.expires >= this.time
+      })
+    )
+    this.sets = Object.fromEntries(
+      Object.entries(this.sets).filter(([, record]) => {
         return record.expires === null || record.expires >= this.time
       })
     )
@@ -68,6 +75,48 @@ export class MockRedisClient implements RedisClient {
     return Promise.resolve(value)
   }
 
+  sAdd(key: string, members: string | string[]): Promise<number> {
+    const memberArray = Array.isArray(members) ? members : [members]
+
+    if (!this.sets[key]) {
+      this.sets[key] = { members: new Set(), expires: null }
+    }
+
+    const set = this.sets[key]
+    const initialSize = set.members.size
+
+    memberArray.forEach((member) => set.members.add(member))
+
+    const addedCount = set.members.size - initialSize
+    return Promise.resolve(addedCount)
+  }
+
+  sMembers(key: string): Promise<string[]> {
+    const set = this.sets[key]
+    if (!set) return Promise.resolve([])
+    return Promise.resolve(Array.from(set.members))
+  }
+
+  sRem(key: string, members: string | string[]): Promise<number> {
+    const set = this.sets[key]
+    if (!set) return Promise.resolve(0)
+
+    const memberArray = Array.isArray(members) ? members : [members]
+    let removedCount = 0
+
+    memberArray.forEach((member) => {
+      if (set.members.delete(member)) {
+        removedCount++
+      }
+    })
+
+    if (set.members.size === 0) {
+      delete this.sets[key]
+    }
+
+    return Promise.resolve(removedCount)
+  }
+
   ping(): Promise<string> {
     return Promise.resolve('PONG')
   }
@@ -87,6 +136,12 @@ class MockTransaction implements RedisTransaction {
   incr(key: string): RedisTransaction {
     this.#queue.push(async () => {
       await this.#client.incr(key)
+    })
+    return this
+  }
+  sAdd(key: string, members: string | string[]): RedisTransaction {
+    this.#queue.push(async () => {
+      await this.#client.sAdd(key, members)
     })
     return this
   }

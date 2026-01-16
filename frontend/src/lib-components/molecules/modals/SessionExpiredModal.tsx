@@ -30,6 +30,7 @@ const SessionExpiredModal: React.FC<Props> = ({
       title={i18n.sessionTimeout.sessionExpiredTitle}
       closeLabel={i18n.sessionTimeout.cancel}
       zIndex={999}
+      data-qa="session-expired-modal"
     >
       <CenteredP>{i18n.sessionTimeout.sessionExpiredMessage}</CenteredP>
       <ButtonFooter>
