@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -107,6 +108,8 @@ private fun Database.Transaction.consolidateMessageThreads(
         val isCopy: Boolean,
     )
 
+    setStatementTimeout(Duration.ofMinutes(10))
+
     val isCopyPredicate =
         if (onlyStaffCopies) {
             Predicate { where("$it.is_copy") }
@@ -139,6 +142,10 @@ ORDER BY mt.is_copy, mt.id
         val toDelete = group.drop(1)
         val threadIdsToDelete = toDelete.map { it.threadId }
         val messageIdsToDelete = toDelete.map { it.messageId }
+
+        logger.info {
+            "Consolidating ${toDelete.size} threads and messages into thread ${toKeep.threadId} for content $contentId (is_copy=$isCopy)"
+        }
 
         execute {
             sql(
