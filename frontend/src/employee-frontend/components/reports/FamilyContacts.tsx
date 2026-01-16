@@ -71,7 +71,6 @@ export default React.memo(function FamilyContacts() {
             <ReportDownload
               data={rows.map((row) => ({
                 name: formatPersonName(row, 'Last First'),
-                ssn: row.ssn,
                 groupName: row.groupName,
                 address: `${row.streetAddress}, ${row.postalCode} ${row.postOffice}`,
                 headOfChildName: row.headOfChild
@@ -96,10 +95,6 @@ export default React.memo(function FamilyContacts() {
                 {
                   label: i18n.reports.familyContacts.name,
                   value: (row) => row.name
-                },
-                {
-                  label: i18n.reports.familyContacts.ssn,
-                  value: (row) => row.ssn
                 },
                 {
                   label: i18n.reports.familyContacts.group,
@@ -152,7 +147,6 @@ export default React.memo(function FamilyContacts() {
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.familyContacts.name}</Th>
-                  <Th>{i18n.reports.familyContacts.ssn}</Th>
                   <Th>{i18n.reports.familyContacts.group}</Th>
                   <Th>{i18n.reports.familyContacts.address}</Th>
                   <Th>{i18n.reports.familyContacts.headOfChild}</Th>
@@ -168,7 +162,6 @@ export default React.memo(function FamilyContacts() {
                         <PersonName person={row} format="Last First" />
                       </Link>
                     </Td>
-                    <Td>{row.ssn}</Td>
                     <Td>{row.groupName}</Td>
                     <Td>
                       {`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}

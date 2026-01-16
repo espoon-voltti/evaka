@@ -435,7 +435,6 @@ export interface FamilyContactReportRow {
   lastName: string
   postOffice: string
   postalCode: string
-  ssn: string | null
   streetAddress: string
 }
 
