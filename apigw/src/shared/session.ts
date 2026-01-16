@@ -45,6 +45,10 @@ function userSessionsKey(userIdHash: string) {
   return `usess:${userIdHash}`
 }
 
+function sfiSessionsKey(sfiNameId: string) {
+  return `sfisess:${sfiNameId}`
+}
+
 export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
@@ -75,7 +79,8 @@ export interface Sessions<T extends SessionType> {
 export function sessionSupport<T extends SessionType>(
   sessionType: T,
   redisClient: RedisClient,
-  config: SessionConfig
+  config: SessionConfig,
+  maxSessionTimeoutMinutes: number
 ): Sessions<T> {
   const cookieName = sessionCookie(sessionType)
 
@@ -229,6 +234,17 @@ export function sessionSupport<T extends SessionType>(
         await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
       }
     }
+
+    if (req.user?.authType === 'sfi' && req.user.samlSession?.nameID) {
+      const key = sfiSessionsKey(req.user.samlSession.nameID)
+      const sessionIds = await redisClient.sMembers(key)
+      if (sessionIds.length > 0) {
+        await redisClient.del(
+          sessionIds.map((sessionId) => `sess:${sessionId}`)
+        )
+        await redisClient.del(key)
+      }
+    }
   }
 
   async function updateUser(
@@ -257,6 +273,20 @@ export function sessionSupport<T extends SessionType>(
         .multi()
         .sAdd(key, req.session.id)
         .expire(key, config.sessionTimeoutMinutes * 60)
+        .exec()
+    }
+
+    if (req.session.id && user.authType === 'sfi') {
+      const key = sfiSessionsKey(user.samlSession.nameID)
+      await redisClient
+        .multi()
+        .sAdd(key, req.session.id)
+        .expire(
+          key,
+          maxSessionTimeoutMinutes
+            ? maxSessionTimeoutMinutes * 60
+            : config.sessionTimeoutMinutes * 60
+        )
         .exec()
     }
   }
