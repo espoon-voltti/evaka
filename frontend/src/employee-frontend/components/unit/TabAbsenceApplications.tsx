@@ -34,6 +34,10 @@ export const TabAbsenceApplications = (props: Props) => {
     })
   )
 
+  if (applicationsResult.isSuccess && applicationsResult.value.length === 0) {
+    return null
+  }
+
   return (
     <CollapsibleContentArea
       title={
