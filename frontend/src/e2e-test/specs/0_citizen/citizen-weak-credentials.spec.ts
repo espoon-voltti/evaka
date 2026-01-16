@@ -17,7 +17,7 @@ import CitizenPersonalDetailsPage, {
 } from '../../pages/citizen/citizen-personal-details'
 import { getVerificationCodeFromEmail } from '../../utils/email'
 import { Page } from '../../utils/page'
-import { enduserLogin } from '../../utils/user'
+import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 const mockedTime = HelsinkiDateTime.of(2024, 1, 1, 12, 0)
 let page: Page
@@ -214,6 +214,47 @@ describe('Citizen weak credentials', () => {
     await modal.unacceptablePasswordAlert.waitUntilHidden()
     await modal.ok.click()
     await modal.waitUntilHidden()
+  })
+
+  test('credentials change invalidates existing weak credential sessions', async () => {
+    const email = 'test@example.com'
+    const citizen = await Fixture.person({
+      email,
+      verifiedEmail: email
+    }).saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: {
+        username: email,
+        password: 'aifiefaeC3io?dee'
+      }
+    })
+    const strongSession = await Page.open({ mockedTime })
+    const weakSession = await Page.open({ mockedTime })
+    const newPassword = 'EeyahShoqu+oe7th'
+
+    await enduserLogin(strongSession, citizen)
+    await enduserLoginWeak(weakSession, {
+      username: email,
+      password: 'aifiefaeC3io?dee'
+    })
+    const header = new CitizenHeader(strongSession)
+    await header.selectTab('personal-details')
+    const personalDetailsPage = new CitizenPersonalDetailsPage(strongSession)
+    const section = personalDetailsPage.loginDetailsSection
+    await section.weakLoginEnabled.waitUntilVisible()
+    await section.username.assertTextEquals(email)
+    await section.updatePassword.click()
+
+    const modal = new WeakCredentialsModal(strongSession)
+    await modal.username.assertAttributeEquals('value', email)
+    await modal.password.fill(newPassword)
+    await modal.confirmPassword.fill(newPassword)
+    await modal.ok.click()
+    await modal.waitUntilHidden()
+
+    // Weak session should be logged out
+    await weakSession.findByDataQa('desktop-nav').click()
+    await weakSession.findByDataQa('session-expired-modal').waitUntilVisible()
   })
 })
 
