@@ -853,7 +853,13 @@ private fun getConfirmedRangeDates(
             ConfirmedRangeDate(
                 date = date,
                 scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
-                reservations = reservationTimes,
+                reservations =
+                    reservationTimes.sortedWith(
+                        compareBy(
+                            { it is ReservationResponse.Times },
+                            { (it as? ReservationResponse.Times)?.range?.start },
+                        )
+                    ),
                 absenceType =
                     if (isFullDayAbsent)
                         (daysAbsences.firstOrNull { it.category == AbsenceCategory.BILLABLE }
