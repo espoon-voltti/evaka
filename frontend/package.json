@@ -82,7 +82,7 @@
     "@types/lodash": "4.17.23",
     "@types/node": "24.10.4",
     "@types/punycode": "2.1.4",
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
     "@types/webpack": "5.28.5",
     "@vitejs/plugin-legacy": "7.2.1",
