@@ -3391,7 +3391,7 @@ __metadata:
     nocache: "npm:4.0.0"
     nock: "npm:14.0.10"
     node-forge: "npm:1.3.3"
-    pino: "npm:10.1.0"
+    pino: "npm:10.1.1"
     pino-http: "npm:11.0.0"
     pino-pretty: "npm:13.1.3"
     prettier: "npm:3.7.4"
@@ -6093,15 +6093,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-abstract-transport@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "pino-abstract-transport@npm:2.0.0"
-  dependencies:
-    split2: "npm:^4.0.0"
-  checksum: 10/e5699ecb06c7121055978e988e5cecea5b6892fc2589c64f1f86df5e7386bbbfd2ada268839e911b021c6b3123428aed7c6be3ac7940eee139556c75324c7e83
-  languageName: node
-  linkType: hard
-
 "pino-abstract-transport@npm:^3.0.0":
   version: 3.0.0
   resolution: "pino-abstract-transport@npm:3.0.0"
@@ -6153,24 +6144,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:10.1.0, pino@npm:^10.0.0":
-  version: 10.1.0
-  resolution: "pino@npm:10.1.0"
+"pino@npm:10.1.1, pino@npm:^10.0.0":
+  version: 10.1.1
+  resolution: "pino@npm:10.1.1"
   dependencies:
     "@pinojs/redact": "npm:^0.4.0"
     atomic-sleep: "npm:^1.0.0"
     on-exit-leak-free: "npm:^2.1.0"
-    pino-abstract-transport: "npm:^2.0.0"
+    pino-abstract-transport: "npm:^3.0.0"
     pino-std-serializers: "npm:^7.0.0"
     process-warning: "npm:^5.0.0"
     quick-format-unescaped: "npm:^4.0.3"
     real-require: "npm:^0.2.0"
     safe-stable-stringify: "npm:^2.3.1"
     sonic-boom: "npm:^4.0.1"
-    thread-stream: "npm:^3.0.0"
+    thread-stream: "npm:^4.0.0"
   bin:
     pino: bin.js
-  checksum: 10/6f9c86572669842950887cf1cd45fc977903ce1be0a6e32b98918c87d1914ff8854395dc64388d75a583672439997422975977275ed92c14a2f6ee1a26b07ccf
+  checksum: 10/371abc2bfd9b2651fc44637b8861064e8e9a68b81c2109c3cef0c1f9d4a97ff3f150adc1a2fb95d00f08bdab763dd058c7f98fad7245e64ed17ea37bad99f255
   languageName: node
   linkType: hard
 
@@ -7145,12 +7136,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"thread-stream@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "thread-stream@npm:3.0.0"
+"thread-stream@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "thread-stream@npm:4.0.0"
   dependencies:
     real-require: "npm:^0.2.0"
-  checksum: 10/f7a8b8539a75194a5c53c2506da4110ced4b3b7096f4ac7fa1bf07a96a7d0dccbe46d8b87cf1427e09804fcdbd6a51ddf5d1da01c58f7ccb7e4b3baf513bf02e
+  checksum: 10/698ac8bd104c6cf91dda8421c30790979b867d7b6c878f914ddef18f1b1bc846f8776976d9f0113ed0ee90043f2e9e6554b96f4c1154ff84cd199da657f214fa
   languageName: node
   linkType: hard
 
