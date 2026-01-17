@@ -66,7 +66,7 @@
     "wouter": "3.9.0"
   },
   "devDependencies": {
-    "@eslint/compat": "2.0.0",
+    "@eslint/compat": "2.0.1",
     "@eslint/js": "9.39.2",
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@playwright/test": "1.57.0",
