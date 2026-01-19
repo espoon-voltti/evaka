@@ -9,3 +9,6 @@
 /.vscode/
 /.idea/
 .npmrc
+
+# mise
+mise.local.toml
