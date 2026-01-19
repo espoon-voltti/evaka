@@ -1028,6 +1028,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageId = threads[0].messages[0].id,
                 recipientAccountIds = setOf(employee1Account),
                 content = "reply content",
+                now = sendTime.plusSeconds(1),
             )
 
             val threadsAfterReply = getRegularMessageThreads(person2)
