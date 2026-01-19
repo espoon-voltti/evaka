@@ -5,7 +5,8 @@
 import axios from 'axios'
 import type express from 'express'
 
-import { systemUserHeader } from './auth/index.ts'
+import type { EvakaSessionUser } from './auth/index.ts'
+import { createUserHeader, systemUserHeader } from './auth/index.ts'
 import { getJwt } from './auth/jwt.ts'
 import { evakaServiceUrl } from './config.ts'
 
@@ -171,6 +172,23 @@ export async function citizenWeakLogin(
     { headers: createServiceRequestHeaders(req, systemUserHeader) }
   )
   return data
+}
+
+interface CitizenWeakLoginCredentialsUpdateRequest {
+  username: string | null
+  password: string | null
+}
+
+export async function citizenWeakLoginCredentialsUpdate(
+  req: express.Request,
+  user: EvakaSessionUser,
+  request: CitizenWeakLoginCredentialsUpdateRequest
+): Promise<void> {
+  await client.put<CitizenUser>(
+    `/citizen/personal-data/weak-login-credentials`,
+    request,
+    { headers: createServiceRequestHeaders(req, createUserHeader(user)) }
+  )
 }
 
 export async function getCitizenDetails(
