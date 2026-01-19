@@ -186,9 +186,6 @@ class ReportPermissions(private val accessControl: AccessControl) {
                             Action.Global.READ_PLACEMENT_SKETCHING_REPORT
                         )
                     },
-                    Report.PRESENCE.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_PRESENCE_REPORT)
-                    },
                     Report.RAW.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_RAW_REPORT)
                     },

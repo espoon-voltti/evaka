@@ -65,7 +65,6 @@ import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import type { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import type { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
-import type { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { RawReportRow } from 'lib-common/generated/api-types/reports'
 import type { RegionalSurveyMunicipalVoucherDistributionResult } from 'lib-common/generated/api-types/reports'
@@ -107,7 +106,6 @@ import { deserializeJsonNonSsnChildrenReportRow } from 'lib-common/generated/api
 import { deserializeJsonPlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonPresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonRawReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonServiceVoucherUnitReport } from 'lib-common/generated/api-types/reports'
@@ -1014,28 +1012,6 @@ export async function getPreschoolApplicationReport(): Promise<PreschoolApplicat
     method: 'GET'
   })
   return json.map(e => deserializeJsonPreschoolApplicationReportRow(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.PresenceReportController.getPresenceReport
-*/
-export async function getPresenceReport(
-  request: {
-    from: LocalDate,
-    to: LocalDate
-  }
-): Promise<PresenceReportRow[]> {
-  const params = createUrlSearchParams(
-    ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()]
-  )
-  const { data: json } = await client.request<JsonOf<PresenceReportRow[]>>({
-    url: uri`/employee/reports/presences`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonPresenceReportRow(e))
 }
 
 

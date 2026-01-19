@@ -83,7 +83,6 @@ import PlacementGuarantee from './components/reports/PlacementGuarantee'
 import PlacementSketching from './components/reports/PlacementSketching'
 import PreschoolAbsenceReport from './components/reports/PreschoolAbsenceReport'
 import PreschoolApplicationReport from './components/reports/PreschoolApplicationReport'
-import ReportPresences from './components/reports/PresenceReport'
 import ReportRaw from './components/reports/Raw'
 import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportSextet from './components/reports/Sextet'
@@ -283,7 +282,6 @@ const routes: EmployeeRoute[] = [
     component: ReportDuplicatePeople,
     title: 'reports'
   },
-  { path: '/reports/presences', component: ReportPresences, title: 'reports' },
   {
     path: '/reports/service-needs',
     component: ReportServiceNeeds,
