@@ -2,6 +2,47 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
+[tasks.start]
+description = "Start the development environment"
+dir = "compose"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker compose up -d
+pm2 start
+
+INSTANCE=${EVAKA_INSTANCE:-0}
+FRONTEND_PORT=$((9099 + $INSTANCE))
+
+echo "Development environment started."
+echo "Open http://localhost:${FRONTEND_PORT}/ in your browser."
+"""
+
+[tasks.restart]
+description = "Restart services in the development environment"
+usage = """
+arg "[services]" var=#true help="Service(s) to restart" {
+    choices "all" "frontend" "apigw" "service"
+}
+"""
+dir = "compose"
+run = """
+pm2 restart {{ usage.services | default(value=["all"]) | join(sep=" ") }}
+"""
+
+[tasks.stop]
+description = "Stop the development environment"
+dir = "compose"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker compose down
+pm2 kill
+
+echo "Development environment stopped."
+"""
 
 [tasks.use]
 description = "Activate eVaka instance with offset ports"
@@ -38,7 +79,9 @@ EOF
 
 echo "Activated eVaka instance $INSTANCE."
 echo ""
-echo "Run 'mise run deactivate' to return to default."
+echo "- Run 'mise run start' to start the development environment"
+echo "- Alternatively, run 'docker-compose' and 'pm2' manually in compose/ directory."
+echo "- Run 'mise run deactivate' to return to default."
 """
 
 [tasks.deactivate]
