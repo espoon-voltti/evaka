@@ -70,6 +70,7 @@ Sanitized default appender logback configuration provided for import
                     </pattern>
                 </pattern>
                 <arguments/>
+                <provider class="fi.espoo.voltti.logging.MdcPathParamProvider"/>
             </providers>
         </encoder>
     </appender>
