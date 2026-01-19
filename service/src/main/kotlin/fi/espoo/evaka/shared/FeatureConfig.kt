@@ -65,13 +65,6 @@ data class FeatureConfig(
     val useContractDaysAsDailyFeeDivisor: Boolean,
 
     /**
-     * Employees with given user roles to show as options for assistance decision makers.
-     *
-     * May contain global and unit scoped roles (null = all roles are visible).
-     */
-    val assistanceDecisionMakerRoles: Set<UserRole>?,
-
-    /**
      * Employees with given user roles to show as options for preschool assistance decision makers.
      *
      * May contain global and unit scoped roles (null = all roles are visible).
@@ -147,8 +140,6 @@ enum class ArchiveProcessType {
     APPLICATION_DAYCARE,
     APPLICATION_PRESCHOOL,
     APPLICATION_CLUB,
-    ASSISTANCE_NEED_DECISION_DAYCARE,
-    ASSISTANCE_NEED_DECISION_PRESCHOOL,
     FEE_DECISION,
     VOUCHER_VALUE_DECISION;
 

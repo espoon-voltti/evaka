@@ -284,31 +284,6 @@ $unsubscribeEn
         )
     }
 
-    override fun assistanceNeedDecisionNotification(language: Language): EmailContent =
-        EmailContent.fromHtml(
-            subject = "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
-            html =
-                """
-<p>Hyvä(t) huoltaja(t),</p>
-<p>Lapsellenne on tehty päätös.</p>
-<p>Päätös on nähtävissä eVakassa osoitteessa ${frontPageLink(Language.fi)}.</p>
-$unsubscribeFi
-<hr>
-<p>Bästa vårdnadshavare,</p>
-<p>Beslut har fattats angående ditt barn.</p>
-<p>Beslutet finns att se i eVaka på ${frontPageLink(Language.sv)}.</p>
-$unsubscribeSv
-<hr>
-<p>Dear guardian(s),</p>
-<p>A decision has been made regarding your child.</p>
-<p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
-$unsubscribeEn
-""",
-        )
-
-    override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
-        assistanceNeedDecisionNotification(language) // currently same content
-
     override fun messageNotification(language: Language, thread: MessageThreadData): EmailContent =
         messageNotification(language, thread, false, null)
 

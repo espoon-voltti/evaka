@@ -34,21 +34,9 @@ import {
   updatePreschoolAssistance
 } from '../../generated/api-clients/assistance'
 import {
-  annulAssistanceNeedPreschoolDecision,
-  createAssistanceNeedPreschoolDecision,
   createAssistanceNeedVoucherCoefficient,
-  decideAssistanceNeedPreschoolDecision,
-  deleteAssistanceNeedDecision,
-  deleteAssistanceNeedPreschoolDecision,
   deleteAssistanceNeedVoucherCoefficient,
-  getAssistanceNeedDecisions,
-  getAssistanceNeedPreschoolDecision,
-  getAssistanceNeedPreschoolDecisions,
   getAssistanceNeedVoucherCoefficients,
-  getAssistancePreschoolDecisionMakerOptions,
-  revertAssistanceNeedPreschoolDecisionToUnsent,
-  sendAssistanceNeedPreschoolDecisionForDecision,
-  updateAssistanceNeedPreschoolDecision,
   updateAssistanceNeedVoucherCoefficient
 } from '../../generated/api-clients/assistanceneed'
 import {
@@ -63,11 +51,7 @@ import {
   getBackupPickups,
   updateBackupPickup
 } from '../../generated/api-clients/backuppickup'
-import {
-  getAssistanceNeedDecisionMetadata,
-  getAssistanceNeedPreschoolDecisionMetadata,
-  getChildDocumentMetadata
-} from '../../generated/api-clients/caseprocess'
+import { getChildDocumentMetadata } from '../../generated/api-clients/caseprocess'
 import {
   deleteDailyServiceTimes,
   getDailyServiceTimes,
@@ -422,90 +406,6 @@ export const deleteOtherAssistanceMeasureMutation = q.parametricMutation<{
 }>()(deleteOtherAssistanceMeasure, [
   ({ childId }) => assistanceQuery({ child: childId })
 ])
-
-export const assistanceNeedDecisionsQuery = q.query(getAssistanceNeedDecisions)
-
-export const assistanceNeedDecisionMetadataQuery = q.query(
-  getAssistanceNeedDecisionMetadata
-)
-
-export const assistanceNeedPreschoolDecisionBasicsQuery = q.query(
-  getAssistanceNeedPreschoolDecisions
-)
-
-export const assistanceNeedPreschoolDecisionQuery = q.query(
-  getAssistanceNeedPreschoolDecision
-)
-
-export const assistanceNeedPreschoolDecisionMakerOptionsQuery =
-  q.parametricQuery<DaycareId | null>()(
-    getAssistancePreschoolDecisionMakerOptions
-  )
-
-export const assistanceNeedPreschoolDecisionMetadataQuery = q.query(
-  getAssistanceNeedPreschoolDecisionMetadata
-)
-
-export const deleteAssistanceNeedDecisionMutation = q.parametricMutation<{
-  childId: ChildId
-}>()(deleteAssistanceNeedDecision, [
-  ({ childId }) => assistanceNeedDecisionsQuery({ childId })
-])
-
-export const createAssistanceNeedPreschoolDecisionMutation = q.mutation(
-  createAssistanceNeedPreschoolDecision,
-  [({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId })]
-)
-
-export const updateAssistanceNeedPreschoolDecisionMutation = q.mutation(
-  updateAssistanceNeedPreschoolDecision
-  // no automatic invalidation due to auto-save
-)
-
-export const sendAssistanceNeedPreschoolDecisionMutation =
-  q.parametricMutation<{ childId: ChildId }>()(
-    sendAssistanceNeedPreschoolDecisionForDecision,
-    [
-      ({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId }),
-      ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
-    ]
-  )
-
-export const unsendAssistanceNeedPreschoolDecisionMutation =
-  q.parametricMutation<{ childId: ChildId }>()(
-    revertAssistanceNeedPreschoolDecisionToUnsent,
-    [
-      ({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId }),
-      ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
-    ]
-  )
-
-export const decideAssistanceNeedPreschoolDecisionMutation =
-  q.parametricMutation<{ childId: ChildId }>()(
-    decideAssistanceNeedPreschoolDecision,
-    [
-      ({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId }),
-      ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
-    ]
-  )
-
-export const annulAssistanceNeedPreschoolDecisionMutation =
-  q.parametricMutation<{ childId: ChildId }>()(
-    annulAssistanceNeedPreschoolDecision,
-    [
-      ({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId }),
-      ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
-    ]
-  )
-
-export const deleteAssistanceNeedPreschoolDecisionMutation =
-  q.parametricMutation<{ childId: ChildId }>()(
-    deleteAssistanceNeedPreschoolDecision,
-    [
-      ({ childId }) => assistanceNeedPreschoolDecisionBasicsQuery({ childId }),
-      ({ id }) => assistanceNeedPreschoolDecisionQuery({ id })
-    ]
-  )
 
 export const getBackupPickupsQuery = q.query(getBackupPickups)
 

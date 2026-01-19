@@ -12,8 +12,6 @@ import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.aromi.AromiService
 import fi.espoo.evaka.assistance.endAssistanceFactorsWhichBelongToPastPlacements
-import fi.espoo.evaka.assistanceneed.decision.endActiveDaycareAssistanceDecisions
-import fi.espoo.evaka.assistanceneed.preschooldecision.endActivePreschoolAssistanceDecisions
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.endOutdatedAssistanceNeedVoucherCoefficients
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
@@ -87,14 +85,6 @@ enum class ScheduledJob(
     EndExpiredChildDocumentDecisions(
         ScheduledJobs::endExpiredChildDocumentDecisions,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
-    ),
-    EndActiveDaycareAssistanceDecisions(
-        ScheduledJobs::endActiveDaycareAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
-    ),
-    EndActivePreschoolAssistanceDecisions(
-        ScheduledJobs::endActivePreschoolAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
     EndOfDayAttendanceUpkeep(
         ScheduledJobs::endOfDayAttendanceUpkeep,
@@ -379,14 +369,6 @@ class ScheduledJobs(
                     "Automatically set an end date of $yesterday to child document decision $id"
                 }
             }
-    }
-
-    fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(clock.today()) }
-    }
-
-    fun endActivePreschoolAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(clock.today()) }
     }
 
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {

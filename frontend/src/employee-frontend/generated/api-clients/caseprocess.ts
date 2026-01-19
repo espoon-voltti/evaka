@@ -5,8 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
-import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
-import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import type { ChildDocumentId } from 'lib-common/generated/api-types/shared'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
@@ -27,38 +25,6 @@ export async function getApplicationMetadata(
 ): Promise<ProcessMetadataResponse> {
   const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
     url: uri`/employee/process-metadata/applications/${request.applicationId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonProcessMetadataResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getAssistanceNeedDecisionMetadata
-*/
-export async function getAssistanceNeedDecisionMetadata(
-  request: {
-    decisionId: AssistanceNeedDecisionId
-  }
-): Promise<ProcessMetadataResponse> {
-  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
-    url: uri`/employee/process-metadata/assistance-need-decisions/${request.decisionId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonProcessMetadataResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataController.getAssistanceNeedPreschoolDecisionMetadata
-*/
-export async function getAssistanceNeedPreschoolDecisionMetadata(
-  request: {
-    decisionId: AssistanceNeedPreschoolDecisionId
-  }
-): Promise<ProcessMetadataResponse> {
-  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
-    url: uri`/employee/process-metadata/assistance-need-preschool-decisions/${request.decisionId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonProcessMetadataResponse(json)

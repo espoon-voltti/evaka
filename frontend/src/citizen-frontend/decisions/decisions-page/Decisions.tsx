@@ -9,10 +9,6 @@ import React, { Fragment, useMemo } from 'react'
 
 import { combine } from 'lib-common/api'
 import type { DecisionSummary } from 'lib-common/generated/api-types/application'
-import type {
-  AssistanceNeedDecisionCitizenListItem,
-  AssistanceNeedPreschoolDecisionCitizenListItem
-} from 'lib-common/generated/api-types/assistanceneed'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
@@ -29,44 +25,31 @@ import { renderResult } from '../../async-rendering'
 import { childrenQuery } from '../../children/queries'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { assistanceDecisionsQuery } from '../assistance-decision-page/queries'
-import { assistanceNeedPreschoolDecisionsQuery } from '../assistance-decision-page/queries-preschool'
 import { decisionsQuery, financeDecisionsQuery } from '../queries'
 
 import ApplicationDecision from './ApplicationDecision'
-import AssistanceDecision from './AssistanceDecision'
-import AssistancePreschoolDecision from './AssistancePreschoolDecision'
 import FinanceDecision from './FinanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
   const children = useQueryResult(childrenQuery())
   const applicationDecisions = useQueryResult(decisionsQuery())
-  const assistanceDecisions = useQueryResult(assistanceDecisionsQuery())
-  const assistancePreschoolDecisions = useQueryResult(
-    assistanceNeedPreschoolDecisionsQuery()
-  )
 
   const financeDecisions = useQueryResult(financeDecisionsQuery())
 
   useTitle(t, t.decisions.title)
 
   const getAriaLabelForChild = (child: {
-    decisions: (
-      | AssistanceNeedDecisionCitizenListItem
-      | AssistanceNeedPreschoolDecisionCitizenListItem
-      | {
-          applicationId: ApplicationId
-          resolved: LocalDate | null
-        }
-    )[]
+    decisions: {
+      applicationId: ApplicationId
+      resolved: LocalDate | null
+    }[]
     firstName: string
     lastName: string
     decidableApplications: ApplicationId[]
   }) => {
     const unconfirmedDecisionsCount = child.decisions.filter(
       (decision) =>
-        'applicationId' in decision &&
         decision.resolved === null &&
         child.decidableApplications.includes(decision.applicationId)
     ).length
@@ -103,44 +86,23 @@ export default React.memo(function Decisions() {
 
   const childrenWithSortedDecisions = useMemo(
     () =>
-      combine(
-        children,
-        applicationDecisions,
-        assistanceDecisions,
-        assistancePreschoolDecisions
-      ).map(
-        ([
-          children,
-          applicationDecisions,
-          assistanceDecisions,
-          assistancePreschoolDecisions
-        ]) =>
+      combine(children, applicationDecisions).map(
+        ([children, applicationDecisions]) =>
           children
             .map((child) => {
               const childDecisions = sortBy(
                 [
                   ...applicationDecisions.decisions.filter(
                     ({ childId }) => child.id === childId
-                  ),
-                  ...assistanceDecisions.filter(
-                    ({ childId }) => child.id === childId
-                  ),
-                  ...assistancePreschoolDecisions.filter(
-                    ({ childId }) => child.id === childId
                   )
                 ],
-                (decision) =>
-                  'decisionMade' in decision
-                    ? [decision.decisionMade.formatIso(), '']
-                    : [decision.sentDate.formatIso(), decision.type]
+                (decision) => [decision.sentDate.formatIso(), decision.type]
               ).reverse()
               return {
                 ...child,
                 decisions: childDecisions,
                 decisionNotifications: childDecisions.filter((decision) =>
-                  'applicationId' in decision
-                    ? applicationDecisionIsUnread(decision)
-                    : decision.isUnread
+                  applicationDecisionIsUnread(decision)
                 ).length,
                 applicationDecisionPermittedActions: mapValues(
                   applicationDecisions.permittedActions,
@@ -152,12 +114,7 @@ export default React.memo(function Decisions() {
             })
             .filter((child) => child.decisions.length > 0)
       ),
-    [
-      applicationDecisions,
-      assistanceDecisions,
-      assistancePreschoolDecisions,
-      children
-    ]
+    [applicationDecisions, children]
   )
 
   return (
@@ -222,23 +179,17 @@ export default React.memo(function Decisions() {
                   {child.decisions.map((decision) => (
                     <Fragment key={decision.id}>
                       <HorizontalLine dashed slim />
-                      {'applicationId' in decision ? (
-                        <ApplicationDecision
-                          {...decision}
-                          permittedActions={
-                            child.applicationDecisionPermittedActions[
-                              decision.id
-                            ] ?? new Set()
-                          }
-                          canDecide={child.decidableApplications.includes(
-                            decision.applicationId
-                          )}
-                        />
-                      ) : 'assistanceLevels' in decision ? (
-                        <AssistanceDecision {...decision} />
-                      ) : (
-                        <AssistancePreschoolDecision decision={decision} />
-                      )}
+                      <ApplicationDecision
+                        {...decision}
+                        permittedActions={
+                          child.applicationDecisionPermittedActions[
+                            decision.id
+                          ] ?? new Set()
+                        }
+                        canDecide={child.decidableApplications.includes(
+                          decision.applicationId
+                        )}
+                      />
                     </Fragment>
                   ))}
                 </ContentArea>
@@ -247,7 +198,6 @@ export default React.memo(function Decisions() {
           </>
         )
       )}
-
       <Gap size="s" />
     </Container>
   )

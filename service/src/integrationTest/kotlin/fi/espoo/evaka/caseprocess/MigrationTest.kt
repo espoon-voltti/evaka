@@ -14,8 +14,6 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.SimpleApplicationAction
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -27,8 +25,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -38,7 +34,6 @@ import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevVoucherValueDecision
-import fi.espoo.evaka.shared.dev.emptyAssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.DateRange
@@ -556,244 +551,6 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         process.history[2].also {
             assertEquals(CaseProcessState.COMPLETED, it.state)
             assertEquals(sent, it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-    }
-
-    @Test
-    fun `draft assistance need daycare decision is migrated to INITIAL`() {
-        val today = LocalDate.of(2023, 1, 1)
-        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
-        val clock = MockEvakaClock(now)
-
-        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
-
-        val child = DevPerson()
-        val assistanceNeedDecision =
-            DevAssistanceNeedDecision(childId = child.id, validityPeriod = DateRange(today, null))
-
-        db.transaction { tx ->
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(assistanceNeedDecision)
-            tx.execute { sql("UPDATE assistance_need_decision SET created_at = ${bind(created)}") }
-        }
-
-        migrateProcessMetadata(db, clock, featureConfig)
-
-        val process =
-            db.read { it.getCaseProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
-        assertEquals("123.456.a", process.processDefinitionNumber)
-        assertEquals(created.year, process.year)
-        assertEquals(1, process.number)
-        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
-        assertEquals(1440, process.archiveDurationMonths)
-        assertTrue(process.migrated)
-        assertEquals(1, process.history.size)
-        process.history.first().also {
-            assertEquals(CaseProcessState.INITIAL, it.state)
-            assertEquals(created, it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-    }
-
-    @Test
-    fun `sent assistance need daycare decision is migrated to COMPLETED`() {
-        val today = LocalDate.of(2023, 1, 1)
-        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
-        val clock = MockEvakaClock(now)
-
-        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
-        val sentForDecision = today.plusDays(1)
-        val decisionMade = today.plusDays(2)
-
-        val employee = DevEmployee()
-        val child = DevPerson()
-        val assistanceNeedDecision =
-            DevAssistanceNeedDecision(
-                childId = child.id,
-                status = AssistanceNeedDecisionStatus.ACCEPTED,
-                validityPeriod = DateRange(today, null),
-                decisionMaker =
-                    AssistanceNeedDecisionEmployee(employeeId = employee.id, null, null, null),
-                sentForDecision = sentForDecision,
-                decisionMade = decisionMade,
-            )
-
-        db.transaction { tx ->
-            tx.insert(employee)
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(assistanceNeedDecision)
-            tx.execute { sql("UPDATE assistance_need_decision SET created_at = ${bind(created)}") }
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.CreateAssistanceNeedDecisionPdf(assistanceNeedDecision.id)),
-                runAt = now,
-            )
-        }
-        asyncJobRunner.runPendingJobsSync(clock)
-
-        migrateProcessMetadata(db, clock, featureConfig)
-
-        val process =
-            db.read { it.getCaseProcessByAssistanceNeedDecisionId(assistanceNeedDecision.id) }!!
-        assertEquals("123.456.a", process.processDefinitionNumber)
-        assertEquals(created.year, process.year)
-        assertEquals(1, process.number)
-        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
-        assertEquals(1440, process.archiveDurationMonths)
-        assertTrue(process.migrated)
-        assertEquals(4, process.history.size)
-        process.history[0].also {
-            assertEquals(CaseProcessState.INITIAL, it.state)
-            assertEquals(created, it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-        process.history[1].also {
-            assertEquals(CaseProcessState.PREPARATION, it.state)
-            assertEquals(HelsinkiDateTime.of(sentForDecision, LocalTime.MIDNIGHT), it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-        process.history[2].also {
-            assertEquals(CaseProcessState.DECIDING, it.state)
-            assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
-            assertEquals(employee.evakaUserId, it.enteredBy.id)
-        }
-        process.history[3].also {
-            assertEquals(CaseProcessState.COMPLETED, it.state)
-            assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-    }
-
-    @Test
-    fun `draft assistance need preschool decision is migrated to INITIAL`() {
-        val today = LocalDate.of(2023, 1, 1)
-        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
-        val clock = MockEvakaClock(now)
-
-        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
-
-        val child = DevPerson()
-        val assistanceNeedPreschoolDecision =
-            DevAssistanceNeedPreschoolDecision(
-                childId = child.id,
-                form = emptyAssistanceNeedPreschoolDecisionForm,
-            )
-
-        db.transaction { tx ->
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(assistanceNeedPreschoolDecision)
-            tx.execute {
-                sql("UPDATE assistance_need_preschool_decision SET created_at = ${bind(created)}")
-            }
-        }
-
-        migrateProcessMetadata(db, clock, featureConfig)
-
-        val process =
-            db.read {
-                it.getCaseProcessByAssistanceNeedPreschoolDecisionId(
-                    assistanceNeedPreschoolDecision.id
-                )
-            }!!
-        assertEquals("123.456.b", process.processDefinitionNumber)
-        assertEquals(created.year, process.year)
-        assertEquals(1, process.number)
-        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
-        assertEquals(1440, process.archiveDurationMonths)
-        assertTrue(process.migrated)
-        assertEquals(1, process.history.size)
-        process.history.first().also {
-            assertEquals(CaseProcessState.INITIAL, it.state)
-            assertEquals(created, it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-    }
-
-    @Test
-    fun `sent assistance need preschool decision is migrated to COMPLETED`() {
-        val today = LocalDate.of(2023, 1, 1)
-        val now = HelsinkiDateTime.of(today, LocalTime.of(10, 0))
-        val clock = MockEvakaClock(now)
-
-        val created = HelsinkiDateTime.of(today, LocalTime.of(9, 0))
-        val sentForDecision = today.plusDays(1)
-        val decisionMade = today.plusDays(2)
-
-        val area = DevCareArea()
-        val daycare = DevDaycare(areaId = area.id)
-        val employee = DevEmployee()
-        val child = DevPerson()
-        val assistanceNeedPreschoolDecision =
-            DevAssistanceNeedPreschoolDecision(
-                childId = child.id,
-                status = AssistanceNeedDecisionStatus.ACCEPTED,
-                form =
-                    emptyAssistanceNeedPreschoolDecisionForm.copy(
-                        validFrom = today,
-                        selectedUnit = daycare.id,
-                        preparer1EmployeeId = employee.id,
-                        decisionMakerEmployeeId = employee.id,
-                    ),
-                sentForDecision = sentForDecision,
-                decisionMade = decisionMade,
-                unreadGuardianIds = setOf(),
-            )
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(daycare)
-            tx.insert(employee)
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(assistanceNeedPreschoolDecision)
-            tx.execute {
-                sql("UPDATE assistance_need_preschool_decision SET created_at = ${bind(created)}")
-            }
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(
-                        assistanceNeedPreschoolDecision.id
-                    )
-                ),
-                runAt = now,
-            )
-        }
-        asyncJobRunner.runPendingJobsSync(clock)
-
-        migrateProcessMetadata(db, clock, featureConfig)
-
-        val process =
-            db.read {
-                it.getCaseProcessByAssistanceNeedPreschoolDecisionId(
-                    assistanceNeedPreschoolDecision.id
-                )
-            }!!
-        assertEquals("123.456.b", process.processDefinitionNumber)
-        assertEquals(created.year, process.year)
-        assertEquals(1, process.number)
-        assertEquals(featureConfig.archiveMetadataOrganization, process.organization)
-        assertEquals(1440, process.archiveDurationMonths)
-        assertTrue(process.migrated)
-        assertEquals(4, process.history.size)
-        process.history[0].also {
-            assertEquals(CaseProcessState.INITIAL, it.state)
-            assertEquals(created, it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-        process.history[1].also {
-            assertEquals(CaseProcessState.PREPARATION, it.state)
-            assertEquals(HelsinkiDateTime.of(sentForDecision, LocalTime.MIDNIGHT), it.enteredAt)
-            assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
-        }
-        process.history[2].also {
-            assertEquals(CaseProcessState.DECIDING, it.state)
-            assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
-            assertEquals(employee.evakaUserId, it.enteredBy.id)
-        }
-        process.history[3].also {
-            assertEquals(CaseProcessState.COMPLETED, it.state)
-            assertEquals(HelsinkiDateTime.of(decisionMade, LocalTime.MIDNIGHT), it.enteredAt)
             assertEquals(AuthenticatedUser.SystemInternalUser.evakaUserId, it.enteredBy.id)
         }
     }

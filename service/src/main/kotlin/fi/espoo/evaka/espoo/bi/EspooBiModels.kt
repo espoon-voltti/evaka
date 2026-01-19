@@ -11,8 +11,6 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
-import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.DecisionStatus
@@ -290,7 +288,7 @@ data class BiAssistanceNeedDaycareDecision(
     val unit: UUID?,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
-    val status: AssistanceNeedDecisionStatus,
+    val status: String,
     val assistanceEnds: Boolean,
     val assistanceServicesForTime: Boolean,
     val enhancedAssistance: Boolean,
@@ -303,7 +301,7 @@ data class BiAssistanceNeedPreschoolDecision(
     val updated: HelsinkiDateTime,
     val child: UUID,
     val unit: UUID?,
-    val type: AssistanceNeedPreschoolDecisionType?,
+    val type: String?,
     val validFrom: LocalDate?,
-    val status: AssistanceNeedDecisionStatus,
+    val status: String,
 )

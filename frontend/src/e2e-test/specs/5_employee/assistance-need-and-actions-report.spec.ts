@@ -356,81 +356,6 @@ describe('Assistance need and actions report', () => {
         'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t0\t\t-'
       )
   })
-  test('Shows assistance decision counts', async () => {
-    const validDuring = new FiniteDateRange(mockedTime, mockedTime)
-    await Fixture.daycareAssistance({
-      childId,
-      validDuring
-    }).save()
-
-    await Fixture.otherAssistanceMeasure({
-      childId,
-      validDuring
-    }).save()
-
-    await Fixture.assistanceActionOption({
-      value: 'ASSISTANCE_SERVICE_CHILD'
-    }).save()
-
-    await Fixture.assistanceAction({
-      childId,
-      modifiedBy: evakaUserId(admin.id),
-      startDate: validDuring.start,
-      endDate: validDuring.end,
-      actions: ['ASSISTANCE_SERVICE_CHILD']
-    }).save()
-
-    await Fixture.assistanceNeedVoucherCoefficient({
-      childId,
-      validityPeriod: new FiniteDateRange(validDuring.start, validDuring.end),
-      coefficient: 1.5
-    }).save()
-    await Fixture.assistanceNeedDecision({
-      childId,
-      validityPeriod: validDuring.asDateRange(),
-      status: 'ACCEPTED',
-      decisionMaker: {
-        employeeId: admin.id,
-        title: 'regional director',
-        name: null,
-        phoneNumber: null
-      },
-      sentForDecision: validDuring.start,
-      selectedUnit: unitId
-    }).save()
-
-    await Fixture.assistanceNeedPreschoolDecision({
-      childId: childId
-    })
-      .withRequiredFieldsFilled(testDaycare.id, admin.id, admin.id)
-      .with({
-        status: 'ACCEPTED',
-        sentForDecision: validDuring.start,
-        decisionMade: validDuring.start,
-        unreadGuardianIds: []
-      })
-      .withForm({
-        type: 'NEW',
-        validFrom: validDuring.start,
-        validTo: validDuring.end
-      })
-      .save()
-
-    await page.goto(
-      `${config.employeeUrl}/reports/assistance-needs-and-actions`
-    )
-    const report = new AssistanceNeedsAndActionsReport(page)
-    await report.needsAndActionsRows
-      .nth(0)
-      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
-    await report.selectCareAreaFilter('Superkeskus')
-    await report.openUnit('Alkuräjähdyksen päiväkoti')
-    await report.childRows
-      .nth(0)
-      .assertTextEquals(
-        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
-      )
-  })
 
   test('Shows document decision counts aggregated by template name', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
@@ -989,36 +914,6 @@ describe('Assistance need and actions report', () => {
       validityPeriod: new FiniteDateRange(validDuring.start, validDuring.end),
       coefficient: 1.5
     }).save()
-    await Fixture.assistanceNeedDecision({
-      childId,
-      validityPeriod: validDuring.asDateRange(),
-      status: 'ACCEPTED',
-      decisionMaker: {
-        employeeId: admin.id,
-        title: 'regional director',
-        name: null,
-        phoneNumber: null
-      },
-      sentForDecision: validDuring.start,
-      selectedUnit: unitId
-    }).save()
-
-    await Fixture.assistanceNeedPreschoolDecision({
-      childId: childId
-    })
-      .withRequiredFieldsFilled(testDaycare.id, admin.id, admin.id)
-      .with({
-        status: 'ACCEPTED',
-        sentForDecision: validDuring.start,
-        decisionMade: validDuring.start,
-        unreadGuardianIds: []
-      })
-      .withForm({
-        type: 'NEW',
-        validFrom: validDuring.start,
-        validTo: validDuring.end
-      })
-      .save()
 
     const child2 = await Fixture.person({
       id: randomId<PersonId>(),

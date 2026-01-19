@@ -252,7 +252,6 @@ val testFeatureConfig =
         unplannedAbsencesAreContractSurplusDays = true,
         maxContractDaySurplusThreshold = null,
         useContractDaysAsDailyFeeDivisor = true,
-        assistanceDecisionMakerRoles = null,
         preschoolAssistanceDecisionMakerRoles = null,
         requestedStartUpperLimit = 14,
         postOffice = "ESPOO",
@@ -285,20 +284,6 @@ val testFeatureConfig =
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.c",
                         archiveDurationMonths = 10 * 12,
-                    )
-                }
-
-                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE -> {
-                    ArchiveProcessConfig(
-                        processDefinitionNumber = "123.456.a",
-                        archiveDurationMonths = 120 * 12,
-                    )
-                }
-
-                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL -> {
-                    ArchiveProcessConfig(
-                        processDefinitionNumber = "123.456.b",
-                        archiveDurationMonths = 120 * 12,
                     )
                 }
 

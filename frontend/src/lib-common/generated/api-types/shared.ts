@@ -21,14 +21,6 @@ export type AssistanceActionId = Id<'AssistanceAction'>
 
 export type AssistanceFactorId = Id<'AssistanceFactor'>
 
-export type AssistanceNeedDecisionGuardianId = Id<'AssistanceNeedDecisionGuardian'>
-
-export type AssistanceNeedDecisionId = Id<'AssistanceNeedDecision'>
-
-export type AssistanceNeedPreschoolDecisionGuardianId = Id<'AssistanceNeedPreschoolDecisionGuardian'>
-
-export type AssistanceNeedPreschoolDecisionId = Id<'AssistanceNeedPreschoolDecision'>
-
 export type AssistanceNeedVoucherCoefficientId = Id<'AssistanceNeedVoucherCoefficient'>
 
 export type AttachmentId = Id<'Attachment'>
@@ -125,7 +117,6 @@ export type DocumentTemplateId = Id<'DocumentTemplate'>
 */
 export interface EmployeeFeatures {
   applications: boolean
-  assistanceNeedDecisionsReport: boolean
   createDraftInvoices: boolean
   createPlacements: boolean
   createUnits: boolean
@@ -205,16 +196,6 @@ export type MessageThreadFolderId = Id<'MessageThreadFolder'>
 export type MessageThreadId = Id<'MessageThread'>
 
 export type MobileDeviceId = Id<'MobileDevice'>
-
-/**
-* Generated from fi.espoo.evaka.shared.domain.OfficialLanguage
-*/
-export const officialLanguages = [
-  'FI',
-  'SV'
-] as const
-
-export type OfficialLanguage = typeof officialLanguages[number]
 
 export type OtherAssistanceMeasureId = Id<'OtherAssistanceMeasure'>
 

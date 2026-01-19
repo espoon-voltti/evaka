@@ -19,7 +19,6 @@ import {
   DatePicker,
   MultiSelect,
   Select,
-  StaticChip,
   TextInput,
   TreeDropdown
 } from '../../utils/page'
@@ -388,97 +387,6 @@ export class ServiceVoucherUnitReport {
       .findAllByDataQa('realized-amount')
       .nth(nth)
       .assertText((text) => parseFloat(text) === expectedRealizedAmount)
-  }
-}
-
-export class AssistanceNeedDecisionsReport {
-  rows: ElementCollection
-
-  constructor(page: Page) {
-    this.rows = page.findAllByDataQa('assistance-need-decision-row')
-  }
-
-  async row(nth: number) {
-    const row = this.rows.nth(nth)
-    return {
-      sentForDecision: await row.findByDataQa('sent-for-decision').text,
-      childName: await row.findByDataQa('child-name').text,
-      careAreaName: await row.findByDataQa('care-area-name').text,
-      unitName: await row.findByDataQa('unit-name').text,
-      decisionMade: await row.findByDataQa('decision-made').text,
-      status: await row
-        .findByDataQa('decision-chip')
-        .getAttribute('data-qa-status'),
-      isUnopened:
-        (await row.locator
-          .locator('[data-qa="unopened-indicator"]')
-          .count()) === 1
-    }
-  }
-}
-
-export class AssistanceNeedDecisionsReportDecision {
-  decisionMaker: Element
-  decisionStatus: StaticChip
-  annulmentReason: Element
-  returnForEditBtn: Element
-  approveBtn: Element
-  rejectBtn: Element
-  annulBtn: Element
-  annulReasonInput: TextInput
-  modalOkBtn: Element
-  mismatchModalLink: Element
-
-  constructor(private page: Page) {
-    this.decisionMaker = page.findByDataQa('labelled-value-decision-maker')
-    this.decisionStatus = new StaticChip(page.findByDataQa('decision-status'))
-    this.annulmentReason = page.findByDataQa('labelled-value-annulment-reason')
-    this.returnForEditBtn = page.findByDataQa('return-for-edit')
-    this.approveBtn = page.findByDataQa('approve-button')
-    this.rejectBtn = page.findByDataQa('reject-button')
-    this.annulBtn = page.findByDataQa('annul-button')
-    this.annulReasonInput = new TextInput(
-      page.findByDataQa('annul-reason-input')
-    )
-    this.modalOkBtn = page.findByDataQa('modal-okBtn')
-    this.mismatchModalLink = page.findByDataQa('mismatch-modal-link')
-  }
-
-  get returnForEditModal() {
-    return {
-      okBtn: this.page.findByDataQa('modal-okBtn')
-    }
-  }
-
-  get mismatchModal() {
-    return {
-      titleInput: new TextInput(this.page.findByDataQa('title-input')),
-      okBtn: this.page.findByDataQa('modal-okBtn')
-    }
-  }
-}
-
-export class AssistanceNeedPreschoolDecisionsReportDecision {
-  returnForEditBtn: Element
-  approveBtn: Element
-  rejectBtn: Element
-  annulBtn: Element
-  annulReasonInput: TextInput
-  modalOkBtn: Element
-  status: Element
-  annulmentReason: Element
-
-  constructor(page: Page) {
-    this.returnForEditBtn = page.findByDataQa('return-for-edit-button')
-    this.approveBtn = page.findByDataQa('approve-button')
-    this.rejectBtn = page.findByDataQa('reject-button')
-    this.annulBtn = page.findByDataQa('annul-button')
-    this.annulReasonInput = new TextInput(
-      page.findByDataQa('annul-reason-input')
-    )
-    this.modalOkBtn = page.findByDataQa('modal-okBtn')
-    this.status = page.findByDataQa('status')
-    this.annulmentReason = page.findByDataQa('annulment-reason')
   }
 }
 

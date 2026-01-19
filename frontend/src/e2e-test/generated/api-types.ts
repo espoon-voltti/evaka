@@ -15,13 +15,6 @@ import type { AreaId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceActionId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceActionOptionCategory } from 'lib-common/generated/api-types/assistanceaction'
 import type { AssistanceFactorId } from 'lib-common/generated/api-types/shared'
-import type { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
-import type { AssistanceNeedDecisionEmployee } from 'lib-common/generated/api-types/assistanceneed'
-import type { AssistanceNeedDecisionGuardian } from 'lib-common/generated/api-types/assistanceneed'
-import type { AssistanceNeedDecisionId } from 'lib-common/generated/api-types/shared'
-import type { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
-import type { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
-import type { AssistanceNeedPreschoolDecisionId } from 'lib-common/generated/api-types/shared'
 import type { AssistanceNeedVoucherCoefficientId } from 'lib-common/generated/api-types/shared'
 import type { BackupCareId } from 'lib-common/generated/api-types/shared'
 import type { BackupPickupId } from 'lib-common/generated/api-types/shared'
@@ -88,7 +81,6 @@ import type { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
 import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
-import type { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
 import type { ParentshipId } from 'lib-common/generated/api-types/shared'
@@ -108,11 +100,9 @@ import type { PushNotificationCategory } from 'lib-common/generated/api-types/we
 import type { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedId } from 'lib-common/generated/api-types/shared'
 import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
-import type { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
 import type { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import type { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import type { StructuralMotivationOptions } from 'lib-common/generated/api-types/assistanceneed'
 import TimeRange from 'lib-common/time-range'
 import type { UUID } from 'lib-common/types'
 import type { UiLanguage } from 'lib-common/generated/api-types/shared'
@@ -125,7 +115,6 @@ import type { VoucherValueDecisionServiceNeed } from 'lib-common/generated/api-t
 import type { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonApplicationForm } from 'lib-common/generated/api-types/application'
-import { deserializeJsonAssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonDocumentContent } from 'lib-common/generated/api-types/document'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
@@ -262,56 +251,6 @@ export interface DevAssistanceFactor {
   modifiedAt: HelsinkiDateTime
   modifiedBy: EvakaUser
   validDuring: FiniteDateRange
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
-*/
-export interface DevAssistanceNeedDecision {
-  annulmentReason: string
-  assistanceLevels: AssistanceLevel[]
-  careMotivation: string | null
-  childId: PersonId
-  decisionMade: LocalDate | null
-  decisionMaker: AssistanceNeedDecisionEmployee | null
-  decisionNumber: number | null
-  endDateNotKnown: boolean
-  expertResponsibilities: string | null
-  guardianInfo: AssistanceNeedDecisionGuardian[]
-  guardiansHeardOn: LocalDate | null
-  id: AssistanceNeedDecisionId
-  language: OfficialLanguage
-  motivationForDecision: string | null
-  otherRepresentativeDetails: string | null
-  otherRepresentativeHeard: boolean
-  pedagogicalMotivation: string | null
-  preparedBy1: AssistanceNeedDecisionEmployee | null
-  preparedBy2: AssistanceNeedDecisionEmployee | null
-  selectedUnit: DaycareId | null
-  sentForDecision: LocalDate | null
-  serviceOptions: ServiceOptions
-  servicesMotivation: string | null
-  status: AssistanceNeedDecisionStatus
-  structuralMotivationDescription: string | null
-  structuralMotivationOptions: StructuralMotivationOptions
-  unreadGuardianIds: PersonId[] | null
-  validityPeriod: DateRange
-  viewOfGuardians: string | null
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
-*/
-export interface DevAssistanceNeedPreschoolDecision {
-  annulmentReason: string
-  childId: PersonId
-  decisionMade: LocalDate | null
-  decisionNumber: number
-  form: AssistanceNeedPreschoolDecisionForm
-  id: AssistanceNeedPreschoolDecisionId
-  sentForDecision: LocalDate | null
-  status: AssistanceNeedDecisionStatus
-  unreadGuardianIds: PersonId[] | null
 }
 
 /**
@@ -1358,27 +1297,6 @@ export function deserializeJsonDevAssistanceFactor(json: JsonOf<DevAssistanceFac
     ...json,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     validDuring: FiniteDateRange.parseJson(json.validDuring)
-  }
-}
-
-
-export function deserializeJsonDevAssistanceNeedDecision(json: JsonOf<DevAssistanceNeedDecision>): DevAssistanceNeedDecision {
-  return {
-    ...json,
-    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
-    guardiansHeardOn: (json.guardiansHeardOn != null) ? LocalDate.parseIso(json.guardiansHeardOn) : null,
-    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
-    validityPeriod: DateRange.parseJson(json.validityPeriod)
-  }
-}
-
-
-export function deserializeJsonDevAssistanceNeedPreschoolDecision(json: JsonOf<DevAssistanceNeedPreschoolDecision>): DevAssistanceNeedPreschoolDecision {
-  return {
-    ...json,
-    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
-    form: deserializeJsonAssistanceNeedPreschoolDecisionForm(json.form),
-    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null
   }
 }
 

@@ -13,9 +13,6 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
-import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
-import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.decision.DecisionStatus
@@ -54,8 +51,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
-import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
@@ -71,20 +66,18 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.TestDecision
-import fi.espoo.evaka.shared.dev.emptyAssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.Month
 import java.util.UUID
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -298,67 +291,12 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getAssistanceNeedDaycareDecisions() {
-        val id =
-            db.transaction {
-                val child = it.insertTestChild()
-                it.insert(
-                    DevAssistanceNeedDecision(
-                        decisionNumber = 999,
-                        childId = child,
-                        validityPeriod = DateRange.ofMonth(2019, Month.JANUARY),
-                        status = AssistanceNeedDecisionStatus.ACCEPTED,
-                        language = OfficialLanguage.FI,
-                        decisionMade = null,
-                        sentForDecision = null,
-                        selectedUnit = null,
-                        preparedBy1 = null,
-                        preparedBy2 = null,
-                        decisionMaker = null,
-                        pedagogicalMotivation = null,
-                        structuralMotivationOptions =
-                            StructuralMotivationOptions(false, false, false, false, false, false),
-                        structuralMotivationDescription = null,
-                        careMotivation = null,
-                        serviceOptions = ServiceOptions(false, false, false, false, false),
-                        servicesMotivation = null,
-                        expertResponsibilities = null,
-                        guardiansHeardOn = null,
-                        guardianInfo = emptySet(),
-                        viewOfGuardians = null,
-                        otherRepresentativeHeard = false,
-                        otherRepresentativeDetails = null,
-                        assistanceLevels = emptySet(),
-                        motivationForDecision = null,
-                        unreadGuardianIds = null,
-                        annulmentReason = "",
-                        endDateNotKnown = false,
-                    )
-                )
-            }
-        assertSingleRowContainingId(EspooBi.getAssistanceNeedDaycareDecisions, id)
+        assertHeaderOnly(EspooBi.getAssistanceNeedDaycareDecisions)
     }
 
     @Test
     fun getAssistanceNeedPreschoolDecisions() {
-        val id =
-            db.transaction {
-                val child = it.insertTestChild()
-                it.insert(
-                    DevAssistanceNeedPreschoolDecision(
-                        childId = child,
-                        form =
-                            emptyAssistanceNeedPreschoolDecisionForm.copy(
-                                selectedUnit = it.insertTestDaycare(),
-                                preparer1EmployeeId = it.insert(DevEmployee()),
-                                decisionMakerEmployeeId = it.insert(DevEmployee()),
-                            ),
-                        status = AssistanceNeedDecisionStatus.ACCEPTED,
-                        decisionMade = LocalDate.of(2019, 5, 1),
-                        unreadGuardianIds = emptySet(),
-                    )
-                )
-            }
-        assertSingleRowContainingId(EspooBi.getAssistanceNeedPreschoolDecisions, id)
+        assertHeaderOnly(EspooBi.getAssistanceNeedPreschoolDecisions)
     }
 
     private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
@@ -371,6 +309,18 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertTrue(lines.first().looksLikeHeaderRow())
         assertTrue(lines.drop(1).single().contains(id.toString()))
+    }
+
+    private fun assertHeaderOnly(query: CsvQuery) {
+        val lines =
+            db.read { tx ->
+                query(tx) { records ->
+                    records.map { it.trim() }.filter { it.isNotEmpty() }.toList()
+                }
+            }
+
+        assertTrue(lines.first().looksLikeHeaderRow())
+        assertEquals(1, lines.size)
     }
 
     private fun String.looksLikeHeaderRow() = trim().contains(',')

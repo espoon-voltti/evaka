@@ -11,8 +11,6 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import { ChildContext } from '../../state'
 
-import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
-import AssistanceNeedPreschoolDecisionSection from './AssistanceNeedPreschoolDecisionSection'
 import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
 import AssistanceAction from './assistance/AssistanceActionSection'
 import { AssistanceFactorSection } from './assistance/AssistanceFactorSection'
@@ -33,18 +31,6 @@ export default React.memo(function Assistance({ childId }: Props) {
     <div>
       {permittedActions.has('READ_ASSISTANCE') && (
         <AssistanceContent id={childId} permittedActions={permittedActions} />
-      )}
-      {permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
-        <>
-          <HorizontalLine dashed slim />
-          <AssistanceNeedDecisionSection id={childId} />
-        </>
-      )}
-      {permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
-        <>
-          <HorizontalLine dashed slim />
-          <AssistanceNeedPreschoolDecisionSection childId={childId} />
-        </>
       )}
       {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
         permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
