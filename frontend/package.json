@@ -80,7 +80,7 @@
     "@types/leaflet": "1.9.21",
     "@types/linkify-it": "5.0.0",
     "@types/lodash": "4.17.23",
-    "@types/node": "24.10.4",
+    "@types/node": "24.10.8",
     "@types/punycode": "2.1.4",
     "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
