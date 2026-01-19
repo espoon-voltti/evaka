@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.daycare
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 
 data class PreschoolTerm(
@@ -42,9 +44,15 @@ data class PreschoolTerm(
                 null
             }
         }
+
+    fun byUnitLanguage(lang: Language) =
+        when (lang) {
+            Language.sv -> swedishPreschool
+            else -> finnishPreschool
+        }
 }
 
-fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
+fun Database.Read.getPreschoolTerms(range: FiniteDateRange? = null): List<PreschoolTerm> {
     return createQuery {
             sql(
                 """
@@ -56,6 +64,7 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
             application_period,
             term_breaks
         FROM preschool_term
+        ${if (range != null) "WHERE extended_term && ${bind(range)}" else ""}
         ORDER BY extended_term
         """
             )
@@ -81,8 +90,8 @@ fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
         }
         .exactlyOneOrNull()
 
-fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
-    return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
+fun Database.Read.getPreschoolTerm(date: LocalDate): PreschoolTerm? {
+    return getPreschoolTerms(range = date.toFiniteDateRange()).firstOrNull()
 }
 
 fun Database.Transaction.insertPreschoolTerm(

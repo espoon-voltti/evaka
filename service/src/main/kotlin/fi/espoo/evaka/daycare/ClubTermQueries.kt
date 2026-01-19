@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 
 data class ClubTerm(
@@ -34,12 +35,15 @@ data class ClubTerm(
         }
 }
 
-fun Database.Read.getClubTerms(): List<ClubTerm> {
+fun Database.Read.getClubTerms(range: FiniteDateRange? = null): List<ClubTerm> {
     return createQuery {
             sql(
                 """
-               SELECT id, term, application_period, term_breaks FROM club_term order by term
-           """
+    SELECT id, term, application_period, term_breaks 
+    FROM club_term
+    ${if (range != null) "WHERE term && ${bind(range)}" else ""}
+    ORDER BY term
+    """
             )
         }
         .toList()
@@ -55,13 +59,8 @@ fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
         }
         .exactlyOneOrNull()
 
-fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? =
-    createQuery {
-            sql(
-                "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> ${bind(date)} LIMIT 1"
-            )
-        }
-        .exactlyOneOrNull()
+fun Database.Read.getClubTerm(date: LocalDate): ClubTerm? =
+    getClubTerms(range = date.toFiniteDateRange()).firstOrNull()
 
 fun Database.Transaction.insertClubTerm(
     term: FiniteDateRange,

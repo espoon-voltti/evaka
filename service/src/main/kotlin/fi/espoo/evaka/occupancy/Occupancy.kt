@@ -837,8 +837,8 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
     val placementsAndPlans =
         (placements + placementPlans + placementDrafts).groupBy { it.groupingId }
 
-    val clubTerms = getClubTerms()
-    val preschoolTerms = getPreschoolTerms()
+    val clubTerms = getClubTerms(range)
+    val preschoolTerms = getPreschoolTerms(range)
 
     return caretakerCounts.map { (key, countsForKey) ->
         val occupancies =

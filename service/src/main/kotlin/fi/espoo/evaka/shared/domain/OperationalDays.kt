@@ -149,7 +149,7 @@ fun Database.Read.getPreschoolOperationalDatesForChildren(
     range: FiniteDateRange,
     children: Set<ChildId>,
 ): Map<ChildId, Set<LocalDate>> =
-    getPreschoolOperationalDatesForChildren(range, children, getPreschoolTerms())
+    getPreschoolOperationalDatesForChildren(range, children, getPreschoolTerms(range))
 
 fun Database.Read.getPreschoolOperationalDatesForChildren(
     range: FiniteDateRange,

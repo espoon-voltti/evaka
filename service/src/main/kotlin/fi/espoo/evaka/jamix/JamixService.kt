@@ -15,7 +15,7 @@ import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.daycare.getDaycaresById
-import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
@@ -296,18 +296,18 @@ fun createAndSendJamixOrder(
     customerId: Int,
     date: LocalDate,
 ) {
-    val (preschoolTerms, children) =
+    val (preschoolTerm, children) =
         dbc.read { tx ->
-            val preschoolTerms = tx.getPreschoolTerms()
+            val preschoolTerm = tx.getPreschoolTerm(date)
             val children = getChildInfos(tx, customerNumber, date)
-            preschoolTerms to children
+            preschoolTerm to children
         }
     val order =
         JamixClient.MealOrder(
             customerID = customerId,
             deliveryDate = date,
             mealOrderRows =
-                mealReportData(children, date, preschoolTerms, mealTypeMapper).map {
+                mealReportData(children, date, preschoolTerm, mealTypeMapper).map {
                     JamixClient.MealOrderRow(
                         orderAmount = it.mealCount,
                         mealTypeID = it.mealId,

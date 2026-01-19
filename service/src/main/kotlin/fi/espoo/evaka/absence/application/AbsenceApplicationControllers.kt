@@ -94,7 +94,16 @@ class AbsenceApplicationControllerEmployee(
                             clock,
                             applications.map { it.id },
                         )
-                    val terms = tx.getPreschoolTerms()
+                    val terms =
+                        tx.getPreschoolTerms(
+                            range =
+                                DateSet.of(
+                                        applications.map {
+                                            FiniteDateRange(it.startDate, it.endDate)
+                                        }
+                                    )
+                                    .spanningRange()
+                        )
                     applications.mapNotNull { application ->
                         actions[application.id]
                             ?.takeIf { it.contains(Action.AbsenceApplication.READ) }
@@ -347,7 +356,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         childId,
                     )
                     val dateRanges = tx.getAbsenceApplicationDateRanges(childId, clock.today())
-                    val allTerms = tx.getPreschoolTerms()
+                    val allTerms = tx.getPreschoolTerms(DateSet.of(dateRanges).spanningRange())
 
                     DateSet.of(
                         dateRanges.flatMap { range: FiniteDateRange ->
@@ -381,7 +390,7 @@ private fun isMaxWeek(tx: Database.Read, application: AbsenceApplication) =
         application.childId,
         application.startDate,
         application.endDate,
-        tx.getPreschoolTerms(),
+        tx.getPreschoolTerms(range = FiniteDateRange(application.startDate, application.endDate)),
     )
 
 private fun isMaxWeek(

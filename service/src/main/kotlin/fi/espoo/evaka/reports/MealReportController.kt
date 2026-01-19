@@ -6,7 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reservations.getChildData
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 
 fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId): DaycareUnitData {
     val daycare = tx.getDaycare(unitId)
-    val holidays = getHolidays(FiniteDateRange(date, date))
+    val holidays = getHolidays(date.toFiniteDateRange())
     val childPlacements = tx.childPlacementsForDay(unitId, date)
     val childrenWithShiftCare =
         tx.getChildServiceNeedInfos(unitId, childPlacements.keys, FiniteDateRange(date, date))
@@ -41,7 +41,7 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
     val childData = tx.getChildData(unitId, childIds, date.toFiniteDateRange())
     val specialDiets = tx.specialDietsForChildren(childIds)
     val mealTextures = tx.mealTexturesForChildren(childIds)
-    val preschoolTerms = tx.getPreschoolTerms()
+    val preschoolTerm = tx.getPreschoolTerm(date)
 
     return DaycareUnitData(
         daycare,
@@ -51,7 +51,7 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
         childData,
         specialDiets,
         mealTextures,
-        preschoolTerms,
+        preschoolTerm,
     )
 }
 

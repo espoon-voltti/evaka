@@ -31,9 +31,10 @@ import fi.espoo.evaka.caseprocess.insertCaseProcessHistoryRow
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.daycare.getClubTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
@@ -1476,7 +1477,7 @@ class ApplicationStateService(
     ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
-            val activePreschoolTerm = tx.getActivePreschoolTermAt(preferredStartDate)
+            val activePreschoolTerm = tx.getPreschoolTerm(preferredStartDate)
             val canApplyForPreferredDate =
                 activePreschoolTerm?.isApplicationAccepted(currentDate) == true ||
                     (activePreschoolTerm != null && !validateApplicationPeriod)
@@ -1491,8 +1492,7 @@ class ApplicationStateService(
                     connectedDaycarePreferredStartDate != preferredStartDate &&
                     validateApplicationPeriod
             ) {
-                val connectedPreschoolTerm =
-                    tx.getActivePreschoolTermAt(connectedDaycarePreferredStartDate)
+                val connectedPreschoolTerm = tx.getPreschoolTerm(connectedDaycarePreferredStartDate)
                 if (connectedPreschoolTerm != activePreschoolTerm) {
                     throw BadRequest(
                         "Cannot apply to different preschool term for connected daycare"
@@ -1517,8 +1517,7 @@ class ApplicationStateService(
         }
 
         if (type == ApplicationType.CLUB && preferredStartDate != null) {
-            val activeClubTerm =
-                tx.getClubTerms().firstOrNull { it.term.includes(preferredStartDate) }
+            val activeClubTerm = tx.getClubTerm(preferredStartDate)
             val canApplyForPreferredDate =
                 activeClubTerm?.applicationPeriod?.includes(currentDate) == true
             if (!canApplyForPreferredDate) {

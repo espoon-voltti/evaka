@@ -8,7 +8,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.placement.getPlacementsForChildrenAt
@@ -28,7 +28,7 @@ fun getExpectedAbsenceCategories(
 ): Map<ChildId, Set<AbsenceCategory>?> {
     val childIds = attendanceTimesByChild.keys
     val placements = tx.getPlacementsForChildrenAt(childIds, date)
-    val preschoolTerms = tx.getPreschoolTerms()
+    val preschoolTerm = tx.getPreschoolTerm(date)
 
     return attendanceTimesByChild.mapValues { (childId, childAttendanceTimes) ->
         val placement = placements[childId] ?: throw BadRequest("child has no placement")
@@ -40,7 +40,7 @@ fun getExpectedAbsenceCategories(
             unitLanguage = daycare.language,
             dailyPreschoolTime = daycare.dailyPreschoolTime,
             dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-            preschoolTerms = preschoolTerms,
+            preschoolTerm = preschoolTerm,
         )
     }
 }
@@ -55,7 +55,7 @@ fun getExpectedAbsenceCategories(
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
             ?: throw BadRequest("child has no placement")
     val daycare = tx.getDaycare(placement.unitId)!!
-    val preschoolTerms = tx.getPreschoolTerms()
+    val preschoolTerm = tx.getPreschoolTerm(date)
 
     return getExpectedAbsenceCategories(
         date = date,
@@ -64,7 +64,7 @@ fun getExpectedAbsenceCategories(
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,
         dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-        preschoolTerms = preschoolTerms,
+        preschoolTerm = preschoolTerm,
     )
 }
 
@@ -76,15 +76,15 @@ fun getExpectedAbsenceCategories(
     unitLanguage: Language,
     dailyPreschoolTime: TimeRange?,
     dailyPreparatoryTime: TimeRange?,
-    preschoolTerms: List<PreschoolTerm>,
+    preschoolTerm: PreschoolTerm?,
 ): Set<AbsenceCategory>? {
     val presences = attendanceTimes.map { it.asHelsinkiDateTimeRange(date) }
 
     val preschoolEducationOnGoing =
-        preschoolTerms.any {
-            val term = if (unitLanguage == Language.sv) it.swedishPreschool else it.finnishPreschool
-            term.includes(date) && !it.termBreaks.includes(date)
-        }
+        preschoolTerm != null &&
+            preschoolTerm.byUnitLanguage(unitLanguage).includes(date) &&
+            !preschoolTerm.termBreaks.includes(date)
+
     val preparatoryEducationOnGoing = preschoolEducationOnGoing
 
     val preschoolTime =

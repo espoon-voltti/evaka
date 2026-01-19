@@ -337,7 +337,7 @@ private fun getAttendancePredictionRows(
     aromiUnitMap: Map<DaycareId, AromiReportingUnit>,
     aromiGroupMap: Map<GroupId, AromiReportingGroup>,
 ): List<AromiAttendanceRow> {
-    val preschoolTerms = tx.getPreschoolTerms()
+    val preschoolTerms = tx.getPreschoolTerms(range)
     return range
         .dates()
         .flatMap { date ->

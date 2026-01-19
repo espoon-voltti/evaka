@@ -218,8 +218,8 @@ fun createReservationsAndAbsences(
 
     val today = now.toLocalDate()
     val reservationsRange = reservationRequestRange(requests)
-    val clubTerms = tx.getClubTerms()
-    val preschoolTerms = tx.getPreschoolTerms()
+    val clubTerms = tx.getClubTerms(reservationsRange)
+    val preschoolTerms = tx.getPreschoolTerms(reservationsRange)
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
 
     val childIds = requests.map { it.childId }.toSet()
@@ -407,7 +407,7 @@ fun createReservationsAndAbsences(
                     placement.unitLanguage,
                     placement.dailyPreschoolTime,
                     placement.dailyPreparatoryTime,
-                    preschoolTerms,
+                    preschoolTerms.find { it.extendedTerm.includes(req.date) },
                 )
                 ?.map {
                     AbsenceUpsert(
