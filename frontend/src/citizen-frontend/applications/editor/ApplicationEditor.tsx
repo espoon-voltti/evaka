@@ -36,6 +36,7 @@ import ActionRow from 'lib-components/layout/ActionRow'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { ExpandingInfoGroup } from 'lib-components/molecules/ExpandingInfo'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 
 import Footer from '../../Footer'
@@ -229,7 +230,12 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const body = formDataToApiData(application, formData, true)
+    const body = formDataToApiData(
+      application,
+      formData,
+      featureFlags.daycareApplication.dailyTimes,
+      true
+    )
     void saveApplicationDraft({ applicationId: application.id, body })
       .then(() => {
         setInfoMessage({
@@ -258,7 +264,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onSend = () => {
     const body = {
-      form: formDataToApiData(application, formData),
+      form: formDataToApiData(
+        application,
+        formData,
+        featureFlags.daycareApplication.dailyTimes
+      ),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
@@ -291,7 +301,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onUpdate = () => {
     const body = {
-      form: formDataToApiData(application, formData),
+      form: formDataToApiData(
+        application,
+        formData,
+        featureFlags.daycareApplication.dailyTimes
+      ),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
