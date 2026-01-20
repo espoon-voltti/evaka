@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -248,12 +247,33 @@ class MessageControllerCitizen(
             }
     }
 
+    // TODO: This is for backwards compatibility. Remove after a week of production use.
     @PostMapping("/{messageId}/reply")
+    fun replyToMessage(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable messageId: MessageThreadId,
+        @RequestBody body: ReplyToMessageBody,
+    ): MessageService.ThreadReply {
+        val threadId =
+            db.connect { dbc ->
+                dbc.read {
+                    it.createQuery {
+                            sql("SELECT thread_id FROM message WHERE id = ${bind(messageId)}")
+                        }
+                        .exactlyOneOrNull<MessageThreadId>()
+                }
+            } ?: throw NotFound("Message thread not found")
+        return replyToThread(db, user, clock, threadId, body)
+    }
+
+    @PostMapping("/reply-to/{threadId}")
     fun replyToThread(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable messageId: MessageId,
+        @PathVariable threadId: MessageThreadId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         return db.connect { dbc ->
@@ -262,7 +282,7 @@ class MessageControllerCitizen(
                     messageService.replyToThread(
                         db = dbc,
                         now = clock.now(),
-                        replyToMessageId = messageId,
+                        threadId = threadId,
                         senderAccount = accountId,
                         recipientAccountIds = body.recipientAccountIds,
                         content = body.content,
@@ -274,8 +294,9 @@ class MessageControllerCitizen(
                 accountId to response
             }
             .let { (accountId, response) ->
-                Audit.MessagingReplyToMessageWrite.log(
-                    targetId = AuditId(listOf(accountId, messageId))
+                Audit.MessagingReplyToThreadWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId)),
+                    objectId = AuditId(response.message.id),
                 )
                 response
             }

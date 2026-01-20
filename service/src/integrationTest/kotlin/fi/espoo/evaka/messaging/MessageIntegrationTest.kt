@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
-import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -594,11 +593,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val thread = getRegularMessageThreads(person1).first()
-            val originalMessageId = thread.messages.first().id
 
-            replyToMessage(
+            replyToThread(
                 person1,
-                originalMessageId,
+                thread.id,
                 setOf(employee1Account),
                 "Reply to sensitive message",
                 now = sendTime.plusSeconds(1),
@@ -630,7 +628,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val thread = getRegularMessageThreads(person1).first()
-            val messageId = thread.messages.first().id
 
             val weakAuthUser = AuthenticatedUser.Citizen(id = person1.id, CitizenAuthLevel.WEAK)
             val threads = getAllCitizenMessageThreads(weakAuthUser)
@@ -642,7 +639,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     dbInstance(),
                     weakAuthUser,
                     MockEvakaClock(readTime),
-                    messageId,
+                    thread.id,
                     ReplyToMessageBody(
                         content = "Attempted reply",
                         recipientAccountIds = setOf(employee1Account),
@@ -665,11 +662,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             val thread = getRegularMessageThreads(person1).first()
             assertTrue(thread.sensitive)
-            val originalMessageId = thread.messages.first().id
 
-            replyToMessage(
+            replyToThread(
                 person1,
-                originalMessageId,
+                thread.id,
                 setOf(employee1Account),
                 "Citizen reply",
                 now = sendTime.plusSeconds(1),
@@ -679,10 +675,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val threadAfterCitizenReply = threadsAfterCitizenReply.first()
             assertTrue(threadAfterCitizenReply.sensitive)
 
-            replyToMessage(
+            replyToThread(
                 employee1,
                 employee1Account,
-                threadAfterCitizenReply.messages.last().id,
+                threadAfterCitizenReply.id,
                 setOf(person1Account),
                 "Employee reply back",
                 now = sendTime.plusSeconds(2),
@@ -711,12 +707,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val thread = getRegularMessageThreads(person1).first()
-            val originalMessageId = thread.messages.first().id
 
             assertThrows<Forbidden> {
-                replyToMessage(
+                replyToThread(
                     person1,
-                    originalMessageId,
+                    thread.id,
                     setOf(employee1Account, person3Account),
                     "Attempted reply with new recipient",
                 )
@@ -1023,9 +1018,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 threads[0].children.map { it.childId }.toSet(),
             )
 
-            replyToMessage(
+            replyToThread(
                 user = person2,
-                messageId = threads[0].messages[0].id,
+                threadId = threads[0].id,
                 recipientAccountIds = setOf(employee1Account),
                 content = "reply content",
             )
@@ -1203,17 +1198,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON),
             )
             val threads = getRegularMessageThreads(person2)
-            replyToMessage(
+            replyToThread(
                 user = person2,
-                messageId = threads.first().messages.last().id,
+                threadId = threads.first().id,
                 recipientAccountIds = setOf(employee1Account),
                 content = "Viimeisen päivän vastaus",
                 now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON).plusMinutes(10),
             )
             assertThrows<Forbidden> {
-                replyToMessage(
+                replyToThread(
                     user = person2,
-                    messageId = threads.first().messages.last().id,
+                    threadId = threads.first().id,
                     recipientAccountIds = setOf(employee1Account),
                     content = "Se on ohi",
                     now = HelsinkiDateTime.of(placementEnd.plusDays(1), LocalTime.NOON),
@@ -1293,8 +1288,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 relatedApplicationId = applicationId,
             )
             val thread = getRegularMessageThreads(person1)[0]
-            replyToMessage(
-                messageId = thread.messages.first().id,
+            replyToThread(
+                threadId = thread.id,
                 content = "Vastaus",
                 recipientAccountIds = setOf(serviceWorkerAccount),
                 user = person1,
@@ -1367,8 +1362,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val thread = getRegularMessageThreads(person1)[0]
-            replyToMessage(
-                messageId = thread.messages.first().id,
+            replyToThread(
+                threadId = thread.id,
                 content = "Vastaus",
                 recipientAccountIds = setOf(serviceWorkerAccount),
                 user = person1,
@@ -1585,9 +1580,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // when
             val replyTime = sendTime.plusSeconds(1)
-            replyToMessage(
+            replyToThread(
                 person1,
-                threadWithOneReply.messages[0].id,
+                threadWithOneReply.id,
                 setOf(employee1Account, person2Account),
                 "No niinpä näyttää tulevan",
                 now = replyTime,
@@ -1641,9 +1636,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             // when person one replies to the employee only
-            replyToMessage(
+            replyToThread(
                 person1,
-                person2Thread.messages.last().id,
+                person2Thread.id,
                 setOf(employee1Account),
                 "person 2 does not see this",
                 now = sendTime.plusSeconds(2),
@@ -1675,10 +1670,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             // when author replies to person two
-            replyToMessage(
+            replyToThread(
                 user = employee1,
                 sender = employee1Account,
-                messageId = threadWithOneReply.messages.last().id,
+                threadId = threadWithOneReply.id,
                 recipientAccountIds = setOf(person2Account),
                 content = "person 1 does not see this",
                 now = sendTime.plusSeconds(3),
@@ -1810,9 +1805,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // when person 1 replies to thread
             val replyTime = sendTime.plusMinutes(5)
-            replyToMessage(
+            replyToThread(
                 person1,
-                person1Threads.first().messages.first().id,
+                person1Threads.first().id,
                 setOf(employee1Account, person2Account),
                 "Hello",
                 replyTime,
@@ -2284,10 +2279,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = clock.now().minusWeeks(3),
             )
             val thread2 = getRegularMessageThreads(person2).first()
-            replyToMessage(
+            replyToThread(
                 employee1,
                 employee1Account,
-                thread2.messages.last().id,
+                thread2.id,
                 setOf(person2Account, group1Account),
                 "reply",
                 now = clock.now().minusDays(replyDaysAgo.toLong()),
@@ -2414,9 +2409,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(0, getUnreadReceivedMessages(employee1Account, employee1).size)
 
             // when a person replies to the thread
-            replyToMessage(
+            replyToThread(
                 person1,
-                person1UnreadMessages.first().id,
+                person1UnreadMessages.first().threadId,
                 setOf(employee1Account, person2Account),
                 "reply",
             )
@@ -2456,9 +2451,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, unreadMessagesCount(person2))
 
             // thread is replied
-            replyToMessage(
+            replyToThread(
                 user = person1,
-                messageId = getRegularMessageThreads(person1).first().messages.last().id,
+                threadId = getRegularMessageThreads(person1).first().id,
                 recipientAccountIds = setOf(person2Account, employee1Account),
                 content = "Juhannus on jo ohi",
             )
@@ -2598,13 +2593,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // Citizen replies to the message thread which makes both of its messages visible to the
             // employee since the newest message is in the employee's access limit
-            replyToMessage(
+            replyToThread(
                 user = adultUser,
-                messageId =
+                threadId =
                     getRegularMessageThreads(adultUser)
                         .first { it.messageType == MessageType.MESSAGE }
-                        .messages
-                        .first()
                         .id,
                 recipientAccountIds = setOf(groupAccount),
                 content = "Kiitos tiedosta",
@@ -2639,8 +2632,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, personUnreadMessages.size)
 
             // Citizen replies
-            replyToMessage(
-                messageId = personUnreadMessages.first().id,
+            replyToThread(
+                threadId = personUnreadMessages.first().threadId,
                 content = "Ihanko totta?",
                 recipientAccountIds = setOf(employee1Account),
                 user = person1,
@@ -2650,11 +2643,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // Employee replies
             val sendReplyTime = readTime.plusMinutes(5)
             disableAsyncJobRunning {
-                replyToMessage(
-                    messageId =
+                replyToThread(
+                    threadId =
                         getUnreadReceivedMessages(employee1Account, employee1, now = sendReplyTime)
                             .first()
-                            .id,
+                            .threadId,
                     content = "Ei sittenkään, väärä hälytys",
                     recipientAccountIds = setOf(person1Account),
                     sender = employee1Account,
@@ -2782,8 +2775,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = financeAdmin.user,
             )
             val thread = getRegularMessageThreads(person1)[0]
-            replyToMessage(
-                messageId = thread.messages.first().id,
+            replyToThread(
+                threadId = thread.id,
                 content = "Vastaus",
                 recipientAccountIds = setOf(financeAccount),
                 user = person1,
@@ -2898,8 +2891,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val thread = getRegularMessageThreads(person1)[0]
-            replyToMessage(
-                messageId = thread.messages.first().id,
+            replyToThread(
+                threadId = thread.id,
                 content = "Vastaus",
                 recipientAccountIds = setOf(financeAccount),
                 user = person1,
@@ -2980,19 +2973,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // when the recipient tries to reply to the bulletin, it is denied
             assertThrows<Forbidden> {
-                replyToMessage(
+                replyToThread(
                     user = person1,
-                    messageId = thread.messages.first().id,
+                    threadId = thread.id,
                     recipientAccountIds = setOf(thread.messages.first().sender.id),
                     content = "Kiitos tiedosta",
                 )
             }
 
             // when the author himself replies to the bulletin, it succeeds
-            replyToMessage(
+            replyToThread(
                 sender = employee1Account,
                 user = employee1,
-                messageId = thread.messages.last().id,
+                threadId = thread.id,
                 recipientAccountIds = setOf(person1Account),
                 content = "Nauttikaa siitä",
                 now = sendTime.plusMinutes(5),
@@ -3648,9 +3641,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageThreadId
     }
 
-    private fun replyToMessage(
+    private fun replyToThread(
         user: AuthenticatedUser.Citizen,
-        messageId: MessageId,
+        threadId: MessageThreadId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
         now: HelsinkiDateTime = sendTime,
@@ -3659,7 +3652,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             user,
             MockEvakaClock(now),
-            messageId,
+            threadId,
             ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds),
         )
         if (asyncJobRunningEnabled) {
@@ -3667,10 +3660,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun replyToMessage(
+    private fun replyToThread(
         user: AuthenticatedUser.Employee,
         sender: MessageAccountId,
-        messageId: MessageId,
+        threadId: MessageThreadId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
         now: HelsinkiDateTime = sendTime,
@@ -3680,7 +3673,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user,
             MockEvakaClock(now),
             sender,
-            messageId,
+            threadId,
             ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds),
         )
         if (asyncJobRunningEnabled) {

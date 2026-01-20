@@ -444,7 +444,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 ColumnRef("fridge_child", "created_by_user"),
                 ColumnRef("fridge_child", "modified_by_user"),
                 ColumnRef("holiday_questionnaire_answer", "modified_by"),
-                ColumnRef("message", "replies_to"),
                 ColumnRef("message_thread_participant", "folder_id"),
                 ColumnRef("other_assistance_measure", "modified_by"),
                 ColumnRef("pairing", "employee_id"),

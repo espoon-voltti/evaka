@@ -380,6 +380,7 @@ enum class Audit(
     MessagingUpdateDraft,
     MessagingDeleteDraft,
     MessagingReplyToMessageWrite,
+    MessagingReplyToThreadWrite,
     MessagingCitizenFetchReceiversForAccount,
     MessagingCitizenSendMessage,
     MessagingMessageThreadRead,

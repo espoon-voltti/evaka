@@ -406,9 +406,9 @@ export async function moveThreadToFolder(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.replyToThread
+* Generated from fi.espoo.evaka.messaging.MessageController.replyToMessage
 */
-export async function replyToThread(
+export async function replyToMessage(
   request: {
     accountId: MessageAccountId,
     messageId: MessageId,
@@ -417,6 +417,25 @@ export async function replyToThread(
 ): Promise<ThreadReply> {
   const { data: json } = await client.request<JsonOf<ThreadReply>>({
     url: uri`/employee/messages/${request.accountId}/${request.messageId}/reply`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ReplyToMessageBody>
+  })
+  return deserializeJsonThreadReply(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.replyToThread
+*/
+export async function replyToThread(
+  request: {
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+    body: ReplyToMessageBody
+  }
+): Promise<ThreadReply> {
+  const { data: json } = await client.request<JsonOf<ThreadReply>>({
+    url: uri`/employee/messages/${request.accountId}/reply-to/${request.threadId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ReplyToMessageBody>
   })

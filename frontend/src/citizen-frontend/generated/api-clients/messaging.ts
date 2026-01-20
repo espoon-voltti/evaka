@@ -8,7 +8,6 @@ import type { CitizenMessageBody } from 'lib-common/generated/api-types/messagin
 import type { GetRecipientsResponse } from 'lib-common/generated/api-types/messaging'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
-import type { MessageId } from 'lib-common/generated/api-types/shared'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import type { MyAccountResponse } from 'lib-common/generated/api-types/messaging'
 import type { PagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
@@ -144,16 +143,34 @@ export async function newMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.replyToThread
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.replyToMessage
 */
-export async function replyToThread(
+export async function replyToMessage(
   request: {
-    messageId: MessageId,
+    messageId: MessageThreadId,
     body: ReplyToMessageBody
   }
 ): Promise<ThreadReply> {
   const { data: json } = await client.request<JsonOf<ThreadReply>>({
     url: uri`/citizen/messages/${request.messageId}/reply`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ReplyToMessageBody>
+  })
+  return deserializeJsonThreadReply(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.replyToThread
+*/
+export async function replyToThread(
+  request: {
+    threadId: MessageThreadId,
+    body: ReplyToMessageBody
+  }
+): Promise<ThreadReply> {
+  const { data: json } = await client.request<JsonOf<ThreadReply>>({
+    url: uri`/citizen/messages/reply-to/${request.threadId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ReplyToMessageBody>
   })

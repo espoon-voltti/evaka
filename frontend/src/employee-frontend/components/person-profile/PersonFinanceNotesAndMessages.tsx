@@ -476,7 +476,7 @@ const SingleThread = React.memo(function SingleThread({
             onSubmit={() => ({
               id,
               accountId: financeAccount.id,
-              messageId: thread.messages[0].id,
+              threadId: thread.id,
               body: {
                 content: replyContent,
                 recipientAccountIds: recipients.map((r) => r.id)

@@ -220,7 +220,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             accounts.person1,
             setOf(accounts.employee1),
             "Just replying here",
-            thread.messages.last().id,
             now = sendTime.plusSeconds(3),
         )
 
@@ -413,18 +412,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(accounts.person1, accounts.person2),
             )
 
-        val participants =
-            db.read {
-                val messageId =
-                    it.createQuery {
-                            sql("SELECT id FROM message WHERE thread_id = ${bind(threadId)}")
-                        }
-                        .exactlyOne<MessageId>()
-                it.getThreadByMessageId(messageId)
-            }
+        val participants = db.read { it.getThreadWithParticipants(threadId) }
         assertEquals(
             ThreadWithParticipants(
-                threadId = threadId,
+                id = threadId,
                 type = MessageType.MESSAGE,
                 isCopy = false,
                 sensitive = false,
@@ -459,11 +450,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         financeAccountName = "Espoon asiakasmaksut",
                     )
                 tx.insertRecipients(listOf(messageId to setOf(accounts.employee1.id)))
-                tx.getThreadByMessageId(messageId)
+                tx.getThreadWithParticipants(threadId)
             }
         assertEquals(
             ThreadWithParticipants(
-                threadId = threadId,
+                id = threadId,
                 type = MessageType.MESSAGE,
                 isCopy = false,
                 sensitive = false,
@@ -1129,7 +1120,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         sender: MessageAccount,
         recipients: Set<MessageAccount>,
         content: String,
-        repliesToMessageId: MessageId? = null,
         now: HelsinkiDateTime = sendTime,
     ) =
         db.transaction { tx ->
@@ -1142,7 +1132,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     threadId = threadId,
                     sender = sender.id,
                     sentAt = now,
-                    repliesToMessageId = repliesToMessageId,
                     recipientNames = listOf(),
                     municipalAccountName = "Espoo",
                     serviceWorkerAccountName = "Espoon palveluohjaus",
