@@ -229,16 +229,6 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     }
 
     @Test
-    fun `presences report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/presences",
-                listOf("from" to "2020-05-01", "to" to "2020-05-02"),
-            )
-        )
-    }
-
-    @Test
     fun `raw report returns http 200`() {
         assertOkResponse(
             http.get("/employee/reports/raw", listOf("from" to "2020-05-01", "to" to "2020-05-02"))

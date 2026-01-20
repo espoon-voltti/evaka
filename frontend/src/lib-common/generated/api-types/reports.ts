@@ -786,17 +786,6 @@ export interface PreschoolUnitsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PresenceReportRow
-*/
-export interface PresenceReportRow {
-  date: LocalDate
-  daycareGroupName: string | null
-  daycareId: DaycareId | null
-  present: boolean | null
-  socialSecurityNumber: string | null
-}
-
-/**
 * Generated from fi.espoo.evaka.reports.RawReportRow
 */
 export interface RawReportRow {
@@ -1375,14 +1364,6 @@ export function deserializeJsonPreschoolApplicationReportRow(json: JsonOf<Presch
   return {
     ...json,
     childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
-  }
-}
-
-
-export function deserializeJsonPresenceReportRow(json: JsonOf<PresenceReportRow>): PresenceReportRow {
-  return {
-    ...json,
-    date: LocalDate.parseIso(json.date)
   }
 }
 

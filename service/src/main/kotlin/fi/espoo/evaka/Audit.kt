@@ -490,7 +490,7 @@ enum class Audit(
     PreschoolTermUpdate,
     PreschoolTermDelete,
     // PreschoolTermRead,
-    PresenceReportRead,
+    // PresenceReportRead,
     PushSettingsRead,
     PushSettingsSet,
     PushSubscriptionUpsert,

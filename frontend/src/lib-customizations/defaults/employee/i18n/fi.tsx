@@ -3765,16 +3765,6 @@ export const fi = {
       person2: 'Puoliso',
       address2: 'Puolison osoite'
     },
-    presence: {
-      title: 'Läsnäolot',
-      date: 'pvm',
-      SSN: 'hetu',
-      daycareId: 'varhaiskasvatuslaitos id',
-      daycareGroupName: 'ryhmä',
-      present: 'läsnä',
-      description: 'Talouden tilannehuone -raportti tutkimuskäyttöön',
-      info: 'Ajanjakson maksimipituus on kaksi viikkoa.'
-    },
     serviceNeeds: {
       title: 'Lasten palvelutarpeet ja iät yksiköissä',
       description:

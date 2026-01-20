@@ -391,19 +391,6 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
-            reports.has('PRESENCE')
-              ? {
-                  name: i18n.reports.presence.title,
-                  item: (
-                    <Report
-                      path="/reports/presences"
-                      color={colors.main.m2}
-                      icon={faDiagnoses}
-                      i18n={i18n.reports.presence}
-                    />
-                  )
-                }
-              : null,
             reports.has('SERVICE_VOUCHER_VALUE')
               ? {
                   name: i18n.reports.voucherServiceProviders.title,
