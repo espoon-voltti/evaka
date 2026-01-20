@@ -970,7 +970,7 @@ class MessageController(
     }
 
     @PostMapping("/employee/messages/{accountId}/{messageId}/reply")
-    fun replyToThread(
+    fun replyToMessage(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -978,10 +978,10 @@ class MessageController(
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply =
-        replyToThread(db, user as AuthenticatedUser, clock, accountId, messageId, body)
+        replyToMessage(db, user as AuthenticatedUser, clock, accountId, messageId, body)
 
     @PostMapping("/employee-mobile/messages/{accountId}/{messageId}/reply")
-    fun replyToThread(
+    fun replyToMessage(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
@@ -989,9 +989,11 @@ class MessageController(
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply =
-        replyToThread(db, user as AuthenticatedUser, clock, accountId, messageId, body)
+        replyToMessage(db, user as AuthenticatedUser, clock, accountId, messageId, body)
 
-    private fun replyToThread(
+    // TODO: This is for backwards compatibility. Remove this and the calling endpoints after a week
+    // of production use.
+    private fun replyToMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -999,13 +1001,56 @@ class MessageController(
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
+        val threadId =
+            db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    it.createQuery {
+                            sql("""SELECT thread_id FROM message WHERE id = ${bind(messageId)}""")
+                        }
+                        .exactlyOneOrNull<MessageThreadId>()
+                } ?: throw NotFound("Message not found in the specified account")
+            }
+        return replyToThread(db, user, clock, accountId, threadId, body)
+    }
+
+    @PostMapping("/employee/messages/{accountId}/reply-to/{threadId}")
+    fun replyToThread(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+        @RequestBody body: ReplyToMessageBody,
+    ): MessageService.ThreadReply =
+        replyToThread(db, user as AuthenticatedUser, clock, accountId, threadId, body)
+
+    @PostMapping("/employee-mobile/messages/{accountId}/reply-to/{threadId}")
+    fun replyToThread(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+        @RequestBody body: ReplyToMessageBody,
+    ): MessageService.ThreadReply =
+        replyToThread(db, user as AuthenticatedUser, clock, accountId, threadId, body)
+
+    private fun replyToThread(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        accountId: MessageAccountId,
+        threadId: MessageThreadId,
+        body: ReplyToMessageBody,
+    ): MessageService.ThreadReply {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
 
                 messageService.replyToThread(
                     db = dbc,
                     now = clock.now(),
-                    replyToMessageId = messageId,
+                    threadId = threadId,
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
@@ -1016,9 +1061,9 @@ class MessageController(
                 )
             }
             .also {
-                Audit.MessagingReplyToMessageWrite.log(
-                    targetId = AuditId(listOf(accountId, messageId)),
-                    objectId = AuditId(listOf(it.threadId, it.message.id)),
+                Audit.MessagingReplyToThreadWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId)),
+                    objectId = AuditId(it.message.id),
                 )
             }
     }

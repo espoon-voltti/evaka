@@ -301,12 +301,11 @@ fun Database.Transaction.insertMessage(
     financeAccountName: String,
     sentAt: HelsinkiDateTime? =
         null, // Only needed because some tests bypass the message service and controllers
-    repliesToMessageId: MessageId? = null,
 ): MessageId {
     return createQuery {
             sql(
                 """
-INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, sent_at, recipient_names)
 SELECT
     ${bind(now)},
     ${bind(contentId)},
@@ -318,7 +317,6 @@ SELECT
         WHEN name_view.type = 'FINANCE' THEN ${bind(financeAccountName)}
         ELSE name_view.name 
     END,
-    ${bind(repliesToMessageId)},
     ${bind(sentAt)},
     ${bind(recipientNames)}
 FROM message_account_view name_view
@@ -506,7 +504,7 @@ WITH new_threads AS (
     FROM generate_series(1, ${bind(count)})
     RETURNING id
 )
-INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
+INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, recipient_names)
 SELECT
     ${bind(now)},
     ${bind(contentId)},
@@ -518,7 +516,6 @@ SELECT
         WHEN name_view.type = 'FINANCE' THEN ${bind(financeAccountName)}
         ELSE name_view.name
     END,
-    NULL,
     ${bind(recipientNames)}
 FROM new_threads
 JOIN message_account_view name_view ON name_view.id = ${bind(senderId)}
@@ -1309,7 +1306,7 @@ ORDER BY msg.sent_at DESC
 }
 
 data class ThreadWithParticipants(
-    val threadId: MessageThreadId,
+    val id: MessageThreadId,
     val type: MessageType,
     val isCopy: Boolean,
     val sensitive: Boolean,
@@ -1320,27 +1317,26 @@ data class ThreadWithParticipants(
     val children: Set<ChildId>,
 )
 
-fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
+fun Database.Read.getThreadWithParticipants(threadId: MessageThreadId): ThreadWithParticipants? {
     return createQuery {
             sql(
                 """
 SELECT
-    t.id AS threadId,
+    t.id,
     t.message_type AS type,
     t.is_copy,
     t.sensitive,
     t.application_id,
     a.status AS application_status,
-    (SELECT array_agg(m2.sender_id)) as senders,
+    (SELECT array_agg(m.sender_id)) as senders,
     (SELECT array_agg(rec.recipient_id)) as recipients,
     (SELECT coalesce(array_agg(mtc.child_id) FILTER (WHERE mtc.child_id IS NOT NULL), '{}')) as children
-    FROM message m
-    JOIN message_thread t ON m.thread_id = t.id
-    JOIN message m2 ON m2.thread_id = t.id
-    JOIN message_recipients rec ON rec.message_id = m2.id
+    FROM message_thread t
+    JOIN message m ON m.thread_id = t.id
+    JOIN message_recipients rec ON rec.message_id = m.id
     LEFT JOIN message_thread_children mtc ON mtc.thread_id = t.id
     LEFT JOIN application a ON t.application_id = a.id
-    WHERE m.id = ${bind(messageId)}
+    WHERE t.id = ${bind(threadId)}
     GROUP BY t.id, t.message_type, t.sensitive, a.status
 """
             )

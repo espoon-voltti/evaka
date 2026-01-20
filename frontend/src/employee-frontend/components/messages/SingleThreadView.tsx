@@ -235,7 +235,7 @@ export function SingleThreadView({
   const onSubmitReply = useCallback(
     () => ({
       accountId: account.id,
-      messageId: messages.slice(-1)[0].id,
+      threadId,
       body: {
         content: replyContent,
         recipientAccountIds: recipients
@@ -243,7 +243,7 @@ export function SingleThreadView({
           .map((r) => r.id)
       }
     }),
-    [account.id, messages, recipients, replyContent]
+    [account.id, threadId, recipients, replyContent]
   )
 
   const handleReplySent = useCallback(

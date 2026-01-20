@@ -570,3 +570,4 @@ V571__application_senttime.sql
 V572__daycare_group_timestamps.sql
 V573__group_support_removal.sql
 V574__message_account_constraints.sql
+V575__drop_message_replies_to.sql

@@ -371,7 +371,7 @@ export default React.memo(
             <MessageReplyEditor
               mutation={replyToThreadMutation}
               onSubmit={() => ({
-                messageId: messages.slice(-1)[0].id,
+                threadId,
                 body: {
                   content: replyContent,
                   recipientAccountIds: recipients

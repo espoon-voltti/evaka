@@ -259,7 +259,7 @@ class MessageService(
     fun replyToThread(
         db: Database.Connection,
         now: HelsinkiDateTime,
-        replyToMessageId: MessageId,
+        threadId: MessageThreadId,
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
@@ -269,50 +269,42 @@ class MessageService(
         user: AuthenticatedUser,
     ): ThreadReply {
         val today = now.toLocalDate()
-        val (
-            threadId,
-            type,
-            isCopy,
-            sensitive,
-            previousSenders,
-            previousRecipients,
-            applicationId,
-            applicationStatus,
-            children) =
-            db.read { it.getThreadByMessageId(replyToMessageId) }
-                ?: throw NotFound("Message not found")
+        val thread =
+            db.read { it.getThreadWithParticipants(threadId) } ?: throw NotFound("Thread not found")
 
-        if (isCopy) throw BadRequest("Message copies cannot be replied to")
-        if (type == MessageType.BULLETIN && !previousSenders.contains(senderAccount))
+        if (thread.isCopy) throw BadRequest("Message copies cannot be replied to")
+        if (thread.type == MessageType.BULLETIN && !thread.senders.contains(senderAccount))
             throw Forbidden("Only the author can reply to bulletin")
 
-        val previousParticipants = previousRecipients + previousSenders
+        val previousParticipants = thread.recipients + thread.senders
         if (!previousParticipants.contains(senderAccount))
             throw Forbidden("Not authorized to post to message")
         if (!previousParticipants.containsAll(recipientAccountIds))
             throw Forbidden("Not authorized to widen the audience")
         if (user is AuthenticatedUser.Citizen) {
-            if (sensitive && user.authLevel == CitizenAuthLevel.WEAK)
+            if (thread.sensitive && user.authLevel == CitizenAuthLevel.WEAK)
                 throw Forbidden(
                     "Weak authentication insufficient for replying to sensitive messages"
                 )
-            val isApplication = applicationId != null
+            val isApplication = thread.applicationId != null
             if (
-                applicationStatus in
+                thread.applicationStatus in
                     setOf(
                         ApplicationStatus.REJECTED,
                         ApplicationStatus.ACTIVE,
                         ApplicationStatus.CANCELLED,
                     )
             )
-                throw Forbidden("Cannot reply to application message in status $applicationStatus")
+                throw Forbidden(
+                    "Cannot reply to application message in status ${thread.applicationStatus}"
+                )
             val financeAccountId = db.read { it.getFinanceAccountId() }
             val validRecipients =
                 db.read { it.getCitizenRecipients(today, senderAccount) }
                     .mapValues { entry -> entry.value.reply.map { it.account.id }.toSet() }
             val allRecipientsValid =
                 recipientAccountIds.all { recipient ->
-                    children.any { child ->
+                    thread.children.any { child ->
                         validRecipients[child]?.contains(recipient) ?: false
                     } || recipient == financeAccountId
                 }
@@ -326,7 +318,7 @@ class MessageService(
                             citizenCalendarEnv.calendarOpenBeforePlacementDays,
                         )
                     }
-                    .filter { children.contains(it.id) }
+                    .filter { thread.children.contains(it.id) }
             val selectedChildrenInSameUnit = selectedChildren.map { it.unit?.id }.toSet().size <= 1
             if (!isApplication && !selectedChildrenInSameUnit)
                 throw Forbidden("Selected children not in same unit")
@@ -347,7 +339,6 @@ class MessageService(
                         contentId = contentId,
                         threadId = threadId,
                         sender = senderAccount,
-                        repliesToMessageId = replyToMessageId,
                         recipientNames = recipientNames,
                         municipalAccountName = municipalAccountName,
                         serviceWorkerAccountName = serviceWorkerAccountName,
@@ -356,10 +347,10 @@ class MessageService(
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
                 tx.markThreadRead(now, senderAccount, threadId)
-                if (applicationId != null) {
+                if (thread.applicationId != null) {
                     tx.createApplicationNote(
                         now = now,
-                        applicationId = applicationId,
+                        applicationId = thread.applicationId,
                         content = content,
                         createdBy = user.evakaUserId,
                         messageContentId = contentId,
