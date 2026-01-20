@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.holidayperiod.QuestionnaireType
-import fi.espoo.evaka.shared.auth.UserRole
 import java.time.MonthDay
 
 data class FeatureConfig(
@@ -63,13 +62,6 @@ data class FeatureConfig(
      * daily price divisor
      */
     val useContractDaysAsDailyFeeDivisor: Boolean,
-
-    /**
-     * Employees with given user roles to show as options for preschool assistance decision makers.
-     *
-     * May contain global and unit scoped roles (null = all roles are visible).
-     */
-    val preschoolAssistanceDecisionMakerRoles: Set<UserRole>?,
 
     /** The number of days citizens can move daycare start forward */
     val requestedStartUpperLimit: Int,

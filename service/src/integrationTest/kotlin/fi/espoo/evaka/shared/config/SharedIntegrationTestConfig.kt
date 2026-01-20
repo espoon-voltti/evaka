@@ -252,7 +252,6 @@ val testFeatureConfig =
         unplannedAbsencesAreContractSurplusDays = true,
         maxContractDaySurplusThreshold = null,
         useContractDaysAsDailyFeeDivisor = true,
-        preschoolAssistanceDecisionMakerRoles = null,
         requestedStartUpperLimit = 14,
         postOffice = "ESPOO",
         municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",

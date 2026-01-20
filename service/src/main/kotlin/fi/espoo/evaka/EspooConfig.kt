@@ -196,7 +196,6 @@ class EspooConfig {
             unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
             maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
             useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
-            preschoolAssistanceDecisionMakerRoles = null,
             requestedStartUpperLimit = 14,
             postOffice = "ESPOO",
             municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
