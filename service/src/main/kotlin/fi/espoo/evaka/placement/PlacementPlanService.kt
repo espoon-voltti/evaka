@@ -11,8 +11,8 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Daycare
-import fi.espoo.evaka.daycare.getActiveClubTermAt
-import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.daycare.getClubTerm
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
@@ -98,7 +98,7 @@ class PlacementPlanService(
         return when (application.type) {
             ApplicationType.PRESCHOOL -> {
                 val preschoolTerms =
-                    tx.getActivePreschoolTermAt(startDate)
+                    tx.getPreschoolTerm(startDate)
                         ?: throw Exception(
                             "No suitable preschool term found for start date $startDate"
                         )
@@ -180,7 +180,7 @@ class PlacementPlanService(
 
             ApplicationType.CLUB -> {
                 val clubTerm =
-                    tx.getActiveClubTermAt(startDate)
+                    tx.getClubTerm(startDate)
                         ?: throw Exception("No suitable club term found for start date $startDate")
                 val period = FiniteDateRange(startDate, clubTerm.term.end)
                 PlacementPlanDraft(
@@ -251,7 +251,7 @@ class PlacementPlanService(
                 preschoolPeriods.map { it to preschoolPlacementType } +
                     (preschoolDaycarePeriod?.let { period ->
                         val preschoolTerms =
-                            tx.getActivePreschoolTermAt(period.start)
+                            tx.getPreschoolTerm(period.start)
                                 ?: throw Exception(
                                     "No suitable preschool term found for start date ${period.start}"
                                 )

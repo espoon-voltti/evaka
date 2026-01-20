@@ -62,14 +62,13 @@ class MealReportTests {
                         ),
                 )
             )
-        val preschoolTerms = emptyList<PreschoolTerm>()
 
         val report =
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = null,
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         assertTrue(report.isEmpty(), "Expected no meals for absent child")
@@ -100,14 +99,13 @@ class MealReportTests {
                         ),
                 )
             )
-        val preschoolTerms = emptyList<PreschoolTerm>()
 
         val report =
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = null,
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
@@ -145,14 +143,13 @@ class MealReportTests {
                         ),
                 )
             )
-        val preschoolTerms = emptyList<PreschoolTerm>()
 
         val report =
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = null,
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH_PRESCHOOL, MealType.SNACK)
@@ -210,8 +207,8 @@ class MealReportTests {
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = preschoolTerms.find { it.extendedTerm.includes(testDate) },
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMealTypes = setOf(MealType.LUNCH_PRESCHOOL, MealType.SNACK)
@@ -272,8 +269,8 @@ class MealReportTests {
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = preschoolTerms.find { it.extendedTerm.includes(testDate) },
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMealTypes = emptySet<MealType>()
@@ -334,8 +331,8 @@ class MealReportTests {
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = preschoolTerms.find { it.extendedTerm.includes(testDate) },
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMealTypes = emptySet<MealType>()
@@ -413,14 +410,13 @@ class MealReportTests {
                         ),
                 ),
             )
-        val preschoolTerms = emptyList<PreschoolTerm>()
 
         val report =
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = null,
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedRowsForElla =
@@ -541,14 +537,13 @@ class MealReportTests {
                         ),
                 ),
             )
-        val preschoolTerms = emptyList<PreschoolTerm>()
 
         val report =
             mealReportData(
                 children = childInfo,
                 date = testDate,
-                preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper,
+                preschoolTerm = null,
+                mealTypeMapper = DefaultMealTypeMapper,
             )
 
         val expectedMealCounts =
@@ -636,7 +631,7 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList(),
+                preschoolTerm = null,
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
@@ -718,7 +713,7 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList(),
+                preschoolTerm = null,
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
@@ -834,7 +829,7 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList(),
+                preschoolTerm = null,
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
@@ -926,7 +921,7 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList(),
+                preschoolTerm = null,
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
@@ -1018,10 +1013,15 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList(),
+                preschoolTerm = null,
             )
 
-        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
+        val report =
+            getMealReportForUnit(
+                unitData = unitData,
+                date = testDate,
+                mealTypeMapper = DefaultMealTypeMapper,
+            )
 
         assertFalse(
             report?.meals.isNullOrEmpty(),

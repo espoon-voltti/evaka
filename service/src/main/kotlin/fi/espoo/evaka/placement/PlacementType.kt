@@ -119,6 +119,12 @@ enum class PlacementType : DatabaseEnum {
 
     fun scheduleType(
         date: LocalDate,
+        clubTerm: ClubTerm?,
+        preschoolTerm: PreschoolTerm?,
+    ): ScheduleType = scheduleType(date, listOfNotNull(clubTerm), listOfNotNull(preschoolTerm))
+
+    fun scheduleType(
+        date: LocalDate,
         clubTerms: List<ClubTerm>,
         preschoolTerms: List<PreschoolTerm>,
     ): ScheduleType =

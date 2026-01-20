@@ -12,8 +12,8 @@ import fi.espoo.evaka.absence.AbsenceUpsert
 import fi.espoo.evaka.absence.getAbsencesOfChildByDate
 import fi.espoo.evaka.absence.insertAbsences
 import fi.espoo.evaka.absence.setChildDateAbsences
-import fi.espoo.evaka.daycare.getClubTerms
-import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.getClubTerm
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesForChildren
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChildren
 import fi.espoo.evaka.pis.service.getFosterParentsForChildren
@@ -74,8 +74,8 @@ class ChildAttendanceController(
                     val now = clock.now()
                     val today = now.toLocalDate()
 
-                    val clubTerms = tx.getClubTerms()
-                    val preschoolTerms = tx.getPreschoolTerms()
+                    val clubTerm = tx.getClubTerm(today)
+                    val preschoolTerm = tx.getPreschoolTerm(today)
 
                     val childrenBasics = tx.fetchChildrenBasics(unitId, now)
                     val childIds = childrenBasics.asSequence().map { it.id }.toSet()
@@ -110,7 +110,7 @@ class ChildAttendanceController(
                             dateOfBirth = child.dateOfBirth,
                             placementType = child.placementType,
                             scheduleType =
-                                child.placementType.scheduleType(today, clubTerms, preschoolTerms),
+                                child.placementType.scheduleType(today, clubTerm, preschoolTerm),
                             operationalDates = operationalDatesByChild[child.id] ?: emptySet(),
                             groupId = child.groupId,
                             backup = child.backup,

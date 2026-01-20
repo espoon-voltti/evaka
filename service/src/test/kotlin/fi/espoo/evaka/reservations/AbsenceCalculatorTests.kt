@@ -230,9 +230,8 @@ class AbsenceCalculatorTests {
             unitLanguage = Language.fi,
             dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
             dailyPreparatoryTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-            preschoolTerms =
-                listOf(
-                    PreschoolTerm(
+            preschoolTerm =
+                PreschoolTerm(
                         id = PreschoolTermId(UUID.randomUUID()),
                         finnishPreschool =
                             FiniteDateRange(LocalDate.of(2023, 8, 15), LocalDate.of(2024, 5, 31)),
@@ -250,6 +249,6 @@ class AbsenceCalculatorTests {
                                 )
                             ),
                     )
-                ),
+                    .takeIf { it.extendedTerm.includes(date) },
         )
 }

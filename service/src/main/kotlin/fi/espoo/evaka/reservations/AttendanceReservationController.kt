@@ -20,9 +20,11 @@ import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.getClubTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
@@ -99,8 +101,9 @@ class AttendanceReservationController(
                         Action.Unit.READ_ATTENDANCE_RESERVATIONS,
                         unitId,
                     )
-                    val clubTerms = tx.getClubTerms()
-                    val preschoolTerms = tx.getPreschoolTerms()
+                    val range = FiniteDateRange(from, to)
+                    val clubTerms = tx.getClubTerms(range)
+                    val preschoolTerms = tx.getPreschoolTerms(range)
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val familyUnitPlacement =
@@ -572,8 +575,8 @@ class AttendanceReservationController(
                     val rowsByDate =
                         tx.getChildReservationsOfUnitForDay(unitId = unitId, day = examinationDate)
 
-                    val clubTerms = tx.getClubTerms()
-                    val preschoolTerms = tx.getPreschoolTerms()
+                    val clubTerm = tx.getClubTerm(examinationDate)
+                    val preschoolTerm = tx.getPreschoolTerm(examinationDate)
                     val holidayPeriods = tx.getHolidayPeriods()
                     val dateRowsByChild = rowsByDate.associateBy { it.childId }
                     val childIds = dateRowsByChild.keys
@@ -606,8 +609,8 @@ class AttendanceReservationController(
                             val scheduleType =
                                 childRow.placementType.scheduleType(
                                     examinationDate,
-                                    clubTerms,
-                                    preschoolTerms,
+                                    clubTerm,
+                                    preschoolTerm,
                                 )
 
                             val reservations =
@@ -829,10 +832,10 @@ private fun getConfirmedRangeDates(
     childId: ChildId,
     citizenReservationThresholdHours: Long,
 ): List<ConfirmedRangeDate> {
-    val clubTerms = tx.getClubTerms()
-    val preschoolTerms = tx.getPreschoolTerms()
     val range = getConfirmedRange(clock.now(), citizenReservationThresholdHours)
     val operationalDays = tx.getOperationalDatesForChild(range, childId)
+    val clubTerms = tx.getClubTerms(range)
+    val preschoolTerms = tx.getPreschoolTerms(range)
     val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
     val reservations = tx.getReservationsForChildInRange(childId, range)
     val absences = tx.getAbsencesOfChildByRange(childId, range.asDateRange())

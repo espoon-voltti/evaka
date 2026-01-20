@@ -107,7 +107,7 @@ data class MealReportChildInfo(
 fun mealReportData(
     children: Collection<MealReportChildInfo>,
     date: LocalDate,
-    preschoolTerms: List<PreschoolTerm>,
+    preschoolTerm: PreschoolTerm?,
     mealTypeMapper: MealTypeMapper,
 ): List<MealReportRow> {
     val mealInfoMap =
@@ -118,8 +118,7 @@ fun mealReportData(
                 val usePreschoolMealTypes =
                     preschoolPlacementTypes.contains(childInfo.placementType)
 
-                val scheduleType =
-                    childInfo.placementType.scheduleType(date, emptyList(), preschoolTerms)
+                val scheduleType = childInfo.placementType.scheduleType(date, null, preschoolTerm)
                 val effectivelyAbsent =
                     if (scheduleType == ScheduleType.TERM_BREAK) true else absenceRecord
 
@@ -182,7 +181,7 @@ data class DaycareUnitData(
     val childData: Map<ChildId, ChildData>,
     val specialDiets: Map<ChildId, SpecialDiet>,
     val mealTextures: Map<ChildId, MealTexture>,
-    val preschoolTerms: List<PreschoolTerm>,
+    val preschoolTerm: PreschoolTerm?,
 )
 
 fun getMealReportForUnit(
@@ -225,7 +224,6 @@ fun getMealReportForUnit(
             } else null
         }
 
-    val preschoolTerms = unitData.preschoolTerms
-    val reportRows = mealReportData(childInfos, date, preschoolTerms, mealTypeMapper)
+    val reportRows = mealReportData(childInfos, date, unitData.preschoolTerm, mealTypeMapper)
     return MealReportData(date, daycare.name, reportRows)
 }

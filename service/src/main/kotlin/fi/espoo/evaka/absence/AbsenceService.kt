@@ -190,8 +190,8 @@ fun getGroupMonthCalendar(
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
-    val clubTerms = tx.getClubTerms()
-    val preschoolTerms = tx.getPreschoolTerms()
+    val clubTerms = tx.getClubTerms(range)
+    val preschoolTerms = tx.getPreschoolTerms(range)
     val daycare =
         tx.getDaycare(tx.getDaycareIdByGroup(groupId))
             ?: throw BadRequest("Couldn't find daycare with group with id $groupId")

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.getActiveClubTermAt
+import fi.espoo.evaka.daycare.getClubTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.insertClubTerm
 import fi.espoo.evaka.shared.data.DateSet
@@ -36,7 +36,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `get club terms`() {
-        val data = db.read { it.getClubTerms() }
+        val data = db.read { it.getClubTerms(null) }
         assertEquals(2, data.size)
         assertEquals(
             FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
@@ -51,7 +51,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val dateAtEndOfTerm = LocalDate.of(2021, 6, 4)
         db.read { dbRead ->
             listOf(dateAtStartOfTerm, dateWithinTerm, dateAtEndOfTerm).forEach { date ->
-                val clubTerm = dbRead.getActiveClubTermAt(date)
+                val clubTerm = dbRead.getClubTerm(date)
                 assertEquals(
                     FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
                     clubTerm?.term,
@@ -60,6 +60,6 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val dateOutsideTerm = LocalDate.of(2020, 8, 5)
-        db.read { assertNull(it.getActiveClubTermAt(dateOutsideTerm)) }
+        db.read { assertNull(it.getClubTerm(dateOutsideTerm)) }
     }
 }
