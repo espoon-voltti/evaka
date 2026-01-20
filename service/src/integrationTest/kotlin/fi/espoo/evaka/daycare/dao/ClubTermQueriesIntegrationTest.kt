@@ -36,7 +36,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `get club terms`() {
-        val data = db.read { it.getClubTerms() }
+        val data = db.read { it.getClubTerms(null) }
         assertEquals(2, data.size)
         assertEquals(
             FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),

@@ -226,7 +226,7 @@ class ApplicationStateService(
         val startDate =
             when (type) {
                 ApplicationType.PRESCHOOL -> {
-                    tx.getPreschoolTerms()
+                    tx.getPreschoolTerms(null)
                         .find {
                             it.applicationPeriod.start <= today && today < it.extendedTerm.start
                         }
@@ -235,7 +235,7 @@ class ApplicationStateService(
                 }
 
                 ApplicationType.CLUB -> {
-                    tx.getClubTerms()
+                    tx.getClubTerms(null)
                         .find { it.applicationPeriod.start <= today && today < it.term.start }
                         ?.term
                         ?.start

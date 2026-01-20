@@ -42,12 +42,12 @@ class TermsController(private val accessControl: AccessControl) {
 
     @GetMapping("/citizen/public/club-terms", "/employee/public/club-terms")
     fun getClubTerms(db: Database): List<ClubTerm> {
-        return db.connect { dbc -> dbc.read { it.getClubTerms() } }
+        return db.connect { dbc -> dbc.read { it.getClubTerms(null) } }
     }
 
     @GetMapping("/citizen/public/preschool-terms", "/employee/public/preschool-terms")
     fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
-        return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
+        return db.connect { dbc -> dbc.read { it.getPreschoolTerms(null) } }
     }
 
     @PostMapping("/employee/club-terms")
@@ -227,11 +227,11 @@ class TermsController(private val accessControl: AccessControl) {
         val allTerms =
             when {
                 termIdToUpdate != null -> {
-                    tx.getClubTerms().filter { term -> term.id != termIdToUpdate }
+                    tx.getClubTerms(null).filter { term -> term.id != termIdToUpdate }
                 }
 
                 else -> {
-                    tx.getClubTerms()
+                    tx.getClubTerms(null)
                 }
             }
 
@@ -250,11 +250,11 @@ class TermsController(private val accessControl: AccessControl) {
         val allTermsToCompare =
             when {
                 termIdToUpdate != null -> {
-                    tx.getPreschoolTerms().filter { term -> term.id != termIdToUpdate }
+                    tx.getPreschoolTerms(null).filter { term -> term.id != termIdToUpdate }
                 }
 
                 else -> {
-                    tx.getPreschoolTerms()
+                    tx.getPreschoolTerms(null)
                 }
             }
         allTermsToCompare.forEach { term ->

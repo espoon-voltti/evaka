@@ -52,7 +52,7 @@ data class PreschoolTerm(
         }
 }
 
-fun Database.Read.getPreschoolTerms(range: FiniteDateRange? = null): List<PreschoolTerm> {
+fun Database.Read.getPreschoolTerms(range: FiniteDateRange?): List<PreschoolTerm> {
     return createQuery {
             sql(
                 """

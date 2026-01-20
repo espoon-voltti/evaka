@@ -366,7 +366,7 @@ WHERE application.type = 'PRESCHOOL'
     }
 
     fun findNextPreschoolTerm(tx: Database.Read, date: LocalDate) =
-        tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > date }
+        tx.getPreschoolTerms(null).firstOrNull { it.finnishPreschool.start > date }
 }
 
 fun parsePlacementToolCsv(inputStream: InputStream): Map<String, DaycareId> {

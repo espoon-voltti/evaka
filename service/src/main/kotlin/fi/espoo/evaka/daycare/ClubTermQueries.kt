@@ -35,7 +35,7 @@ data class ClubTerm(
         }
 }
 
-fun Database.Read.getClubTerms(range: FiniteDateRange? = null): List<ClubTerm> {
+fun Database.Read.getClubTerms(range: FiniteDateRange?): List<ClubTerm> {
     return createQuery {
             sql(
                 """
