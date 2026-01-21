@@ -78,8 +78,8 @@ data class Varhaiskasvatuspaatos(
     val vuorohoito_kytkin: Boolean,
     val tilapainen_vaka_kytkin: Boolean,
     val tuntimaara_viikossa: Double,
-    val paivittainen_vaka_kytkin: Boolean,
-    val kokopaivainen_vaka_kytkin: Boolean,
+    val paivittainen_vaka_kytkin: Boolean?,
+    val kokopaivainen_vaka_kytkin: Boolean?,
     val jarjestamismuoto_koodi: String,
 ) {
     companion object {
