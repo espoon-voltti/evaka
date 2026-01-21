@@ -92,3 +92,18 @@ export async function employeeLogin(
     { preset, authUrl }
   )
 }
+
+export async function employeeSfiLogin(page: Page, person: DevPerson) {
+  if (!person.ssn) {
+    throw new Error('Person does not have an SSN: cannot login')
+  }
+
+  await page.goto(
+    `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
+  )
+  await page.find(`[id="${person.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+
+  await page.findByDataQa('username').waitUntilVisible()
+}
