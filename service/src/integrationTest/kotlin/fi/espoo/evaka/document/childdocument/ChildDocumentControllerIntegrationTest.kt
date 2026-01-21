@@ -332,6 +332,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.PREV_STATUS,
                         Action.ChildDocument.READ_METADATA,
                         Action.ChildDocument.DOWNLOAD,
+                        Action.ChildDocument.DOWNLOAD_VERSION,
                         Action.ChildDocument.ARCHIVE,
                         Action.ChildDocument.PROPOSE_DECISION,
                         Action.ChildDocument.ANNUL_DECISION,
@@ -573,7 +574,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
             )
-        assertNull(db.read { it.getChildDocumentKey(documentId) })
+        assertTrue(db.read { it.getChildDocumentPdfVersions(documentId) }.isEmpty())
 
         controller.publishDocument(dbInstance(), employeeUser.user, clock, documentId)
         assertEquals(
@@ -585,7 +586,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
         asyncJobRunner.runPendingJobsSync(clock)
-        assertNotNull(db.read { it.getChildDocumentKey(documentId) })
+        assertEquals(1, db.read { it.getChildDocumentPdfVersions(documentId) }.size)
 
         // republishing after edits regenerates pdf
         updateDocumentContent(
@@ -593,9 +594,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
         )
         controller.publishDocument(dbInstance(), employeeUser.user, clock, documentId)
-        assertNull(db.read { it.getChildDocumentKey(documentId) })
+
         asyncJobRunner.runPendingJobsSync(clock)
-        assertNotNull(db.read { it.getChildDocumentKey(documentId) })
+        assertEquals(2, db.read { it.getChildDocumentPdfVersions(documentId) }.size)
     }
 
     @Test
@@ -851,6 +852,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         }
 
         // sfi message was sent
+        // First run: CreateChildDocumentPdf job
+        asyncJobRunner.runPendingJobsSync(clock)
+        // Second run: SendChildDocumentDecisionSfiMessage job (scheduled by CreateChildDocumentPdf)
         asyncJobRunner.runPendingJobsSync(clock)
         assertThat(MockSfiMessagesClient.getMessages())
             .extracting({ it.ssn }, { it.messageHeader })
@@ -931,6 +935,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         }
 
         // sfi message was sent
+        // First run: CreateChildDocumentPdf job
+        asyncJobRunner.runPendingJobsSync(clock)
+        // Second run: SendChildDocumentDecisionSfiMessage job (scheduled by CreateChildDocumentPdf)
         asyncJobRunner.runPendingJobsSync(clock)
         assertThat(MockSfiMessagesClient.getMessages())
             .extracting({ it.ssn }, { it.messageHeader })

@@ -2234,6 +2234,7 @@ sealed interface Action {
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
+        DOWNLOAD_VERSION(HasGlobalRole(ADMIN)),
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)

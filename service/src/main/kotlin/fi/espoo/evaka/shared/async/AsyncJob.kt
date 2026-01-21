@@ -216,7 +216,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendChildDocumentDecisionSfiMessage(val documentId: ChildDocumentId) : AsyncJob {
+    data class SendChildDocumentDecisionSfiMessage(
+        val documentId: ChildDocumentId,
+        val versionNumber: Int,
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
