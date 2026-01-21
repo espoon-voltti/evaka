@@ -41,8 +41,8 @@ run = """
 #!/usr/bin/env bash
 set -euo pipefail
 
-docker compose down
 pm2 kill
+docker compose down
 
 echo "Development environment stopped."
 """
