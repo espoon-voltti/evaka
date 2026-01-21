@@ -90,7 +90,11 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     cd.id,
                     cd.status,
                     cd.published_at,
-                    cd.document_key IS NOT NULL AS downloadable,
+                    EXISTS(
+                        SELECT 1 FROM child_document_pdf_version v 
+                        WHERE v.child_document_id = cd.id 
+                        AND v.document_key IS NOT NULL
+                    ) AS downloadable,
                     cd.published_content AS content,
                     p.id as child_id,
                     p.first_name as child_first_name,

@@ -587,13 +587,17 @@ class ChildDocumentController(
                         documentId,
                     )
                     deleteProcessByDocumentId(tx, documentId)
-                    tx.getChildDocumentKey(documentId)?.also { key ->
+
+                    val pdfVersions = tx.getChildDocumentPdfVersions(documentId)
+                    if (pdfVersions.isNotEmpty()) {
                         asyncJobRunner.plan(
                             tx = tx,
-                            payloads = listOf(AsyncJob.DeleteChildDocumentPdf(key)),
+                            payloads =
+                                pdfVersions.map { AsyncJob.DeleteChildDocumentPdf(it.documentKey) },
                             runAt = clock.now(),
                         )
                     }
+
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
@@ -687,6 +691,7 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
+        @RequestParam(required = false) version: Int?,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -694,13 +699,19 @@ class ChildDocumentController(
                         tx,
                         user,
                         clock,
-                        Action.ChildDocument.DOWNLOAD,
+                        if (version != null) Action.ChildDocument.DOWNLOAD_VERSION
+                        else Action.ChildDocument.DOWNLOAD,
                         documentId,
                     )
-                    childDocumentService.getPdfResponse(tx, documentId)
+                    childDocumentService.getPdfResponse(tx, documentId, version)
                 }
             }
-            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
+            .also {
+                Audit.ChildDocumentDownload.log(
+                    targetId = AuditId(documentId),
+                    meta = version?.let { mapOf("version" to it) } ?: emptyMap(),
+                )
+            }
     }
 
     data class ProposeChildDocumentDecisionRequest(val decisionMaker: EmployeeId)

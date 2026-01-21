@@ -21,7 +21,16 @@ sealed interface DocumentKey {
     }
 
     data class ChildDocument(override val value: String) : DocumentKey {
-        constructor(id: ChildDocumentId) : this("child-documents/child_document_$id.pdf")
+        constructor(
+            id: ChildDocumentId,
+            version: Int? = null,
+        ) : this(
+            if (version != null) {
+                "child-documents/child_document_${id}_v$version.pdf"
+            } else {
+                "child-documents/child_document_$id.pdf"
+            }
+        )
     }
 
     data class ChildImage(override val value: String) : DocumentKey {

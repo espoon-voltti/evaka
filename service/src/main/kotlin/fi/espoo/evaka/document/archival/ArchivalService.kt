@@ -14,7 +14,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.markDecisionAsArchived
 import fi.espoo.evaka.document.childdocument.getChildDocument
-import fi.espoo.evaka.document.childdocument.getChildDocumentKey
+import fi.espoo.evaka.document.childdocument.getChildDocumentPdfVersion
 import fi.espoo.evaka.document.childdocument.markDocumentAsArchived
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -204,12 +204,12 @@ class ArchivalService(
         val caseProcess = db.read { tx -> tx.getCaseProcessByChildDocumentId(documentId) }
         val documentMetadata = db.read { tx -> tx.getChildDocumentMetadata(documentId) }
 
-        val documentKey =
+        val pdfVersion =
             db.read { tx ->
-                tx.getChildDocumentKey(documentId)
-                    ?: throw NotFound("Document key not found for document $documentId")
+                tx.getChildDocumentPdfVersion(documentId)
+                    ?: throw NotFound("PDF not found for document $documentId")
             }
-        val documentContent = getDocument(DocumentKey.ChildDocument(documentKey))
+        val documentContent = getDocument(DocumentKey.ChildDocument(pdfVersion.documentKey))
 
         val instanceId =
             archivalIntegrationClient.uploadChildDocumentToArchive(

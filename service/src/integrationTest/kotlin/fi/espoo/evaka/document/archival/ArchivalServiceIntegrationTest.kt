@@ -308,8 +308,8 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 )
             tx.insert(childDocument)
 
-            // Set document key
-            tx.updateChildDocumentKey(documentId, "test-document-key")
+            val versionNumber = tx.insertChildDocumentPdfVersion(documentId, now)
+            tx.updateChildDocumentPdfVersionKey(documentId, versionNumber, "test-document-key")
         }
     }
 

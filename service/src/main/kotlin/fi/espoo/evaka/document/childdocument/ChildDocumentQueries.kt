@@ -181,7 +181,11 @@ SELECT
     cd.status,
     cd.published_at,
     cd.archived_at,
-    cd.document_key IS NOT NULL AS pdf_available,
+    EXISTS(
+        SELECT 1 FROM child_document_pdf_version v 
+        WHERE v.child_document_id = cd.id 
+        AND v.document_key IS NOT NULL
+    ) AS pdf_available,
     cd.content,
     cd.published_content,
     p.id as child_id,
@@ -222,18 +226,85 @@ WHERE cd.id = ${bind(id)}
         .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
-fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
-    return createQuery {
+fun Database.Transaction.insertChildDocumentPdfVersion(
+    documentId: ChildDocumentId,
+    createdAt: HelsinkiDateTime,
+): Int =
+    createQuery {
             sql(
                 """
-                SELECT cd.document_key
-                FROM child_document cd
-                WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
-                """
+            WITH next_version AS (
+                SELECT COALESCE(MAX(version_number), 0) + 1 AS version
+                FROM child_document_pdf_version
+                WHERE child_document_id = ${bind(documentId)}
+            )
+            INSERT INTO child_document_pdf_version 
+                (child_document_id, created_at, version_number)
+            SELECT ${bind(documentId)}, ${bind(createdAt)}, version
+            FROM next_version
+            RETURNING version_number
+        """
             )
         }
-        .exactlyOneOrNull<String>()
+        .exactlyOne<Int>()
+
+fun Database.Transaction.updateChildDocumentPdfVersionKey(
+    documentId: ChildDocumentId,
+    versionNumber: Int,
+    documentKey: String,
+) {
+    createUpdate {
+            sql(
+                """
+            UPDATE child_document_pdf_version
+            SET document_key = ${bind(documentKey)}
+            WHERE child_document_id = ${bind(documentId)}
+                AND version_number = ${bind(versionNumber)}
+                AND document_key IS NULL
+        """
+            )
+        }
+        .updateExactlyOne()
 }
+
+fun Database.Read.getChildDocumentPdfVersions(documentId: ChildDocumentId): List<PdfVersion> =
+    createQuery {
+            sql(
+                """
+            SELECT version_number, document_key, created_at
+            FROM child_document_pdf_version
+            WHERE child_document_id = ${bind(documentId)}
+                AND document_key IS NOT NULL
+            ORDER BY version_number DESC
+        """
+            )
+        }
+        .toList()
+
+fun Database.Read.getChildDocumentPdfVersion(
+    documentId: ChildDocumentId,
+    versionNumber: Int? = null,
+): PdfVersion? =
+    createQuery {
+            sql(
+                """
+            SELECT version_number, document_key, created_at
+            FROM child_document_pdf_version
+            WHERE child_document_id = ${bind(documentId)}
+                ${if (versionNumber != null) "AND version_number = ${bind(versionNumber)}" else ""}
+                AND document_key IS NOT NULL
+            ORDER BY version_number DESC
+            LIMIT 1
+        """
+            )
+        }
+        .exactlyOneOrNull<PdfVersion>()
+
+data class PdfVersion(
+    val versionNumber: Int,
+    val documentKey: String,
+    val createdAt: HelsinkiDateTime,
+)
 
 data class DocumentWriteLock(
     val lockedBy: EvakaUserId,
@@ -465,19 +536,6 @@ fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
                 DELETE FROM child_document
                 WHERE id = ${bind(id)} AND status = 'DRAFT'
                 """
-            )
-        }
-        .updateExactlyOne()
-}
-
-fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey: String) {
-    createUpdate {
-            sql(
-                """
-        UPDATE child_document
-        SET document_key = ${bind(documentKey)}
-        WHERE id = ${bind(id)}
-    """
             )
         }
         .updateExactlyOne()

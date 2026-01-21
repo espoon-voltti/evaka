@@ -77,15 +77,15 @@ class ChildDocumentService(
                 ?: throw NotFound("document $documentId not found")
         val html = generateChildDocumentHtml(document)
         val pdfBytes = pdfGenerator.render(html)
-        val key =
-            documentClient.upload(
-                DocumentKey.ChildDocument(documentId),
-                pdfBytes,
-                "application/pdf",
-            )
 
         db.transaction { tx ->
-            tx.updateChildDocumentKey(documentId, key.key)
+            val nextVersion =
+                tx.insertChildDocumentPdfVersion(documentId = documentId, createdAt = clock.now())
+
+            val versionedKey = DocumentKey.ChildDocument(documentId, nextVersion)
+            val location = documentClient.upload(versionedKey, pdfBytes, "application/pdf")
+
+            tx.updateChildDocumentPdfVersionKey(documentId, nextVersion, location.key)
 
             if (document.decision != null) {
                 if (tx.hasChildDocumentSfiMessageBeenSent(documentId)) {
@@ -97,7 +97,7 @@ class ChildDocumentService(
 
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId)),
+                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, nextVersion)),
                     runAt = clock.now(),
                 )
 
@@ -127,15 +127,14 @@ class ChildDocumentService(
                         throw IllegalStateException("document $documentId is not a decision")
                 } ?: throw NotFound("document $documentId not found")
 
-            val documentLocation =
-                documentClient.locate(
-                    DocumentKey.ChildDocument(
-                        tx.getChildDocumentKey(documentId)
-                            ?: throw IllegalStateException(
-                                "Decision pdf has not yet been generated"
-                            )
+            val pdfVersion =
+                tx.getChildDocumentPdfVersion(documentId, msg.versionNumber)
+                    ?: throw IllegalStateException(
+                        "Decision pdf version ${msg.versionNumber} has not been generated for document $documentId"
                     )
-                )
+
+            val documentLocation =
+                documentClient.locate(DocumentKey.ChildDocument(pdfVersion.documentKey))
 
             val lang =
                 if (document.template.language == UiLanguage.SV) OfficialLanguage.SV
@@ -193,14 +192,23 @@ class ChildDocumentService(
         }
     }
 
-    fun getPdfResponse(tx: Database.Read, documentId: ChildDocumentId): ResponseEntity<Any> {
-        val documentLocation =
-            documentClient.locate(
-                DocumentKey.ChildDocument(
-                    tx.getChildDocumentKey(documentId)
-                        ?: throw NotFound("Document $documentId not found or pdf not ready")
+    fun getPdfResponse(
+        tx: Database.Read,
+        documentId: ChildDocumentId,
+        versionNumber: Int? = null,
+    ): ResponseEntity<Any> {
+        val pdfVersion =
+            tx.getChildDocumentPdfVersion(documentId, versionNumber)
+                ?: throw NotFound(
+                    if (versionNumber != null) {
+                        "Document $documentId version $versionNumber not found"
+                    } else {
+                        "Document $documentId not found or pdf not ready"
+                    }
                 )
-            )
+
+        val documentLocation =
+            documentClient.locate(DocumentKey.ChildDocument(pdfVersion.documentKey))
         return documentClient.responseAttachment(documentLocation, null)
     }
 
@@ -261,8 +269,8 @@ class ChildDocumentService(
     ) {
         logger.info { "Scheduling generation of ${ids.size} child document pdfs" }
 
-        // set document key to null until re-generation finishes
-        // the new document key will be the same, so there's no need to separately delete from s3
+        // Reset deprecated document_key column (kept for backward compatibility)
+        // New versioned PDFs are stored in child_document_pdf_version table
         tx.resetChildDocumentKey(ids)
 
         asyncJobRunner.plan(
