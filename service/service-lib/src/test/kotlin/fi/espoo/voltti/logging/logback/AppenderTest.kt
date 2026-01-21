@@ -127,6 +127,25 @@ class AppenderTest {
         }
     }
 
+    @Test
+    fun `sanitized appender with http route and params`() {
+        withTestLoggers {
+            val route = "/api/v1/some/route/{id}"
+            val routeParam = "httpRoute"
+            val pathParam = "httpPathParam.id"
+            val pathParamValue = "123"
+            MDC.put(routeParam, route)
+            MDC.put(pathParam, pathParamValue)
+
+            logger.info { "Request with route and params" }
+
+            it.withLatestSanitized { actual ->
+                assertThat(actual[routeParam]).isEqualTo(route)
+                assertThat(actual[pathParam]).isEqualTo(pathParamValue)
+            }
+        }
+    }
+
     private fun defaultInfoAssertions(actual: Map<String, Any>) {
         assertThat(actual["logLevel"]).isEqualTo("INFO")
         assertThat(actual["@timestamp"] as String).isNotBlank

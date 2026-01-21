@@ -40,7 +40,6 @@ Audit appender logback configuration provided for import
                 "type": "app-audit-events",
                 "appBuild": "${APP_BUILD}",
                 "appCommit": "${APP_COMMIT}",
-                "appName": "${appName}",
                 "env": "${VOLTTI_ENV}",
                 "hostIp": "${HOST_IP}",
                 "version": 1
