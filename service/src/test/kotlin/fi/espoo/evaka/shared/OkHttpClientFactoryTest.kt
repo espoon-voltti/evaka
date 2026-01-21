@@ -14,14 +14,15 @@ class OkHttpClientFactoryTest {
     @Test
     fun `builder creates a client with custom timeouts`() {
         val client =
-            OkHttpClientFactory.builder()
-                .timeouts(
-                    connectTimeout = Duration.ofSeconds(10),
-                    readTimeout = Duration.ofSeconds(20),
-                    writeTimeout = Duration.ofSeconds(15),
-                    callTimeout = Duration.ofMinutes(1),
+            buildHttpClient(
+                    timeouts =
+                        TimeoutConfig(
+                            connectTimeout = Duration.ofSeconds(10),
+                            readTimeout = Duration.ofSeconds(20),
+                            writeTimeout = Duration.ofSeconds(15),
+                            callTimeout = Duration.ofMinutes(1),
+                        )
                 )
-                .build()
                 .client
 
         assertEquals(10_000, client.connectTimeoutMillis)
@@ -35,12 +36,7 @@ class OkHttpClientFactoryTest {
         val interceptor1 = okhttp3.Interceptor { chain -> chain.proceed(chain.request()) }
         val interceptor2 = okhttp3.Interceptor { chain -> chain.proceed(chain.request()) }
 
-        val client =
-            OkHttpClientFactory.builder()
-                .addInterceptor(interceptor1)
-                .addInterceptor(interceptor2)
-                .build()
-                .client
+        val client = buildHttpClient(interceptors = listOf(interceptor1, interceptor2)).client
 
         // Verify both interceptors were added
         assertTrue(client.interceptors.contains(interceptor1))

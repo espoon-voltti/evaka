@@ -37,26 +37,29 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val customerNumberToIdMapping = mapOf(77 to 777, 88 to 888, 99 to 999)
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 8), LocalTime.of(2, 25))
 
-    private fun createJamixMockServer(
+    private fun useJamixMockServer(
         customers: Map<Int, Int> = customerNumberToIdMapping,
         specialDiets: List<JamixSpecialDiet> = emptyList(),
         mealTextures: List<JamixTexture> = emptyList(),
-    ): MockWebServerHelper {
-        return MockWebServerHelper().apply {
-            addJsonGetRoute(
-                "/customers",
-                customers.map { (number, id) ->
-                    mapOf("customerId" to id, "customerNumber" to number)
-                },
-                jsonMapper,
-            )
+        callback: (MockWebServerHelper) -> Unit,
+    ) {
+        val mockServer =
+            MockWebServerHelper().apply {
+                addJsonGetRoute(
+                    "/customers",
+                    customers.map { (number, id) ->
+                        mapOf("customerId" to id, "customerNumber" to number)
+                    },
+                    jsonMapper,
+                )
 
-            addJsonGetRoute("/diets", specialDiets, jsonMapper)
+                addJsonGetRoute("/diets", specialDiets, jsonMapper)
 
-            addJsonGetRoute("/textures", mealTextures, jsonMapper)
+                addJsonGetRoute("/textures", mealTextures, jsonMapper)
 
-            addJsonPostRoute("/v2/mealorders", emptyMap<String, Any>(), jsonMapper)
-        }
+                addJsonPostRoute("/v2/mealorders", emptyMap<String, Any>(), jsonMapper)
+            }
+        mockServer.use { mockServer -> callback(mockServer) }
     }
 
     private fun createJamixClient(mockServer: MockWebServerHelper): JamixClient {
@@ -71,7 +74,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `meal order jobs for daycare groups without customer number are not planned`() {
-        createJamixMockServer().use { mockServer ->
+        useJamixMockServer { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare =
@@ -102,7 +105,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `meal order jobs for closed units are not planned`() {
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
-        createJamixMockServer().use { mockServer ->
+        useJamixMockServer { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare =
@@ -129,7 +132,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `meal order jobs for the next week are planned`() {
-        createJamixMockServer().use { mockServer ->
+        useJamixMockServer { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare =
@@ -173,7 +176,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `meal order jobs can be manually requested for a unit and date`() {
-        createJamixMockServer().use { mockServer ->
+        useJamixMockServer { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare = DevDaycare(areaId = area.id)
@@ -234,7 +237,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val tuesday = LocalDate.of(2024, 4, 9)
         val wednesday = LocalDate.of(2024, 4, 10)
 
-        createJamixMockServer().use { mockServer ->
+        useJamixMockServer { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare =
@@ -439,7 +442,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `diet sync does not sync empty data`() {
-        createJamixMockServer(specialDiets = emptyList()).use { mockServer ->
+        useJamixMockServer(specialDiets = emptyList()) { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             assertThrows<Exception> {
                 fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
@@ -454,7 +457,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")),
                 JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello")),
             )
-        createJamixMockServer(specialDiets = specialDiets).use { mockServer ->
+        useJamixMockServer(specialDiets = specialDiets) { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
             db.transaction { tx ->
@@ -466,32 +469,31 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `diet sync nullifies removed diets from child`() {
-        createJamixMockServer(
-                specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
-            )
-            .use { mockServer ->
-                val jamixClient = createJamixClient(mockServer)
-                val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
-                db.transaction { tx ->
-                    tx.setSpecialDiets(listOf(SpecialDiet(555, "diet abbreviation")))
-                    tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
-                    tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 555))
-                }
-                fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
-
-                db.transaction { tx ->
-                    val childAfterSync = tx.getChild(childWithSpecialDiet.id)
-                    assertNotNull(childAfterSync)
-                    assertNull(childAfterSync.additionalInformation.specialDiet)
-                }
+        useJamixMockServer(
+            specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
+        ) { mockServer ->
+            val jamixClient = createJamixClient(mockServer)
+            val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+            db.transaction { tx ->
+                tx.setSpecialDiets(listOf(SpecialDiet(555, "diet abbreviation")))
+                tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
+                tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 555))
             }
+            fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
+
+            db.transaction { tx ->
+                val childAfterSync = tx.getChild(childWithSpecialDiet.id)
+                assertNotNull(childAfterSync)
+                assertNull(childAfterSync.additionalInformation.specialDiet)
+            }
+        }
     }
 
     @Test
     fun `diet sync generates warning emails`() {
         val specialDiets =
             listOf(JamixSpecialDiet(3, JamixSpecialDietFields("diet 3", "diet abbreviation 3")))
-        createJamixMockServer(specialDiets = specialDiets).use { mockServer ->
+        useJamixMockServer(specialDiets = specialDiets) { mockServer ->
             val jamixClient = createJamixClient(mockServer)
             val area = DevCareArea()
             val daycare = DevDaycare(areaId = area.id, name = "Daycare 1")
@@ -585,33 +587,32 @@ Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden 
 
     @Test
     fun `diet sync keeps diet selection when diet abbreviation changes`() {
-        createJamixMockServer(
-                specialDiets =
-                    listOf(
-                        JamixSpecialDiet(
-                            1,
-                            JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed"),
-                        )
+        useJamixMockServer(
+            specialDiets =
+                listOf(
+                    JamixSpecialDiet(
+                        1,
+                        JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed"),
                     )
-            )
-            .use { mockServer ->
-                val jamixClient = createJamixClient(mockServer)
-                val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
-                db.transaction { tx ->
-                    tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation with a typo")))
-                    tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
-                    tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
-                }
-                fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
-                db.transaction { tx ->
-                    val childAfterSync = tx.getChild(childWithSpecialDiet.id)
-                    assertNotNull(childAfterSync)
-                    assertEquals(
-                        SpecialDiet(1, "diet abbreviation fixed"),
-                        childAfterSync.additionalInformation.specialDiet,
-                    )
-                }
+                )
+        ) { mockServer ->
+            val jamixClient = createJamixClient(mockServer)
+            val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+            db.transaction { tx ->
+                tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation with a typo")))
+                tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
+                tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
             }
+            fetchAndUpdateJamixDiets(jamixClient, db, asyncJobRunner, now)
+            db.transaction { tx ->
+                val childAfterSync = tx.getChild(childWithSpecialDiet.id)
+                assertNotNull(childAfterSync)
+                assertEquals(
+                    SpecialDiet(1, "diet abbreviation fixed"),
+                    childAfterSync.additionalInformation.specialDiet,
+                )
+            }
+        }
     }
 
     private fun getJobs() =

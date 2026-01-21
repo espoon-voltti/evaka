@@ -21,13 +21,14 @@ import fi.espoo.evaka.reports.mealReportData
 import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.OkHttpClientFactory
+import fi.espoo.evaka.shared.TimeoutConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
+import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -390,16 +391,17 @@ class JamixClient(env: JamixEnv, private val jsonMapper: JsonMapper) {
     )
 
     private val httpClient =
-        OkHttpClientFactory.builder()
-            .rootUrl(env.url)
-            .jsonMapper(jsonMapper)
-            .timeouts(
-                connectTimeout = Duration.ofSeconds(120),
-                readTimeout = Duration.ofSeconds(120),
-                writeTimeout = Duration.ofSeconds(120),
-            )
-            .addInterceptor(basicAuthInterceptor(env.user, env.password.value))
-            .build()
+        buildHttpClient(
+            rootUrl = env.url,
+            jsonMapper = jsonMapper,
+            interceptors = listOf(basicAuthInterceptor(env.user, env.password.value)),
+            timeouts =
+                TimeoutConfig(
+                    connectTimeout = Duration.ofSeconds(120),
+                    readTimeout = Duration.ofSeconds(120),
+                    writeTimeout = Duration.ofSeconds(120),
+                ),
+        )
 
     fun getCustomers(): List<Customer> = httpClient.executeGetRequest("customers")
 
