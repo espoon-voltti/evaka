@@ -112,8 +112,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   const employeeMobileSessions = sessionSupport(
     'employee-mobile',
     redisClient,
-    config.employee,
-    config.employee.sessionTimeoutMinutes
+    config.employee
   )
   const employeeMobileProxy = createProxy({
     getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)

@@ -80,7 +80,7 @@ export function sessionSupport<T extends SessionType>(
   sessionType: T,
   redisClient: RedisClient,
   config: SessionConfig,
-  maxSessionTimeoutMinutes: number
+  maxSessionTimeoutMinutes?: number
 ): Sessions<T> {
   const cookieName = sessionCookie(sessionType)
 
@@ -235,8 +235,8 @@ export function sessionSupport<T extends SessionType>(
       }
     }
 
-    if (req.user?.authType === 'sfi' && req.user.samlSession?.nameID) {
-      const key = sfiSessionsKey(req.user.samlSession.nameID)
+    if (req.user?.authType === 'sfi' && req.user.ssnHash) {
+      const key = sfiSessionsKey(req.user.ssnHash)
       const sessionIds = await redisClient.sMembers(key)
       if (sessionIds.length > 0) {
         await redisClient.del(
@@ -276,17 +276,17 @@ export function sessionSupport<T extends SessionType>(
         .exec()
     }
 
-    if (req.session.id && user.authType === 'sfi') {
-      const key = sfiSessionsKey(user.samlSession.nameID)
+    if (
+      req.session.id &&
+      user.authType === 'sfi' &&
+      user.ssnHash &&
+      maxSessionTimeoutMinutes
+    ) {
+      const key = sfiSessionsKey(user.ssnHash)
       await redisClient
         .multi()
         .sAdd(key, req.session.id)
-        .expire(
-          key,
-          maxSessionTimeoutMinutes
-            ? maxSessionTimeoutMinutes * 60
-            : config.sessionTimeoutMinutes * 60
-        )
+        .expire(key, maxSessionTimeoutMinutes * 60)
         .exec()
     }
   }

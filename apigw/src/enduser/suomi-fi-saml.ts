@@ -6,6 +6,7 @@ import { SAML } from '@node-saml/node-saml'
 import { z } from 'zod'
 
 import type { EvakaSamlConfig } from '../shared/config.ts'
+import { createSha256Hash } from '../shared/crypto.ts'
 import { logWarn } from '../shared/logging.ts'
 import type { RedisClient } from '../shared/redis-client.ts'
 import { createSamlIntegration } from '../shared/routes/saml.ts'
@@ -46,6 +47,7 @@ const authenticateCitizen = authenticateProfile(
       id: person.id,
       authType: 'sfi',
       userType: 'CITIZEN_STRONG',
+      ssnHash: createSha256Hash(socialSecurityNumber),
       samlSession
     }
   }
@@ -91,6 +93,7 @@ const authenticateEmployee = authenticateProfile(
       userType: 'EMPLOYEE',
       globalRoles: person.globalRoles,
       allScopedRoles: person.allScopedRoles,
+      ssnHash: createSha256Hash(socialSecurityNumber),
       samlSession
     }
   }
