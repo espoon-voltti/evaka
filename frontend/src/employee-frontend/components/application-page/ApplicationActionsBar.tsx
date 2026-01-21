@@ -19,6 +19,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -149,10 +150,20 @@ export default React.memo(function ApplicationActionsBar({
               ? updateAndSendApplicationMutation
               : updateApplicationMutation
           }
-          onClick={() => ({
-            applicationId: editedApplication.id,
-            body: editedApplication
-          })}
+          onClick={() => {
+            const applicationData = { ...editedApplication }
+            if (
+              !featureFlags.daycareApplication.dailyTimes &&
+              applicationData.form.preferences.serviceNeed
+            ) {
+              applicationData.form.preferences.serviceNeed.startTime = ''
+              applicationData.form.preferences.serviceNeed.endTime = ''
+            }
+            return {
+              applicationId: editedApplication.id,
+              body: applicationData
+            }
+          }}
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}

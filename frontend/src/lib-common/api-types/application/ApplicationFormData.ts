@@ -293,6 +293,7 @@ export function formDataToApiData(
     otherGuardianLivesInSameAddress
   }: ApplicationDetails,
   form: ApplicationFormData,
+  dailyTimes: boolean,
   isDraft = false
 ): ApplicationFormUpdate {
   const fullFamily =
@@ -381,8 +382,8 @@ export function formDataToApiData(
         type === 'DAYCARE' ||
         (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? {
-              startTime: form.serviceNeed.startTime,
-              endTime: form.serviceNeed.endTime,
+              startTime: dailyTimes ? form.serviceNeed.startTime : '',
+              endTime: dailyTimes ? form.serviceNeed.endTime : '',
               shiftCare: form.serviceNeed.shiftCare,
               partTime: type === 'DAYCARE' && form.serviceNeed.partTime,
               serviceNeedOption: form.serviceNeed.serviceNeedOption
