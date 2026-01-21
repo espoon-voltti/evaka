@@ -178,6 +178,24 @@ git push --delete origin playwright-test
 To dump local database run `./db.sh dump` and restore it with `./db.sh restore`.
 Optional dump name can be given to script, example `./db.sh dump my.dump`.
 
+## Running Multiple Instances
+
+If you work with multiple git worktrees and need to run several eVaka instances concurrently, you can use [mise](https://mise.jdx.dev/) to manage instance-specific environment variables. Each instance uses offset ports to avoid conflicts.
+
+**Setup:** Install mise following the [official installation instructions](https://mise.jdx.dev/getting-started.html).
+
+**Usage:**
+
+```bash
+mise run use 1           # Activate instance 1
+mise run start           # Start instance 1
+mise run status          # Show current port configuration
+mise run stop            # Stop instance 1
+mise run deactivate      # Return to default instance
+```
+
+After activation, all port-related environment variables are set automatically based on the configured mise environment. Access instance 1 at http://localhost:9100.
+
 ## Troubleshooting
 
 ### Database

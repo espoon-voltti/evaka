@@ -6,8 +6,10 @@
 
 set -euo pipefail
 
-until nc -z "localhost" "5432"; do
-  echo "Waiting for PostgreSQL"
+DB_PORT="${EVAKA_DB_PORT:-5432}"
+
+until nc -z "localhost" "$DB_PORT"; do
+  echo "Waiting for PostgreSQL on port $DB_PORT"
   sleep 1
 done
 

@@ -22,7 +22,7 @@ services:
         - ghcr.io/espoon-voltti/evaka/test-db:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/test-db:cache-master
     ports:
-      - "5432:5432"
+      - "${EVAKA_DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -37,7 +37,7 @@ services:
   valkey:
     image: valkey/valkey:9.0-alpine
     ports:
-      - "6379:6379"
+      - "${EVAKA_REDIS_PORT:-6379}:6379"
     healthcheck:
       test: '[ "$$(valkey-cli -h 127.0.0.1 ping)" == "PONG" ]'
       interval: 1s
@@ -47,7 +47,7 @@ services:
   s3-mock:
     image: adobe/s3mock:4.11.0
     ports:
-      - "9876:9191"
+      - "${EVAKA_S3_PORT:-9876}:9191"
     volumes:
       - s3-data:/data
     environment:
@@ -63,7 +63,7 @@ services:
   sftp:
     image: atmoz/sftp:alpine
     ports:
-      - "2222:22"
+      - "${EVAKA_SFTP_PORT:-2222}:22"
     volumes:
       - ./sftp/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
       - ./sftp/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
@@ -76,7 +76,11 @@ services:
     init: true
     restart: on-failure
     ports:
-      - "9090:9090"
+      - "${EVAKA_IDP_PORT:-9090}:9090"
+    environment:
+      SP_ENTITY_ID: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/"
+      SP_SSO_CALLBACK_URL: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/login/callback"
+      SP_SLO_CALLBACK_URL: "http://localhost:${EVAKA_FRONTEND_PORT:-9099}/api/application/auth/saml/logout/callback"
 
 volumes:
   db-data:
