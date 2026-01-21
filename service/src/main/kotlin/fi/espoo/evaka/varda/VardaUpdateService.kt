@@ -103,7 +103,7 @@ class VardaUpdateService(
             jsonMapper,
             vardaEnv.url,
             vardaEnv.basicAuth.value,
-            vardaEnv.ratePerSec ?: 1.0,
+            vardaEnv.ratePerSec ?: 0.9,
         )
 
     private val vardaEnabledRange =
