@@ -15,8 +15,7 @@ set -euo pipefail
 docker compose up -d
 pm2 start
 
-INSTANCE=${EVAKA_INSTANCE:-0}
-FRONTEND_PORT=$((9099 + $INSTANCE))
+FRONTEND_PORT=${EVAKA_FRONTEND_PORT:-9099}
 
 echo "Development environment started."
 echo "Open http://localhost:${FRONTEND_PORT}/ in your browser."

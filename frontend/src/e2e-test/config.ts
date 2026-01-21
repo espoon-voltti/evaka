@@ -39,9 +39,9 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
   }
 }
 
-const instance = env('EVAKA_INSTANCE', (value) => parseInt(value, 10)) ?? 0
-const frontendPort = 9099 + instance
-const idpPort = 9090 + instance
+const frontendPort =
+  env('EVAKA_FRONTEND_PORT', (value) => parseInt(value, 10)) ?? 9099
+const idpPort = env('EVAKA_IDP_PORT', (value) => parseInt(value, 10)) ?? 9090
 
 const baseUrl =
   env('BASE_URL', (url) => url) ?? `http://localhost:${frontendPort}`

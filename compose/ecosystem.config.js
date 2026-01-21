@@ -4,17 +4,15 @@
 
 const path = require('path')
 
-const instance = parseInt(process.env.EVAKA_INSTANCE || '0', 10)
-
 const ports = {
-  db: 5432 + instance,
-  redis: 6379 + instance,
-  s3: 9876 + instance,
-  sftp: 2222 + instance,
-  idp: 9090 + instance,
-  apigw: 3000 + instance,
-  service: 8888 + instance,
-  frontend: 9099 + instance
+  db: parseInt(process.env.EVAKA_DB_PORT || '5432', 10),
+  redis: parseInt(process.env.EVAKA_REDIS_PORT || '6379', 10),
+  s3: parseInt(process.env.EVAKA_S3_PORT || '9876', 10),
+  sftp: parseInt(process.env.EVAKA_SFTP_PORT || '2222', 10),
+  idp: parseInt(process.env.EVAKA_IDP_PORT || '9090', 10),
+  apigw: parseInt(process.env.EVAKA_APIGW_PORT || '3000', 10),
+  service: parseInt(process.env.SERVER_PORT || '8888', 10),
+  frontend: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10)
 }
 
 const defaults = {
