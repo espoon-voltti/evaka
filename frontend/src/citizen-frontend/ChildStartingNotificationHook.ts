@@ -19,6 +19,7 @@ import { useTranslation } from './localization'
 
 type ChildWithUpcomingPlacement = ChildAndPermittedActions & {
   upcomingPlacementStartDate: LocalDate
+  upcomingPlacementCalendarOpenDate: LocalDate
   upcomingPlacementUnit: {
     id: string
     name: string
@@ -32,6 +33,7 @@ function hasUpcomingPlacement(
   return (
     child.upcomingPlacementType !== null &&
     child.upcomingPlacementStartDate !== null &&
+    child.upcomingPlacementCalendarOpenDate !== null &&
     child.upcomingPlacementUnit !== null &&
     !child.upcomingPlacementIsCalendarOpen
   )
@@ -98,7 +100,8 @@ export const useChildrenStartingNotification = () => {
             children: i18n.calendar.infoToast.childStartsInfo(
               formatPersonName(child, 'FirstFirst'),
               child.upcomingPlacementStartDate.format(),
-              child.upcomingPlacementUnit.name
+              child.upcomingPlacementUnit.name,
+              child.upcomingPlacementCalendarOpenDate.format()
             ),
             onClose: () => dismissChildStartingNotification(userId, child.id),
             dataQa: `${notificationPrefix}-${index}`

@@ -605,9 +605,10 @@ const en: Translations = {
       childStartsInfo: (
         firstName: string,
         startDate: string,
-        unitName: string
+        unitName: string,
+        calendarOpenDate: string
       ) =>
-        `${firstName} will start at the unit ${unitName} on ${startDate}. Registering the attendances begins a month before the start date.`
+        `${firstName} will start at the unit ${unitName} on ${startDate}. Registering the attendances begins on ${calendarOpenDate}.`
     }
   },
   messages: {
