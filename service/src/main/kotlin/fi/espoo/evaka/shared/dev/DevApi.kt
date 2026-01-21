@@ -2185,6 +2185,7 @@ data class DevEmployee(
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val active: Boolean = true,
+    val ssn: String? = null,
 ) {
     val evakaUserId: EvakaUserId
         @JsonIgnore get() = EvakaUserId(id.raw)

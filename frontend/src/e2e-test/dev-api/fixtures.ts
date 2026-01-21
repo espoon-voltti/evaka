@@ -515,6 +515,7 @@ export class Fixture {
       created: HelsinkiDateTime.now(),
       lastLogin: HelsinkiDateTime.now(),
       preferredFirstName: null,
+      ssn: null,
       ...initial
     }
     const save = async () => {
@@ -615,6 +616,9 @@ export class Fixture {
           ...groupAcl,
           { groupId, createdAt, updatedAt }
         ])
+      },
+      ssnEmployee(ssn: string) {
+        return Fixture.employee({ ...value, ssn }, unitRoles, groupAcl)
       },
       save
     }
