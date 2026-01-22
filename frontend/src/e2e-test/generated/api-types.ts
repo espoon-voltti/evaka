@@ -584,6 +584,7 @@ export interface DevEmployee {
   lastName: string
   preferredFirstName: string | null
   roles: UserRole[]
+  ssn: string | null
 }
 
 /**
