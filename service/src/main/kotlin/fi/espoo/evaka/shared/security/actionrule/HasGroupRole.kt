@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
@@ -23,6 +24,10 @@ import java.util.EnumSet
 
 private typealias GetGroupRoles =
     QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
+
+// Default number of days before a placement starts that staff can access CITIZEN_BASIC
+// type of child documents.
+private const val DEFAULT_FUTURE_ACCESS_DAYS = 30
 
 data class HasGroupRole(
     val oneOf: EnumSet<UserRole>,
@@ -160,6 +165,40 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementGroupOfChildWithFutureAccess(
+        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS
+    ) =
+        rule<ChildId> { user, now ->
+            val futureAccessDate = now.toLocalDate().plusDays(daysBeforePlacement.toLong())
+            val pastAccessDate = now.toLocalDate().minusDays(daysBeforePlacement.toLong())
+            sql(
+                """
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM daycare_group_placement dgp
+JOIN placement dp ON dp.id = dgp.daycare_placement_id
+JOIN daycare_group_acl AS group_acl USING (daycare_group_id)
+JOIN daycare_group ON dgp.daycare_group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND dgp.start_date <= ${bind(futureAccessDate)}
+  AND dgp.end_date >= ${bind(now.toLocalDate())}
+
+UNION ALL
+
+SELECT bc.child_id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM backup_care bc
+JOIN daycare_group_acl AS group_acl ON bc.group_id = group_acl.daycare_group_id
+JOIN daycare_group ON bc.group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND bc.end_date > ${bind(pastAccessDate)}
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementGroupOfChildOfAbsenceApplication() =
         rule<AbsenceApplicationId> { user, now ->
             sql(
@@ -176,28 +215,65 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementGroupOfChildOfChildDocument(
+    fun inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
+        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS,
         editable: Boolean = false,
         deletable: Boolean = false,
         publishable: Boolean = false,
         canGoToPrevStatus: Boolean = false,
         denyForDecisions: Boolean = false,
     ): DatabaseActionRule.Scoped<ChildDocumentId, HasGroupRole> {
-        val denyDecisionSql =
-            if (denyForDecisions) " AND child_document.type <> 'OTHER_DECISION' " else ""
+        val childDocumentFilters =
+            PredicateSql.allNotNull(
+                PredicateSql {
+                        where(
+                            "status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])"
+                        )
+                    }
+                    .takeIf { editable },
+                PredicateSql { where("status = 'DRAFT' AND published_at IS NULL") }
+                    .takeIf { deletable },
+                PredicateSql { where("status <> 'COMPLETED'") }.takeIf { publishable },
+                PredicateSql {
+                        where(
+                            "child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'"
+                        )
+                    }
+                    .takeIf { canGoToPrevStatus },
+                PredicateSql { where("child_document.type <> 'OTHER_DECISION'") }
+                    .takeIf { denyForDecisions },
+            )
+
         return rule { user, now ->
+            val futureAccessDate = now.toLocalDate().plusDays(daysBeforePlacement.toLong())
+            val pastAccessDate = now.toLocalDate().minusDays(daysBeforePlacement.toLong())
             sql(
                 """
-SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_document
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)}
-${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
-${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
-${if (publishable) "AND status <> 'COMPLETED'" else ""}
-${if (canGoToPrevStatus) "AND child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'" else ""}
-$denyDecisionSql
+JOIN placement dp ON child_document.child_id = dp.child_id
+JOIN daycare_group_placement dgp ON dp.id = dgp.daycare_placement_id
+JOIN daycare_group_acl AS group_acl USING (daycare_group_id)
+JOIN daycare_group ON dgp.daycare_group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND dgp.start_date <= ${bind(futureAccessDate)}
+  AND dgp.end_date >= ${bind(now.toLocalDate())}
+  AND ${predicate(childDocumentFilters)}
+
+UNION ALL
+
+SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM child_document
+JOIN backup_care bc ON child_document.child_id = bc.child_id
+JOIN daycare_group_acl AS group_acl ON bc.group_id = group_acl.daycare_group_id
+JOIN daycare_group ON bc.group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND bc.end_date > ${bind(pastAccessDate)}
+  AND ${predicate(childDocumentFilters)}
             """
                     .trimIndent()
             )

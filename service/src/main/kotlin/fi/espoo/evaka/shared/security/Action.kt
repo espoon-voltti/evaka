@@ -1136,7 +1136,7 @@ sealed interface Action {
         CREATE_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            HasGroupRole(STAFF).inPlacementGroupOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildWithFutureAccess(),
         ),
         CREATE_CHILD_DECISION_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1145,7 +1145,7 @@ sealed interface Action {
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            HasGroupRole(STAFF).inPlacementGroupOfChild(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildWithFutureAccess(),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -2206,10 +2206,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
@@ -2218,10 +2218,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
+            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         UPDATE(
@@ -2229,27 +2229,34 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(editable = true),
             HasGroupRole(STAFF)
-                .inPlacementGroupOfChildOfChildDocument(editable = true, denyForDecisions = true),
+                .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
+                    editable = true,
+                    denyForDecisions = true,
+                ),
         ),
         PUBLISH(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(publishable = true),
             HasGroupRole(STAFF)
-                .inPlacementGroupOfChildOfChildDocument(publishable = true, denyForDecisions = true),
+                .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
+                    publishable = true,
+                    denyForDecisions = true,
+                ),
         ),
         NEXT_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocument(denyForDecisions = true),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(denyForDecisions = true),
         ),
         PREV_STATUS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(canGoToPrevStatus = true),
             HasGroupRole(STAFF)
-                .inPlacementGroupOfChildOfChildDocument(
+                .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
                     canGoToPrevStatus = true,
                     denyForDecisions = true,
                 ),
@@ -2260,7 +2267,10 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(deletable = true),
             HasGroupRole(STAFF)
-                .inPlacementGroupOfChildOfChildDocument(deletable = true, denyForDecisions = true),
+                .inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
+                    deletable = true,
+                    denyForDecisions = true,
+                ),
         ),
         PROPOSE_DECISION(
             HasGlobalRole(ADMIN),
