@@ -1684,17 +1684,8 @@ const en: Translations = {
     title: 'Decisions',
     childhoodEducationTitle:
       'Decisions regarding child’s early childhood education, pre-primary education and clubs',
-    summary: (
-      <P width="800px">
-        This page displays the received decisions regarding child&lsquo;s early
-        childhood education, pre-primary education, clubs and payments.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Upon receiving a new decision concerning a new placement applied for a
-        child, you are required to respond in two weeks, whether you accept or
-        reject it.
-      </P>
-    ),
+    summary:
+      'This page contains decisions regarding early childhood education, pre-primary education and clubs as well as decisions regarding fees.',
     unconfirmedDecisions: (n: number) =>
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'
@@ -1748,6 +1739,8 @@ const en: Translations = {
       goToConfirmation:
         'Please open the decision and respond whether you will accept or reject the place.',
       confirmationLink: 'Review and confirm the decision',
+      information:
+        'Confirm the decisions immediately or no later than two weeks from receiving the notification.',
       response: {
         title: 'Accepting or rejecting the placement',
         accept1: 'We accept the placement from',
