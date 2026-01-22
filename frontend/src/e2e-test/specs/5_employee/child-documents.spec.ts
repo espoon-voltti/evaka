@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type { DocumentContent } from 'lib-common/generated/api-types/document'
+import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId } from 'lib-common/id-type'
+import { evakaUserId, randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
@@ -362,6 +365,215 @@ describe('Employee - Child documents', () => {
     // Verify the create decision document button is not present
     await childDocumentsSection.decisionHeader.waitUntilVisible()
     await childDocumentsSection.createDecisionDocumentButton.waitUntilHidden()
+  })
+
+  test('Staff can create CITIZEN_BASIC document for child with placement starting in less than 30 days', async () => {
+    const group1: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+
+    const staffEmployee = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(group1.id)
+      .save()
+
+    const childFuture = await Fixture.person({
+      id: randomId<PersonId>(),
+      ssn: '080214A9257',
+      firstName: 'Future',
+      lastName: 'Child',
+      dateOfBirth: LocalDate.of(2014, 2, 8)
+    }).saveChild()
+
+    await Fixture.guardian(childFuture, testAdult).save()
+
+    // Create a placement that starts in 20 days (within the 30-day window)
+    const futurePlacement = await Fixture.placement({
+      childId: childFuture.id,
+      unitId: testDaycare.id,
+      startDate: now.toLocalDate().addDays(20),
+      endDate: now.toLocalDate().addYears(1),
+      type: 'DAYCARE'
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: group1.id,
+      daycarePlacementId: futurePlacement.id,
+      startDate: futurePlacement.startDate,
+      endDate: futurePlacement.endDate
+    }).save()
+    const documentName = 'Huoltajan kanssa täytettävä lomake'
+    await Fixture.documentTemplate({
+      type: 'CITIZEN_BASIC',
+      name: documentName,
+      published: true
+    }).save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+
+    // Staff employee opens child information page
+    await employeeLogin(page, staffEmployee)
+    await page.goto(`${config.employeeUrl}/child-information/${childFuture.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+
+    // Verify the create external document button is visible and enabled
+    await childDocumentsSection.externalHeader.waitUntilVisible()
+    await childDocumentsSection.createExternalDocumentButton.waitUntilVisible()
+
+    // Create the document
+    await childDocumentsSection.createExternalDocumentButton.click()
+
+    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
+      documentName
+    )
+    await childDocumentsSection.modalOk.click()
+
+    // Verify document was created successfully
+    const childDocument = new ChildDocumentPage(page)
+    await childDocument.status.assertTextEquals('Luonnos')
+  })
+
+  test('Staff cannot see child documents section for child with placement starting in more than 30 days', async () => {
+    const group1: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+
+    const staffEmployee = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(group1.id)
+      .save()
+
+    const childFuture = await Fixture.person({
+      id: randomId<PersonId>(),
+      ssn: '080214A9257',
+      firstName: 'Future',
+      lastName: 'Child',
+      dateOfBirth: LocalDate.of(2014, 2, 8)
+    }).saveChild()
+
+    await Fixture.guardian(childFuture, testAdult).save()
+
+    // Create a placement that starts in 40 days (outside the 30-day window)
+    const futurePlacement = await Fixture.placement({
+      childId: childFuture.id,
+      unitId: testDaycare.id,
+      startDate: now.toLocalDate().addDays(40),
+      endDate: now.toLocalDate().addYears(1),
+      type: 'DAYCARE'
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: group1.id,
+      daycarePlacementId: futurePlacement.id,
+      startDate: futurePlacement.startDate,
+      endDate: futurePlacement.endDate
+    }).save()
+
+    const page = await Page.open({
+      mockedTime: now,
+      employeeCustomizations: {
+        featureFlags: { citizenChildDocumentTypes: true }
+      }
+    })
+
+    // Staff employee opens child information page
+    await employeeLogin(page, staffEmployee)
+    await page.goto(`${config.employeeUrl}/child-information/${childFuture.id}`)
+    const childInformationPage = new ChildInformationPage(page)
+
+    await childInformationPage.assertSomeCollapsiblesVisible({
+      childDocuments: false
+    })
+  })
+
+  test('Staff can see child documents section for child with backup care in their group', async () => {
+    const primaryGroup: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+
+    const backupCareDaycare: DevDaycare = await Fixture.daycare({
+      areaId: testCareArea.id,
+      name: 'Backup Care Daycare',
+      enabledPilotFeatures: [
+        'VASU_AND_PEDADOC',
+        'OTHER_DECISION',
+        'CITIZEN_BASIC_DOCUMENT'
+      ]
+    }).save()
+
+    const backupCareGroup: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: backupCareDaycare.id,
+      name: 'Backup Care Group'
+    }).save()
+
+    const backupCareStaff = await Fixture.employee({
+      firstName: 'Kaarlo',
+      lastName: 'Kasvattaja'
+    })
+      .staff(backupCareDaycare.id)
+      .groupAcl(backupCareGroup.id)
+      .save()
+
+    const child = await Fixture.person({
+      id: randomId<PersonId>(),
+      ssn: '050115A975B',
+      firstName: 'Tesmi',
+      lastName: 'Lapsinen',
+      dateOfBirth: LocalDate.of(2015, 1, 1)
+    }).saveChild()
+
+    await Fixture.guardian(child, testAdult).save()
+
+    const primaryPlacement = await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: now.toLocalDate().subMonths(6),
+      endDate: now.toLocalDate().addYears(1),
+      type: 'DAYCARE'
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: primaryGroup.id,
+      daycarePlacementId: primaryPlacement.id,
+      startDate: primaryPlacement.startDate,
+      endDate: primaryPlacement.endDate
+    }).save()
+
+    await Fixture.backupCare({
+      childId: child.id,
+      unitId: backupCareDaycare.id,
+      groupId: backupCareGroup.id,
+      period: new FiniteDateRange(
+        now.toLocalDate(),
+        now.toLocalDate().addDays(1)
+      )
+    }).save()
+
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
+
+    const page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, backupCareStaff)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
+
+    const childInformationPage = new ChildInformationPage(page)
+
+    await childInformationPage.assertSomeCollapsiblesVisible({
+      childDocuments: true
+    })
+
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createInternalDocumentButton.waitUntilVisible()
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {
@@ -727,8 +939,8 @@ describe('Employee - Child documents', () => {
     await row.status.assertTextEquals('Valmis')
   })
 
-  test('Citizen basic can be filled by employee', async () => {
-    // create document template
+  async function fillCitizenBasicDocument(fillerRole: DevEmployee) {
+    // Admin creates the document template
     page = await Page.open({
       mockedTime: now,
       employeeCustomizations: {
@@ -770,14 +982,14 @@ describe('Employee - Child documents', () => {
     await templateEditor.saveButton.waitUntilHidden()
     await page.close()
 
-    // create child document and send to citizen
+    // create child document with selected role and send to citizen
     page = await Page.open({
       mockedTime: now,
       employeeCustomizations: {
         featureFlags: { citizenChildDocumentTypes: true }
       }
     })
-    await employeeLogin(page, unitSupervisor)
+    await employeeLogin(page, fillerRole)
     await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
@@ -806,7 +1018,7 @@ describe('Employee - Child documents', () => {
     const row = childDocumentsSection.externalChildDocuments(0)
     await row.sent.assertTextEquals(now.toLocalDate().format())
     await row.answered.assertTextEquals(
-      `${now.toLocalDate().format()}, ${unitSupervisor.lastName} ${unitSupervisor.firstName}`
+      `${now.toLocalDate().format()}, ${fillerRole.lastName} ${fillerRole.firstName}`
     )
     await row.status.assertTextEquals('Valmis')
     await runJobs({ mockedTime: now })
@@ -825,6 +1037,29 @@ describe('Employee - Child documents', () => {
           'Uusi täytettävä asiakirja eVakassa / Nytt ifyllnadsdokument i eVaka / New fillable document in eVaka'
       }
     ])
+  }
+  test('Citizen basic can be filled by staff employee in the same group', async () => {
+    const group1: DevDaycareGroup = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group1.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
+    const staffEmployee = await Fixture.employee({
+      firstName: 'Kaija',
+      lastName: 'Kasvattaja'
+    })
+      .staff(testDaycare.id)
+      .groupAcl(group1.id)
+      .save()
+
+    await fillCitizenBasicDocument(staffEmployee)
+  })
+  test('Citizen basic can be filled by unitSuperVisor', async () => {
+    await fillCitizenBasicDocument(unitSupervisor)
   })
 
   test('English citizen basic document can be sent irrespective of unit language', async () => {
