@@ -6,6 +6,7 @@ node_modules/
 .cache/
 .idea/
 *.iml
+.github/copilot-instructions.md
 dist/
 *~
 *.bak
@@ -40,6 +41,9 @@ src/lib-customizations/**/*
 !src/lib-customizations/defaults/**/*
 !src/lib-customizations/espoo
 !src/lib-customizations/espoo/**/*
+!src/lib-customizations/translation-converter
+!src/lib-customizations/translation-converter/**/*
+src/lib-customizations/translation-converter/output/
 !src/lib-customizations/README.md
 !src/lib-customizations/*.ts
 !src/lib-customizations/*.json
