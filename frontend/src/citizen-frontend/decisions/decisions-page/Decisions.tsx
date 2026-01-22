@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import mapValues from 'lodash/mapValues'
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
+import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import type { DecisionSummary } from 'lib-common/generated/api-types/application'
@@ -14,12 +16,15 @@ import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import LinkButton from 'lib-components/atoms/buttons/LinkButton'
+import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faGavel } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { childrenQuery } from '../../children/queries'
@@ -117,22 +122,76 @@ export default React.memo(function Decisions() {
     [applicationDecisions, children]
   )
 
+  const unconfirmedDecisionTypesPerChild = useMemo(() => {
+    return combine(children, applicationDecisions).map(
+      ([children, applicationDecisions]) =>
+        children
+          .map((child) => {
+            const undecidedTypes = applicationDecisions.decisions
+              .filter(applicationDecisionIsUnread)
+              .filter(
+                ({ childId, applicationId }) =>
+                  child.id === childId &&
+                  applicationDecisions.decidableApplications.includes(
+                    applicationId
+                  )
+              )
+              .map((decision) => decision.type)
+            return { child, undecidedTypes }
+          })
+          .filter(({ undecidedTypes }) => undecidedTypes.length > 0)
+    )
+  }, [applicationDecisions, children])
+
   return (
     <Container data-qa="decisions-page">
       <Gap size="s" />
-      <ContentArea opaque paddingVertical="L" id="main">
+      <ContentArea opaque paddingVertical="s" paddingHorizontal="s" id="main">
         <H1 noMargin>{t.decisions.title}</H1>
-        <Gap size="xs" />
+        <Gap size="s" />
         {t.decisions.summary}
         {unconfirmedDecisionsCount > 0 && (
           <>
             <Gap size="s" />
-            <AlertBox
-              message={t.decisions.unconfirmedDecisions(
-                unconfirmedDecisionsCount
-              )}
-              data-qa="alert-box-unconfirmed-decisions-count"
-            />
+            <UnconfirmedDecisionsBox>
+              <IconContainer>
+                <GavelIcon icon={faGavel} color={colors.grayscale.g0} />
+              </IconContainer>
+              <UnconfirmedColumn>
+                <UnconfirmedHeader data-qa="alert-box-unconfirmed-decisions-count">
+                  {t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)}
+                </UnconfirmedHeader>
+                {renderResult(
+                  unconfirmedDecisionTypesPerChild,
+                  (unconfirmedDecisionTypesPerChild) => (
+                    <>
+                      {unconfirmedDecisionTypesPerChild.map(
+                        ({ child, undecidedTypes }) => (
+                          <div key={child.id}>
+                            <BoldDiv>
+                              <PersonName person={child} format="First Last" />
+                            </BoldDiv>
+                            <DecisionTypeNameList>
+                              {undecidedTypes.map((type) => (
+                                <li key={type}>
+                                  {t.decisions.applicationDecisions.type[type]}
+                                </li>
+                              ))}
+                            </DecisionTypeNameList>
+                          </div>
+                        )
+                      )}
+                      <ResponsiveLinkButton>
+                        {t.decisions.applicationDecisions.confirmationLink}
+                      </ResponsiveLinkButton>
+                    </>
+                  )
+                )}
+                <BoldDiv>
+                  {t.decisions.applicationDecisions.information}
+                </BoldDiv>
+              </UnconfirmedColumn>
+            </UnconfirmedDecisionsBox>
           </>
         )}
       </ContentArea>
@@ -205,3 +264,53 @@ export default React.memo(function Decisions() {
 
 const applicationDecisionIsUnread = (decision: DecisionSummary) =>
   decision.status === 'PENDING'
+
+const UnconfirmedDecisionsBox = styled.div`
+  display: flex;
+  gap: ${defaultMargins.s};
+  background-color: #ffeee0;
+  border: 1px solid ${colors.status.warning};
+  border-radius: ${defaultMargins.xxs};
+  padding: ${defaultMargins.s};
+
+  @media (max-width: ${tabletMin}) {
+    flex-direction: column;
+    align-items: center;
+  }
+`
+
+const IconContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ${defaultMargins.XL};
+  min-width: ${defaultMargins.XL};
+  height: ${defaultMargins.XL};
+  background: ${colors.status.warning};
+  border-radius: 100%;
+`
+const GavelIcon = styled(FontAwesomeIcon)`
+  width: ${defaultMargins.m};
+  height: ${defaultMargins.m};
+`
+const UnconfirmedColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.s};
+`
+const UnconfirmedHeader = styled(H2)`
+  margin-block: ${defaultMargins.xs};
+`
+const BoldDiv = styled.div`
+  font-weight: 600;
+`
+const DecisionTypeNameList = styled.ul`
+  margin-block-start: ${defaultMargins.xxs};
+  margin-block-end: ${defaultMargins.s};
+  padding-inline-start: ${defaultMargins.m};
+`
+const ResponsiveLinkButton = styled(LinkButton)`
+  @media (max-width: ${tabletMin}) {
+    width: 100%;
+  }
+`

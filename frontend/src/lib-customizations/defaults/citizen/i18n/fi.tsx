@@ -1651,19 +1651,10 @@ export default {
     title: 'Päätökset',
     childhoodEducationTitle:
       'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
-    summary: (
-      <P width="800px">
-        Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen,
-        kerhoon ja maksuihin liittyvät päätökset.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
-        <strong>sinun tulee vastata kahden viikon sisällä</strong>, hyväksytkö
-        vai hylkäätkö lapselle tarjotun paikan.
-      </P>
-    ),
+    summary:
+      'Tältä sivulta löydät varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset sekä maksuihin liittyvät päätökset.',
     unconfirmedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
+      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa huoltajan vahvistusta`,
     noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
     unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
@@ -1682,13 +1673,13 @@ export default {
     applicationDecisions: {
       decision: 'Päätös',
       type: {
-        CLUB: 'kerhosta',
-        DAYCARE: 'varhaiskasvatuksesta',
-        DAYCARE_PART_TIME: 'osa-aikaisesta varhaiskasvatuksesta',
-        PRESCHOOL: 'esiopetuksesta',
-        PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta',
-        PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
+        CLUB: 'Kerho',
+        DAYCARE: 'Varhaiskasvatus',
+        DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+        PRESCHOOL: 'Esiopetus',
+        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho',
+        PREPARATORY_EDUCATION: 'Valmistava opetus'
       },
       childName: 'Lapsen nimi',
       unit: 'Toimipaikka',
@@ -1711,7 +1702,9 @@ export default {
       },
       goToConfirmation:
         'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
-      confirmationLink: 'Siirry vastaamaan',
+      confirmationLink: 'Lue ja vahvista',
+      information:
+        'Vahvista päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
       response: {
         title: 'Paikan hyväksyminen tai hylkääminen',
         accept1: 'Otamme paikan vastaan',

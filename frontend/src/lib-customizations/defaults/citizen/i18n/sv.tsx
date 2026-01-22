@@ -1639,16 +1639,8 @@ const sv: Translations = {
     title: 'Beslut',
     childhoodEducationTitle:
       'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
-    summary: (
-      <P width="800px">
-        Till denna sidan kommer beslut gällande betalningar, barnets ansökan
-        till småbarnspedagogik, förskola och klubbverksamhet.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Om beslutet gäller en ny sökt plats för barnet ska du svara inom två
-        veckor om du tar emot eller inte tar emot platsen.
-      </P>
-    ),
+    summary:
+      'På denna sida hittar du beslut som gäller småbarnspedagogik, förskoleundervisning och klubbar samt beslut som gäller avgifter.',
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
     noUnconfirmedDecisions: 'alla beslut bekräftade',
     unreadDecision: 'oläst beslut',
@@ -1698,6 +1690,8 @@ const sv: Translations = {
       goToConfirmation:
         'Gå till beslutet för att läsa det och svara om du tar emot eller avvisar platsen.',
       confirmationLink: 'Gå vidare för att bekräfta',
+      information:
+        'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
       response: {
         title: 'Mottagande eller avvisande av plats',
         accept1: 'Vi tar emot platsen från och med',
