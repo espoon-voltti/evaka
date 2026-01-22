@@ -48,7 +48,7 @@
     "lib-customizations": "link:src/lib-customizations",
     "lib-icons": "link:src/lib-icons",
     "linkify-it": "5.0.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "polished": "4.3.1",
     "punycode": "2.3.1",
     "react": "19.2.3",
