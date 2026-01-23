@@ -17,6 +17,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
@@ -243,6 +245,10 @@ class VardaUpdater(
             }
             logger.info { "Varda update succeeded for child $childId" }
         } catch (e: Exception) {
+            Span.current().also {
+                it.setStatus(StatusCode.ERROR)
+                it.recordException(e)
+            }
             logger.error(e) { "Varda update failed for child $childId" }
             if (saveState) {
                 dbc.transaction { tx -> tx.setVardaUpdateError(childId, now, e.localizedMessage) }
