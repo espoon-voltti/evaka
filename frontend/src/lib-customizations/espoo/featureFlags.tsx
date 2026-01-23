@@ -133,7 +133,7 @@ const features: Features = {
     archiveIntegration: {
       childDocuments: true
     },
-    aromiIntegration: false,
+    aromiIntegration: true,
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
     showCitizenApplicationPreschoolTerms: false,
