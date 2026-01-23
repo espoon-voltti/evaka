@@ -1637,8 +1637,6 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
-    childhoodEducationTitle:
-      'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
     summary:
       'På denna sida hittar du beslut som gäller småbarnspedagogik, förskoleundervisning och klubbar samt beslut som gäller avgifter.',
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
@@ -1660,13 +1658,13 @@ const sv: Translations = {
     applicationDecisions: {
       decision: 'Beslut',
       type: {
-        CLUB: 'klubbverksamhet',
-        DAYCARE: 'småbarnspedagogik',
-        DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
-        PRESCHOOL: 'förskola',
-        PRESCHOOL_DAYCARE: 'kompletterande småbarnspedagogik',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (sv)',
-        PREPARATORY_EDUCATION: 'förberedande undervisning'
+        CLUB: 'Klubbverksamhet',
+        DAYCARE: 'Småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Deldag småbarnspedagogik',
+        PRESCHOOL: 'Förskola',
+        PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho (sv)',
+        PREPARATORY_EDUCATION: 'Förberedande undervisning'
       },
       childName: 'Barnets namn',
       unit: 'Enhet',
@@ -1681,14 +1679,6 @@ const sv: Translations = {
         ACCEPTED: 'Bekräftad',
         REJECTED: 'Avvisad'
       },
-      confirmationInfo: {
-        preschool:
-          'Du ska omedelbart eller senast två veckor från mottagandet av detta beslut, ta emot eller annullera platsen. Du kan ta emot eller annullera platsen elektroniskt på adressen espoonvarhaiskasvatus.fi (kräver identifiering) eller per post.',
-        default:
-          'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen.'
-      },
-      goToConfirmation:
-        'Gå till beslutet för att läsa det och svara om du tar emot eller avvisar platsen.',
       confirmationLink: 'Gå vidare för att bekräfta',
       information:
         'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',

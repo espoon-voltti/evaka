@@ -117,6 +117,7 @@ export type CollapsibleContentAreaProps = ContentAreaProps & {
   open: boolean
   toggleOpen: () => void
   title: ReactNode
+  alwaysShownContent?: ReactNode
   children: ReactNode
   countIndicator?:
     | number
@@ -138,6 +139,7 @@ export const CollapsibleContentArea = React.memo(
     open,
     toggleOpen,
     title,
+    alwaysShownContent,
     children,
     countIndicator = 0,
     countIndicatorColor,
@@ -190,6 +192,7 @@ export const CollapsibleContentArea = React.memo(
             />
           </IconContainer>
         </TitleContainer>
+        {alwaysShownContent}
         <Collapsible open={open} $slim={slim}>
           {open && children}
         </Collapsible>

@@ -16,7 +16,7 @@ import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import LinkButton from 'lib-components/atoms/buttons/LinkButton'
+import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -195,8 +195,40 @@ export default React.memo(function Decisions() {
           </>
         )}
       </ContentArea>
+      {renderResult(
+        childrenWithSortedDecisions,
+        (childrenWithSortedDecisions) => (
+          <>
+            {childrenWithSortedDecisions.map((child) => (
+              <Fragment key={child.id}>
+                <Gap size="s" />
+                <ContentArea
+                  opaque
+                  paddingVertical="s"
+                  paddingHorizontal="s"
+                  data-qa={`child-decisions-${child.id}`}
+                >
+                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
+                    <PersonName person={child} format="First Last" />
+                  </H2>
+                  {child.decisions.map((decision) => (
+                    <Fragment key={decision.id}>
+                      <FullWidthSeparator />
+                      <ApplicationDecision
+                        {...decision}
+                        canDecide={child.decidableApplications.includes(
+                          decision.applicationId
+                        )}
+                      />
+                    </Fragment>
+                  ))}
+                </ContentArea>
+              </Fragment>
+            ))}
+          </>
+        )
+      )}
       <Gap size="s" />
-
       {renderResult(sortedFinanceDecisions, (decisions) => (
         <FixedSpaceColumn>
           <ContentArea opaque paddingVertical="L">
@@ -214,50 +246,7 @@ export default React.memo(function Decisions() {
           </ContentArea>
         </FixedSpaceColumn>
       ))}
-
-      {renderResult(
-        childrenWithSortedDecisions,
-        (childrenWithSortedDecisions) => (
-          <>
-            <Gap size="s" />
-            <ContentArea opaque paddingVertical="L">
-              <H2 noMargin>{t.decisions.childhoodEducationTitle}</H2>
-            </ContentArea>
-            <Gap size="s" />
-            <FixedSpaceColumn>
-              {childrenWithSortedDecisions.map((child) => (
-                <ContentArea
-                  key={child.id}
-                  opaque
-                  paddingVertical="L"
-                  data-qa={`child-decisions-${child.id}`}
-                >
-                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
-                    <PersonName person={child} format="First Last" />
-                  </H2>
-                  {child.decisions.map((decision) => (
-                    <Fragment key={decision.id}>
-                      <HorizontalLine dashed slim />
-                      <ApplicationDecision
-                        {...decision}
-                        permittedActions={
-                          child.applicationDecisionPermittedActions[
-                            decision.id
-                          ] ?? new Set()
-                        }
-                        canDecide={child.decidableApplications.includes(
-                          decision.applicationId
-                        )}
-                      />
-                    </Fragment>
-                  ))}
-                </ContentArea>
-              ))}
-            </FixedSpaceColumn>
-          </>
-        )
-      )}
-      <Gap size="s" />
+      <Gap size="s" />{' '}
     </Container>
   )
 })
@@ -309,8 +298,12 @@ const DecisionTypeNameList = styled.ul`
   margin-block-end: ${defaultMargins.s};
   padding-inline-start: ${defaultMargins.m};
 `
-const ResponsiveLinkButton = styled(LinkButton)`
-  @media (max-width: ${tabletMin}) {
-    width: 100%;
-  }
+
+const FullWidthSeparator = styled.hr`
+  width: calc(100% + ${defaultMargins.s} * 2);
+  border: none;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: ${colors.grayscale.g15};
+  margin: ${defaultMargins.s} -${defaultMargins.s};
 `
