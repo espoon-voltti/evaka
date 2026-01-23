@@ -1649,8 +1649,6 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
-    childhoodEducationTitle:
-      'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
     summary:
       'Tältä sivulta löydät varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset sekä maksuihin liittyvät päätökset.',
     unconfirmedDecisions: (n: number) =>
@@ -1690,18 +1688,10 @@ export default {
       summary:
         'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
       status: {
-        PENDING: 'Vahvistettavana huoltajalla',
+        PENDING: 'Odottaa vahvistusta',
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
-      confirmationInfo: {
-        preschool:
-          'Esiopetuksen, valmistavan opetuksen ja/tai liittyvän varhaiskasvatuksen hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta. Jos olet hakenut useampaa palvelua, saat jokaisesta oman päätöksen erikseen vahvistettavaksi',
-        default:
-          'Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta.'
-      },
-      goToConfirmation:
-        'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
       confirmationLink: 'Lue ja vahvista',
       information:
         'Vahvista päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',

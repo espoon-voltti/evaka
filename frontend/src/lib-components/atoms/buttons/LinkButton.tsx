@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 
+import { tabletMin } from '../../breakpoints'
+
 import { buttonBorderRadius } from './button-commons'
 
-export default styled.a`
+const baseStyles = css`
   -webkit-font-smoothing: antialiased;
   text-size-adjust: 100%;
   box-sizing: inherit;
@@ -18,7 +20,7 @@ export default styled.a`
   min-width: 100px;
   text-align: center;
   overflow-x: hidden;
-  border: 1px solid ${(p) => p.theme.colors.main.m2};
+  border: 1px solid;
   border-radius: ${buttonBorderRadius};
   outline: none;
   cursor: pointer;
@@ -28,23 +30,58 @@ export default styled.a`
   font-weight: ${fontWeights.semibold};
   white-space: nowrap;
   letter-spacing: 0.2px;
-  color: ${(p) => p.theme.colors.grayscale.g0};
-  background-color: ${(p) => p.theme.colors.main.m2};
   margin-right: 0;
   text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  &:hover {
-    background-color: ${(p) => p.theme.colors.main.m2Hover};
-  }
   &:focus {
     box-shadow:
       0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
       0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
   }
+`
+
+const primaryStyles = css`
+  border-color: ${(p) => p.theme.colors.main.m2};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+  background-color: ${(p) => p.theme.colors.main.m2};
+
+  &:hover {
+    background-color: ${(p) => p.theme.colors.main.m2Hover};
+  }
+
   &:active {
     background-color: ${(p) => p.theme.colors.main.m2Active};
   }
 `
+
+const secondaryStyles = css`
+  border-color: ${(p) => p.theme.colors.main.m2};
+  color: ${(p) => p.theme.colors.main.m2};
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+  &:hover {
+    background-color: ${(p) => p.theme.colors.main.m2};
+    color: ${(p) => p.theme.colors.grayscale.g0};
+  }
+
+  &:active {
+    background-color: ${(p) => p.theme.colors.main.m2Active};
+    color: ${(p) => p.theme.colors.grayscale.g0};
+  }
+`
+
+const LinkButton = styled.a<{ $style?: 'primary' | 'secondary' }>`
+  ${baseStyles}
+  ${(p) => (p.$style === 'secondary' ? secondaryStyles : primaryStyles)}
+`
+
+export const ResponsiveLinkButton = styled(LinkButton)`
+  @media (max-width: ${tabletMin}) {
+    width: 100%;
+  }
+`
+
+export default LinkButton

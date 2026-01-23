@@ -48,7 +48,7 @@ export const MetadataSection = React.memo(function MetadataSection({
   )
 })
 
-const MetadataResultSection = React.memo(function MetadataResultSection<
+export const MetadataResultSection = React.memo(function MetadataResultSection<
   Q extends ProcessMetadataQuery
 >({ query }: { query: Q }) {
   const metadataResult = useQueryResult(query)

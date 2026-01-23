@@ -1682,8 +1682,6 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
-    childhoodEducationTitle:
-      'Decisions regarding child’s early childhood education, pre-primary education and clubs',
     summary:
       'This page contains decisions regarding early childhood education, pre-primary education and clubs as well as decisions regarding fees.',
     unconfirmedDecisions: (n: number) =>
@@ -1708,14 +1706,14 @@ const en: Translations = {
     applicationDecisions: {
       decision: 'Decision of',
       type: {
-        CLUB: 'club',
-        DAYCARE: 'early childhood education',
-        DAYCARE_PART_TIME: 'part-day early childhood education',
-        PRESCHOOL: 'pre-primary education',
+        CLUB: 'Club',
+        DAYCARE: 'Early childhood education',
+        DAYCARE_PART_TIME: 'Part-day early childhood education',
+        PRESCHOOL: 'Pre-primary education',
         PRESCHOOL_DAYCARE:
-          'early childhood education related to pre-primary education',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (en)',
-        PREPARATORY_EDUCATION: 'preparatory education'
+          'Early childhood education related to pre-primary education',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
+        PREPARATORY_EDUCATION: 'Preparatory education'
       },
       childName: "Child's name",
       unit: 'Unit',
@@ -1730,14 +1728,6 @@ const en: Translations = {
         ACCEPTED: 'Confirmed',
         REJECTED: 'Rejected'
       },
-      confirmationInfo: {
-        preschool:
-          'You must either accept or reject the place proposed in the decision of pre-primary education, preparatory education and/or early childhood education related to pre-primary education within two weeks of receiving this notification. If you have applied for several services, you will receive separate decisions for each of them that require your action.',
-        default:
-          'You must either accept or reject the place proposed in the decision within two weeks of receiving this notification.'
-      },
-      goToConfirmation:
-        'Please open the decision and respond whether you will accept or reject the place.',
       confirmationLink: 'Review and confirm the decision',
       information:
         'Confirm the decisions immediately or no later than two weeks from receiving the notification.',
