@@ -64,7 +64,18 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
             (
                 $sfiDeliverySelect
                 WHERE sm.document_id = cd.id
-            ) AS sfi_deliveries
+            ) AS sfi_deliveries,
+            (
+                SELECT coalesce(jsonb_agg(
+                    jsonb_build_object(
+                        'versionNumber', version_number,
+                        'createdAt', created_at,
+                        'downloadPath', '/employee/child-documents/' || ${bind(documentId)} || '/pdf?version=' || version_number
+                    ) ORDER BY version_number DESC
+                ), '[]'::jsonb)
+                FROM child_document_pdf_version
+                WHERE child_document_id = cd.id
+            ) AS versions
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
@@ -98,6 +109,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                 downloadPath = "/employee/child-documents/$documentId/pdf",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
+                versions = jsonColumn("versions")
             )
         }
         .exactlyOne()

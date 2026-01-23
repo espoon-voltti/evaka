@@ -75,169 +75,14 @@ Instead of replacing the PDF, the system should:
 
 **Implementation details**: See detailed summary documents for transactional safety improvements, access control implementation, and code refactoring details
 
-## Phase 3: API & Controller Changes
+## Phase 3: API & Controller Changes ✅ COMPLETED
 
-### Data Classes
-
-**File: `ProcessMetadataController.kt`**
-Add new data class for document versions:
-
-```kotlin
-data class DocumentVersion(
-    val versionNumber: Int,
-    val createdAt: HelsinkiDateTime,
-    val downloadPath: String
-)
-
-// Update existing DocumentMetadata to include versions
-data class DocumentMetadata(
-    val documentId: UUID,
-    val name: String,
-    val createdAtDate: LocalDate?,
-    val createdAtTime: LocalTime?,
-    @Nested("created_by") val createdBy: EvakaUser?,
-    val confidential: Boolean?,
-    @Nested("confidentiality") val confidentiality: DocumentConfidentiality?,
-    val downloadPath: String?,  // Latest version (backward compat)
-    val receivedBy: DocumentOrigin?,
-    val sfiDeliveries: List<SfiDelivery>,
-    val versions: List<DocumentVersion> = emptyList()  // All versions
-)
-```
-
-### Metadata Query
-
-**File: `ProcessMetadataQueries.kt`**
-Update `getChildDocumentMetadata()`:
-
-```kotlin
-fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
-    createQuery {
-        sql("""
-            SELECT 
-                dt.id,
-                dt.name,
-                cd.created,
-                e.id AS created_by_id,
-                e.name AS created_by_name,
-                e.type AS created_by_type,
-                dt.confidential,
-                dt.confidentiality_duration_years,
-                dt.confidentiality_basis,
-                cd.document_key,
-                (
-                    $sfiDeliverySelect
-                    WHERE sm.document_id = cd.id
-                ) AS sfi_deliveries,
-                (
-                    SELECT coalesce(jsonb_agg(
-                        jsonb_build_object(
-                            'versionNumber', version_number,
-                            'createdAt', created_at,
-                            'downloadPath', '/employee/child-documents/' || ${bind(documentId)} || '/pdf?version=' || version_number
-                        ) ORDER BY version_number DESC
-                    ), '[]'::jsonb)
-                    FROM child_document_pdf_version
-                    WHERE child_document_id = cd.id
-                ) AS versions
-            FROM child_document cd
-            JOIN document_template dt ON dt.id = cd.template_id
-            LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
-            WHERE cd.id = ${bind(documentId)}
-        """)
-    }
-    .map {
-        val createdAt = column<HelsinkiDateTime>("created")
-        DocumentMetadata(
-            documentId = column("id"),
-            name = column("name"),
-            createdAtDate = createdAt.toLocalDate(),
-            createdAtTime = createdAt.toLocalTime(),
-            createdBy = column<EvakaUserId?>("created_by_id")?.let {
-                EvakaUser(
-                    id = it,
-                    name = column("created_by_name"),
-                    type = column("created_by_type"),
-                )
-            },
-            confidential = column("confidential"),
-            confidentiality = if (column<Boolean>("confidential")) {
-                DocumentConfidentiality(
-                    durationYears = column("confidentiality_duration_years"),
-                    basis = column("confidentiality_basis"),
-                )
-            } else null,
-            downloadPath = "/employee/child-documents/$documentId/pdf",
-            receivedBy = null,
-            sfiDeliveries = jsonColumn("sfi_deliveries"),
-            versions = jsonColumn("versions")
-        )
-    }
-    .exactlyOne()
-```
-
-### Controller Changes
-
-**File: `ChildDocumentController.kt`**
-Add version parameter to download endpoint:
-
-```kotlin
-@GetMapping("/{documentId}/pdf")
-fun downloadChildDocument(
-    db: Database,
-    user: AuthenticatedUser.Employee,
-    clock: EvakaClock,
-    @PathVariable documentId: ChildDocumentId,
-    @RequestParam(required = false) version: Int?
-): ResponseEntity<Any> {
-    return db.connect { dbc ->
-        dbc.read { tx ->
-            accessControl.requirePermissionFor(
-                tx,
-                user,
-                clock,
-                Action.ChildDocument.DOWNLOAD,
-                documentId
-            )
-            childDocumentService.getPdfResponse(tx, documentId, version)
-        }
-    }.also {
-        Audit.ChildDocumentDownload.log(
-            targetId = AuditId(documentId),
-            meta = version?.let { mapOf("version" to it) } ?: emptyMap()
-        )
-    }
-}
-```
-
-**File: `ChildDocumentControllerCitizen.kt`**
-Keep citizen endpoint simple (no version parameter - always latest):
-
-```kotlin
-@GetMapping("/{documentId}/pdf")
-fun downloadChildDocument(
-    db: Database,
-    user: AuthenticatedUser.Citizen,
-    clock: EvakaClock,
-    @PathVariable documentId: ChildDocumentId,
-): ResponseEntity<Any> {
-    return db.connect { dbc ->
-        dbc.read { tx ->
-            accessControl.requirePermissionFor(
-                tx,
-                user,
-                clock,
-                Action.Citizen.ChildDocument.DOWNLOAD,
-                documentId
-            )
-            // Citizens always get latest version (no version parameter)
-            childDocumentService.getPdfResponse(tx, documentId, null)
-        }
-    }.also {
-        Audit.ChildDocumentDownloadCitizen.log(targetId = AuditId(documentId))
-    }
-}
-```
+**Summary**:
+- Added `DocumentVersion` data class to represent individual PDF versions
+- Updated `DocumentMetadata` to include `versions` list (backward compatible with default empty list)
+- Modified metadata query to fetch all versions from `child_document_pdf_version` table
+- Employee download endpoint already supports optional `version` parameter (ADMIN only for specific versions)
+- Citizen download endpoint always returns latest version (no version parameter)
 
 ## Phase 4: Access Control
 
@@ -250,29 +95,18 @@ Citizens can only download the latest version (no version parameter available in
 
 ## Implementation Summary
 
-### Changes by File:
-1. **Migration**: `V{next}__child_document_versioned_pdfs.sql` - Create table, migrate data
-2. **DocumentKey.kt** - Add version parameter to `ChildDocument` constructor
-3. **ChildDocumentQueries.kt** - Add 4 new query functions for versioned PDFs
-4. **ChildDocumentService.kt** - Update `createAndUploadPdf()` and `getPdfResponse()`
-5. **ProcessMetadataController.kt** - Add `DocumentVersion` data class, update `DocumentMetadata`
-6. **ProcessMetadataQueries.kt** - Update `getChildDocumentMetadata()` to include versions
-7. **ChildDocumentController.kt** - Add `version` query parameter to download endpoint
-8. **ChildDocumentControllerCitizen.kt** - No changes (citizens always get latest)
+### Completed Changes (Phases 1-3):
+- Database schema with `child_document_pdf_version` table
+- PDF generation now creates versioned files instead of replacing
+- Metadata endpoint returns list of all versions
+- Download endpoints support version parameter (admin only for specific versions)
+- Backward compatibility maintained throughout
 
-### Backward Compatibility:
-- Existing `downloadPath` field still works (points to latest version)
-- `child_document.document_key` column remains (will be deprecated in future)
-- Old PDFs in S3 remain unchanged (new versions use versioned naming)
-- Default download behavior unchanged (no version param = latest)
-
-### Testing Considerations:
-- Test migration with existing documents
-- Test PDF generation creates new versions
-- Test version download with valid/invalid version numbers
-- Test metadata endpoint shows all versions
-- Test citizen endpoint only gets latest version
-- Test access control for version downloads
+### Files Modified:
+- Migration: `V576__child_document_versioned_pdfs.sql`
+- `DocumentKey.kt`, `ChildDocumentQueries.kt`, `ChildDocumentService.kt`
+- `ProcessMetadataController.kt`, `ProcessMetadataQueries.kt`
+- Access control already in place (no changes needed)
 
 ## Future Considerations
 
