@@ -198,6 +198,19 @@ export function sessionSupport<T extends SessionType>(
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (user.authType === 'sfi' && user.ssnHash) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
+      const key = sfiSessionsKey(user.ssnHash)
+      const sessionIds = await redisClient.sMembers(key)
+      if (sessionIds.length > 0) {
+        await redisClient.del(
+          sessionIds.map((sessionId) => `sess:${sessionId}`)
+        )
+        await redisClient.del(key)
+      }
+    }
+
     return user
   }
 
