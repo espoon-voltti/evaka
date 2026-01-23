@@ -45,6 +45,12 @@ data class SfiDelivery(val time: HelsinkiDateTime, val method: SfiMethod, val re
 
 data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val basis: String)
 
+data class DocumentVersion(
+    val versionNumber: Int,
+    val createdAt: HelsinkiDateTime,
+    val downloadPath: String
+)
+
 data class DocumentMetadata(
     val documentId: UUID,
     val name: String,
@@ -56,6 +62,7 @@ data class DocumentMetadata(
     val downloadPath: String?,
     val receivedBy: DocumentOrigin?,
     val sfiDeliveries: List<SfiDelivery>,
+    val versions: List<DocumentVersion> = emptyList()
 )
 
 data class ProcessMetadata(
