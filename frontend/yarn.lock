@@ -3291,10 +3291,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:4.6.1":
-  version: 4.6.1
-  resolution: "@sentry/babel-plugin-component-annotate@npm:4.6.1"
-  checksum: 10/8aff72493b2b5aeeb67887054dcb52a3faf4a1b9cf2888f576467df1954ee9784409eef210043c4f3a571958fcd01e940a28cfa5758c7393239405ab5fec7628
+"@sentry/babel-plugin-component-annotate@npm:4.6.2":
+  version: 4.6.2
+  resolution: "@sentry/babel-plugin-component-annotate@npm:4.6.2"
+  checksum: 10/b4fb63f00e95ac8adee299130051cd89c01d5ed987898ba84be243611daf9b3692f6eb19370c01dfaad1a3b7c0ca3211968f93b0cb9418932a7492faf07109ad
   languageName: node
   linkType: hard
 
@@ -3311,19 +3311,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugin-core@npm:4.6.1":
-  version: 4.6.1
-  resolution: "@sentry/bundler-plugin-core@npm:4.6.1"
+"@sentry/bundler-plugin-core@npm:4.6.2":
+  version: 4.6.2
+  resolution: "@sentry/bundler-plugin-core@npm:4.6.2"
   dependencies:
     "@babel/core": "npm:^7.18.5"
-    "@sentry/babel-plugin-component-annotate": "npm:4.6.1"
+    "@sentry/babel-plugin-component-annotate": "npm:4.6.2"
     "@sentry/cli": "npm:^2.57.0"
     dotenv: "npm:^16.3.1"
     find-up: "npm:^5.0.0"
     glob: "npm:^10.5.0"
     magic-string: "npm:0.30.8"
     unplugin: "npm:1.0.1"
-  checksum: 10/9144b5dca6cb3846600e5829a95e183e89fbde05236a20402897d9eecc10b4f11bb94259777cdac9736deaf49d1c5ac7d9d3ef4f11bccb60981ce086d35e7abe
+  checksum: 10/dca517445e9522267c4d25f7604f056aa5c95d5575f2245f0e410413a12663b36ac45b144c1fe7e1388e44a8d213e5824ae78616594ac0cc7e9c5b4a87d3c05c
   languageName: node
   linkType: hard
 
@@ -3442,13 +3442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/vite-plugin@npm:4.6.1":
-  version: 4.6.1
-  resolution: "@sentry/vite-plugin@npm:4.6.1"
+"@sentry/vite-plugin@npm:4.6.2":
+  version: 4.6.2
+  resolution: "@sentry/vite-plugin@npm:4.6.2"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:4.6.1"
+    "@sentry/bundler-plugin-core": "npm:4.6.2"
     unplugin: "npm:1.0.1"
-  checksum: 10/241d87ff753e874007cfb5a2712e41341ebeae681771e3c5234601e15caaa96d14d0f9e0ca07abc0004aa21b735a03b79a3f68ddec43fca3331b1ab43fd3652d
+  checksum: 10/449a568a5deed252b20e2f1466bbd7de8d2b34abef4f6c70d55551568796117f27044f60fa4afd0e57256422f17cf4fb93ec2c79dd043c357461645e2aa6def4
   languageName: node
   linkType: hard
 
@@ -6429,7 +6429,7 @@ __metadata:
     "@react-spring/web": "npm:10.0.3"
     "@sentry/browser": "npm:10.33.0"
     "@sentry/react": "npm:10.33.0"
-    "@sentry/vite-plugin": "npm:4.6.1"
+    "@sentry/vite-plugin": "npm:4.6.2"
     "@tanstack/react-query": "npm:5.90.19"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"
