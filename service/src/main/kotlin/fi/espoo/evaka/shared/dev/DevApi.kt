@@ -1536,6 +1536,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             CalendarEventNotificationData(
                                 HtmlSafe("Esimerkki 1"),
                                 FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
+                                listOf(HtmlSafe("Ryhmä A")),
                             ),
                             CalendarEventNotificationData(
                                 HtmlSafe("Esimerkki 2"),
@@ -1543,6 +1544,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     LocalDate.now().plusDays(7),
                                     LocalDate.now().plusDays(7),
                                 ),
+                                listOf(HtmlSafe("Ryhmä B"), HtmlSafe("Ryhmä C")),
                             ),
                         ),
                     )
