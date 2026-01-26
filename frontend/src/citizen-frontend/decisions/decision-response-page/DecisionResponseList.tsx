@@ -3,20 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { useIdRouteParam } from 'lib-common/useRouteParams'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, P } from 'lib-components/typography'
+import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faExclamation } from 'lib-icons'
 
@@ -24,18 +20,15 @@ import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { decisionsOfApplicationQuery } from '../queries'
+import { pendingDecisionsQuery } from '../queries'
 
 import DecisionResponse from './DecisionResponse'
 
 export default React.memo(function DecisionResponseList() {
-  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const t = useTranslation()
   const [, navigate] = useLocation()
 
-  const decisionsRequest = useQueryResult(
-    decisionsOfApplicationQuery({ applicationId })
-  )
+  const decisionsRequest = useQueryResult(pendingDecisionsQuery())
 
   const [
     displayDecisionWithNoResponseWarning,
@@ -77,22 +70,19 @@ export default React.memo(function DecisionResponseList() {
         />
         <Gap size="s" />
         <Main>
-          <ContentArea opaque>
-            <H1>{t.decisions.title}</H1>
-            {renderResult(decisionsRequest, (decisions) => (
-              <div>
-                <P width="800px">{t.decisions.applicationDecisions.summary}</P>
-                {unconfirmedDecisionsCount > 0 ? (
-                  <AlertBox
-                    message={t.decisions.unconfirmedDecisions(
-                      unconfirmedDecisionsCount
-                    )}
-                    data-qa="alert-box-unconfirmed-decisions-count"
-                  />
-                ) : null}
-                <Gap size="L" />
-                {sortDecisions(decisions).map((decision, i) => (
-                  <React.Fragment key={decision.decision.id}>
+          <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
+            <H1 noMargin>
+              {t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)}
+            </H1>
+            <Gap size="s" />
+            <div>{t.decisions.applicationDecisions.summary}</div>
+          </ContentArea>
+          <Gap size="s" />
+          {renderResult(decisionsRequest, (decisions) => (
+            <Fragment>
+              {sortDecisions(decisions).map((decision, i) => (
+                <Fragment key={decision.decision.id}>
+                  <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
                     <DecisionResponse
                       decision={decision.decision}
                       permittedActions={new Set(decision.permittedActions)}
@@ -103,14 +93,15 @@ export default React.memo(function DecisionResponseList() {
                       blocked={isDecisionBlocked(decision, decisions)}
                       rejectCascade={isRejectCascaded(decision, decisions)}
                       handleReturnToPreviousPage={handleReturnToPreviousPage}
+                      headerCounter={`${i + 1}/${decisions.length}`}
                     />
-                    {i < decisions.length - 1 ? <HorizontalLine /> : null}
-                  </React.Fragment>
-                ))}
-              </div>
-            ))}
-            <Gap size="m" />
-          </ContentArea>
+                  </ContentArea>
+                  <Gap size="s" />
+                </Fragment>
+              ))}
+            </Fragment>
+          ))}
+          <Gap size="m" />
           {displayDecisionWithNoResponseWarning && (
             <InfoModal
               title={
@@ -167,9 +158,10 @@ const isDecisionBlocked = (
   (decision.type === 'PRESCHOOL_DAYCARE' ||
     decision.type === 'PRESCHOOL_CLUB') &&
   allDecisions.find(
-    ({ decision: { type, status } }) =>
+    ({ decision: { type, status, applicationId } }) =>
       ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(type) &&
-      status !== 'ACCEPTED'
+      status !== 'ACCEPTED' &&
+      applicationId === decision.applicationId
   ) !== undefined
 
 const isRejectCascaded = (
@@ -178,7 +170,8 @@ const isRejectCascaded = (
 ) =>
   ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
   allDecisions.find(
-    ({ decision: { type, status } }) =>
+    ({ decision: { type, status, applicationId } }) =>
       (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
-      status === 'PENDING'
+      status === 'PENDING' &&
+      applicationId === decision.applicationId
   ) !== undefined
