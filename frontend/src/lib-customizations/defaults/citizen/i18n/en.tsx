@@ -2099,6 +2099,8 @@ const en: Translations = {
           The income statement and its attachments must be submitted within two
           weeks of the beginning of early childhood education. In case of
           incomplete income information, the fee may be set at the highest fee.
+          Incorrect income information will not be corrected retroactively after
+          the deadline for requesting administrative review.
         </P>
         <P>
           The client fee is charged from the first day of early education in
