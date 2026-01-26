@@ -45,7 +45,7 @@ function userSessionsKey(userIdHash: string) {
   return `usess:${userIdHash}`
 }
 
-function sfiSessionsKey(sfiNameId: string) {
+function secondarySfiSessionsKey(sfiNameId: string) {
   return `sfisess:${sfiNameId}`
 }
 
@@ -72,6 +72,7 @@ export interface Sessions<T extends SessionType> {
 
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
+  getSecondaryUser(req: express.Request): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
 }
@@ -199,15 +200,16 @@ export function sessionSupport<T extends SessionType>(
     if (!user) return
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (user.authType === 'sfi' && user.ssnHash) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
-      const key = sfiSessionsKey(user.ssnHash)
-      const sessionIds = await redisClient.sMembers(key)
-      if (sessionIds.length > 0) {
-        await redisClient.del(
-          sessionIds.map((sessionId) => `sess:${sessionId}`)
-        )
-        await redisClient.del(key)
+    if (user?.authType === 'sfi') {
+      const secondarySession = await redisClient.get(
+        secondarySfiSessionsKey(sid)
+      )
+      if (secondarySession) {
+        await redisClient.del(sessionKey(secondarySession))
+        await redisClient.del([
+          secondarySfiSessionsKey(sid),
+          secondarySfiSessionsKey(secondarySession)
+        ])
       }
     }
 
@@ -232,6 +234,7 @@ export function sessionSupport<T extends SessionType>(
   async function destroy(req: express.Request, res: express.Response) {
     logDebug('Destroying session', req)
     const logoutToken = req.session?.logoutToken?.value
+    const sessionId = req.session?.id
 
     if (req.session) {
       await fromCallback((cb) => req.session.destroy(cb))
@@ -248,14 +251,16 @@ export function sessionSupport<T extends SessionType>(
       }
     }
 
-    if (req.user?.authType === 'sfi' && req.user.ssnHash) {
-      const key = sfiSessionsKey(req.user.ssnHash)
-      const sessionIds = await redisClient.sMembers(key)
-      if (sessionIds.length > 0) {
-        await redisClient.del(
-          sessionIds.map((sessionId) => `sess:${sessionId}`)
-        )
-        await redisClient.del(key)
+    if (req.user?.authType === 'sfi' && sessionId) {
+      const secondarySession = await redisClient.get(
+        secondarySfiSessionsKey(sessionId)
+      )
+      if (secondarySession) {
+        await redisClient.del(sessionKey(secondarySession))
+        await redisClient.del([
+          secondarySfiSessionsKey(sessionId),
+          secondarySfiSessionsKey(secondarySession)
+        ])
       }
     }
   }
@@ -289,23 +294,64 @@ export function sessionSupport<T extends SessionType>(
         .exec()
     }
 
-    if (
-      req.session.id &&
-      user.authType === 'sfi' &&
-      user.ssnHash &&
-      maxSessionTimeoutMinutes
-    ) {
-      const key = sfiSessionsKey(user.ssnHash)
-      await redisClient
-        .multi()
-        .sAdd(key, req.session.id)
-        .expire(key, maxSessionTimeoutMinutes * 60)
-        .exec()
+    if (req.session.id && user.authType === 'sfi' && maxSessionTimeoutMinutes) {
+      let primarySession: string | undefined
+      let secondarySession: string | undefined
+      if (
+        user.userType === 'EMPLOYEE' &&
+        req.signedCookies['evaka.eugw.session'] &&
+        typeof req.signedCookies['evaka.eugw.session'] === 'string'
+      ) {
+        primarySession = req.session.id
+        secondarySession = req.signedCookies['evaka.eugw.session']
+      }
+      if (
+        user.userType === 'CITIZEN_STRONG' &&
+        req.signedCookies['evaka.employee.session'] &&
+        typeof req.signedCookies['evaka.employee.session'] === 'string'
+      ) {
+        primarySession = req.session.id
+        secondarySession = req.signedCookies['evaka.employee.session']
+      }
+      if (primarySession && secondarySession) {
+        await redisClient.set(
+          secondarySfiSessionsKey(primarySession),
+          secondarySession,
+          {
+            EX: maxSessionTimeoutMinutes
+          }
+        )
+        await redisClient.set(
+          secondarySfiSessionsKey(secondarySession),
+          primarySession,
+          {
+            EX: maxSessionTimeoutMinutes
+          }
+        )
+      }
     }
   }
 
   function getUser(req: express.Request): EvakaSessionUser | undefined {
     return req.session?.passport?.user ?? undefined
+  }
+
+  async function getSecondaryUser(
+    req: express.Request
+  ): Promise<EvakaSessionUser | undefined> {
+    const secondarySessionId = await redisClient.get(
+      secondarySfiSessionsKey(req.session.id)
+    )
+    if (!secondarySessionId) return undefined
+
+    const session = await redisClient.get(sessionKey(secondarySessionId))
+    if (!session) return undefined
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    const user = JSON.parse(session)?.passport?.user
+    if (!user) return undefined
+
+    return user as EvakaSessionUser
   }
 
   function getUserHeader(req: express.Request): string | undefined {
@@ -329,6 +375,7 @@ export function sessionSupport<T extends SessionType>(
     destroy,
     updateUser,
     getUser,
+    getSecondaryUser,
     getUserHeader,
     isAuthenticated
   }

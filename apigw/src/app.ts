@@ -156,7 +156,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     employeeSfiIntegration = createEmployeeSuomiFiIntegration(
       employeeSessions,
       config.sfi.saml,
-      redisClient
+      redisClient,
+      config.employee.cookieSecret
     )
     router.use('/employee/auth/sfi', employeeSfiIntegration.router)
   }
