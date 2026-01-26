@@ -51,6 +51,7 @@ const Container = styled.div<{ backgroundColor: string; textColor: string }>`
   line-height: 22px;
   font-weight: 600;
   white-space: nowrap;
+  width: fit-content;
 `
 
 const Icon = styled(FontAwesomeIcon)`

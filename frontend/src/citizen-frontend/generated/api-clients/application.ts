@@ -156,22 +156,6 @@ export async function getApplicationChildren(): Promise<CitizenChildren[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getApplicationDecisions
-*/
-export async function getApplicationDecisions(
-  request: {
-    applicationId: ApplicationId
-  }
-): Promise<DecisionWithValidStartDatePeriod[]> {
-  const { data: json } = await client.request<JsonOf<DecisionWithValidStartDatePeriod[]>>({
-    url: uri`/citizen/applications/${request.applicationId}/decisions`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonDecisionWithValidStartDatePeriod(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getChildDuplicateApplications
 */
 export async function getChildDuplicateApplications(
@@ -248,6 +232,18 @@ export async function getLiableCitizenFinanceDecisions(): Promise<FinanceDecisio
     method: 'GET'
   })
   return json.map(e => deserializeJsonFinanceDecisionCitizenInfo(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getPendingDecisions
+*/
+export async function getPendingDecisions(): Promise<DecisionWithValidStartDatePeriod[]> {
+  const { data: json } = await client.request<JsonOf<DecisionWithValidStartDatePeriod[]>>({
+    url: uri`/citizen/decisions/pending`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonDecisionWithValidStartDatePeriod(e))
 }
 
 

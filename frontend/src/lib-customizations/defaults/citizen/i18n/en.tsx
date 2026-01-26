@@ -1715,14 +1715,16 @@ const en: Translations = {
         PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
         PREPARATORY_EDUCATION: 'Preparatory education'
       },
+      data: 'Information',
       childName: "Child's name",
       unit: 'Unit',
       period: 'Time period',
       sentDate: 'Decision made',
       resolved: 'Decision confirmed',
+      confirmation: 'Confirmation',
       statusLabel: 'Status',
       summary:
-        'The placement / placements indicated in the decision should be either accepted or rejected immediately and no later than two weeks after receiving the decision.',
+        'Accept or reject the decisions immediately or no later than two weeks from receiving the notification.',
       status: {
         PENDING: 'Waiting for confirmation from the guardian',
         ACCEPTED: 'Confirmed',
@@ -1736,10 +1738,10 @@ const en: Translations = {
         accept1: 'We accept the placement from',
         accept2: '',
         reject: 'We reject the placement',
-        cancel: 'Cancel',
-        submit: 'Submit response to the decision',
+        cancel: 'Go back without confirming',
+        submit: 'Send confirmation of the decision',
         disabledInfo:
-          'NOTE! You are able to accept/reject the related early childhood education decision if you accept the pre-primary / preparatory education decision first.'
+          'First confirm the decision regarding pre-primary education or preparatory education. After that, you can confirm the related early childhood education decision.'
       },
       openPdf: 'Show the decision',
       warnings: {
@@ -1860,7 +1862,7 @@ const en: Translations = {
     cancelApplicationBtn: 'Cancel application',
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
-    confirmationLink: 'Review and confirm the decision',
+    confirmationLink: 'Confirm the decision',
     newApplicationLink: 'New application',
     namelessChild: 'Nameless child',
     noCustodians: 'No dependent children',

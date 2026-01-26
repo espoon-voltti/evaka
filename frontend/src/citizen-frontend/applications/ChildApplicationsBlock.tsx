@@ -311,9 +311,7 @@ export default React.memo(function ChildApplicationsBlock({
                         <div color={colors.main.m2}>
                           {t.applicationsList.confirmationLinkInstructions}
                         </div>
-                        <StyledLink
-                          to={`/decisions/by-application/${applicationId}`}
-                        >
+                        <StyledLink to="/decisions/pending">
                           {t.applicationsList.confirmationLink}{' '}
                           <Icon icon={faArrowRight} color={colors.main.m2} />
                         </StyledLink>

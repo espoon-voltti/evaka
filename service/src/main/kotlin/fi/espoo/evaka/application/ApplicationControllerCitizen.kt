@@ -12,9 +12,9 @@ import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.getDecisionsByGuardian
 import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.decision.getSentDecision
-import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.invoicing.data.getFeeDecisionByLiableCitizen
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionByLiableCitizen
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
@@ -538,22 +538,14 @@ class ApplicationControllerCitizen(
         val canDecide: Boolean,
     )
 
-    @GetMapping("/applications/{applicationId}/decisions")
-    fun getApplicationDecisions(
+    @GetMapping("/decisions/pending")
+    fun getPendingDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId,
     ): List<DecisionWithValidStartDatePeriod> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Application.READ_DECISIONS,
-                        applicationId,
-                    )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             tx,
@@ -561,37 +553,45 @@ class ApplicationControllerCitizen(
                             clock,
                             Action.Citizen.Decision.READ,
                         )
-                    val decisions = tx.getSentDecisionsByApplication(applicationId, filter)
+                    val childIds = tx.getCitizenChildIds(clock.today(), user.id)
+                    val decisions =
+                        tx.getDecisionsByGuardian(user.id, filter).filter { it.childId in childIds }
+                    val pendingDecisions =
+                        decisions.filter { decision -> decision.status == DecisionStatus.PENDING }
+                    val decidableApplications =
+                        getDecidableApplications(
+                            tx,
+                            user,
+                            clock,
+                            pendingDecisions.map { it.applicationId }.toSet(),
+                        )
+                    val actionableDecisions =
+                        pendingDecisions.filter { it.applicationId in decidableApplications }
                     val permittedActions =
                         accessControl.getPermittedActions<DecisionId, Action.Citizen.Decision>(
                             tx,
                             user,
                             clock,
-                            decisions.map { it.id },
+                            actionableDecisions.map { it.id },
                         )
-                    val canDecide =
-                        getDecidableApplications(
-                            tx,
-                            user,
-                            clock,
-                            decisions.map { it.applicationId }.toSet(),
-                        )
-                    decisions.map {
+                    actionableDecisions.map { decision ->
                         DecisionWithValidStartDatePeriod(
-                            it,
-                            it.validRequestedStartDatePeriod(featureConfig, isCitizen = true),
-                            permittedActions[it.id] ?: emptySet(),
-                            canDecide.contains(it.applicationId),
+                            decision,
+                            decision.validRequestedStartDatePeriod(featureConfig, isCitizen = true),
+                            permittedActions[decision.id] ?: emptySet(),
+                            decidableApplications.contains(decision.applicationId),
                         )
                     }
                 }
             }
             .also { decisionWithValidStartDatePeriodList ->
-                val childIds = decisionWithValidStartDatePeriodList.map { it.decision.childId }
-                Audit.DecisionReadByApplication.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(childIds),
-                    meta = mapOf("count" to decisionWithValidStartDatePeriodList.size),
+                Audit.DecisionRead.log(
+                    targetId = AuditId(user.id),
+                    meta =
+                        mapOf(
+                            "count" to decisionWithValidStartDatePeriodList.size,
+                            "pendingOnly" to true,
+                        ),
                 )
             }
     }

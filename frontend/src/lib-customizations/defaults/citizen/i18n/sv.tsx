@@ -1666,14 +1666,16 @@ const sv: Translations = {
         PRESCHOOL_CLUB: 'Esiopetuksen kerho (sv)',
         PREPARATORY_EDUCATION: 'Förberedande undervisning'
       },
+      data: 'Uppgifter',
       childName: 'Barnets namn',
       unit: 'Enhet',
       period: 'För tiden',
       sentDate: 'Beslutsdatum',
       resolved: 'Bekräftat',
+      confirmation: 'Bekräftelse',
       statusLabel: 'Status',
       summary:
-        'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller avvisa platsen / platserna.',
+        'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
@@ -1687,10 +1689,10 @@ const sv: Translations = {
         accept1: 'Vi tar emot platsen från och med',
         accept2: '',
         reject: 'Vi tar inte emot platsen',
-        cancel: 'Gå tillbaka utan att svara',
-        submit: 'Skicka svar på beslutet',
+        cancel: 'Gå tillbaka utan att bekräfta',
+        submit: 'Skicka bekräftelse på beslutet',
         disabledInfo:
-          'OBS! Du kan bekräfta/avvisa beslutet gällande kompletterande småbarnspedagogik, om du först bekräftar beslutet för förskola..'
+          'Bekräfta först beslutet om förskoleundervisning eller förberedande undervisning. Därefter kan du bekräfta det tillhörande beslutet om småbarnspedagogik.'
       },
       openPdf: 'Visa beslut',
       warnings: {
@@ -2106,7 +2108,7 @@ const sv: Translations = {
     cancelApplicationBtn: 'Ta bort ansökan',
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
-    confirmationLink: 'Gå vidare för att svara',
+    confirmationLink: 'Bekräftelse av beslut',
     newApplicationLink: 'Ny ansökan',
     namelessChild: 'Namnlöst barn',
     noCustodians: 'Inga försörjningsskyldiga barn',

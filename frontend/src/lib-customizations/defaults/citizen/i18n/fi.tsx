@@ -1679,14 +1679,16 @@ export default {
         PRESCHOOL_CLUB: 'Esiopetuksen kerho',
         PREPARATORY_EDUCATION: 'Valmistava opetus'
       },
+      data: 'Tiedot',
       childName: 'Lapsen nimi',
       unit: 'Toimipaikka',
       period: 'Ajalle',
       sentDate: 'Päätös tehty',
       resolved: 'Vahvistettu',
+      confirmation: 'Vahvistus',
       statusLabel: 'Tila',
       summary:
-        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
+        'Hyväksy tai hylkää päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
       status: {
         PENDING: 'Odottaa vahvistusta',
         ACCEPTED: 'Hyväksytty',
@@ -1700,10 +1702,10 @@ export default {
         accept1: 'Otamme paikan vastaan',
         accept2: 'alkaen',
         reject: 'Emme ota paikkaa vastaan',
-        cancel: 'Palaa takaisin vastaamatta',
-        submit: 'Lähetä vastaus päätökseen',
+        cancel: 'Palaa takaisin vahvistamatta',
+        submit: 'Lähetä vahvistus päätökseen',
         disabledInfo:
-          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+          'Vahvista ensin esiopetuksen tai valmistavan opetuksen päätös. Tämän jälkeen voit vahvistaa liittyvän varhaiskasvatuksen päätöksen.'
       },
       openPdf: 'Näytä päätös',
       warnings: {
@@ -2124,7 +2126,7 @@ export default {
     cancelApplicationBtn: 'Peruuta hakemus',
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
-    confirmationLink: 'Siirry vahvistamaan',
+    confirmationLink: 'Päätösten vahvistaminen',
     newApplicationLink: 'Uusi hakemus',
     namelessChild: 'Nimetön lapsi',
     noCustodians: 'Ei huollettavia lapsia',

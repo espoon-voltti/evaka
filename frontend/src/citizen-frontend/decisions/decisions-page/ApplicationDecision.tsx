@@ -14,43 +14,17 @@ import type {
   DecisionId
 } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
-import type { IconChipVisualProps } from 'lib-components/atoms/IconChip'
 import IconChip from 'lib-components/atoms/IconChip'
 import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H3, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import colors from 'lib-customizations/common'
-import { faGavel, faCheck, faTimes } from 'lib-icons'
 
 import { applicationMetadataQuery } from '../../applications/queries'
 import { useTranslation } from '../../localization'
 import { MetadataResultSection } from '../../metadata/MetadataSection'
-
-const iconPropsByStatus: Record<DecisionStatus, IconChipVisualProps> = {
-  PENDING: {
-    icon: faGavel,
-    backgroundColor: '#ffeee0',
-    textColor: colors.accents.a2orangeDark,
-    iconColor: colors.grayscale.g0,
-    iconBackgroundColor: colors.status.warning
-  },
-  ACCEPTED: {
-    icon: faCheck,
-    backgroundColor: '#e9f6ea',
-    textColor: colors.accents.a1greenDark,
-    iconColor: colors.grayscale.g0,
-    iconBackgroundColor: '#3c963f'
-  },
-  REJECTED: {
-    icon: faTimes,
-    backgroundColor: '#ffecec',
-    textColor: '#a94442',
-    iconColor: colors.grayscale.g0,
-    iconBackgroundColor: colors.status.danger
-  }
-}
+import { iconPropsByStatus } from '../shared'
 
 interface Props {
   id: DecisionId
@@ -95,7 +69,7 @@ export default React.memo(function ApplicationDecision({
           {canDecide && (
             <ResponsiveLinkButton
               $style="secondary"
-              href={`/decisions/by-application/${applicationId}`}
+              href="/decisions/pending"
               data-qa={`button-confirm-decisions-${applicationId}`}
             >
               {t.decisions.applicationDecisions.confirmationLink}
