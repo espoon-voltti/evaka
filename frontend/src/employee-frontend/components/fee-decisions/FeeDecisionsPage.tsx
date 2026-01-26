@@ -33,8 +33,8 @@ import {
 
 export default React.memo(function FeeDecisionsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
-  const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('HEAD_OF_FAMILY')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+  const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('CREATED')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('DESC')
 
   const {
     feeDecisions: { confirmedSearchFilters: searchFilters, page }
