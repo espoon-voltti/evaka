@@ -59,17 +59,16 @@ const primaryStyles = css`
 
 const secondaryStyles = css`
   border-color: ${(p) => p.theme.colors.main.m2};
-  color: ${(p) => p.theme.colors.main.m2};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 
   &:hover {
-    background-color: ${(p) => p.theme.colors.main.m2};
-    color: ${(p) => p.theme.colors.grayscale.g0};
+    color: ${(p) => p.theme.colors.main.m2Hover};
+    border-color: ${(p) => p.theme.colors.main.m2Hover};
   }
 
   &:active {
-    background-color: ${(p) => p.theme.colors.main.m2Active};
-    color: ${(p) => p.theme.colors.grayscale.g0};
+    color: ${(p) => p.theme.colors.main.m2Active};
+    border-color: ${(p) => p.theme.colors.main.m2Active};
   }
 `
 

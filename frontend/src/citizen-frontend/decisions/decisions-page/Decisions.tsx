@@ -21,7 +21,7 @@ import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
-import { H1, H2 } from 'lib-components/typography'
+import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faGavel } from 'lib-icons'
@@ -168,9 +168,9 @@ export default React.memo(function Decisions() {
                       {unconfirmedDecisionTypesPerChild.map(
                         ({ child, undecidedTypes }) => (
                           <div key={child.id}>
-                            <BoldDiv>
+                            <Label>
                               <PersonName person={child} format="First Last" />
-                            </BoldDiv>
+                            </Label>
                             <DecisionTypeNameList>
                               {undecidedTypes.map((type) => (
                                 <li key={type}>
@@ -181,15 +181,15 @@ export default React.memo(function Decisions() {
                           </div>
                         )
                       )}
-                      <ResponsiveLinkButton>
+                      <ResponsiveLinkButton href="/decisions/pending">
                         {t.decisions.applicationDecisions.confirmationLink}
                       </ResponsiveLinkButton>
                     </>
                   )
                 )}
-                <BoldDiv>
+                <SmallLabel>
                   {t.decisions.applicationDecisions.information}
-                </BoldDiv>
+                </SmallLabel>
               </UnconfirmedColumn>
             </UnconfirmedDecisionsBox>
           </>
@@ -290,9 +290,6 @@ const UnconfirmedColumn = styled.div`
 const UnconfirmedHeader = styled(H2)`
   margin-block: ${defaultMargins.xs};
 `
-const BoldDiv = styled.div`
-  font-weight: 600;
-`
 const DecisionTypeNameList = styled.ul`
   margin-block-start: ${defaultMargins.xxs};
   margin-block-end: ${defaultMargins.s};
@@ -306,4 +303,7 @@ const FullWidthSeparator = styled.hr`
   border-bottom-style: solid;
   border-bottom-color: ${colors.grayscale.g15};
   margin: ${defaultMargins.s} -${defaultMargins.s};
+`
+const SmallLabel = styled(Label)`
+  font-size: 14px;
 `
