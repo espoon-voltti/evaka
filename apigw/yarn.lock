@@ -3391,7 +3391,7 @@ __metadata:
     nocache: "npm:4.0.0"
     nock: "npm:14.0.10"
     node-forge: "npm:1.3.3"
-    pino: "npm:10.1.1"
+    pino: "npm:10.2.1"
     pino-http: "npm:11.0.0"
     pino-pretty: "npm:13.1.3"
     prettier: "npm:3.8.0"
@@ -6144,9 +6144,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:10.1.1, pino@npm:^10.0.0":
-  version: 10.1.1
-  resolution: "pino@npm:10.1.1"
+"pino@npm:10.2.1, pino@npm:^10.0.0":
+  version: 10.2.1
+  resolution: "pino@npm:10.2.1"
   dependencies:
     "@pinojs/redact": "npm:^0.4.0"
     atomic-sleep: "npm:^1.0.0"
@@ -6161,7 +6161,7 @@ __metadata:
     thread-stream: "npm:^4.0.0"
   bin:
     pino: bin.js
-  checksum: 10/371abc2bfd9b2651fc44637b8861064e8e9a68b81c2109c3cef0c1f9d4a97ff3f150adc1a2fb95d00f08bdab763dd058c7f98fad7245e64ed17ea37bad99f255
+  checksum: 10/6f674ee35017edf17105677b539914be01c83b938ab89c7701c50f8cb1197cf3f4426437ff37b59a2d0ff8b58926801b96cd883c40c740989380168bda95c510
   languageName: node
   linkType: hard
 
