@@ -2342,7 +2342,8 @@ const sv: Translations = {
         <P>
           Inkomstutredningen jämte dess bilagor lämnas in inom två veckor efter
           att småbarnspedagogiken startats. En bristfällig inkomstutredning kan
-          leda till den högsta avgiften.
+          leda till den högsta avgiften. Bristfälliga inkomstuppgifter
+          korrigeras inte med retroaktiv verkan efter omprövningstidens utgång.
         </P>
         <P>
           Klientavgiften tas ut från och med den dag då småbarnspedagogiken
