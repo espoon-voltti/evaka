@@ -251,6 +251,10 @@ enum class ScheduledJob(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
+    ScheduleMigrateBulletinMessageThreads(
+        ScheduledJobs::scheduleMigrateBulletinMessageThreads,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(22, 0))),
+    ),
     DatabaseSanityChecks(
         ScheduledJobs::databaseSanityChecks,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
@@ -597,6 +601,16 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =
         db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
+
+    fun scheduleMigrateBulletinMessageThreads(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.MigrateMunicipalMessageThreads(batchSize = 1000)),
+                retryCount = 1,
+                runAt = clock.now(),
+            )
+        }
 
     fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) =
         db.transaction { runSanityChecks(it, clock) }
