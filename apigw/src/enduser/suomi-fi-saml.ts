@@ -102,7 +102,8 @@ const authenticateEmployee = authenticateProfile(
 export function createEmployeeSuomiFiIntegration(
   sessions: Sessions<'employee'>,
   config: EvakaSamlConfig,
-  redisClient: RedisClient
+  redisClient: RedisClient,
+  employeeCookieSecret: string
 ) {
   return createSamlIntegration({
     sessions,
@@ -114,6 +115,7 @@ export function createEmployeeSuomiFiIntegration(
       )
     ),
     authenticate: authenticateEmployee,
-    defaultPageUrl: '/employee'
+    defaultPageUrl: '/employee',
+    employeeCookieSecret
   })
 }

@@ -37,6 +37,7 @@ export interface SamlEndpointConfig<T extends SessionType> {
   defaultPageUrl: string
   authenticate: AuthenticateProfile
   citizenCookieSecret?: string
+  employeeCookieSecret?: string
 }
 
 export type Options = {
@@ -89,7 +90,8 @@ export function createSamlIntegration<T extends SessionType>(
     saml,
     defaultPageUrl,
     authenticate,
-    citizenCookieSecret
+    citizenCookieSecret,
+    employeeCookieSecret
   } = endpointConfig
 
   const eventCode = (name: SamlAuditEvent) =>
@@ -256,7 +258,18 @@ export function createSamlIntegration<T extends SessionType>(
           samlRequestOptions(req)
         )
       } else {
-        url = defaultPageUrl
+        const secondaryUser = await sessions.getSecondaryUser(req)
+        const secondarySamlSession = SamlSessionSchema.safeParse(secondaryUser)
+        if (secondarySamlSession.success) {
+          url = await saml.getLogoutUrlAsync(
+            secondarySamlSession.data,
+            // no need for validation here, because the value only matters in the logout callback request and is validated there
+            getRawUnvalidatedRelayState(req) ?? '',
+            samlRequestOptions(req)
+          )
+        } else {
+          url = defaultPageUrl
+        }
       }
       await sessions.destroy(req, res)
       return res.redirect(url)
@@ -363,6 +376,9 @@ export function createSamlIntegration<T extends SessionType>(
   router.use(sessions.middleware)
   if (citizenCookieSecret) {
     router.use(cookieParser(citizenCookieSecret))
+  }
+  if (employeeCookieSecret) {
+    router.use(cookieParser(employeeCookieSecret))
   }
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
