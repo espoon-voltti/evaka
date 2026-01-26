@@ -483,7 +483,9 @@ jobs:
         if: always()
         with:
           name: integration-test-results-${{ matrix.test_chunk_number }}
-          path: ./compose/test-results/
+          path: |
+            compose/test-results/
+            !compose/test-results/**/binary/
           retention-days: 2
 
   e2e-split:
