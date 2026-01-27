@@ -573,12 +573,59 @@ fun completeAndPublishChildDocumentsAtEndOfTerm(
 ```
 
 
-### Testing Checklist
+### Testing Plan
 
-- [ ] Publishing with unchanged content skips version creation
-- [ ] Publishing with changed content creates new version
-- [ ] Latest version shown in summaries (even if document_key NULL)
-- [ ] Automated end-of-term completion works with new logic
+Based on analysis of existing integration tests, the following tests are needed to cover the NEW functionality introduced by the versioned PDF feature:
+
+#### 1. Version Creation Logic Tests
+Tests for the new `createPublishedVersionIfNeeded()` logic:
+- **Publishing unchanged content skips version creation** - Verify that calling publish on unchanged content returns null and creates no version row
+- **Publishing changed content creates new version** - Verify that publishing with changed content creates version row with incremental version number
+- **Multiple publishes create incremental versions** - Test version 1, 2, 3 sequence with different content
+
+#### 2. PDF Generation with Version Validation Tests
+Tests for the updated `createAndUploadPdf()` with version checking:
+- **PDF generation succeeds for latest version** - Verify PDF is generated and document_key updated when version is still latest
+- **Backward compatibility with existing jobs** - Test that AsyncJob.CreateChildDocumentPdf with versionNumber=null defaults to version 1
+- **Versioned S3 keys are created** - Verify that PDFs are stored with format like `child-documents/child_document_{documentId}_v{version}.pdf`
+
+#### 3. Data Integrity Tests
+Tests for the database migration and architectural changes:
+- **Published status derived from version table** - Test that document.publishedAt/publishedBy comes from latest version row, not original table
+- **Null document_key handling** - Test that documents with version rows but NULL document_key show as published but PDF download fails gracefully
+
+#### 4. Metadata API Version Support Tests  
+Tests for the new multi-version metadata endpoint:
+- **Version list in metadata response** - Verify getChildDocumentMetadata returns array of versions with createdAt, createdBy, versionNumber
+- **Version-specific download paths** - Test that download URLs include version parameter: `/pdf?version=2`
+- **Admin-only version access** - Verify that users without READ_METADATA permission can only access latest version
+- **Empty versions array for unpublished documents** - Test metadata for documents with no published versions
+
+#### 5. Read Marker Management with Versions Tests
+Tests for the updated read marker behavior:
+- **Read markers deleted when PDF generation completes** - Verify deleteChildDocumentReadMarkers() is called when document_key is set, not at publish time
+
+#### 6. Batch Operations with Versioning Tests
+Tests for the updated `markCompletedAndPublish()` function:
+- **Batch end-of-term filtering by changed content** - Verify that only documents with changed content get new versions during automated completion, but all get status updated
+
+#### 7. Controller Integration with New Publishing Logic Tests
+Tests for updated controller endpoints using the new architecture:
+- **publishDocument endpoint with content change detection** - Test that explicit publish button creates version only if content changed
+- **nextDocumentStatus endpoint publishing behavior** - Test status transitions that trigger publishing use new version logic
+- **Decision document workflows unchanged** - Verify decision documents still work correctly with new architecture (publishing happens on accept, not status change)
+
+#### 8. Error Handling and Edge Cases Tests
+- **Document deletion with existing versions** - Test that document deletion properly cleans up version table rows and also deletes the documents from S3 via the scheduled async jobs.
+
+### Tests NOT Needed (Already Covered)
+Based on existing test analysis, these areas are already well covered and don't need new tests:
+- Basic status transitions (hojks, pedagogical, decision workflows) - `ChildDocumentControllerIntegrationTest` has comprehensive coverage
+- Document creation, content updates, permissions - Already tested
+- SFI message sending - Already tested  
+- Email notifications - Already tested in `ChildDocumentServiceIntegrationTest`
+- Case process history updates - Already tested
+- Basic metadata functionality - Already tested
 
 ## Implementation Summary
 
