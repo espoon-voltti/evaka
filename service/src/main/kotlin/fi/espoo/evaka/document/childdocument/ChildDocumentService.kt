@@ -50,7 +50,7 @@ private val logger = KotlinLogging.logger {}
 enum class EmailNotificationPolicy {
     NEVER,
     ON_NEW_VERSION,
-    ALWAYS
+    ALWAYS,
 }
 
 @Service
@@ -85,20 +85,24 @@ class ChildDocumentService(
                 ?: throw NotFound("document $documentId not found")
 
         // Check if this version is still the latest
-        val latestVersion = db.read { tx ->
-            tx.createQuery {
-                sql("""
+        val latestVersion =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            """
                     SELECT MAX(version_number)
                     FROM child_document_published_version
                     WHERE child_document_id = ${bind(documentId)}
-                """)
-            }.exactlyOneOrNull<Int>()
-        }
+                """
+                        )
+                    }
+                    .exactlyOneOrNull<Int>()
+            }
 
         if (latestVersion != null && requestedVersion < latestVersion) {
             logger.warn {
                 "Aborting PDF generation for document $documentId version $requestedVersion " +
-                "(superseded by version $latestVersion). Leaving document_key NULL."
+                    "(superseded by version $latestVersion). Leaving document_key NULL."
             }
             return
         }
@@ -125,7 +129,9 @@ class ChildDocumentService(
 
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, requestedVersion)),
+                    listOf(
+                        AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, requestedVersion)
+                    ),
                     runAt = clock.now(),
                 )
 
@@ -155,7 +161,8 @@ class ChildDocumentService(
                         throw IllegalStateException("document $documentId is not a decision")
                 } ?: throw NotFound("document $documentId not found")
 
-            val publishedVersion = tx.getChildDocumentPublishedVersion(documentId, msg.versionNumber)
+            val publishedVersion =
+                tx.getChildDocumentPublishedVersion(documentId, msg.versionNumber)
 
             if (publishedVersion?.documentKey == null) {
                 throw IllegalStateException(
@@ -306,16 +313,18 @@ class ChildDocumentService(
 
         asyncJobRunner.plan(
             tx,
-            payloads = documentVersions.map { (documentId, versionNumber) ->
-                AsyncJob.CreateChildDocumentPdf(documentId, versionNumber, user)
-            },
+            payloads =
+                documentVersions.map { (documentId, versionNumber) ->
+                    AsyncJob.CreateChildDocumentPdf(documentId, versionNumber, user)
+                },
             runAt = now,
             retryCount = 10,
         )
     }
 
     /**
-     * Publishes document if content has changed, and schedules PDF generation and email notification.
+     * Publishes document if content has changed, and schedules PDF generation and email
+     * notification.
      *
      * @param emailPolicy Controls when to schedule email notifications
      * @return The created version number, or null if content was already up to date
@@ -333,11 +342,12 @@ class ChildDocumentService(
             schedulePdfGeneration(tx, user, mapOf(documentId to versionNumber), now)
         }
 
-        val shouldScheduleEmail = when (emailPolicy) {
-            EmailNotificationPolicy.NEVER -> false
-            EmailNotificationPolicy.ON_NEW_VERSION -> versionNumber != null
-            EmailNotificationPolicy.ALWAYS -> true
-        }
+        val shouldScheduleEmail =
+            when (emailPolicy) {
+                EmailNotificationPolicy.NEVER -> false
+                EmailNotificationPolicy.ON_NEW_VERSION -> versionNumber != null
+                EmailNotificationPolicy.ALWAYS -> true
+            }
 
         if (shouldScheduleEmail) {
             scheduleEmailNotification(tx, listOf(documentId), now)

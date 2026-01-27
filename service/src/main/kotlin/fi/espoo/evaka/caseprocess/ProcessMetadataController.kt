@@ -49,7 +49,7 @@ data class DocumentVersion(
     val versionNumber: Int,
     val createdAt: HelsinkiDateTime,
     @Nested("createdBy") val createdBy: EvakaUser,
-    val downloadPath: String
+    val downloadPath: String,
 )
 
 data class DocumentMetadata(
@@ -63,7 +63,7 @@ data class DocumentMetadata(
     val downloadPath: String?,
     val receivedBy: DocumentOrigin?,
     val sfiDeliveries: List<SfiDelivery>,
-    val versions: List<DocumentVersion> = emptyList()
+    val versions: List<DocumentVersion> = emptyList(),
 )
 
 data class ProcessMetadata(

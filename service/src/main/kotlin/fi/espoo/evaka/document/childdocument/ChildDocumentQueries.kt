@@ -24,8 +24,8 @@ import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.json.Json
 import java.time.LocalDate
+import org.jdbi.v3.json.Json
 
 const val lockMinutes = 5
 
@@ -285,7 +285,9 @@ fun Database.Transaction.updateChildDocumentPublishedVersionKey(
         .updateExactlyOne()
 }
 
-fun Database.Read.getChildDocumentPublishedVersions(documentId: ChildDocumentId): List<PublishedVersion> =
+fun Database.Read.getChildDocumentPublishedVersions(
+    documentId: ChildDocumentId
+): List<PublishedVersion> =
     createQuery {
             sql(
                 """
@@ -427,7 +429,8 @@ fun Database.Transaction.updateChildDocument(
 }
 
 /**
- * Creates a new published version if content has changed. Returns version number or null if skipped.
+ * Creates a new published version if content has changed. Returns version number or null if
+ * skipped.
  */
 fun Database.Transaction.createPublishedVersionIfNeeded(
     id: ChildDocumentId,
@@ -436,9 +439,10 @@ fun Database.Transaction.createPublishedVersionIfNeeded(
 ): Int? {
     data class Result(@Json val content: DocumentContent, val upToDate: Boolean)
 
-    val result = createQuery {
-        sql(
-            """
+    val result =
+        createQuery {
+                sql(
+                    """
             SELECT 
                 cd.content,
                 (lv.published_content IS NOT NULL AND cd.content = lv.published_content) AS up_to_date
@@ -452,8 +456,9 @@ fun Database.Transaction.createPublishedVersionIfNeeded(
             ) lv ON true
             WHERE cd.id = ${bind(id)}
             """
-        )
-    }.exactlyOneOrNull<Result>() ?: throw NotFound("Document $id not found")
+                )
+            }
+            .exactlyOneOrNull<Result>() ?: throw NotFound("Document $id not found")
 
     if (result.upToDate) return null
 
@@ -461,9 +466,8 @@ fun Database.Transaction.createPublishedVersionIfNeeded(
 }
 
 fun Database.Transaction.deleteChildDocumentReadMarkers(documentId: ChildDocumentId) {
-    createUpdate {
-        sql("DELETE FROM child_document_read WHERE document_id = ${bind(documentId)}")
-    }.execute()
+    createUpdate { sql("DELETE FROM child_document_read WHERE document_id = ${bind(documentId)}") }
+        .execute()
 }
 
 data class StatusTransition(val currentStatus: DocumentStatus, val newStatus: DocumentStatus)
@@ -553,25 +557,21 @@ fun Database.Transaction.markCompletedAndPublish(
                 """
             )
         }
-        .toMap {
-            column<ChildDocumentId>("child_document_id") to column<Int>("version_number")
-        }
+        .toMap { column<ChildDocumentId>("child_document_id") to column<Int>("version_number") }
 }
 
-/**
- * Make sure to schedule DeleteChildDocumentPdf jobs before calling this
- */
+/** Make sure to schedule DeleteChildDocumentPdf jobs before calling this */
 fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
     deleteChildDocumentReadMarkers(id)
 
     createUpdate {
-            sql("DELETE FROM child_document_published_version WHERE child_document_id = ${bind(id)}")
+            sql(
+                "DELETE FROM child_document_published_version WHERE child_document_id = ${bind(id)}"
+            )
         }
         .execute()
 
-    createUpdate {
-            sql("DELETE FROM child_document WHERE id = ${bind(id)} AND status = 'DRAFT'")
-        }
+    createUpdate { sql("DELETE FROM child_document WHERE id = ${bind(id)} AND status = 'DRAFT'") }
         .updateExactlyOne()
 }
 

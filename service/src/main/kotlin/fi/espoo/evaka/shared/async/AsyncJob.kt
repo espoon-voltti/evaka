@@ -215,7 +215,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class CreateChildDocumentPdf(
         val documentId: ChildDocumentId,
         val versionNumber: Int? = null,
-        override val user: AuthenticatedUser? = null
+        override val user: AuthenticatedUser? = null,
     ) : AsyncJob
 
     data class SendChildDocumentDecisionSfiMessage(

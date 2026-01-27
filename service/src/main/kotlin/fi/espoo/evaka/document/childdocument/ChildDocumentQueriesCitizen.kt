@@ -72,7 +72,9 @@ fun Database.Read.getChildDocumentCitizenSummaries(
             Predicate.all(
                 Predicate { where("$it.child_id = ${bind(childId)}") },
                 Predicate {
-                    where("EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = $it.id)")
+                    where(
+                        "EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = $it.id)"
+                    )
                 },
             ),
         )

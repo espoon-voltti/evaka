@@ -204,8 +204,7 @@ class ArchivalService(
         val caseProcess = db.read { tx -> tx.getCaseProcessByChildDocumentId(documentId) }
         val documentMetadata = db.read { tx -> tx.getChildDocumentMetadata(documentId) }
 
-        val publishedVersion =
-            db.read { tx -> tx.getChildDocumentPublishedVersion(documentId) }
+        val publishedVersion = db.read { tx -> tx.getChildDocumentPublishedVersion(documentId) }
 
         if (publishedVersion?.documentKey == null) {
             throw NotFound("PDF not ready for document $documentId")

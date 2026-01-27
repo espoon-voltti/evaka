@@ -302,15 +302,16 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     answeredAt = null,
                     answeredBy = null,
                     processId = process.id,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = now,
-                            createdBy = employee.evakaUserId,
-                            publishedContent = emptyContent,
-                            documentKey = "test-document-key"
-                        )
-                    )
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = employee.evakaUserId,
+                                publishedContent = emptyContent,
+                                documentKey = "test-document-key",
+                            )
+                        ),
                 )
             tx.insert(childDocument)
         }

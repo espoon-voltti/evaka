@@ -249,14 +249,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         contentLockedBy = employeeUser.id,
                         answeredAt = null,
                         answeredBy = null,
-                        publishedVersions = listOf(
-                            DevChildDocumentPublishedVersion(
-                                versionNumber = 1,
-                                createdAt = clock.now(),
-                                createdBy = employeeUser.evakaUserId,
-                                publishedContent = documentContent,
-                            )
-                        ),
+                        publishedVersions =
+                            listOf(
+                                DevChildDocumentPublishedVersion(
+                                    versionNumber = 1,
+                                    createdAt = clock.now(),
+                                    createdBy = employeeUser.evakaUserId,
+                                    publishedContent = documentContent,
+                                )
+                            ),
                     )
                 )
             }
@@ -370,14 +371,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         contentLockedBy = employeeUser.id,
                         answeredAt = null,
                         answeredBy = null,
-                        publishedVersions = listOf(
-                            DevChildDocumentPublishedVersion(
-                                versionNumber = 1,
-                                createdAt = clock.now(),
-                                createdBy = employeeUser.evakaUserId,
-                                publishedContent = documentContent,
-                            )
-                        ),
+                        publishedVersions =
+                            listOf(
+                                DevChildDocumentPublishedVersion(
+                                    versionNumber = 1,
+                                    createdAt = clock.now(),
+                                    createdBy = employeeUser.evakaUserId,
+                                    publishedContent = documentContent,
+                                )
+                            ),
                     )
                 )
             }
@@ -406,14 +408,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         contentLockedBy = employeeUser.id,
                         answeredAt = null,
                         answeredBy = null,
-                        publishedVersions = listOf(
-                            DevChildDocumentPublishedVersion(
-                                versionNumber = 1,
-                                createdAt = clock.now(),
-                                createdBy = employeeUser.evakaUserId,
-                                publishedContent = documentContent,
-                            )
-                        ),
+                        publishedVersions =
+                            listOf(
+                                DevChildDocumentPublishedVersion(
+                                    versionNumber = 1,
+                                    createdAt = clock.now(),
+                                    createdBy = employeeUser.evakaUserId,
+                                    publishedContent = documentContent,
+                                )
+                            ),
                     )
                 )
             }
@@ -534,14 +537,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     contentLockedBy = employeeUser.id,
                     answeredAt = null,
                     answeredBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = clock.now(),
-                            createdBy = employeeUser.evakaUserId,
-                            publishedContent = documentContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
                 )
             )
 
@@ -581,14 +585,15 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 contentLockedBy = employeeUser.id,
                 answeredAt = now,
                 answeredBy = null,
-                publishedVersions = listOf(
-                    DevChildDocumentPublishedVersion(
-                        versionNumber = 1,
-                        createdAt = now,
-                        createdBy = employeeUser.evakaUserId,
-                        publishedContent = documentContent,
-                    )
-                ),
+                publishedVersions =
+                    listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = now,
+                            createdBy = employeeUser.evakaUserId,
+                            publishedContent = documentContent,
+                        )
+                    ),
             )
         val answeredByCitizenId =
             db.transaction { tx ->
