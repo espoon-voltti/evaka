@@ -158,7 +158,11 @@ data class MessageThreadData(
     val isCopy: Boolean,
 )
 
-data class CalendarEventNotificationData(val title: HtmlSafe<String>, val period: FiniteDateRange)
+data class CalendarEventNotificationData(
+    val title: HtmlSafe<String>,
+    val period: FiniteDateRange,
+    val groupNames: List<HtmlSafe<String>>,
+)
 
 data class DiscussionTimeReminderData(
     val date: LocalDate,
