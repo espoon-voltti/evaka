@@ -16,7 +16,6 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.endOutdatedAssistanceNee
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
-import fi.espoo.evaka.caseprocess.migrateProcessMetadata
 import fi.espoo.evaka.daycare.controllers.removeDaycareAclForRole
 import fi.espoo.evaka.document.archival.planChildDocumentArchival
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
@@ -285,10 +284,6 @@ enum class ScheduledJob(
     ),
     DeleteEndedAcl(
         ScheduledJobs::syncAclRows,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
-    ),
-    MigrateMetadata(
-        ScheduledJobs::migrateMetadata,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
 
@@ -637,10 +632,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun getSfiEvents(db: Database.Connection, clock: EvakaClock) {
         sfiAsyncJobs.getEvents(db, clock)
-    }
-
-    fun migrateMetadata(db: Database.Connection, clock: EvakaClock) {
-        migrateProcessMetadata(db, clock, featureConfig, tracer)
     }
 
     fun removeInvalidatedShiftCareReservations(db: Database.Connection, clock: EvakaClock) {
