@@ -57,7 +57,11 @@ export function createCitizenSuomiFiIntegration(
   sessions: Sessions<'citizen'>,
   samlConfig: EvakaSamlConfig,
   redisClient: RedisClient,
-  citizenCookieSecret: string
+  citizenCookieSecret: string,
+  secondaryCookieConfig?: {
+    cookieName: string
+    cookieSecret: string
+  }
 ) {
   return createSamlIntegration({
     sessions,
@@ -70,7 +74,8 @@ export function createCitizenSuomiFiIntegration(
     ),
     authenticate: authenticateCitizen,
     defaultPageUrl: '/',
-    citizenCookieSecret
+    citizenCookieSecret,
+    secondaryCookieConfig
   })
 }
 
@@ -103,7 +108,10 @@ export function createEmployeeSuomiFiIntegration(
   sessions: Sessions<'employee'>,
   config: EvakaSamlConfig,
   redisClient: RedisClient,
-  employeeCookieSecret: string
+  secondaryCookieConfig?: {
+    cookieName: string
+    cookieSecret: string
+  }
 ) {
   return createSamlIntegration({
     sessions,
@@ -116,6 +124,6 @@ export function createEmployeeSuomiFiIntegration(
     ),
     authenticate: authenticateEmployee,
     defaultPageUrl: '/employee',
-    employeeCookieSecret
+    secondaryCookieConfig
   })
 }
