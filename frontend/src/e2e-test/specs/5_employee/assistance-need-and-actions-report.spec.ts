@@ -451,19 +451,22 @@ describe('Assistance need and actions report', () => {
       childId,
       templateId: template1.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test answer'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test answer'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: validDuring.asDateRange(),
@@ -477,19 +480,22 @@ describe('Assistance need and actions report', () => {
       childId: child2.id,
       templateId: template2.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test answer'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test answer'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: validDuring.asDateRange(),
@@ -573,19 +579,22 @@ describe('Assistance need and actions report', () => {
       childId,
       templateId: template1.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: validDuring.asDateRange(),
@@ -600,19 +609,22 @@ describe('Assistance need and actions report', () => {
       childId,
       templateId: template2.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'REJECTED',
         validity: null,
@@ -627,19 +639,22 @@ describe('Assistance need and actions report', () => {
       childId,
       templateId: template3.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: expiredRange.asDateRange(),
@@ -734,19 +749,22 @@ describe('Assistance need and actions report', () => {
       childId,
       templateId: template1.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: validDuring.asDateRange(),
@@ -760,19 +778,22 @@ describe('Assistance need and actions report', () => {
       childId: child2.id,
       templateId: template2.id,
       status: 'COMPLETED',
-      publishedAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
-      publishedBy: evakaUserId(admin.id),
-      publishedContent: {
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
-      },
       decisionMaker: admin.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedTime.toHelsinkiDateTime(LocalTime.of(10, 0)),
+        createdBy: evakaUserId(admin.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: child2placementDateRange.asDateRange(),
