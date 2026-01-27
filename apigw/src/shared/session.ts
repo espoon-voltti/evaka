@@ -67,12 +67,18 @@ export interface Sessions<T extends SessionType> {
   ): Promise<void>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown>
 
-  login(req: express.Request, user: EvakaSessionUser): Promise<void>
+  login(
+    req: express.Request,
+    user: EvakaSessionUser,
+    secondarySessionId?: string
+  ): Promise<void>
   destroy(req: express.Request, res: express.Response): Promise<void>
 
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
-  getSecondaryUser(req: express.Request): Promise<EvakaSessionUser | undefined>
+  getSecondaryUser(
+    secondarySessionId: string
+  ): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
 }
@@ -218,17 +224,22 @@ export function sessionSupport<T extends SessionType>(
 
   async function login(
     req: express.Request,
-    user: EvakaSessionUser
+    user: EvakaSessionUser,
+    secondarySessionId?: string
   ): Promise<void> {
     await fromCallback<void>((cb) => req.session.regenerate(cb))
     // express-session has now regenerated the active session, so the ID has changed, and it's empty
-    await saveUser(req, {
-      ...user,
-      // spread saml session fields for backwards compatibility
-      ...(user.authType === 'sfi' || user.authType === 'ad'
-        ? user.samlSession
-        : undefined)
-    })
+    await saveUser(
+      req,
+      {
+        ...user,
+        // spread saml session fields for backwards compatibility
+        ...(user.authType === 'sfi' || user.authType === 'ad'
+          ? user.samlSession
+          : undefined)
+      },
+      secondarySessionId
+    )
   }
 
   async function destroy(req: express.Request, res: express.Response) {
@@ -274,7 +285,11 @@ export function sessionSupport<T extends SessionType>(
     await saveUser(req, user)
   }
 
-  async function saveUser(req: express.Request, user: EvakaSessionUser) {
+  async function saveUser(
+    req: express.Request,
+    user: EvakaSessionUser,
+    secondarySessionId?: string
+  ) {
     const userIdHash = createSha256Hash(user.id)
 
     req.session.passport = { user }
@@ -294,41 +309,26 @@ export function sessionSupport<T extends SessionType>(
         .exec()
     }
 
-    if (req.session.id && user.authType === 'sfi' && maxSessionTimeoutMinutes) {
-      let primarySession: string | undefined
-      let secondarySession: string | undefined
-      if (
-        user.userType === 'EMPLOYEE' &&
-        req.signedCookies['evaka.eugw.session'] &&
-        typeof req.signedCookies['evaka.eugw.session'] === 'string'
-      ) {
-        primarySession = req.session.id
-        secondarySession = req.signedCookies['evaka.eugw.session']
-      }
-      if (
-        user.userType === 'CITIZEN_STRONG' &&
-        req.signedCookies['evaka.employee.session'] &&
-        typeof req.signedCookies['evaka.employee.session'] === 'string'
-      ) {
-        primarySession = req.session.id
-        secondarySession = req.signedCookies['evaka.employee.session']
-      }
-      if (primarySession && secondarySession) {
-        await redisClient.set(
-          secondarySfiSessionsKey(primarySession),
-          secondarySession,
-          {
-            EX: maxSessionTimeoutMinutes
-          }
-        )
-        await redisClient.set(
-          secondarySfiSessionsKey(secondarySession),
-          primarySession,
-          {
-            EX: maxSessionTimeoutMinutes
-          }
-        )
-      }
+    if (
+      req.session.id &&
+      user.authType === 'sfi' &&
+      maxSessionTimeoutMinutes &&
+      secondarySessionId
+    ) {
+      await redisClient.set(
+        secondarySfiSessionsKey(req.session.id),
+        secondarySessionId,
+        {
+          EX: maxSessionTimeoutMinutes
+        }
+      )
+      await redisClient.set(
+        secondarySfiSessionsKey(secondarySessionId),
+        req.session.id,
+        {
+          EX: maxSessionTimeoutMinutes
+        }
+      )
     }
   }
 
@@ -337,13 +337,8 @@ export function sessionSupport<T extends SessionType>(
   }
 
   async function getSecondaryUser(
-    req: express.Request
+    secondarySessionId: string
   ): Promise<EvakaSessionUser | undefined> {
-    const secondarySessionId = await redisClient.get(
-      secondarySfiSessionsKey(req.session.id)
-    )
-    if (!secondarySessionId) return undefined
-
     const session = await redisClient.get(sessionKey(secondarySessionId))
     if (!session) return undefined
 

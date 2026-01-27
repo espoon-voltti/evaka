@@ -355,8 +355,8 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
         VOLTTI_ENV: 'local',
         ENABLE_DEV_API: true,
 
-        CITIZEN_COOKIE_SECRET: 'A very hush hush cookie secret.',
-        EMPLOYEE_COOKIE_SECRET: 'A very hush hush cookie secret.',
+        CITIZEN_COOKIE_SECRET: 'A very hush hush citizen cookie secret.',
+        EMPLOYEE_COOKIE_SECRET: 'A very hush hush employee cookie secret.',
         USE_SECURE_COOKIES: false,
         CITIZEN_WEAK_LOGIN_RATE_LIMIT: 0,
 
