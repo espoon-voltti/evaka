@@ -49,7 +49,7 @@ data class DocumentVersion(
     val versionNumber: Int,
     val createdAt: HelsinkiDateTime,
     @Nested("createdBy") val createdBy: EvakaUser,
-    val downloadPath: String,
+    val downloadPath: String?,
 )
 
 data class DocumentMetadata(
