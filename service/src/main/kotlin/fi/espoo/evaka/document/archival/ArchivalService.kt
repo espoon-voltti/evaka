@@ -206,8 +206,14 @@ class ArchivalService(
 
         val publishedVersion = db.read { tx -> tx.getChildDocumentPublishedVersion(documentId) }
 
-        if (publishedVersion?.documentKey == null) {
-            throw NotFound("PDF not ready for document $documentId")
+        if (publishedVersion == null) {
+            throw NotFound("No published version found for document $documentId")
+        }
+
+        if (publishedVersion.documentKey == null) {
+            throw IllegalStateException(
+                "Latest version ${publishedVersion.versionNumber} of document $documentId has no PDF generated yet"
+            )
         }
 
         val documentContent = getDocument(DocumentKey.ChildDocument(publishedVersion.documentKey))

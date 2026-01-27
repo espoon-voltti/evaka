@@ -559,4 +559,150 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             "Error log message with ERROR level should be created when instance ID is missing",
         )
     }
+
+    @Test
+    fun `uploadToArchive uses latest version when multiple published versions exist`() {
+        val documentId2 = ChildDocumentId(UUID.randomUUID())
+        val emptyContent = DocumentContent(answers = emptyList())
+        val olderContent =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "old")))
+        val latestContent =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "new")))
+
+        db.transaction { tx ->
+            val employee = DevEmployee()
+            tx.insert(employee)
+
+            val process =
+                tx.insertCaseProcess(
+                    processDefinitionNumber = "12.06.01.SL1.RT34",
+                    year = 2023,
+                    organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+                    archiveDurationMonths = 120,
+                )
+
+            tx.insert(
+                DevChildDocument(
+                    id = documentId2,
+                    childId = childId,
+                    status = DocumentStatus.COMPLETED,
+                    templateId = templateId,
+                    content = latestContent,
+                    modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = null,
+                    answeredAt = null,
+                    answeredBy = null,
+                    processId = process.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now.minusDays(2),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = emptyContent,
+                                documentKey = "old-version-key",
+                            ),
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 2,
+                                createdAt = now.minusDays(1),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = olderContent,
+                                documentKey = "older-version-key",
+                            ),
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 3,
+                                createdAt = now,
+                                createdBy = employee.evakaUserId,
+                                publishedContent = latestContent,
+                                documentKey = "latest-version-key",
+                            ),
+                        ),
+                )
+            )
+        }
+
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId2))
+
+        // Verify archival was successful
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId2)
+            assertNotNull(document?.archivedAt)
+        }
+
+        // Verify the latest version's PDF was used for archival
+        assertEquals(1, särmäClient.calls.size)
+        val archivedDocument = särmäClient.calls.first().documentContent
+        assertEquals("test-document.pdf", archivedDocument.name)
+    }
+
+    @Test
+    fun `uploadToArchive fails when latest version has no PDF generated`() {
+        val documentId3 = ChildDocumentId(UUID.randomUUID())
+        val emptyContent = DocumentContent(answers = emptyList())
+        val latestContent =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "new")))
+
+        db.transaction { tx ->
+            val employee = DevEmployee()
+            tx.insert(employee)
+
+            val process =
+                tx.insertCaseProcess(
+                    processDefinitionNumber = "12.06.01.SL1.RT34",
+                    year = 2023,
+                    organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+                    archiveDurationMonths = 120,
+                )
+
+            tx.insert(
+                DevChildDocument(
+                    id = documentId3,
+                    childId = childId,
+                    status = DocumentStatus.COMPLETED,
+                    templateId = templateId,
+                    content = latestContent,
+                    modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = null,
+                    answeredAt = null,
+                    answeredBy = null,
+                    processId = process.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now.minusDays(1),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = emptyContent,
+                                documentKey = "old-version-key",
+                            ),
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 2,
+                                createdAt = now,
+                                createdBy = employee.evakaUserId,
+                                publishedContent = latestContent,
+                                documentKey = null, // PDF not generated yet for latest version
+                            ),
+                        ),
+                )
+            )
+        }
+
+        // Verify that archival fails when latest version has no PDF
+        assertThrows<IllegalStateException> {
+            archivalService.uploadChildDocumentToArchive(
+                db,
+                AsyncJob.ArchiveChildDocument(documentId3),
+            )
+        }
+
+        // Verify the document was NOT marked as archived
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId3)
+            assertNull(document?.archivedAt)
+        }
+    }
 }
