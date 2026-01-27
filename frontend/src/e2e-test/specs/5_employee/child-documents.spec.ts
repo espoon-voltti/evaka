@@ -912,12 +912,16 @@ describe('Employee - Child documents', () => {
       childId: testChild2.id,
       status: 'COMPLETED',
       content,
-      publishedAt,
-      publishedBy: evakaUserId(unitSupervisor.id),
-      publishedContent: content,
       answeredAt,
       answeredBy: evakaUserId(guardian.id)
-    }).save()
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: publishedAt,
+        createdBy: evakaUserId(unitSupervisor.id),
+        publishedContent: content
+      })
+      .save()
 
     page = await Page.open({
       mockedTime: now,
@@ -1361,13 +1365,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(
@@ -1386,13 +1393,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(
@@ -1490,13 +1500,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(now.toLocalDate(), null),
@@ -1583,13 +1596,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(now.toLocalDate(), null),
