@@ -574,7 +574,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed),
             )
-        assertTrue(db.read { it.getChildDocumentPdfVersions(documentId) }.isEmpty())
+        assertTrue(db.read { it.getChildDocumentPublishedVersions(documentId) }.isEmpty())
 
         controller.publishDocument(dbInstance(), employeeUser.user, clock, documentId)
         assertEquals(
@@ -586,7 +586,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
         asyncJobRunner.runPendingJobsSync(clock)
-        assertEquals(1, db.read { it.getChildDocumentPdfVersions(documentId) }.size)
+        assertEquals(1, db.read { it.getChildDocumentPublishedVersions(documentId) }.size)
 
         // republishing after edits regenerates pdf
         updateDocumentContent(
@@ -596,7 +596,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         controller.publishDocument(dbInstance(), employeeUser.user, clock, documentId)
 
         asyncJobRunner.runPendingJobsSync(clock)
-        assertEquals(2, db.read { it.getChildDocumentPdfVersions(documentId) }.size)
+        assertEquals(2, db.read { it.getChildDocumentPublishedVersions(documentId) }.size)
     }
 
     @Test

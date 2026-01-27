@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 
 const val lockMinutes = 5
@@ -82,14 +83,14 @@ fun Database.Read.getChildDocuments(
     return createQuery {
             sql(
                 """
-SELECT 
+SELECT
     cd.id, 
     cd.status,
     dt.type,
     cd.modified_at, 
     modified_by.name AS modified_by,
-    cd.published_at, 
-    published_by.name AS published_by,
+    latest_version.published_at,
+    latest_version.published_by,
     dt.id as template_id, 
     dt.name as template_name,
     ch.first_name AS child_first_name,
@@ -112,7 +113,14 @@ FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person ch ON cd.child_id = ch.id
 LEFT JOIN evaka_user modified_by ON cd.modified_by = modified_by.id
-LEFT JOIN evaka_user published_by ON cd.published_by = published_by.id
+LEFT JOIN LATERAL (
+    SELECT v.created_at AS published_at, u.name AS published_by
+    FROM child_document_published_version v
+    JOIN evaka_user u ON v.created_by = u.id
+    WHERE v.child_document_id = cd.id
+    ORDER BY v.version_number DESC
+    LIMIT 1
+) latest_version ON true
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employee_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
@@ -179,15 +187,11 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
 SELECT 
     cd.id,
     cd.status,
-    cd.published_at,
+    latest_version.published_at,
     cd.archived_at,
-    EXISTS(
-        SELECT 1 FROM child_document_pdf_version v 
-        WHERE v.child_document_id = cd.id 
-        AND v.document_key IS NOT NULL
-    ) AS pdf_available,
+    COALESCE(latest_version.pdf_available, false) as pdf_available,
     cd.content,
-    cd.published_content,
+    latest_version.published_content,
     p.id as child_id,
     p.first_name as child_first_name,
     p.last_name as child_last_name,
@@ -217,6 +221,13 @@ SELECT
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
+LEFT JOIN LATERAL (
+    SELECT v.created_at AS published_at, v.published_content, v.document_key IS NOT NULL as pdf_available
+    FROM child_document_published_version v
+    WHERE v.child_document_id = cd.id
+    ORDER BY v.version_number DESC
+    LIMIT 1
+) latest_version ON true
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE cd.id = ${bind(id)}
@@ -226,29 +237,36 @@ WHERE cd.id = ${bind(id)}
         .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
-fun Database.Transaction.insertChildDocumentPdfVersion(
+fun Database.Transaction.insertChildDocumentPublishedVersion(
     documentId: ChildDocumentId,
     createdAt: HelsinkiDateTime,
+    createdBy: EvakaUserId,
+    publishedContent: DocumentContent,
 ): Int =
     createQuery {
             sql(
                 """
-            WITH next_version AS (
-                SELECT COALESCE(MAX(version_number), 0) + 1 AS version
-                FROM child_document_pdf_version
-                WHERE child_document_id = ${bind(documentId)}
+            INSERT INTO child_document_published_version
+                (child_document_id, version_number, created_at, created_by, published_content)
+            VALUES (
+                ${bind(documentId)},
+                COALESCE(
+                    (SELECT MAX(version_number) + 1 
+                     FROM child_document_published_version
+                     WHERE child_document_id = ${bind(documentId)}), 
+                    1
+                ),
+                ${bind(createdAt)},
+                ${bind(createdBy)},
+                ${bind(publishedContent)}::jsonb
             )
-            INSERT INTO child_document_pdf_version 
-                (child_document_id, created_at, version_number)
-            SELECT ${bind(documentId)}, ${bind(createdAt)}, version
-            FROM next_version
             RETURNING version_number
         """
             )
         }
         .exactlyOne<Int>()
 
-fun Database.Transaction.updateChildDocumentPdfVersionKey(
+fun Database.Transaction.updateChildDocumentPublishedVersionKey(
     documentId: ChildDocumentId,
     versionNumber: Int,
     documentKey: String,
@@ -256,7 +274,7 @@ fun Database.Transaction.updateChildDocumentPdfVersionKey(
     createUpdate {
             sql(
                 """
-            UPDATE child_document_pdf_version
+            UPDATE child_document_published_version
             SET document_key = ${bind(documentKey)}
             WHERE child_document_id = ${bind(documentId)}
                 AND version_number = ${bind(versionNumber)}
@@ -267,42 +285,40 @@ fun Database.Transaction.updateChildDocumentPdfVersionKey(
         .updateExactlyOne()
 }
 
-fun Database.Read.getChildDocumentPdfVersions(documentId: ChildDocumentId): List<PdfVersion> =
+fun Database.Read.getChildDocumentPublishedVersions(documentId: ChildDocumentId): List<PublishedVersion> =
     createQuery {
             sql(
                 """
             SELECT version_number, document_key, created_at
-            FROM child_document_pdf_version
+            FROM child_document_published_version
             WHERE child_document_id = ${bind(documentId)}
-                AND document_key IS NOT NULL
             ORDER BY version_number DESC
         """
             )
         }
         .toList()
 
-fun Database.Read.getChildDocumentPdfVersion(
+fun Database.Read.getChildDocumentPublishedVersion(
     documentId: ChildDocumentId,
     versionNumber: Int? = null,
-): PdfVersion? =
+): PublishedVersion? =
     createQuery {
             sql(
                 """
             SELECT version_number, document_key, created_at
-            FROM child_document_pdf_version
+            FROM child_document_published_version
             WHERE child_document_id = ${bind(documentId)}
                 ${if (versionNumber != null) "AND version_number = ${bind(versionNumber)}" else ""}
-                AND document_key IS NOT NULL
             ORDER BY version_number DESC
             LIMIT 1
         """
             )
         }
-        .exactlyOneOrNull<PdfVersion>()
+        .exactlyOneOrNull<PublishedVersion>()
 
-data class PdfVersion(
+data class PublishedVersion(
     val versionNumber: Int,
-    val documentKey: String,
+    val documentKey: String?,
     val createdAt: HelsinkiDateTime,
 )
 
@@ -401,9 +417,6 @@ fun Database.Transaction.updateChildDocument(
                     modified_by = ${bind(userId)},
                     content_locked_at = ${bind(now)},
                     content_locked_by = ${bind(userId)},
-                    published_content = ${bind(content)},
-                    published_at = ${bind(now)},
-                    published_by = ${bind(userId)},
                     answered_at = ${bind(now)},
                     answered_by = ${bind(userId)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
@@ -413,71 +426,53 @@ fun Database.Transaction.updateChildDocument(
         .updateExactlyOne()
 }
 
-fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boolean {
-    return createQuery {
-            sql(
-                """
-                SELECT (published_content IS NOT NULL AND content = published_content) AS up_to_date 
-                FROM child_document 
-                WHERE id = ${bind(id)}
-                """
-            )
-        }
-        .exactlyOneOrNull<Boolean>() ?: throw NotFound("Document $id not found")
-}
-
-fun Database.Transaction.publishChildDocument(
+/**
+ * Creates a new published version if content has changed. Returns version number or null if skipped.
+ */
+fun Database.Transaction.createPublishedVersionIfNeeded(
     id: ChildDocumentId,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
-) {
-    createUpdate {
-            sql(
-                """
-                UPDATE child_document
-                SET published_at = ${bind(now)}, published_by = ${bind(userId)}, published_content = content
-                WHERE id = ${bind(id)} AND status <> 'COMPLETED'
-                """
-            )
-        }
-        .updateExactlyOne()
+): Int? {
+    data class Result(@Json val content: DocumentContent, val upToDate: Boolean)
 
+    val result = createQuery {
+        sql(
+            """
+            SELECT 
+                cd.content,
+                (lv.published_content IS NOT NULL AND cd.content = lv.published_content) AS up_to_date
+            FROM child_document cd
+            LEFT JOIN LATERAL (
+                SELECT v.published_content
+                FROM child_document_published_version v
+                WHERE v.child_document_id = cd.id
+                ORDER BY v.version_number DESC
+                LIMIT 1
+            ) lv ON true
+            WHERE cd.id = ${bind(id)}
+            """
+        )
+    }.exactlyOneOrNull<Result>() ?: throw NotFound("Document $id not found")
+
+    if (result.upToDate) return null
+
+    return insertChildDocumentPublishedVersion(id, now, userId, result.content)
+}
+
+fun Database.Transaction.deleteChildDocumentReadMarkers(documentId: ChildDocumentId) {
     createUpdate {
-            sql(
-                """
-                DELETE FROM child_document_read
-                WHERE document_id = ${bind(id)}
-                """
-            )
-        }
-        .execute()
+        sql("DELETE FROM child_document_read WHERE document_id = ${bind(documentId)}")
+    }.execute()
 }
 
 data class StatusTransition(val currentStatus: DocumentStatus, val newStatus: DocumentStatus)
 
-fun Database.Transaction.changeStatus(
+fun Database.Transaction.updateChildDocumentStatus(
     id: ChildDocumentId,
     statusTransition: StatusTransition,
     now: HelsinkiDateTime,
-    userId: EvakaUserId,
-) {
-    createUpdate {
-            sql(
-                """
-                UPDATE child_document
-                SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, modified_by = ${bind(userId)}
-                WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
-                """
-            )
-        }
-        .updateExactlyOne()
-}
-
-fun Database.Transaction.changeStatusAndPublish(
-    id: ChildDocumentId,
-    statusTransition: StatusTransition,
-    now: HelsinkiDateTime,
-    answeredBy: EvakaUserId?,
+    answeredBy: EvakaUserId? = null,
     userId: EvakaUserId,
 ) {
     createUpdate {
@@ -486,10 +481,7 @@ fun Database.Transaction.changeStatusAndPublish(
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)},
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(userId)},
-                    published_at = ${bind(now)},
-                    published_by = ${bind(userId)},
-                    published_content = content
+                    modified_by = ${bind(userId)}
                     ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
@@ -501,56 +493,86 @@ fun Database.Transaction.changeStatusAndPublish(
 fun Database.Transaction.markCompletedAndPublish(
     ids: List<ChildDocumentId>,
     now: HelsinkiDateTime,
-) {
+): Map<ChildDocumentId, Int> {
+    val userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+
+    // Always update status for all documents
     createUpdate {
             sql(
                 """
                 UPDATE child_document
                 SET status = 'COMPLETED',
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(AuthenticatedUser.SystemInternalUser.rawId())},
-                    published_at = ${bind(now)},
-                    published_by = ${bind(AuthenticatedUser.SystemInternalUser.rawId())},
-                    published_content = content
+                    modified_by = ${bind(userId)}
                 WHERE id = ANY(${bind(ids)})
                 """
             )
         }
         .execute()
-}
 
-fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
-    createUpdate {
+    // Batch insert into version table using CTE, filtering for changed content in SQL
+    return createQuery {
             sql(
                 """
-                DELETE FROM child_document_read
-                WHERE document_id = ${bind(id)}
+            WITH documents_to_publish AS (
+                SELECT cd.id, cd.content
+                FROM child_document cd
+                LEFT JOIN LATERAL (
+                    SELECT v.published_content
+                    FROM child_document_published_version v
+                    WHERE v.child_document_id = cd.id
+                    ORDER BY v.version_number DESC
+                    LIMIT 1
+                ) latest_version ON true
+                WHERE cd.id = ANY(${bind(ids)})
+                  AND (latest_version.published_content IS NULL OR cd.content != latest_version.published_content)
+            ),
+            next_versions AS (
+                SELECT 
+                    d.id,
+                    d.content,
+                    COALESCE(MAX(v.version_number) + 1, 1) as next_version
+                FROM documents_to_publish d
+                LEFT JOIN child_document_published_version v ON v.child_document_id = d.id
+                GROUP BY d.id, d.content
+            ),
+            inserted AS (
+                INSERT INTO child_document_published_version
+                    (child_document_id, version_number, created_at, created_by, published_content, document_key)
+                SELECT 
+                    id,
+                    next_version,
+                    ${bind(now)},
+                    ${bind(userId)},
+                    content::jsonb,
+                    NULL
+                FROM next_versions
+                RETURNING child_document_id, version_number
+            )
+            SELECT child_document_id, version_number FROM inserted
                 """
             )
+        }
+        .toMap {
+            column<ChildDocumentId>("child_document_id") to column<Int>("version_number")
+        }
+}
+
+/**
+ * Make sure to schedule DeleteChildDocumentPdf jobs before calling this
+ */
+fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
+    deleteChildDocumentReadMarkers(id)
+
+    createUpdate {
+            sql("DELETE FROM child_document_published_version WHERE child_document_id = ${bind(id)}")
         }
         .execute()
 
     createUpdate {
-            sql(
-                """
-                DELETE FROM child_document
-                WHERE id = ${bind(id)} AND status = 'DRAFT'
-                """
-            )
+            sql("DELETE FROM child_document WHERE id = ${bind(id)} AND status = 'DRAFT'")
         }
         .updateExactlyOne()
-}
-
-fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
-    executeBatch(ids) {
-        sql(
-            """
-UPDATE child_document
-SET document_key = NULL
-WHERE id = ${bind { it }}
-"""
-        )
-    }
 }
 
 fun Database.Transaction.markDocumentAsArchived(id: ChildDocumentId, now: HelsinkiDateTime) {
@@ -641,7 +663,7 @@ fun Database.Transaction.annulChildDocumentDecision(
         .exactlyOne()
 }
 
-fun Database.Transaction.setChildDocumentDecisionAndPublish(
+fun Database.Transaction.setChildDocumentDecisionAndComplete(
     documentId: ChildDocumentId,
     decisionId: ChildDocumentDecisionId,
     now: HelsinkiDateTime,
@@ -654,10 +676,7 @@ fun Database.Transaction.setChildDocumentDecisionAndPublish(
                 SET decision_id = ${bind(decisionId)}, 
                     status = 'COMPLETED', 
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(userId)},
-                    published_content = content,
-                    published_at = ${bind(now)},
-                    published_by = ${bind(userId)}
+                    modified_by = ${bind(userId)}
                 WHERE id = ${bind(documentId)} AND status = 'DECISION_PROPOSAL'
                 """
             )

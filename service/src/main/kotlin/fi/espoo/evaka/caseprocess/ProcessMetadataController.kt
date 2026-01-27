@@ -48,6 +48,7 @@ data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val ba
 data class DocumentVersion(
     val versionNumber: Int,
     val createdAt: HelsinkiDateTime,
+    @Nested("createdBy") val createdBy: EvakaUser,
     val downloadPath: String
 )
 

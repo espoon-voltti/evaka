@@ -295,21 +295,24 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     templateId = templateId,
                     status = DocumentStatus.COMPLETED,
                     content = emptyContent,
-                    publishedContent = emptyContent,
                     modifiedAt = now,
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = now,
                     contentLockedBy = null,
-                    publishedAt = now,
-                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
                     processId = process.id,
+                    publishedVersions = listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = now,
+                            createdBy = employee.evakaUserId,
+                            publishedContent = emptyContent,
+                            documentKey = "test-document-key"
+                        )
+                    )
                 )
             tx.insert(childDocument)
-
-            val versionNumber = tx.insertChildDocumentPdfVersion(documentId, now)
-            tx.updateChildDocumentPdfVersionKey(documentId, versionNumber, "test-document-key")
         }
     }
 

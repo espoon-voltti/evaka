@@ -415,20 +415,13 @@ class ChildDocumentController(
                     if (!document.template.type.manuallyPublishable)
                         throw BadRequest("Document type is not publishable")
 
-                    val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-                    tx.publishChildDocument(documentId, clock.now(), user.evakaUserId)
-                    if (!wasUpToDate) {
-                        childDocumentService.schedulePdfGeneration(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
-                        childDocumentService.scheduleEmailNotification(
-                            tx,
-                            listOf(documentId),
-                            clock.now(),
-                        )
-                    }
+                    childDocumentService.publishAndScheduleNotifications(
+                        tx,
+                        user,
+                        documentId,
+                        clock.now(),
+                        emailPolicy = EmailNotificationPolicy.ON_NEW_VERSION,
+                    )
                 }
             }
             .also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
@@ -484,27 +477,30 @@ class ChildDocumentController(
                 goingForward = true,
             )
 
-        if (document.template.type.decision) {
-            tx.changeStatus(documentId, statusTransition, clock.now(), user.evakaUserId)
-        } else {
-            val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
-            tx.changeStatusAndPublish(
-                documentId,
-                statusTransition,
-                clock.now(),
-                answeredBy =
-                    user.evakaUserId.takeIf {
-                        document.template.type == ChildDocumentType.CITIZEN_BASIC &&
-                            statusTransition.newStatus == DocumentStatus.COMPLETED
-                    },
-                user.evakaUserId,
-            )
-            if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT || !wasUpToDate) {
-                childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
-            }
+        tx.updateChildDocumentStatus(
+            id = documentId,
+            statusTransition = statusTransition,
+            now = clock.now(),
+            answeredBy = user.evakaUserId.takeIf {
+                document.template.type == ChildDocumentType.CITIZEN_BASIC &&
+                        statusTransition.newStatus == DocumentStatus.COMPLETED
+            },
+            userId = user.evakaUserId
+        )
 
-            if (!wasUpToDate)
-                childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+        // decisions are published when accepted/rejected, not on status change
+        if (!document.template.type.decision) {
+            childDocumentService.publishAndScheduleNotifications(
+                tx,
+                user,
+                documentId,
+                clock.now(),
+                emailPolicy = if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT) {
+                    EmailNotificationPolicy.ALWAYS
+                } else {
+                    EmailNotificationPolicy.ON_NEW_VERSION
+                },
+            )
         }
 
         updateDocumentCaseProcessHistory(
@@ -551,7 +547,7 @@ class ChildDocumentController(
                             goingForward = false,
                         )
 
-                    tx.changeStatus(documentId, statusTransition, clock.now(), user.evakaUserId)
+                    tx.updateChildDocumentStatus(documentId, statusTransition, clock.now(), userId = user.evakaUserId)
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,
@@ -588,12 +584,14 @@ class ChildDocumentController(
                     )
                     deleteProcessByDocumentId(tx, documentId)
 
-                    val pdfVersions = tx.getChildDocumentPdfVersions(documentId)
-                    if (pdfVersions.isNotEmpty()) {
+                    val publishedVersions = tx.getChildDocumentPublishedVersions(documentId)
+
+                    val documentKeysToDelete = publishedVersions.mapNotNull { it.documentKey }
+                    if (documentKeysToDelete.isNotEmpty()) {
                         asyncJobRunner.plan(
                             tx = tx,
                             payloads =
-                                pdfVersions.map { AsyncJob.DeleteChildDocumentPdf(it.documentKey) },
+                                documentKeysToDelete.map { AsyncJob.DeleteChildDocumentPdf(it) },
                             runAt = clock.now(),
                         )
                     }
@@ -748,14 +746,14 @@ class ChildDocumentController(
                     }
 
                     tx.setChildDocumentDecisionMaker(documentId, body.decisionMaker)
-                    tx.changeStatus(
+                    tx.updateChildDocumentStatus(
                         documentId,
                         StatusTransition(
                             currentStatus = DocumentStatus.DRAFT,
                             newStatus = DocumentStatus.DECISION_PROPOSAL,
                         ),
                         clock.now(),
-                        user.evakaUserId,
+                        userId = user.evakaUserId,
                     )
 
                     updateDocumentCaseProcessHistory(
@@ -810,53 +808,26 @@ class ChildDocumentController(
                             .firstOrNull()
                             ?.unitId
 
-                    tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.ACCEPTED,
-                            userId = user.evakaUserId,
-                            validity = body.validity,
-                            daycareId = placementDaycareId,
-                        )
-                        .also { decisionId ->
-                            tx.setChildDocumentDecisionAndPublish(
-                                documentId,
-                                decisionId,
-                                clock.now(),
-                                user.evakaUserId,
-                            )
-                        }
+                    val decisionId = tx.insertChildDocumentDecision(
+                        status = ChildDocumentDecisionStatus.ACCEPTED,
+                        userId = user.evakaUserId,
+                        validity = body.validity,
+                        daycareId = placementDaycareId,
+                    )
 
-                    body.endingDecisionIds?.isEmpty()?.let {
-                        if (!it) {
-                            try {
-                                tx.endChildDocumentDecisionsWithSubstitutiveDecision(
-                                    childId = document.child.id,
-                                    endingDecisionIds = body.endingDecisionIds,
-                                    endDate = body.validity.start.minusDays(1),
-                                )
-                            } catch (e: JdbiException) {
-                                when (e.psqlCause()?.sqlState) {
-                                    PSQLState.CHECK_VIOLATION.state -> {
-                                        val constraintName =
-                                            e.psqlCause()?.serverErrorMessage?.constraint
-                                        throw Conflict(
-                                            "Cannot end decisions: check constraint violation (constraint: $constraintName).",
-                                            "end-child-document-decision",
-                                        )
-                                    }
-
-                                    else -> {
-                                        throw e
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
-                    childDocumentService.scheduleEmailNotification(
-                        tx,
-                        listOf(documentId),
+                    tx.setChildDocumentDecisionAndComplete(
+                        documentId,
+                        decisionId,
                         clock.now(),
+                        user.evakaUserId,
+                    )
+
+                    childDocumentService.publishAndScheduleNotifications(
+                        tx,
+                        user,
+                        documentId,
+                        clock.now(),
+                        emailPolicy = EmailNotificationPolicy.ALWAYS,
                     )
 
                     updateDocumentCaseProcessHistory(
@@ -866,6 +837,31 @@ class ChildDocumentController(
                         now = clock.now(),
                         userId = user.evakaUserId,
                     )
+
+                    if(!body.endingDecisionIds.isNullOrEmpty()) {
+                        try {
+                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                childId = document.child.id,
+                                endingDecisionIds = body.endingDecisionIds,
+                                endDate = body.validity.start.minusDays(1),
+                            )
+                        } catch (e: JdbiException) {
+                            when (e.psqlCause()?.sqlState) {
+                                PSQLState.CHECK_VIOLATION.state -> {
+                                    val constraintName =
+                                        e.psqlCause()?.serverErrorMessage?.constraint
+                                    throw Conflict(
+                                        "Cannot end decisions: check constraint violation (constraint: $constraintName).",
+                                        "end-child-document-decision",
+                                    )
+                                }
+
+                                else -> {
+                                    throw e
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .also { Audit.ChildDocumentAcceptDecision.log(targetId = AuditId(documentId)) }
@@ -896,26 +892,26 @@ class ChildDocumentController(
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
 
-                    tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.REJECTED,
-                            userId = user.evakaUserId,
-                            validity = null,
-                            daycareId = null,
-                        )
-                        .also { decisionId ->
-                            tx.setChildDocumentDecisionAndPublish(
-                                documentId,
-                                decisionId,
-                                clock.now(),
-                                user.evakaUserId,
-                            )
-                        }
+                    val decisionId = tx.insertChildDocumentDecision(
+                        status = ChildDocumentDecisionStatus.REJECTED,
+                        userId = user.evakaUserId,
+                        validity = null,
+                        daycareId = null,
+                    )
 
-                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
-                    childDocumentService.scheduleEmailNotification(
-                        tx,
-                        listOf(documentId),
+                    tx.setChildDocumentDecisionAndComplete(
+                        documentId,
+                        decisionId,
                         clock.now(),
+                        user.evakaUserId,
+                    )
+
+                    childDocumentService.publishAndScheduleNotifications(
+                        tx,
+                        user,
+                        documentId,
+                        clock.now(),
+                        emailPolicy = EmailNotificationPolicy.ALWAYS,
                     )
 
                     updateDocumentCaseProcessHistory(

@@ -2451,19 +2451,24 @@ data class DevChildDocument(
     val childId: ChildId,
     val templateId: DocumentTemplateId,
     @Json val content: DocumentContent,
-    @Json val publishedContent: DocumentContent?,
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUserId,
     val contentLockedAt: HelsinkiDateTime,
     val contentLockedBy: EmployeeId?,
-    val documentKey: String? = null,
-    val publishedAt: HelsinkiDateTime?,
-    val publishedBy: EvakaUserId?,
     val answeredAt: HelsinkiDateTime? = null,
     val answeredBy: EvakaUserId? = null,
     val processId: CaseProcessId? = null,
     val decisionMaker: EmployeeId? = null,
     val decision: DevChildDocumentDecision? = null,
+    val publishedVersions: List<DevChildDocumentPublishedVersion> = emptyList(),
+)
+
+data class DevChildDocumentPublishedVersion(
+    val versionNumber: Int,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUserId,
+    @Json val publishedContent: DocumentContent,
+    val documentKey: String? = null,
 )
 
 data class DevChildDocumentDecision(

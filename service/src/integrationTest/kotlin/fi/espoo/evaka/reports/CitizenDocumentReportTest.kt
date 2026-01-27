@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -382,15 +383,20 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     childId = testChildAapo.id,
                     status = DocumentStatus.COMPLETED,
                     content = affirmativeDocumentContent,
-                    publishedContent = affirmativeDocumentContent,
                     contentLockedAt = mockClock.now(),
                     modifiedAt = mockClock.now(),
                     modifiedBy = admin.evakaUserId,
                     answeredAt = mockClock.now(),
-                    publishedAt = mockClock.now(),
-                    publishedBy = admin.evakaUserId,
                     contentLockedBy = admin.id,
                     answeredBy = admin.evakaUserId,
+                    publishedVersions = listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = mockClock.now(),
+                            createdBy = admin.evakaUserId,
+                            publishedContent = affirmativeDocumentContent,
+                        )
+                    ),
                 )
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(
