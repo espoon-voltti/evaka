@@ -164,14 +164,19 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                            createdBy = employee.evakaUserId,
-                            publishedContent = updatedContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
             tx.insert(
@@ -187,14 +192,15 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = clock.now().minusMonths(1),
-                            createdBy = employee.evakaUserId,
-                            publishedContent = updatedContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now().minusMonths(1),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
             tx.insert(
@@ -263,14 +269,19 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                            createdBy = employee.evakaUserId,
-                            publishedContent = updatedContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
 
@@ -311,14 +322,19 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     contentLockedBy = null,
                     answeredAt = null,
                     answeredBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                            createdBy = employee.evakaUserId,
-                            publishedContent = content,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = content,
+                            )
+                        ),
                 )
             )
         }

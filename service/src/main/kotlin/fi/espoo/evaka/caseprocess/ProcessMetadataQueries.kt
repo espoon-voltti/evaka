@@ -114,7 +114,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                 downloadPath = "/employee/child-documents/$documentId/pdf",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
-                versions = jsonColumn("versions")
+                versions = jsonColumn("versions"),
             )
         }
         .exactlyOne()

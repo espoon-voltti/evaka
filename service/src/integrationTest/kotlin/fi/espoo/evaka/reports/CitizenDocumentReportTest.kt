@@ -389,14 +389,15 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     answeredAt = mockClock.now(),
                     contentLockedBy = admin.id,
                     answeredBy = admin.evakaUserId,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = mockClock.now(),
-                            createdBy = admin.evakaUserId,
-                            publishedContent = affirmativeDocumentContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = mockClock.now(),
+                                createdBy = admin.evakaUserId,
+                                publishedContent = affirmativeDocumentContent,
+                            )
+                        ),
                 )
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(

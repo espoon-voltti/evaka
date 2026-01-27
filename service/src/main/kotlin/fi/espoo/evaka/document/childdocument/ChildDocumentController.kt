@@ -481,11 +481,12 @@ class ChildDocumentController(
             id = documentId,
             statusTransition = statusTransition,
             now = clock.now(),
-            answeredBy = user.evakaUserId.takeIf {
-                document.template.type == ChildDocumentType.CITIZEN_BASIC &&
+            answeredBy =
+                user.evakaUserId.takeIf {
+                    document.template.type == ChildDocumentType.CITIZEN_BASIC &&
                         statusTransition.newStatus == DocumentStatus.COMPLETED
-            },
-            userId = user.evakaUserId
+                },
+            userId = user.evakaUserId,
         )
 
         // decisions are published when accepted/rejected, not on status change
@@ -495,11 +496,12 @@ class ChildDocumentController(
                 user,
                 documentId,
                 clock.now(),
-                emailPolicy = if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT) {
-                    EmailNotificationPolicy.ALWAYS
-                } else {
-                    EmailNotificationPolicy.ON_NEW_VERSION
-                },
+                emailPolicy =
+                    if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT) {
+                        EmailNotificationPolicy.ALWAYS
+                    } else {
+                        EmailNotificationPolicy.ON_NEW_VERSION
+                    },
             )
         }
 
@@ -547,7 +549,12 @@ class ChildDocumentController(
                             goingForward = false,
                         )
 
-                    tx.updateChildDocumentStatus(documentId, statusTransition, clock.now(), userId = user.evakaUserId)
+                    tx.updateChildDocumentStatus(
+                        documentId,
+                        statusTransition,
+                        clock.now(),
+                        userId = user.evakaUserId,
+                    )
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,
@@ -808,12 +815,13 @@ class ChildDocumentController(
                             .firstOrNull()
                             ?.unitId
 
-                    val decisionId = tx.insertChildDocumentDecision(
-                        status = ChildDocumentDecisionStatus.ACCEPTED,
-                        userId = user.evakaUserId,
-                        validity = body.validity,
-                        daycareId = placementDaycareId,
-                    )
+                    val decisionId =
+                        tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.ACCEPTED,
+                            userId = user.evakaUserId,
+                            validity = body.validity,
+                            daycareId = placementDaycareId,
+                        )
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,
@@ -838,7 +846,7 @@ class ChildDocumentController(
                         userId = user.evakaUserId,
                     )
 
-                    if(!body.endingDecisionIds.isNullOrEmpty()) {
+                    if (!body.endingDecisionIds.isNullOrEmpty()) {
                         try {
                             tx.endChildDocumentDecisionsWithSubstitutiveDecision(
                                 childId = document.child.id,
@@ -892,12 +900,13 @@ class ChildDocumentController(
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
                         throw BadRequest("Document is not in decision proposal status")
 
-                    val decisionId = tx.insertChildDocumentDecision(
-                        status = ChildDocumentDecisionStatus.REJECTED,
-                        userId = user.evakaUserId,
-                        validity = null,
-                        daycareId = null,
-                    )
+                    val decisionId =
+                        tx.insertChildDocumentDecision(
+                            status = ChildDocumentDecisionStatus.REJECTED,
+                            userId = user.evakaUserId,
+                            validity = null,
+                            daycareId = null,
+                        )
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,

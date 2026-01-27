@@ -136,14 +136,15 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     status = DocumentStatus.COMPLETED,
                     contentLockedBy = supervisor1.id,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = clock.now(),
-                            createdBy = supervisor1.evakaUserId,
-                            publishedContent = child2Document.content,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = supervisor1.evakaUserId,
+                                publishedContent = child2Document.content,
+                            )
+                        ),
                     decision =
                         DevChildDocumentDecision(
                             createdBy = decisionMaker.id,
@@ -206,14 +207,15 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             childId = child1.id,
                             status = DocumentStatus.COMPLETED,
                             contentLockedBy = supervisor1.id,
-                            publishedVersions = listOf(
-                                DevChildDocumentPublishedVersion(
-                                    versionNumber = 1,
-                                    createdAt = clock.now(),
-                                    createdBy = supervisor1.evakaUserId,
-                                    publishedContent = child2Document.content,
-                                )
-                            ),
+                            publishedVersions =
+                                listOf(
+                                    DevChildDocumentPublishedVersion(
+                                        versionNumber = 1,
+                                        createdAt = clock.now(),
+                                        createdBy = supervisor1.evakaUserId,
+                                        publishedContent = child2Document.content,
+                                    )
+                                ),
                             decision =
                                 DevChildDocumentDecision(
                                     createdBy = decisionMaker.id,

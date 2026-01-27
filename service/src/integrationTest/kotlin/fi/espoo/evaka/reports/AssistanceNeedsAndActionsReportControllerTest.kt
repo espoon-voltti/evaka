@@ -678,22 +678,24 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     modifiedBy = decisionMaker.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = decisionMaker.id,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = clock.now(),
-                            createdBy = decisionMaker.evakaUserId,
-                            publishedContent = DocumentContent(
-                                answers =
-                                    listOf(
-                                        AnsweredQuestion.CheckboxAnswer(
-                                            questionId = "q1",
-                                            answer = true,
-                                        )
-                                    )
-                            ),
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = decisionMaker.evakaUserId,
+                                publishedContent =
+                                    DocumentContent(
+                                        answers =
+                                            listOf(
+                                                AnsweredQuestion.CheckboxAnswer(
+                                                    questionId = "q1",
+                                                    answer = true,
+                                                )
+                                            )
+                                    ),
+                            )
+                        ),
                     decision =
                         DevChildDocumentDecision(
                             createdBy = decisionMaker.id,

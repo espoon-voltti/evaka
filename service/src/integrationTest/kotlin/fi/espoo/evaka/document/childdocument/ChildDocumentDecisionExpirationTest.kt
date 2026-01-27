@@ -107,14 +107,15 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                                     decisionStatus != ChildDocumentDecisionStatus.REJECTED
                                 },
                         ),
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = now.minusDays(5),
-                            createdBy = admin.evakaUserId,
-                            publishedContent = DocumentContent(emptyList()),
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now.minusDays(5),
+                                createdBy = admin.evakaUserId,
+                                publishedContent = DocumentContent(emptyList()),
+                            )
+                        ),
                 )
             )
         }

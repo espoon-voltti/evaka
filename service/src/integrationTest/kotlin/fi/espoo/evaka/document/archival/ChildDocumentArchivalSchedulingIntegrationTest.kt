@@ -151,14 +151,15 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                         modifiedBy = userId,
                         contentLockedAt = now,
                         contentLockedBy = null,
-                        publishedVersions = listOf(
-                            DevChildDocumentPublishedVersion(
-                                versionNumber = 1,
-                                createdAt = now,
-                                createdBy = userId,
-                                publishedContent = emptyContent,
-                            )
-                        ),
+                        publishedVersions =
+                            listOf(
+                                DevChildDocumentPublishedVersion(
+                                    versionNumber = 1,
+                                    createdAt = now,
+                                    createdBy = userId,
+                                    publishedContent = emptyContent,
+                                )
+                            ),
                     )
                 )
             }
@@ -198,14 +199,15 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                     modifiedBy = userId,
                     contentLockedAt = now,
                     contentLockedBy = null,
-                    publishedVersions = listOf(
-                        DevChildDocumentPublishedVersion(
-                            versionNumber = 1,
-                            createdAt = now,
-                            createdBy = userId,
-                            publishedContent = emptyContent,
-                        )
-                    ),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = userId,
+                                publishedContent = emptyContent,
+                            )
+                        ),
                 )
             )
         }
