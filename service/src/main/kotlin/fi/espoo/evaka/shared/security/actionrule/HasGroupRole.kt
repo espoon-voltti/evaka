@@ -194,7 +194,7 @@ JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
-${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
+${if (deletable) "AND status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'" else ""}
 $denyDecisionSql

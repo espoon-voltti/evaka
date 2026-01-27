@@ -24,7 +24,7 @@ SELECT
     cd.status,
     dt.type,
     dt.name AS template_name,
-    cd.published_at,
+    latest_version.published_at,
     (NOT EXISTS(
         SELECT FROM child_document_read cdr
         WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
@@ -49,6 +49,13 @@ SELECT
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
 JOIN person child ON cd.child_id = child.id
+LEFT JOIN LATERAL (
+    SELECT v.created_at AS published_at
+    FROM child_document_published_version v
+    WHERE v.child_document_id = cd.id
+    ORDER BY v.version_number DESC
+    LIMIT 1
+) latest_version ON true
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 WHERE ${predicate(childDocumentPredicate.forTable("cd"))}
@@ -64,7 +71,9 @@ fun Database.Read.getChildDocumentCitizenSummaries(
             user,
             Predicate.all(
                 Predicate { where("$it.child_id = ${bind(childId)}") },
-                Predicate { where("$it.published_at IS NOT NULL") },
+                Predicate {
+                    where("EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = $it.id)")
+                },
             ),
         )
         .toList<ChildDocumentCitizenSummary>()
@@ -89,13 +98,13 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                 SELECT 
                     cd.id,
                     cd.status,
-                    cd.published_at,
+                    latest_version.published_at,
                     EXISTS(
-                        SELECT 1 FROM child_document_pdf_version v 
+                        SELECT 1 FROM child_document_published_version v 
                         WHERE v.child_document_id = cd.id 
                         AND v.document_key IS NOT NULL
                     ) AS downloadable,
-                    cd.published_content AS content,
+                    latest_version.published_content AS content,
                     p.id as child_id,
                     p.first_name as child_first_name,
                     p.last_name as child_last_name,
@@ -121,8 +130,15 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id
+                LEFT JOIN LATERAL (
+                    SELECT v.created_at AS published_at, v.published_content
+                    FROM child_document_published_version v
+                    WHERE v.child_document_id = cd.id
+                    ORDER BY v.version_number DESC
+                    LIMIT 1
+                ) latest_version ON true
                 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
-                WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
+                WHERE cd.id = ${bind(id)} AND latest_version.published_at IS NOT NULL
                 """
             )
         }

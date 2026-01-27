@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -146,13 +147,18 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                         templateId = templateId,
                         status = DocumentStatus.COMPLETED,
                         content = emptyContent,
-                        publishedContent = emptyContent,
                         modifiedAt = now,
                         modifiedBy = userId,
                         contentLockedAt = now,
                         contentLockedBy = null,
-                        publishedAt = now,
-                        publishedBy = userId,
+                        publishedVersions = listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = userId,
+                                publishedContent = emptyContent,
+                            )
+                        ),
                     )
                 )
             }
@@ -188,13 +194,18 @@ class ChildDocumentArchivalSchedulingIntegrationTest :
                     templateId = templateId,
                     status = DocumentStatus.COMPLETED,
                     content = emptyContent,
-                    publishedContent = emptyContent,
                     modifiedAt = now,
                     modifiedBy = userId,
                     contentLockedAt = now,
                     contentLockedBy = null,
-                    publishedAt = now,
-                    publishedBy = userId,
+                    publishedVersions = listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = now,
+                            createdBy = userId,
+                            publishedContent = emptyContent,
+                        )
+                    ),
                 )
             )
         }

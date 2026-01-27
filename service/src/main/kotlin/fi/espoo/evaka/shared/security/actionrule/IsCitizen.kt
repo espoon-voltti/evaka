@@ -351,7 +351,7 @@ WHERE parent_id = ${bind(userId)}
 SELECT id
 FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
-    AND cd.published_at IS NOT NULL 
+    AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
             """
                     .trimIndent()
@@ -365,7 +365,7 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
 SELECT id
 FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
-    AND cd.published_at IS NOT NULL 
+    AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
     ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
             """
                     .trimIndent()

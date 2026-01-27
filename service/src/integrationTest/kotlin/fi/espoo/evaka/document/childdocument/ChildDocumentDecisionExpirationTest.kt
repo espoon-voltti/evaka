@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevChildDocumentDecision
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -87,13 +88,10 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                     childId = child.id,
                     templateId = decisionTemplate.id,
                     content = DocumentContent(emptyList()),
-                    publishedContent = DocumentContent(emptyList()),
                     modifiedAt = now.minusDays(5),
                     modifiedBy = admin.evakaUserId,
                     contentLockedAt = now.minusDays(5),
                     contentLockedBy = admin.id,
-                    publishedAt = now.minusDays(5),
-                    publishedBy = admin.evakaUserId,
                     decisionMaker = admin.id,
                     decision =
                         DevChildDocumentDecision(
@@ -109,6 +107,14 @@ class ChildDocumentDecisionExpirationTest : PureJdbiTest(resetDbBeforeEach = tru
                                     decisionStatus != ChildDocumentDecisionStatus.REJECTED
                                 },
                         ),
+                    publishedVersions = listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = now.minusDays(5),
+                            createdBy = admin.evakaUserId,
+                            publishedContent = DocumentContent(emptyList()),
+                        )
+                    ),
                 )
             )
         }

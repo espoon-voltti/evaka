@@ -56,72 +56,535 @@ Instead of replacing the PDF, the system should:
 
 ## Phase 1: Database Schema ✅ COMPLETED
 
-**Migration**: `src/main/resources/db/migration/V576__child_document_versioned_pdfs.sql`
-
-**Summary**: 
-- Created `child_document_pdf_version` table to store versioned PDFs
-- Migrated existing document keys from `child_document` table as version 1
-- Kept `child_document.document_key` column for backward compatibility
-
-**Schema details**: See migration file for complete table definition, constraints, and indexes
-
 ## Phase 2: Service Layer Changes ✅ COMPLETED
-
-**Summary**: 
-- Modified PDF generation to create versioned PDFs instead of replacing existing ones
-- Added query functions for managing and retrieving PDF versions
-- Implemented version parameter support in download endpoints (admin only for specific versions)
-- Maintained backward compatibility with existing code
-
-**Implementation details**: See detailed summary documents for transactional safety improvements, access control implementation, and code refactoring details
 
 ## Phase 3: API & Controller Changes ✅ COMPLETED
 
-**Summary**:
-- Added `DocumentVersion` data class to represent individual PDF versions
-- Updated `DocumentMetadata` to include `versions` list (backward compatible with default empty list)
-- Modified metadata query to fetch all versions from `child_document_pdf_version` table
-- Employee download endpoint already supports optional `version` parameter (ADMIN only for specific versions)
-- Citizen download endpoint always returns latest version (no version parameter)
+## Phase 4: Architectural Refactoring - Move Publishing Data to PDF Version Table ✅ COMPLETED
 
-## Phase 4: Access Control
+**Implementation completed:**
+- Migration updated to rename table to `child_document_published_version`
+- Added `created_by`, `published_content`, `updated_at` columns
+- Migrated existing published documents from `child_document` table
+- Dropped old publishing columns (`published_at`, `published_by`, `published_content`)
+- Updated `AsyncJob.CreateChildDocumentPdf` to include `versionNumber` and `user`
+- Renamed query functions to use "Published" instead of "Pdf" in names
+- Created helper function: `createPublishedVersionIfNeeded()`, `deleteChildDocumentReadMarkers()`
+- Updated `updateChildDocumentStatus()` to replace `changeStatus()` and `changeStatusAndPublish()`
+- Refactored `markCompletedAndPublish()` to filter changed content in SQL and return version map
+- Updated service layer: `schedulePdfGeneration()` accepts version map, `createAndUploadPdf()` validates version and deletes read markers when PDF ready
+- Updated controller endpoints: `publishDocument()`, `nextDocumentStatus()`, `acceptChildDocumentDecision()` use new publishing logic
+- Updated metadata API to include `created_by` in `DocumentVersion`
+- Updated all queries to read from `child_document_published_version` table
 
-**No changes required** - use existing permissions:
-- `Action.ChildDocument.READ_METADATA` - Required to see version list in metadata endpoint
-- `Action.ChildDocument.DOWNLOAD` - Required to download any version (employee)
-- `Action.Citizen.ChildDocument.DOWNLOAD` - Required to download latest version (citizen)
+### Goal
+Move publishing-related data (`published_at`, `published_by`, `published_content`) from `child_document` to `child_document_published_version`. A document is considered "published" if it has at least one completed version row in the version table.
 
-Citizens can only download the latest version (no version parameter available in citizen endpoint).
+### Key Architectural Decisions
+
+**1. Publishing creates version row (not PDF generation)**
+- Publishing functions insert version row with NULL `document_key`
+- Async PDF generation updates the `document_key` once completed
+- This decouples logical "publishing" from async PDF generation
+
+**2. Only publish if content changed**
+- Check if published content matches current content before creating version row
+- If content unchanged, do nothing (no version row, no PDF generation)
+- Avoids duplicate versions when user republishes without changes
+
+**3. Document key nullable**
+- `child_document_published_version.document_key` is NULLABLE
+- NULL = PDF generation in progress or aborted
+- NOT NULL = PDF ready for download
+
+**4. Published status from latest version (regardless of PDF completion)**
+- Document is published if: `EXISTS (SELECT ... FROM child_document_published_version ...)`
+- `ChildDocumentSummary.publishedAt/publishedBy` fetched from latest version (even if `document_key` is NULL)
+- Shows when document was last published, even if PDF generation is still pending
+- PDF download will fail/wait until `document_key` is NOT NULL
+
+**5. Race condition handling**
+- Store `versionNumber` in `AsyncJob.CreateChildDocumentPdf` (nullable for backward compatibility)
+- Existing scheduled jobs (before Phase 4a deployment) will have NULL version - treat as version 1
+- Before generating PDF, check if this version is still latest
+- If superseded by newer version, abort (leave `document_key` NULL)
+- Rationale: Cannot recreate exact content state from that publish moment
+
+**6. Read marker deletion timing**
+- Read markers (`child_document_read`) deleted when PDF generation completes successfully
+- NOT deleted at publish time (when version row created)
+- Rationale: Read markers signal users that new content is available to download - only delete when PDF is actually ready
+
+### Implementation Strategy
+
+**Big-bang migration:**
+- Move publishing data (`published_at`, `published_by`, `published_content`) from `child_document` to `child_document_published_version` in single migration
+- Drop old columns immediately
+- Update all code to read/write from new location
+- Accept temporary issues during deployment when old service instances reference dropped columns
+
+### Phase 4 Implementation
+
+#### Database Migration
+
+**Update `V576__child_document_versioned_pdfs.sql`** (not yet deployed, can be modified):
+
+```sql
+CREATE TABLE child_document_published_version (
+    id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
+    child_document_id uuid NOT NULL REFERENCES child_document(id),
+    document_key text,  -- Nullable: NULL = PDF generation pending/aborted, NOT NULL = ready
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    version_number integer NOT NULL,
+    created_by uuid NOT NULL REFERENCES evaka_user(id),
+    published_content jsonb NOT NULL,
+    CONSTRAINT unique_version_per_document UNIQUE(child_document_id, version_number)
+);
+
+CREATE INDEX fk$child_document_published_version_document_id
+    ON child_document_published_version(child_document_id);
+
+CREATE INDEX fk$child_document_published_version_created_by
+    ON child_document_published_version(created_by);
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON child_document_published_version 
+    FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated_at();
+
+-- Migrate existing published documents to version table
+INSERT INTO child_document_published_version (child_document_id, document_key, created_at, version_number, created_by, published_content)
+SELECT
+    cd.id AS child_document_id,
+    cd.document_key,  -- May be NULL if PDF generation still pending
+    cd.published_at AS created_at,
+    1 AS version_number,
+    cd.published_by AS created_by,
+    cd.published_content
+FROM child_document cd
+WHERE cd.published_at IS NOT NULL;  -- published_consistency constraint ensures published_by and published_content are also NOT NULL
+
+-- Drop old publishing columns
+ALTER TABLE child_document
+    DROP CONSTRAINT published_consistency,
+    DROP COLUMN published_at,
+    DROP COLUMN published_by,
+    DROP COLUMN published_content,
+    DROP COLUMN document_key;
+```
+
+**Changes to V576:**
+- Remove `ON DELETE CASCADE` - version rows must be deleted asynchronously via `AsyncJob.DeleteChildDocumentPdf`
+- Add `updated_at` column (timestamp with time zone, NOT NULL, DEFAULT now())
+- Add trigger `set_timestamp` to automatically update `updated_at` on row updates
+- Add `created_by` column (references evaka_user, NOT NULL)
+- Add `published_content` column (jsonb, NOT NULL)
+- Add index on `created_by`
+- Update INSERT to migrate all published documents (WHERE published_at IS NOT NULL)
+- Rely on `published_consistency` constraint to ensure published_by and published_content are also NOT NULL
+- Documents with NULL document_key will have PDFs generated when existing async jobs are processed (versionNumber defaults to 1)
+- **Drop document_key from child_document table** - now stored in child_document_published_version only
+
+#### API Changes
+
+**File: `ProcessMetadataController.kt`**
+
+Update `DocumentVersion` data class:
+```kotlin
+data class DocumentVersion(
+    val versionNumber: Int,
+    val createdAt: HelsinkiDateTime,
+    @Nested("created_by") val createdBy: EvakaUser,  // NOT NULL - created_by column is NOT NULL
+    val downloadPath: String
+)
+```
+
+**File: `ProcessMetadataQueries.kt`**
+
+Update versions subquery in `getChildDocumentMetadata()`:
+```kotlin
+(
+    SELECT coalesce(jsonb_agg(
+        jsonb_build_object(
+            'versionNumber', v.version_number,
+            'createdAt', v.created_at,
+            'createdById', vu.id,
+            'createdByName', vu.name,
+            'createdByType', vu.type,
+            'downloadPath', '/employee/child-documents/' || v.child_document_id || '/pdf?version=' || v.version_number
+        ) ORDER BY v.version_number DESC
+    ), '[]'::jsonb)
+    FROM child_document_published_version v
+    JOIN evaka_user vu ON v.created_by = vu.id  -- JOIN (not LEFT JOIN) - created_by is NOT NULL
+    WHERE v.child_document_id = cd.id
+) AS versions
+```
+
+#### AsyncJob Changes
+
+**File: `AsyncJob.kt`**
+```kotlin
+data class CreateChildDocumentPdf(
+    val documentId: ChildDocumentId,
+    val versionNumber: Int? = null,  // Nullable for backward compatibility with existing jobs
+    override val user: AuthenticatedUser? = null
+) : AsyncJob
+```
+
+#### Service Layer Changes
+
+**File: `ChildDocumentQueries.kt`**
+
+New function for publishing:
+```kotlin
+fun Database.Transaction.insertChildDocumentPublishedVersion(
+    documentId: ChildDocumentId,
+    createdAt: HelsinkiDateTime,
+    createdBy: EvakaUserId,
+    publishedContent: DocumentContent
+): Int {
+    return createQuery {
+        sql("""
+            INSERT INTO child_document_published_version
+                (child_document_id, version_number, created_at, created_by, published_content, document_key)
+            VALUES (
+                ${bind(documentId)},
+                COALESCE(
+                    (SELECT MAX(version_number) + 1 
+                     FROM child_document_published_version
+                     WHERE child_document_id = ${bind(documentId)}), 
+                    1
+                ),
+                ${bind(createdAt)},
+                ${bind(createdBy)},
+                ${bind(publishedContent)}::jsonb,
+                NULL
+            )
+            RETURNING version_number
+        """)
+    }.exactlyOne()
+}
+```
+
+New function to delete read markers (called when PDF generation completes successfully):
+```kotlin
+fun Database.Transaction.deleteChildDocumentReadMarkers(documentId: ChildDocumentId) {
+    createUpdate {
+        sql("DELETE FROM child_document_read WHERE document_id = ${bind(documentId)}")
+    }.execute()
+}
+```
+
+**Remove redundant wrappers:**
+- Delete `publishChildDocument()` - callers use `createPublishedVersionIfNeeded()` directly
+- Delete `changeStatusAndPublish()` - callers do status update + publishing separately
+
+Keep `updateChildDocumentStatus()` simple (only status updates, no publishing):
+```kotlin
+fun Database.Transaction.updateChildDocumentStatus(
+    id: ChildDocumentId,
+    statusTransition: StatusTransition,
+    now: HelsinkiDateTime,
+    answeredBy: EvakaUserId? = null,
+    userId: EvakaUserId,
+) {
+    createUpdate {
+        sql("""
+            UPDATE child_document
+            SET status = ${bind(statusTransition.newStatus)},
+                modified_at = ${bind(now)},
+                modified_by = ${bind(userId)}
+                ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
+            WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
+        """)
+    }.updateExactlyOne()
+}
+```
+
+Update `markCompletedAndPublish()` for batch operations:
+```kotlin
+fun Database.Transaction.markCompletedAndPublish(
+    ids: List<ChildDocumentId>,
+    now: HelsinkiDateTime,
+): Map<ChildDocumentId, Int> {  // Returns map of documentId -> versionNumber
+    val userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+    
+    // Always update status for all documents
+    createUpdate {
+        sql("""
+            UPDATE child_document
+            SET status = 'COMPLETED',
+                modified_at = ${bind(now)},
+                modified_by = ${bind(userId)}
+            WHERE id = ANY(${bind(ids)})
+        """)
+    }.execute()
+    
+    // Batch insert into version table using CTE, filtering for changed content in SQL
+    return createQuery {
+        sql("""
+            WITH documents_to_publish AS (
+                SELECT cd.id, cd.content
+                FROM child_document cd
+                LEFT JOIN LATERAL (
+                    SELECT v.published_content
+                    FROM child_document_published_version v
+                    WHERE v.child_document_id = cd.id
+                    ORDER BY v.version_number DESC
+                    LIMIT 1
+                ) latest_version ON true
+                WHERE cd.id = ANY(${bind(ids)})
+                  AND (latest_version.published_content IS NULL OR cd.content != latest_version.published_content)
+            ),
+            next_versions AS (
+                SELECT 
+                    d.id,
+                    d.content,
+                    COALESCE(MAX(v.version_number) + 1, 1) as next_version
+                FROM documents_to_publish d
+                LEFT JOIN child_document_published_version v ON v.child_document_id = d.id
+                GROUP BY d.id, d.content
+            ),
+            inserted AS (
+                INSERT INTO child_document_published_version
+                    (child_document_id, version_number, created_at, created_by, published_content, document_key)
+                SELECT 
+                    id,
+                    next_version,
+                    ${bind(now)},
+                    ${bind(userId)},
+                    content::jsonb,
+                    NULL
+                FROM next_versions
+                RETURNING child_document_id, version_number
+            )
+            SELECT child_document_id, version_number FROM inserted
+        """)
+    }.toMap { 
+        column<ChildDocumentId>("child_document_id") to column<Int>("version_number") 
+    }
+}
+```
+
+Helper functions:
+```kotlin
+/** 
+ * Creates a new published version if content has changed. Returns version number or null if skipped.
+ */
+fun Database.Transaction.createPublishedVersionIfNeeded(
+    id: ChildDocumentId,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+): Int? {
+    data class Result(val content: DocumentContent, val upToDate: Boolean)
+    
+    val result = createQuery {
+        sql(
+            """
+            SELECT 
+                cd.content,
+                (lv.published_content IS NOT NULL AND cd.content = lv.published_content) AS up_to_date
+            FROM child_document cd
+            LEFT JOIN LATERAL (
+                SELECT v.published_content
+                FROM child_document_published_version v
+                WHERE v.child_document_id = cd.id
+                ORDER BY v.version_number DESC
+                LIMIT 1
+            ) lv ON true
+            WHERE cd.id = ${bind(id)}
+            """
+        )
+    }.exactlyOneOrNull<Result>() ?: throw NotFound("Document $id not found")
+    
+    if (result.upToDate) return null
+    
+    return insertChildDocumentPublishedVersion(id, now, userId, result.content)
+}
+```
+
+**File: `ChildDocumentService.kt`**
+
+Update `schedulePdfGeneration()`:
+```kotlin
+fun schedulePdfGeneration(
+    tx: Database.Transaction,
+    user: AuthenticatedUser,
+    documentVersions: Map<ChildDocumentId, Int>,  // documentId -> versionNumber
+    now: HelsinkiDateTime,
+) {
+    logger.info { "Scheduling generation of ${documentVersions.size} child document pdfs" }
+    
+    asyncJobRunner.plan(
+        tx,
+        payloads = documentVersions.map { (documentId, versionNumber) ->
+            AsyncJob.CreateChildDocumentPdf(documentId, versionNumber, user)
+        },
+        runAt = now,
+        retryCount = 10,
+    )
+}
+```
+
+Update `createAndUploadPdf()` with version validation:
+```kotlin
+fun createAndUploadPdf(
+    db: Database.Connection,
+    clock: EvakaClock,
+    msg: AsyncJob.CreateChildDocumentPdf,
+) {
+    val documentId = msg.documentId
+    val requestedVersion = msg.versionNumber ?: 1  // Default to v1 for backward compatibility
+    
+    val document = db.read { tx -> tx.getChildDocument(documentId) }
+        ?: throw NotFound("document $documentId not found")
+    
+    // Check if this version is still the latest
+    val latestVersion = db.read { tx ->
+        tx.createQuery {
+            sql("""
+                SELECT MAX(version_number)
+                FROM child_document_published_version
+                WHERE child_document_id = ${bind(documentId)}
+            """)
+        }.exactlyOneOrNull<Int>()
+    }
+    
+    if (latestVersion != null && requestedVersion < latestVersion) {
+        logger.warn {
+            "Aborting PDF generation for document $documentId version $requestedVersion " +
+            "(superseded by version $latestVersion). Leaving document_key NULL."
+        }
+        return  // Abort - this version is stale
+    }
+    
+    val html = generateChildDocumentHtml(document)
+    val pdfBytes = pdfGenerator.render(html)
+
+    db.transaction { tx ->
+        val versionedKey = DocumentKey.ChildDocument(documentId, requestedVersion)
+        val location = documentClient.upload(versionedKey, pdfBytes, "application/pdf")
+
+        tx.updateChildDocumentPublishedVersionKey(documentId, requestedVersion, location.key)
+        
+        // Delete read markers now that PDF is ready to download
+        tx.deleteChildDocumentReadMarkers(documentId)
+
+        if (document.decision != null) {
+            // ...existing SFI message logic...
+        }
+    }
+}
+```
+
+Update controller call sites:
+```kotlin
+// In ChildDocumentController.kt
+
+@PutMapping("/{documentId}/publish")
+fun publishDocument(...): ResponseEntity<Unit> {
+    return db.connect { dbc ->
+        dbc.transaction { tx ->
+            // ...access control...
+
+            val versionNumber = tx.createPublishedVersionIfNeeded(documentId, clock.now(), user.evakaUserId)
+            
+            if (versionNumber != null) {
+                // Content changed, schedule PDF generation
+                childDocumentService.schedulePdfGeneration(
+                    tx,
+                    user,
+                    mapOf(documentId to versionNumber),
+                    clock.now()
+                )
+                childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
+            }
+            // else: content unchanged, nothing to do
+        }
+    }
+    // ...audit...
+}
+
+@PutMapping("/{documentId}/next-status")
+fun nextDocumentStatus(...): ResponseEntity<Unit> {
+    return db.connect { dbc ->
+        dbc.transaction { tx ->
+            // ...access control...
+            
+            val document = tx.getChildDocument(documentId) ?: throw NotFound()
+            val statusTransition = validateStatusTransition(document, newStatus, goingForward = true)
+            
+            // For decisions: just change status (publishing happens later after accept/reject)
+            if (document.template.type.decision) {
+                tx.updateChildDocumentStatus(documentId, statusTransition, clock.now(), userId = user.evakaUserId)
+            } else {
+                // For non-decisions: change status + publish if content changed
+                val versionNumber = tx.createPublishedVersionIfNeeded(documentId, clock.now(), user.evakaUserId)
+                
+                val answeredBy = user.evakaUserId.takeIf {
+                    document.template.type == ChildDocumentType.CITIZEN_BASIC &&
+                    statusTransition.newStatus == DocumentStatus.COMPLETED
+                }
+                tx.updateChildDocumentStatus(documentId, statusTransition, clock.now(), answeredBy, user.evakaUserId)
+                
+                if (versionNumber != null) {
+                    childDocumentService.schedulePdfGeneration(
+                        tx,
+                        user,
+                        mapOf(documentId to versionNumber),
+                        clock.now()
+                    )
+                }
+                
+                if (statusTransition.newStatus == DocumentStatus.CITIZEN_DRAFT || versionNumber != null) {
+                    childDocumentService.scheduleEmailNotification(tx, listOf(documentId), clock.now())
+                }
+            }
+            
+            updateDocumentCaseProcessHistory(tx, document, statusTransition.newStatus, clock.now(), user.evakaUserId)
+        }
+    }
+    // ...audit...
+}
+```
+
+**File: `ChildDocumentService.kt` - automated process**
+
+Update `completeAndPublishChildDocumentsAtEndOfTerm()`:
+```kotlin
+fun completeAndPublishChildDocumentsAtEndOfTerm(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+) {
+    val documentIds = // ...existing query...
+
+    if (documentIds.isNotEmpty()) {
+        val versionMap = tx.markCompletedAndPublish(documentIds, now)
+        
+        if (versionMap.isNotEmpty()) {
+            schedulePdfGeneration(tx, AuthenticatedUser.SystemInternalUser, versionMap, now)
+            scheduleEmailNotification(tx, versionMap.keys.toList(), now)
+        }
+
+        documentIds.forEach { documentId ->
+            autoCompleteDocumentCaseProcessHistory(tx = tx, documentId = documentId, now = now)
+        }
+    }
+}
+```
+
+
+### Testing Checklist
+
+- [ ] Publishing with unchanged content skips version creation
+- [ ] Publishing with changed content creates new version
+- [ ] Latest version shown in summaries (even if document_key NULL)
+- [ ] Automated end-of-term completion works with new logic
 
 ## Implementation Summary
 
-### Completed Changes (Phases 1-3):
-- Database schema with `child_document_pdf_version` table
+- Database schema with `child_document_published_version` table
+- Publishing data moved from `child_document` to version table
+- Old columns (`published_at`, `published_by`, `published_content`) dropped in migration
 - PDF generation now creates versioned files instead of replacing
 - Metadata endpoint returns list of all versions
 - Download endpoints support version parameter (admin only for specific versions)
-- Backward compatibility maintained throughout
-
-### Files Modified:
-- Migration: `V576__child_document_versioned_pdfs.sql`
-- `DocumentKey.kt`, `ChildDocumentQueries.kt`, `ChildDocumentService.kt`
-- `ProcessMetadataController.kt`, `ProcessMetadataQueries.kt`
-- Access control already in place (no changes needed)
-
-## Future Considerations
-
-### Migration Race Condition
-**Issue**: When migration `V576__child_document_versioned_pdfs.sql` is executed, there may be background jobs (`AsyncJob.CreateChildDocumentPdf`) already scheduled or running. These jobs will update `child_document.document_key` after the migration's `INSERT` statement has completed, meaning those document keys won't be migrated to the new `child_document_pdf_version` table.
-
-**Impact**: 
-- Documents with PDFs generated during/after migration might not have entries in the versioned table
-- The backward compatibility approach (keeping `child_document.document_key`) mitigates this for Phase 2
-- When Phase 2 is implemented, the service layer should handle missing version 1 entries gracefully
-
-**Mitigation Options**:
-1. Run a follow-up data fix after Phase 2 deployment to catch any missing entries
-2. Modify Phase 2 implementation to check if version 1 exists before creating version 2, and create it if missing
-3. Accept that some documents may only have versions 2+ (older documents will have version 1)
-
-**Recommended approach**: Option 2 - Make Phase 2 implementation defensive by checking for existing versions and backfilling if needed.
-

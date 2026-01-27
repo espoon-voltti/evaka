@@ -47,6 +47,12 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
+enum class EmailNotificationPolicy {
+    NEVER,
+    ON_NEW_VERSION,
+    ALWAYS
+}
+
 @Service
 class ChildDocumentService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -72,20 +78,42 @@ class ChildDocumentService(
         msg: AsyncJob.CreateChildDocumentPdf,
     ) {
         val documentId = msg.documentId
+        val requestedVersion = msg.versionNumber ?: 1
+
         val document =
             db.read { tx -> tx.getChildDocument(documentId) }
                 ?: throw NotFound("document $documentId not found")
+
+        // Check if this version is still the latest
+        val latestVersion = db.read { tx ->
+            tx.createQuery {
+                sql("""
+                    SELECT MAX(version_number)
+                    FROM child_document_published_version
+                    WHERE child_document_id = ${bind(documentId)}
+                """)
+            }.exactlyOneOrNull<Int>()
+        }
+
+        if (latestVersion != null && requestedVersion < latestVersion) {
+            logger.warn {
+                "Aborting PDF generation for document $documentId version $requestedVersion " +
+                "(superseded by version $latestVersion). Leaving document_key NULL."
+            }
+            return
+        }
+
         val html = generateChildDocumentHtml(document)
         val pdfBytes = pdfGenerator.render(html)
 
         db.transaction { tx ->
-            val nextVersion =
-                tx.insertChildDocumentPdfVersion(documentId = documentId, createdAt = clock.now())
-
-            val versionedKey = DocumentKey.ChildDocument(documentId, nextVersion)
+            val versionedKey = DocumentKey.ChildDocument(documentId, requestedVersion)
             val location = documentClient.upload(versionedKey, pdfBytes, "application/pdf")
 
-            tx.updateChildDocumentPdfVersionKey(documentId, nextVersion, location.key)
+            tx.updateChildDocumentPublishedVersionKey(documentId, requestedVersion, location.key)
+
+            // Delete old read markers now that new a PDF is ready to download
+            tx.deleteChildDocumentReadMarkers(documentId)
 
             if (document.decision != null) {
                 if (tx.hasChildDocumentSfiMessageBeenSent(documentId)) {
@@ -97,7 +125,7 @@ class ChildDocumentService(
 
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, nextVersion)),
+                    listOf(AsyncJob.SendChildDocumentDecisionSfiMessage(documentId, requestedVersion)),
                     runAt = clock.now(),
                 )
 
@@ -127,14 +155,16 @@ class ChildDocumentService(
                         throw IllegalStateException("document $documentId is not a decision")
                 } ?: throw NotFound("document $documentId not found")
 
-            val pdfVersion =
-                tx.getChildDocumentPdfVersion(documentId, msg.versionNumber)
-                    ?: throw IllegalStateException(
-                        "Decision pdf version ${msg.versionNumber} has not been generated for document $documentId"
-                    )
+            val publishedVersion = tx.getChildDocumentPublishedVersion(documentId, msg.versionNumber)
+
+            if (publishedVersion?.documentKey == null) {
+                throw IllegalStateException(
+                    "Decision pdf version ${msg.versionNumber} does not have a document key yet for document $documentId"
+                )
+            }
 
             val documentLocation =
-                documentClient.locate(DocumentKey.ChildDocument(pdfVersion.documentKey))
+                documentClient.locate(DocumentKey.ChildDocument(publishedVersion.documentKey))
 
             val lang =
                 if (document.template.language == UiLanguage.SV) OfficialLanguage.SV
@@ -197,18 +227,21 @@ class ChildDocumentService(
         documentId: ChildDocumentId,
         versionNumber: Int? = null,
     ): ResponseEntity<Any> {
-        val pdfVersion =
-            tx.getChildDocumentPdfVersion(documentId, versionNumber)
-                ?: throw NotFound(
-                    if (versionNumber != null) {
-                        "Document $documentId version $versionNumber not found"
-                    } else {
-                        "Document $documentId not found or pdf not ready"
-                    }
-                )
+        val publishedVersion = tx.getChildDocumentPublishedVersion(documentId, versionNumber)
+
+        if (publishedVersion?.documentKey == null) {
+            throw NotFound(
+                if (versionNumber != null) {
+                    "Document $documentId version $versionNumber pdf not ready"
+                } else {
+                    "Document $documentId pdf not ready"
+                }
+            )
+        }
 
         val documentLocation =
-            documentClient.locate(DocumentKey.ChildDocument(pdfVersion.documentKey))
+            documentClient.locate(DocumentKey.ChildDocument(publishedVersion.documentKey))
+
         return documentClient.responseAttachment(documentLocation, null)
     }
 
@@ -228,21 +261,22 @@ class ChildDocumentService(
                         ChildDocumentType.entries.filter { it.autoCompleteAtEndOfValidity }
                     )})
                     AND cd.status <> 'COMPLETED'
-                    AND cd.published_at IS NOT NULL 
+                    AND EXISTS (
+                        SELECT 1 FROM child_document_published_version v
+                        WHERE v.child_document_id = cd.id
+                    )
             """
                     )
                 }
                 .toList<ChildDocumentId>()
 
         if (documentIds.isNotEmpty()) {
-            documentIds
-                .filter { !tx.isDocumentPublishedContentUpToDate(it) }
-                .also {
-                    schedulePdfGeneration(tx, it, now)
-                    scheduleEmailNotification(tx, it, now)
-                }
+            val versionMap = tx.markCompletedAndPublish(documentIds, now)
 
-            tx.markCompletedAndPublish(documentIds, now)
+            if (versionMap.isNotEmpty()) {
+                schedulePdfGeneration(tx, AuthenticatedUser.SystemInternalUser, versionMap, now)
+                scheduleEmailNotification(tx, versionMap.keys.toList(), now)
+            }
 
             documentIds.forEach { documentId ->
                 autoCompleteDocumentCaseProcessHistory(tx = tx, documentId = documentId, now = now)
@@ -264,21 +298,52 @@ class ChildDocumentService(
 
     fun schedulePdfGeneration(
         tx: Database.Transaction,
-        ids: List<ChildDocumentId>,
+        user: AuthenticatedUser,
+        documentVersions: Map<ChildDocumentId, Int>,
         now: HelsinkiDateTime,
     ) {
-        logger.info { "Scheduling generation of ${ids.size} child document pdfs" }
-
-        // Reset deprecated document_key column (kept for backward compatibility)
-        // New versioned PDFs are stored in child_document_pdf_version table
-        tx.resetChildDocumentKey(ids)
+        logger.info { "Scheduling generation of ${documentVersions.size} child document pdfs" }
 
         asyncJobRunner.plan(
             tx,
-            payloads = ids.map { AsyncJob.CreateChildDocumentPdf(it) },
+            payloads = documentVersions.map { (documentId, versionNumber) ->
+                AsyncJob.CreateChildDocumentPdf(documentId, versionNumber, user)
+            },
             runAt = now,
             retryCount = 10,
         )
+    }
+
+    /**
+     * Publishes document if content has changed, and schedules PDF generation and email notification.
+     *
+     * @param emailPolicy Controls when to schedule email notifications
+     * @return The created version number, or null if content was already up to date
+     */
+    fun publishAndScheduleNotifications(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        documentId: ChildDocumentId,
+        now: HelsinkiDateTime,
+        emailPolicy: EmailNotificationPolicy,
+    ): Int? {
+        val versionNumber = tx.createPublishedVersionIfNeeded(documentId, now, user.evakaUserId)
+
+        if (versionNumber != null) {
+            schedulePdfGeneration(tx, user, mapOf(documentId to versionNumber), now)
+        }
+
+        val shouldScheduleEmail = when (emailPolicy) {
+            EmailNotificationPolicy.NEVER -> false
+            EmailNotificationPolicy.ON_NEW_VERSION -> versionNumber != null
+            EmailNotificationPolicy.ALWAYS -> true
+        }
+
+        if (shouldScheduleEmail) {
+            scheduleEmailNotification(tx, listOf(documentId), now)
+        }
+
+        return versionNumber
     }
 
     private fun getLanguage(languageStr: String?): Language {

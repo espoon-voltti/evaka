@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevChildDocumentDecision
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -673,22 +674,26 @@ class AssistanceNeedsAndActionsReportControllerTest :
                                     )
                                 )
                         ),
-                    publishedContent =
-                        DocumentContent(
-                            answers =
-                                listOf(
-                                    AnsweredQuestion.CheckboxAnswer(
-                                        questionId = "q1",
-                                        answer = true,
-                                    )
-                                )
-                        ),
-                    publishedAt = clock.now(),
-                    publishedBy = decisionMaker.evakaUserId,
                     modifiedAt = clock.now(),
                     modifiedBy = decisionMaker.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = decisionMaker.id,
+                    publishedVersions = listOf(
+                        DevChildDocumentPublishedVersion(
+                            versionNumber = 1,
+                            createdAt = clock.now(),
+                            createdBy = decisionMaker.evakaUserId,
+                            publishedContent = DocumentContent(
+                                answers =
+                                    listOf(
+                                        AnsweredQuestion.CheckboxAnswer(
+                                            questionId = "q1",
+                                            answer = true,
+                                        )
+                                    )
+                            ),
+                        )
+                    ),
                     decision =
                         DevChildDocumentDecision(
                             createdBy = decisionMaker.id,
