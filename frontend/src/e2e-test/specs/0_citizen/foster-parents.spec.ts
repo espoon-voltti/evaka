@@ -130,12 +130,13 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   const decisions = await getApplicationDecisions({ applicationId })
   const decisionId = decisions[0].id
   await activeRelationshipHeader.selectTab('decisions')
-  const responsePage =
-    await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
-  await responsePage.assertUnresolvedDecisionsCount(1)
+  const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+    applicationId,
+    1
+  )
   await responsePage.acceptDecision(decisionId)
   await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
-  await responsePage.assertUnresolvedDecisionsCount(0)
+  await responsePage.assertPageTitle(0)
 
   const { endedRelationshipPage, endedRelationshipHeader } =
     await openEndedRelationshipPage()
@@ -205,12 +206,13 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   const decisions = await getApplicationDecisions({ applicationId })
   const decisionId = decisions[0].id
   await activeRelationshipHeader.selectTab('decisions')
-  const responsePage =
-    await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
-  await responsePage.assertUnresolvedDecisionsCount(1)
+  const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+    applicationId,
+    1
+  )
   await responsePage.acceptDecision(decisionId)
   await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
-  await responsePage.assertUnresolvedDecisionsCount(0)
+  await responsePage.assertPageTitle(0)
 
   const { endedRelationshipPage, endedRelationshipHeader } =
     await openEndedRelationshipPage()
