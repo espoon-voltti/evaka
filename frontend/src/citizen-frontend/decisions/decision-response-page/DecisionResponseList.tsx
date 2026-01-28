@@ -72,7 +72,23 @@ export default React.memo(function DecisionResponseList() {
     decisionId: DecisionId,
     status: DecisionStatus
   ) => {
-    setLocalDecisionStatuses((prev) => new Map(prev).set(decisionId, status))
+    setLocalDecisionStatuses((prev) => {
+      const next = new Map(prev).set(decisionId, status)
+
+      const handledDecision = displayedDecisions.find(
+        ({ decision }) => decision.id === decisionId
+      )
+      if (handledDecision && status === 'REJECTED') {
+        const connectedToReject = findRejectCascadedDecision(
+          handledDecision,
+          displayedDecisions
+        )
+        if (connectedToReject) {
+          next.set(connectedToReject.decision.id, 'REJECTED')
+        }
+      }
+      return next
+    })
   }
 
   const [
@@ -113,7 +129,7 @@ export default React.memo(function DecisionResponseList() {
         <Gap size="s" />
         <Main>
           <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
-            <H1 noMargin data-qa="decision-response-list-header">
+            <H1 noMargin>
               {t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)}
             </H1>
             <Gap size="s" />
@@ -207,14 +223,20 @@ const isDecisionBlocked = (
       applicationId === decision.applicationId
   ) !== undefined
 
-const isRejectCascaded = (
+const findRejectCascadedDecision = (
   { decision }: DecisionWithValidStartDatePeriod,
   allDecisions: DecisionWithValidStartDatePeriod[]
 ) =>
-  ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
-  allDecisions.find(
-    ({ decision: { type, status, applicationId } }) =>
-      (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
-      status === 'PENDING' &&
-      applicationId === decision.applicationId
-  ) !== undefined
+  ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type)
+    ? allDecisions.find(
+        ({ decision: { type, status, applicationId } }) =>
+          (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
+          status === 'PENDING' &&
+          applicationId === decision.applicationId
+      )
+    : undefined
+
+const isRejectCascaded = (
+  decision: DecisionWithValidStartDatePeriod,
+  allDecisions: DecisionWithValidStartDatePeriod[]
+) => findRejectCascadedDecision(decision, allDecisions) !== undefined

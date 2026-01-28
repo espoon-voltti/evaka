@@ -181,8 +181,10 @@ describe('Service Worker Messaging', () => {
       // Citizen accepts the decision
       await header.selectTab('decisions')
       const decisionsPage = new CitizenDecisionsPage(citizenPage)
-      const decisionResponse =
-        await decisionsPage.navigateToDecisionResponse(applicationFixtureId)
+      const decisionResponse = await decisionsPage.navigateToDecisionResponse(
+        applicationFixtureId,
+        1
+      )
       const decisions = await getApplicationDecisions({
         applicationId: applicationFixtureId
       })
