@@ -8,7 +8,11 @@ import styled from 'styled-components'
 import { Failure } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { Action } from 'lib-common/generated/action'
-import type { Decision } from 'lib-common/generated/api-types/decision'
+import type {
+  Decision,
+  DecisionStatus
+} from 'lib-common/generated/api-types/decision'
+import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -46,6 +50,7 @@ interface SingleDecisionProps {
   permittedActions: Set<Action.Citizen.Decision>
   canDecide: boolean
   headerCounter: string
+  onDecisionHandled: (decisionId: DecisionId, status: DecisionStatus) => void
 }
 
 export default React.memo(function DecisionResponse({
@@ -56,7 +61,8 @@ export default React.memo(function DecisionResponse({
   handleReturnToPreviousPage,
   permittedActions,
   canDecide,
-  headerCounter
+  headerCounter,
+  onDecisionHandled
 }: SingleDecisionProps) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -131,6 +137,7 @@ export default React.memo(function DecisionResponse({
 
   const onSuccess = () => {
     setSubmitting(false)
+    onDecisionHandled(decisionId, acceptChecked ? 'ACCEPTED' : 'REJECTED')
   }
 
   const onFailure = () => {

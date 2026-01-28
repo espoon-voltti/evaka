@@ -4,6 +4,7 @@
 
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 
+import config from '../../config'
 import { waitUntilEqual } from '../../utils'
 import type { Page, Element } from '../../utils/page'
 
@@ -143,11 +144,13 @@ class CitizenDecisionResponsePage {
     this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
 
   async assertPageTitle() {
-    await this.#title.assertTextEquals('Päätökset')
+    await this.#title.assertTextEquals(
+      '2 päätöstä odottaa huoltajan vahvistusta'
+    )
   }
 
   async assertUnresolvedDecisionsCount(count: number) {
-    return assertUnresolvedDecisionsCount(this.page, count)
+    return assertUnresolvedDecisionResponseCount(this.page, count)
   }
 
   async assertDecisionCannotBeAccepted(decisionId: string) {
@@ -190,6 +193,22 @@ class CitizenDecisionResponsePage {
       .find('[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]')
       .click()
   }
+
+  async assertDecisionVisible(decisionId: string) {
+    await this.#decisionBlock(decisionId).waitUntilVisible()
+  }
+
+  async assertNoDecisionsVisible() {
+    const decisions = this.page.findAll('[data-qa="decision-child-name"]')
+    const count = await decisions.count()
+    if (count > 0) {
+      throw new Error(`Expected no decisions to be visible, but found ${count}`)
+    }
+  }
+
+  async reload() {
+    return this.page.goto(`${config.enduserUrl}/decisions/pending`)
+  }
 }
 
 async function assertUnresolvedDecisionsCount(page: Page, count: number) {
@@ -200,10 +219,33 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   }
 
   if (count === 1) {
-    return await element.assertTextEquals('1 päätös odottaa vahvistustasi')
+    return await element.assertTextEquals(
+      '1 päätös odottaa huoltajan vahvistusta'
+    )
   }
 
   return await element.assertTextEquals(
-    `${count} päätöstä odottaa vahvistustasi`
+    `${count} päätöstä odottaa huoltajan vahvistusta`
+  )
+}
+
+async function assertUnresolvedDecisionResponseCount(
+  page: Page,
+  count: number
+) {
+  const element = page.findByDataQa('decision-response-list-header')
+
+  if (count === 0) {
+    return await element.assertTextEquals('Päätökset')
+  }
+
+  if (count === 1) {
+    return await element.assertTextEquals(
+      '1 päätös odottaa huoltajan vahvistusta'
+    )
+  }
+
+  return await element.assertTextEquals(
+    `${count} päätöstä odottaa huoltajan vahvistusta`
   )
 }

@@ -1651,8 +1651,12 @@ export default {
     title: 'Päätökset',
     summary:
       'Tältä sivulta löydät varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset sekä maksuihin liittyvät päätökset.',
-    unconfirmedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa huoltajan vahvistusta`,
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) {
+        return 'Päätökset'
+      }
+      return `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa huoltajan vahvistusta`
+    },
     noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
     unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
@@ -1689,6 +1693,7 @@ export default {
       statusLabel: 'Tila',
       summary:
         'Hyväksy tai hylkää päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
+      allDecisionsConfirmed: 'Olet hyväksynyt kaikki päätökset.',
       status: {
         PENDING: 'Odottaa vahvistusta',
         ACCEPTED: 'Hyväksytty',

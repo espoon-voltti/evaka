@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
+import type { DecisionStatus } from 'lib-common/generated/api-types/decision'
+import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -17,7 +19,6 @@ import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faExclamation } from 'lib-icons'
 
 import Footer from '../../Footer'
-import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { pendingDecisionsQuery } from '../queries'
@@ -30,6 +31,50 @@ export default React.memo(function DecisionResponseList() {
 
   const decisionsRequest = useQueryResult(pendingDecisionsQuery())
 
+  // Local state to keep decisions visible after handling them
+  const [localDecisionStatuses, setLocalDecisionStatuses] = useState<
+    Map<DecisionId, DecisionStatus>
+  >(new Map())
+
+  const initializedRef = useRef(false)
+  const initialDecisionsRef = useRef<DecisionWithValidStartDatePeriod[]>([])
+
+  useEffect(() => {
+    if (decisionsRequest.isSuccess && !initializedRef.current) {
+      initialDecisionsRef.current = sortDecisions(decisionsRequest.value)
+      initializedRef.current = true
+    }
+  }, [decisionsRequest])
+
+  const displayedDecisions = useMemo(() => {
+    if (!initializedRef.current) {
+      return decisionsRequest.isSuccess
+        ? sortDecisions(decisionsRequest.value)
+        : []
+    }
+
+    return initialDecisionsRef.current.map((item) => {
+      const localStatus = localDecisionStatuses.get(item.decision.id)
+      if (localStatus) {
+        return {
+          ...item,
+          decision: {
+            ...item.decision,
+            status: localStatus
+          }
+        }
+      }
+      return item
+    })
+  }, [decisionsRequest, localDecisionStatuses])
+
+  const handleDecisionHandled = (
+    decisionId: DecisionId,
+    status: DecisionStatus
+  ) => {
+    setLocalDecisionStatuses((prev) => new Map(prev).set(decisionId, status))
+  }
+
   const [
     displayDecisionWithNoResponseWarning,
     setDisplayDecisionWithNoResponseWarning
@@ -37,17 +82,14 @@ export default React.memo(function DecisionResponseList() {
 
   useTitle(t, t.decisions.title)
 
-  const unconfirmedDecisionsCount = decisionsRequest.isSuccess
-    ? decisionsRequest.value.filter(
-        ({ decision: { status } }) => status === 'PENDING'
-      ).length
-    : 0
+  const unconfirmedDecisionsCount = displayedDecisions.filter(
+    ({ decision: { status } }) => status === 'PENDING'
+  ).length
 
   const handleReturnToPreviousPage = () => {
     const warnAboutMissingResponse =
-      decisionsRequest.isSuccess &&
-      decisionsRequest.value.length > 1 &&
-      !!decisionsRequest.value.find(
+      displayedDecisions.length > 1 &&
+      !!displayedDecisions.find(
         ({ decision: { status } }) => status === 'PENDING'
       )
 
@@ -71,34 +113,35 @@ export default React.memo(function DecisionResponseList() {
         <Gap size="s" />
         <Main>
           <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
-            <H1 noMargin>
+            <H1 noMargin data-qa="decision-response-list-header">
               {t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)}
             </H1>
             <Gap size="s" />
-            <div>{t.decisions.applicationDecisions.summary}</div>
+            <div>
+              {unconfirmedDecisionsCount === 0
+                ? t.decisions.applicationDecisions.allDecisionsConfirmed
+                : t.decisions.applicationDecisions.summary}
+            </div>
           </ContentArea>
           <Gap size="s" />
-          {renderResult(decisionsRequest, (decisions) => (
-            <Fragment>
-              {sortDecisions(decisions).map((decision, i) => (
-                <Fragment key={decision.decision.id}>
-                  <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
-                    <DecisionResponse
-                      decision={decision.decision}
-                      permittedActions={new Set(decision.permittedActions)}
-                      canDecide={decision.canDecide}
-                      validRequestedStartDatePeriod={
-                        decision.validRequestedStartDatePeriod
-                      }
-                      blocked={isDecisionBlocked(decision, decisions)}
-                      rejectCascade={isRejectCascaded(decision, decisions)}
-                      handleReturnToPreviousPage={handleReturnToPreviousPage}
-                      headerCounter={`${i + 1}/${decisions.length}`}
-                    />
-                  </ContentArea>
-                  <Gap size="s" />
-                </Fragment>
-              ))}
+          {displayedDecisions.map((decision, i) => (
+            <Fragment key={decision.decision.id}>
+              <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
+                <DecisionResponse
+                  decision={decision.decision}
+                  permittedActions={new Set(decision.permittedActions)}
+                  canDecide={decision.canDecide}
+                  validRequestedStartDatePeriod={
+                    decision.validRequestedStartDatePeriod
+                  }
+                  blocked={isDecisionBlocked(decision, displayedDecisions)}
+                  rejectCascade={isRejectCascaded(decision, displayedDecisions)}
+                  handleReturnToPreviousPage={handleReturnToPreviousPage}
+                  headerCounter={`${i + 1}/${displayedDecisions.length}`}
+                  onDecisionHandled={handleDecisionHandled}
+                />
+              </ContentArea>
+              <Gap size="s" />
             </Fragment>
           ))}
           <Gap size="m" />

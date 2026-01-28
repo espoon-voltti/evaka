@@ -201,6 +201,75 @@ describe('Citizen application decisions', () => {
     await responsePage.assertUnresolvedDecisionsCount(0)
   })
 
+  test('Handled decisions stay visible in the list until page navigation', async () => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'PRESCHOOL',
+      null,
+      [testDaycare.id],
+      true
+    )
+    const applicationId = application.id
+    await createApplications({ body: [application] })
+
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
+      ],
+      now
+    )
+
+    const decisions = await getApplicationDecisions({ applicationId })
+    if (decisions.length !== 2) throw Error('Expected 2 decisions')
+    const preschoolDecisionId = decisions.find(
+      (d) => d.type === 'PRESCHOOL'
+    )?.id
+    if (!preschoolDecisionId)
+      throw Error('Expected a decision with type PRESCHOOL')
+    const preschoolDaycareDecisionId = decisions.find(
+      (d) => d.type === 'PRESCHOOL_DAYCARE'
+    )?.id
+    if (!preschoolDaycareDecisionId)
+      throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
+
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
+    const responsePage =
+      await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
+
+    // Both decisions should be visible initially
+    await responsePage.assertDecisionVisible(preschoolDecisionId)
+    await responsePage.assertDecisionVisible(preschoolDaycareDecisionId)
+
+    // Accept preschool decision
+    await responsePage.acceptDecision(preschoolDecisionId)
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hyväksytty')
+
+    // Both decisions should still be visible after accepting
+    await responsePage.assertDecisionVisible(preschoolDecisionId)
+    await responsePage.assertDecisionVisible(preschoolDaycareDecisionId)
+
+    // Accept preschool daycare decision
+    await responsePage.acceptDecision(preschoolDaycareDecisionId)
+    await responsePage.assertDecisionStatus(
+      preschoolDaycareDecisionId,
+      'Hyväksytty'
+    )
+
+    // Both decisions should still be visible after accepting both
+    await responsePage.assertDecisionVisible(preschoolDecisionId)
+    await responsePage.assertDecisionVisible(preschoolDaycareDecisionId)
+
+    // Reload page - decisions should now be gone from response page
+    await responsePage.reload()
+    await responsePage.assertUnresolvedDecisionsCount(0)
+    await responsePage.assertNoDecisionsVisible()
+  })
+
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
     const child = await Fixture.person({ ssn: '010116A9219' }).saveChild({
       updateMockVtj: true

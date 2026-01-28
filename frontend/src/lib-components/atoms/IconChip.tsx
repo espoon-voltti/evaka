@@ -17,6 +17,7 @@ export interface IconChipVisualProps {
 }
 export interface IconChipProps extends IconChipVisualProps {
   label: string
+  'data-qa'?: string
 }
 
 const IconChip = React.memo(function IconChip({
@@ -25,10 +26,15 @@ const IconChip = React.memo(function IconChip({
   backgroundColor,
   textColor,
   iconColor,
-  iconBackgroundColor
+  iconBackgroundColor,
+  'data-qa': dataQa
 }: IconChipProps) {
   return (
-    <Container backgroundColor={backgroundColor} textColor={textColor}>
+    <Container
+      backgroundColor={backgroundColor}
+      textColor={textColor}
+      data-qa={dataQa}
+    >
       <IconContainer backgroundColor={iconBackgroundColor}>
         <Icon icon={icon} color={iconColor} />
       </IconContainer>
