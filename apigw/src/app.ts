@@ -39,7 +39,7 @@ import type { RedisClient } from './shared/redis-client.ts'
 import { handleCspReport } from './shared/routes/csp.ts'
 import type { SamlIntegration } from './shared/routes/saml.ts'
 import { validateRelayStateUrl } from './shared/saml/index.ts'
-import { sessionSupport } from './shared/session.ts'
+import { sessionCookie, sessionSupport } from './shared/session.ts'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
   const router = express.Router()
@@ -131,7 +131,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       redisClient,
       config.citizen.cookieSecret,
       {
-        cookieName: 'evaka.employee.session',
+        cookieName: sessionCookie('employee'),
         cookieSecret: config.employee.cookieSecret
       }
     )
@@ -162,7 +162,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       config.sfi.saml,
       redisClient,
       {
-        cookieName: 'evaka.eugw.session',
+        cookieName: sessionCookie('citizen'),
         cookieSecret: config.citizen.cookieSecret
       }
     )

@@ -64,6 +64,17 @@ export class SamlError extends Error {
   }
 }
 
+const parseSessionCookie = (cookie: string, cookieName: string) => {
+  const cookies = cookie.split('; ')
+
+  for (const c of cookies) {
+    const [name, value] = c.split('=')
+    if (name === cookieName) {
+      return value.substring(4).split('.')[0]
+    }
+  }
+}
+
 const samlRequestOptions = (req: express.Request): AuthOptions => {
   const locale = req.query.locale
   return typeof locale === 'string' ? { additionalParams: { locale } } : {}
@@ -151,8 +162,8 @@ export function createSamlIntegration<T extends SessionType>(
       let secondarySessionId: string | undefined
       if (secondaryCookieConfig) {
         secondarySessionId = req.signedCookies[
-          secondaryCookieConfig.cookieName ?? ''
-        ] as string
+          secondaryCookieConfig.cookieName
+        ] as string | undefined
       }
       const idpLoginUrl = await saml.getAuthorizeUrlAsync(
         // no need for validation here, because the value only matters in the login callback request and is validated there
@@ -261,8 +272,23 @@ export function createSamlIntegration<T extends SessionType>(
     )
     try {
       const user = sessions.getUser(req)
-      const samlSession = SamlSessionSchema.safeParse(user)
+      let samlSession = SamlSessionSchema.safeParse(user)
       let url: string
+      if (req.headers.cookie && secondaryCookieConfig) {
+        const secondarySessionId =
+          parseSessionCookie(
+            req.headers.cookie,
+            secondaryCookieConfig?.cookieName
+          ) ?? ''
+        if (
+          secondarySessionId &&
+          (await sessions.isSecondarySessionNewer(req, secondarySessionId))
+        ) {
+          const secondaryUser =
+            await sessions.getSecondaryUser(secondarySessionId)
+          samlSession = SamlSessionSchema.safeParse(secondaryUser)
+        }
+      }
       if (samlSession.success) {
         url = await saml.getLogoutUrlAsync(
           samlSession.data,
@@ -272,25 +298,6 @@ export function createSamlIntegration<T extends SessionType>(
         )
       } else {
         url = defaultPageUrl
-
-        if (secondaryCookieConfig) {
-          const secondarySessionId = req.signedCookies[
-            secondaryCookieConfig.cookieName ?? ''
-          ] as string
-          const secondaryUser =
-            await sessions.getSecondaryUser(secondarySessionId)
-          const secondarySamlSession =
-            SamlSessionSchema.safeParse(secondaryUser)
-
-          if (secondarySamlSession.success) {
-            url = await saml.getLogoutUrlAsync(
-              secondarySamlSession.data,
-              // no need for validation here, because the value only matters in the logout callback request and is validated there
-              getRawUnvalidatedRelayState(req) ?? '',
-              samlRequestOptions(req)
-            )
-          }
-        }
       }
       await sessions.destroy(req, res)
       return res.redirect(url)

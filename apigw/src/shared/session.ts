@@ -81,6 +81,10 @@ export interface Sessions<T extends SessionType> {
   ): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
+  isSecondarySessionNewer(
+    req: express.Request,
+    secondarySessionId: string
+  ): Promise<boolean>
 }
 
 export function sessionSupport<T extends SessionType>(
@@ -319,14 +323,14 @@ export function sessionSupport<T extends SessionType>(
         secondarySfiSessionsKey(req.session.id),
         secondarySessionId,
         {
-          EX: maxSessionTimeoutMinutes
+          EX: maxSessionTimeoutMinutes * 60
         }
       )
       await redisClient.set(
         secondarySfiSessionsKey(secondarySessionId),
         req.session.id,
         {
-          EX: maxSessionTimeoutMinutes
+          EX: maxSessionTimeoutMinutes * 60
         }
       )
     }
@@ -358,6 +362,28 @@ export function sessionSupport<T extends SessionType>(
     return !!req.session?.passport?.user
   }
 
+  async function isSecondarySessionNewer(
+    req: express.Request,
+    secondarySessionId: string
+  ): Promise<boolean> {
+    const primaryUser = req.session?.evaka?.user
+    if (!primaryUser || primaryUser.authType !== 'sfi') return false
+    const primarySessionCreatedAt = primaryUser.createdAt
+
+    const secondarySession = await redisClient.get(
+      sessionKey(secondarySessionId)
+    )
+    if (!secondarySession) return false
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    const secondarySessionUser = JSON.parse(secondarySession)?.evaka?.user
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    const secondarySessionCreatedAt = secondarySessionUser?.createdAt
+    if (!secondarySessionCreatedAt) return false
+
+    return secondarySessionCreatedAt > primarySessionCreatedAt
+  }
+
   return {
     sessionType,
     cookieName,
@@ -372,6 +398,7 @@ export function sessionSupport<T extends SessionType>(
     getUser,
     getSecondaryUser,
     getUserHeader,
-    isAuthenticated
+    isAuthenticated,
+    isSecondarySessionNewer
   }
 }
