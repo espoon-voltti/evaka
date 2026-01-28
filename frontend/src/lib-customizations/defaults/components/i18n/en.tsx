@@ -204,6 +204,8 @@ const components: Translations = {
     name: 'Document name',
     createdAt: 'Creation date',
     createdBy: 'Creator',
+    publishedVersions: 'Published versions',
+    notPublished: 'Not published',
     monthsUnit: 'months',
     confidentiality: 'Confidentiality',
     confidential: 'Confidential',

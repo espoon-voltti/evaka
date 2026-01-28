@@ -200,6 +200,8 @@ const components: Translations = {
     name: 'Asiakirjan nimi',
     createdAt: 'Laatimisajankohta',
     createdBy: 'Laatija',
+    publishedVersions: 'Julkaistut versiot',
+    notPublished: 'Ei julkaistu',
     monthsUnit: 'kuukautta',
     confidentiality: 'Julkisuus',
     confidential: 'Salassapidettävä',
