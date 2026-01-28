@@ -1684,10 +1684,12 @@ const en: Translations = {
     title: 'Decisions',
     summary:
       'This page contains decisions regarding early childhood education, pre-primary education and clubs as well as decisions regarding fees.',
-    unconfirmedDecisions: (n: number) =>
-      `${n} ${
-        n === 1 ? 'decision is' : 'decisions are'
-      } waiting for confirmation`,
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) return 'Decisions'
+      return `${n} ${
+        n === 1 ? 'decision' : 'decisions'
+      } waiting for guardian's confirmation`
+    },
     noUnconfirmedDecisions: 'all decisions confirmed',
     unreadDecision: 'unread decision',
     pageLoadError: 'Error in fetching the requested information',
@@ -1725,6 +1727,7 @@ const en: Translations = {
       statusLabel: 'Status',
       summary:
         'Accept or reject the decisions immediately or no later than two weeks from receiving the notification.',
+      allDecisionsConfirmed: 'You have accepted all decisions.',
       status: {
         PENDING: 'Waiting for confirmation from the guardian',
         ACCEPTED: 'Confirmed',

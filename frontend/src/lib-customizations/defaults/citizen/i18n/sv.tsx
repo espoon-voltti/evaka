@@ -1639,7 +1639,13 @@ const sv: Translations = {
     title: 'Beslut',
     summary:
       'På denna sida hittar du beslut som gäller småbarnspedagogik, förskoleundervisning och klubbar samt beslut som gäller avgifter.',
-    unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) {
+        return 'Beslut'
+      }
+      // fi: `${n} päätöstä odottaa huoltajan vahvistusta`
+      return `${n} beslut väntar på bekräftelse från vårdnadshavaren`
+    },
     noUnconfirmedDecisions: 'alla beslut bekräftade',
     unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
@@ -1676,6 +1682,7 @@ const sv: Translations = {
       statusLabel: 'Status',
       summary:
         'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
+      allDecisionsConfirmed: 'Du har bekräftat alla beslut.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
