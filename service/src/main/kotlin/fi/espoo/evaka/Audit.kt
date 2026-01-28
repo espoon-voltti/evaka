@@ -198,6 +198,7 @@ enum class Audit(
     ChildServiceApplicationsRead,
     ChildServiceApplicationAccept,
     ChildServiceApplicationReject,
+    ChildServiceNeedsRead,
     ChildStickyNoteCreate,
     ChildStickyNoteUpdate,
     ChildStickyNoteDelete,

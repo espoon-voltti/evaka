@@ -62,7 +62,8 @@ interface Props {
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   realtimeStaffAttendanceEnabled: boolean
-  operationalDays: number[]
+  normalOperationDays: number[]
+  shiftCareOperationDays: number[] | undefined
   groups: DaycareGroup[]
   weekRange: FiniteDateRange
 }
@@ -72,7 +73,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   selectedGroup,
   selectedDate,
   realtimeStaffAttendanceEnabled,
-  operationalDays,
+  normalOperationDays,
+  shiftCareOperationDays,
   groups,
   weekRange
 }: Props) {
@@ -133,7 +135,9 @@ export default React.memo(function UnitAttendanceReservationsView({
         <ReservationModalSingleChild
           child={creatingReservationChild}
           onClose={() => setCreatingReservationChild(undefined)}
-          operationalDays={operationalDays}
+          unitId={unitId}
+          normalOperationDays={normalOperationDays}
+          shiftCareOperationDays={shiftCareOperationDays}
         />
       )}
       {childDateEditorTarget && (

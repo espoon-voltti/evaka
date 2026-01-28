@@ -969,4 +969,72 @@ describe('Unit group calendar for shift care unit', () => {
         '1 (1,00)'
       ])
   })
+
+  test('Can make reservations on weekend days when child has shift care', async () => {
+    await testCareArea.save()
+    await testDaycare.save()
+    const careArea = await testCareArea2.save()
+    daycare = await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id
+    }).save()
+
+    unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
+    await createDefaultServiceNeedOptions()
+
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId: daycare.id,
+      name: 'Testailijat'
+    }).save()
+
+    const child = await Fixture.person().saveChild()
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addWeeks(4)
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
+
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(unitSupervisor.id),
+      shiftCare: 'FULL'
+    }).save()
+
+    page = await Page.open({
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await employeeLogin(page, unitSupervisor)
+
+    const weekCalendar = await openWeekCalendar()
+    const childReservations = weekCalendar.childReservations
+
+    const saturday = mockedToday.addDays(3)
+    const reservationModal = await childReservations.openReservationModal(
+      child.id
+    )
+    await reservationModal.selectRepetitionType('IRREGULAR')
+    await reservationModal.startDate.fill(saturday.format())
+    await reservationModal.endDate.fill(saturday.format())
+    await reservationModal.setStartTime('10:00', 0)
+    await reservationModal.setEndTime('16:00', 0)
+    await reservationModal.save()
+
+    await weekCalendar.changeWeekToDate(saturday)
+    await childReservations
+      .reservationCells(child.id, saturday)
+      .nth(0)
+      .assertTextEquals('10:00\n16:00*')
+  })
 })
