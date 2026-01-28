@@ -54,8 +54,12 @@ export default React.memo(function ApplicationDecision({
       toggleOpen={toggleOpen}
       title={
         <div>
-          <H4 noMargin>{sentDate.format()}</H4>
-          <H3 noMargin>{t.decisions.applicationDecisions.type[type]}</H3>
+          <H4 noMargin data-qa="decision-sent-date">
+            {sentDate.format()}
+          </H4>
+          <H3 noMargin data-qa="title-decision-type">
+            {t.decisions.applicationDecisions.type[type]}
+          </H3>
         </div>
       }
       alwaysShownContent={
