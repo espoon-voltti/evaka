@@ -204,6 +204,8 @@ const components: Translations = {
     name: 'Dokumentets namn',
     createdAt: 'Skapandedatum',
     createdBy: 'Skapare',
+    publishedVersions: 'Publicerade versioner',
+    notPublished: 'Inte publicerad',
     monthsUnit: 'månader',
     confidentiality: 'Sekretess',
     confidential: 'Sekretessbelagd',
