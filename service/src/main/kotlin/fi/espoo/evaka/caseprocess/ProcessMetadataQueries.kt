@@ -80,7 +80,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                 FROM child_document_published_version v
                 JOIN evaka_user vu ON v.created_by = vu.id
                 WHERE v.child_document_id = cd.id
-            ) AS versions
+            ) AS published_versions
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
@@ -114,7 +114,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                 downloadPath = "/employee/child-documents/$documentId/pdf",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
-                versions = jsonColumn("versions"),
+                publishedVersions = jsonColumn("published_versions"),
             )
         }
         .exactlyOne()

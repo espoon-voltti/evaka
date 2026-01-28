@@ -63,7 +63,7 @@ data class DocumentMetadata(
     val downloadPath: String?,
     val receivedBy: DocumentOrigin?,
     val sfiDeliveries: List<SfiDelivery>,
-    val versions: List<DocumentVersion> = emptyList(),
+    val publishedVersions: List<DocumentVersion>? = null,
 )
 
 data class ProcessMetadata(
@@ -159,7 +159,17 @@ class ProcessMetadataController(
                                                 Action.ChildDocument.DOWNLOAD,
                                                 childDocumentId,
                                             )
-                                        }
+                                        },
+                                    publishedVersions =
+                                        document.publishedVersions.takeIf {
+                                            accessControl.hasPermissionFor(
+                                                tx,
+                                                user,
+                                                clock,
+                                                Action.ChildDocument.DOWNLOAD_VERSION,
+                                                childDocumentId,
+                                            )
+                                        },
                                 ),
                             secondaryDocuments = emptyList(),
                         )
