@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import type { AcceptServiceApplicationBody } from 'lib-common/generated/api-types/serviceneed'
+import type { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import type { JsonCompatible } from 'lib-common/json'
@@ -21,6 +22,7 @@ import type { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/se
 import type { UndecidedServiceApplicationSummary } from 'lib-common/generated/api-types/serviceneed'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonEmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -41,6 +43,22 @@ export async function deleteServiceNeed(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getChildServiceNeeds
+*/
+export async function getChildServiceNeeds(
+  request: {
+    childId: PersonId
+  }
+): Promise<ChildServiceNeedInfo[]> {
+  const { data: json } = await client.request<JsonOf<ChildServiceNeedInfo[]>>({
+    url: uri`/employee/children/${request.childId}/service-needs`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonChildServiceNeedInfo(e))
 }
 
 
