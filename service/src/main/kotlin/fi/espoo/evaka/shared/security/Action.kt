@@ -2059,22 +2059,22 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         INSERT_ACL_UNIT_SUPERVISOR(HasGlobalRole(ADMIN)),
-        DELETE_ACL_UNIT_SUPERVISOR(HasGlobalRole(ADMIN)),
+        UPDATE_ACL_UNIT_SUPERVISOR(HasGlobalRole(ADMIN)),
         INSERT_ACL_SPECIAL_EDUCATION_TEACHER(HasGlobalRole(ADMIN)),
-        DELETE_ACL_SPECIAL_EDUCATION_TEACHER(HasGlobalRole(ADMIN)),
+        UPDATE_ACL_SPECIAL_EDUCATION_TEACHER(HasGlobalRole(ADMIN)),
         INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY(HasGlobalRole(ADMIN)),
-        DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY(HasGlobalRole(ADMIN)),
+        UPDATE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY(HasGlobalRole(ADMIN)),
         INSERT_ACL_STAFF(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .withUnitProviderTypes(ProviderType.MUNICIPAL, ProviderType.MUNICIPAL_SCHOOL)
                 .inUnit(),
         ),
-        DELETE_ACL_STAFF(
+        UPDATE_ACL_STAFF(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
-        DELETE_ACL_SCHEDULED(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        UPDATE_ACL_SCHEDULED(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         UPDATE_STAFF_GROUP_ACL(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),

@@ -20,13 +20,14 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../../state/i18n'
-import { updateGroupAclWithOccupancyCoefficientMutation } from '../../queries'
+import { updateGroupAclMutation } from '../../queries'
 
 import { useGroupOptions } from './common'
 
 interface Props {
   onClose: () => void
   permittedActions: Action.Unit[]
+  endDateEditable: boolean
   unitId: DaycareId
   groups: Record<string, DaycareGroupResponse>
   row: DaycareAclRow
@@ -41,6 +42,7 @@ type FormState = {
 export default React.memo(function EditAclModal({
   onClose,
   permittedActions,
+  endDateEditable,
   unitId,
   groups,
   row
@@ -64,11 +66,12 @@ export default React.memo(function EditAclModal({
   return (
     <MutateFormModal
       title={i18n.unit.accessControl.editDaycareAclModal.title}
-      resolveMutation={updateGroupAclWithOccupancyCoefficientMutation}
+      resolveMutation={updateGroupAclMutation}
       resolveAction={() => ({
         unitId,
         employeeId: row.employee.id,
         body: {
+          role,
           groupIds: formData.selectedGroups?.map(({ id }) => id) ?? null,
           hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect,
           endDate: formData.endDate
@@ -125,18 +128,20 @@ export default React.memo(function EditAclModal({
           />
         )}
 
-        <FixedSpaceColumn spacing="xs">
-          <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
-          <DatePicker
-            data-qa="end-date"
-            date={formData.endDate}
-            onChange={(date) =>
-              setFormData((prev) => ({ ...prev, endDate: date }))
-            }
-            locale={lang}
-            minDate={LocalDate.todayInHelsinkiTz()}
-          />
-        </FixedSpaceColumn>
+        {endDateEditable && (
+          <FixedSpaceColumn spacing="xs">
+            <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
+            <DatePicker
+              data-qa="end-date"
+              date={formData.endDate}
+              onChange={(date) =>
+                setFormData((prev) => ({ ...prev, endDate: date }))
+              }
+              locale={lang}
+              minDate={LocalDate.todayInHelsinkiTz()}
+            />
+          </FixedSpaceColumn>
+        )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
