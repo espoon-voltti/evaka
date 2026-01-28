@@ -185,7 +185,7 @@ describe('Employee - Child documents', () => {
     await childDocument.goToCompletedStatus()
     await childDocument.status.assertTextEquals('Valmis')
 
-    // Assert status and new publish time
+    // Assert status and times
     await childDocument.returnButton.click()
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
@@ -193,7 +193,9 @@ describe('Employee - Child documents', () => {
     await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
     row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Valmis')
-    await row.published.assertTextEquals(later.format())
+    await row.modified.assertTextEquals(later.format())
+    // Content has not changed since last publishing so published time remains the same
+    await row.published.assertTextEquals(now.format())
   })
 
   test('Pedagogical report only has two states', async () => {
