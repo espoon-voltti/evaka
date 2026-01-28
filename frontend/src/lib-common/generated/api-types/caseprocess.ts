@@ -66,9 +66,9 @@ export interface DocumentMetadata {
   documentId: UUID
   downloadPath: string | null
   name: string
+  publishedVersions: DocumentVersion[] | null
   receivedBy: DocumentOrigin | null
   sfiDeliveries: SfiDelivery[]
-  versions: DocumentVersion[]
 }
 
 /**
@@ -144,8 +144,8 @@ export function deserializeJsonDocumentMetadata(json: JsonOf<DocumentMetadata>):
     ...json,
     createdAtDate: (json.createdAtDate != null) ? LocalDate.parseIso(json.createdAtDate) : null,
     createdAtTime: (json.createdAtTime != null) ? LocalTime.parseIso(json.createdAtTime) : null,
-    sfiDeliveries: json.sfiDeliveries.map(e => deserializeJsonSfiDelivery(e)),
-    versions: json.versions.map(e => deserializeJsonDocumentVersion(e))
+    publishedVersions: (json.publishedVersions != null) ? json.publishedVersions.map(e => deserializeJsonDocumentVersion(e)) : null,
+    sfiDeliveries: json.sfiDeliveries.map(e => deserializeJsonSfiDelivery(e))
   }
 }
 

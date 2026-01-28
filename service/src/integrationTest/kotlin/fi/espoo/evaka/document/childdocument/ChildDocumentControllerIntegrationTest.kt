@@ -625,15 +625,17 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // Initially no versions for unpublished document
         val metadata1 = getChildDocumentMetadata(documentId).data!!
-        assertTrue(metadata1.primaryDocument.versions.isEmpty())
+        assertTrue(metadata1.primaryDocument.publishedVersions.isNullOrEmpty())
 
         // First publish
         publishDocument(documentId)
         asyncJobRunner.runPendingJobsSync(clock)
 
         val metadata2 = getChildDocumentMetadata(documentId).data!!
-        assertEquals(1, metadata2.primaryDocument.versions.size)
-        val version1 = metadata2.primaryDocument.versions[0]
+        val versions2 = metadata2.primaryDocument.publishedVersions
+        assertNotNull(versions2)
+        assertEquals(1, versions2.size)
+        val version1 = versions2[0]
         assertEquals(1, version1.versionNumber)
         assertEquals(clock.now(), version1.createdAt)
         assertEquals(employeeUser.evakaUserId, version1.createdBy.id)
@@ -648,11 +650,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         asyncJobRunner.runPendingJobsSync(clock)
 
         val metadata3 = getChildDocumentMetadata(documentId).data!!
-        assertEquals(2, metadata3.primaryDocument.versions.size)
+        val versions3 = metadata3.primaryDocument.publishedVersions
+        assertNotNull(versions3)
+        assertEquals(2, versions3.size)
 
         // Versions should be in descending order (latest first)
-        val latestVersion = metadata3.primaryDocument.versions[0]
-        val olderVersion = metadata3.primaryDocument.versions[1]
+        val latestVersion = versions3[0]
+        val olderVersion = versions3[1]
         assertEquals(2, latestVersion.versionNumber)
         assertEquals(1, olderVersion.versionNumber)
         assertTrue(latestVersion.downloadPath?.contains("/pdf?version=2") == true)
