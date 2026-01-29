@@ -5,6 +5,8 @@
 FROM library/postgres:18-alpine
 
 COPY postgresql.conf /var/lib/postgresql/
+COPY reset-local-db.sh /usr/local/bin/reset-local-db
+COPY reset-it-db.sh /usr/local/bin/reset-it-db
 
 # Add the initialisation scripts
 COPY entry/* /docker-entrypoint-initdb.d/

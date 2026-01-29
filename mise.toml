@@ -102,3 +102,13 @@ fi
 echo "Current environment:"
 mise env | grep EVAKA_ | sort
 """
+
+[tasks.reset-local-db]
+description = "Drop and recreate the evaka_local development database"
+dir = "compose"
+run = "docker compose exec -T db reset-local-db"
+
+[tasks.reset-test-db]
+description = "Drop and recreate the evaka_it integration test database"
+dir = "compose"
+run = "docker compose exec -T db reset-it-db"
