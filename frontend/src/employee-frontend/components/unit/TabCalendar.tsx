@@ -223,11 +223,15 @@ const CalendarContent = React.memo(function CalendarContent({
     unitInformation.daycare.shiftCareOperationDays
   ])
 
-  // passed into ReservationModalSingleChild to keep the functionality unchanged for now
-  const normalOperationalDays = useMemo((): DayOfWeek[] => {
+  const normalOperationDays = useMemo((): DayOfWeek[] => {
     const days = unitInformation.daycare.operationDays as DayOfWeek[]
     return days.length === 0 ? [1, 2, 3, 4, 5] : days
   }, [unitInformation.daycare.operationDays])
+
+  const shiftCareOperationDays = useMemo((): DayOfWeek[] | undefined => {
+    const days = unitInformation.daycare.shiftCareOperationDays as DayOfWeek[]
+    return days && days.length > 0 ? days : undefined
+  }, [unitInformation.daycare.shiftCareOperationDays])
 
   const weekRange = useMemo(
     () => getWeekDateRange(selectedDate),
@@ -309,7 +313,8 @@ const CalendarContent = React.memo(function CalendarContent({
             selectedGroup={selectedGroup}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            operationalDays={normalOperationalDays}
+            normalOperationDays={normalOperationDays}
+            shiftCareOperationDays={shiftCareOperationDays}
             realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
             groups={groups}
             weekRange={weekRange}

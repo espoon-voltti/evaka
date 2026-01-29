@@ -405,3 +405,30 @@ FROM service_need_option_fee
         }
         .toList<ServiceNeedOptionFee>()
 }
+
+fun Database.Read.getChildFutureServiceNeedInfos(
+    childId: ChildId,
+    today: LocalDate,
+): List<ChildServiceNeedInfo> {
+    return createQuery {
+            sql(
+                """
+SELECT
+    p.child_id,
+    sno.id AS option_id,
+    sno.contract_days_per_month IS NOT NULL AS has_contract_days,
+    sno.daycare_hours_per_month,
+    sno.name_fi AS option_name,
+    daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+    sn.shift_care,
+    sn.part_week
+FROM placement p
+JOIN service_need sn ON sn.placement_id = p.id
+JOIN service_need_option sno ON sn.option_id = sno.id
+WHERE p.child_id = ${bind(childId)} AND sn.end_date >= ${bind(today)}
+ORDER BY sn.start_date
+"""
+            )
+        }
+        .toList<ChildServiceNeedInfo>()
+}
