@@ -74,6 +74,26 @@ export type DaycareAclRole = Extract<
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
 >
 
+function isUpdateAclPermitted(
+  permittedActions: Action.Unit[],
+  role: UserRole
+): boolean {
+  switch (role) {
+    case 'UNIT_SUPERVISOR':
+      return permittedActions.includes('UPDATE_ACL_UNIT_SUPERVISOR')
+    case 'SPECIAL_EDUCATION_TEACHER':
+      return permittedActions.includes('UPDATE_ACL_SPECIAL_EDUCATION_TEACHER')
+    case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
+      return permittedActions.includes(
+        'UPDATE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+      )
+    case 'STAFF':
+      return permittedActions.includes('UPDATE_ACL_STAFF')
+    default:
+      return false
+  }
+}
+
 const roleOrder = (role: UserRole) => {
   switch (role) {
     case 'UNIT_SUPERVISOR':
@@ -275,31 +295,8 @@ function AclTable({
     [rows]
   )
 
-  const editPermitted = useMemo(
-    () =>
-      permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
-      permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'),
-    [permittedActions]
-  )
-  const deletePermitted = useCallback(
-    (role: UserRole) => {
-      switch (role) {
-        case 'UNIT_SUPERVISOR':
-          return permittedActions.includes('DELETE_ACL_UNIT_SUPERVISOR')
-        case 'SPECIAL_EDUCATION_TEACHER':
-          return permittedActions.includes(
-            'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
-          )
-        case 'EARLY_CHILDHOOD_EDUCATION_SECRETARY':
-          return permittedActions.includes(
-            'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-          )
-        case 'STAFF':
-          return permittedActions.includes('DELETE_ACL_STAFF')
-        default:
-          return false
-      }
-    },
+  const updatePermitted = useCallback(
+    (role: UserRole) => isUpdateAclPermitted(permittedActions, role),
     [permittedActions]
   )
   const coefficientPermitted = useMemo(
@@ -327,9 +324,17 @@ function AclTable({
             row={row}
             scheduledRow={scheduledRows.find((sr) => sr.id === row.employee.id)}
             isDeletable={
-              deletePermitted(row.role) && row.employee.id !== user?.id
+              updatePermitted(row.role) && row.employee.id !== user?.id
             }
-            isEditable={!!(editPermitted && unitGroups)}
+            isEditable={
+              !!(
+                (permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+                  permittedActions.includes(
+                    'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+                  )) &&
+                unitGroups
+              )
+            }
             coefficientPermitted={coefficientPermitted}
             onClickEdit={() => onClickEdit(row)}
           />
@@ -404,7 +409,7 @@ function ScheduledAclTable({
               </Td>
               <Td>{row.endDate?.format()}</Td>
               <Td>
-                {permittedActions.includes('DELETE_ACL_SCHEDULED') && (
+                {permittedActions.includes('UPDATE_ACL_SCHEDULED') && (
                   <ConfirmedMutation
                     buttonStyle="ICON"
                     icon={faTrash}
@@ -703,6 +708,10 @@ export default React.memo(function UnitAccessControl({
           <EditAclModal
             onClose={() => setEditedAclRow(null)}
             permittedActions={permittedActions}
+            endDateEditable={
+              isUpdateAclPermitted(permittedActions, editedAclRow.role) &&
+              editedAclRow.employee.id !== user?.id
+            }
             row={editedAclRow}
             unitId={unitId}
             groups={groups}
