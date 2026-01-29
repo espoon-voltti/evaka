@@ -177,6 +177,8 @@ export interface Translations {
     name: string
     createdAt: string
     createdBy: string
+    publishedVersions: string
+    notPublished: string
     monthsUnit: string
     confidentiality: string
     confidential: string

@@ -18,7 +18,6 @@ import type {
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import type { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
-import type { DocumentContent } from 'lib-common/generated/api-types/document'
 import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import type {
@@ -124,6 +123,7 @@ import type {
   DevChildAttendance,
   DevChildDocument,
   DevChildDocumentDecision,
+  DevChildDocumentPublishedVersion,
   DevClubTerm,
   DevDailyServiceTimeNotification,
   DevDailyServiceTimes,
@@ -1536,9 +1536,6 @@ export class Fixture {
       modifiedBy: systemInternalUser.id,
       contentLockedAt: HelsinkiDateTime.now(),
       contentLockedBy: null,
-      documentKey: null,
-      publishedAt: null,
-      publishedBy: null,
       content: {
         answers: [
           {
@@ -1548,12 +1545,12 @@ export class Fixture {
           }
         ]
       },
-      publishedContent: null,
       answeredAt: null,
       answeredBy: null,
       processId: null,
       decisionMaker: null,
       decision: null,
+      publishedVersions: [],
       ...initial
     }
 
@@ -1569,16 +1566,21 @@ export class Fixture {
           modifiedAt
         })
       },
-      withPublishedAt(publishedAt: HelsinkiDateTime | null) {
+      withPublishedVersion(
+        version: SemiPartial<
+          DevChildDocumentPublishedVersion,
+          'versionNumber' | 'createdAt' | 'createdBy' | 'publishedContent'
+        >
+      ) {
         return Fixture.childDocument({
           ...value,
-          publishedAt
-        })
-      },
-      withPublishedContent(publishedContent: DocumentContent | null) {
-        return Fixture.childDocument({
-          ...value,
-          publishedContent
+          publishedVersions: [
+            ...value.publishedVersions,
+            {
+              documentKey: null,
+              ...version
+            }
+          ]
         })
       },
       withDecision(

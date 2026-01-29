@@ -116,7 +116,7 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
-              <Td>
+              <Td data-qa="document-modified-at">
                 <Tooltip
                   tooltip={i18n.childInformation.childDocuments.table.modifiedBy(
                     document.modifiedBy

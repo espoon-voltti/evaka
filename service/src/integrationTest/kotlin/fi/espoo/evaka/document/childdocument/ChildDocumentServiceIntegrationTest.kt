@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -142,13 +143,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = activeHojksTemplateId,
                     content = content,
-                    publishedContent = null,
                     modifiedAt = clock.now(),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = null,
-                    publishedAt = null,
-                    publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -160,16 +158,25 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = expiredHojksTemplateId,
                     content = content,
-                    publishedContent = updatedContent,
                     modifiedAt = clock.now(),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = null,
-                    publishedAt =
-                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
             tx.insert(
@@ -179,15 +186,21 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = expiredHojksTemplateId,
                     content = content,
-                    publishedContent = updatedContent,
                     modifiedAt = clock.now().minusMonths(1),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now().minusMonths(1),
                     contentLockedBy = null,
-                    publishedAt = clock.now().minusMonths(1),
-                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now().minusMonths(1),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
             tx.insert(
@@ -197,13 +210,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = expiredDecisionTemplateId,
                     content = content,
-                    publishedContent = null,
                     modifiedAt = clock.now(),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = null,
-                    publishedAt = null,
-                    publishedBy = null,
                     answeredAt = null,
                     answeredBy = null,
                 )
@@ -253,16 +263,25 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = expiredHojksTemplateId,
                     content = content,
-                    publishedContent = updatedContent,
                     modifiedAt = clock.now(),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = null,
-                    publishedAt =
-                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = updatedContent,
+                            )
+                        ),
                 )
             )
 
@@ -297,16 +316,25 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     templateId = expiredHojksTemplateId,
                     content = content,
-                    publishedContent = content,
                     modifiedAt = clock.now(),
                     modifiedBy = employee.evakaUserId,
                     contentLockedAt = clock.now(),
                     contentLockedBy = null,
-                    publishedAt =
-                        HelsinkiDateTime.of(clock.today().minusMonths(1), LocalTime.of(8, 0)),
-                    publishedBy = employee.evakaUserId,
                     answeredAt = null,
                     answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt =
+                                    HelsinkiDateTime.of(
+                                        clock.today().minusMonths(1),
+                                        LocalTime.of(8, 0),
+                                    ),
+                                createdBy = employee.evakaUserId,
+                                publishedContent = content,
+                            )
+                        ),
                 )
             )
         }

@@ -91,18 +91,21 @@ beforeEach(async () => {
   documentIdVasu = (
     await Fixture.childDocument({
       childId: child.id,
-      templateId: templateIdVasu,
-      publishedBy: evakaUserId(decisionMaker.id)
+      templateId: templateIdVasu
     })
-      .withPublishedAt(mockedNow)
-      .withPublishedContent({
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
       })
       .save()
   ).id
@@ -118,18 +121,21 @@ beforeEach(async () => {
   documentIdHojks = (
     await Fixture.childDocument({
       childId: child.id,
-      templateId: templateIdHojks,
-      publishedBy: evakaUserId(decisionMaker.id)
+      templateId: templateIdHojks
     })
-      .withPublishedAt(mockedNow)
-      .withPublishedContent({
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
       })
       .save()
   ).id
@@ -145,19 +151,22 @@ beforeEach(async () => {
   documentIdPed = (
     await Fixture.childDocument({
       templateId: templateIdPed,
-      childId: child.id,
-      publishedBy: evakaUserId(decisionMaker.id)
+      childId: child.id
     })
       .withModifiedAt(mockedNow)
-      .withPublishedAt(mockedNow)
-      .withPublishedContent({
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
       })
       .save()
   ).id
@@ -176,19 +185,22 @@ beforeEach(async () => {
       templateId: templateIdDecision,
       childId: child.id,
       status: 'COMPLETED',
-      decisionMaker: decisionMaker.id,
-      publishedBy: evakaUserId(decisionMaker.id)
+      decisionMaker: decisionMaker.id
     })
       .withModifiedAt(mockedNow)
-      .withPublishedAt(mockedNow)
-      .withPublishedContent({
-        answers: [
-          {
-            questionId: 'q1',
-            type: 'TEXT',
-            answer: 'test'
-          }
-        ]
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: {
+          answers: [
+            {
+              questionId: 'q1',
+              type: 'TEXT',
+              answer: 'test'
+            }
+          ]
+        }
       })
       .withDecision({
         status: 'ACCEPTED',
@@ -293,12 +305,16 @@ describe('Citizen child documents listing page', () => {
       childId: child.id,
       status: 'COMPLETED',
       content: documentContent,
-      publishedAt: mockedNow,
-      publishedBy: evakaUserId(unitSupervisor.id),
-      publishedContent: documentContent,
       answeredAt: mockedNow,
       answeredBy: evakaUserId(unitSupervisor.id)
-    }).save()
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(unitSupervisor.id),
+        publishedContent: documentContent
+      })
+      .save()
 
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
@@ -351,11 +367,15 @@ describe('Citizen child documents editor page', () => {
       templateId: template.id,
       childId: child.id,
       status: 'CITIZEN_DRAFT',
-      content: documentContent,
-      publishedAt: mockedNow,
-      publishedBy: evakaUserId(decisionMaker.id),
-      publishedContent: documentContent
-    }).save()
+      content: documentContent
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: documentContent
+      })
+      .save()
 
     await enduserLogin(page, testAdult)
     await header.assertUnreadChildrenCount(5)
@@ -399,11 +419,15 @@ describe('Citizen child documents editor page', () => {
       templateId: template.id,
       childId: child.id,
       status: 'CITIZEN_DRAFT',
-      content: documentContent,
-      publishedAt: mockedNow,
-      publishedBy: evakaUserId(decisionMaker.id),
-      publishedContent: documentContent
-    }).save()
+      content: documentContent
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: documentContent
+      })
+      .save()
 
     await enduserLogin(page, testAdult)
     const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
@@ -447,11 +471,15 @@ describe('Citizen child documents editor page', () => {
       templateId: template.id,
       childId: child.id,
       status: 'CITIZEN_DRAFT',
-      content: documentContent,
-      publishedAt: mockedNow,
-      publishedBy: evakaUserId(decisionMaker.id),
-      publishedContent: documentContent
-    }).save()
+      content: documentContent
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: mockedNow,
+        createdBy: evakaUserId(decisionMaker.id),
+        publishedContent: documentContent
+      })
+      .save()
 
     await enduserLoginWeak(page, credentials)
     const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)

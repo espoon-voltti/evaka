@@ -389,11 +389,15 @@ export async function deleteDraftDocument(
 */
 export function downloadChildDocument(
   request: {
-    documentId: ChildDocumentId
+    documentId: ChildDocumentId,
+    version?: number | null
   }
 ): { url: Uri } {
+  const params = createUrlSearchParams(
+    ['version', request.version?.toString()]
+  )
   return {
-    url: uri`/employee/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '')
+    url: uri`/employee/child-documents/${request.documentId}/pdf`.withBaseUrl(client.defaults.baseURL ?? '').appendQuery(params)
   }
 }
 

@@ -66,6 +66,7 @@ export interface DocumentMetadata {
   documentId: UUID
   downloadPath: string | null
   name: string
+  publishedVersions: DocumentVersion[] | null
   receivedBy: DocumentOrigin | null
   sfiDeliveries: SfiDelivery[]
 }
@@ -76,6 +77,16 @@ export interface DocumentMetadata {
 export type DocumentOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
+
+/**
+* Generated from fi.espoo.evaka.caseprocess.DocumentVersion
+*/
+export interface DocumentVersion {
+  createdAt: HelsinkiDateTime
+  createdBy: EvakaUser
+  downloadPath: string | null
+  versionNumber: number
+}
 
 /**
 * Generated from fi.espoo.evaka.caseprocess.ProcessMetadata
@@ -133,7 +144,16 @@ export function deserializeJsonDocumentMetadata(json: JsonOf<DocumentMetadata>):
     ...json,
     createdAtDate: (json.createdAtDate != null) ? LocalDate.parseIso(json.createdAtDate) : null,
     createdAtTime: (json.createdAtTime != null) ? LocalTime.parseIso(json.createdAtTime) : null,
+    publishedVersions: (json.publishedVersions != null) ? json.publishedVersions.map(e => deserializeJsonDocumentVersion(e)) : null,
     sfiDeliveries: json.sfiDeliveries.map(e => deserializeJsonSfiDelivery(e))
+  }
+}
+
+
+export function deserializeJsonDocumentVersion(json: JsonOf<DocumentVersion>): DocumentVersion {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt)
   }
 }
 
