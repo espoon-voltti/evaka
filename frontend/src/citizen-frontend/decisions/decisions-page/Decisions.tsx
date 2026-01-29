@@ -155,7 +155,11 @@ export default React.memo(function Decisions() {
             <Gap size="s" />
             <UnconfirmedDecisionsBox>
               <IconContainer>
-                <GavelIcon icon={faGavel} color={colors.grayscale.g0} />
+                <GavelIcon
+                  icon={faGavel}
+                  color={colors.grayscale.g0}
+                  aria-hidden="true"
+                />
               </IconContainer>
               <UnconfirmedColumn>
                 <UnconfirmedHeader data-qa="alert-box-unconfirmed-decisions-count">

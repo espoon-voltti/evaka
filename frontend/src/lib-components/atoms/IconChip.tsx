@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
@@ -36,7 +37,7 @@ const IconChip = React.memo(function IconChip({
       data-qa={dataQa}
     >
       <IconContainer backgroundColor={iconBackgroundColor}>
-        <Icon icon={icon} color={iconColor} />
+        <Icon icon={icon} color={iconColor} aria-hidden="true" />
       </IconContainer>
       {label}
     </Container>

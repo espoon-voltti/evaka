@@ -53,7 +53,13 @@ export default React.memo(function ApplicationDecision({
       open={open}
       toggleOpen={toggleOpen}
       title={
-        <div>
+        <div
+          aria-label={`${
+            t.decisions.applicationDecisions.type[type]
+          } ${sentDate.format()} - ${
+            t.decisions.applicationDecisions.status[status]
+          }`}
+        >
           <H4 noMargin data-qa="decision-sent-date">
             {sentDate.format()}
           </H4>

@@ -215,7 +215,9 @@ export default React.memo(function DecisionResponse({
             columnGap="s"
             mobileMaxWidth={tabletMin}
           >
-            <H3 noMargin>{t.decisions.applicationDecisions.confirmation}</H3>
+            <H3 noMargin id={`decision-${decision.id}-confirmation`}>
+              {t.decisions.applicationDecisions.confirmation}
+            </H3>
             <FixedSpaceColumn>
               {blocked && (
                 <InfoBoxWrapper>
@@ -227,65 +229,72 @@ export default React.memo(function DecisionResponse({
                   />
                 </InfoBoxWrapper>
               )}
-              <FixedSpaceRow alignItems="center" spacing="xs">
+              <div
+                role="group"
+                aria-labelledby={`decision-${decision.id}-confirmation`}
+              >
+                <FixedSpaceRow alignItems="center" spacing="xs">
+                  <Radio
+                    id={`${decision.id}-accept`}
+                    checked={acceptChecked}
+                    onChange={() => setAcceptChecked(true)}
+                    name={`${decision.id}-confirmation`}
+                    label={
+                      <FixedSpaceFlexWrap horizontalSpacing="xs">
+                        <div>
+                          {t.decisions.applicationDecisions.response.accept1}
+                        </div>
+                        {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
+                          decisionType
+                        ) ? (
+                          <div>{startDate.format()}</div>
+                        ) : (
+                          <DatePickerContainer
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <DatePicker
+                              date={requestedStartDate}
+                              onChange={(date) => setRequestedStartDate(date)}
+                              minDate={validRequestedStartDatePeriod.start}
+                              maxDate={validRequestedStartDatePeriod.end}
+                              locale={lang}
+                              disabled={blocked || submitting}
+                              info={
+                                dateErrorMessage !== ''
+                                  ? {
+                                      text: dateErrorMessage,
+                                      status: 'warning'
+                                    }
+                                  : undefined
+                              }
+                            />
+                          </DatePickerContainer>
+                        )}
+                        <div>
+                          {t.decisions.applicationDecisions.response.accept2}
+                        </div>
+                      </FixedSpaceFlexWrap>
+                    }
+                    ariaLabel={`${
+                      t.decisions.applicationDecisions.response.accept1
+                    } ${requestedStartDate?.format() ?? ''} ${
+                      t.decisions.applicationDecisions.response.accept2
+                    }`}
+                    disabled={blocked || submitting}
+                    data-qa="radio-accept"
+                  />
+                </FixedSpaceRow>
+                <Gap size="s" />
                 <Radio
-                  id={`${decision.id}-accept`}
-                  checked={acceptChecked}
-                  onChange={() => setAcceptChecked(true)}
-                  name={`${decision.id}-accept`}
-                  label={
-                    <FixedSpaceFlexWrap horizontalSpacing="xs">
-                      <div>
-                        {t.decisions.applicationDecisions.response.accept1}
-                      </div>
-                      {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
-                        decisionType
-                      ) ? (
-                        <div>{startDate.format()}</div>
-                      ) : (
-                        <DatePickerContainer
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <DatePicker
-                            date={requestedStartDate}
-                            onChange={(date) => setRequestedStartDate(date)}
-                            minDate={validRequestedStartDatePeriod.start}
-                            maxDate={validRequestedStartDatePeriod.end}
-                            locale={lang}
-                            info={
-                              dateErrorMessage !== ''
-                                ? {
-                                    text: dateErrorMessage,
-                                    status: 'warning'
-                                  }
-                                : undefined
-                            }
-                          />
-                        </DatePickerContainer>
-                      )}
-                      <div>
-                        {t.decisions.applicationDecisions.response.accept2}
-                      </div>
-                    </FixedSpaceFlexWrap>
-                  }
-                  ariaLabel={`${
-                    t.decisions.applicationDecisions.response.accept1
-                  } ${requestedStartDate?.format() ?? ''} ${
-                    t.decisions.applicationDecisions.response.accept2
-                  }`}
+                  id={`${decision.id}-reject`}
+                  checked={!acceptChecked}
+                  onChange={() => setAcceptChecked(false)}
+                  name={`${decision.id}-confirmation`}
+                  label={t.decisions.applicationDecisions.response.reject}
                   disabled={blocked || submitting}
-                  data-qa="radio-accept"
+                  data-qa="radio-reject"
                 />
-              </FixedSpaceRow>
-              <Radio
-                id={`${decision.id}-reject`}
-                checked={!acceptChecked}
-                onChange={() => setAcceptChecked(false)}
-                name={`${decision.id}-reject`}
-                label={t.decisions.applicationDecisions.response.reject}
-                disabled={blocked || submitting}
-                data-qa="radio-reject"
-              />
+              </div>
               <LeftAlignedButtonsContainer>
                 <AsyncButton
                   text={t.decisions.applicationDecisions.response.submit}
