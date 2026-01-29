@@ -21,7 +21,7 @@ export const iconPropsByStatus: Record<DecisionStatus, IconChipVisualProps> = {
   PENDING: {
     icon: faGavel,
     backgroundColor: '#ffeee0',
-    textColor: colors.accents.a2orangeDark,
+    textColor: '#814113',
     iconColor: colors.grayscale.g0,
     iconBackgroundColor: colors.status.warning
   },
