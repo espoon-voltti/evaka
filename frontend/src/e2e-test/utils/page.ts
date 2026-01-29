@@ -33,8 +33,17 @@ export class Page {
     return new Page(page)
   }
 
+  static async openNewTab(page: Page) {
+    const newPage = await page.context.newPage()
+    return new Page(newPage)
+  }
+
   private constructor(readonly page: PlaywrightPage) {
     this.keyboard = page.keyboard
+  }
+
+  get context() {
+    return this.page.context()
   }
 
   get url() {
@@ -77,6 +86,10 @@ export class Page {
 
   async pause() {
     return this.page.pause()
+  }
+
+  async bringToFront() {
+    return this.page.bringToFront()
   }
 
   onPopup(fn: (popup: Page) => void) {

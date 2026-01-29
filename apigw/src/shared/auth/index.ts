@@ -11,7 +11,7 @@ export type CitizenSessionUser =
       id: string
       authType: 'sfi'
       userType: 'CITIZEN_STRONG'
-      ssnHash: string
+      createdAt: number
       samlSession: SamlSession
     }
   | { id: string; authType: 'citizen-weak'; userType: 'CITIZEN_WEAK' }
@@ -22,7 +22,7 @@ export type EmployeeSessionUser =
       id: string
       authType: 'sfi'
       userType: 'EMPLOYEE'
-      ssnHash: string
+      createdAt: number
       samlSession: SamlSession
       globalRoles: string[]
       allScopedRoles: string[]

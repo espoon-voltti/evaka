@@ -129,7 +129,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       citizenSessions,
       config.sfi.saml,
       redisClient,
-      config.citizen.cookieSecret
+      config.citizen.cookieSecret,
+      {
+        cookieName: 'evaka.employee.session',
+        cookieSecret: config.employee.cookieSecret
+      }
     )
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
@@ -156,7 +160,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     employeeSfiIntegration = createEmployeeSuomiFiIntegration(
       employeeSessions,
       config.sfi.saml,
-      redisClient
+      redisClient,
+      {
+        cookieName: 'evaka.eugw.session',
+        cookieSecret: config.citizen.cookieSecret
+      }
     )
     router.use('/employee/auth/sfi', employeeSfiIntegration.router)
   }

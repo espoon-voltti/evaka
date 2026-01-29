@@ -45,7 +45,7 @@ function userSessionsKey(userIdHash: string) {
   return `usess:${userIdHash}`
 }
 
-function sfiSessionsKey(sfiNameId: string) {
+function secondarySfiSessionsKey(sfiNameId: string) {
   return `sfisess:${sfiNameId}`
 }
 
@@ -67,13 +67,24 @@ export interface Sessions<T extends SessionType> {
   ): Promise<void>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown>
 
-  login(req: express.Request, user: EvakaSessionUser): Promise<void>
+  login(
+    req: express.Request,
+    user: EvakaSessionUser,
+    secondarySessionId?: string
+  ): Promise<void>
   destroy(req: express.Request, res: express.Response): Promise<void>
 
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
+  getSecondaryUser(
+    secondarySessionId: string
+  ): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
+  isSecondarySessionNewer(
+    req: express.Request,
+    secondarySessionId: string
+  ): Promise<boolean>
 }
 
 export function sessionSupport<T extends SessionType>(
@@ -198,27 +209,47 @@ export function sessionSupport<T extends SessionType>(
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (user?.authType === 'sfi') {
+      const secondarySession = await redisClient.get(
+        secondarySfiSessionsKey(sid)
+      )
+      if (secondarySession) {
+        await redisClient.del(sessionKey(secondarySession))
+        await redisClient.del([
+          secondarySfiSessionsKey(sid),
+          secondarySfiSessionsKey(secondarySession)
+        ])
+      }
+    }
+
     return user
   }
 
   async function login(
     req: express.Request,
-    user: EvakaSessionUser
+    user: EvakaSessionUser,
+    secondarySessionId?: string
   ): Promise<void> {
     await fromCallback<void>((cb) => req.session.regenerate(cb))
     // express-session has now regenerated the active session, so the ID has changed, and it's empty
-    await saveUser(req, {
-      ...user,
-      // spread saml session fields for backwards compatibility
-      ...(user.authType === 'sfi' || user.authType === 'ad'
-        ? user.samlSession
-        : undefined)
-    })
+    await saveUser(
+      req,
+      {
+        ...user,
+        // spread saml session fields for backwards compatibility
+        ...(user.authType === 'sfi' || user.authType === 'ad'
+          ? user.samlSession
+          : undefined)
+      },
+      secondarySessionId
+    )
   }
 
   async function destroy(req: express.Request, res: express.Response) {
     logDebug('Destroying session', req)
     const logoutToken = req.session?.logoutToken?.value
+    const sessionId = req.session?.id
 
     if (req.session) {
       await fromCallback((cb) => req.session.destroy(cb))
@@ -235,14 +266,16 @@ export function sessionSupport<T extends SessionType>(
       }
     }
 
-    if (req.user?.authType === 'sfi' && req.user.ssnHash) {
-      const key = sfiSessionsKey(req.user.ssnHash)
-      const sessionIds = await redisClient.sMembers(key)
-      if (sessionIds.length > 0) {
-        await redisClient.del(
-          sessionIds.map((sessionId) => `sess:${sessionId}`)
-        )
-        await redisClient.del(key)
+    if (req.user?.authType === 'sfi' && sessionId) {
+      const secondarySession = await redisClient.get(
+        secondarySfiSessionsKey(sessionId)
+      )
+      if (secondarySession) {
+        await redisClient.del(sessionKey(secondarySession))
+        await redisClient.del([
+          secondarySfiSessionsKey(sessionId),
+          secondarySfiSessionsKey(secondarySession)
+        ])
       }
     }
   }
@@ -256,7 +289,11 @@ export function sessionSupport<T extends SessionType>(
     await saveUser(req, user)
   }
 
-  async function saveUser(req: express.Request, user: EvakaSessionUser) {
+  async function saveUser(
+    req: express.Request,
+    user: EvakaSessionUser,
+    secondarySessionId?: string
+  ) {
     const userIdHash = createSha256Hash(user.id)
 
     req.session.passport = { user }
@@ -279,20 +316,41 @@ export function sessionSupport<T extends SessionType>(
     if (
       req.session.id &&
       user.authType === 'sfi' &&
-      user.ssnHash &&
-      maxSessionTimeoutMinutes
+      maxSessionTimeoutMinutes &&
+      secondarySessionId
     ) {
-      const key = sfiSessionsKey(user.ssnHash)
-      await redisClient
-        .multi()
-        .sAdd(key, req.session.id)
-        .expire(key, maxSessionTimeoutMinutes * 60)
-        .exec()
+      await redisClient.set(
+        secondarySfiSessionsKey(req.session.id),
+        secondarySessionId,
+        {
+          EX: maxSessionTimeoutMinutes * 60
+        }
+      )
+      await redisClient.set(
+        secondarySfiSessionsKey(secondarySessionId),
+        req.session.id,
+        {
+          EX: maxSessionTimeoutMinutes * 60
+        }
+      )
     }
   }
 
   function getUser(req: express.Request): EvakaSessionUser | undefined {
     return req.session?.passport?.user ?? undefined
+  }
+
+  async function getSecondaryUser(
+    secondarySessionId: string
+  ): Promise<EvakaSessionUser | undefined> {
+    const session = await redisClient.get(sessionKey(secondarySessionId))
+    if (!session) return undefined
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    const user = JSON.parse(session)?.passport?.user
+    if (!user) return undefined
+
+    return user as EvakaSessionUser
   }
 
   function getUserHeader(req: express.Request): string | undefined {
@@ -302,6 +360,28 @@ export function sessionSupport<T extends SessionType>(
 
   function isAuthenticated(req: express.Request): boolean {
     return !!req.session?.passport?.user
+  }
+
+  async function isSecondarySessionNewer(
+    req: express.Request,
+    secondarySessionId: string
+  ): Promise<boolean> {
+    const primaryUser = req.session?.evaka?.user
+    if (!primaryUser || primaryUser.authType !== 'sfi') return false
+    const primarySessionCreatedAt = primaryUser.createdAt
+
+    const secondarySession = await redisClient.get(
+      sessionKey(secondarySessionId)
+    )
+    if (!secondarySession) return false
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    const secondarySessionUser = JSON.parse(secondarySession)?.evaka?.user
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    const secondarySessionCreatedAt = secondarySessionUser?.createdAt
+    if (!secondarySessionCreatedAt) return false
+
+    return secondarySessionCreatedAt > primarySessionCreatedAt
   }
 
   return {
@@ -316,7 +396,9 @@ export function sessionSupport<T extends SessionType>(
     destroy,
     updateUser,
     getUser,
+    getSecondaryUser,
     getUserHeader,
-    isAuthenticated
+    isAuthenticated,
+    isSecondarySessionNewer
   }
 }

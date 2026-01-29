@@ -100,11 +100,14 @@ export const SamlSessionSchema = z.object({
 })
 
 export function getRawUnvalidatedRelayState(
-  req: express.Request
+  req: express.Request,
+  secondarySessionId?: string
 ): string | undefined {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
-  return typeof relayState === 'string' ? relayState : undefined
+  if (typeof relayState !== 'string') return undefined
+  if (!secondarySessionId) return relayState
+  return `${relayState}&secondarySessionId=${secondarySessionId}`
 }
 
 // SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
@@ -113,7 +116,9 @@ export function getRawUnvalidatedRelayState(
 // is not signed or encrypted, we must make sure the URL points to our application
 // and not to some 3rd party domain
 export function validateRelayStateUrl(req: express.Request): URL | undefined {
-  const relayState = getRawUnvalidatedRelayState(req)
+  const relayState = getRawUnvalidatedRelayState(req)?.split(
+    '&secondarySessionId='
+  )[0]
   if (relayState) {
     const url = parseUrlWithOrigin(evakaBaseUrl, relayState)
     if (url) return url
