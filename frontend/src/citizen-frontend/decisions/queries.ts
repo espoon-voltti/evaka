@@ -6,10 +6,10 @@ import { Queries } from 'lib-common/query'
 
 import {
   acceptDecision,
-  getApplicationDecisions,
   getDecisions,
   getGuardianApplicationNotifications,
   getLiableCitizenFinanceDecisions,
+  getPendingDecisions,
   rejectDecision
 } from '../generated/api-clients/application'
 import {
@@ -24,20 +24,20 @@ export const decisionsQuery = q.query(getDecisions)
 
 export const financeDecisionsQuery = q.query(getLiableCitizenFinanceDecisions)
 
-export const decisionsOfApplicationQuery = q.query(getApplicationDecisions)
+export const pendingDecisionsQuery = q.query(getPendingDecisions)
 
 export const applicationNotificationsQuery = q.query(
   getGuardianApplicationNotifications
 )
 
 export const acceptDecisionMutation = q.mutation(acceptDecision, [
-  ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
+  pendingDecisionsQuery,
   applicationNotificationsQuery,
   receivedMessagesQuery
 ])
 
 export const rejectDecisionMutation = q.mutation(rejectDecision, [
-  ({ applicationId }) => decisionsOfApplicationQuery({ applicationId }),
+  pendingDecisionsQuery,
   applicationNotificationsQuery,
   receivedMessagesQuery
 ])

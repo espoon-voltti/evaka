@@ -1649,21 +1649,14 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
-    childhoodEducationTitle:
-      'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
-    summary: (
-      <P width="800px">
-        Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen,
-        kerhoon ja maksuihin liittyvät päätökset.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
-        <strong>sinun tulee vastata kahden viikon sisällä</strong>, hyväksytkö
-        vai hylkäätkö lapselle tarjotun paikan.
-      </P>
-    ),
-    unconfirmedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
+    summary:
+      'Tältä sivulta löydät varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset sekä maksuihin liittyvät päätökset.',
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) {
+        return 'Päätökset'
+      }
+      return `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa huoltajan vahvistusta`
+    },
     noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
     unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
@@ -1682,45 +1675,42 @@ export default {
     applicationDecisions: {
       decision: 'Päätös',
       type: {
-        CLUB: 'kerhosta',
-        DAYCARE: 'varhaiskasvatuksesta',
-        DAYCARE_PART_TIME: 'osa-aikaisesta varhaiskasvatuksesta',
-        PRESCHOOL: 'esiopetuksesta',
-        PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta',
-        PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
+        CLUB: 'Kerho',
+        DAYCARE: 'Varhaiskasvatus',
+        DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+        PRESCHOOL: 'Esiopetus',
+        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho',
+        PREPARATORY_EDUCATION: 'Valmistava opetus'
       },
+      data: 'Tiedot',
       childName: 'Lapsen nimi',
       unit: 'Toimipaikka',
       period: 'Ajalle',
       sentDate: 'Päätös tehty',
       resolved: 'Vahvistettu',
+      confirmation: 'Vahvistus',
       statusLabel: 'Tila',
       summary:
-        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
+        'Hyväksy tai hylkää päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
+      allDecisionsConfirmed: 'Olet hyväksynyt kaikki päätökset.',
       status: {
-        PENDING: 'Vahvistettavana huoltajalla',
+        PENDING: 'Odottaa vahvistusta',
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
-      confirmationInfo: {
-        preschool:
-          'Esiopetuksen, valmistavan opetuksen ja/tai liittyvän varhaiskasvatuksen hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta. Jos olet hakenut useampaa palvelua, saat jokaisesta oman päätöksen erikseen vahvistettavaksi',
-        default:
-          'Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta.'
-      },
-      goToConfirmation:
-        'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
-      confirmationLink: 'Siirry vastaamaan',
+      confirmationLink: 'Lue ja vahvista',
+      information:
+        'Vahvista päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
       response: {
         title: 'Paikan hyväksyminen tai hylkääminen',
         accept1: 'Otamme paikan vastaan',
         accept2: 'alkaen',
         reject: 'Emme ota paikkaa vastaan',
-        cancel: 'Palaa takaisin vastaamatta',
-        submit: 'Lähetä vastaus päätökseen',
+        cancel: 'Palaa takaisin vahvistamatta',
+        submit: 'Lähetä vahvistus päätökseen',
         disabledInfo:
-          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+          'Vahvista ensin esiopetuksen tai valmistavan opetuksen päätös. Tämän jälkeen voit vahvistaa liittyvän varhaiskasvatuksen päätöksen.'
       },
       openPdf: 'Näytä päätös',
       warnings: {
@@ -2141,7 +2131,7 @@ export default {
     cancelApplicationBtn: 'Peruuta hakemus',
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
-    confirmationLink: 'Siirry vahvistamaan',
+    confirmationLink: 'Päätösten vahvistaminen',
     newApplicationLink: 'Uusi hakemus',
     namelessChild: 'Nimetön lapsi',
     noCustodians: 'Ei huollettavia lapsia',
