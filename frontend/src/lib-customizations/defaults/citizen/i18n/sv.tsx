@@ -1691,6 +1691,7 @@ const sv: Translations = {
       confirmationLink: 'Gå vidare för att bekräfta',
       information:
         'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
+      new: (n: number) => (n === 1 ? '1 ny' : `${n} nya`),
       response: {
         title: 'Mottagande eller avvisande av plats',
         accept1: 'Vi tar emot platsen från och med',

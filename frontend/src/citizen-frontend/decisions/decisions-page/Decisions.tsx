@@ -15,7 +15,9 @@ import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
+import { scrollToElement } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import IconChip from 'lib-components/atoms/IconChip'
 import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -30,7 +32,9 @@ import { renderResult } from '../../async-rendering'
 import { childrenQuery } from '../../children/queries'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
+import { focusElementAfterDelay } from '../../utils/focus'
 import { decisionsQuery, financeDecisionsQuery } from '../queries'
+import { iconPropsByStatus } from '../shared'
 
 import ApplicationDecision from './ApplicationDecision'
 import FinanceDecision from './FinanceDecision'
@@ -89,60 +93,76 @@ export default React.memo(function Decisions() {
     [financeDecisions]
   )
 
-  const childrenWithSortedDecisions = useMemo(
-    () =>
-      combine(children, applicationDecisions).map(
-        ([children, applicationDecisions]) =>
-          children
-            .map((child) => {
-              const childDecisions = sortBy(
-                [
-                  ...applicationDecisions.decisions.filter(
-                    ({ childId }) => child.id === childId
-                  )
-                ],
-                (decision) => [decision.sentDate.formatIso(), decision.type]
-              ).reverse()
-              return {
-                ...child,
-                decisions: childDecisions,
-                decisionNotifications: childDecisions.filter((decision) =>
-                  applicationDecisionIsUnread(decision)
-                ).length,
-                applicationDecisionPermittedActions: mapValues(
-                  applicationDecisions.permittedActions,
-                  (actions) => new Set(actions)
-                ),
-                decidableApplications:
-                  applicationDecisions.decidableApplications
-              }
-            })
-            .filter((child) => child.decisions.length > 0)
-      ),
-    [applicationDecisions, children]
-  )
-
-  const unconfirmedDecisionTypesPerChild = useMemo(() => {
-    return combine(children, applicationDecisions).map(
+  const [
+    childrenWithSortedDecisions,
+    unconfirmedDecisionTypesPerChild,
+    unconfirmedDecisionCountPerChild
+  ] = useMemo(() => {
+    const processed = combine(children, applicationDecisions).map(
       ([children, applicationDecisions]) =>
-        children
-          .map((child) => {
-            const undecidedTypes = applicationDecisions.decisions
-              .filter(applicationDecisionIsUnread)
-              .filter(
-                ({ childId, applicationId }) =>
-                  child.id === childId &&
-                  applicationDecisions.decidableApplications.includes(
-                    applicationId
-                  )
+        children.map((child) => {
+          const childDecisions = sortBy(
+            applicationDecisions.decisions.filter(
+              ({ childId }) => child.id === childId
+            ),
+            (decision) => [decision.sentDate.formatIso(), decision.type]
+          ).reverse()
+          const unconfirmedDecisions = childDecisions
+            .filter(applicationDecisionIsUnread)
+            .filter((decision) =>
+              applicationDecisions.decidableApplications.includes(
+                decision.applicationId
               )
-              .map((decision) => decision.type)
-            return { child, undecidedTypes }
-          })
-          .filter(({ undecidedTypes }) => undecidedTypes.length > 0)
+            )
+          return {
+            child: {
+              ...child,
+              decisions: childDecisions,
+              decisionNotifications: unconfirmedDecisions.length,
+              applicationDecisionPermittedActions: mapValues(
+                applicationDecisions.permittedActions,
+                (actions) => new Set(actions)
+              ),
+              decidableApplications: applicationDecisions.decidableApplications
+            },
+            hasDecisions: childDecisions.length > 0,
+            undecidedTypes: unconfirmedDecisions.map((d) => d.type),
+            unconfirmedCount: unconfirmedDecisions.length
+          }
+        })
     )
+    return [
+      processed.map((items) =>
+        items.filter((x) => x.hasDecisions).map((x) => x.child)
+      ),
+      processed.map((items) =>
+        items
+          .filter((x) => x.undecidedTypes.length > 0)
+          .map((x) => ({ child: x.child, undecidedTypes: x.undecidedTypes }))
+      ),
+      processed.map((items) =>
+        items.map((x) => ({
+          child: x.child,
+          unconfirmedCount: x.unconfirmedCount
+        }))
+      )
+    ] as const
   }, [applicationDecisions, children])
 
+  const scrollToDecisions = (
+    e:
+      | React.KeyboardEvent<HTMLLabelElement>
+      | React.MouseEvent<HTMLLabelElement>,
+    targetId: string
+  ) => {
+    e.preventDefault()
+    e.currentTarget.blur()
+    const element = document.getElementById(targetId)
+    if (element) {
+      scrollToElement(element, 100)
+      focusElementAfterDelay(targetId, 150)
+    }
+  }
   return (
     <Container data-qa="decisions-page">
       <Gap size="s" />
@@ -198,6 +218,67 @@ export default React.memo(function Decisions() {
             </UnconfirmedDecisionsBox>
           </>
         )}
+        {renderResult(
+          unconfirmedDecisionCountPerChild,
+          (unconfirmedDecisionCountPerChild) => (
+            <>
+              <Gap size="s" />
+              {unconfirmedDecisionCountPerChild.map(
+                ({ child, unconfirmedCount }) => (
+                  <LinkRow
+                    key={child.id}
+                    aria-label={
+                      formatPersonName(child, 'First Last') +
+                      ', ' +
+                      (unconfirmedCount > 0
+                        ? t.decisions.unconfirmedDecisions(unconfirmedCount)
+                        : t.decisions.noUnconfirmedDecisions)
+                    }
+                  >
+                    <DecisionLink
+                      onClick={(e) => {
+                        scrollToDecisions(e, `child-decisions-${child.id}`)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          scrollToDecisions(e, `child-decisions-${child.id}`)
+                        }
+                      }}
+                      role="link"
+                      tabIndex={0}
+                    >
+                      <PersonName person={child} format="First Last" />
+                    </DecisionLink>
+                    {unconfirmedCount > 0 && (
+                      <IconChip
+                        {...iconPropsByStatus.PENDING}
+                        label={t.decisions.applicationDecisions.new(
+                          unconfirmedCount
+                        )}
+                      />
+                    )}
+                  </LinkRow>
+                )
+              )}
+              <LinkRow>
+                <DecisionLink
+                  onClick={(e) => {
+                    scrollToDecisions(e, `finance-decisions`)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      scrollToDecisions(e, `finance-decisions`)
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                >
+                  {t.decisions.financeDecisions.title}
+                </DecisionLink>
+              </LinkRow>
+            </>
+          )
+        )}
       </ContentArea>
       {renderResult(
         childrenWithSortedDecisions,
@@ -211,6 +292,7 @@ export default React.memo(function Decisions() {
                   paddingVertical="s"
                   paddingHorizontal="s"
                   data-qa={`child-decisions-${child.id}`}
+                  id={`child-decisions-${child.id}`}
                 >
                   <H2 noMargin aria-label={getAriaLabelForChild(child)}>
                     <PersonName person={child} format="First Last" />
@@ -235,7 +317,7 @@ export default React.memo(function Decisions() {
       <Gap size="s" />
       {renderResult(sortedFinanceDecisions, (decisions) => (
         <FixedSpaceColumn>
-          <ContentArea opaque paddingVertical="L">
+          <ContentArea opaque paddingVertical="L" id="finance-decisions">
             <H2 noMargin>{t.decisions.financeDecisions.title}</H2>
             {decisions.length > 0 && <Gap size="xs" />}
             {decisions.map((decision, index) => (
@@ -310,4 +392,15 @@ const FullWidthSeparator = styled.hr`
 `
 const SmallLabel = styled(Label)`
   font-size: 14px;
+`
+const LinkRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  padding-block: ${defaultMargins.xs};
+  min-height: ${defaultMargins.XXL};
+`
+const DecisionLink = styled(Label)`
+  cursor: pointer;
+  color: ${colors.main.m2};
 `
