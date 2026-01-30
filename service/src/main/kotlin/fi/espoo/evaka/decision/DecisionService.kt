@@ -346,9 +346,8 @@ class DecisionService(
     }
 
     private fun calculateDecisionFileName(decision: Decision, lang: OfficialLanguage): String {
-        val decisionUniqueId = decision.decisionNumber
-        val prefix = templateProvider.getLocalizedFilename(decision.type, lang)
-        return "${prefix}_$decisionUniqueId.pdf".replace(" ", "_")
+        val prefix = templateProvider.getLocalizedFilename(decision.type, lang).replace(" ", "_")
+        return "${prefix}_${decision.decisionNumber}_${decision.startDate}.pdf"
     }
 }
 
