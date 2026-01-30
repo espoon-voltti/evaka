@@ -1736,6 +1736,7 @@ const en: Translations = {
       confirmationLink: 'Review and confirm the decision',
       information:
         'Confirm the decisions immediately or no later than two weeks from receiving the notification.',
+      new: (n: number) => `${n} new`,
       response: {
         title: 'Accepting or rejecting the placement',
         accept1: 'We accept the placement from',

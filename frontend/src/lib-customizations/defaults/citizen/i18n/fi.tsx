@@ -1702,6 +1702,7 @@ export default {
       confirmationLink: 'Lue ja vahvista',
       information:
         'Vahvista päätökset välittömästi tai viimeistään kahden viikon kuluessa ilmoituksen vastaanottamisesta.',
+      new: (n: number) => (n === 1 ? '1 uusi' : `${n} uutta`),
       response: {
         title: 'Paikan hyväksyminen tai hylkääminen',
         accept1: 'Otamme paikan vastaan',
