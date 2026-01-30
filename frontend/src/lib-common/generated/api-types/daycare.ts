@@ -51,6 +51,7 @@ export interface AclUpdate {
   endDate: LocalDate | null
   groupIds: GroupId[] | null
   hasStaffOccupancyEffect: boolean | null
+  role: UserRole
 }
 
 /**
@@ -364,14 +365,6 @@ export interface FinanceDecisionHandler {
   firstName: string
   id: EmployeeId
   lastName: string
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.FullAclInfo
-*/
-export interface FullAclInfo {
-  role: UserRole
-  update: AclUpdate
 }
 
 /**
@@ -736,14 +729,6 @@ export function deserializeJsonDaycareResponse(json: JsonOf<DaycareResponse>): D
     daycare: deserializeJsonDaycare(json.daycare),
     groups: json.groups.map(e => deserializeJsonDaycareGroupResponse(e)),
     lastPlacementDate: (json.lastPlacementDate != null) ? LocalDate.parseIso(json.lastPlacementDate) : null
-  }
-}
-
-
-export function deserializeJsonFullAclInfo(json: JsonOf<FullAclInfo>): FullAclInfo {
-  return {
-    ...json,
-    update: deserializeJsonAclUpdate(json.update)
   }
 }
 

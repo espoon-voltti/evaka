@@ -111,6 +111,28 @@ WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
     )
 }
 
+fun Database.Read.getDaycareAclRole(daycareId: DaycareId, employeeId: EmployeeId): UserRole? =
+    createQuery {
+            sql(
+                """
+SELECT role FROM daycare_acl
+WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
+    """
+            )
+        }
+        .exactlyOneOrNull<UserRole>()
+
+fun Database.Read.getDaycareAclEndDate(daycareId: DaycareId, employeeId: EmployeeId): LocalDate? =
+    createQuery {
+            sql(
+                """
+SELECT end_date FROM daycare_acl
+WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
+    """
+            )
+        }
+        .exactlyOneOrNull<LocalDate>()
+
 fun Database.Transaction.deleteDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
