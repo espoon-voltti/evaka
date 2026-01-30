@@ -97,7 +97,7 @@ class VoucherValueDecisionService(
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)
                 DocumentKey.VoucherValueDecision(decision.documentKey) to
-                    calculateDecisionFileName(decision, lang, includeValidFrom = true)
+                    calculateDecisionFileName(decision, lang, FileNameType.FILE_NAME)
             }
         val documentLocation = documentClient.locate(documentKey)
         return documentClient.responseAttachment(documentLocation, fileName)
@@ -136,7 +136,8 @@ class VoucherValueDecisionService(
         val documentLocation =
             documentClient.locate(DocumentKey.VoucherValueDecision(decision.documentKey))
 
-        val documentDisplayName = calculateDecisionFileName(decision, lang)
+        val documentDisplayName =
+            calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang)
         val messageContent = messageProvider.getVoucherValueDecisionContent(lang)
 
@@ -298,13 +299,23 @@ class VoucherValueDecisionService(
         }
     }
 
+    private enum class FileNameType {
+        DISPLAY_NAME,
+        FILE_NAME,
+    }
+
     private fun calculateDecisionFileName(
         decision: VoucherValueDecisionDetailed,
         lang: OfficialLanguage,
-        includeValidFrom: Boolean = false,
+        type: FileNameType,
     ): String {
-        val validFromStr = if (includeValidFrom) "_${decision.validFrom}" else ""
-        return if (lang == OfficialLanguage.SV) "Beslut_om_servicecedels_värde$validFromStr.pdf"
-        else "Varhaiskasvatuksen_arvopäätös$validFromStr.pdf"
+        val prefix =
+            if (lang == OfficialLanguage.SV) "Beslut_om_servicecedels_värde"
+            else "Varhaiskasvatuksen_arvopäätös"
+        return when (type) {
+            FileNameType.DISPLAY_NAME -> "$prefix.pdf"
+            FileNameType.FILE_NAME ->
+                "${prefix}_${decision.decisionNumber ?: ""}_${decision.validFrom}.pdf"
+        }
     }
 }

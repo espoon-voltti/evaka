@@ -306,7 +306,8 @@ class FeeDecisionService(
             DecisionSendAddress.fromPerson(recipient)
                 ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
-        val feeDecisionDisplayName = calculateDecisionFileName(decision, lang)
+        val feeDecisionDisplayName =
+            calculateDecisionFileName(decision, lang, FileNameType.DISPLAY_NAME)
 
         val documentLocation = documentClient.locate(DocumentKey.FeeDecision(decision.documentKey))
 
@@ -396,7 +397,7 @@ class FeeDecisionService(
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)
                 DocumentKey.FeeDecision(decision.documentKey) to
-                    calculateDecisionFileName(decision, lang, includeValidFrom = true)
+                    calculateDecisionFileName(decision, lang, FileNameType.FILE_NAME)
             }
         val documentLocation = documentClient.locate(documentKey)
         return documentClient.responseAttachment(documentLocation, fileName)
@@ -442,14 +443,23 @@ class FeeDecisionService(
         logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
     }
 
+    private enum class FileNameType {
+        DISPLAY_NAME,
+        FILE_NAME,
+    }
+
     private fun calculateDecisionFileName(
         decision: FeeDecisionDetailed,
         lang: OfficialLanguage,
-        includeValidFrom: Boolean = false,
+        type: FileNameType,
     ): String {
-        val validFromStr = if (includeValidFrom) "_${decision.validDuring.start}" else ""
-        return if (lang == OfficialLanguage.SV)
-            "Beslut_om_avgift_för_småbarnspedagogik$validFromStr.pdf"
-        else "Varhaiskasvatuksen_maksupäätös$validFromStr.pdf"
+        val prefix =
+            if (lang == OfficialLanguage.SV) "Beslut_om_avgift_för_småbarnspedagogik"
+            else "Varhaiskasvatuksen_maksupäätös"
+        return when (type) {
+            FileNameType.DISPLAY_NAME -> "$prefix.pdf"
+            FileNameType.FILE_NAME ->
+                "${prefix}_${decision.decisionNumber ?: ""}_${decision.validDuring.start}.pdf"
+        }
     }
 }
