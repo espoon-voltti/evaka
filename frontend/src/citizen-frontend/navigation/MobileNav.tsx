@@ -11,7 +11,7 @@ import { Link } from 'wouter'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { useIsRouteActive } from 'lib-components/atoms/NavLink'
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { fontWeights } from 'lib-components/typography'
@@ -163,6 +163,11 @@ const BottomBar = styled.nav`
 
   @media (min-width: ${desktopMin}) {
     display: none;
+  }
+
+  @media screen and (max-width: ${zoomedMobileMax}) {
+    padding: ${defaultMargins.xxs};
+    overflow-x: auto;
   }
 
   @media print {
