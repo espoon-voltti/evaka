@@ -135,7 +135,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
     1
   )
   await responsePage.acceptDecision(decisionId)
-  await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
+  await responsePage.assertDecisionStatus(decisionId, 'Vahvistettu')
   await responsePage.assertPageTitle(0)
 
   const { endedRelationshipPage, endedRelationshipHeader } =
@@ -211,7 +211,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
     1
   )
   await responsePage.acceptDecision(decisionId)
-  await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
+  await responsePage.assertDecisionStatus(decisionId, 'Vahvistettu')
   await responsePage.assertPageTitle(0)
 
   const { endedRelationshipPage, endedRelationshipHeader } =

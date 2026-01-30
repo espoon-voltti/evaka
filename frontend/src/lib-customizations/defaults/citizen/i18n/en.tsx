@@ -1691,7 +1691,6 @@ const en: Translations = {
       } waiting for guardian's confirmation`
     },
     noUnconfirmedDecisions: 'all decisions confirmed',
-    unreadDecision: 'unread decision',
     pageLoadError: 'Error in fetching the requested information',
     financeDecisions: {
       type: {
@@ -1738,7 +1737,6 @@ const en: Translations = {
         'Confirm the decisions immediately or no later than two weeks from receiving the notification.',
       new: (n: number) => `${n} new`,
       response: {
-        title: 'Accepting or rejecting the placement',
         accept1: 'We accept the placement from',
         accept2: '',
         reject: 'We reject the placement',
