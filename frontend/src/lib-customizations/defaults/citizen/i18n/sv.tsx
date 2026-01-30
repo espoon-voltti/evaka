@@ -1643,11 +1643,9 @@ const sv: Translations = {
       if (n === 0) {
         return 'Beslut'
       }
-      // fi: `${n} päätöstä odottaa huoltajan vahvistusta`
       return `${n} beslut väntar på bekräftelse från vårdnadshavaren`
     },
     noUnconfirmedDecisions: 'alla beslut bekräftade',
-    unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
     financeDecisions: {
       type: {
@@ -1693,7 +1691,6 @@ const sv: Translations = {
         'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
       new: (n: number) => (n === 1 ? '1 ny' : `${n} nya`),
       response: {
-        title: 'Mottagande eller avvisande av plats',
         accept1: 'Vi tar emot platsen från och med',
         accept2: '',
         reject: 'Vi tar inte emot platsen',

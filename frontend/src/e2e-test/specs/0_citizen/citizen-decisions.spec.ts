@@ -131,7 +131,7 @@ describe('Citizen application decisions', () => {
     )
 
     await responsePage.acceptDecision(preschoolDecisionId)
-    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hyväksytty')
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Vahvistettu')
     await responsePage.assertPageTitle(1)
 
     await responsePage.assertDecisionData(
@@ -142,10 +142,10 @@ describe('Citizen application decisions', () => {
     )
 
     await responsePage.rejectDecision(preschoolDaycareDecisionId)
-    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hyväksytty')
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Vahvistettu')
     await responsePage.assertDecisionStatus(
       preschoolDaycareDecisionId,
-      'Hylätty'
+      'Kieltäydytty'
     )
     await responsePage.assertPageTitle(0)
 
@@ -202,10 +202,10 @@ describe('Citizen application decisions', () => {
     await responsePage.rejectDecision(preschoolDecisionId)
     await responsePage.confirmRejectCascade()
 
-    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hylätty')
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Kieltäydytty')
     await responsePage.assertDecisionStatus(
       preschoolDaycareDecisionId,
-      'Hylätty'
+      'Kieltäydytty'
     )
     await responsePage.assertPageTitle(0)
   })

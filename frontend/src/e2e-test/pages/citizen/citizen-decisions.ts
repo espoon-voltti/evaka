@@ -152,10 +152,10 @@ class CitizenDecisionResponsePage {
   async assertPageTitle(unresolvedCount: number) {
     await this.#title.assertTextEquals(
       unresolvedCount === 0
-        ? 'Päätökset'
+        ? 'Vahvistettavat paikat'
         : unresolvedCount === 1
-          ? '1 päätös odottaa huoltajan vahvistusta'
-          : `${unresolvedCount} päätöstä odottaa huoltajan vahvistusta`
+          ? '1 paikka odottaa huoltajan vahvistusta'
+          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`
     )
   }
 
@@ -222,11 +222,11 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
 
   if (count === 1) {
     return await element.assertTextEquals(
-      '1 päätös odottaa huoltajan vahvistusta'
+      '1 paikka odottaa huoltajan vahvistusta'
     )
   }
 
   return await element.assertTextEquals(
-    `${count} päätöstä odottaa huoltajan vahvistusta`
+    `${count} paikkaa odottaa huoltajan vahvistusta`
   )
 }
