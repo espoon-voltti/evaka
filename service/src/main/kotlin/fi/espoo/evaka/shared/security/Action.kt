@@ -1107,6 +1107,16 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.SERVICE_APPLICATIONS)
                 .inPlacementUnitOfChild(),
         ),
+        READ_SERVICE_NEEDS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                )
+                .inPlacementUnitOfChild(),
+        ),
         READ_FAMILY_CONTACTS(
             HasGlobalRole(ADMIN),
             HasUnitRole(
