@@ -9,6 +9,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { faInfo, faExclamation } from 'lib-icons'
 
+import { zoomedMobileMax } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 
@@ -32,6 +33,11 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   .message-container {
     display: flex;
     align-items: flex-start;
+    @media (max-width: ${zoomedMobileMax}) {
+      flex-direction: column;
+      align-items: center;
+      hyphens: auto;
+    }
   }
 
   .icon-wrapper {
@@ -44,6 +50,10 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
     height: 24px;
     background: ${(props) => props.color};
     border-radius: 100%;
+    @media (max-width: ${zoomedMobileMax}) {
+      margin-right: 0;
+      margin-bottom: ${defaultMargins.s};
+    }
   }
 
   .message-title {
