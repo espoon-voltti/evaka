@@ -5,7 +5,7 @@
 import { ErrorBoundary } from '@sentry/react'
 import type { ReactNode } from 'react'
 import React, { useCallback, useContext } from 'react'
-import styled, { ThemeProvider } from 'styled-components'
+import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 import { Redirect } from 'wouter'
 
 import {
@@ -14,7 +14,7 @@ import {
 } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
@@ -35,12 +35,21 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { queryClient, QueryClientProvider } from './query'
 
+const GlobalStyle = createGlobalStyle`
+  @media screen and (max-width: ${zoomedMobileMax}) {
+    html {
+      overflow-x: auto;
+    }
+  }
+`
+
 export function App({ children }: { children: React.ReactNode }) {
   const i18n = useTranslation()
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
+        <GlobalStyle />
         <Localization>
           <ErrorBoundary
             fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
