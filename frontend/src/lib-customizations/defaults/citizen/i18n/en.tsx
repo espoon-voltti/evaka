@@ -1682,25 +1682,15 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
-    childhoodEducationTitle:
-      'Decisions regarding child’s early childhood education, pre-primary education and clubs',
-    summary: (
-      <P width="800px">
-        This page displays the received decisions regarding child&lsquo;s early
-        childhood education, pre-primary education, clubs and payments.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Upon receiving a new decision concerning a new placement applied for a
-        child, you are required to respond in two weeks, whether you accept or
-        reject it.
-      </P>
-    ),
-    unconfirmedDecisions: (n: number) =>
-      `${n} ${
-        n === 1 ? 'decision is' : 'decisions are'
-      } waiting for confirmation`,
+    summary:
+      'This page contains decisions regarding early childhood education, pre-primary education and clubs as well as decisions regarding fees.',
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) return 'Decisions'
+      return `${n} ${
+        n === 1 ? 'decision' : 'decisions'
+      } waiting for guardian's confirmation`
+    },
     noUnconfirmedDecisions: 'all decisions confirmed',
-    unreadDecision: 'unread decision',
     pageLoadError: 'Error in fetching the requested information',
     financeDecisions: {
       type: {
@@ -1717,46 +1707,43 @@ const en: Translations = {
     applicationDecisions: {
       decision: 'Decision of',
       type: {
-        CLUB: 'club',
-        DAYCARE: 'early childhood education',
-        DAYCARE_PART_TIME: 'part-day early childhood education',
-        PRESCHOOL: 'pre-primary education',
+        CLUB: 'Club',
+        DAYCARE: 'Early childhood education',
+        DAYCARE_PART_TIME: 'Part-day early childhood education',
+        PRESCHOOL: 'Pre-primary education',
         PRESCHOOL_DAYCARE:
-          'early childhood education related to pre-primary education',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (en)',
-        PREPARATORY_EDUCATION: 'preparatory education'
+          'Early childhood education related to pre-primary education',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
+        PREPARATORY_EDUCATION: 'Preparatory education'
       },
+      data: 'Information',
       childName: "Child's name",
       unit: 'Unit',
       period: 'Time period',
       sentDate: 'Decision made',
       resolved: 'Decision confirmed',
+      confirmation: 'Confirmation',
       statusLabel: 'Status',
       summary:
-        'The placement / placements indicated in the decision should be either accepted or rejected immediately and no later than two weeks after receiving the decision.',
+        'Accept or reject the decisions immediately or no later than two weeks from receiving the notification.',
+      allDecisionsConfirmed: 'You have accepted all decisions.',
       status: {
         PENDING: 'Waiting for confirmation from the guardian',
         ACCEPTED: 'Confirmed',
         REJECTED: 'Rejected'
       },
-      confirmationInfo: {
-        preschool:
-          'You must either accept or reject the place proposed in the decision of pre-primary education, preparatory education and/or early childhood education related to pre-primary education within two weeks of receiving this notification. If you have applied for several services, you will receive separate decisions for each of them that require your action.',
-        default:
-          'You must either accept or reject the place proposed in the decision within two weeks of receiving this notification.'
-      },
-      goToConfirmation:
-        'Please open the decision and respond whether you will accept or reject the place.',
       confirmationLink: 'Review and confirm the decision',
+      information:
+        'Confirm the decisions immediately or no later than two weeks from receiving the notification.',
+      new: (n: number) => `${n} new`,
       response: {
-        title: 'Accepting or rejecting the placement',
         accept1: 'We accept the placement from',
         accept2: '',
         reject: 'We reject the placement',
-        cancel: 'Cancel',
-        submit: 'Submit response to the decision',
+        cancel: 'Go back without confirming',
+        submit: 'Send confirmation of the decision',
         disabledInfo:
-          'NOTE! You are able to accept/reject the related early childhood education decision if you accept the pre-primary / preparatory education decision first.'
+          'First confirm the decision regarding pre-primary education or preparatory education. After that, you can confirm the related early childhood education decision.'
       },
       openPdf: 'Show the decision',
       warnings: {
@@ -1877,7 +1864,7 @@ const en: Translations = {
     cancelApplicationBtn: 'Cancel application',
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
-    confirmationLink: 'Review and confirm the decision',
+    confirmationLink: 'Confirm the decision',
     newApplicationLink: 'New application',
     namelessChild: 'Nameless child',
     noCustodians: 'No dependent children',

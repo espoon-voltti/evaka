@@ -1637,21 +1637,15 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
-    childhoodEducationTitle:
-      'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
-    summary: (
-      <P width="800px">
-        Till denna sidan kommer beslut gällande betalningar, barnets ansökan
-        till småbarnspedagogik, förskola och klubbverksamhet.
-        <br aria-hidden="true" />
-        <br aria-hidden="true" />
-        Om beslutet gäller en ny sökt plats för barnet ska du svara inom två
-        veckor om du tar emot eller inte tar emot platsen.
-      </P>
-    ),
-    unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    summary:
+      'På denna sida hittar du beslut som gäller småbarnspedagogik, förskoleundervisning och klubbar samt beslut som gäller avgifter.',
+    unconfirmedDecisions: (n: number) => {
+      if (n === 0) {
+        return 'Beslut'
+      }
+      return `${n} beslut väntar på bekräftelse från vårdnadshavaren`
+    },
     noUnconfirmedDecisions: 'alla beslut bekräftade',
-    unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
     financeDecisions: {
       type: {
@@ -1668,45 +1662,42 @@ const sv: Translations = {
     applicationDecisions: {
       decision: 'Beslut',
       type: {
-        CLUB: 'klubbverksamhet',
-        DAYCARE: 'småbarnspedagogik',
-        DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
-        PRESCHOOL: 'förskola',
-        PRESCHOOL_DAYCARE: 'kompletterande småbarnspedagogik',
-        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (sv)',
-        PREPARATORY_EDUCATION: 'förberedande undervisning'
+        CLUB: 'Klubbverksamhet',
+        DAYCARE: 'Småbarnspedagogik',
+        DAYCARE_PART_TIME: 'Deldag småbarnspedagogik',
+        PRESCHOOL: 'Förskola',
+        PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
+        PRESCHOOL_CLUB: 'Esiopetuksen kerho (sv)',
+        PREPARATORY_EDUCATION: 'Förberedande undervisning'
       },
+      data: 'Uppgifter',
       childName: 'Barnets namn',
       unit: 'Enhet',
       period: 'För tiden',
       sentDate: 'Beslutsdatum',
       resolved: 'Bekräftat',
+      confirmation: 'Bekräftelse',
       statusLabel: 'Status',
       summary:
-        'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller avvisa platsen / platserna.',
+        'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
+      allDecisionsConfirmed: 'Du har bekräftat alla beslut.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
         REJECTED: 'Avvisad'
       },
-      confirmationInfo: {
-        preschool:
-          'Du ska omedelbart eller senast två veckor från mottagandet av detta beslut, ta emot eller annullera platsen. Du kan ta emot eller annullera platsen elektroniskt på adressen espoonvarhaiskasvatus.fi (kräver identifiering) eller per post.',
-        default:
-          'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen.'
-      },
-      goToConfirmation:
-        'Gå till beslutet för att läsa det och svara om du tar emot eller avvisar platsen.',
       confirmationLink: 'Gå vidare för att bekräfta',
+      information:
+        'Bekräfta besluten omedelbart eller senast två veckor från mottagandet av meddelandet.',
+      new: (n: number) => (n === 1 ? '1 ny' : `${n} nya`),
       response: {
-        title: 'Mottagande eller avvisande av plats',
         accept1: 'Vi tar emot platsen från och med',
         accept2: '',
         reject: 'Vi tar inte emot platsen',
-        cancel: 'Gå tillbaka utan att svara',
-        submit: 'Skicka svar på beslutet',
+        cancel: 'Gå tillbaka utan att bekräfta',
+        submit: 'Skicka bekräftelse på beslutet',
         disabledInfo:
-          'OBS! Du kan bekräfta/avvisa beslutet gällande kompletterande småbarnspedagogik, om du först bekräftar beslutet för förskola..'
+          'Bekräfta först beslutet om förskoleundervisning eller förberedande undervisning. Därefter kan du bekräfta det tillhörande beslutet om småbarnspedagogik.'
       },
       openPdf: 'Visa beslut',
       warnings: {
@@ -2122,7 +2113,7 @@ const sv: Translations = {
     cancelApplicationBtn: 'Ta bort ansökan',
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
-    confirmationLink: 'Gå vidare för att svara',
+    confirmationLink: 'Bekräftelse av beslut',
     newApplicationLink: 'Ny ansökan',
     namelessChild: 'Namnlöst barn',
     noCustodians: 'Inga försörjningsskyldiga barn',

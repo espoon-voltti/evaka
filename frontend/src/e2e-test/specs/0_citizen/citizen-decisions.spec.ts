@@ -101,21 +101,22 @@ describe('Citizen application decisions', () => {
     await citizenDecisionsPage.assertApplicationDecision(
       testChild.id,
       preschoolDecisionId,
-      `Päätös esiopetuksesta ${now.toLocalDate().format()}`,
+      'Esiopetus',
       now.toLocalDate().format(),
-      'Vahvistettavana huoltajalla'
+      'Odottaa vahvistusta'
     )
     await citizenDecisionsPage.assertApplicationDecision(
       testChild.id,
       preschoolDaycareDecisionId,
-      `Päätös liittyvästä varhaiskasvatuksesta ${now.toLocalDate().format()}`,
+      'Liittyvä varhaiskasvatus',
       now.toLocalDate().format(),
-      'Vahvistettavana huoltajalla'
+      'Odottaa vahvistusta'
     )
 
-    const responsePage =
-      await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
-    await responsePage.assertUnresolvedDecisionsCount(2)
+    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      applicationId,
+      2
+    )
 
     // preschool daycare decision cannot be accepted before accepting preschool
     await responsePage.assertDecisionCannotBeAccepted(
@@ -124,28 +125,34 @@ describe('Citizen application decisions', () => {
 
     await responsePage.assertDecisionData(
       preschoolDecisionId,
-      'Päätös esiopetuksesta',
+      'Esiopetus',
       testDaycare.decisionCustomization.preschoolName,
-      'Vahvistettavana huoltajalla'
+      'Odottaa vahvistusta'
     )
 
     await responsePage.acceptDecision(preschoolDecisionId)
-    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hyväksytty')
-    await responsePage.assertUnresolvedDecisionsCount(1)
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Vahvistettu')
+    await responsePage.assertPageTitle(1)
 
     await responsePage.assertDecisionData(
       preschoolDaycareDecisionId,
-      'Päätös liittyvästä varhaiskasvatuksesta',
+      'Liittyvä varhaiskasvatus',
       testDaycare.decisionCustomization.daycareName,
-      'Vahvistettavana huoltajalla'
+      'Odottaa vahvistusta'
     )
 
     await responsePage.rejectDecision(preschoolDaycareDecisionId)
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Vahvistettu')
     await responsePage.assertDecisionStatus(
       preschoolDaycareDecisionId,
-      'Hylätty'
+      'Kieltäydytty'
     )
-    await responsePage.assertUnresolvedDecisionsCount(0)
+    await responsePage.assertPageTitle(0)
+
+    // Reload page - decisions should now be gone from response page
+    await responsePage.reload()
+    await responsePage.assertPageTitle(0)
+    await responsePage.assertNoDecisionsVisible()
   })
 
   test('Rejecting preschool decision also rejects connected daycare after confirmation', async () => {
@@ -188,17 +195,19 @@ describe('Citizen application decisions', () => {
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
-    const responsePage =
-      await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
+    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+      applicationId,
+      2
+    )
     await responsePage.rejectDecision(preschoolDecisionId)
     await responsePage.confirmRejectCascade()
 
-    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Hylätty')
+    await responsePage.assertDecisionStatus(preschoolDecisionId, 'Kieltäydytty')
     await responsePage.assertDecisionStatus(
       preschoolDaycareDecisionId,
-      'Hylätty'
+      'Kieltäydytty'
     )
-    await responsePage.assertUnresolvedDecisionsCount(0)
+    await responsePage.assertPageTitle(0)
   })
 
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
@@ -261,8 +270,13 @@ describe('Citizen application decisions', () => {
       ],
       now
     )
+    const decisions = await getApplicationDecisions({
+      applicationId: application.id
+    })
+    if (decisions.length !== 1) throw Error('Expected 1 decision')
+
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
-    await citizenDecisionsPage.viewDecisionMetadata(application.id)
+    await citizenDecisionsPage.viewDecisionMetadata(decisions[0].id)
   })
 })
