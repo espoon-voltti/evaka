@@ -10,6 +10,7 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ServiceApplicationId } from 'lib-common/generated/api-types/shared'
@@ -51,12 +52,17 @@ export async function deleteServiceNeed(
 */
 export async function getChildServiceNeeds(
   request: {
-    childId: PersonId
+    childId: PersonId,
+    from: LocalDate
   }
 ): Promise<ChildServiceNeedInfo[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<ChildServiceNeedInfo[]>>({
     url: uri`/employee/children/${request.childId}/service-needs`.toString(),
-    method: 'GET'
+    method: 'GET',
+    params
   })
   return json.map(e => deserializeJsonChildServiceNeedInfo(e))
 }

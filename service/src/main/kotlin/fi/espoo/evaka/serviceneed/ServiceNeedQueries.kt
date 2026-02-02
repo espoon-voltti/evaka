@@ -406,9 +406,9 @@ FROM service_need_option_fee
         .toList<ServiceNeedOptionFee>()
 }
 
-fun Database.Read.getChildFutureServiceNeedInfos(
+fun Database.Read.getChildServiceNeedInfos(
     childId: ChildId,
-    today: LocalDate,
+    from: LocalDate,
 ): List<ChildServiceNeedInfo> {
     return createQuery {
             sql(
@@ -425,7 +425,7 @@ SELECT
 FROM placement p
 JOIN service_need sn ON sn.placement_id = p.id
 JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE p.child_id = ${bind(childId)} AND sn.end_date >= ${bind(today)}
+WHERE p.child_id = ${bind(childId)} AND sn.end_date >= ${bind(from)}
 ORDER BY sn.start_date
 """
             )

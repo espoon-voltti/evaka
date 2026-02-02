@@ -562,6 +562,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 unitSupervisor,
                 MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
                 testChild_1.id,
+                today,
             )
 
         assertEquals(2, result.size)
@@ -606,6 +607,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 unitSupervisor,
                 MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
                 testChild_1.id,
+                today,
             )
 
         assertEquals(2, result.size)

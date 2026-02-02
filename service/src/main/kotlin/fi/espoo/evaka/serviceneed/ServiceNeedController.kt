@@ -192,6 +192,7 @@ class ServiceNeedController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
+        @RequestParam from: LocalDate,
     ): List<ChildServiceNeedInfo> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -202,7 +203,7 @@ class ServiceNeedController(
                         Action.Child.READ_SERVICE_NEEDS,
                         childId,
                     )
-                    tx.getChildFutureServiceNeedInfos(childId, clock.today())
+                    tx.getChildServiceNeedInfos(childId, from)
                 }
             }
             .also { Audit.ChildServiceNeedsRead.log(targetId = AuditId(childId)) }

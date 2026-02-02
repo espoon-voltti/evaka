@@ -292,7 +292,10 @@ export default React.memo(function ReservationModalSingleChild({
   const { i18n, lang } = useTranslation()
 
   const childServiceNeeds = useQueryResult(
-    childServiceNeedsQuery({ childId: child.id })
+    childServiceNeedsQuery({
+      childId: child.id,
+      from: LocalDate.todayInSystemTz()
+    })
   )
 
   const getIncludedDaysForRange = useCallback(
