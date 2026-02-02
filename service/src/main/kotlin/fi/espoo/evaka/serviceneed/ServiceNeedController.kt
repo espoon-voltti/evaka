@@ -6,7 +6,9 @@ package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -182,5 +184,28 @@ class ServiceNeedController(
         @RequestParam placementTypes: List<PlacementType> = emptyList(),
     ): List<ServiceNeedOptionPublicInfo> {
         return db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
+    }
+
+    @GetMapping("/employee/children/{childId}/service-needs")
+    fun getChildServiceNeeds(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestParam from: LocalDate,
+    ): List<ChildServiceNeedInfo> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_SERVICE_NEEDS,
+                        childId,
+                    )
+                    tx.getChildServiceNeedInfos(childId, from)
+                }
+            }
+            .also { Audit.ChildServiceNeedsRead.log(targetId = AuditId(childId)) }
     }
 }

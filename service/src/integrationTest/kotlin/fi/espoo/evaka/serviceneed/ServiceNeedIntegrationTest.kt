@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
@@ -32,6 +33,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -503,6 +505,114 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
         }
+    }
+
+    @Test
+    fun `get child future service needs returns only future service needs`() {
+        val today = LocalDate.of(2024, 1, 15)
+        val pastServiceNeedId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = LocalDate.of(2024, 1, 1),
+                        endDate = LocalDate.of(2024, 1, 10),
+                        optionId = snDefaultDaycare.id,
+                        shiftCare = ShiftCareType.NONE,
+                        partWeek = false,
+                        confirmedBy = unitSupervisor.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+        val currentServiceNeedId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = LocalDate.of(2024, 1, 11),
+                        endDate = LocalDate.of(2024, 1, 20),
+                        optionId = snDaycareFullDay35.id,
+                        shiftCare = ShiftCareType.FULL,
+                        partWeek = false,
+                        confirmedBy = unitSupervisor.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+        val futureServiceNeedId =
+            db.transaction { tx ->
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = LocalDate.of(2024, 1, 21),
+                        endDate = LocalDate.of(2024, 1, 30),
+                        optionId = snDaycareFullDay25to35.id,
+                        shiftCare = ShiftCareType.NONE,
+                        partWeek = true,
+                        confirmedBy = unitSupervisor.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                )
+            }
+
+        val result =
+            serviceNeedController.getChildServiceNeeds(
+                dbInstance(),
+                unitSupervisor,
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
+                testChild_1.id,
+                today,
+            )
+
+        assertEquals(2, result.size)
+        assertTrue(result.any { it.validDuring.start == LocalDate.of(2024, 1, 11) })
+        assertTrue(result.any { it.validDuring.start == LocalDate.of(2024, 1, 21) })
+        assertTrue(result.none { it.validDuring.start == LocalDate.of(2024, 1, 1) })
+    }
+
+    @Test
+    fun `get child future service needs with multiple future periods`() {
+        val today = LocalDate.of(2024, 1, 15)
+        db.transaction { tx ->
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = LocalDate.of(2024, 1, 20),
+                    endDate = LocalDate.of(2024, 2, 10),
+                    optionId = snDefaultDaycare.id,
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
+                )
+            )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = LocalDate.of(2024, 2, 11),
+                    endDate = LocalDate.of(2024, 3, 15),
+                    optionId = snDaycareFullDay35.id,
+                    shiftCare = ShiftCareType.FULL,
+                    partWeek = false,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
+                )
+            )
+        }
+
+        val result =
+            serviceNeedController.getChildServiceNeeds(
+                dbInstance(),
+                unitSupervisor,
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
+                testChild_1.id,
+                today,
+            )
+
+        assertEquals(2, result.size)
+        assertEquals(ShiftCareType.NONE, result[0].shiftCare)
+        assertEquals(ShiftCareType.FULL, result[1].shiftCare)
     }
 
     private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> =

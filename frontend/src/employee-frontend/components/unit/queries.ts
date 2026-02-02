@@ -65,7 +65,10 @@ import {
   postChildDatePresence,
   postReservations
 } from '../../generated/api-clients/reservations'
-import { getUndecidedServiceApplications } from '../../generated/api-clients/serviceneed'
+import {
+  getChildServiceNeeds,
+  getUndecidedServiceApplications
+} from '../../generated/api-clients/serviceneed'
 
 const q = new Queries()
 
@@ -228,6 +231,8 @@ export const updateUnitClosingDateMutation = q.mutation(updateUnitClosingDate, [
 export const unitAttendanceReservationsQuery = q.query(
   getAttendanceReservations
 )
+
+export const childServiceNeedsQuery = q.query(getChildServiceNeeds)
 
 export const ongoingChildAttendanceQuery = q.query(getOngoingChildAttendance)
 

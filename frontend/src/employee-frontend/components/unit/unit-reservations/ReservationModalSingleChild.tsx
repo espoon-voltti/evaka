@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -34,6 +34,7 @@ import type {
 } from 'lib-common/generated/api-types/reservations'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import type { Repetition } from 'lib-common/reservations'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -53,12 +54,14 @@ import { faUserMinus } from 'lib-icons'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { postReservationsMutation } from '../queries'
+import { childServiceNeedsQuery, postReservationsMutation } from '../queries'
 
 interface Props {
   onClose: () => void
   child: Child
-  operationalDays: number[]
+  unitId: string
+  normalOperationDays: number[]
+  shiftCareOperationDays: number[] | undefined
 }
 
 const reservableDates = new FiniteDateRange(
@@ -217,11 +220,7 @@ function initialState(
   }
 }
 
-function resetTimes(
-  includedWeekDays: number[],
-  repetition: Repetition,
-  selectedRange: FiniteDateRange
-): {
+type ReservationFormTimes = {
   dailyTimes: StateOf<
     ReturnType<(typeof reservationForm)['shape']>['dailyTimes']
   >
@@ -231,64 +230,123 @@ function resetTimes(
   irregularTimes: StateOf<
     ReturnType<(typeof reservationForm)['shape']>['irregularTimes']
   >
-} {
-  switch (repetition) {
-    case 'DAILY':
-      return {
-        dailyTimes: {
+}
+
+function resetDailyTimes(): ReservationFormTimes {
+  return {
+    dailyTimes: {
+      branch: 'timeRanges',
+      state: [{ startTime: '', endTime: '' }]
+    },
+    weeklyTimes: [],
+    irregularTimes: []
+  }
+}
+
+function resetWeeklyTimes(includedWeekDays: number[]): ReservationFormTimes {
+  return {
+    dailyTimes: {
+      branch: 'timeRanges',
+      state: []
+    },
+    weeklyTimes: includedWeekDays.map((dayIndex) => ({
+      index: dayIndex,
+      enabled: true,
+      times: {
+        branch: 'timeRanges',
+        state: [{ startTime: '', endTime: '' }]
+      }
+    })),
+    irregularTimes: []
+  }
+}
+
+function resetIrregularTimes(
+  selectedRange: FiniteDateRange,
+  isDateValid: (date: LocalDate) => boolean
+): ReservationFormTimes {
+  return {
+    dailyTimes: {
+      branch: 'timeRanges',
+      state: []
+    },
+    weeklyTimes: [],
+    irregularTimes: [...selectedRange.dates()]
+      .filter((date) => isDateValid(date))
+      .map((date) => ({
+        date,
+        times: {
           branch: 'timeRanges',
           state: [{ startTime: '', endTime: '' }]
-        },
-        weeklyTimes: [],
-        irregularTimes: []
-      }
-    case 'WEEKLY':
-      return {
-        dailyTimes: {
-          branch: 'timeRanges',
-          state: []
-        },
-        weeklyTimes: includedWeekDays.map((dayIndex) => ({
-          index: dayIndex,
-          enabled: true,
-          times: {
-            branch: 'timeRanges',
-            state: [{ startTime: '', endTime: '' }]
-          }
-        })),
-        irregularTimes: []
-      }
-    case 'IRREGULAR':
-      return {
-        dailyTimes: {
-          branch: 'timeRanges',
-          state: []
-        },
-        weeklyTimes: [],
-        irregularTimes: [...selectedRange.dates()]
-          .filter((date) => includedWeekDays.includes(date.getIsoDayOfWeek()))
-          .map((date) => ({
-            date,
-            times: {
-              branch: 'timeRanges',
-              state: [{ startTime: '', endTime: '' }]
-            }
-          }))
-      }
+        }
+      }))
   }
 }
 
 export default React.memo(function ReservationModalSingleChild({
   onClose,
   child,
-  operationalDays
+  normalOperationDays,
+  shiftCareOperationDays
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const includedDays = useMemo(
-    () => [1, 2, 3, 4, 5, 6, 7].filter((day) => operationalDays.includes(day)),
-    [operationalDays]
+  const childServiceNeeds = useQueryResult(
+    childServiceNeedsQuery({
+      childId: child.id,
+      from: LocalDate.todayInSystemTz()
+    })
   )
+
+  const getIncludedDaysForRange = useCallback(
+    (selectedRange: FiniteDateRange): number[] => {
+      if (!childServiceNeeds.isSuccess) return []
+
+      const allowedDays = new Set<number>()
+
+      for (const serviceNeed of childServiceNeeds.value) {
+        if (!serviceNeed.validDuring.overlaps(selectedRange)) continue
+
+        const hasShiftCare = serviceNeed.shiftCare !== 'NONE'
+        const operationDays =
+          hasShiftCare && shiftCareOperationDays
+            ? shiftCareOperationDays
+            : normalOperationDays
+
+        for (const day of operationDays) {
+          allowedDays.add(day)
+        }
+      }
+
+      return Array.from(allowedDays).sort((a, b) => a - b)
+    },
+    [childServiceNeeds, normalOperationDays, shiftCareOperationDays]
+  )
+
+  const isDateValidForReservation = useMemo(() => {
+    const normalOperationDaysSet = new Set(normalOperationDays)
+    const shiftCareOperationDaysSet = shiftCareOperationDays
+      ? new Set(shiftCareOperationDays)
+      : undefined
+    return (date: LocalDate): boolean => {
+      if (!childServiceNeeds.isSuccess) return false
+
+      const serviceNeed = childServiceNeeds.value.find((sn) =>
+        sn.validDuring.includes(date)
+      )
+
+      if (!serviceNeed) return false
+
+      const dayOfWeek = date.getIsoDayOfWeek()
+      const hasShiftCare = serviceNeed.shiftCare !== 'NONE'
+
+      if (hasShiftCare && shiftCareOperationDaysSet) {
+        return shiftCareOperationDaysSet.has(dayOfWeek)
+      } else {
+        return normalOperationDaysSet.has(dayOfWeek)
+      }
+    }
+  }, [childServiceNeeds, normalOperationDays, shiftCareOperationDays])
 
   const form = useForm(
     reservationForm,
@@ -309,9 +367,26 @@ export default React.memo(function ReservationModalSingleChild({
         const [repetition, selectedRange] = next.value
 
         if (!prev.isValid) {
+          let resetState: ReservationFormTimes
+          switch (repetition) {
+            case 'DAILY':
+              resetState = resetDailyTimes()
+              break
+            case 'WEEKLY':
+              resetState = resetWeeklyTimes(
+                getIncludedDaysForRange(selectedRange)
+              )
+              break
+            case 'IRREGULAR':
+              resetState = resetIrregularTimes(
+                selectedRange,
+                isDateValidForReservation
+              )
+              break
+          }
           return {
             ...nextState,
-            ...resetTimes(includedDays, repetition, selectedRange)
+            ...resetState
           }
         }
 
@@ -322,9 +397,26 @@ export default React.memo(function ReservationModalSingleChild({
             prevDateRange === undefined ||
             !prevDateRange.isEqual(selectedRange))
         ) {
+          let resetState: ReservationFormTimes
+          switch (repetition) {
+            case 'DAILY':
+              resetState = resetDailyTimes()
+              break
+            case 'WEEKLY':
+              resetState = resetWeeklyTimes(
+                getIncludedDaysForRange(selectedRange)
+              )
+              break
+            case 'IRREGULAR':
+              resetState = resetIrregularTimes(
+                selectedRange,
+                isDateValidForReservation
+              )
+              break
+          }
           return {
             ...nextState,
-            ...resetTimes(includedDays, repetition, selectedRange)
+            ...resetState
           }
         }
         return nextState
@@ -337,6 +429,13 @@ export default React.memo(function ReservationModalSingleChild({
   const dailyTimes = useFormField(form, 'dailyTimes')
   const weeklyTimes = useFormElems(useFormField(form, 'weeklyTimes'))
   const irregularTimes = useFormElems(useFormField(form, 'irregularTimes'))
+
+  const dateRangeValue = dateRange.isValid() ? dateRange.value() : undefined
+  const includedDays = useMemo(
+    () =>
+      dateRangeValue ? getIncludedDaysForRange(dateRangeValue) : undefined,
+    [dateRangeValue, getIncludedDaysForRange]
+  )
 
   const [showAllErrors, setShowAllErrors] = useState(false)
 
@@ -384,21 +483,30 @@ export default React.memo(function ReservationModalSingleChild({
 
       <TimeInputGrid>
         {repetition.value() === 'DAILY' ? (
-          <ReservationTimes
-            label={
-              <Label>{`${
-                i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
-              }-${
-                i18n.common.datetime.weekdaysShort[
-                  includedDays[includedDays.length - 1] - 1
-                ]
-              }`}</Label>
-            }
-            bind={dailyTimes}
-            showAllErrors={showAllErrors}
-          />
+          includedDays !== undefined ? (
+            <ReservationTimes
+              label={
+                <Label>{`${
+                  i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
+                }-${
+                  i18n.common.datetime.weekdaysShort[
+                    includedDays[includedDays.length - 1] - 1
+                  ]
+                }`}</Label>
+              }
+              bind={dailyTimes}
+              showAllErrors={showAllErrors}
+            />
+          ) : (
+            <MissingDateRange>
+              {
+                i18n.unit.attendanceReservations.reservationModal
+                  .missingDateRange
+              }
+            </MissingDateRange>
+          )
         ) : repetition.value() === 'WEEKLY' ? (
-          weeklyTimes.length > 0 ? (
+          includedDays !== undefined && weeklyTimes.length > 0 ? (
             weeklyTimes.map((times, index) =>
               includedDays.includes(index + 1) ? (
                 <WeeklyTimeInputs
@@ -424,7 +532,6 @@ export default React.memo(function ReservationModalSingleChild({
                 key={index}
                 bind={irregularTimesElem}
                 index={index}
-                includedDays={includedDays}
                 showAllErrors={showAllErrors}
               />
             ))
@@ -481,13 +588,11 @@ const WeeklyTimeInputs = React.memo(function WeeklyTimeInputs({
 const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
   bind,
   index,
-  showAllErrors,
-  includedDays
+  showAllErrors
 }: {
   bind: BoundForm<typeof irregularDay>
   index: number
   showAllErrors: boolean
-  includedDays: number[]
 }) {
   const { i18n, lang } = useTranslation()
 
@@ -502,13 +607,11 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
           {i18n.common.datetime.week} {date.getIsoWeek()}
         </Week>
       ) : null}
-      {includedDays.includes(date.getIsoDayOfWeek()) && (
-        <ReservationTimes
-          label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-          bind={times}
-          showAllErrors={showAllErrors}
-        />
-      )}
+      <ReservationTimes
+        label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+        bind={times}
+        showAllErrors={showAllErrors}
+      />
     </>
   )
 })
