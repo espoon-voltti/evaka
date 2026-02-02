@@ -7,7 +7,11 @@ import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
-import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
+import {
+  desktopMin,
+  desktopMinPx,
+  zoomedMobileMax
+} from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
@@ -64,6 +68,10 @@ const HeaderContainer = styled.header`
   position: sticky;
   top: 0;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: ${zoomedMobileMax}) {
+    grid: minmax(60px, min-content) / repeat(3, minmax(60px, 1fr));
+  }
 
   @media (min-width: ${desktopMin}) {
     position: static;
