@@ -65,12 +65,17 @@ export class SamlError extends Error {
 }
 
 const parseSessionCookie = (cookie: string, cookieName: string) => {
-  const cookies = cookie.split('; ')
+  const cookies = cookie.split(';')
 
   for (const c of cookies) {
-    const [name, value] = c.split('=')
-    if (name === cookieName) {
-      return value.substring(4).split('.')[0]
+    const match = c.match(/^([^=]+)=(.*)$/)
+    if (!match) continue
+    const [, name, value] = match
+    if (name.trim() === cookieName) {
+      // Signed cookie format: s%3A<sessionID>.<signature>
+      if (value.startsWith('s%3A')) {
+        return value.substring(4).split('.')[0]
+      }
     }
   }
 }
