@@ -26,7 +26,6 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import type { Employee } from 'lib-common/generated/api-types/pis'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
-import type { FullAclInfo } from 'lib-common/generated/api-types/daycare'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
 import type { GroupUpdateRequest } from 'lib-common/generated/api-types/daycare'
 import type { JsonCompatible } from 'lib-common/json'
@@ -722,13 +721,13 @@ export async function addFullAclForRole(
   request: {
     unitId: DaycareId,
     employeeId: EmployeeId,
-    body: FullAclInfo
+    body: AclUpdate
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/daycares/${request.unitId}/full-acl/${request.employeeId}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<FullAclInfo>
+    data: request.body satisfies JsonCompatible<AclUpdate>
   })
   return json
 }
@@ -954,9 +953,9 @@ export async function reactivateTemporaryEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.updateGroupAclWithOccupancyCoefficient
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.updateGroupAcl
 */
-export async function updateGroupAclWithOccupancyCoefficient(
+export async function updateGroupAcl(
   request: {
     unitId: DaycareId,
     employeeId: EmployeeId,

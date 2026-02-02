@@ -38,7 +38,7 @@ import {
   setUnitServiceWorkerNote,
   updateDaycare,
   updateGroup,
-  updateGroupAclWithOccupancyCoefficient,
+  updateGroupAcl,
   updateTemporaryEmployee,
   updateUnitClosingDate
 } from '../../generated/api-clients/daycare'
@@ -139,10 +139,9 @@ export const deleteStaffMutation = q.mutation(deleteStaff, [
 export const deleteScheduledAclMutation = q.mutation(deleteScheduledAcl, [
   ({ unitId }) => unitScheduledAclQuery({ unitId })
 ])
-export const updateGroupAclWithOccupancyCoefficientMutation = q.mutation(
-  updateGroupAclWithOccupancyCoefficient,
-  [({ unitId }) => unitAclQuery({ unitId })]
-)
+export const updateGroupAclMutation = q.mutation(updateGroupAcl, [
+  ({ unitId }) => unitAclQuery({ unitId })
+])
 
 export const unitServiceWorkerNoteQuery = q.query(getUnitServiceWorkerNote)
 

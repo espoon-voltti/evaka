@@ -127,19 +127,17 @@ export default React.memo(function AddAclModal({
               employeeId: formData.selectedEmployee.value,
               body: {
                 role: formData.role,
-                update: {
-                  groupIds: permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
-                    ? formData.selectedGroups
-                      ? formData.selectedGroups.map((g) => g.id)
-                      : null
-                    : null,
-                  hasStaffOccupancyEffect: permittedActions.includes(
-                    'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
-                  )
-                    ? formData.hasStaffOccupancyEffect
-                    : null,
-                  endDate: formData.endDate
-                }
+                groupIds: permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
+                  ? formData.selectedGroups
+                    ? formData.selectedGroups.map((g) => g.id)
+                    : null
+                  : null,
+                hasStaffOccupancyEffect: permittedActions.includes(
+                  'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+                )
+                  ? formData.hasStaffOccupancyEffect
+                  : null,
+                endDate: formData.endDate
               }
             }
           : cancelMutation
