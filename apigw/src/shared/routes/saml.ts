@@ -285,12 +285,11 @@ export function createSamlIntegration<T extends SessionType>(
             req.headers.cookie,
             secondaryCookieConfig?.cookieName
           ) ?? ''
-        if (
-          secondarySessionId &&
-          (await sessions.isSecondarySessionNewer(req, secondarySessionId))
-        ) {
-          const secondaryUser =
-            await sessions.getSecondaryUser(secondarySessionId)
+        const secondaryUser = await sessions.getSecondaryUserIfNewer(
+          req,
+          secondarySessionId
+        )
+        if (secondaryUser) {
           samlSession = SamlSessionSchema.safeParse(secondaryUser)
         }
       }

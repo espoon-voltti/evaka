@@ -76,15 +76,12 @@ export interface Sessions<T extends SessionType> {
 
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
-  getSecondaryUser(
+  getSecondaryUserIfNewer(
+    req: express.Request,
     secondarySessionId: string
   ): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
-  isSecondarySessionNewer(
-    req: express.Request,
-    secondarySessionId: string
-  ): Promise<boolean>
 }
 
 export function sessionSupport<T extends SessionType>(
@@ -340,17 +337,28 @@ export function sessionSupport<T extends SessionType>(
     return req.session?.passport?.user ?? undefined
   }
 
-  async function getSecondaryUser(
+  async function getSecondaryUserIfNewer(
+    req: express.Request,
     secondarySessionId: string
   ): Promise<EvakaSessionUser | undefined> {
-    const session = await redisClient.get(sessionKey(secondarySessionId))
-    if (!session) return undefined
+    const primaryUser = req.session?.evaka?.user
+    if (!primaryUser || primaryUser.authType !== 'sfi') return undefined
+    const primaryUserCreatedAt = primaryUser.createdAt
+
+    const secondarySession = await redisClient.get(
+      sessionKey(secondarySessionId)
+    )
+    if (!secondarySession) return undefined
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-    const user = JSON.parse(session)?.passport?.user
-    if (!user) return undefined
+    const user = JSON.parse(secondarySession)?.evaka?.user
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    const secondaryUserCreatedAt = user?.createdAt
+    if (!secondaryUserCreatedAt) return undefined
 
-    return user as EvakaSessionUser
+    return secondaryUserCreatedAt > primaryUserCreatedAt
+      ? (user as EvakaSessionUser)
+      : undefined
   }
 
   function getUserHeader(req: express.Request): string | undefined {
@@ -360,28 +368,6 @@ export function sessionSupport<T extends SessionType>(
 
   function isAuthenticated(req: express.Request): boolean {
     return !!req.session?.passport?.user
-  }
-
-  async function isSecondarySessionNewer(
-    req: express.Request,
-    secondarySessionId: string
-  ): Promise<boolean> {
-    const primaryUser = req.session?.evaka?.user
-    if (!primaryUser || primaryUser.authType !== 'sfi') return false
-    const primarySessionCreatedAt = primaryUser.createdAt
-
-    const secondarySession = await redisClient.get(
-      sessionKey(secondarySessionId)
-    )
-    if (!secondarySession) return false
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-    const secondarySessionUser = JSON.parse(secondarySession)?.evaka?.user
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-    const secondarySessionCreatedAt = secondarySessionUser?.createdAt
-    if (!secondarySessionCreatedAt) return false
-
-    return secondarySessionCreatedAt > primarySessionCreatedAt
   }
 
   return {
@@ -396,9 +382,8 @@ export function sessionSupport<T extends SessionType>(
     destroy,
     updateUser,
     getUser,
-    getSecondaryUser,
+    getSecondaryUserIfNewer,
     getUserHeader,
-    isAuthenticated,
-    isSecondarySessionNewer
+    isAuthenticated
   }
 }
