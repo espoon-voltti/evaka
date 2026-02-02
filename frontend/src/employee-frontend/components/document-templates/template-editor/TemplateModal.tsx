@@ -8,6 +8,7 @@ import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import type {
+  DocumentTemplate,
   ExportedDocumentTemplate,
   ChildDocumentType
 } from 'lib-common/generated/api-types/document'
@@ -15,7 +16,11 @@ import { childDocumentTypes } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
 import { uiLanguages } from 'lib-common/generated/api-types/shared'
 import type { JsonOf } from 'lib-common/json'
-import { useMutationResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -33,9 +38,11 @@ import {
 } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
+import { renderResult } from '../../async-rendering'
 import { documentTemplateForm } from '../forms'
 import {
   createDocumentTemplateMutation,
+  documentTemplateQuery,
   duplicateDocumentTemplateMutation,
   importDocumentTemplateMutation
 } from '../queries'
@@ -51,6 +58,40 @@ interface Props {
 }
 
 export default React.memo(function TemplateModal({ onClose, mode }: Props) {
+  const templateToDuplicate = useQueryResult(
+    mode.type === 'duplicate'
+      ? documentTemplateQuery({ templateId: mode.from })
+      : constantQuery(null)
+  )
+
+  if (mode.type === 'duplicate') {
+    return renderResult(templateToDuplicate, (template) =>
+      template !== null ? (
+        <TemplateModalInner
+          onClose={onClose}
+          mode={{ type: 'duplicate', template }}
+        />
+      ) : null
+    )
+  }
+
+  return <TemplateModalInner onClose={onClose} mode={mode} />
+})
+
+type InternalMode =
+  | { type: 'new' }
+  | { type: 'duplicate'; template: DocumentTemplate }
+  | { type: 'import'; data: JsonOf<ExportedDocumentTemplate> }
+
+interface InternalProps {
+  onClose: () => void
+  mode: InternalMode
+}
+
+const TemplateModalInner = React.memo(function TemplateModalInner({
+  onClose,
+  mode
+}: InternalProps) {
   const { i18n, lang } = useTranslation()
 
   const { mutateAsync: createDocumentTemplate } = useMutationResult(
@@ -98,55 +139,84 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const form = useForm(
     documentTemplateForm,
-    () =>
-      mode.type === 'import'
-        ? {
-            name: mode.data.name,
-            type: {
-              domValue: mode.data.type,
-              options: typeOptions
-            },
-            placementTypes: mode.data.placementTypes,
-            language: {
-              domValue: mode.data.language,
-              options: getLanguageOptions(mode.data.type)
-            },
-            confidential: mode.data.confidentiality !== null,
-            confidentialityDurationYears:
-              mode.data.confidentiality?.durationYears?.toString() ?? '',
-            confidentialityBasis: mode.data.confidentiality?.basis ?? '',
-            legalBasis: mode.data.legalBasis,
-            validity: openEndedLocalDateRange.fromRange(
-              DateRange.parseJson(mode.data.validity)
-            ),
-            processDefinitionNumber: mode.data.processDefinitionNumber ?? '',
-            archiveDurationMonths:
-              mode.data.archiveDurationMonths?.toString() ?? '120',
-            archiveExternally: mode.data.archiveExternally,
-            endDecisionWhenUnitChanges:
-              mode.data.endDecisionWhenUnitChanges ?? true
-          }
-        : {
-            name: '',
-            type: {
-              domValue: 'PEDAGOGICAL_ASSESSMENT',
-              options: typeOptions
-            },
-            placementTypes: [],
-            language: {
-              domValue: 'FI',
-              options: getLanguageOptions('PEDAGOGICAL_ASSESSMENT')
-            },
-            confidential: true,
-            confidentialityDurationYears: '100',
-            confidentialityBasis: '',
-            legalBasis: '',
-            validity: openEndedLocalDateRange.empty(),
-            processDefinitionNumber: '',
-            archiveDurationMonths: '120',
-            archiveExternally: false,
-            endDecisionWhenUnitChanges: true
+    () => {
+      if (mode.type === 'import') {
+        return {
+          name: mode.data.name,
+          type: {
+            domValue: mode.data.type,
+            options: typeOptions
           },
+          placementTypes: mode.data.placementTypes,
+          language: {
+            domValue: mode.data.language,
+            options: getLanguageOptions(mode.data.type)
+          },
+          confidential: mode.data.confidentiality !== null,
+          confidentialityDurationYears:
+            mode.data.confidentiality?.durationYears?.toString() ?? '',
+          confidentialityBasis: mode.data.confidentiality?.basis ?? '',
+          legalBasis: mode.data.legalBasis,
+          validity: openEndedLocalDateRange.fromRange(
+            DateRange.parseJson(mode.data.validity)
+          ),
+          processDefinitionNumber: mode.data.processDefinitionNumber ?? '',
+          archiveDurationMonths:
+            mode.data.archiveDurationMonths?.toString() ?? '120',
+          archiveExternally: mode.data.archiveExternally,
+          endDecisionWhenUnitChanges:
+            mode.data.endDecisionWhenUnitChanges ?? true
+        }
+      } else if (mode.type === 'duplicate') {
+        const template = mode.template
+        return {
+          name: template.name,
+          type: {
+            domValue: template.type,
+            options: typeOptions
+          },
+          placementTypes: template.placementTypes,
+          language: {
+            domValue: template.language,
+            options: getLanguageOptions(template.type)
+          },
+          confidential: template.confidentiality !== null,
+          confidentialityDurationYears:
+            template.confidentiality?.durationYears?.toString() ?? '',
+          confidentialityBasis: template.confidentiality?.basis ?? '',
+          legalBasis: template.legalBasis,
+          validity: openEndedLocalDateRange.fromRange(template.validity),
+          processDefinitionNumber: template.processDefinitionNumber ?? '',
+          archiveDurationMonths:
+            template.archiveDurationMonths?.toString() ?? '120',
+          archiveExternally: template.archiveExternally,
+          endDecisionWhenUnitChanges:
+            template.endDecisionWhenUnitChanges ?? true
+        }
+      } else {
+        return {
+          name: '',
+          type: {
+            domValue: 'PEDAGOGICAL_ASSESSMENT',
+            options: typeOptions
+          },
+          placementTypes: [],
+          language: {
+            domValue: 'FI',
+            options: getLanguageOptions('PEDAGOGICAL_ASSESSMENT')
+          },
+          confidential: true,
+          confidentialityDurationYears: '100',
+          confidentialityBasis: '',
+          legalBasis: '',
+          validity: openEndedLocalDateRange.empty(),
+          processDefinitionNumber: '',
+          archiveDurationMonths: '120',
+          archiveExternally: false,
+          endDecisionWhenUnitChanges: true
+        }
+      }
+    },
     {
       ...i18n.validationErrors
     },
@@ -201,7 +271,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       resolveAction={() => {
         if (mode.type === 'duplicate') {
           return duplicateDocumentTemplate({
-            templateId: mode.from,
+            templateId: mode.template.id,
             body: form.value()
           })
         } else if (mode.type === 'import') {
