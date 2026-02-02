@@ -84,21 +84,34 @@ export default class ChildInformationPage {
     await this.confirmButton.click()
   }
 
-  async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {
+  private async getCollapsiblesVisibility(
+    keys?: Collapsible[]
+  ): Promise<Record<string, boolean>> {
     const collapsibleArray = Object.entries(collapsibles) as [
       Collapsible,
       { selector: string }
     ][]
 
-    await waitUntilEqual(async () => {
-      const collapsibleStatus = collapsibleArray.map(
-        async ([key, { selector }]) => {
-          const isVisible = await this.page.find(selector).visible
-          return [key, isVisible] as const
-        }
-      )
-      return Object.fromEntries(await Promise.all(collapsibleStatus))
-    }, params)
+    const filteredArray = keys
+      ? collapsibleArray.filter(([key]) => keys.includes(key))
+      : collapsibleArray
+
+    const collapsibleStatus = filteredArray.map(async ([key, { selector }]) => {
+      const isVisible = await this.page.find(selector).visible
+      return [key, isVisible] as const
+    })
+    return Object.fromEntries(await Promise.all(collapsibleStatus))
+  }
+
+  async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {
+    await waitUntilEqual(() => this.getCollapsiblesVisibility(), params)
+  }
+
+  async assertSomeCollapsiblesVisible(
+    params: Partial<Record<Collapsible, boolean>>
+  ) {
+    const keys = Object.keys(params) as Collapsible[]
+    await waitUntilEqual(() => this.getCollapsiblesVisibility(keys), params)
   }
 
   async openCollapsible<C extends Collapsible>(
