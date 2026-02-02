@@ -58,7 +58,9 @@ export default React.memo(function WeakLoginFormPage() {
         <FixedSpaceColumn spacing="s">
           <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
           <ContentArea opaque>
-            <H1 noMargin>{i18n.loginPage.login.title}</H1>
+            <H1 noMargin hyphenate>
+              {i18n.loginPage.login.title}
+            </H1>
             <Gap size="m" />
             <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
           </ContentArea>
