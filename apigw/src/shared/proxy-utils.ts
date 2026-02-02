@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { OutgoingHttpHeaders } from 'node:http'
+import http, { type OutgoingHttpHeaders } from 'node:http'
 
 import type express from 'express'
 import expressHttpProxy from 'express-http-proxy'
@@ -10,6 +10,8 @@ import _ from 'lodash'
 
 import { evakaServiceUrl } from './config.ts'
 import { createServiceRequestHeaders } from './service-client.ts'
+
+const proxyAgent = new http.Agent({ keepAlive: true, timeout: 0 })
 
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)
@@ -41,6 +43,7 @@ export function createProxy({
         ...originalHeaders,
         ...serviceHeaders
       }
+      proxyReqOpts.agent = proxyAgent
       return proxyReqOpts
     }
   })
