@@ -72,9 +72,12 @@ const parseSessionCookie = (cookie: string, cookieName: string) => {
     if (!match) continue
     const [, name, value] = match
     if (name.trim() === cookieName) {
-      // Signed cookie format: s%3A<sessionID>.<signature>
+      // Signed cookie format: s:<sessionID>.<signature>
       if (value.startsWith('s%3A')) {
         return value.substring(4).split('.')[0]
+      }
+      if (value.startsWith('s:')) {
+        return value.substring(2).split('.')[0]
       }
     }
   }
