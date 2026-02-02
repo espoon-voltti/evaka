@@ -9,7 +9,7 @@ import React, { useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { tabletMin } from 'lib-components/breakpoints'
+import { tabletMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import { H1, P } from 'lib-components/typography'
 import type { SpacingSize } from 'lib-components/white-space'
@@ -67,7 +67,7 @@ export default React.memo(function BaseModal(props: Props) {
             {!!props.title && (
               <ModalHeader
                 headingComponent={(props) => (
-                  <H1 {...props} data-qa="title">
+                  <H1 hyphenate {...props} data-qa="title">
                     {props.children}
                   </H1>
                 )}
@@ -100,6 +100,11 @@ export const ModalButtons = styled.div<{
 
   @media (max-width: ${tabletMin}) {
     margin-bottom: ${defaultMargins.L};
+  }
+
+  @media (max-width: ${zoomedMobileMax}) {
+    flex-direction: column-reverse;
+    gap: ${defaultMargins.s};
   }
 `
 
