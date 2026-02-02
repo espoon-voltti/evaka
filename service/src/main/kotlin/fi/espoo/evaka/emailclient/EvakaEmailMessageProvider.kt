@@ -579,7 +579,13 @@ $unsubscribeEn
                     if (event.period.end != event.period.start) {
                         period += "-${event.period.end.format(format)}"
                     }
-                    "<li>$period: ${event.title}</li>"
+                    val groupInfo =
+                        if (event.groupNames.isNotEmpty()) {
+                            " (${event.groupNames.joinToString(", ")})"
+                        } else {
+                            ""
+                        }
+                    "<li>$period: ${event.title}$groupInfo</li>"
                 } +
                 "</ul>"
         return EmailContent.fromHtml(

@@ -147,7 +147,13 @@ class CalendarEventNotificationService(
     ) {
         val notificationData =
             dbc.read { tx -> tx.getCalendarEventsById(msg.events.toSet()) }
-                .map { CalendarEventNotificationData(HtmlSafe(it.title), it.period) }
+                .map {
+                    CalendarEventNotificationData(
+                        HtmlSafe(it.title),
+                        it.period,
+                        it.groups.map { group -> HtmlSafe(group.name) },
+                    )
+                }
                 .sortedWith(compareBy({ it.period.start }, { it.title.toString() }))
         if (notificationData.isEmpty()) {
             logger.info { "No events to notify for parent ${msg.parentId}" }
