@@ -9,7 +9,7 @@ import styled, { css } from 'styled-components'
 
 import { defaultMargins } from 'lib-components/white-space'
 
-import { tabletMin } from '../../breakpoints'
+import { tabletMin, zoomedMobileMax } from '../../breakpoints'
 import type { BaseProps } from '../../utils'
 
 import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
@@ -107,6 +107,13 @@ const StyledButton = styled.button<{
     width: fit-content;
   }
 
+  @media screen and (max-width: ${zoomedMobileMax}) {
+    hyphens: auto;
+    word-break: break-word;
+    white-space: normal;
+    max-width: calc(100vw - ${defaultMargins.m});
+  }
+
   svg {
     ${({ $order }) =>
       $order === 'icon-text'
@@ -164,6 +171,10 @@ const StyledButton = styled.button<{
               border-color: ${(p) => p.theme.colors.grayscale.g35};
               background: ${(p) => p.theme.colors.grayscale.g35};
             }
+          }
+
+          @media screen and (max-width: ${zoomedMobileMax}) {
+            padding: 0 ${defaultMargins.s};
           }
         `
       : css`
