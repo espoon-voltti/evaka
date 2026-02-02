@@ -168,6 +168,7 @@ const TemplateRow = React.memo(function TemplateRow({
             icon={faCopy}
             aria-label={i18n.common.copy}
             onClick={onDuplicate}
+            data-qa="duplicate"
           />
           <IconOnlyButton
             icon={faTrash}

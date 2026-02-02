@@ -65,4 +65,39 @@ describe('Employee - Document templates', () => {
 
     await templates.templateRow(name).waitUntilVisible()
   })
+
+  test('Duplicating a template copies archive metadata fields', async () => {
+    const template = await Fixture.documentTemplate({
+      name: 'Original Template',
+      processDefinitionNumber: '12.34.56',
+      archiveDurationMonths: 240,
+      confidentiality: {
+        durationYears: 50,
+        basis: 'Test legal basis'
+      },
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'osio 1',
+            infoText: '',
+            questions: []
+          }
+        ]
+      }
+    }).save()
+
+    const nav = new EmployeeNav(page)
+    await nav.openAndClickDropdownMenuItem('document-templates')
+    const templates = new DocumentTemplatesListPage(page)
+
+    await templates.templateRow(template.name).duplicateButton.click()
+    const modal = templates.templateModal
+    await modal.waitUntilVisible()
+
+    await modal.processDefinitionNumberInput.assertValueEquals('12.34.56')
+    await modal.archiveDurationMonthsInput.assertValueEquals('240')
+    await modal.confidentialityDurationYearsInput.assertValueEquals('50')
+    await modal.confidentialityBasisInput.assertValueEquals('Test legal basis')
+  })
 })

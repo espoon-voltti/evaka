@@ -59,9 +59,11 @@ export class DocumentTemplatesListPage {
 }
 
 export class DocumentTemplateRow extends Element {
+  readonly duplicateButton: Element
   readonly exportButton: Element
   constructor(locator: Locator) {
     super(locator)
+    this.duplicateButton = this.findByDataQa('duplicate')
     this.exportButton = this.findByDataQa('export')
   }
 
