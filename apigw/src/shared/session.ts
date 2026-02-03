@@ -77,8 +77,7 @@ export interface Sessions<T extends SessionType> {
   updateUser(req: express.Request, user: EvakaSessionUser): Promise<void>
   getUser(req: express.Request): EvakaSessionUser | undefined
   getSecondaryUserIfNewer(
-    req: express.Request,
-    secondarySessionId: string
+    req: express.Request
   ): Promise<EvakaSessionUser | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
@@ -338,12 +337,18 @@ export function sessionSupport<T extends SessionType>(
   }
 
   async function getSecondaryUserIfNewer(
-    req: express.Request,
-    secondarySessionId: string
+    req: express.Request
   ): Promise<EvakaSessionUser | undefined> {
     const primaryUser = req.session?.evaka?.user
     if (!primaryUser || primaryUser.authType !== 'sfi') return undefined
+
+    const primarySessionId = req.session.id
     const primaryUserCreatedAt = primaryUser.createdAt
+
+    const secondarySessionId = await redisClient.get(
+      secondarySfiSessionsKey(primarySessionId)
+    )
+    if (!secondarySessionId) return undefined
 
     const secondarySession = await redisClient.get(
       sessionKey(secondarySessionId)

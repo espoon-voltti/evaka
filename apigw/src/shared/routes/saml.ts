@@ -280,12 +280,6 @@ export function createSamlIntegration<T extends SessionType>(
     })
 
   const logout: AsyncRequestHandler = async (req, res) => {
-    // Run cookieParser to populate req.signedCookies
-    await runMiddleware(
-      cookieParser(secondaryCookieConfig?.cookieSecret ?? []),
-      req,
-      res
-    )
     logAuditEvent(
       eventCode('sign_out_requested'),
       req,
@@ -296,17 +290,9 @@ export function createSamlIntegration<T extends SessionType>(
       let samlSession = SamlSessionSchema.safeParse(user)
       let url: string
       if (secondaryCookieConfig) {
-        const secondarySessionId = req.signedCookies[
-          secondaryCookieConfig.cookieName
-        ] as string | undefined
-        if (secondarySessionId) {
-          const secondaryUser = await sessions.getSecondaryUserIfNewer(
-            req,
-            secondarySessionId
-          )
-          if (secondaryUser) {
-            samlSession = SamlSessionSchema.safeParse(secondaryUser)
-          }
+        const secondaryUser = await sessions.getSecondaryUserIfNewer(req)
+        if (secondaryUser) {
+          samlSession = SamlSessionSchema.safeParse(secondaryUser)
         }
       }
       if (samlSession.success) {
