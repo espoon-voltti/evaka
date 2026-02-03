@@ -21,6 +21,8 @@ import {
 } from '../saml/error-utils.ts'
 import type { AuthenticateProfile } from '../saml/index.ts'
 import {
+  buildRelayStateWithSecondarySessionCookie,
+  extractSecondarySessionCookie,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
@@ -156,9 +158,15 @@ export function createSamlIntegration<T extends SessionType>(
           secondaryCookieConfig.cookieName
         ] as string | undefined
       }
+      const relayState = getRawUnvalidatedRelayState(req) ?? ''
       const idpLoginUrl = await saml.getAuthorizeUrlAsync(
         // no need for validation here, because the value only matters in the login callback request and is validated there
-        getRawUnvalidatedRelayState(req, secondarySessionCookie) ?? '',
+        secondarySessionCookie
+          ? buildRelayStateWithSecondarySessionCookie(
+              relayState,
+              secondarySessionCookie
+            )
+          : relayState,
         undefined,
         samlRequestOptions(req)
       )
@@ -222,15 +230,7 @@ export function createSamlIntegration<T extends SessionType>(
     }
     try {
       const user = await authenticate(req, profile)
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-      const relayState = req.body?.RelayState || req.query?.RelayState
-      const secondarySessionCookie =
-        typeof relayState === 'string'
-          ? relayState.split('&secondarySessionCookie=')[1]
-          : undefined
-
-      // secondarySessionCookie from RelayState is the raw signed cookie value to prevent
-      // tampering, so we need to unsign it here
+      const secondarySessionCookie = extractSecondarySessionCookie(req)
       const secondarySessionId =
         secondarySessionCookie && secondaryCookieConfig
           ? signedCookie(

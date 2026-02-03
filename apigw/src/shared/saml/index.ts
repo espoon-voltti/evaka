@@ -99,15 +99,31 @@ export const SamlSessionSchema = z.object({
   spNameQualifier: z.string().optional()
 })
 
+const SECONDARY_COOKIE_PARAM = '&secondarySessionCookie='
+
 export function getRawUnvalidatedRelayState(
-  req: express.Request,
-  secondarySessionCookie?: string
+  req: express.Request
 ): string | undefined {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
   if (typeof relayState !== 'string') return undefined
-  if (!secondarySessionCookie) return relayState
-  return `${relayState}&secondarySessionCookie=${secondarySessionCookie}`
+  return relayState
+}
+
+export function buildRelayStateWithSecondarySessionCookie(
+  relayState: string,
+  secondarySessionCookie: string
+): string {
+  return `${relayState}${SECONDARY_COOKIE_PARAM}${encodeURIComponent(secondarySessionCookie)}`
+}
+
+export function extractSecondarySessionCookie(
+  req: express.Request
+): string | undefined {
+  const relayState = getRawUnvalidatedRelayState(req)
+  if (!relayState) return undefined
+  const encoded = relayState.split(SECONDARY_COOKIE_PARAM)[1]
+  return encoded ? decodeURIComponent(encoded) : undefined
 }
 
 // SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
@@ -117,7 +133,7 @@ export function getRawUnvalidatedRelayState(
 // and not to some 3rd party domain
 export function validateRelayStateUrl(req: express.Request): URL | undefined {
   const relayState = getRawUnvalidatedRelayState(req)?.split(
-    '&secondarySessionCookie='
+    SECONDARY_COOKIE_PARAM
   )[0]
   if (relayState) {
     const url = parseUrlWithOrigin(evakaBaseUrl, relayState)
