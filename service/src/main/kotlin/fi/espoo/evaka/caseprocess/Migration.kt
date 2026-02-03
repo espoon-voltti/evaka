@@ -322,7 +322,7 @@ private data class DocumentData(
     val createdBy: EvakaUserId?,
     val modifiedAt: HelsinkiDateTime,
     val status: DocumentStatus,
-    val documentKey: String?,
+    val hasDocumentKey: Boolean,
     val processDefinitionNumber: String,
     val archiveDurationMonths: Int,
 )
@@ -344,7 +344,12 @@ private fun migrateDocuments(
                         d.created_by,
                         d.modified_at,
                         d.status,
-                        d.document_key,
+                        EXISTS(
+                            SELECT 1
+                            FROM child_document_published_version v
+                            WHERE v.child_document_id = d.id
+                            AND v.document_key IS NOT NULL
+                        ) AS has_document_key,
                         t.process_definition_number,
                         t.archive_duration_months
                     FROM child_document d
@@ -382,9 +387,7 @@ private fun migrateDocuments(
                 now = document.created,
                 userId = document.createdBy ?: systemInternalUser,
             )
-            if (
-                document.status == DocumentStatus.COMPLETED && !document.documentKey.isNullOrEmpty()
-            ) {
+            if (document.status == DocumentStatus.COMPLETED && document.hasDocumentKey) {
                 tx.insertCaseProcessHistoryRow(
                     processId = processId,
                     state = CaseProcessState.COMPLETED,
