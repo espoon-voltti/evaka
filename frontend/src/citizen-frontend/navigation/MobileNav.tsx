@@ -257,6 +257,10 @@ const ResponsiveLanguageRow = styled(FixedSpaceRow)`
       }
     }
   }
+  @media (max-width: ${zoomedMobileMax}) {
+    display: flex;
+    flex-direction: column;
+  }
 `
 
 const ChildrenLink = React.memo(function ChildrenLink({
