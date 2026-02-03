@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.security.Action.Citizen
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
@@ -387,6 +388,90 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
 
         assertEquals(0, notificationCount)
+    }
+
+    @Test
+    fun `getPendingDecisions returns pending decision with valid start date period and permitted actions`() {
+        val applicationId = ApplicationId(UUID.randomUUID())
+        val rejectedApplicationId = ApplicationId(UUID.randomUUID())
+
+        db.transaction { tx ->
+            tx.insertTestApplication(
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
+                childId = child.id,
+                guardianId = adult.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(createTestApplicationDetails(adult, child)),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = applicationId,
+                    status = DecisionStatus.PENDING,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = clock.today(),
+                )
+            )
+            // Rejected application and related decision should not be returned
+            tx.insertTestApplication(
+                id = rejectedApplicationId,
+                status = ApplicationStatus.REJECTED,
+                confidential = true,
+                childId = child.id,
+                guardianId = adult.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(createTestApplicationDetails(adult, child)),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = rejectedApplicationId,
+                    status = DecisionStatus.REJECTED,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = clock.today(),
+                )
+            )
+        }
+
+        val pendingDecisions =
+            applicationControllerCitizen.getPendingDecisions(
+                db = dbInstance(),
+                user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
+                clock = clock,
+            )
+
+        assertEquals(1, pendingDecisions.size)
+        val decisionWithPeriod = pendingDecisions[0]
+
+        assertEquals(applicationId, decisionWithPeriod.decision.applicationId)
+        assertEquals(child.id, decisionWithPeriod.decision.childId)
+        assertEquals(DecisionStatus.PENDING, decisionWithPeriod.decision.status)
+        assertEquals(DecisionType.DAYCARE, decisionWithPeriod.decision.type)
+        assertEquals(daycare.id, decisionWithPeriod.decision.unit.id)
+
+        val expectedStartDate = clock.today()
+        val expectedEndDate = clock.today().plusDays(14)
+        assertEquals(expectedStartDate, decisionWithPeriod.validRequestedStartDatePeriod.start)
+        assertEquals(expectedEndDate, decisionWithPeriod.validRequestedStartDatePeriod.end)
+
+        assertEquals(
+            setOf(Citizen.Decision.READ, Citizen.Decision.DOWNLOAD_PDF),
+            decisionWithPeriod.permittedActions,
+        )
     }
 
     private fun createTestApplicationDetails(

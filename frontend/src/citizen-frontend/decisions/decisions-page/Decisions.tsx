@@ -332,7 +332,7 @@ export default React.memo(function Decisions() {
           </ContentArea>
         </FixedSpaceColumn>
       ))}
-      <Gap size="s" />{' '}
+      <Gap size="s" />
     </Container>
   )
 })

@@ -535,7 +535,6 @@ class ApplicationControllerCitizen(
         val decision: Decision,
         val validRequestedStartDatePeriod: FiniteDateRange,
         val permittedActions: Set<Action.Citizen.Decision>,
-        val canDecide: Boolean,
     )
 
     @GetMapping("/decisions/pending")
@@ -553,11 +552,10 @@ class ApplicationControllerCitizen(
                             clock,
                             Action.Citizen.Decision.READ,
                         )
-                    val childIds = tx.getCitizenChildIds(clock.today(), user.id)
-                    val decisions =
-                        tx.getDecisionsByGuardian(user.id, filter).filter { it.childId in childIds }
                     val pendingDecisions =
-                        decisions.filter { decision -> decision.status == DecisionStatus.PENDING }
+                        tx.getDecisionsByGuardian(user.id, filter).filter {
+                            it.status == DecisionStatus.PENDING
+                        }
                     val decidableApplications =
                         getDecidableApplications(
                             tx,
@@ -579,14 +577,16 @@ class ApplicationControllerCitizen(
                             decision,
                             decision.validRequestedStartDatePeriod(featureConfig, isCitizen = true),
                             permittedActions[decision.id] ?: emptySet(),
-                            decidableApplications.contains(decision.applicationId),
                         )
                     }
                 }
             }
             .also { decisionWithValidStartDatePeriodList ->
+                val childIds =
+                    decisionWithValidStartDatePeriodList.map { it.decision.childId }.toSet()
                 Audit.DecisionRead.log(
                     targetId = AuditId(user.id),
+                    objectId = AuditId(childIds),
                     meta =
                         mapOf(
                             "count" to decisionWithValidStartDatePeriodList.size,

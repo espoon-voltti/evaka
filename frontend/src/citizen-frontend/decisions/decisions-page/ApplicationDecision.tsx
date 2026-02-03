@@ -74,7 +74,6 @@ export default React.memo(function ApplicationDecision({
             {...iconPropsByStatus[status]}
             label={t.decisions.applicationDecisions.status[status]}
             data-qa="decision-status"
-            data-qa-status={status}
           />
           {canDecide && (
             <ResponsiveLinkButton

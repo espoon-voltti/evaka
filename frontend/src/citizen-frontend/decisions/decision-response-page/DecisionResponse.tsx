@@ -48,7 +48,6 @@ interface SingleDecisionProps {
   rejectCascade: boolean
   handleReturnToPreviousPage: () => void
   permittedActions: Set<Action.Citizen.Decision>
-  canDecide: boolean
   headerCounter: string
   onDecisionHandled: (decisionId: DecisionId, status: DecisionStatus) => void
 }
@@ -60,7 +59,6 @@ export default React.memo(function DecisionResponse({
   rejectCascade,
   handleReturnToPreviousPage,
   permittedActions,
-  canDecide,
   headerCounter,
   onDecisionHandled
 }: SingleDecisionProps) {
@@ -207,7 +205,7 @@ export default React.memo(function DecisionResponse({
           </div>
         </FixedSpaceColumn>
       </DataTable>
-      {decision.status === 'PENDING' && canDecide && (
+      {decision.status === 'PENDING' && (
         <Fragment>
           <ThinHorizontalLine />
           <DecisionListGrid

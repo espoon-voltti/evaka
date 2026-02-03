@@ -538,7 +538,6 @@ export interface DecisionSummary {
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.DecisionWithValidStartDatePeriod
 */
 export interface DecisionWithValidStartDatePeriod {
-  canDecide: boolean
   decision: Decision
   permittedActions: Action.Citizen.Decision[]
   validRequestedStartDatePeriod: FiniteDateRange

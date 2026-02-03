@@ -40,21 +40,3 @@ export const iconPropsByStatus: Record<DecisionStatus, IconChipVisualProps> = {
     iconBackgroundColor: '#ff000c'
   }
 }
-
-export const decisionStatusIcon: Record<
-  DecisionStatus,
-  { icon: typeof faGavel; color: string }
-> = {
-  PENDING: {
-    icon: faGavel,
-    color: colors.status.warning
-  },
-  ACCEPTED: {
-    icon: faCheck,
-    color: colors.status.success
-  },
-  REJECTED: {
-    icon: faTimes,
-    color: colors.status.danger
-  }
-}
