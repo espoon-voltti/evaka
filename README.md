@@ -14,12 +14,20 @@ This is eVaka® – an ERP system developed for early childhood education in
 Finland. It is a web application developed using modern technologies and
 designed to be deployed in cloud environment.
 
-**Caution:** eVaka® is currently under very active development. At this
-point, it is not yet adviced to start developing or running your custom
-solution based on this project. Most likely, the project will evolve
-considerably before reaching more stable phase. Please refer to
-project's roadmap for further information regarding development plans.
-However, feel free to explore the project and try running it locally.
+eVaka® is governed, funded and primarily developed by Espoo, Oulu, Tampere
+and Turku (4pack). The roadmap and architecture are driven by the needs of
+these deployments and their early childhood education processes.
+
+Other municipalities and private entities may deploy eVaka in production,
+but the core development team may be unable to provide implementation or
+operational support for third parties. Plan to run and maintain your
+deployment yourself or with a partner.
+
+Before opening an issue, consider whether your need can be met by
+harmonizing your early childhood education processes with existing eVaka
+municipalities. Municipality-specific deviations may not fit the shared
+product direction and are less likely to be included in core eVaka®.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## How to get started
 
