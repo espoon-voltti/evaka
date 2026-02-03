@@ -64,25 +64,6 @@ export class SamlError extends Error {
   }
 }
 
-const parseSessionCookie = (cookie: string, cookieName: string) => {
-  const cookies = cookie.split(';')
-
-  for (const c of cookies) {
-    const match = c.match(/^([^=]+)=(.*)$/)
-    if (!match) continue
-    const [, name, value] = match
-    if (name.trim() === cookieName) {
-      // Signed cookie format: s:<sessionID>.<signature>
-      if (value.startsWith('s%3A')) {
-        return value.substring(4).split('.')[0]
-      }
-      if (value.startsWith('s:')) {
-        return value.substring(2).split('.')[0]
-      }
-    }
-  }
-}
-
 const samlRequestOptions = (req: express.Request): AuthOptions => {
   const locale = req.query.locale
   return typeof locale === 'string' ? { additionalParams: { locale } } : {}
@@ -272,7 +253,24 @@ export function createSamlIntegration<T extends SessionType>(
     }
   }
 
+  const runMiddleware = (
+    middleware: express.RequestHandler,
+    req: express.Request,
+    res: express.Response
+  ): Promise<void> =>
+    new Promise((resolve, reject) => {
+      middleware(req, res, (err?: unknown) =>
+        err ? reject(err as Error) : resolve()
+      )
+    })
+
+  const cookieParserMiddleware = cookieParser(
+    secondaryCookieConfig?.cookieSecret ?? []
+  )
+
   const logout: AsyncRequestHandler = async (req, res) => {
+    // Run cookieParser to populate req.signedCookies
+    await runMiddleware(cookieParserMiddleware, req, res)
     logAuditEvent(
       eventCode('sign_out_requested'),
       req,
@@ -282,18 +280,18 @@ export function createSamlIntegration<T extends SessionType>(
       const user = sessions.getUser(req)
       let samlSession = SamlSessionSchema.safeParse(user)
       let url: string
-      if (req.headers.cookie && secondaryCookieConfig) {
-        const secondarySessionId =
-          parseSessionCookie(
-            req.headers.cookie,
-            secondaryCookieConfig?.cookieName
-          ) ?? ''
-        const secondaryUser = await sessions.getSecondaryUserIfNewer(
-          req,
-          secondarySessionId
-        )
-        if (secondaryUser) {
-          samlSession = SamlSessionSchema.safeParse(secondaryUser)
+      if (secondaryCookieConfig) {
+        const secondarySessionId = req.signedCookies[
+          secondaryCookieConfig.cookieName
+        ] as string | undefined
+        if (secondarySessionId) {
+          const secondaryUser = await sessions.getSecondaryUserIfNewer(
+            req,
+            secondarySessionId
+          )
+          if (secondaryUser) {
+            samlSession = SamlSessionSchema.safeParse(secondaryUser)
+          }
         }
       }
       if (samlSession.success) {
@@ -423,13 +421,6 @@ export function createSamlIntegration<T extends SessionType>(
     urlencodedParser,
     cookieParser(secondaryCookieConfig?.cookieSecret ?? ''),
     toRequestHandler(loginCallback)
-  )
-  // Our application directs the browser to one of these endpoints to start
-  // the logout flow. We generate a LogoutRequest.
-  router.get(
-    `/logout`,
-    cookieParser(secondaryCookieConfig?.cookieSecret ?? ''),
-    toRequestHandler(logout)
   )
   // The IDP makes the browser either GET or POST one of these endpoints in two
   // separate logout flows.
