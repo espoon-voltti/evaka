@@ -36,7 +36,8 @@ import { desktopMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
-  FixedSpaceRow
+  FixedSpaceRow,
+  MobileFixedSpaceColumn
 } from 'lib-components/layout/flex-helpers'
 import {
   Desktop,
@@ -400,7 +401,7 @@ export default React.memo(
             <>
               <Gap size="s" />
               <MobileAndTablet data-qa="message-thread-actions-mobile">
-                <FixedSpaceColumn alignItems="center">
+                <MobileFixedSpaceColumn alignItems="center">
                   {messageType === 'MESSAGE' && allowReply ? (
                     <Button
                       appearance="button"
@@ -439,7 +440,7 @@ export default React.memo(
                     onClick={() => setConfirmDelete(true)}
                     text={i18n.messages.deleteThread}
                   />
-                </FixedSpaceColumn>
+                </MobileFixedSpaceColumn>
               </MobileAndTablet>
               <Desktop data-qa="message-thread-actions-desktop">
                 <ActionRow justifyContent="space-between">
