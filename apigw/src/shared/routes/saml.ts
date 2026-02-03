@@ -6,7 +6,7 @@ import * as url from 'node:url'
 
 import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
-import cookieParser from 'cookie-parser'
+import cookieParser, { signedCookie } from 'cookie-parser'
 import express from 'express'
 import _ from 'lodash'
 
@@ -147,16 +147,18 @@ export function createSamlIntegration<T extends SessionType>(
 
   const login: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
+    // Run cookieParser to get req.cookies, but do not pass cookie secret to get access to raw cookies
+    await runMiddleware(cookieParser(), req, res)
     try {
-      let secondarySessionId: string | undefined
+      let secondarySessionCookie: string | undefined
       if (secondaryCookieConfig) {
-        secondarySessionId = req.signedCookies[
+        secondarySessionCookie = req.cookies[
           secondaryCookieConfig.cookieName
         ] as string | undefined
       }
       const idpLoginUrl = await saml.getAuthorizeUrlAsync(
         // no need for validation here, because the value only matters in the login callback request and is validated there
-        getRawUnvalidatedRelayState(req, secondarySessionId) ?? '',
+        getRawUnvalidatedRelayState(req, secondarySessionCookie) ?? '',
         undefined,
         samlRequestOptions(req)
       )
@@ -222,8 +224,21 @@ export function createSamlIntegration<T extends SessionType>(
       const user = await authenticate(req, profile)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
       const relayState = req.body?.RelayState || req.query?.RelayState
+      const secondarySessionCookie =
+        typeof relayState === 'string'
+          ? relayState.split('&secondarySessionCookie=')[1]
+          : undefined
+
+      // secondarySessionCookie from RelayState is the raw signed cookie value to prevent
+      // tampering, so we need to unsign it here
       const secondarySessionId =
-        typeof relayState === 'string' ? relayState.split('=')[1] : undefined
+        secondarySessionCookie && secondaryCookieConfig
+          ? signedCookie(
+              secondarySessionCookie,
+              secondaryCookieConfig.cookieSecret
+            ) || undefined
+          : undefined
+
       await sessions.login(req, user, secondarySessionId)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
@@ -264,13 +279,13 @@ export function createSamlIntegration<T extends SessionType>(
       )
     })
 
-  const cookieParserMiddleware = cookieParser(
-    secondaryCookieConfig?.cookieSecret ?? []
-  )
-
   const logout: AsyncRequestHandler = async (req, res) => {
     // Run cookieParser to populate req.signedCookies
-    await runMiddleware(cookieParserMiddleware, req, res)
+    await runMiddleware(
+      cookieParser(secondaryCookieConfig?.cookieSecret ?? []),
+      req,
+      res
+    )
     logAuditEvent(
       eventCode('sign_out_requested'),
       req,
@@ -409,11 +424,7 @@ export function createSamlIntegration<T extends SessionType>(
   router.use(sessions.middleware)
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
-  router.get(
-    `/login`,
-    cookieParser(secondaryCookieConfig?.cookieSecret ?? ''),
-    toRequestHandler(login)
-  )
+  router.get(`/login`, toRequestHandler(login))
   // The IDP makes the browser POST to this callback during login flow, and
   // a SAML LoginResponse is included in the request.
   router.post(
