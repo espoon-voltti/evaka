@@ -5,6 +5,7 @@
 import type { Property } from 'csstype'
 import styled from 'styled-components'
 
+import { zoomedMobileMax } from '../breakpoints'
 import type { SpacingSize } from '../white-space'
 import { defaultMargins, isSpacingSize } from '../white-space'
 
@@ -89,6 +90,13 @@ export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
     &:last-child {
       margin-bottom: 0;
     }
+  }
+`
+
+export const MobileFixedSpaceColumn = styled(FixedSpaceColumn)`
+  @media (max-width: ${zoomedMobileMax}) {
+    width: 100vw;
+    align-items: center;
   }
 `
 
