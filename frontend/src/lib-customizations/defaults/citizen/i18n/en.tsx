@@ -2464,6 +2464,7 @@ const en: Translations = {
       statuses: {
         DRAFT: 'Draft',
         SENT: 'Sent',
+        HANDLING: 'Being processed',
         HANDLED: 'Handled'
       },
       actions: {

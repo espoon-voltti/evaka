@@ -84,7 +84,10 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
     }
 
-    data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
+    data class SetIncomeStatementHandledBody(
+        val status: IncomeStatementStatus,
+        val handlerNote: String,
+    )
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setIncomeStatementHandled(
@@ -108,7 +111,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     clock.now(),
                     incomeStatementId,
                     body.handlerNote,
-                    body.handled,
+                    body.status,
                 )
             }
         }
@@ -138,6 +141,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.sentStartDate,
                         body.sentEndDate,
                         body.placementValidDate,
+                        body.status ?: emptyList(),
                         body.page,
                         pageSize = 50,
                         body.sortBy ?: IncomeStatementSortParam.SENT_AT,
@@ -186,6 +190,7 @@ data class SearchIncomeStatementsRequest(
     val sentStartDate: LocalDate? = null,
     val sentEndDate: LocalDate? = null,
     val placementValidDate: LocalDate? = null,
+    val status: List<IncomeStatementStatus>? = emptyList(),
 )
 
 enum class IncomeStatementSortParam {

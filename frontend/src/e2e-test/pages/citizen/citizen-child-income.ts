@@ -196,4 +196,14 @@ export class CitizenChildIncomeStatementListPage {
       .click()
     return new CitizenChildIncomeStatementViewPage(this.page)
   }
+
+  async assertNthIncomeStatementDeleteButtonDisabled(
+    nth: number,
+    disabled: boolean
+  ) {
+    await this.childIncomeStatementRows
+      .nth(nth)
+      .findByDataQa('delete-income-statement')
+      .assertDisabled(disabled)
+  }
 }

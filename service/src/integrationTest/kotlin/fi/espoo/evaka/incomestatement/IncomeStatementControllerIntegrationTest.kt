@@ -127,7 +127,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         setIncomeStatementHandled(
             id,
-            IncomeStatementController.SetIncomeStatementHandledBody(true, "is cool"),
+            IncomeStatementController.SetIncomeStatementHandledBody(
+                IncomeStatementStatus.HANDLING,
+                "",
+            ),
         )
 
         val incomeStatement2 = getIncomeStatement(id)
@@ -142,16 +145,19 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 createdAt = incomeStatement.createdAt,
                 modifiedAt = incomeStatement2.modifiedAt,
                 sentAt = incomeStatement.sentAt,
-                status = IncomeStatementStatus.HANDLED,
-                handledAt = now,
-                handlerNote = "is cool",
+                status = IncomeStatementStatus.HANDLING,
+                handledAt = null,
+                handlerNote = "",
             ),
             incomeStatement2,
         )
 
         setIncomeStatementHandled(
             id,
-            IncomeStatementController.SetIncomeStatementHandledBody(false, "is not cool"),
+            IncomeStatementController.SetIncomeStatementHandledBody(
+                IncomeStatementStatus.HANDLED,
+                "is cool",
+            ),
         )
 
         val incomeStatement3 = getIncomeStatement(id)
@@ -166,11 +172,38 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 createdAt = incomeStatement3.createdAt,
                 modifiedAt = incomeStatement3.modifiedAt,
                 sentAt = incomeStatement3.sentAt,
-                status = IncomeStatementStatus.SENT,
+                status = IncomeStatementStatus.HANDLED,
+                handledAt = now,
+                handlerNote = "is cool",
+            ),
+            incomeStatement3,
+        )
+
+        setIncomeStatementHandled(
+            id,
+            IncomeStatementController.SetIncomeStatementHandledBody(
+                IncomeStatementStatus.HANDLING,
+                "is not cool",
+            ),
+        )
+
+        val incomeStatement4 = getIncomeStatement(id)
+        assertEquals(
+            IncomeStatement.HighestFee(
+                id = id,
+                personId = testAdult_1.id,
+                firstName = testAdult_1.firstName,
+                lastName = testAdult_1.lastName,
+                startDate = startDate,
+                endDate = endDate,
+                createdAt = incomeStatement3.createdAt,
+                modifiedAt = incomeStatement3.modifiedAt,
+                sentAt = incomeStatement3.sentAt,
+                status = IncomeStatementStatus.HANDLING,
                 handledAt = null,
                 handlerNote = "is not cool",
             ),
-            incomeStatement3,
+            incomeStatement4,
         )
 
         assertEquals(
@@ -1444,7 +1477,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         setIncomeStatementHandled(
             incomeStatement1.id,
             IncomeStatementController.SetIncomeStatementHandledBody(
-                handled = false,
+                status = IncomeStatementStatus.SENT,
                 handlerNote = "a",
             ),
         )
@@ -1453,7 +1486,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         setIncomeStatementHandled(
             incomeStatement2.id,
             IncomeStatementController.SetIncomeStatementHandledBody(
-                handled = false,
+                status = IncomeStatementStatus.SENT,
                 handlerNote = "b",
             ),
         )

@@ -301,6 +301,7 @@ export type IncomeStatementSortParam =
 export type IncomeStatementStatus =
   | 'DRAFT'
   | 'SENT'
+  | 'HANDLING'
   | 'HANDLED'
 
 /**
@@ -395,6 +396,7 @@ export interface SearchIncomeStatementsRequest {
   sentStartDate: LocalDate | null
   sortBy: IncomeStatementSortParam | null
   sortDirection: SortDirection | null
+  status: IncomeStatementStatus[] | null
   unit: DaycareId | null
 }
 
@@ -410,8 +412,8 @@ export interface SelfEmployed {
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.SetIncomeStatementHandledBody
 */
 export interface SetIncomeStatementHandledBody {
-  handled: boolean
   handlerNote: string
+  status: IncomeStatementStatus
 }
 
 /**

@@ -3,13 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { Page, Element, ElementCollection } from '../../utils/page'
-import { Checkbox, TextInput } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export class IncomeStatementPage {
   #form: Element
   #childOtherInfo: Element
   #noAttachments: Element
-  #handledCheckbox: Checkbox
+  #status: Element
+  #moveToHandlingBtn: Element
+  #returnToSentBtn: Element
+  #markHandledBtn: Element
+  #returnToHandlingBtn: Element
   #noteInput: TextInput
   #submitBtn: Element
   #attachments: ElementCollection
@@ -17,9 +21,13 @@ export class IncomeStatementPage {
     this.#form = page.findByDataQa(`handler-notes-form`)
     this.#childOtherInfo = page.findByDataQa('other-info')
     this.#noAttachments = page.findByDataQa('no-attachments')
-    this.#handledCheckbox = new Checkbox(this.#form.findByDataQa('set-handled'))
+    this.#status = page.findByDataQa('income-statement-status')
+    this.#moveToHandlingBtn = page.findByDataQa('move-to-handling-btn')
+    this.#returnToSentBtn = page.findByDataQa('return-to-sent-btn')
+    this.#markHandledBtn = page.findByDataQa('mark-handled-btn')
+    this.#returnToHandlingBtn = page.findByDataQa('return-to-handling-btn')
     this.#noteInput = new TextInput(this.#form.find('input[type="text"]'))
-    this.#submitBtn = this.#form.find('button')
+    this.#submitBtn = this.#form.findByDataQa('submit-btn')
     this.#attachments = page.findAll('[data-qa="attachments"]')
   }
 
@@ -39,12 +47,24 @@ export class IncomeStatementPage {
     await this.#noteInput.fill(text)
   }
 
-  async setHandled(handled = true) {
-    if (handled) {
-      await this.#handledCheckbox.check()
-    } else {
-      await this.#handledCheckbox.uncheck()
-    }
+  async assertStatus(expectedStatus: string) {
+    await this.#status.assertTextEquals(expectedStatus)
+  }
+
+  async moveToHandling() {
+    await this.#moveToHandlingBtn.click()
+  }
+
+  async returnToSent() {
+    await this.#returnToSentBtn.click()
+  }
+
+  async markHandled() {
+    await this.#markHandledBtn.click()
+  }
+
+  async returnToHandling() {
+    await this.#returnToHandlingBtn.click()
   }
 
   async submit() {

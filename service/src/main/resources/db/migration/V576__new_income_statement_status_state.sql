@@ -1,0 +1,1 @@
+ALTER TYPE income_statement_status ADD VALUE 'HANDLING' BEFORE 'HANDLED';

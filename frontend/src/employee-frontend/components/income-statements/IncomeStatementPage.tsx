@@ -15,6 +15,7 @@ import type {
   Gross,
   IncomeStatement,
   IncomeStatementAttachment,
+  IncomeStatementStatus,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import type { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
@@ -35,7 +36,6 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
@@ -43,6 +43,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import FileUpload, { fileIcon } from 'lib-components/molecules/FileUpload'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -62,6 +63,8 @@ import {
   incomeStatementQuery,
   setIncomeStatementHandledMutation
 } from './queries'
+
+type SentIncomeStatementStatus = 'SENT' | 'HANDLING' | 'HANDLED'
 
 export default React.memo(function IncomeStatementPage() {
   const personId = useIdRouteParam<PersonId>('personId')
@@ -132,9 +135,12 @@ export default React.memo(function IncomeStatementPage() {
                 incomeStatementId={incomeStatementId}
                 onSuccess={() => navigateToPersonProfile(incomeStatement)}
                 initialValues={{
-                  handled: incomeStatement.status === 'HANDLED',
+                  status: incomeStatement.status,
                   handlerNote: incomeStatement.handlerNote
                 }}
+                incomeStatementStatus={
+                  incomeStatement.status as SentIncomeStatementStatus
+                }
               />
             </ContentArea>
           </>
@@ -530,48 +536,148 @@ function EmployeeAttachments({
 function HandlerNotesForm({
   incomeStatementId,
   onSuccess,
-  initialValues
+  initialValues,
+  incomeStatementStatus
 }: {
   incomeStatementId: IncomeStatementId
   onSuccess: () => void
   initialValues: SetIncomeStatementHandledBody
+  incomeStatementStatus: SentIncomeStatementStatus
 }) {
   const { i18n } = useTranslation()
   const [state, setState] = useState(initialValues)
 
   return (
     <FixedSpaceColumn data-qa="handler-notes-form">
-      <H2>{i18n.incomeStatement.handlerNotesForm.title}</H2>
+      <H1>{i18n.incomeStatement.handlerNotesForm.title}</H1>
+      <Gap size="x3s" />
 
-      <Checkbox
-        label={i18n.incomeStatement.handlerNotesForm.handled}
-        checked={state.handled}
-        onChange={(handled) => setState((old) => ({ ...old, handled }))}
-        data-qa="set-handled"
-      />
+      <FixedSpaceRow>
+        <Label>{i18n.incomeStatement.handlerNotesForm.statusLabel}</Label>
+        {incomeStatementStatus !== 'HANDLED' ? (
+          <ExpandingInfo
+            info={i18n.incomeStatement.handlerNotesForm.statusInfo}
+            width="auto"
+          >
+            <div data-qa="income-statement-status">
+              {
+                i18n.incomeStatement.handlerNotesForm.status[
+                  incomeStatementStatus
+                ]
+              }
+            </div>
+          </ExpandingInfo>
+        ) : (
+          <div data-qa="income-statement-status">
+            {
+              i18n.incomeStatement.handlerNotesForm.status[
+                incomeStatementStatus
+              ]
+            }
+          </div>
+        )}
+      </FixedSpaceRow>
+      {incomeStatementStatus === 'SENT' && (
+        <MutateButton
+          text={i18n.incomeStatement.handlerNotesForm.startHandlingBtn}
+          mutation={setIncomeStatementHandledMutation}
+          onClick={() => {
+            setState((old) => ({ ...old, status: 'HANDLING' }))
+            return {
+              incomeStatementId,
+              body: {
+                status: 'HANDLING' as IncomeStatementStatus,
+                handlerNote: state.handlerNote
+              }
+            }
+          }}
+          data-qa="move-to-handling-btn"
+        />
+      )}
 
-      <Label htmlFor="handler-note">
-        {i18n.incomeStatement.handlerNotesForm.handlerNote}
-      </Label>
-      <InputField
-        id="handler-note"
-        type="text"
-        width="L"
-        value={state.handlerNote}
-        onChange={(handlerNote) => setState((old) => ({ ...old, handlerNote }))}
-      />
+      {incomeStatementStatus === 'HANDLING' && (
+        <FixedSpaceRow spacing="XXL">
+          <MutateButton
+            appearance="inline"
+            text={i18n.common.cancel}
+            mutation={setIncomeStatementHandledMutation}
+            onClick={() => {
+              setState((old) => ({ ...old, status: 'SENT' }))
+              return {
+                incomeStatementId,
+                body: {
+                  status: 'SENT' as IncomeStatementStatus,
+                  handlerNote: state.handlerNote
+                }
+              }
+            }}
+            data-qa="return-to-sent-btn"
+          />
+          <MutateButton
+            text={i18n.incomeStatement.handlerNotesForm.markHandledBtn}
+            mutation={setIncomeStatementHandledMutation}
+            onClick={() => {
+              setState((old) => ({ ...old, status: 'HANDLED' }))
+              return {
+                incomeStatementId,
+                body: {
+                  status: 'HANDLED' as IncomeStatementStatus,
+                  handlerNote: state.handlerNote
+                }
+              }
+            }}
+            data-qa="mark-handled-btn"
+          />
+        </FixedSpaceRow>
+      )}
 
-      <MutateButton
-        mutation={setIncomeStatementHandledMutation}
-        primary
-        onClick={() => ({
-          incomeStatementId,
-          body: state
-        })}
-        onSuccess={onSuccess}
-        text={i18n.common.save}
-        textInProgress={i18n.common.saving}
-      />
+      {incomeStatementStatus === 'HANDLED' && (
+        <MutateButton
+          text={i18n.incomeStatement.handlerNotesForm.returnToHandlingBtn}
+          mutation={setIncomeStatementHandledMutation}
+          onClick={() => {
+            setState((old) => ({ ...old, status: 'HANDLING' }))
+            return {
+              incomeStatementId,
+              body: {
+                status: 'HANDLING' as IncomeStatementStatus,
+                handlerNote: state.handlerNote
+              }
+            }
+          }}
+          data-qa="return-to-handling-btn"
+        />
+      )}
+
+      {incomeStatementStatus !== 'HANDLED' && (
+        <>
+          <Label htmlFor="handler-note">
+            {i18n.incomeStatement.handlerNotesForm.handlerNote}
+          </Label>
+          <InputField
+            id="handler-note"
+            type="text"
+            width="L"
+            value={state.handlerNote}
+            onChange={(handlerNote) =>
+              setState((old) => ({ ...old, handlerNote }))
+            }
+          />
+
+          <MutateButton
+            mutation={setIncomeStatementHandledMutation}
+            primary
+            onClick={() => ({
+              incomeStatementId,
+              body: state
+            })}
+            onSuccess={onSuccess}
+            text={i18n.common.save}
+            textInProgress={i18n.common.saving}
+            data-qa="submit-btn"
+          />
+        </>
+      )}
     </FixedSpaceColumn>
   )
 }

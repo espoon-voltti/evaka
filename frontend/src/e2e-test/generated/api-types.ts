@@ -1182,9 +1182,9 @@ export type StaffAttendancePlanId = Id<'StaffAttendancePlan'>
 */
 export interface UpdateIncomeStatementHandledBody {
   employeeId: EmployeeId
-  handled: boolean
   incomeStatementId: IncomeStatementId
   note: string
+  status: IncomeStatementStatus
 }
 
 /**
