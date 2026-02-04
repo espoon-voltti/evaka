@@ -54,6 +54,14 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   }
 `
 
+export const MobileFixedSpaceRow = styled(FixedSpaceRow)`
+  @media (max-width: ${zoomedMobileMax}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${defaultMargins.xs};
+  }
+`
+
 interface FixedSpaceColumnProps {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string

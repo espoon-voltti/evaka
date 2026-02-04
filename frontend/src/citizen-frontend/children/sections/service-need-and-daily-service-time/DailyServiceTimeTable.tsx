@@ -15,7 +15,8 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
-  FixedSpaceRow
+  FixedSpaceRow,
+  MobileFixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import {
   MobileOnly,
@@ -120,14 +121,14 @@ const DailyServiceTimeTableMobile = ({
               key={dailyServiceTime.id}
               data-qa="daily-service-time-table-row-mobile"
             >
-              <FixedSpaceRow justifyContent="space-between">
+              <MobileFixedSpaceRow justifyContent="space-between">
                 <strong data-qa="daily-service-time-date-range">
                   {dailyServiceTime.times.validityPeriod.format()}
                 </strong>
                 <StaticChip color={colorsByTense[tense]}>
                   {t.common.tense[tense]}
                 </StaticChip>
-              </FixedSpaceRow>
+              </MobileFixedSpaceRow>
               <FixedSpaceRow data-qa="daily-service-time-description">
                 <DailyServiceTimeValue value={dailyServiceTime.times} />
               </FixedSpaceRow>
