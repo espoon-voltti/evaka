@@ -21,6 +21,7 @@ import { useTranslations } from 'lib-components/i18n'
 import { faCalendarAlt } from 'lib-icons'
 
 import type { InputInfo } from '../../atoms/form/InputField'
+import { zoomedMobileMax } from '../../breakpoints'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
 
@@ -110,6 +111,11 @@ const DayPickerDiv = styled.div`
   .rdp-selected:not([disabled]) .rdp-day_button {
     color: ${(p) => p.theme.colors.grayscale.g0};
     background-color: ${(p) => p.theme.colors.main.m2Active};
+  }
+  @media (max-width: ${zoomedMobileMax}) {
+    overflow-x: auto;
+    justify-content: flex-start;
+    max-width: calc(100vw - ${defaultMargins.xs});
   }
 `
 
