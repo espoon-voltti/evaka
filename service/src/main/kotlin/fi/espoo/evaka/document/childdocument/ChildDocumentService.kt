@@ -84,30 +84,20 @@ class ChildDocumentService(
             db.read { tx -> tx.getChildDocument(documentId) }
                 ?: throw NotFound("document $documentId not found")
 
-        // Check if this version is still the latest
-        val latestVersion =
+        // Fetch version-specific content
+        val versionContent =
             db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            """
-                    SELECT MAX(version_number)
-                    FROM child_document_published_version
-                    WHERE child_document_id = ${bind(documentId)}
-                """
-                        )
-                    }
-                    .exactlyOneOrNull<Int>()
+                tx.getChildDocumentPublishedVersionContent(documentId, requestedVersion)
             }
+                ?: throw NotFound(
+                    "Published version $requestedVersion not found for document $documentId"
+                )
 
-        if (latestVersion != null && requestedVersion < latestVersion) {
-            logger.warn {
-                "Aborting PDF generation for document $documentId version $requestedVersion " +
-                    "(superseded by version $latestVersion). Leaving document_key NULL."
-            }
-            return
-        }
-
-        val html = generateChildDocumentHtml(document)
+        // Create document with version-specific content for HTML generation
+        val html =
+            generateChildDocumentHtml(
+                document.copy(content = versionContent, publishedContent = versionContent)
+            )
         val pdfBytes = pdfGenerator.render(html)
 
         db.transaction { tx ->

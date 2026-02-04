@@ -324,6 +324,22 @@ data class PublishedVersion(
     val createdAt: HelsinkiDateTime,
 )
 
+fun Database.Read.getChildDocumentPublishedVersionContent(
+    documentId: ChildDocumentId,
+    versionNumber: Int,
+): DocumentContent? =
+    createQuery {
+            sql(
+                """
+            SELECT published_content
+            FROM child_document_published_version
+            WHERE child_document_id = ${bind(documentId)}
+                AND version_number = ${bind(versionNumber)}
+            """
+            )
+        }
+        .exactlyOneOrNull<DocumentContent>()
+
 data class DocumentWriteLock(
     val lockedBy: EvakaUserId,
     val lockedByName: String,
