@@ -39,7 +39,7 @@ import type { RedisClient } from './shared/redis-client.ts'
 import { handleCspReport } from './shared/routes/csp.ts'
 import type { SamlIntegration } from './shared/routes/saml.ts'
 import { validateRelayStateUrl } from './shared/saml/index.ts'
-import { sessionSupport } from './shared/session.ts'
+import { sessionCookie, sessionSupport } from './shared/session.ts'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
   const router = express.Router()
@@ -129,7 +129,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       citizenSessions,
       config.sfi.saml,
       redisClient,
-      config.citizen.cookieSecret
+      config.citizen.cookieSecret,
+      {
+        cookieName: sessionCookie('employee'),
+        cookieSecret: config.employee.cookieSecret
+      }
     )
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
@@ -156,7 +160,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     employeeSfiIntegration = createEmployeeSuomiFiIntegration(
       employeeSessions,
       config.sfi.saml,
-      redisClient
+      redisClient,
+      {
+        cookieName: sessionCookie('citizen'),
+        cookieSecret: config.citizen.cookieSecret
+      }
     )
     router.use('/employee/auth/sfi', employeeSfiIntegration.router)
   }

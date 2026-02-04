@@ -6,7 +6,6 @@ import { SAML } from '@node-saml/node-saml'
 import { z } from 'zod'
 
 import type { EvakaSamlConfig } from '../shared/config.ts'
-import { createSha256Hash } from '../shared/crypto.ts'
 import { logWarn } from '../shared/logging.ts'
 import type { RedisClient } from '../shared/redis-client.ts'
 import { createSamlIntegration } from '../shared/routes/saml.ts'
@@ -47,7 +46,7 @@ const authenticateCitizen = authenticateProfile(
       id: person.id,
       authType: 'sfi',
       userType: 'CITIZEN_STRONG',
-      ssnHash: createSha256Hash(socialSecurityNumber),
+      createdAt: Date.now(),
       samlSession
     }
   }
@@ -57,7 +56,11 @@ export function createCitizenSuomiFiIntegration(
   sessions: Sessions<'citizen'>,
   samlConfig: EvakaSamlConfig,
   redisClient: RedisClient,
-  citizenCookieSecret: string
+  citizenCookieSecret: string,
+  secondaryCookieConfig?: {
+    cookieName: string
+    cookieSecret: string
+  }
 ) {
   return createSamlIntegration({
     sessions,
@@ -70,7 +73,8 @@ export function createCitizenSuomiFiIntegration(
     ),
     authenticate: authenticateCitizen,
     defaultPageUrl: '/',
-    citizenCookieSecret
+    citizenCookieSecret,
+    secondaryCookieConfig
   })
 }
 
@@ -93,7 +97,7 @@ const authenticateEmployee = authenticateProfile(
       userType: 'EMPLOYEE',
       globalRoles: person.globalRoles,
       allScopedRoles: person.allScopedRoles,
-      ssnHash: createSha256Hash(socialSecurityNumber),
+      createdAt: Date.now(),
       samlSession
     }
   }
@@ -102,7 +106,11 @@ const authenticateEmployee = authenticateProfile(
 export function createEmployeeSuomiFiIntegration(
   sessions: Sessions<'employee'>,
   config: EvakaSamlConfig,
-  redisClient: RedisClient
+  redisClient: RedisClient,
+  secondaryCookieConfig?: {
+    cookieName: string
+    cookieSecret: string
+  }
 ) {
   return createSamlIntegration({
     sessions,
@@ -114,6 +122,7 @@ export function createEmployeeSuomiFiIntegration(
       )
     ),
     authenticate: authenticateEmployee,
-    defaultPageUrl: '/employee'
+    defaultPageUrl: '/employee',
+    secondaryCookieConfig
   })
 }

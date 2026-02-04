@@ -6,7 +6,7 @@ import * as url from 'node:url'
 
 import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
 import { AxiosError } from 'axios'
-import cookieParser from 'cookie-parser'
+import cookieParser, { signedCookie } from 'cookie-parser'
 import express from 'express'
 import _ from 'lodash'
 
@@ -21,6 +21,8 @@ import {
 } from '../saml/error-utils.ts'
 import type { AuthenticateProfile } from '../saml/index.ts'
 import {
+  buildRelayStateWithSecondarySessionCookie,
+  extractSecondarySessionCookie,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
@@ -37,6 +39,10 @@ export interface SamlEndpointConfig<T extends SessionType> {
   defaultPageUrl: string
   authenticate: AuthenticateProfile
   citizenCookieSecret?: string
+  secondaryCookieConfig?: {
+    cookieName: string
+    cookieSecret: string
+  }
 }
 
 export type Options = {
@@ -89,7 +95,8 @@ export function createSamlIntegration<T extends SessionType>(
     saml,
     defaultPageUrl,
     authenticate,
-    citizenCookieSecret
+    citizenCookieSecret,
+    secondaryCookieConfig
   } = endpointConfig
 
   const eventCode = (name: SamlAuditEvent) =>
@@ -142,10 +149,24 @@ export function createSamlIntegration<T extends SessionType>(
 
   const login: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(eventCode('sign_in_started'), req, 'Login endpoint called')
+    // Run cookieParser to get req.cookies, but do not pass cookie secret to get access to raw cookies
+    await runMiddleware(cookieParser(), req, res)
     try {
+      let secondarySessionCookie: string | undefined
+      if (secondaryCookieConfig) {
+        secondarySessionCookie = req.cookies[
+          secondaryCookieConfig.cookieName
+        ] as string | undefined
+      }
+      const relayState = getRawUnvalidatedRelayState(req) ?? ''
       const idpLoginUrl = await saml.getAuthorizeUrlAsync(
         // no need for validation here, because the value only matters in the login callback request and is validated there
-        getRawUnvalidatedRelayState(req) ?? '',
+        secondarySessionCookie
+          ? buildRelayStateWithSecondarySessionCookie(
+              relayState,
+              secondarySessionCookie
+            )
+          : relayState,
         undefined,
         samlRequestOptions(req)
       )
@@ -209,7 +230,16 @@ export function createSamlIntegration<T extends SessionType>(
     }
     try {
       const user = await authenticate(req, profile)
-      await sessions.login(req, user)
+      const secondarySessionCookie = extractSecondarySessionCookie(req)
+      const secondarySessionId =
+        secondarySessionCookie && secondaryCookieConfig
+          ? signedCookie(
+              secondarySessionCookie,
+              secondaryCookieConfig.cookieSecret
+            ) || undefined
+          : undefined
+
+      await sessions.login(req, user, secondarySessionId)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
       // Set device cookie for citizen authentication
@@ -238,6 +268,17 @@ export function createSamlIntegration<T extends SessionType>(
     }
   }
 
+  const runMiddleware = (
+    middleware: express.RequestHandler,
+    req: express.Request,
+    res: express.Response
+  ): Promise<void> =>
+    new Promise((resolve, reject) => {
+      middleware(req, res, (err?: unknown) =>
+        err ? reject(err as Error) : resolve()
+      )
+    })
+
   const logout: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(
       eventCode('sign_out_requested'),
@@ -246,8 +287,14 @@ export function createSamlIntegration<T extends SessionType>(
     )
     try {
       const user = sessions.getUser(req)
-      const samlSession = SamlSessionSchema.safeParse(user)
+      let samlSession = SamlSessionSchema.safeParse(user)
       let url: string
+      if (secondaryCookieConfig) {
+        const secondaryUser = await sessions.getSecondaryUserIfNewer(req)
+        if (secondaryUser) {
+          samlSession = SamlSessionSchema.safeParse(secondaryUser)
+        }
+      }
       if (samlSession.success) {
         url = await saml.getLogoutUrlAsync(
           samlSession.data,
@@ -361,9 +408,6 @@ export function createSamlIntegration<T extends SessionType>(
   // * HTTP POST: the browser makes a POST request with URI-encoded form body
   const router = express.Router()
   router.use(sessions.middleware)
-  if (citizenCookieSecret) {
-    router.use(cookieParser(citizenCookieSecret))
-  }
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
   router.get(`/login`, toRequestHandler(login))
@@ -372,11 +416,9 @@ export function createSamlIntegration<T extends SessionType>(
   router.post(
     `/login/callback`,
     urlencodedParser,
+    cookieParser(secondaryCookieConfig?.cookieSecret ?? ''),
     toRequestHandler(loginCallback)
   )
-  // Our application directs the browser to one of these endpoints to start
-  // the logout flow. We generate a LogoutRequest.
-  router.get(`/logout`, toRequestHandler(logout))
   // The IDP makes the browser either GET or POST one of these endpoints in two
   // separate logout flows.
   // 1. SP-initiated logout. In this case the logout flow started from us
