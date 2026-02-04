@@ -84,20 +84,18 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
                                 {i18n.common.userTypes[version.createdBy.type]})
                               </span>
                               {version.downloadPath !== null && (
-                                <>
-                                  <Button
-                                    appearance="inline"
-                                    icon={faArrowDownToLine}
-                                    text={i18n.metadata.downloadPdf}
-                                    onClick={() => {
-                                      window.open(
-                                        `/api${version.downloadPath}`,
-                                        '_blank',
-                                        'noopener,noreferrer'
-                                      )
-                                    }}
-                                  />
-                                </>
+                                <Button
+                                  appearance="inline"
+                                  icon={faArrowDownToLine}
+                                  text={i18n.metadata.downloadPdf}
+                                  onClick={() => {
+                                    window.open(
+                                      `/api${version.downloadPath}`,
+                                      '_blank',
+                                      'noopener,noreferrer'
+                                    )
+                                  }}
+                                />
                               )}
                             </FixedSpaceRow>
                           </li>
