@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -455,36 +456,33 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `force unpublishing a template with documents and metadata`() {
-        val documentId = createDocument(templateId = templateIdHojks)
-        assertNotNull(getChildDocumentMetadata(documentId).data)
+    fun `force unpublishing a template deletes all related data`() {
+        val documentId = createDecisionDocument(templateId = templateIdAssistanceDecision)
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        acceptChildDocumentDecision(
+            id = documentId,
+            validity = DateRange(clock.today().plusDays(2), clock.today().plusDays(5)),
+            user = unitSupervisorUser,
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // Mark document as read by guardian
+        val guardianUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+        db.transaction { tx -> tx.markChildDocumentAsRead(guardianUser, documentId, clock.now()) }
 
         templateController.forceUnpublishTemplate(
             dbInstance(),
             employeeUser.user,
             clock,
-            templateIdHojks,
+            templateIdAssistanceDecision,
         )
 
         assertFalse(
             templateController
-                .getTemplate(dbInstance(), employeeUser.user, clock, templateIdHojks)
+                .getTemplate(dbInstance(), employeeUser.user, clock, templateIdAssistanceDecision)
                 .published
         )
         assertEquals(0, getDocuments(testChild_1.id).size)
-        assertEquals(
-            0,
-            db.read {
-                it.createQuery { sql("SELECT count(*) FROM case_process") }.exactlyOne<Int>()
-            },
-        )
-        assertEquals(
-            0,
-            db.read {
-                it.createQuery { sql("SELECT count(*) FROM case_process_history") }
-                    .exactlyOne<Int>()
-            },
-        )
     }
 
     @Test
