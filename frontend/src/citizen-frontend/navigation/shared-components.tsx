@@ -10,6 +10,7 @@ import styled, { css } from 'styled-components'
 import { useBoolean } from 'lib-common/form/hooks'
 import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import NavLink from 'lib-components/atoms/NavLink'
+import { zoomedMobileMax } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -49,6 +50,10 @@ const dropDownButtonStyles = css`
   line-height: 2rem;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-bottom: 4px solid transparent;
+
+  @media (max-width: ${zoomedMobileMax}) {
+    padding: ${defaultMargins.xs} ${defaultMargins.xs};
+  }
 
   &:hover {
     color: ${colors.main.m2Hover};
