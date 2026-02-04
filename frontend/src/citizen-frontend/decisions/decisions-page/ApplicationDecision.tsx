@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-import { useLocation } from 'wouter'
+import styled from 'styled-components'
 
-import type { Action } from 'lib-common/generated/action'
 import type {
   DecisionStatus,
   DecisionType
@@ -15,36 +14,24 @@ import type {
   DecisionId
 } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
-import { StaticChip } from 'lib-components/atoms/Chip'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import IconChip from 'lib-components/atoms/IconChip'
+import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import ListGrid from 'lib-components/layout/ListGrid'
-import { H3, Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { H3, H4 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { theme } from 'lib-customizations/common'
 
 import { applicationMetadataQuery } from '../../applications/queries'
 import { useTranslation } from '../../localization'
-import { MetadataSection } from '../../metadata/MetadataSection'
-import { PdfLink } from '../PdfLink'
-
-const preschoolInfoTypes: DecisionType[] = [
-  'PRESCHOOL',
-  'PRESCHOOL_DAYCARE',
-  'PRESCHOOL_CLUB',
-  'PREPARATORY_EDUCATION'
-]
+import { MetadataResultSection } from '../../metadata/MetadataSection'
+import { iconPropsByStatus } from '../shared'
 
 interface Props {
   id: DecisionId
   applicationId: ApplicationId
   type: DecisionType
   sentDate: LocalDate
-  resolved: LocalDate | null
   status: DecisionStatus
-  permittedActions: Set<Action.Citizen.Decision>
   canDecide: boolean
 }
 
@@ -53,13 +40,11 @@ export default React.memo(function ApplicationDecision({
   applicationId,
   type,
   sentDate,
-  resolved,
   status,
-  permittedActions,
   canDecide
 }: Props) {
   const t = useTranslation()
-  const [open, setOpen] = useState(resolved === null)
+  const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((o) => !o), [])
 
   return (
@@ -68,104 +53,56 @@ export default React.memo(function ApplicationDecision({
       open={open}
       toggleOpen={toggleOpen}
       title={
-        <H3
-          noMargin
-          data-qa="title-decision-type"
-          aria-label={`${t.decisions.applicationDecisions.decision} ${
+        <div
+          aria-label={`${
             t.decisions.applicationDecisions.type[type]
           } ${sentDate.format()} - ${
             t.decisions.applicationDecisions.status[status]
           }`}
         >
-          {`${t.decisions.applicationDecisions.decision} ${
-            t.decisions.applicationDecisions.type[type]
-          } ${sentDate.format()}`}
-        </H3>
+          <H4 noMargin data-qa="decision-sent-date">
+            {sentDate.format()}
+          </H4>
+          <H3 noMargin data-qa="title-decision-type">
+            {t.decisions.applicationDecisions.type[type]}
+          </H3>
+        </div>
       }
-      countIndicator={resolved === null && canDecide ? 1 : 0}
+      alwaysShownContent={
+        <AlwaysShownCollapseContent>
+          <IconChip
+            {...iconPropsByStatus[status]}
+            label={t.decisions.applicationDecisions.status[status]}
+            data-qa="decision-status"
+          />
+          {canDecide && (
+            <ResponsiveLinkButton
+              $style="secondary"
+              href="/decisions/pending"
+              data-qa={`button-confirm-decisions-${applicationId}`}
+            >
+              {t.decisions.applicationDecisions.confirmationLink}
+            </ResponsiveLinkButton>
+          )}
+        </AlwaysShownCollapseContent>
+      }
       paddingHorizontal="0"
       paddingVertical="0"
       data-qa={`application-decision-${id}`}
     >
-      <Gap size="xs" />
-      <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
-        <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-        <span data-qa="decision-sent-date">{sentDate.format()}</span>
-        {resolved !== null && (
-          <>
-            <Label>{t.decisions.applicationDecisions.resolved}</Label>
-            <span data-qa="decision-resolved-date">{resolved.format()}</span>
-          </>
-        )}
-        <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-        <StaticChip
-          color={decisionStatusColors[status]}
-          fitContent
-          data-qa="decision-status"
-          data-qa-status={status}
-        >
-          {t.decisions.applicationDecisions.status[status]}
-        </StaticChip>
-      </ListGrid>
-      {status === 'PENDING'
-        ? canDecide && (
-            <ConfirmationDialog applicationId={applicationId} type={type} />
-          )
-        : permittedActions.has('DOWNLOAD_PDF') && (
-            <>
-              <Gap size="m" />
-              <PdfLink decisionId={id} />
-            </>
-          )}
       {featureFlags.showMetadataToCitizen && (
-        <>
-          <Gap size="s" />
-          <MetadataSection
-            data-qa={applicationId}
-            query={applicationMetadataQuery({ applicationId })}
-          />
-        </>
+        <MetadataResultSection
+          query={applicationMetadataQuery({ applicationId })}
+        />
       )}
     </CollapsibleContentArea>
   )
 })
 
-const decisionStatusColors: Record<DecisionStatus, string> = {
-  PENDING: theme.colors.accents.a5orangeLight,
-  ACCEPTED: theme.colors.accents.a3emerald,
-  REJECTED: theme.colors.status.danger
-}
-
-const ConfirmationDialog = React.memo(function ConfirmationDialog({
-  applicationId,
-  type
-}: {
-  applicationId: string
-  type: DecisionType
-}) {
-  const t = useTranslation()
-  const [, navigate] = useLocation()
-
-  return (
-    <>
-      <P width="800px">
-        {
-          t.decisions.applicationDecisions.confirmationInfo[
-            preschoolInfoTypes.includes(type) ? 'preschool' : 'default'
-          ]
-        }
-      </P>
-      <P width="800px">
-        <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
-      </P>
-      <ButtonContainer>
-        <LegacyButton
-          primary
-          text={t.decisions.applicationDecisions.confirmationLink}
-          onClick={() => navigate(`/decisions/by-application/${applicationId}`)}
-          data-qa={`button-confirm-decisions-${applicationId}`}
-        />
-      </ButtonContainer>
-    </>
-  )
-})
+const AlwaysShownCollapseContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${defaultMargins.s};
+  margin-top: ${defaultMargins.s};
+`

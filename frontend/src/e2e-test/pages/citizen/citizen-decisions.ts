@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { DecisionId } from 'lib-common/generated/api-types/shared'
 
 import { waitUntilEqual } from '../../utils'
 import type { Page, Element } from '../../utils/page'
@@ -101,10 +101,13 @@ export default class CitizenDecisionsPage {
       .waitUntilHidden()
   }
 
-  async navigateToDecisionResponse(applicationId: string) {
+  async navigateToDecisionResponse(
+    applicationId: string,
+    unresolvedCount: number
+  ) {
     await this.#decisionResponseButton(applicationId).click()
     const responsePage = new CitizenDecisionResponsePage(this.page)
-    await responsePage.assertPageTitle()
+    await responsePage.assertPageTitle(unresolvedCount)
     return responsePage
   }
 
@@ -115,8 +118,12 @@ export default class CitizenDecisionsPage {
       .assertCount(n)
   }
 
-  async viewDecisionMetadata(applicationId: ApplicationId) {
-    await this.page.findByDataQa(`metadata-toggle-${applicationId}`).click()
+  async viewDecisionMetadata(decisionId: DecisionId) {
+    await this.page
+      .findByDataQa(`application-decision-${decisionId}`)
+      .findAll('button')
+      .first()
+      .click()
     await this.page.findByDataQa('process-number-field').waitUntilVisible()
   }
 }
@@ -142,12 +149,14 @@ class CitizenDecisionResponsePage {
   #decisionStatus = (decisionId: string) =>
     this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
 
-  async assertPageTitle() {
-    await this.#title.assertTextEquals('Päätökset')
-  }
-
-  async assertUnresolvedDecisionsCount(count: number) {
-    return assertUnresolvedDecisionsCount(this.page, count)
+  async assertPageTitle(unresolvedCount: number) {
+    await this.#title.assertTextEquals(
+      unresolvedCount === 0
+        ? 'Vahvistettavat paikat'
+        : unresolvedCount === 1
+          ? '1 paikka odottaa huoltajan vahvistusta'
+          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`
+    )
   }
 
   async assertDecisionCannotBeAccepted(decisionId: string) {
@@ -190,6 +199,18 @@ class CitizenDecisionResponsePage {
       .find('[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]')
       .click()
   }
+
+  async assertNoDecisionsVisible() {
+    const decisions = this.page.findAll('[data-qa="decision-child-name"]')
+    const count = await decisions.count()
+    if (count > 0) {
+      throw new Error(`Expected no decisions to be visible, but found ${count}`)
+    }
+  }
+
+  async reload() {
+    return this.page.reload()
+  }
 }
 
 async function assertUnresolvedDecisionsCount(page: Page, count: number) {
@@ -200,10 +221,12 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   }
 
   if (count === 1) {
-    return await element.assertTextEquals('1 päätös odottaa vahvistustasi')
+    return await element.assertTextEquals(
+      '1 paikka odottaa huoltajan vahvistusta'
+    )
   }
 
   return await element.assertTextEquals(
-    `${count} päätöstä odottaa vahvistustasi`
+    `${count} paikkaa odottaa huoltajan vahvistusta`
   )
 }

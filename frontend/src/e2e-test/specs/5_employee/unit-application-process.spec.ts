@@ -258,7 +258,8 @@ describe('Unit groups - placement plans / proposals', () => {
     await header.selectTab('decisions')
     let citizenDecisionsPage = new CitizenDecisionsPage(page)
     let responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
-      testApplication.id
+      testApplication.id,
+      2
     )
     await responsePage.acceptDecision(decision1.id)
     await page.close()
@@ -279,7 +280,8 @@ describe('Unit groups - placement plans / proposals', () => {
     await header.selectTab('decisions')
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
-      testApplication.id
+      testApplication.id,
+      1
     )
     await responsePage.acceptDecision(decision2.id)
     await page.close()
