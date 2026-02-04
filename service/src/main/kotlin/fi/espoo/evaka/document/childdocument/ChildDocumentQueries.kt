@@ -90,7 +90,7 @@ SELECT
     cd.modified_at, 
     modified_by.name AS modified_by,
     latest_version.published_at,
-    latest_version.published_by,
+    latest_version.published_by_name AS published_by,
     dt.id as template_id, 
     dt.name as template_name,
     ch.first_name AS child_first_name,
@@ -113,14 +113,7 @@ FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person ch ON cd.child_id = ch.id
 LEFT JOIN evaka_user modified_by ON cd.modified_by = modified_by.id
-LEFT JOIN LATERAL (
-    SELECT v.created_at AS published_at, u.name AS published_by
-    FROM child_document_published_version v
-    JOIN evaka_user u ON v.created_by = u.id
-    WHERE v.child_document_id = cd.id
-    ORDER BY v.version_number DESC
-    LIMIT 1
-) latest_version ON true
+LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN evaka_user decision_maker ON cd.decision_maker = decision_maker.employee_id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
@@ -189,7 +182,7 @@ SELECT
     cd.status,
     latest_version.published_at,
     cd.archived_at,
-    COALESCE(latest_version.pdf_available, false) as pdf_available,
+    latest_version.document_key IS NOT NULL as pdf_available,
     cd.content,
     latest_version.published_content,
     p.id as child_id,
@@ -221,13 +214,7 @@ SELECT
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
-LEFT JOIN LATERAL (
-    SELECT v.created_at AS published_at, v.published_content, v.document_key IS NOT NULL as pdf_available
-    FROM child_document_published_version v
-    WHERE v.child_document_id = cd.id
-    ORDER BY v.version_number DESC
-    LIMIT 1
-) latest_version ON true
+LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 LEFT JOIN daycare d ON d.id = cdd.daycare_id
 WHERE cd.id = ${bind(id)}
@@ -537,13 +524,7 @@ fun Database.Transaction.markCompletedAndPublish(
             WITH documents_to_publish AS (
                 SELECT cd.id, cd.content
                 FROM child_document cd
-                LEFT JOIN LATERAL (
-                    SELECT v.published_content
-                    FROM child_document_published_version v
-                    WHERE v.child_document_id = cd.id
-                    ORDER BY v.version_number DESC
-                    LIMIT 1
-                ) latest_version ON true
+                LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
                 WHERE cd.id = ANY(${bind(ids)})
                   AND (latest_version.published_content IS NULL OR cd.content != latest_version.published_content)
             ),

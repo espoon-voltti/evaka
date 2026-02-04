@@ -49,13 +49,7 @@ SELECT
 FROM child_document cd
 JOIN document_template dt ON cd.template_id = dt.id
 JOIN person child ON cd.child_id = child.id
-LEFT JOIN LATERAL (
-    SELECT v.created_at AS published_at
-    FROM child_document_published_version v
-    WHERE v.child_document_id = cd.id
-    ORDER BY v.version_number DESC
-    LIMIT 1
-) latest_version ON true
+LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
 LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
 WHERE ${predicate(childDocumentPredicate.forTable("cd"))}
@@ -132,13 +126,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                 FROM child_document cd
                 JOIN document_template dt on cd.template_id = dt.id
                 JOIN person p on cd.child_id = p.id
-                LEFT JOIN LATERAL (
-                    SELECT v.created_at AS published_at, v.published_content
-                    FROM child_document_published_version v
-                    WHERE v.child_document_id = cd.id
-                    ORDER BY v.version_number DESC
-                    LIMIT 1
-                ) latest_version ON true
+                LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
                 LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
                 WHERE cd.id = ${bind(id)} AND latest_version.published_at IS NOT NULL
                 """
