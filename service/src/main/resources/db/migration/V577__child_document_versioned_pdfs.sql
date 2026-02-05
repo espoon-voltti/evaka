@@ -31,9 +31,17 @@ FROM child_document cd
 WHERE cd.published_at IS NOT NULL;
 
 ALTER TABLE child_document
-    DROP CONSTRAINT published_consistency,
-    DROP COLUMN published_at,
-    DROP COLUMN published_by,
-    DROP COLUMN published_content,
-    DROP COLUMN document_key;
+    DROP CONSTRAINT published_consistency;
+
+ALTER TABLE child_document
+    RENAME COLUMN published_at TO deprecated_published_at;
+
+ALTER TABLE child_document
+    RENAME COLUMN published_by TO deprecated_published_by;
+
+ALTER TABLE child_document
+    RENAME COLUMN published_content TO deprecated_published_content;
+
+ALTER TABLE child_document
+    RENAME COLUMN document_key TO deprecated_document_key;
 
