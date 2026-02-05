@@ -132,13 +132,22 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @RequestBody body: SearchIncomeStatementsRequest,
     ): PagedIncomeStatementsAwaitingHandler {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { it ->
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
                         Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER,
                     )
+
+                    if (
+                        body.status?.any {
+                            it == IncomeStatementStatus.DRAFT || it == IncomeStatementStatus.HANDLED
+                        } ?: false
+                    ) {
+                        throw BadRequest("Invalid status filters")
+                    }
+
                     it.fetchIncomeStatementsAwaitingHandler(
                         clock.now().toLocalDate(),
                         body.areas ?: emptyList(),
