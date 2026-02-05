@@ -34,6 +34,9 @@ ALTER TABLE child_document
     DROP CONSTRAINT published_consistency;
 
 ALTER TABLE child_document
+    DROP CONSTRAINT publishing_by_status;
+
+ALTER TABLE child_document
     RENAME COLUMN published_at TO deprecated_published_at;
 
 ALTER TABLE child_document
@@ -44,4 +47,3 @@ ALTER TABLE child_document
 
 ALTER TABLE child_document
     RENAME COLUMN document_key TO deprecated_document_key;
-
