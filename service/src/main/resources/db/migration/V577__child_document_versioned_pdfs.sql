@@ -10,8 +10,8 @@ CREATE TABLE child_document_published_version (
     CONSTRAINT unique_version_per_document UNIQUE(child_document_id, version_number)
 );
 
-CREATE INDEX fk$child_document_published_version_document_id
-    ON child_document_published_version(child_document_id);
+CREATE INDEX fk$child_document_published_version_document_id_version_number
+    ON child_document_published_version(child_document_id, version_number);
 
 CREATE INDEX fk$child_document_published_version_created_by
     ON child_document_published_version(created_by);
