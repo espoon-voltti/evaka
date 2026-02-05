@@ -552,9 +552,10 @@ class ApplicationControllerCitizen(
                             clock,
                             Action.Citizen.Decision.READ,
                         )
+                    val childIds = tx.getCitizenChildIds(clock.today(), user.id)
                     val pendingDecisions =
                         tx.getDecisionsByGuardian(user.id, filter).filter {
-                            it.status == DecisionStatus.PENDING
+                            it.status == DecisionStatus.PENDING && it.childId in childIds
                         }
                     val decidableApplications =
                         getDecidableApplications(
