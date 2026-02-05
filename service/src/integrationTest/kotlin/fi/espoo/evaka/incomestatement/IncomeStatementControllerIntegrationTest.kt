@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPartnership
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -210,6 +211,29 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             listOf(false),
             getIncomeStatements(citizenId).data.map { it.status == IncomeStatementStatus.HANDLED },
         )
+    }
+
+    @Test
+    fun `cannot set to draft`() {
+        val incomeStatement =
+            DevIncomeStatement(
+                personId = citizenId,
+                data = IncomeStatementBody.HighestFee(today, today.plusDays(30)),
+                status = IncomeStatementStatus.SENT,
+                sentAt = now,
+            )
+        db.transaction { it.insert(incomeStatement) }
+        val id = incomeStatement.id
+
+        assertThrows<BadRequest> {
+            setIncomeStatementHandled(
+                id,
+                IncomeStatementController.SetIncomeStatementHandledBody(
+                    IncomeStatementStatus.DRAFT,
+                    "",
+                ),
+            )
+        }
     }
 
     @Test

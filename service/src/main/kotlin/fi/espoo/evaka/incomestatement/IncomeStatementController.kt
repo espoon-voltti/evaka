@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -106,6 +107,11 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     Action.IncomeStatement.UPDATE_HANDLED,
                     incomeStatementId,
                 )
+
+                if (body.status == IncomeStatementStatus.DRAFT) {
+                    throw BadRequest("Cannot set income statement status to DRAFT")
+                }
+
                 tx.updateIncomeStatementHandled(
                     user,
                     clock.now(),
