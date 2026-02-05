@@ -594,9 +594,10 @@ const sv: Translations = {
       childStartsInfo: (
         firstName: string,
         startDate: string,
-        unitName: string
+        unitName: string,
+        calendarOpenDate: string
       ) =>
-        `${firstName} kommer att börja på enheten ${unitName} den ${startDate}. Registreringen av närvaro börjar en månad före startdatumet.`
+        `${firstName} kommer att börja på enheten ${unitName} den ${startDate}. Registreringen av närvaro börjar den ${calendarOpenDate}.`
     }
   },
   messages: {

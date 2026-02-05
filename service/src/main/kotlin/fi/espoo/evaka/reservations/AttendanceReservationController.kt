@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -78,6 +79,7 @@ class AttendanceReservationController(
     private val ac: AccessControl,
     private val featureConfig: FeatureConfig,
     private val env: EvakaEnv,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     @GetMapping("/employee/attendance-reservations")
     fun getAttendanceReservations(
@@ -326,6 +328,7 @@ class AttendanceReservationController(
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
                     )
                 }
             }

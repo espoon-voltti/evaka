@@ -747,7 +747,8 @@ describe.each(envs)(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
-        child2StartDate
+        child2StartDate,
+        child2StartDate.subDays(30) // Calendar opens 30 days before placement start
       )
     })
     test('Citizen sees an info box about more than one child starting later than the selected range end date', async () => {
@@ -799,7 +800,8 @@ describe.each(envs)(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
-        child2StartDate
+        child2StartDate,
+        child2StartDate.subDays(30) // Calendar opens 30 days before placement start
       )
 
       const infoBoxChild3 = reservationsModal.getInfoBox(testChildRestricted.id)
@@ -807,7 +809,8 @@ describe.each(envs)(
         infoBoxChild3,
         testChildRestricted,
         testDaycare.name,
-        child3StartDate
+        child3StartDate,
+        child3StartDate.subDays(30) // Calendar opens 30 days before placement start
       )
     })
 
@@ -849,7 +852,8 @@ describe.each(envs)(
         infoBoxChild2,
         testChild2,
         testDaycare.name,
-        child2StartDate
+        child2StartDate,
+        child2StartDate.subDays(30) // Calendar opens 30 days before placement start
       )
     })
   }

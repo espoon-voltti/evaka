@@ -35,6 +35,7 @@ export interface ChildAndPermittedActions {
   preferredName: string
   serviceApplicationCreationPossible: boolean
   unit: Unit | null
+  upcomingPlacementCalendarOpenDate: LocalDate | null
   upcomingPlacementIsCalendarOpen: boolean | null
   upcomingPlacementStartDate: LocalDate | null
   upcomingPlacementType: PlacementType | null
@@ -61,6 +62,7 @@ export interface Unit {
 export function deserializeJsonChildAndPermittedActions(json: JsonOf<ChildAndPermittedActions>): ChildAndPermittedActions {
   return {
     ...json,
+    upcomingPlacementCalendarOpenDate: (json.upcomingPlacementCalendarOpenDate != null) ? LocalDate.parseIso(json.upcomingPlacementCalendarOpenDate) : null,
     upcomingPlacementStartDate: (json.upcomingPlacementStartDate != null) ? LocalDate.parseIso(json.upcomingPlacementStartDate) : null
   }
 }

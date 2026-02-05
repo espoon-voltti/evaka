@@ -201,6 +201,7 @@ fun createReservationsAndAbsences(
     requests: List<DailyReservationRequest>,
     citizenReservationThresholdHours: Long,
     plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
+    calendarOpenBeforePlacementDays: Int,
 ): CreateReservationsResult? {
     if (requests.isEmpty()) return null
 
@@ -223,7 +224,12 @@ fun createReservationsAndAbsences(
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
 
     val childIds = requests.map { it.childId }.toSet()
-    val placements = tx.getReservationPlacements(childIds, reservationsRange.asDateRange())
+    val placements =
+        tx.getReservationPlacements(
+            childIds,
+            reservationsRange.asDateRange(),
+            calendarOpenBeforePlacementDays,
+        )
     val plannedAbsenceEnabledRanges =
         tx.getPlannedAbsenceEnabledRanges(
             childIds,
