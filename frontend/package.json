@@ -24,7 +24,6 @@
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
     "@fortawesome/react-fontawesome": "3.1.1",
-    "@react-spring/rafz": "10.0.3",
     "@react-spring/web": "10.0.3",
     "@sentry/browser": "10.37.0",
     "@sentry/react": "10.37.0",
@@ -36,7 +35,6 @@
     "chartjs-plugin-annotation": "3.1.0",
     "classnames": "2.5.1",
     "compute-scroll-into-view": "3.1.1",
-    "core-js": "3.48.0",
     "csstype": "3.2.3",
     "date-fns": "4.1.0",
     "date-fns-tz": "3.2.0",
@@ -62,7 +60,6 @@
     "react-select": "5.10.2",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.1.19",
-    "tslib": "2.8.1",
     "wouter": "3.9.0"
   },
   "devDependencies": {
@@ -88,7 +85,6 @@
     "@vitejs/plugin-legacy": "7.2.1",
     "@vitejs/plugin-react": "5.1.2",
     "concurrently": "9.2.1",
-    "csstype": "3.2.3",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
