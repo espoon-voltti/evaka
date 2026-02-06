@@ -6,20 +6,19 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ServiceNeedOption
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -31,22 +30,27 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     private lateinit var missingServiceNeedReportController: MissingServiceNeedReportController
     val today: LocalDate = LocalDate.now()
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val voucherDaycare =
+        DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
+    private val child = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insert(admin)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testVoucherDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(voucherDaycare)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
         }
     }
 
     @Test
     fun `child without service need is reported`() {
-        insertPlacement(testChild_1.id, today, today, testDaycare)
+        insertPlacement(child.id, today, today, daycare)
         val rows =
             missingServiceNeedReportController.getMissingServiceNeedReport(
                 dbInstance(),
@@ -60,13 +64,13 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
             .isEqualTo(
                 listOf(
                     MissingServiceNeedReportResultRow(
-                        careAreaName = testArea.name,
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
-                        unitName = testDaycare.name,
+                        careAreaName = area.name,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        unitName = daycare.name,
                         daysWithoutServiceNeed = 1,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
                         defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
                     )
                 )
@@ -75,7 +79,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `child without service need in service voucher unit shown on service voucher care area`() {
-        insertPlacement(testChild_1.id, today, today, testVoucherDaycare)
+        insertPlacement(child.id, today, today, voucherDaycare)
         val rows =
             missingServiceNeedReportController.getMissingServiceNeedReport(
                 dbInstance(),
@@ -90,12 +94,12 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                 listOf(
                     MissingServiceNeedReportResultRow(
                         careAreaName = "palvelusetelialue",
-                        childId = testChild_1.id,
-                        unitId = testVoucherDaycare.id,
-                        unitName = testVoucherDaycare.name,
+                        childId = child.id,
+                        unitId = voucherDaycare.id,
+                        unitName = voucherDaycare.name,
                         daysWithoutServiceNeed = 1,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
                         defaultOption = ServiceNeedOption.fromFullServiceNeed(snDefaultDaycare),
                     )
                 )
