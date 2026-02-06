@@ -6,6 +6,9 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -13,12 +16,8 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testRoundTheClockDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -30,15 +29,26 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
 
     private val clock = MockEvakaClock(2020, 10, 26, 0, 10)
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id)
+    private val allDayTimeRange = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59))
+    private val roundTheClockDaycare =
+        DevDaycare(
+            areaId = area.id,
+            shiftCareOperationTimes = List(7) { allDayTimeRange },
+            shiftCareOpenOnHolidays = true,
+        )
+    private val child = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testRoundTheClockDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(roundTheClockDaycare)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -49,8 +59,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         db.transaction {
             it.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 arrived = arrived,
                 departed = null,
             )
@@ -70,15 +80,15 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testRoundTheClockDaycare.id,
+                    childId = child.id,
+                    unitId = roundTheClockDaycare.id,
                     startDate = clock.now().toLocalDate().minusDays(1),
                     endDate = clock.now().toLocalDate().plusDays(1),
                 )
             )
             it.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
+                childId = child.id,
+                unitId = roundTheClockDaycare.id,
                 arrived = arrived,
                 departed = null,
             )
@@ -99,15 +109,15 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Placement to the attendance's unit has ended
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testRoundTheClockDaycare.id,
+                    childId = child.id,
+                    unitId = roundTheClockDaycare.id,
                     startDate = clock.now().toLocalDate().minusDays(2),
                     endDate = clock.now().toLocalDate().minusDays(1),
                 )
             )
             it.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
+                childId = child.id,
+                unitId = roundTheClockDaycare.id,
                 arrived = arrived,
                 departed = null,
             )
@@ -115,8 +125,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // A placement to another unit is active
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = clock.now().toLocalDate(),
                     endDate = clock.now().toLocalDate().plusDays(1),
                 )
@@ -138,8 +148,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Placement to another unit is active
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = clock.now().toLocalDate().minusDays(2),
                     endDate = clock.now().toLocalDate().plusDays(1),
                 )
@@ -147,8 +157,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Backup placement to attendance's unit is active
             it.insert(
                 DevBackupCare(
-                    childId = testChild_1.id,
-                    unitId = testRoundTheClockDaycare.id,
+                    childId = child.id,
+                    unitId = roundTheClockDaycare.id,
                     groupId = null,
                     period =
                         FiniteDateRange(
@@ -158,8 +168,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
             it.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
+                childId = child.id,
+                unitId = roundTheClockDaycare.id,
                 arrived = arrived,
                 departed = null,
             )
@@ -180,8 +190,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Placement to another unit is active
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = clock.now().toLocalDate().minusDays(2),
                     endDate = clock.now().toLocalDate().plusDays(1),
                 )
@@ -189,8 +199,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Backup placement to attendance's unit has ended
             it.insert(
                 DevBackupCare(
-                    childId = testChild_1.id,
-                    unitId = testRoundTheClockDaycare.id,
+                    childId = child.id,
+                    unitId = roundTheClockDaycare.id,
                     groupId = null,
                     period =
                         FiniteDateRange(
@@ -202,8 +212,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Backup placement to another unit has ended
             it.insert(
                 DevBackupCare(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
+                    childId = child.id,
+                    unitId = daycare2.id,
                     groupId = null,
                     period =
                         FiniteDateRange(
@@ -213,8 +223,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
             it.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
+                childId = child.id,
+                unitId = roundTheClockDaycare.id,
                 arrived = arrived,
                 departed = null,
             )
