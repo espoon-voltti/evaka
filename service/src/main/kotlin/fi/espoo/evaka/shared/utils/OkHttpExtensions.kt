@@ -6,14 +6,20 @@ package fi.espoo.evaka.shared.utils
 
 import fi.espoo.evaka.shared.ConfiguredHttpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.InputStream
 import java.net.URI
 import java.util.concurrent.TimeUnit
 import okhttp3.Credentials
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okio.BufferedSink
+import okio.source
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.readValue
 
@@ -34,6 +40,17 @@ fun basicAuthInterceptor(username: String, password: String): okhttp3.Intercepto
         chain.proceed(authenticatedRequest)
     }
 }
+
+fun streamRequestBody(contentType: MediaType, inputStream: InputStream): RequestBody =
+    object : RequestBody() {
+        override fun contentType() = contentType
+
+        override fun isOneShot() = true
+
+        override fun writeTo(sink: BufferedSink) {
+            inputStream.source().use { source -> sink.writeAll(source) }
+        }
+    }
 
 fun tokenAuthInterceptor(token: String): okhttp3.Interceptor {
     return okhttp3.Interceptor { chain ->
@@ -62,6 +79,11 @@ fun OkHttpClient.executeWithRetries(
                 throw IllegalStateException(
                     "Failed to receive a non-throttled response after all retries"
                 )
+            }
+
+            if (request.body?.isOneShot() == true) {
+                response.close()
+                throw IllegalStateException("Cannot retry a request with a one-shot body")
             }
 
             val retryAfter =
@@ -107,43 +129,14 @@ fun OkHttpClient.executeWithRetriesForString(
     return response.use { it.body.string() }
 }
 
-inline fun <reified R> OkHttpClient.executeWithRetriesForObject(
-    request: Request,
-    jsonMapper: JsonMapper,
-    remainingTries: Int = 5,
-    maxRetryAfterWaitSeconds: Long = 600L,
-): R {
-    val jsonBody = executeWithRetriesForString(request, remainingTries, maxRetryAfterWaitSeconds)
-    return jsonMapper.readValue(jsonBody)
-}
-
-fun OkHttpClient.executeWithRetriesPostJson(
-    url: String,
-    body: Any?,
-    jsonMapper: JsonMapper,
-    remainingTries: Int = 5,
-    maxRetryAfterWaitSeconds: Long = 600L,
-) {
-    val jsonBody =
-        jsonMapper.writeValueAsString(body).toRequestBody("application/json".toMediaType())
-    val request = Request.Builder().url(url).post(jsonBody).build()
-    executeWithRetriesForString(request, remainingTries, maxRetryAfterWaitSeconds)
-}
-
-fun buildUrl(rootUrl: URI, endpoint: String): String {
-    return rootUrl.resolve(endpoint).toString()
-}
-
-fun buildGetRequest(rootUrl: URI, endpoint: String): Request {
-    val url = buildUrl(rootUrl, endpoint)
-    return Request.Builder().url(url).get().build()
-}
-
-fun buildPostRequest(rootUrl: URI, endpoint: String, body: Any?, jsonMapper: JsonMapper): Request {
-    val url = buildUrl(rootUrl, endpoint)
-    val jsonBody =
-        jsonMapper.writeValueAsString(body).toRequestBody("application/json".toMediaType())
-    return Request.Builder().url(url).post(jsonBody).build()
+fun buildUrl(
+    rootUrl: URI,
+    endpoint: String,
+    queryParams: Map<String, String> = emptyMap(),
+): String {
+    val urlBuilder = rootUrl.resolve(endpoint).toString().toHttpUrl().newBuilder()
+    queryParams.forEach { (key, value) -> urlBuilder.addQueryParameter(key, value) }
+    return urlBuilder.build().toString()
 }
 
 fun ConfiguredHttpClient.getRootUrl(): URI {
@@ -154,30 +147,41 @@ fun ConfiguredHttpClient.getJsonMapper(): JsonMapper {
     return this.jsonMapper ?: error("JsonMapper not configured for this OkHttpClient")
 }
 
+fun ConfiguredHttpClient.jsonBody(body: Any?): RequestBody =
+    getJsonMapper().writeValueAsString(body).toRequestBody("application/json".toMediaType())
+
 inline fun <reified R> ConfiguredHttpClient.executeGetRequest(
     endpoint: String,
-    remainingTries: Int = 5,
-    maxRetryAfterWaitSeconds: Long = 600L,
+    queryParams: Map<String, String> = emptyMap(),
 ): R {
-    val rootUrl = getRootUrl()
-    val jsonMapper = getJsonMapper()
-    val request = buildGetRequest(rootUrl, endpoint)
-    return client.executeWithRetriesForObject(
-        request,
-        jsonMapper,
-        remainingTries,
-        maxRetryAfterWaitSeconds,
-    )
+    val url = buildUrl(getRootUrl(), endpoint, queryParams)
+    val request = Request.Builder().url(url).get().build()
+    val jsonBody = client.executeWithRetriesForString(request)
+    return getJsonMapper().readValue(jsonBody)
 }
 
 fun ConfiguredHttpClient.executePostRequest(
     endpoint: String,
-    body: Any?,
-    remainingTries: Int = 5,
-    maxRetryAfterWaitSeconds: Long = 600L,
+    body: RequestBody,
+    queryParams: Map<String, String> = emptyMap(),
 ) {
-    val rootUrl = getRootUrl()
-    val jsonMapper = getJsonMapper()
-    val request = buildPostRequest(rootUrl, endpoint, body, jsonMapper)
-    client.executeWithRetriesForString(request, remainingTries, maxRetryAfterWaitSeconds)
+    val url = buildUrl(getRootUrl(), endpoint, queryParams)
+    val request = Request.Builder().url(url).post(body).build()
+    client.executeWithRetries(request).close()
+}
+
+fun ConfiguredHttpClient.executePostJsonRequest(
+    endpoint: String,
+    body: Any?,
+    queryParams: Map<String, String> = emptyMap(),
+) = executePostRequest(endpoint, jsonBody(body), queryParams)
+
+fun ConfiguredHttpClient.executePutRequest(
+    endpoint: String,
+    body: RequestBody,
+    queryParams: Map<String, String> = emptyMap(),
+) {
+    val url = buildUrl(getRootUrl(), endpoint, queryParams)
+    val request = Request.Builder().url(url).put(body).build()
+    client.executeWithRetries(request).close()
 }

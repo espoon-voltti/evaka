@@ -34,11 +34,11 @@ sealed interface EspooAsyncJob : AsyncJobPayload {
 
 class EspooAsyncJobRegistration(
     runner: AsyncJobRunner<EspooAsyncJob>,
-    espooBiJob: EspooBiJob,
+    espooBiJob: EspooBiJob?,
     linkitySyncService: LinkitySyncService,
 ) {
     init {
-        espooBiJob.let { runner.registerHandler(it::sendBiTable) }
+        espooBiJob?.let { runner.registerHandler(it::sendBiTable) }
         linkitySyncService.let { runner.registerHandler(it::getStaffAttendancePlans) }
     }
 }

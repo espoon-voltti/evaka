@@ -4,43 +4,41 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.core.requests.DefaultBody
 import fi.espoo.evaka.EspooBiEnv
+import fi.espoo.evaka.shared.TimeoutConfig
+import fi.espoo.evaka.shared.buildHttpClient
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
+import fi.espoo.evaka.shared.utils.executePutRequest
+import fi.espoo.evaka.shared.utils.streamRequestBody
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
 import java.time.Duration
+import okhttp3.MediaType.Companion.toMediaType
 
-class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
-    private val fuel = FuelManager()
+class EspooBiHttpClient(env: EspooBiEnv) {
     private val logger = KotlinLogging.logger {}
-    private val readTimeout = Duration.ofMinutes(5)
 
-    override fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) {
-        logger.info { "Sending BI CSV file $fileName" }
-        val (_, _, result) =
-            fuel
-                .put("${env.url}/report", listOf("filename" to fileName))
-                .header("Content-type", "text/csv")
-                .timeoutRead(readTimeout.toMillis().toInt())
-                .authentication()
-                .basic(env.username, env.password.value)
-                .body(DefaultBody({ stream }))
-                .responseString()
-        result.fold(
-            {
-                logger.info {
-                    "Sent BI CSV file $fileName successfully (${stream.totalBytes} bytes)"
-                }
-            },
-            { error ->
-                val meta = mapOf("errorMessage" to error.errorData.decodeToString())
-                logger.error(error, meta) {
-                    "Failed to send BI CSV file $fileName (${stream.totalBytes} bytes sent before failure)"
-                }
-                throw error
-            },
+    private val httpClient =
+        buildHttpClient(
+            rootUrl = URI(env.url),
+            interceptors = listOf(basicAuthInterceptor(env.username, env.password.value)),
+            timeouts = TimeoutConfig(readTimeout = Duration.ofMinutes(5)),
         )
+
+    fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) {
+        logger.info { "Sending BI CSV file $fileName" }
+
+        val body = streamRequestBody("text/csv".toMediaType(), stream)
+
+        try {
+            httpClient.executePutRequest("report", body, mapOf("filename" to fileName))
+        } catch (e: Exception) {
+            logger.error(e, mapOf("errorMessage" to e.message)) {
+                "Failed to send BI CSV file $fileName (${stream.totalBytes} bytes sent before failure)"
+            }
+            throw e
+        }
+        logger.info { "Sent BI CSV file $fileName successfully (${stream.totalBytes} bytes)" }
     }
 }

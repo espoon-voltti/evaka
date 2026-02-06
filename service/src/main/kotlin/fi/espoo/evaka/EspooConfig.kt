@@ -12,10 +12,8 @@ import fi.espoo.evaka.espoo.*
 import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
 import fi.espoo.evaka.espoo.archival.SärmäHttpClient
 import fi.espoo.evaka.espoo.archival.SärmäMockClient
-import fi.espoo.evaka.espoo.bi.EspooBiClient
 import fi.espoo.evaka.espoo.bi.EspooBiHttpClient
 import fi.espoo.evaka.espoo.bi.EspooBiJob
-import fi.espoo.evaka.espoo.bi.MockEspooBiClient
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
@@ -169,13 +167,11 @@ class EspooConfig {
 
     @Bean @Lazy fun espooBiEnv(env: Environment) = EspooBiEnv.fromEnvironment(env)
 
-    @Bean fun espooBiJob(client: EspooBiClient) = EspooBiJob(client)
-
     @Bean
-    fun espooBiClient(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>) =
+    fun espooBiJob(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>): EspooBiJob? =
         when (env.biIntegrationEnabled) {
-            true -> EspooBiHttpClient(biEnv.getObject())
-            false -> MockEspooBiClient()
+            true -> EspooBiJob(EspooBiHttpClient(biEnv.getObject()))
+            false -> null
         }
 
     @Bean
@@ -267,8 +263,16 @@ class EspooConfig {
         linkityEnv: LinkityEnv?,
         jsonMapper: JsonMapper,
         childDocumentArchivalEnv: ChildDocumentArchivalEnv,
+        espooBiJob: EspooBiJob?,
     ): EspooScheduledJobs =
-        EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env, linkityEnv, jsonMapper)
+        EspooScheduledJobs(
+            patuReportingService,
+            espooAsyncJobRunner,
+            env,
+            linkityEnv,
+            jsonMapper,
+            espooBiJob,
+        )
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
