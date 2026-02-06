@@ -9,19 +9,19 @@ import fi.espoo.evaka.daycare.controllers.DaycareController
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,14 +30,17 @@ import org.springframework.beans.factory.annotation.Autowired
 class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var daycareController: DaycareController
 
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val admin =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
     private val standardOpTime = TimeRange(LocalTime.parse("08:00"), LocalTime.parse("18:00"))
     private val fields =
         DaycareFields(
             name = "Uusi päiväkoti",
             openingDate = LocalDate.of(2020, 1, 1),
             closingDate = LocalDate.of(2120, 1, 1),
-            areaId = testArea.id,
+            areaId = area.id,
             type = setOf(CareType.CENTRE),
             dailyPreschoolTime = null,
             dailyPreparatoryTime = null,
@@ -130,10 +133,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(
-                DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name)
-            )
+            tx.insert(area)
+            tx.insert(daycare)
         }
     }
 
@@ -145,14 +146,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun testUpdate() {
-        daycareController.updateDaycare(
-            dbInstance(),
-            admin,
-            RealEvakaClock(),
-            testDaycare.id,
-            fields,
-        )
-        getAndAssertDaycareFields(testDaycare.id, fields)
+        daycareController.updateDaycare(dbInstance(), admin, RealEvakaClock(), daycare.id, fields)
+        getAndAssertDaycareFields(daycare.id, fields)
     }
 
     @Test
@@ -162,10 +157,10 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             dbInstance(),
             admin,
             RealEvakaClock(),
-            testDaycare.id,
+            daycare.id,
             fieldsWithLocationNull,
         )
-        getAndAssertDaycareFields(testDaycare.id, fieldsWithLocationNull)
+        getAndAssertDaycareFields(daycare.id, fieldsWithLocationNull)
     }
 
     @Test
@@ -182,10 +177,10 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             dbInstance(),
             admin,
             RealEvakaClock(),
-            testDaycare.id,
+            daycare.id,
             preschoolFields,
         )
-        getAndAssertDaycareFields(testDaycare.id, preschoolFields)
+        getAndAssertDaycareFields(daycare.id, preschoolFields)
     }
 
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
