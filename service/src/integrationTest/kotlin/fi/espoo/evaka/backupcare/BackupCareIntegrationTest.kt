@@ -15,6 +15,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -24,11 +26,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -41,8 +38,13 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Autowired lateinit var backupCareController: BackupCareController
 
     private val clock = RealEvakaClock()
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val child = DevPerson()
     private val serviceWorker =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+        AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
 
     final val placementStart = LocalDate.of(2021, 1, 1)
     final val placementEnd = placementStart.plusDays(200)
@@ -55,16 +57,16 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(child, DevPersonType.CHILD)
             placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare2.id,
+                        childId = child.id,
+                        unitId = daycare2.id,
                         startDate = placementStart,
                         endDate = placementEnd,
                     )
@@ -74,8 +76,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
     @Test
     fun testUpdate() {
-        val groupId =
-            db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
+        val groupId = db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = daycare.id)) }
         val period = FiniteDateRange(backupCareStart, backupCareEnd)
         val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = backupCareEnd.plusDays(4))
@@ -89,10 +90,10 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         )
 
         db.read { r ->
-            r.getBackupCareRowsByChild(testChild_1.id).exactlyOne().also {
+            r.getBackupCareRowsByChild(child.id).exactlyOne().also {
                 assertEquals(id, it.id)
-                assertEquals(testChild_1.id, it.childId)
-                assertEquals(testDaycare.id, it.unitId)
+                assertEquals(child.id, it.childId)
+                assertEquals(daycare.id, it.unitId)
                 assertEquals(groupId, it.groupId)
                 assertEquals(changedPeriod, it.period())
             }
@@ -107,9 +108,9 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dbInstance(),
                 serviceWorker,
                 clock,
-                testChild_1.id,
+                child.id,
                 NewBackupCare(
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     groupId = null,
                     period =
                         FiniteDateRange(backupCareStart.plusDays(1), backupCareStart.plusDays(4)),
@@ -122,13 +123,11 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     fun testChildBackupCare() {
         val groupName = "Test Group"
         val groupId =
-            db.transaction {
-                it.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-            }
+            db.transaction { it.insert(DevDaycareGroup(daycareId = daycare.id, name = groupName)) }
         val id = createBackupCareAndAssert(groupId = groupId)
         val backupCares =
             backupCareController
-                .getChildBackupCares(dbInstance(), serviceWorker, clock, testChild_1.id)
+                .getChildBackupCares(dbInstance(), serviceWorker, clock, child.id)
                 .backupCares
                 .map { it.backupCare }
 
@@ -136,7 +135,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             listOf(
                 ChildBackupCare(
                     id = id,
-                    unit = BackupCareUnit(id = testDaycare.id, name = testDaycare.name),
+                    unit = BackupCareUnit(id = daycare.id, name = daycare.name),
                     group = BackupCareGroup(id = groupId, name = groupName),
                     period = FiniteDateRange(backupCareStart, backupCareEnd),
                 )
@@ -152,22 +151,21 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dbInstance(),
                 serviceWorker,
                 clock,
-                testChild_1.id,
+                child.id,
                 NewBackupCare(
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     groupId = null,
                     period =
                         FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2)),
                 ),
             )
         }
-        assertEquals(0, db.read { r -> r.getBackupCaresForChild(testChild_1.id).size })
+        assertEquals(0, db.read { r -> r.getBackupCaresForChild(child.id).size })
     }
 
     @Test
     fun `backup care must be during a placement when modifying range`() {
-        val groupId =
-            db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
+        val groupId = db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = daycare.id)) }
         val id = createBackupCareAndAssert(groupId = groupId)
 
         val newPeriod = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
@@ -182,22 +180,22 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
         }
 
-        assertNotEquals(
-            newPeriod,
-            db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period },
-        )
+        assertNotEquals(newPeriod, db.read { r -> r.getBackupCaresForChild(child.id)[0].period })
     }
 
     @Test
     fun `backup care must be created for unit that is open the whole period`() {
-        val area = db.transaction { tx -> tx.insert(DevCareArea(shortName = "test_area1")) }
+        val otherArea =
+            db.transaction { tx ->
+                tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
+            }
         val daycareId =
             db.transaction { tx ->
                 tx.insert(
                     DevDaycare(
                         openingDate = backupCareStart,
                         closingDate = backupCareEnd,
-                        areaId = area,
+                        areaId = otherArea,
                     )
                 )
             }
@@ -208,7 +206,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dbInstance(),
                 serviceWorker,
                 clock,
-                testChild_1.id,
+                child.id,
                 NewBackupCare(
                     unitId = daycareId,
                     groupId = null,
@@ -223,7 +221,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dbInstance(),
                 serviceWorker,
                 clock,
-                testChild_1.id,
+                child.id,
                 NewBackupCare(
                     unitId = daycareId,
                     groupId = null,
@@ -238,7 +236,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dbInstance(),
                 serviceWorker,
                 clock,
-                testChild_1.id,
+                child.id,
                 NewBackupCare(
                     unitId = daycareId,
                     groupId = null,
@@ -250,8 +248,8 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     private fun createBackupCareAndAssert(
-        childId: ChildId = testChild_1.id,
-        unitId: DaycareId = testDaycare.id,
+        childId: ChildId = child.id,
+        unitId: DaycareId = daycare.id,
         groupId: GroupId? = null,
         period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd),
     ): BackupCareId {
