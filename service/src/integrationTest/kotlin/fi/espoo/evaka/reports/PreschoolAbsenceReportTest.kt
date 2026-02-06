@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.withHolidays
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -68,11 +67,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
     private val saturday: LocalDate = monday.plusDays(5)
 
     private val previousThursday: LocalDate = monday.minusDays(4)
-    private val previousFriday: LocalDate = monday.minusDays(3)
     private val previousSunday: LocalDate = monday.minusDays(1)
 
-    private val nextTuesday: LocalDate = tuesday.plusWeeks(1)
     private val nextWednesday: LocalDate = wednesday.plusWeeks(1)
+
+    private val holidayBefore: LocalDate = LocalDate.of(2022, 12, 6)
+    private val holidayAfter: LocalDate = LocalDate.of(2023, 1, 6)
 
     private val mockClock = MockEvakaClock(HelsinkiDateTime.of(monday, LocalTime.of(12, 15)))
 
@@ -150,19 +150,16 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val testData = initTestData()
 
         val reportResults =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(previousFriday, nextTuesday)) {
-                preschoolAbsenceReport.getPreschoolAbsenceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    null,
-                    testData.daycareAId,
-                    null,
-                    testData.preschoolTerm.start,
-                    testData.preschoolTerm.end,
-                )
-            }
+            preschoolAbsenceReport.getPreschoolAbsenceReport(
+                dbInstance(),
+                mockClock,
+                adminLoginUser,
+                null,
+                testData.daycareAId,
+                null,
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end,
+            )
 
         val (groupAExpectation, groupBExpectation, groupCExpectation) = getExpectedResults(testData)
         val childCResults =
@@ -195,19 +192,16 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val testData = initTestData()
 
         val reportResults =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(previousFriday, nextTuesday)) {
-                preschoolAbsenceReport.getPreschoolAbsenceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    null,
-                    testData.daycareAId,
-                    testData.groupBId,
-                    testData.preschoolTerm.start,
-                    testData.preschoolTerm.end,
-                )
-            }
+            preschoolAbsenceReport.getPreschoolAbsenceReport(
+                dbInstance(),
+                mockClock,
+                adminLoginUser,
+                null,
+                testData.daycareAId,
+                testData.groupBId,
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end,
+            )
 
         val (_, groupBExpectation, _) = getExpectedResults(testData)
 
@@ -219,19 +213,16 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val testData = initTestData()
 
         val reportResults =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(previousFriday, nextTuesday)) {
-                preschoolAbsenceReport.getPreschoolAbsenceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    null,
-                    testData.daycareAId,
-                    testData.groupCId,
-                    testData.preschoolTerm.start,
-                    testData.preschoolTerm.end,
-                )
-            }
+            preschoolAbsenceReport.getPreschoolAbsenceReport(
+                dbInstance(),
+                mockClock,
+                adminLoginUser,
+                null,
+                testData.daycareAId,
+                testData.groupCId,
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end,
+            )
 
         val (_, _, groupCExpectation) = getExpectedResults(testData)
 
@@ -243,19 +234,16 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val testData = initTestData()
 
         val reportResults =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(previousFriday, nextTuesday)) {
-                preschoolAbsenceReport.getPreschoolAbsenceReport(
-                    dbInstance(),
-                    mockClock,
-                    adminLoginUser,
-                    testData.areaAId,
-                    null,
-                    null,
-                    testData.preschoolTerm.start,
-                    testData.preschoolTerm.end,
-                )
-            }
+            preschoolAbsenceReport.getPreschoolAbsenceReport(
+                dbInstance(),
+                mockClock,
+                adminLoginUser,
+                testData.areaAId,
+                null,
+                null,
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end,
+            )
 
         val (groupAExpectation, groupBExpectation, groupCExpectation) = getExpectedResults(testData)
         val childCResults =
@@ -945,15 +933,14 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 null,
             )
 
-            // next tuesday
             // absence on holiday shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
                     testChildCecil.id,
-                    nextTuesday,
+                    holidayAfter,
                     AbsenceType.OTHER_ABSENCE,
-                    HelsinkiDateTime.atStartOfDay(nextTuesday),
+                    HelsinkiDateTime.atStartOfDay(holidayAfter),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE,
                 )
@@ -987,15 +974,14 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
-            // previous friday
             // absence on holiday shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
                     testChildCecil.id,
-                    previousFriday,
+                    holidayBefore,
                     AbsenceType.OTHER_ABSENCE,
-                    HelsinkiDateTime.atStartOfDay(previousFriday),
+                    HelsinkiDateTime.atStartOfDay(holidayBefore),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE,
                 )
