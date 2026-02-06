@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -26,6 +27,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.Action.Citizen
@@ -472,6 +474,68 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             setOf(Citizen.Decision.READ, Citizen.Decision.DOWNLOAD_PDF),
             decisionWithPeriod.permittedActions,
         )
+    }
+
+    @Test
+    fun `getPendingDecisions does not return decision when foster parent relationship has ended`() {
+        val fosterParent = DevPerson(ssn = "050180-1232")
+        val fosterChild = DevPerson(ssn = "050617A123U")
+        val applicationId = ApplicationId(UUID.randomUUID())
+
+        db.transaction { tx ->
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(fosterChild, DevPersonType.CHILD)
+
+            // Create foster parent relationship that ended yesterday
+            tx.insert(
+                DevFosterParent(
+                    childId = fosterChild.id,
+                    parentId = fosterParent.id,
+                    validDuring =
+                        DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
+                    modifiedAt = clock.now(),
+                    modifiedBy = EvakaUserId(decisionMaker.id.raw),
+                )
+            )
+
+            tx.insertTestApplication(
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                confidential = true,
+                childId = fosterChild.id,
+                guardianId = fosterParent.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0.fromApplication2(
+                        createTestApplicationDetails(fosterParent, fosterChild)
+                    ),
+            )
+
+            tx.insertTestDecision(
+                TestDecision(
+                    applicationId = applicationId,
+                    status = DecisionStatus.PENDING,
+                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    unitId = daycare.id,
+                    type = DecisionType.DAYCARE,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1),
+                    resolvedBy = decisionMaker.id.raw,
+                    sentDate = clock.today(),
+                )
+            )
+        }
+
+        MockPersonDetailsService.addPersons(fosterParent, fosterChild)
+
+        val pendingDecisions =
+            applicationControllerCitizen.getPendingDecisions(
+                db = dbInstance(),
+                user = AuthenticatedUser.Citizen(fosterParent.id, CitizenAuthLevel.STRONG),
+                clock = clock,
+            )
+
+        assertEquals(0, pendingDecisions.size)
     }
 
     private fun createTestApplicationDetails(
