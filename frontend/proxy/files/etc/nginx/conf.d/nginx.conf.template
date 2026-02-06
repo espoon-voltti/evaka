@@ -159,6 +159,7 @@ server {
   set $enduserUrl "{{ .Env.ENDUSER_GW_URL }}";
   set $internalUrl "{{ .Env.INTERNAL_GW_URL }}";
   set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
+  set $cspConnectSrcSentry "{{ env.Getenv "CSP_CONNECT_SRC_SENTRY" "https://o4507111645052928.ingest.de.sentry.io/ https://o318158.ingest.sentry.io" }}";
   {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
   set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
   {{ end }}
@@ -175,7 +176,7 @@ server {
   add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"$httpScheme://$host/api/csp"}]}';
 
   set $loadFailedInlineScript "'sha256-PR1ssrSqCny+dZsLWihNXCvJD0eBdn4ItWwveZE1M+0='"; # SHA256 calculated from the script contents
-  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o4507111645052928.ingest.de.sentry.io/ https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' $cspConnectSrcSentry https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
   add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' ${loadFailedInlineScript}; frame-ancestors 'none'; form-action 'self';";
 
   # Tracing
