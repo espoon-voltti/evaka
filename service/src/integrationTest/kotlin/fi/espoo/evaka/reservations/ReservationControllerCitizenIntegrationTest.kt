@@ -780,16 +780,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
         }
 
+        val localMockNow = HelsinkiDateTime.of(localMonday.minusWeeks(2), LocalTime.of(12, 0))
         val res =
             getReservations(
                 adult.user(CitizenAuthLevel.WEAK),
                 FiniteDateRange(localSundayLastWeek, localThursday),
+                mockNow = localMockNow,
             )
 
         assertEquals(
             ReservationsResponse(
                 reservableRange =
-                    FiniteDateRange(LocalDate.of(2022, 1, 10), LocalDate.of(2022, 8, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 12, 27), LocalDate.of(2022, 8, 31)),
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -969,16 +971,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 }
         }
 
+        val localMockNow = HelsinkiDateTime.of(localMonday.minusWeeks(2), LocalTime.of(12, 0))
         val res =
             getReservations(
                 adult.user(CitizenAuthLevel.WEAK),
                 FiniteDateRange(localSundayLastWeek, localWednesday),
+                mockNow = localMockNow,
             )
 
         assertEquals(
             ReservationsResponse(
                 reservableRange =
-                    FiniteDateRange(LocalDate.of(2021, 12, 13), LocalDate.of(2022, 8, 31)),
+                    FiniteDateRange(LocalDate.of(2021, 11, 29), LocalDate.of(2022, 8, 31)),
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
