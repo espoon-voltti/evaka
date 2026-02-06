@@ -8,33 +8,32 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getCaretakers
 import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.updateCaretakers
-import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val daycareId = testDaycare.id
-    private val groupId = GroupId(UUID.randomUUID())
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
     private val groupStart = LocalDate.of(2000, 1, 1)
+    private val group = DevDaycareGroup(daycareId = daycare.id, startDate = groupStart)
 
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart))
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
             tx.execute {
                 sql(
-                    "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(groupId)}, ${bind(groupStart)}, NULL, 3)"
+                    "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(group.id)}, ${bind(groupStart)}, NULL, 3)"
                 )
             }
         }
@@ -42,9 +41,9 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `group initially has one row`() {
-        val caretakers = db.transaction { getCaretakers(it, groupId) }
+        val caretakers = db.transaction { getCaretakers(it, group.id) }
         assertEquals(1, caretakers.size)
-        assertEquals(groupId, caretakers[0].groupId)
+        assertEquals(group.id, caretakers[0].groupId)
         assertEquals(groupStart, caretakers[0].startDate)
         assertEquals(null, caretakers[0].endDate)
         assertEquals(3.0, caretakers[0].amount)
@@ -57,12 +56,12 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 insertCaretakers(
                     tx,
-                    groupId = groupId,
+                    groupId = group.id,
                     startDate = start2,
                     endDate = null,
                     amount = 5.0,
                 )
-                getCaretakers(tx, groupId)
+                getCaretakers(tx, group.id)
             }
         assertEquals(2, caretakers.size)
 
@@ -79,17 +78,17 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `updating caretaker row`() {
         val rows =
             db.transaction { tx ->
-                val id = getCaretakers(tx, groupId).first().id
+                val id = getCaretakers(tx, group.id).first().id
                 updateCaretakers(
                     tx,
-                    groupId = groupId,
+                    groupId = group.id,
                     id = id,
                     startDate = LocalDate.of(2000, 7, 1),
                     endDate = LocalDate.of(2000, 8, 1),
                     amount = 2.0,
                 )
 
-                getCaretakers(tx, groupId)
+                getCaretakers(tx, group.id)
             }
         assertEquals(1, rows.size)
         val updated = rows.first()
@@ -104,7 +103,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 insertCaretakers(
                     tx,
-                    groupId = groupId,
+                    groupId = group.id,
                     startDate = groupStart.minusDays(3),
                     endDate = groupStart.plusDays(3),
                     amount = 5.0,
@@ -119,7 +118,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 insertCaretakers(
                     tx,
-                    groupId = groupId,
+                    groupId = group.id,
                     startDate = groupStart,
                     endDate = null,
                     amount = 5.0,
