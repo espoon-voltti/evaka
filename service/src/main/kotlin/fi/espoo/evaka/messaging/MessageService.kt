@@ -8,6 +8,7 @@ import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.children.getChildrenByParent
+import fi.espoo.evaka.incomestatement.citizenHasUnhandledIncomeStatements
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
@@ -306,7 +307,9 @@ class MessageService(
                 recipientAccountIds.all { recipient ->
                     thread.children.any { child ->
                         validRecipients[child]?.contains(recipient) ?: false
-                    } || recipient == financeAccountId
+                    } ||
+                        (recipient == financeAccountId &&
+                            db.read { it.citizenHasUnhandledIncomeStatements(user.id) })
                 }
             if (!isApplication && !allRecipientsValid)
                 throw Forbidden("Not authorized to send to all recipients")

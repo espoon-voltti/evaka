@@ -833,6 +833,19 @@ fun Database.Read.unhandledIncomeStatementExistsForStartDate(
         }
         .exactlyOne()
 
+fun Database.Read.citizenHasUnhandledIncomeStatements(personId: PersonId): Boolean =
+    createQuery {
+            sql(
+                """
+                SELECT EXISTS (
+                    SELECT FROM income_statement
+                    WHERE person_id = ${bind(personId)} AND status = ANY(${bind(listOf(IncomeStatementStatus.SENT, IncomeStatementStatus.HANDLING))})
+                )
+            """
+            )
+        }
+        .exactlyOne()
+
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 
 fun Database.Read.getIncomeStatementChildrenByGuardian(

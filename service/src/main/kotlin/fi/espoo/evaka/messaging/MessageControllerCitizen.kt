@@ -10,6 +10,7 @@ import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.children.getChildrenByParent
+import fi.espoo.evaka.incomestatement.citizenHasUnhandledIncomeStatements
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -212,7 +213,9 @@ class MessageControllerCitizen(
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val accountsPerChild =
                     (dbc.read { it.getCitizenRecipients(evakaClock.today(), accountId) })
-                val financeAccountId = dbc.read { it.getFinanceAccountId() }
+                val financeAccountId =
+                    dbc.read { it.getFinanceAccountId() }
+                        ?.takeIf { dbc.read { it.citizenHasUnhandledIncomeStatements(user.id) } }
                 val response =
                     GetRecipientsResponse(
                         messageAccounts =
