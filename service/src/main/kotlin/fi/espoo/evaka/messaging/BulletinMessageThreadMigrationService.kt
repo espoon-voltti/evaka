@@ -157,6 +157,33 @@ WHERE message_id = ANY(${bind(messageIdsToDelete)})
             )
         }
 
+        // Delete duplicate participant entries: keep one per participant among threads to delete,
+        // and remove any that already exist in the kept thread
+        //
+        // This is a rare case but seems to exist in production. It was probably caused due to some
+        // historical bug.
+        execute {
+            sql(
+                """
+WITH to_keep AS (
+    SELECT DISTINCT ON (participant_id) id
+    FROM message_thread_participant
+    WHERE thread_id = ANY(${bind(threadIdsToDelete)}) AND last_received_timestamp IS NOT NULL
+    ORDER BY participant_id, thread_id
+)
+DELETE FROM message_thread_participant
+WHERE thread_id = ANY(${bind(threadIdsToDelete)})
+  AND last_received_timestamp IS NOT NULL
+  AND (
+    id NOT IN (SELECT id FROM to_keep)
+    OR participant_id IN (
+      SELECT participant_id FROM message_thread_participant WHERE thread_id = ${bind(toKeep.threadId)}
+    )
+  )
+"""
+            )
+        }
+
         // Consolidate receiver's message_thread_participant entries to the kept thread
         execute {
             sql(
