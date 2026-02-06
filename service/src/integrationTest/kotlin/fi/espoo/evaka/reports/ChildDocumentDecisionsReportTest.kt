@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevChildDocumentDecision
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -81,9 +82,6 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     answers =
                         listOf(AnsweredQuestion.CheckboxAnswer(questionId = "q1", answer = true))
                 ),
-            publishedContent = null,
-            publishedAt = null,
-            publishedBy = null,
             modifiedAt = clock.now(),
             modifiedBy = supervisor2.evakaUserId,
             contentLockedAt = clock.now(),
@@ -137,10 +135,16 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                     id = ChildDocumentId(UUID.randomUUID()),
                     childId = child1.id,
                     status = DocumentStatus.COMPLETED,
-                    publishedAt = clock.now(),
-                    publishedBy = supervisor1.evakaUserId,
-                    publishedContent = child2Document.content,
                     contentLockedBy = supervisor1.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = supervisor1.evakaUserId,
+                                publishedContent = child2Document.content,
+                            )
+                        ),
                     decision =
                         DevChildDocumentDecision(
                             createdBy = decisionMaker.id,
@@ -202,10 +206,16 @@ class ChildDocumentDecisionsReportTest : FullApplicationTest(resetDbBeforeEach =
                             id = ChildDocumentId(UUID.randomUUID()),
                             childId = child1.id,
                             status = DocumentStatus.COMPLETED,
-                            publishedAt = clock.now(),
-                            publishedBy = supervisor1.evakaUserId,
-                            publishedContent = child2Document.content,
                             contentLockedBy = supervisor1.id,
+                            publishedVersions =
+                                listOf(
+                                    DevChildDocumentPublishedVersion(
+                                        versionNumber = 1,
+                                        createdAt = clock.now(),
+                                        createdBy = supervisor1.evakaUserId,
+                                        publishedContent = child2Document.content,
+                                    )
+                                ),
                             decision =
                                 DevChildDocumentDecision(
                                     createdBy = decisionMaker.id,

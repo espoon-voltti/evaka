@@ -185,7 +185,7 @@ describe('Employee - Child documents', () => {
     await childDocument.goToCompletedStatus()
     await childDocument.status.assertTextEquals('Valmis')
 
-    // Assert status and new publish time
+    // Assert status and times
     await childDocument.returnButton.click()
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
@@ -193,7 +193,9 @@ describe('Employee - Child documents', () => {
     await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
     row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Valmis')
-    await row.published.assertTextEquals(later.format())
+    await row.modified.assertTextEquals(later.format())
+    // Content has not changed since last publishing so published time remains the same
+    await row.published.assertTextEquals(now.format())
   })
 
   test('Pedagogical report only has two states', async () => {
@@ -912,12 +914,16 @@ describe('Employee - Child documents', () => {
       childId: testChild2.id,
       status: 'COMPLETED',
       content,
-      publishedAt,
-      publishedBy: evakaUserId(unitSupervisor.id),
-      publishedContent: content,
       answeredAt,
       answeredBy: evakaUserId(guardian.id)
-    }).save()
+    })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: publishedAt,
+        createdBy: evakaUserId(unitSupervisor.id),
+        publishedContent: content
+      })
+      .save()
 
     page = await Page.open({
       mockedTime: now,
@@ -1361,13 +1367,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(
@@ -1386,13 +1395,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(
@@ -1490,13 +1502,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(now.toLocalDate(), null),
@@ -1583,13 +1598,16 @@ describe('Employee - Child documents', () => {
       content: {
         answers: []
       },
-      publishedAt: now,
-      publishedBy: evakaUserId(director.id),
-      publishedContent: {
-        answers: []
-      },
       decisionMaker: director.id
     })
+      .withPublishedVersion({
+        versionNumber: 1,
+        createdAt: now,
+        createdBy: evakaUserId(director.id),
+        publishedContent: {
+          answers: []
+        }
+      })
       .withDecision({
         status: 'ACCEPTED',
         validity: new DateRange(now.toLocalDate(), null),

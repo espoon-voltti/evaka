@@ -188,10 +188,19 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
         WITH documents_to_delete AS (
             SELECT id, process_id, decision_id FROM child_document
             WHERE template_id = ${bind(id)}
-            FOR UPDATE 
+            FOR UPDATE
         ), delete_processes AS (
             DELETE FROM case_process ap
             WHERE ap.id IN (SELECT d2d.process_id FROM documents_to_delete d2d)
+        ), delete_published_versions AS (
+            DELETE FROM child_document_published_version cdpv
+            WHERE cdpv.child_document_id IN (SELECT d2d.id FROM documents_to_delete d2d)
+        ), delete_reads AS (
+            DELETE FROM child_document_read cdr
+            WHERE cdr.document_id IN (SELECT d2d.id FROM documents_to_delete d2d)
+        ), delete_sfi_messages AS (
+            DELETE FROM sfi_message sm
+            WHERE sm.document_id IN (SELECT d2d.id FROM documents_to_delete d2d)
         ), delete_documents AS (
             DELETE FROM child_document cd WHERE cd.id IN (SELECT d2d.id FROM documents_to_delete d2d)
         ), delete_decisions AS (

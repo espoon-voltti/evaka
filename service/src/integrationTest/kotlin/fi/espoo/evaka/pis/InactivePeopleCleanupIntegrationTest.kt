@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -368,13 +369,19 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                         childId = testChild_1.id,
                         templateId = template,
                         content = documentContent,
-                        publishedContent = documentContent,
                         modifiedAt = HelsinkiDateTime.now(),
                         modifiedBy = employeeUser.evakaUserId,
                         contentLockedAt = HelsinkiDateTime.now(),
                         contentLockedBy = employeeUser.id,
-                        publishedAt = HelsinkiDateTime.now(),
-                        publishedBy = employeeUser.evakaUserId,
+                        publishedVersions =
+                            listOf(
+                                DevChildDocumentPublishedVersion(
+                                    versionNumber = 1,
+                                    createdAt = HelsinkiDateTime.now(),
+                                    createdBy = employeeUser.evakaUserId,
+                                    publishedContent = documentContent,
+                                )
+                            ),
                     )
                 )
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)

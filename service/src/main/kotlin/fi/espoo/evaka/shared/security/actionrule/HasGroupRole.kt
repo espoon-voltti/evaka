@@ -231,7 +231,11 @@ WHERE employee_id = ${bind(user.id)}
                         )
                     }
                     .takeIf { editable },
-                PredicateSql { where("status = 'DRAFT' AND published_at IS NULL") }
+                PredicateSql {
+                        where(
+                            "status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)"
+                        )
+                    }
                     .takeIf { deletable },
                 PredicateSql { where("status <> 'COMPLETED'") }.takeIf { publishable },
                 PredicateSql {

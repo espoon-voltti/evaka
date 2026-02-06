@@ -455,6 +455,7 @@ export class ChildDocumentsSection extends Section {
     return {
       openLink: row.findByDataQa('open-document'),
       status: row.findByDataQa('document-status'),
+      modified: row.findByDataQa('document-modified-at'),
       published: row.findByDataQa('document-published-at')
     }
   }

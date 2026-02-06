@@ -184,6 +184,8 @@ export const testTranslations: Translations = {
     name: '',
     createdAt: '',
     createdBy: '',
+    publishedVersions: '',
+    notPublished: '',
     monthsUnit: '',
     confidentiality: '',
     confidential: '',

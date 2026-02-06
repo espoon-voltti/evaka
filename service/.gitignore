@@ -43,6 +43,7 @@ out/
 *.ntvs*
 *.njsproj
 *.sln
+.github/copilot-instructions.md
 ./certificates/truststore
 
 .kotlin

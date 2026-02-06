@@ -233,6 +233,7 @@ export type ChildDocument =
   | 'ARCHIVE'
   | 'DELETE'
   | 'DOWNLOAD'
+  | 'DOWNLOAD_VERSION'
   | 'NEXT_STATUS'
   | 'PREV_STATUS'
   | 'PROPOSE_DECISION'

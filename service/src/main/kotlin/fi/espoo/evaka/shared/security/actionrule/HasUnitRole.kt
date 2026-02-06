@@ -641,7 +641,7 @@ SELECT child_document.id AS id, child_id
 FROM child_document
 WHERE TRUE
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])" else ""}
-${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
+${if (deletable) "AND status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
 ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb)) AND status <> 'COMPLETED'" else ""}
             """

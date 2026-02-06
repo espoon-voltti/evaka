@@ -5,16 +5,29 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.document.ChildDocumentType
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
+import fi.espoo.evaka.document.childdocument.ChildDocumentDecisionStatus
+import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
+import fi.espoo.evaka.shared.dev.DevChildDocument
+import fi.espoo.evaka.shared.dev.DevChildDocumentDecision
+import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevFeeDecisionChild
@@ -24,12 +37,14 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -569,5 +584,237 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(placement)
         }
         return ChildInDaycareFixture(daycare = daycare, child = child, placement = placement)
+    }
+
+    @Test
+    fun `sanityCheckChildDocumentPublishingByStatus positive`() {
+        val fixture = givenChildDocumentFixtures()
+
+        db.transaction { tx ->
+            // Violation 1: Decision document COMPLETED but unpublished
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.COMPLETED,
+                    childId = fixture.child.id,
+                    templateId = fixture.decisionTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    decisionMaker = fixture.employee.id,
+                    decision = fixture.createDecision(),
+                    publishedVersions = emptyList(),
+                )
+            )
+
+            // Violation 2: Decision document DRAFT but published
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.DRAFT,
+                    childId = fixture.child.id,
+                    templateId = fixture.decisionTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = fixture.employee.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
+                )
+            )
+
+            // Violation 3: VASU document COMPLETED but unpublished
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.COMPLETED,
+                    childId = fixture.child.id,
+                    templateId = fixture.vasuTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    publishedVersions = emptyList(),
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckChildDocumentPublishingByStatus() }
+        assertEquals(3, violations.size)
+    }
+
+    @Test
+    fun `sanityCheckChildDocumentPublishingByStatus negative`() {
+        val fixture = givenChildDocumentFixtures()
+
+        db.transaction { tx ->
+            // Valid 1: Decision COMPLETED with version 1
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.COMPLETED,
+                    childId = fixture.child.id,
+                    templateId = fixture.decisionTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    decisionMaker = fixture.employee.id,
+                    decision = fixture.createDecision(),
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = fixture.employee.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
+                )
+            )
+
+            // Valid 2: Decision DRAFT without version
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.DRAFT,
+                    childId = fixture.child.id,
+                    templateId = fixture.decisionTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    publishedVersions = emptyList(),
+                )
+            )
+
+            // Valid 3: VASU DRAFT without version
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.DRAFT,
+                    childId = fixture.child.id,
+                    templateId = fixture.vasuTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    publishedVersions = emptyList(),
+                )
+            )
+
+            // Valid 4: VASU COMPLETED with version 1
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.COMPLETED,
+                    childId = fixture.child.id,
+                    templateId = fixture.vasuTemplateId,
+                    content = documentContent,
+                    modifiedAt = now,
+                    modifiedBy = fixture.employee.evakaUserId,
+                    contentLockedAt = now,
+                    contentLockedBy = fixture.employee.id,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = now,
+                                createdBy = fixture.employee.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
+                )
+            )
+        }
+
+        val violations = db.read { it.sanityCheckChildDocumentPublishingByStatus() }
+        assertEquals(0, violations.size)
+    }
+
+    private data class ChildDocumentTestFixture(
+        val daycare: DevDaycare,
+        val child: DevPerson,
+        val employee: DevEmployee,
+        val decisionTemplateId: DocumentTemplateId,
+        val vasuTemplateId: DocumentTemplateId,
+    ) {
+        fun createDecision() =
+            DevChildDocumentDecision(
+                createdBy = employee.id,
+                modifiedBy = employee.id,
+                status = ChildDocumentDecisionStatus.ACCEPTED,
+                validity = DateRange(LocalDate.of(2024, 6, 1), null),
+                daycareId = daycare.id,
+            )
+    }
+
+    private val templateContent =
+        DocumentTemplateContent(
+            listOf(
+                Section(
+                    id = "s1",
+                    label = "s1",
+                    questions = listOf(Question.TextQuestion(id = "q1", label = "q1")),
+                )
+            )
+        )
+
+    private val documentContent =
+        DocumentContent(
+            answers = listOf(AnsweredQuestion.TextAnswer(questionId = "q1", answer = "answer"))
+        )
+
+    private fun givenChildDocumentFixtures(): ChildDocumentTestFixture {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val child = DevPerson()
+        val employee = DevEmployee()
+
+        val decisionTemplateId = DocumentTemplateId(UUID.randomUUID())
+        val vasuTemplateId = DocumentTemplateId(UUID.randomUUID())
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(employee)
+
+            tx.insert(
+                DevDocumentTemplate(
+                    id = decisionTemplateId,
+                    name = "Decision Template",
+                    type = ChildDocumentType.OTHER_DECISION,
+                    validity = DateRange(today.minusYears(1), null),
+                    content = templateContent,
+                    endDecisionWhenUnitChanges = false,
+                )
+            )
+
+            tx.insert(
+                DevDocumentTemplate(
+                    id = vasuTemplateId,
+                    name = "VASU Template",
+                    type = ChildDocumentType.VASU,
+                    validity = DateRange(today.minusYears(1), null),
+                    content = templateContent,
+                )
+            )
+        }
+
+        return ChildDocumentTestFixture(
+            daycare = daycare,
+            child = child,
+            employee = employee,
+            decisionTemplateId = decisionTemplateId,
+            vasuTemplateId = vasuTemplateId,
+        )
     }
 }

@@ -207,7 +207,13 @@ class ChildDocumentControllerCitizen(
                         user.evakaUserId,
                     )
 
-                    childDocumentService.schedulePdfGeneration(tx, listOf(documentId), clock.now())
+                    childDocumentService.publishAndScheduleNotifications(
+                        tx,
+                        user,
+                        documentId,
+                        clock.now(),
+                        emailPolicy = EmailNotificationPolicy.NEVER,
+                    )
 
                     updateDocumentCaseProcessHistory(
                         tx = tx,

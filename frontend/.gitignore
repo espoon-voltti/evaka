@@ -18,6 +18,7 @@ test-results
 junit.xml
 .DS_Store
 .vscode
+.github/copilot-instructions.md
 screenshots/
 traces/
 .yalc

@@ -8,6 +8,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildAttendanceId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
@@ -47,6 +48,10 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
                 FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             )
         ),
+    )
+    logResult(
+        "child documents with incorrect publishing status",
+        tx.sanityCheckChildDocumentPublishingByStatus(),
     )
 }
 
@@ -176,6 +181,27 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
                     fdc_overlapping.child_id = fdc.child_id AND
                     fd_overlapping.status = ANY(${bind(statuses)})
             )
+    """
+            )
+        }
+        .toList()
+}
+
+fun Database.Read.sanityCheckChildDocumentPublishingByStatus(): List<ChildDocumentId> {
+    return createQuery {
+            sql(
+                """
+        SELECT cd.id
+        FROM child_document cd
+        LEFT JOIN child_document_published_version v
+            ON v.child_document_id = cd.id AND v.version_number = 1
+        WHERE
+            CASE
+                WHEN cd.type IN ('OTHER_DECISION', 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION', 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION')
+                    THEN (cd.status = 'COMPLETED') != (v.id IS NOT NULL)
+                ELSE
+                    cd.status != 'DRAFT' AND v.id IS NULL
+            END
     """
             )
         }

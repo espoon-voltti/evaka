@@ -60,11 +60,27 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
             dt.confidential,
             dt.confidentiality_duration_years,
             dt.confidentiality_basis,
-            cd.document_key,
             (
                 $sfiDeliverySelect
                 WHERE sm.document_id = cd.id
-            ) AS sfi_deliveries
+            ) AS sfi_deliveries,
+            (
+                SELECT coalesce(jsonb_agg(
+                    jsonb_build_object(
+                        'versionNumber', v.version_number,
+                        'createdAt', v.created_at,
+                        'createdBy', jsonb_build_object(
+                            'id', vu.id,
+                            'name', vu.name,
+                            'type', vu.type
+                        ),
+                        'downloadPath', CASE WHEN v.document_key IS NOT NULL THEN '/employee/child-documents/' || v.child_document_id || '/pdf?version=' || v.version_number END
+                    ) ORDER BY v.version_number DESC
+                ), '[]'::jsonb)
+                FROM child_document_published_version v
+                JOIN evaka_user vu ON v.created_by = vu.id
+                WHERE v.child_document_id = cd.id
+            ) AS published_versions
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
@@ -98,6 +114,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
                 downloadPath = "/employee/child-documents/$documentId/pdf",
                 receivedBy = null,
                 sfiDeliveries = jsonColumn("sfi_deliveries"),
+                publishedVersions = jsonColumn("published_versions"),
             )
         }
         .exactlyOne()

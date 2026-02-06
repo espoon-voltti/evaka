@@ -41,25 +41,7 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
         contents={[
           {
             label: i18n.metadata.name,
-            value: (
-              <FixedSpaceRow>
-                <span>{document.name}</span>
-                {document.downloadPath !== null && (
-                  <Button
-                    appearance="inline"
-                    icon={faArrowDownToLine}
-                    text={i18n.metadata.downloadPdf}
-                    onClick={() => {
-                      window.open(
-                        `/api${document.downloadPath}`,
-                        '_blank',
-                        'noopener,noreferrer'
-                      )
-                    }}
-                  />
-                )}
-              </FixedSpaceRow>
-            )
+            value: document.name
           },
           {
             label: i18n.metadata.documentId,
@@ -75,6 +57,54 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
               ? `${document.createdBy.name} (${i18n.common.userTypes[document.createdBy.type]}) `
               : '-'
           },
+          ...(document.publishedVersions !== null
+            ? [
+                {
+                  label: i18n.metadata.publishedVersions,
+                  value:
+                    document.publishedVersions.length === 0 ? (
+                      i18n.metadata.notPublished
+                    ) : (
+                      <UnorderedList spacing="xxs">
+                        {orderBy(
+                          document.publishedVersions,
+                          (v) => v.versionNumber,
+                          'asc'
+                        ).map((version) => (
+                          <li key={version.versionNumber}>
+                            <FixedSpaceRow spacing="m" alignItems="center">
+                              <span>v{version.versionNumber}</span>
+                              <span>
+                                {version.createdAt.format(
+                                  'dd.MM.yyyy HH:mm:ss'
+                                )}
+                              </span>
+                              <span>
+                                {version.createdBy.name} (
+                                {i18n.common.userTypes[version.createdBy.type]})
+                              </span>
+                              {version.downloadPath !== null && (
+                                <Button
+                                  appearance="inline"
+                                  icon={faArrowDownToLine}
+                                  text={i18n.metadata.downloadPdf}
+                                  onClick={() => {
+                                    window.open(
+                                      `/api${version.downloadPath}`,
+                                      '_blank',
+                                      'noopener,noreferrer'
+                                    )
+                                  }}
+                                />
+                              )}
+                            </FixedSpaceRow>
+                          </li>
+                        ))}
+                      </UnorderedList>
+                    )
+                }
+              ]
+            : []),
           ...(document.receivedBy
             ? [
                 {

@@ -1426,16 +1426,32 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
 
     val decisionId = row.decision?.let { insert(it) }
 
-    return createUpdate {
-            sql(
-                """
-INSERT INTO child_document (id, created, created_by, type, status, child_id, template_id, content, published_content, modified_at, modified_by, content_locked_at, content_locked_by, document_key, published_at, published_by, answered_at, answered_by, process_id, decision_maker, decision_id)
-VALUES (${bind(row.id)}, ${if (row.created != null) bind(row.created) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.documentKey)}, ${bind(row.publishedAt)}, ${bind(row.publishedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
+    val documentId =
+        createUpdate {
+                sql(
+                    """
+INSERT INTO child_document (id, created, created_by, type, status, child_id, template_id, content, modified_at, modified_by, content_locked_at, content_locked_by, answered_at, answered_by, process_id, decision_maker, decision_id)
+VALUES (${bind(row.id)}, ${if (row.created != null) bind(row.created) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne()
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .exactlyOne<ChildDocumentId>()
+
+    // Insert published versions
+    row.publishedVersions.forEach { version ->
+        createUpdate {
+                sql(
+                    """
+INSERT INTO child_document_published_version (child_document_id, version_number, created_at, created_by, published_content, document_key)
+VALUES (${bind(documentId)}, ${bind(version.versionNumber)}, ${bind(version.createdAt)}, ${bind(version.createdBy)}, ${bind(version.publishedContent)}, ${bind(version.documentKey)})
+"""
+                )
+            }
+            .execute()
+    }
+
+    return documentId
 }
 
 fun Database.Transaction.insert(row: DevChildDocumentDecision): ChildDocumentDecisionId {
