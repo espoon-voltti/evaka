@@ -103,6 +103,10 @@ echo "Current environment:"
 mise env | grep EVAKA_ | sort
 """
 
+[tasks.dump-schema]
+description = "Dump the database schema to docs/db/schema.sql"
+run = "bin/dump-db-schema.sh > docs/db/schema.sql"
+
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"
 dir = "compose"
