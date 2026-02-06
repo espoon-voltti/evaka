@@ -5,109 +5,84 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_2
-import fi.espoo.evaka.testRoundTheClockDaycare
-import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id, openingDate = LocalDate.of(2000, 1, 1))
+    private val voucherDaycare =
+        DevDaycare(
+            areaId = area.id,
+            name = "Voucher Daycare",
+            openingDate = LocalDate.of(2000, 1, 1),
+            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+        )
+    private val roundTheClockDaycare =
+        DevDaycare(
+            areaId = area.id,
+            name = "Round The Clock Daycare",
+            openingDate = LocalDate.of(2000, 1, 1),
+            type = setOf(CareType.CENTRE),
+        )
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            testDecisionMaker_2.let {
-                tx.insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
-            }
-            tx.insert(testDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
-            tx.insert(testVoucherDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
-            tx.insert(testRoundTheClockDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
-            tx.insert(
-                DevDaycareGroup(
-                    id = GroupId(UUID.randomUUID()),
-                    daycareId = testDaycare.id,
-                    name = "Test group 1",
-                )
-            )
-            tx.insert(
-                DevDaycareGroup(
-                    id = GroupId(UUID.randomUUID()),
-                    daycareId = testVoucherDaycare.id,
-                    name = "Test voucher group 1",
-                )
-            )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(voucherDaycare)
+            tx.insert(roundTheClockDaycare)
+            tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Test group 1"))
+            tx.insert(DevDaycareGroup(daycareId = voucherDaycare.id, name = "Test voucher group 1"))
         }
     }
 
     @Test
     fun `children with correct age are found in report`() {
+        val adult1 = DevPerson()
+        val adult2 = DevPerson()
+        // Names document intent: "Sopiva" = right age, "Nuori" = too young, "Vanha" = too old
+        val children =
+            listOf(
+                DevPerson(
+                    dateOfBirth = LocalDate.of(2018, 6, 1),
+                    firstName = "Just",
+                    lastName = "Sopiva",
+                ),
+                DevPerson(
+                    dateOfBirth = LocalDate.of(2019, 7, 1),
+                    firstName = "Turhan",
+                    lastName = "Nuori",
+                ),
+                DevPerson(
+                    dateOfBirth = LocalDate.of(2017, 8, 1),
+                    firstName = "Liian",
+                    lastName = "Vanha",
+                ),
+            )
         db.transaction { tx ->
-            val children =
-                setOf(
-                    DevPerson(
-                        id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(2018, 6, 1),
-                        ssn = "111111-999X",
-                        firstName = "Just",
-                        lastName = "Sopiva",
-                        streetAddress = "Testitie 1",
-                        postalCode = "02770",
-                        postOffice = "Espoo",
-                        restrictedDetailsEnabled = false,
-                    ),
-                    DevPerson(
-                        id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(2019, 7, 1),
-                        ssn = "222222-998Y",
-                        firstName = "Turhan",
-                        lastName = "Nuori",
-                        streetAddress = "Testitie 2",
-                        postalCode = "02770",
-                        postOffice = "Espoo",
-                        restrictedDetailsEnabled = false,
-                    ),
-                    DevPerson(
-                        id = ChildId(UUID.randomUUID()),
-                        dateOfBirth = LocalDate.of(2017, 8, 1),
-                        ssn = "333333-997Z",
-                        firstName = "Liian",
-                        lastName = "Vanha",
-                        streetAddress = "Testitie 3",
-                        postalCode = "02770",
-                        postOffice = "Espoo",
-                        restrictedDetailsEnabled = false,
-                    ),
-                )
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            children.forEachIndexed { i, it ->
-                tx.insert(it, DevPersonType.CHILD)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(adult2, DevPersonType.RAW_ROW)
+            children.forEachIndexed { i, child ->
+                tx.insert(child, DevPersonType.CHILD)
                 tx.insert(
-                    DevPlacement(
-                        childId = it.id,
-                        unitId = testDaycare.id,
-                        endDate = LocalDate.now(),
-                    )
+                    DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
                 )
-                tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
-                if (i % 2 == 1) tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
+                tx.insert(DevGuardian(guardianId = adult1.id, childId = child.id))
+                if (i % 2 == 1) tx.insert(DevGuardian(guardianId = adult2.id, childId = child.id))
             }
         }
 
