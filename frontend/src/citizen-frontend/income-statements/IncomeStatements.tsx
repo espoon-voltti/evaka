@@ -110,6 +110,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                       data-qa="edit-income-statement"
                     />
                     <Button
+                      disabled={item.status === 'HANDLING'}
                       appearance="inline"
                       icon={faTrash}
                       text={
@@ -118,6 +119,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                           : t.income.table.actions.cancel
                       }
                       onClick={() => onRemoveIncomeStatement(item.id)}
+                      data-qa="delete-income-statement"
                     />
                   </>
                 )}
@@ -178,6 +180,7 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
                   data-qa="edit-income-statement"
                 />
                 <Button
+                  disabled={item.status === 'HANDLING'}
                   appearance="inline"
                   icon={faTrash}
                   text={
@@ -186,6 +189,7 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
                       : t.income.table.actions.cancel
                   }
                   onClick={() => onRemoveIncomeStatement(item.id)}
+                  data-qa="delete-income-statement"
                 />
               </>
             )}

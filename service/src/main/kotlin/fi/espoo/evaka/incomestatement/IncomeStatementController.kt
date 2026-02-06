@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -84,7 +85,10 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
     }
 
-    data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
+    data class SetIncomeStatementHandledBody(
+        val status: IncomeStatementStatus,
+        val handlerNote: String,
+    )
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setIncomeStatementHandled(
@@ -103,12 +107,17 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     Action.IncomeStatement.UPDATE_HANDLED,
                     incomeStatementId,
                 )
+
+                if (body.status == IncomeStatementStatus.DRAFT) {
+                    throw BadRequest("Cannot set income statement status to DRAFT")
+                }
+
                 tx.updateIncomeStatementHandled(
                     user,
                     clock.now(),
                     incomeStatementId,
                     body.handlerNote,
-                    body.handled,
+                    body.status,
                 )
             }
         }
@@ -123,13 +132,22 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @RequestBody body: SearchIncomeStatementsRequest,
     ): PagedIncomeStatementsAwaitingHandler {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { it ->
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
                         Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER,
                     )
+
+                    if (
+                        body.status?.any {
+                            it == IncomeStatementStatus.DRAFT || it == IncomeStatementStatus.HANDLED
+                        } ?: false
+                    ) {
+                        throw BadRequest("Invalid status filters")
+                    }
+
                     it.fetchIncomeStatementsAwaitingHandler(
                         clock.now().toLocalDate(),
                         body.areas ?: emptyList(),
@@ -138,6 +156,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.sentStartDate,
                         body.sentEndDate,
                         body.placementValidDate,
+                        body.status ?: emptyList(),
                         body.page,
                         pageSize = 50,
                         body.sortBy ?: IncomeStatementSortParam.SENT_AT,
@@ -186,6 +205,7 @@ data class SearchIncomeStatementsRequest(
     val sentStartDate: LocalDate? = null,
     val sentEndDate: LocalDate? = null,
     val placementValidDate: LocalDate? = null,
+    val status: List<IncomeStatementStatus>? = emptyList(),
 )
 
 enum class IncomeStatementSortParam {

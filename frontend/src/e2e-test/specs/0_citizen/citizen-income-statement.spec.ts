@@ -4,8 +4,11 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { testAdult } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import { Fixture, testAdult } from '../../dev-api/fixtures'
+import {
+  resetServiceState,
+  updateIncomeStatementHandled
+} from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual } from '../../utils'
@@ -299,6 +302,42 @@ describe.each(envs)('Income statements', (env) => {
       await incomeStatementsPage.submit()
 
       await assertIncomeStatementCreated(startDate2, now, env)
+    })
+  })
+
+  describe('Handling status', () => {
+    test('Citizen cannot delete income statement while employee is handling it', async () => {
+      const employee = await Fixture.employee().save()
+      const incomeStatement = await Fixture.incomeStatement({
+        personId: testAdult.id,
+        data: {
+          type: 'HIGHEST_FEE',
+          startDate: now.toLocalDate(),
+          endDate: null
+        },
+        status: 'SENT'
+      }).save()
+
+      await header.selectTab('income')
+      await incomeStatementsPage.assertNthIncomeStatementDeleteButtonDisabled(
+        0,
+        false
+      )
+
+      await updateIncomeStatementHandled({
+        body: {
+          incomeStatementId: incomeStatement.id,
+          employeeId: employee.id,
+          note: 'Handling income statement',
+          status: 'HANDLING'
+        }
+      })
+
+      await page.reload()
+      await incomeStatementsPage.assertNthIncomeStatementDeleteButtonDisabled(
+        0,
+        true
+      )
     })
   })
 })

@@ -73,6 +73,7 @@ import fi.espoo.evaka.holidayperiod.createOpenRangesQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.incomestatement.updateIncomeStatementHandled
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionProcessId
@@ -580,7 +581,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val employeeId: EmployeeId,
         val incomeStatementId: IncomeStatementId,
         val note: String,
-        val handled: Boolean,
+        val status: IncomeStatementStatus,
     )
 
     @PostMapping("/income-statement/update-handled")
@@ -596,7 +597,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     clock.now(),
                     body.incomeStatementId,
                     body.note,
-                    body.handled,
+                    body.status,
                 )
             }
         }

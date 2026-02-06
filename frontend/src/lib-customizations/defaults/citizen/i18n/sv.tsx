@@ -2705,6 +2705,7 @@ const sv: Translations = {
       statuses: {
         DRAFT: 'Utkast',
         SENT: 'Skickat',
+        HANDLING: 'Under handläggning',
         HANDLED: 'Handläggare'
       },
       actions: {

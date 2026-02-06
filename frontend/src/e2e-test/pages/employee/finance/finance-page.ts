@@ -493,6 +493,9 @@ export class IncomeStatementsPage {
   #providerTypeFilter = (type: ProviderType) =>
     new Checkable(this.page.findByDataQa(`provider-type-filter-${type}`))
 
+  #statusFilter = (status: 'SENT' | 'HANDLING') =>
+    new Checkable(this.page.findByDataQa(`status-filter-${status}`))
+
   async waitUntilLoaded() {
     await this.page
       .findByDataQa('income-statements-page')
@@ -505,6 +508,14 @@ export class IncomeStatementsPage {
 
   async unSelectProviderType(type: ProviderType) {
     await this.#providerTypeFilter(type).uncheck()
+  }
+
+  async selectStatus(status: 'SENT' | 'HANDLING') {
+    await this.#statusFilter(status).check()
+  }
+
+  async unSelectStatus(status: 'SENT' | 'HANDLING') {
+    await this.#statusFilter(status).uncheck()
   }
 
   async openNthIncomeStatementForGuardian(nth: number) {

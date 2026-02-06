@@ -2705,6 +2705,7 @@ export default {
       statuses: {
         DRAFT: 'Luonnos',
         SENT: 'Lähetetty',
+        HANDLING: 'Käsittelyssä',
         HANDLED: 'Käsitelty'
       },
       actions: {

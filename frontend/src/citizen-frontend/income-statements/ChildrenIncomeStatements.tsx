@@ -122,6 +122,7 @@ const ChildIncomeStatementsTable = React.memo(
                         data-qa={`edit-income-statement-${item.status}`}
                       />
                       <Button
+                        disabled={item.status === 'HANDLING'}
                         appearance="inline"
                         icon={faTrash}
                         text={
@@ -195,6 +196,7 @@ const ChildIncomeStatementsList = React.memo(
                     data-qa={`edit-income-statement-${item.status}`}
                   />
                   <Button
+                    disabled={item.status === 'HANDLING'}
                     appearance="inline"
                     icon={faTrash}
                     text={

@@ -88,8 +88,21 @@ describe('Income statements', () => {
     const incomeStatementPage = await incomesSection.openIncomeStatement(0)
 
     await incomeStatementPage.typeHandlerNote('this is a note')
-    await incomeStatementPage.setHandled(true)
-    await incomeStatementPage.submit()
+    await incomeStatementPage.moveToHandling()
+    await incomeStatementPage.assertStatus('Käsittelyssä')
+    await incomeStatementPage.returnToSent()
+    await incomeStatementPage.assertStatus('Odottaa käsittelyä')
+    await incomeStatementPage.moveToHandling()
+    await incomeStatementPage.markHandled()
+    await incomeStatementPage.assertStatus('Käsitelty')
+    await incomeStatementPage.returnToHandling()
+    await incomeStatementPage.assertStatus('Käsittelyssä')
+    await incomeStatementPage.markHandled()
+
+    await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await incomeStatementsPage.openNthIncomeStatementForGuardian(0)
 
     await waitUntilTrue(() => incomesSection.isIncomeStatementHandled(0))
     await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
@@ -156,6 +169,60 @@ describe('Income statements', () => {
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(0)
+  })
+
+  test('Income statement can be filtered by status', async () => {
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: today,
+        endDate: null
+      },
+      status: 'HANDLED',
+      handledAt: now,
+      handlerId: financeAdmin.id
+    }).save()
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: today,
+        endDate: null
+      },
+      status: 'HANDLING'
+    }).save()
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: {
+        type: 'HIGHEST_FEE',
+        startDate: today,
+        endDate: null
+      }
+    }).save()
+
+    const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+
+    await incomeStatementsPage.incomeStatementRows.assertCount(2)
+
+    await incomeStatementsPage.selectStatus('SENT')
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+
+    await incomeStatementsPage.unSelectStatus('SENT')
+    await incomeStatementsPage.selectStatus('HANDLING')
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+
+    await incomeStatementsPage.selectStatus('SENT')
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await incomeStatementsPage.incomeStatementRows.assertCount(2)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {

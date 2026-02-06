@@ -431,6 +431,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     ) {
         val incomeStatement =
             tx.readIncomeStatement(user, id) ?: throw NotFound("Income statement not found")
+        if (incomeStatement.status == IncomeStatementStatus.HANDLING) {
+            throw Forbidden("Income statement cannot be removed while being handled")
+        }
         if (incomeStatement.status == IncomeStatementStatus.HANDLED) {
             throw Forbidden("Handled income statement cannot be removed")
         }

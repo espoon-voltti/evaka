@@ -221,4 +221,14 @@ export default class CitizenIncomePage {
   async saveEditedIncomeStatement() {
     await this.page.find('button.primary').click()
   }
+
+  async assertNthIncomeStatementDeleteButtonDisabled(
+    nth: number,
+    disabled: boolean
+  ) {
+    await this.rows
+      .nth(nth)
+      .findByDataQa('delete-income-statement')
+      .assertDisabled(disabled)
+  }
 }

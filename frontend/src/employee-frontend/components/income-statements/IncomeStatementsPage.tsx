@@ -184,6 +184,7 @@ export default React.memo(function IncomeStatementsPage() {
             sentStartDate: searchFilters.sentStartDate ?? null,
             sentEndDate: searchFilters.sentEndDate ?? null,
             placementValidDate: searchFilters.placementValidDate ?? null,
+            status: searchFilters.status ?? null,
             page,
             sortBy,
             sortDirection

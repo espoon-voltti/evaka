@@ -28,6 +28,7 @@ import java.time.LocalDate
 enum class IncomeStatementStatus : DatabaseEnum {
     DRAFT,
     SENT,
+    HANDLING,
     HANDLED;
 
     override val sqlType: String = "income_statement_status"
@@ -592,7 +593,7 @@ fun Database.Transaction.updateIncomeStatementHandled(
     now: HelsinkiDateTime,
     incomeStatementId: IncomeStatementId,
     note: String,
-    handled: Boolean,
+    status: IncomeStatementStatus,
 ) {
     execute {
         sql(
@@ -601,9 +602,9 @@ UPDATE income_statement
 SET modified_at = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)},
     handler_note = ${bind(note)},
-    handler_id = ${bind(user.id.takeIf { handled })}, 
-    handled_at = ${bind(now.takeIf { handled })},
-    status = ${bind(if (handled) IncomeStatementStatus.HANDLED else IncomeStatementStatus.SENT)}
+    handler_id = ${bind(user.id.takeIf { status == IncomeStatementStatus.HANDLED })},
+    handled_at = ${bind(now.takeIf { status == IncomeStatementStatus.HANDLED })},
+    status = ${bind(status)}
 WHERE id = ${bind(incomeStatementId)}
 """
         )
@@ -641,6 +642,7 @@ private fun awaitingHandlerQuery(
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
     placementValidDate: LocalDate?,
+    status: List<IncomeStatementStatus>,
 ) = QuerySql {
     val filters =
         PredicateSql.allNotNull(
@@ -655,6 +657,14 @@ private fun awaitingHandlerQuery(
                     )
                 }
                 .takeIf { placementValidDate != null },
+            PredicateSql { where("i.status = ANY(${bind(status)})") }
+                .takeIf { status.isNotEmpty() },
+            PredicateSql {
+                    where(
+                        "i.status = 'SENT'::income_statement_status OR i.status = 'HANDLING'::income_statement_status"
+                    )
+                }
+                .takeIf { status.isEmpty() },
         )
     val sentStart = sentStartDate?.let { HelsinkiDateTime.atStartOfDay(it) }
     val sentEnd = sentEndDate?.let { HelsinkiDateTime.atStartOfDay(it.plusDays(1)) }
@@ -718,7 +728,6 @@ LEFT JOIN application a ON p.id IS NULL AND a.child_id IN (
 LEFT JOIN daycare d ON d.id IN (p.unit_id, a.primary_preferred_unit)
 LEFT JOIN care_area ca ON ca.id = d.care_area_id
 WHERE
-    i.status = 'SENT'::income_statement_status AND
     between_start_and_end(tstzrange(${bind(sentStart)}, ${bind(sentEnd)}, '[)'), i.sent_at) AND
     ${predicate(filters)}
 """
@@ -739,6 +748,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
     placementValidDate: LocalDate?,
+    status: List<IncomeStatementStatus>,
     page: Int,
     pageSize: Int,
     sortBy: IncomeStatementSortParam,
@@ -753,6 +763,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             sentStartDate,
             sentEndDate,
             placementValidDate,
+            status,
         )
     val count = createQuery { sql("SELECT COUNT(*) FROM (${subquery(query)}) q") }.exactlyOne<Int>()
     val sortColumn =

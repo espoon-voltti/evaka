@@ -1905,8 +1905,18 @@ export const fi = {
     },
     noNote: 'Tuloselvityksellä ei muistiinpanoa',
     handlerNotesForm: {
-      title: 'Käsittelijän muistiinpanot',
-      handled: 'Käsitelty',
+      title: 'Käsittely',
+      statusLabel: 'Tila',
+      status: {
+        SENT: 'Odottaa käsittelyä',
+        HANDLING: 'Käsittelyssä',
+        HANDLED: 'Käsitelty'
+      },
+      statusInfo:
+        'Kun tuloselvitys on käsittelyssä, kuntalainen ei voi perua hakemusta, mutta voi lisätä puuttuvia liitteitä.',
+      startHandlingBtn: 'Ota käsittelyyn',
+      markHandledBtn: 'Merkitse käsitellyksi',
+      returnToHandlingBtn: 'Palauta käsittelyyn',
       handlerNote: 'Muistiinpano (sisäinen)'
     },
     attachmentNames: {
@@ -3154,6 +3164,11 @@ export const fi = {
     paymentFreeTextPlaceholder: 'Haku maksun numerolla',
     incomeStatementSent: 'Tuloselvitys lähetetty',
     incomeStatementPlacementValidDate: 'Sijoitus voimassa',
+    incomeStatementStatusTitle: 'Näytä tilat',
+    incomeStatementStatus: {
+      SENT: 'Odottaa käsittelyä',
+      HANDLING: 'Käsittelyssä'
+    },
     showClosedUnits: 'Näytä suljetut yksiköt',
     hideClosedUnits: 'Piilota suljetut yksiköt'
   },

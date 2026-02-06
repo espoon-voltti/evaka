@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
@@ -26,6 +27,8 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let listPage: CitizenChildIncomeStatementListPage
+
+const now = HelsinkiDateTime.of(2024, 11, 25, 12)
 
 describe.each(envs)('Child Income statements (%s)', (env) => {
   beforeEach(async () => {
@@ -132,7 +135,7 @@ describe.each(envs)('Child Income statements (%s)', (env) => {
         incomeStatementId,
         employeeId: employee.id,
         note: '',
-        handled: true
+        status: 'HANDLED'
       }
     })
 
@@ -140,5 +143,35 @@ describe.each(envs)('Child Income statements (%s)', (env) => {
     const viewPage = await listPage.viewChildHandledIncomeStatement(0)
     await viewPage.otherInfo.assertTextEquals('foo bar baz')
     await viewPage.assertAttachmentExists('CHILD_INCOME', testFileName)
+  })
+
+  test('Citizen cannot delete child income statement while employee is handling it', async () => {
+    const employee = await Fixture.employee().save()
+    const incomeStatement = await Fixture.incomeStatement({
+      personId: testChild.id,
+      data: {
+        type: 'CHILD_INCOME',
+        otherInfo: 'Some other info',
+        startDate: now.toLocalDate(),
+        endDate: null,
+        attachmentIds: []
+      },
+      status: 'SENT'
+    }).save()
+
+    await header.selectTab('income')
+    await listPage.assertNthIncomeStatementDeleteButtonDisabled(0, false)
+
+    await updateIncomeStatementHandled({
+      body: {
+        incomeStatementId: incomeStatement.id,
+        employeeId: employee.id,
+        note: '',
+        status: 'HANDLING'
+      }
+    })
+
+    await page.reload()
+    await listPage.assertNthIncomeStatementDeleteButtonDisabled(0, true)
   })
 })

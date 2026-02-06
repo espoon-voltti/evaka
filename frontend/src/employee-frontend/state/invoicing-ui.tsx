@@ -18,6 +18,7 @@ import type {
   ProviderType,
   UnitStub
 } from 'lib-common/generated/api-types/daycare'
+import type { IncomeStatementStatus } from 'lib-common/generated/api-types/incomestatement'
 import type {
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
@@ -167,6 +168,7 @@ export interface IncomeStatementSearchFiltersRaw {
   sentStartDate: string
   sentEndDate: string
   placementValidDate: string
+  status: IncomeStatementStatus[]
 }
 
 export interface IncomeStatementSearchFilters extends Omit<
@@ -288,7 +290,8 @@ const defaultState: UiState = {
       providerTypes: [],
       sentStartDate: '',
       sentEndDate: '',
-      placementValidDate: ''
+      placementValidDate: '',
+      status: []
     },
     setSearchFilters: () => undefined,
     confirmedSearchFilters: undefined,
