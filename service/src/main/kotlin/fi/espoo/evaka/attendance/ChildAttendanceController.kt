@@ -403,11 +403,15 @@ class ChildAttendanceController(
                             tx.updateAttendanceEnd(
                                 attendanceId = ongoingAttendance.id,
                                 endTime = body.departed,
+                                now,
+                                user.evakaUserId,
                             )
                         } else {
                             tx.updateAttendanceEnd(
                                 attendanceId = ongoingAttendance.id,
                                 endTime = LocalTime.of(23, 59),
+                                now,
+                                user.evakaUserId,
                             )
                             generateSequence(ongoingAttendance.date.plusDays(1)) { it.plusDays(1) }
                                 .takeWhile { it <= today }
@@ -425,7 +429,7 @@ class ChildAttendanceController(
                                         unitId,
                                         date,
                                         TimeInterval(startTime, endTime),
-                                        clock.now(),
+                                        now,
                                         user.evakaUserId,
                                     )
                                 }
@@ -491,10 +495,12 @@ class ChildAttendanceController(
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
                     unitId,
                 )
+                val now = clock.now()
+
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                tx.getChildAttendanceId(childId, unitId, clock.now())?.also {
-                    tx.unsetAttendanceEndTime(it)
+                tx.getChildAttendanceId(childId, unitId, now)?.also {
+                    tx.unsetAttendanceEndTime(it, now, user.evakaUserId)
                 }
             }
         }

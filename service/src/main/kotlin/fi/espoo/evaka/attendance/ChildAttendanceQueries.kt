@@ -417,14 +417,27 @@ WHERE p.child_id = ANY(${bind(childIds)}) AND ${bind(today)} BETWEEN p.start_dat
         }
         .toMap { columnPair("child_id", "placement_type") }
 
-fun Database.Transaction.unsetAttendanceEndTime(attendanceId: ChildAttendanceId) {
-    execute { sql("UPDATE child_attendance SET end_time = NULL WHERE id = ${bind(attendanceId)}") }
-}
-
-fun Database.Transaction.updateAttendanceEnd(attendanceId: ChildAttendanceId, endTime: LocalTime) {
+fun Database.Transaction.unsetAttendanceEndTime(
+    attendanceId: ChildAttendanceId,
+    now: HelsinkiDateTime,
+    updatedById: EvakaUserId,
+) {
     execute {
         sql(
-            "UPDATE child_attendance SET end_time = ${bind(endTime)} WHERE id = ${bind(attendanceId)}"
+            "UPDATE child_attendance SET end_time = NULL, modified_at=${bind(now)}, modified_by=${bind(updatedById)} WHERE id = ${bind(attendanceId)}"
+        )
+    }
+}
+
+fun Database.Transaction.updateAttendanceEnd(
+    attendanceId: ChildAttendanceId,
+    endTime: LocalTime,
+    now: HelsinkiDateTime,
+    updatedById: EvakaUserId,
+) {
+    execute {
+        sql(
+            "UPDATE child_attendance SET end_time = ${bind(endTime)}, modified_at = ${bind(now)}, modified_by = ${bind(updatedById)} WHERE id = ${bind(attendanceId)}"
         )
     }
 }
