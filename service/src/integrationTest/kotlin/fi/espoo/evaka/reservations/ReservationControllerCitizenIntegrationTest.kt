@@ -63,7 +63,6 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.user.EvakaUserType
-import fi.espoo.evaka.withHolidays
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -696,6 +695,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `get reservations returns correct children every day in range`() {
+        val localMonday = LocalDate.of(2022, 1, 3)
+        val localTuesday = localMonday.plusDays(1)
+        val localWednesday = localMonday.plusDays(2)
+        val localThursday = localMonday.plusDays(3)
+        val localSundayLastWeek = localMonday.minusDays(1)
+        val localFridayLastWeek = localMonday.minusDays(3)
+
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
@@ -722,8 +728,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = child1.id,
                     unitId = daycare.id,
-                    startDate = monday,
-                    endDate = tuesday,
+                    startDate = localMonday,
+                    endDate = localTuesday,
                 )
             )
             tx.insert(
@@ -731,13 +737,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         type = PlacementType.DAYCARE,
                         childId = child2.id,
                         unitId = daycare.id,
-                        startDate = fridayLastWeek,
-                        endDate = tuesday,
+                        startDate = localFridayLastWeek,
+                        endDate = localTuesday,
                     )
                 )
                 .also { placementId ->
                     // contract days on monday and tuesday
-                    val period = FiniteDateRange(monday, tuesday)
+                    val period = FiniteDateRange(localMonday, localTuesday)
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -757,39 +763,35 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     type = PlacementType.PRESCHOOL,
                     childId = child3.id,
                     unitId = daycare.id,
-                    startDate = monday,
-                    endDate = thursday,
+                    startDate = localMonday,
+                    endDate = localThursday,
                 )
             )
 
             // child4 has no placement
 
-            // Term break on thursday
+            // Term break on wednesday
             tx.insertPreschoolTerm(
                 preschoolTerm2021.finnishPreschool,
                 preschoolTerm2021.swedishPreschool,
                 preschoolTerm2021.extendedTerm,
                 preschoolTerm2021.applicationPeriod,
-                DateSet.of(FiniteDateRange(thursday, thursday)),
+                DateSet.of(FiniteDateRange(localWednesday, localWednesday)),
             )
         }
 
+        val localMockNow = HelsinkiDateTime.of(localMonday.minusWeeks(2), LocalTime.of(12, 0))
         val res =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(wednesday)) {
-                getReservations(
-                    adult.user(CitizenAuthLevel.WEAK),
-                    FiniteDateRange(sundayLastWeek, thursday),
-                )
-            }
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(localSundayLastWeek, localThursday),
+                mockNow = localMockNow,
+            )
 
         assertEquals(
             ReservationsResponse(
                 reservableRange =
-                    FiniteDateRange(
-                        LocalDate.of(2021, 11, 8), // Next week's monday
-                        LocalDate.of(2022, 8, 31),
-                    ),
+                    FiniteDateRange(LocalDate.of(2021, 12, 27), LocalDate.of(2022, 8, 31)),
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -802,7 +804,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                             monthSummaries = emptyList(),
-                            upcomingPlacementStartDate = monday,
+                            upcomingPlacementStartDate = localMonday,
                             upcomingPlacementUnitName = daycare.name,
                         ),
                         ReservationChild(
@@ -814,7 +816,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
-                            upcomingPlacementStartDate = fridayLastWeek,
+                            upcomingPlacementStartDate = localFridayLastWeek,
                             upcomingPlacementUnitName = daycare.name,
                         ),
                         ReservationChild(
@@ -826,7 +828,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL,
                             monthSummaries = emptyList(),
-                            upcomingPlacementStartDate = monday,
+                            upcomingPlacementStartDate = localMonday,
                             upcomingPlacementUnitName = daycare.name,
                         ),
                         // child4 has no placements => not included
@@ -835,12 +837,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     listOf(
                         // sunday without children is included because weekends are always visible
                         ReservationResponseDay(
-                            date = sundayLastWeek,
+                            date = localSundayLastWeek,
                             holiday = false,
                             children = emptyList(),
                         ),
                         ReservationResponseDay(
-                            date = monday,
+                            date = localMonday,
                             holiday = false,
                             children =
                                 listOf(
@@ -854,7 +856,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     .sortedBy { it.childId },
                         ),
                         ReservationResponseDay(
-                            date = tuesday,
+                            date = localTuesday,
                             holiday = false,
                             children =
                                 listOf(
@@ -868,15 +870,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     .sortedBy { it.childId },
                         ),
                         ReservationResponseDay(
-                            date = wednesday,
-                            holiday = true,
-                            children = emptyList(), // Holiday, no children eligible for daycare
-                        ),
-                        ReservationResponseDay(
-                            date = thursday,
+                            date = localWednesday,
                             holiday = false,
                             children =
                                 listOf(dayChild(child3.id, scheduleType = ScheduleType.TERM_BREAK)),
+                        ),
+                        ReservationResponseDay(
+                            date = localThursday,
+                            holiday = true,
+                            children = emptyList(), // Holiday, no children eligible for daycare
                         ),
                     ),
             ),
@@ -886,6 +888,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `get reservations returns correct children every day in range with children in shift care`() {
+        val localMonday = LocalDate.of(2021, 12, 6)
+        val localTuesday = localMonday.plusDays(1)
+        val localWednesday = localMonday.plusDays(2)
+        val localSundayLastWeek = localMonday.minusDays(1)
+
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
@@ -921,8 +928,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         type = PlacementType.DAYCARE,
                         childId = child1.id,
                         unitId = roundTheClockDaycare.id,
-                        startDate = sundayLastWeek,
-                        endDate = tuesday,
+                        startDate = localSundayLastWeek,
+                        endDate = localTuesday,
                     )
                 )
                 .also { placementId ->
@@ -930,8 +937,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         DevServiceNeed(
                             confirmedBy = employee.evakaUserId,
                             placementId = placementId,
-                            startDate = sundayLastWeek,
-                            endDate = tuesday,
+                            startDate = localSundayLastWeek,
+                            endDate = localTuesday,
                             optionId = snDaycareFullDay35.id,
                             shiftCare = ShiftCareType.FULL,
                         )
@@ -944,12 +951,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         type = PlacementType.DAYCARE,
                         childId = child2.id,
                         unitId = daycare.id,
-                        startDate = sundayLastWeek,
-                        endDate = wednesday,
+                        startDate = localSundayLastWeek,
+                        endDate = localWednesday,
                     )
                 )
                 .also { placementId ->
-                    val period = FiniteDateRange(sundayLastWeek, tuesday)
+                    val period = FiniteDateRange(localSundayLastWeek, localTuesday)
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -964,22 +971,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 }
         }
 
+        val localMockNow = HelsinkiDateTime.of(localMonday.minusWeeks(2), LocalTime.of(12, 0))
         val res =
-            @Suppress("DEPRECATION")
-            withHolidays(setOf(tuesday)) {
-                getReservations(
-                    adult.user(CitizenAuthLevel.WEAK),
-                    FiniteDateRange(sundayLastWeek, wednesday),
-                )
-            }
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(localSundayLastWeek, localWednesday),
+                mockNow = localMockNow,
+            )
 
         assertEquals(
             ReservationsResponse(
                 reservableRange =
-                    FiniteDateRange(
-                        LocalDate.of(2021, 11, 8), // Next week's monday
-                        LocalDate.of(2022, 8, 31),
-                    ),
+                    FiniteDateRange(LocalDate.of(2021, 11, 29), LocalDate.of(2022, 8, 31)),
                 children =
                     // Sorted by date of birth, oldest child first
                     listOf(
@@ -992,7 +995,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
-                            upcomingPlacementStartDate = sundayLastWeek,
+                            upcomingPlacementStartDate = localSundayLastWeek,
                             upcomingPlacementUnitName = roundTheClockDaycare.name,
                         ),
                         ReservationChild(
@@ -1004,14 +1007,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                             monthSummaries = emptyList(),
-                            upcomingPlacementStartDate = sundayLastWeek,
+                            upcomingPlacementStartDate = localSundayLastWeek,
                             upcomingPlacementUnitName = daycare.name,
                         ),
                     ),
                 days =
                     listOf(
                         ReservationResponseDay(
-                            date = sundayLastWeek,
+                            date = localSundayLastWeek,
                             holiday = false,
                             children =
                                 listOf(
@@ -1035,29 +1038,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     .sortedBy { it.childId },
                         ),
                         ReservationResponseDay(
-                            date = monday,
-                            holiday = false,
-                            children =
-                                listOf(
-                                        dayChild(
-                                            child1.id,
-                                            shiftCare = true,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.ShiftCare(allDayTimeRange),
-                                        ),
-                                        dayChild(
-                                            child2.id,
-                                            shiftCare = true,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.IntermittentShiftCare(
-                                                    daycare.operationTimes[0]!!
-                                                ),
-                                        ),
-                                    )
-                                    .sortedBy { it.childId },
-                        ),
-                        ReservationResponseDay(
-                            date = tuesday,
+                            date = localMonday,
                             holiday = true,
                             children =
                                 listOf(
@@ -1081,7 +1062,29 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     .sortedBy { it.childId },
                         ),
                         ReservationResponseDay(
-                            date = wednesday,
+                            date = localTuesday,
+                            holiday = false,
+                            children =
+                                listOf(
+                                        dayChild(
+                                            child1.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.ShiftCare(allDayTimeRange),
+                                        ),
+                                        dayChild(
+                                            child2.id,
+                                            shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.IntermittentShiftCare(
+                                                    daycare.operationTimes[1]!!
+                                                ),
+                                        ),
+                                    )
+                                    .sortedBy { it.childId },
+                        ),
+                        ReservationResponseDay(
+                            date = localWednesday,
                             holiday = false,
                             children =
                                 listOf(
