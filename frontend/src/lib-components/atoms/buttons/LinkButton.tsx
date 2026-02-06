@@ -44,9 +44,6 @@ const baseStyles = css`
     padding: 0 ${defaultMargins.s};
   }
 
-  &:hover {
-    background-color: ${(p) => p.theme.colors.main.m2Hover};
-  }
   &:focus {
     box-shadow:
       0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},

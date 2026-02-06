@@ -133,7 +133,6 @@ const HoverButton = styled(Button)`
   animation-delay: 1.5s;
   @media (max-width: ${zoomedMobileMax}) {
     max-width: calc(100% - 10px);
-    white-space: wrap;
     right: ${defaultMargins.xs};
   }
 `
