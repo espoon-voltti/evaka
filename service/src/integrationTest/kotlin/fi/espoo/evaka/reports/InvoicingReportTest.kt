@@ -13,15 +13,12 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevInvoice
 import fi.espoo.evaka.shared.dev.DevInvoiceRow
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
 import java.time.LocalTime
 import java.time.YearMonth
 import java.util.UUID
@@ -37,6 +34,22 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val area2 = DevCareArea(areaCode = 200, name = "Area 2", shortName = "area2")
     private val daycare1 = DevDaycare(areaId = area1.id)
     private val daycare2 = DevDaycare(areaId = area2.id)
+    private val adult1 =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Testikatu 1",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult2 =
+        DevPerson(
+            ssn = "010180-2357",
+            streetAddress = "Testikatu 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
@@ -45,8 +58,8 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(area2)
             tx.insert(daycare1)
             tx.insert(daycare2)
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
@@ -99,19 +112,19 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         listOf(
             DevInvoice(
                 status = InvoiceStatus.SENT,
-                headOfFamilyId = testAdult_1.id,
+                headOfFamilyId = adult1.id,
                 areaId = area1.id,
-                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = daycare1.id)),
+                rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare1.id)),
             ),
             DevInvoice(
                 status = InvoiceStatus.SENT,
-                headOfFamilyId = testAdult_2.id,
+                headOfFamilyId = adult2.id,
                 areaId = area2.id,
-                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = daycare2.id)),
+                rows = listOf(DevInvoiceRow(childId = child2.id, unitId = daycare2.id)),
             ),
             DevInvoice(
                 status = InvoiceStatus.SENT,
-                headOfFamilyId = testAdult_2.id,
+                headOfFamilyId = adult2.id,
                 areaId = area2.id,
                 rows = listOf(),
             ),
