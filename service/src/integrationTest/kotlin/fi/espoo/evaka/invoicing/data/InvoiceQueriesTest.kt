@@ -7,17 +7,14 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevInvoice
 import fi.espoo.evaka.shared.dev.DevInvoiceRow
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -25,38 +22,45 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val adult1 = DevPerson()
+    private val adult2 = DevPerson()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
+
     private val testInvoices =
         listOf(
             DevInvoice(
                 status = InvoiceStatus.DRAFT,
-                headOfFamilyId = testAdult_1.id,
-                areaId = testArea.id,
-                rows = listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
+                headOfFamilyId = adult1.id,
+                areaId = area.id,
+                rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
             ),
             DevInvoice(
                 status = InvoiceStatus.SENT,
-                headOfFamilyId = testAdult_1.id,
-                areaId = testArea.id,
+                headOfFamilyId = adult1.id,
+                areaId = area.id,
                 number = 5000000001L,
-                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = testDaycare.id)),
+                rows = listOf(DevInvoiceRow(childId = child2.id, unitId = daycare.id)),
             ),
             DevInvoice(
                 status = InvoiceStatus.DRAFT,
-                headOfFamilyId = testAdult_1.id,
-                areaId = testArea.id,
+                headOfFamilyId = adult1.id,
+                areaId = area.id,
                 periodStart = LocalDate.of(2018, 1, 1),
                 periodEnd = LocalDate.of(2018, 1, 31),
-                rows = listOf(DevInvoiceRow(childId = testChild_2.id, unitId = testDaycare.id)),
+                rows = listOf(DevInvoiceRow(childId = child2.id, unitId = daycare.id)),
             ),
         )
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(area)
+            tx.insert(daycare)
+            listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
@@ -108,7 +112,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val invoice = result[0]
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { row ->
-                assertEquals(testChild_2.id, row.child.id)
+                assertEquals(child2.id, row.child.id)
                 assertEquals(28900, row.price)
             }
         }
@@ -121,11 +125,10 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     DevInvoice(
                         status = InvoiceStatus.SENT,
-                        headOfFamilyId = testAdult_1.id,
-                        areaId = testArea.id,
+                        headOfFamilyId = adult1.id,
+                        areaId = area.id,
                         number = 5000000123L,
-                        rows =
-                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
+                        rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
                     )
                 )
             )
@@ -143,11 +146,10 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .map {
                     DevInvoice(
                         status = InvoiceStatus.SENT,
-                        headOfFamilyId = testAdult_1.id,
-                        areaId = testArea.id,
+                        headOfFamilyId = adult1.id,
+                        areaId = area.id,
                         number = it,
-                        rows =
-                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
+                        rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
                     )
                 }
                 .let { invoices -> tx.insert(invoices) }
@@ -216,16 +218,15 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testInvoices.plus(
                     DevInvoice(
                         status = InvoiceStatus.DRAFT,
-                        headOfFamilyId = testAdult_2.id,
-                        areaId = testArea.id,
-                        rows =
-                            listOf(DevInvoiceRow(childId = testChild_1.id, unitId = testDaycare.id)),
+                        headOfFamilyId = adult2.id,
+                        areaId = area.id,
+                        rows = listOf(DevInvoiceRow(childId = child1.id, unitId = daycare.id)),
                     )
                 )
             )
 
-            assertEquals(testInvoices.size, tx.getHeadOfFamilyInvoices(testAdult_1.id).size)
-            assertEquals(1, tx.getHeadOfFamilyInvoices(testAdult_2.id).size)
+            assertEquals(testInvoices.size, tx.getHeadOfFamilyInvoices(adult1.id).size)
+            assertEquals(1, tx.getHeadOfFamilyInvoices(adult2.id).size)
         }
     }
 }
