@@ -25,11 +25,11 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -47,13 +47,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -62,81 +56,86 @@ import org.junit.jupiter.api.Test
 
 class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val testDate = LocalDate.of(2020, 3, 1)
-    private val testUnit = testDaycare
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val adult1 = DevPerson()
+    private val adult2 = DevPerson()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.insert(testArea)
-            it.insert(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id))
+            it.insert(area)
+            it.insert(daycare)
         }
     }
 
     @Test
     fun `adult with no family is cleaned up`() {
-        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.RAW_ROW) }
+        db.transaction { tx -> tx.insert(adult1, DevPersonType.RAW_ROW) }
 
-        assertCleanedUpPeople(testDate, setOf(testAdult_1.id))
+        assertCleanedUpPeople(testDate, setOf(adult1.id))
     }
 
     @Test
     fun `guardian and their child are cleaned up when neither have archive data`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
+            tx.insertGuardian(adult1.id, child1.id)
         }
 
-        assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testChild_1.id))
+        assertCleanedUpPeople(testDate, setOf(adult1.id, child1.id))
     }
 
     @Test
     fun `blocked guardian is not cleaned up without any archived data`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.blockGuardian(testChild_1.id, testAdult_1.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
+            tx.blockGuardian(child1.id, adult1.id)
         }
 
-        assertCleanedUpPeople(testDate, setOf(testChild_1.id))
+        assertCleanedUpPeople(testDate, setOf(child1.id))
     }
 
     @Test
     fun `head of family and their child are cleaned up when neither have archive data`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
         }
 
-        assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testChild_1.id))
+        assertCleanedUpPeople(testDate, setOf(adult1.id, child1.id))
     }
 
     @Test
     fun `head of family and their partner are cleaned up when neither have archive data`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(adult2, DevPersonType.RAW_ROW)
+            tx.insertTestPartnership(adult1 = adult1.id, adult2 = adult2.id)
         }
 
-        assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testAdult_2.id))
+        assertCleanedUpPeople(testDate, setOf(adult1.id, adult2.id))
     }
 
     @Test
     fun `adult with no family that has logged in recently is not cleaned up`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.execute {
                 sql(
-                    "UPDATE person SET last_login = ${bind(testDate.minusMonths(2))} WHERE id = ${bind(testAdult_1.id)}"
+                    "UPDATE person SET last_login = ${bind(testDate.minusMonths(2))} WHERE id = ${bind(adult1.id)}"
                 )
             }
         }
@@ -147,12 +146,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `guardian and their child are not cleaned up when guardian has logged in recently`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
+            tx.insertGuardian(adult1.id, child1.id)
             tx.execute {
                 sql(
-                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(testAdult_1.id)}"
+                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(adult1.id)}"
                 )
             }
         }
@@ -174,7 +173,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     type = ApplicationType.DAYCARE,
                     guardianId = applicationOwner,
                     childId = child,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    document =
+                        DaycareFormV0.fromApplication2(
+                            getValidDaycareApplication(preferredUnit = daycare)
+                        ),
                 )
             tx.syncApplicationOtherGuardians(application, testDate)
             tx.deleteGuardianRelationship(childId = child, guardianId = otherGuardian)
@@ -195,17 +197,17 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `head of family and their child are not cleaned up when child has a placement`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.CHILD)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
-            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
+            tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -214,26 +216,26 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `family with two children is not cleaned up when one of the children has a placement`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testChild_2, DevPersonType.CHILD)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child2.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
-            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
+            tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -242,28 +244,28 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `family with two children and two adults is not cleaned up when one of the children has a placement`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testChild_2, DevPersonType.CHILD)
-            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(adult2, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insertTestPartnership(adult1 = adult1.id, adult2 = adult2.id)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child2.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
-            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
+            tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -272,28 +274,28 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `family with two children with separate heads of family is not cleaned up when one of the children has a placement`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testChild_2, DevPersonType.CHILD)
-            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
+            tx.insert(adult2, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insertTestPartnership(adult1 = adult1.id, adult2 = adult2.id)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31),
                 )
             )
-            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
+            tx.insert(DevPlacement(childId = child1.id, unitId = daycare.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -302,10 +304,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `adult with income statement is not cleaned up`() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     data = IncomeStatementBody.HighestFee(LocalDate.now(), null),
                 )
             )
@@ -317,13 +319,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `adult and child with pedagogical document is not cleaned up`() {
         db.transaction { tx ->
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
             val docId = PedagogicalDocumentId(UUID.randomUUID())
-            tx.insert(DevPedagogicalDocument(docId, testChild_1.id, "document"))
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(DevPedagogicalDocument(docId, child1.id, "document"))
+            tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.createUpdate {
                     sql(
-                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(docId)}, ${bind(testDate)})"
+                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(docId)}, ${bind(testDate)})"
                     )
                 }
                 .execute()
@@ -354,7 +356,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
         db.transaction { tx ->
             tx.insert(employee)
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            tx.insert(child1, DevPersonType.RAW_ROW)
             val template =
                 tx.insert(
                     DevDocumentTemplate(
@@ -366,7 +368,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 tx.insert(
                     DevChildDocument(
                         status = DocumentStatus.COMPLETED,
-                        childId = testChild_1.id,
+                        childId = child1.id,
                         templateId = template,
                         content = documentContent,
                         modifiedAt = HelsinkiDateTime.now(),
@@ -384,10 +386,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                             ),
                     )
                 )
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(adult1, DevPersonType.RAW_ROW)
             tx.createUpdate {
                     sql(
-                        "INSERT INTO child_document_read (person_id, document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(document)}, ${bind(testDate)})"
+                        "INSERT INTO child_document_read (person_id, document_id, read_at) VALUES (${bind(adult1.id)}, ${bind(document)}, ${bind(testDate)})"
                     )
                 }
                 .execute()
@@ -400,14 +402,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `adult with received messages is cleaned up`() {
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
-            val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insert(
-                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
-            )
-            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
+            val supervisor = DevEmployee()
+            tx.insert(supervisor)
+            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisor.id)
 
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            val personAccount = tx.getCitizenMessageAccount(testAdult_1.id)
+            tx.insert(adult1, DevPersonType.ADULT)
+            val personAccount = tx.getCitizenMessageAccount(adult1.id)
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId =
@@ -433,21 +433,19 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
 
-        assertCleanedUpPeople(testDate, setOf(testAdult_1.id))
+        assertCleanedUpPeople(testDate, setOf(adult1.id))
     }
 
     @Test
     fun `adult with sent messages is not cleaned up`() {
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
-            val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insert(
-                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
-            )
-            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
+            val supervisor = DevEmployee()
+            tx.insert(supervisor)
+            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisor.id)
 
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            val personAccount = tx.getCitizenMessageAccount(testAdult_1.id)
+            tx.insert(adult1, DevPersonType.ADULT)
+            val personAccount = tx.getCitizenMessageAccount(adult1.id)
 
             val contentId = tx.insertMessageContent("content", personAccount)
             val threadId =
