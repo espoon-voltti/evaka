@@ -15,8 +15,6 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,14 +34,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.toEvakaUser
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.util.*
@@ -64,8 +54,14 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
-    val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
-    val employeeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id, language = Language.sv)
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val adult = DevPerson()
+    private val child = DevPerson(dateOfBirth = java.time.LocalDate.of(2017, 6, 1))
+
+    val citizen = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+    val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
 
     val templateId = DocumentTemplateId(UUID.randomUUID())
 
@@ -91,16 +87,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare.copy(language = Language.sv))
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(DevGuardian(testAdult_1.id, testChild_1.id))
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(DevGuardian(adult.id, child.id))
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = clock.today(),
                     endDate = clock.today().plusDays(5),
                 )
@@ -119,7 +115,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 DevChildDocument(
                     id = documentId,
                     status = DocumentStatus.DRAFT,
-                    childId = testChild_1.id,
+                    childId = child.id,
                     templateId = templateId,
                     content = documentContent,
                     modifiedAt = clock.now(),
@@ -135,8 +131,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     @Test
     fun `Unpublished document is not shown`() {
-        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
-        assertEquals(emptyList(), getDocumentsByChild(testChild_1.id))
+        assertEquals(mapOf(child.id to 0), getUnreadCount())
+        assertEquals(emptyList(), getDocumentsByChild(child.id))
         assertThrows<Forbidden> { getDocument(documentId) }
     }
 
@@ -150,7 +146,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             template.confidentiality,
         )
 
-        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
+        assertEquals(mapOf(child.id to 1), getUnreadCount())
         assertEquals(
             listOf(
                 ChildDocumentCitizenSummary(
@@ -162,16 +158,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unread = true,
                     child =
                         ChildBasics(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            dateOfBirth = child.dateOfBirth,
                         ),
                     answeredAt = null,
                     answeredBy = null,
                 )
             ),
-            getDocumentsByChild(testChild_1.id),
+            getDocumentsByChild(child.id),
         )
         assertEquals(
             ChildDocumentCitizenDetails(
@@ -182,10 +178,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 content = documentContent,
                 child =
                     ChildBasics(
-                        id = testChild_1.id,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
-                        dateOfBirth = testChild_1.dateOfBirth,
+                        id = child.id,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        dateOfBirth = child.dateOfBirth,
                     ),
                 template = template,
             ),
@@ -193,8 +189,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
         )
 
         putDocumentRead(documentId)
-        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
-        assertFalse(getDocumentsByChild(testChild_1.id).first().unread)
+        assertEquals(mapOf(child.id to 0), getUnreadCount())
+        assertFalse(getDocumentsByChild(child.id).first().unread)
 
         assertEquals(200, downloadChildDocument(documentId).statusCode.value())
     }
@@ -204,10 +200,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
         publishDocument(documentId)
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
+        assertEquals(mapOf(child.id to 1), getUnreadCount())
         assertEquals(documentContent, getDocument(documentId).content)
         putDocumentRead(documentId)
-        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+        assertEquals(mapOf(child.id to 0), getUnreadCount())
 
         val updatedContent =
             DocumentContent(
@@ -215,13 +211,13 @@ class ChildDocumentControllerCitizenIntegrationTest :
             )
         updateDocumentContent(documentId, updatedContent)
 
-        assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
+        assertEquals(mapOf(child.id to 0), getUnreadCount())
         assertEquals(documentContent, getDocument(documentId).content)
 
         publishDocument(documentId)
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
+        assertEquals(mapOf(child.id to 1), getUnreadCount())
         assertEquals(updatedContent, getDocument(documentId).content)
     }
 
@@ -240,7 +236,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 tx.insert(
                     DevChildDocument(
                         status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = testChild_1.id,
+                        childId = child.id,
                         templateId = templateId,
                         content = documentContent,
                         modifiedAt = clock.now(),
@@ -272,10 +268,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unread = true,
                     child =
                         ChildBasics(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            dateOfBirth = child.dateOfBirth,
                         ),
                     answeredAt = null,
                     answeredBy = null,
@@ -300,7 +296,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             ),
         )
 
-        val documents = getDocumentsByChild(testChild_1.id)
+        val documents = getDocumentsByChild(child.id)
         assertEquals(
             listOf(
                 ChildDocumentCitizenSummary(
@@ -312,13 +308,18 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     unread = true,
                     child =
                         ChildBasics(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            dateOfBirth = child.dateOfBirth,
                         ),
                     answeredAt = clock.now(),
-                    answeredBy = testAdult_1.toEvakaUser(EvakaUserType.CITIZEN),
+                    answeredBy =
+                        EvakaUser(
+                            id = adult.evakaUserId(),
+                            name = "${adult.lastName} ${adult.firstName}",
+                            type = EvakaUserType.CITIZEN,
+                        ),
                 )
             ),
             documents.filter { it.type == ChildDocumentType.CITIZEN_BASIC },
@@ -333,10 +334,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 content = content,
                 child =
                     ChildBasics(
-                        id = testChild_1.id,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
-                        dateOfBirth = testChild_1.dateOfBirth,
+                        id = child.id,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        dateOfBirth = child.dateOfBirth,
                     ),
                 template = template.toDocumentTemplate(),
             ),
@@ -357,12 +358,16 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     content = templateContent,
                 )
                 .also { db.transaction { tx -> tx.insert(it) } }
+
+        val adult2 = DevPerson()
+        val child2 = DevPerson(dateOfBirth = java.time.LocalDate.of(2016, 3, 1))
+
         val child1DocumentId =
             db.transaction { tx ->
                 tx.insert(
                     DevChildDocument(
                         status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = testChild_1.id,
+                        childId = child.id,
                         templateId = template.id,
                         content = documentContent,
                         modifiedAt = clock.now(),
@@ -385,13 +390,13 @@ class ChildDocumentControllerCitizenIntegrationTest :
             }
         val child2DocumentId =
             db.transaction { tx ->
-                tx.insert(testChild_2, DevPersonType.CHILD)
-                tx.insert(testAdult_2, DevPersonType.ADULT)
-                tx.insert(DevGuardian(testAdult_2.id, testChild_2.id))
+                tx.insert(child2, DevPersonType.CHILD)
+                tx.insert(adult2, DevPersonType.ADULT)
+                tx.insert(DevGuardian(adult2.id, child2.id))
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
+                        childId = child2.id,
+                        unitId = daycare.id,
                         startDate = clock.today(),
                         endDate = clock.today().plusDays(5),
                     )
@@ -399,7 +404,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 tx.insert(
                     DevChildDocument(
                         status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = testChild_2.id,
+                        childId = child2.id,
                         templateId = template.id,
                         content = documentContent,
                         modifiedAt = clock.now(),
@@ -431,10 +436,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 unread = true,
                 child =
                     ChildBasics(
-                        id = testChild_1.id,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
-                        dateOfBirth = testChild_1.dateOfBirth,
+                        id = child.id,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        dateOfBirth = child.dateOfBirth,
                     ),
                 answeredAt = null,
                 answeredBy = null,
@@ -449,22 +454,22 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 unread = true,
                 child =
                     ChildBasics(
-                        id = testChild_1.id,
-                        firstName = testChild_1.firstName,
-                        lastName = testChild_1.lastName,
-                        dateOfBirth = testChild_1.dateOfBirth,
+                        id = child.id,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        dateOfBirth = child.dateOfBirth,
                     ),
                 answeredAt = null,
                 answeredBy = null,
             )
-        assertEquals(mapOf(testChild_1.id to 2), getUnreadCount())
+        assertEquals(mapOf(child.id to 2), getUnreadCount())
         assertEquals(
             listOf(summary11, summary12),
-            getDocumentsByChild(testChild_1.id).sortedBy { it.type },
+            getDocumentsByChild(child.id).sortedBy { it.type },
         )
         assertEquals(listOf(summary12), getUnansweredChildDocuments())
-        assertThrows<Forbidden> { getDocumentsByChild(testChild_2.id) }
-        val citizen2 = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        assertThrows<Forbidden> { getDocumentsByChild(child2.id) }
+        val citizen2 = AuthenticatedUser.Citizen(adult2.id, CitizenAuthLevel.STRONG)
         val summary2 =
             ChildDocumentCitizenSummary(
                 id = child2DocumentId,
@@ -475,18 +480,18 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 unread = true,
                 child =
                     ChildBasics(
-                        id = testChild_2.id,
-                        firstName = testChild_2.firstName,
-                        lastName = testChild_2.lastName,
-                        dateOfBirth = testChild_2.dateOfBirth,
+                        id = child2.id,
+                        firstName = child2.firstName,
+                        lastName = child2.lastName,
+                        dateOfBirth = child2.dateOfBirth,
                     ),
                 answeredAt = null,
                 answeredBy = null,
             )
-        assertEquals(mapOf(testChild_2.id to 1), getUnreadCount(user = citizen2))
-        assertEquals(listOf(summary2), getDocumentsByChild(testChild_2.id, user = citizen2))
+        assertEquals(mapOf(child2.id to 1), getUnreadCount(user = citizen2))
+        assertEquals(listOf(summary2), getDocumentsByChild(child2.id, user = citizen2))
         assertEquals(listOf(summary2), getUnansweredChildDocuments(user = citizen2))
-        assertThrows<Forbidden> { getDocumentsByChild(testChild_1.id, user = citizen2) }
+        assertThrows<Forbidden> { getDocumentsByChild(child.id, user = citizen2) }
     }
 
     @Test
@@ -500,41 +505,30 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 )
                 .also { db.transaction { tx -> tx.insert(it) } }
 
-        val adult =
-            DevPerson(PersonId(UUID.randomUUID())).also {
-                db.transaction { tx -> tx.insert(it, DevPersonType.ADULT) }
-            }
-        val child =
-            DevPerson(PersonId(UUID.randomUUID())).also {
-                db.transaction { tx -> tx.insert(it, DevPersonType.CHILD) }
-            }
-        db.transaction { tx -> tx.insert(DevGuardian(adult.id, child.id)) }
+        val localAdult = DevPerson()
+        val localChild = DevPerson()
+        val localEmployee = DevEmployee()
 
-        val adultUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
-        val employee =
-            DevEmployee(EmployeeId(UUID.randomUUID())).also {
-                db.transaction { tx -> tx.insert(it) }
-            }
-        val employeeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(localAdult, DevPersonType.ADULT)
+            tx.insert(localChild, DevPersonType.CHILD)
+            tx.insert(DevGuardian(localAdult.id, localChild.id))
+            tx.insert(localEmployee)
+        }
 
-        val careArea =
-            DevCareArea(shortName = "test_care_area").also {
-                db.transaction { tx -> tx.insert(it) }
-            }
-        val daycare =
-            DevDaycare(areaId = careArea.id).also { db.transaction { tx -> tx.insert(it) } }
+        val localEmployeeUser = AuthenticatedUser.Employee(localEmployee.id, setOf(UserRole.ADMIN))
 
         db.transaction { tx ->
             tx.insert(
                 DevChildDocument(
                     status = DocumentStatus.CITIZEN_DRAFT,
-                    childId = child.id,
+                    childId = localChild.id,
                     templateId = template.id,
                     content = documentContent,
                     modifiedAt = clock.now(),
-                    modifiedBy = employeeUser.evakaUserId,
+                    modifiedBy = localEmployeeUser.evakaUserId,
                     contentLockedAt = clock.now(),
-                    contentLockedBy = employeeUser.id,
+                    contentLockedBy = localEmployeeUser.id,
                     answeredAt = null,
                     answeredBy = null,
                     publishedVersions =
@@ -551,7 +545,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
             tx.insert(
                 DevPlacement(
-                    childId = child.id,
+                    childId = localChild.id,
                     unitId = daycare.id,
                     startDate = clock.today().minusDays(1),
                     endDate = clock.today().minusDays(1),
@@ -559,7 +553,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
             )
         }
 
-        assertThrows<Forbidden> { getDocumentsByChild(child.id, adultUser) }
+        val adultUser = AuthenticatedUser.Citizen(localAdult.id, CitizenAuthLevel.STRONG)
+        assertThrows<Forbidden> { getDocumentsByChild(localChild.id, adultUser) }
     }
 
     @Test
@@ -576,7 +571,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         val childDocumentBase =
             DevChildDocument(
                 status = DocumentStatus.COMPLETED,
-                childId = testChild_1.id,
+                childId = child.id,
                 templateId = template.id,
                 content = documentContent,
                 modifiedAt = now,
@@ -615,10 +610,18 @@ class ChildDocumentControllerCitizenIntegrationTest :
             }
 
         assertThat(getUnansweredChildDocuments()).isEmpty()
-        assertThat(getDocumentsByChild(testChild_1.id))
+        assertThat(getDocumentsByChild(child.id))
             .extracting({ it.id }, { it.answeredAt }, { it.answeredBy })
             .containsExactlyInAnyOrder(
-                Tuple(answeredByCitizenId, now, testAdult_1.toEvakaUser(EvakaUserType.CITIZEN)),
+                Tuple(
+                    answeredByCitizenId,
+                    now,
+                    EvakaUser(
+                        id = adult.evakaUserId(),
+                        name = "${adult.lastName} ${adult.firstName}",
+                        type = EvakaUserType.CITIZEN,
+                    ),
+                ),
                 Tuple(
                     answeredByEmployeeId,
                     now,
