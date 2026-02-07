@@ -40,7 +40,7 @@ dependencies {
         api(libs.mockito.junit.jupiter)
         api("org.mockito.kotlin:mockito-kotlin:6.2.3")
         api("org.postgresql:postgresql:42.7.9")
-        api("org.checkerframework:checker-qual:3.53.0")
+        api("org.checkerframework:checker-qual:3.53.1")
         api("org.skyscreamer:jsonassert:1.5.3")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
         api("org.thymeleaf:thymeleaf:3.1.3.RELEASE")
