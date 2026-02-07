@@ -10,7 +10,6 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentController
 import fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -25,9 +24,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.UiLanguage
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -41,9 +37,21 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired lateinit var controller: DocumentTemplateController
     @Autowired lateinit var childDocumentController: ChildDocumentController
 
-    lateinit var employeeUser: AuthenticatedUser.Employee
-
-    val now = MockEvakaClock(2022, 1, 1, 15, 0)
+    private val now = MockEvakaClock(2022, 1, 1, 15, 0)
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            language = Language.sv,
+            enabledPilotFeatures =
+                setOf(
+                    PilotFeature.VASU_AND_PEDADOC,
+                    PilotFeature.OTHER_DECISION,
+                    PilotFeature.CITIZEN_BASIC_DOCUMENT,
+                ),
+        )
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val child = DevPerson()
 
     val testContent =
         DocumentTemplateContent(
@@ -78,27 +86,14 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            employeeUser =
-                tx.insert(DevEmployee()).let {
-                    AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
-                }
-            tx.insert(testArea)
-            tx.insert(
-                testDaycare.copy(
-                    language = Language.sv,
-                    enabledPilotFeatures =
-                        setOf(
-                            PilotFeature.VASU_AND_PEDADOC,
-                            PilotFeature.OTHER_DECISION,
-                            PilotFeature.CITIZEN_BASIC_DOCUMENT,
-                        ),
-                )
-            )
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today().plusDays(5),
                 )
@@ -109,7 +104,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `test basic crud`() {
         val created =
-            controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
+            controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
 
         assertEquals(testCreationRequest.name, created.name)
         assertEquals(testCreationRequest.type, created.type)
@@ -121,7 +116,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(testCreationRequest.archiveDurationMonths, created.archiveDurationMonths)
         assertEquals(DocumentTemplateContent(sections = emptyList()), created.content)
 
-        val summaries = controller.getTemplates(dbInstance(), employeeUser, now)
+        val summaries = controller.getTemplates(dbInstance(), employee.user, now)
         assertEquals(
             listOf(
                 DocumentTemplateSummary(
@@ -140,7 +135,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         controller.updateDraftTemplateBasics(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             testCreationRequest.copy(
@@ -156,15 +151,15 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         controller.updateDraftTemplateContent(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             testContent,
         )
         val newValidity = DateRange(LocalDate.of(2022, 5, 1), LocalDate.of(2022, 9, 1))
-        controller.updateTemplateValidity(dbInstance(), employeeUser, now, created.id, newValidity)
+        controller.updateTemplateValidity(dbInstance(), employee.user, now, created.id, newValidity)
 
-        val fetched = controller.getTemplate(dbInstance(), employeeUser, now, created.id)
+        val fetched = controller.getTemplate(dbInstance(), employee.user, now, created.id)
         assertEquals(
             created.copy(
                 name = "name2",
@@ -180,34 +175,34 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             fetched,
         )
 
-        controller.deleteDraftTemplate(dbInstance(), employeeUser, now, created.id)
+        controller.deleteDraftTemplate(dbInstance(), employee.user, now, created.id)
 
-        val summaries2 = controller.getTemplates(dbInstance(), employeeUser, now)
+        val summaries2 = controller.getTemplates(dbInstance(), employee.user, now)
         assertEquals(emptyList(), summaries2)
         assertThrows<NotFound> {
-            controller.getTemplate(dbInstance(), employeeUser, now, created.id)
+            controller.getTemplate(dbInstance(), employee.user, now, created.id)
         }
     }
 
     @Test
     fun `test publishing, after which basics and content cannot be updated or template deleted`() {
         val created =
-            controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
+            controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
         controller.updateDraftTemplateContent(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             testContent,
         )
-        controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, created.id)
 
-        assertTrue(controller.getTemplate(dbInstance(), employeeUser, now, created.id).published)
+        assertTrue(controller.getTemplate(dbInstance(), employee.user, now, created.id).published)
 
         assertThrows<BadRequest> {
             controller.updateDraftTemplateBasics(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 created.id,
                 testCreationRequest.copy(name = "changed"),
@@ -217,7 +212,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<BadRequest> {
             controller.updateDraftTemplateContent(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 created.id,
                 testContent,
@@ -225,13 +220,13 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         }
 
         assertThrows<BadRequest> {
-            controller.deleteDraftTemplate(dbInstance(), employeeUser, now, created.id)
+            controller.deleteDraftTemplate(dbInstance(), employee.user, now, created.id)
         }
 
         // validity period can still be updated
         controller.updateTemplateValidity(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             DateRange(LocalDate.of(2000, 1, 1), null),
@@ -240,31 +235,31 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `document count`() {
-        val child = DevPerson()
-        db.transaction { tx -> tx.insert(child, DevPersonType.CHILD) }
+        val otherChild = DevPerson()
+        db.transaction { tx -> tx.insert(otherChild, DevPersonType.CHILD) }
 
         val created =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(validity = DateRange(now.today(), null)),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, created.id)
 
-        controller.getTemplates(dbInstance(), employeeUser, now).also {
+        controller.getTemplates(dbInstance(), employee.user, now).also {
             assertEquals(1, it.size)
             assertEquals(0, it.first().documentCount)
         }
 
         childDocumentController.createDocument(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
-            ChildDocumentCreateRequest(child.id, created.id),
+            ChildDocumentCreateRequest(otherChild.id, created.id),
         )
 
-        controller.getTemplates(dbInstance(), employeeUser, now).also {
+        controller.getTemplates(dbInstance(), employee.user, now).also {
             assertEquals(1, it.size)
             assertEquals(1, it.first().documentCount)
         }
@@ -273,21 +268,21 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `template can be duplicated`() {
         val created =
-            controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
+            controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
         controller.updateDraftTemplateContent(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             testContent,
         )
-        controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, created.id)
 
         val newValidity = DateRange(LocalDate.of(2022, 5, 1), LocalDate.of(2022, 9, 1))
         val copy =
             controller.duplicateTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 created.id,
                 DocumentTemplateBasicsRequest.Regular(
@@ -315,22 +310,22 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(1200, copy.archiveDurationMonths)
         assertEquals(false, copy.published)
         assertEquals(testContent, copy.content)
-        assertEquals(copy, controller.getTemplate(dbInstance(), employeeUser, now, copy.id))
+        assertEquals(copy, controller.getTemplate(dbInstance(), employee.user, now, copy.id))
     }
 
     @Test
     fun `template can be exported`() {
         val request = testCreationRequest.copy(placementTypes = setOf(PlacementType.DAYCARE))
-        val created = controller.createTemplate(dbInstance(), employeeUser, now, request)
+        val created = controller.createTemplate(dbInstance(), employee.user, now, request)
         controller.updateDraftTemplateContent(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             created.id,
             testContent,
         )
 
-        val exported = controller.exportTemplate(dbInstance(), employeeUser, now, created.id)
+        val exported = controller.exportTemplate(dbInstance(), employee.user, now, created.id)
 
         assertEquals(request.toExported(testContent), exported.body)
     }
@@ -340,16 +335,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
                     validity = DateRange(now.today(), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertEquals(1, active.size)
         assertEquals(template.id, active.first().id)
     }
@@ -359,7 +354,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val pedaTemplate =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
@@ -367,17 +362,17 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = ChildDocumentType.VASU,
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, pedaTemplate.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, pedaTemplate.id)
         assertEquals(
             1,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
 
         removePilotFeature(PilotFeature.VASU_AND_PEDADOC)
 
         assertEquals(
             0,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
     }
 
@@ -386,7 +381,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
@@ -395,17 +390,17 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = ChildDocumentType.OTHER_DECISION,
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
         assertEquals(
             1,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
 
         removePilotFeature(PilotFeature.OTHER_DECISION)
 
         assertEquals(
             0,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
     }
 
@@ -414,7 +409,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
@@ -422,17 +417,17 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = ChildDocumentType.CITIZEN_BASIC,
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
         assertEquals(
             1,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
 
         removePilotFeature(PilotFeature.CITIZEN_BASIC_DOCUMENT)
 
         assertEquals(
             0,
-            controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id).size,
+            controller.getActiveTemplates(dbInstance(), employee.user, now, child.id).size,
         )
     }
 
@@ -443,7 +438,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         """
     UPDATE daycare
     SET enabled_pilot_features = array_remove(enabled_pilot_features, '${pilotFeature.name.uppercase()}')
-    WHERE id = ${bind(testDaycare.id)}
+    WHERE id = ${bind(daycare.id)}
     """
                     )
                 }
@@ -455,7 +450,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `active templates endpoint does not return draft templates`() {
         controller.createTemplate(
             dbInstance(),
-            employeeUser,
+            employee.user,
             now,
             testCreationRequest.copy(
                 language = UiLanguage.SV,
@@ -463,7 +458,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             ),
         )
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertTrue(active.isEmpty())
     }
 
@@ -472,16 +467,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
                     validity = DateRange(now.today().plusDays(1), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertTrue(active.isEmpty())
     }
 
@@ -490,16 +485,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
                     validity = DateRange(now.today().minusDays(10), now.today().minusDays(1)),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertTrue(active.isEmpty())
     }
 
@@ -508,16 +503,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.FI,
                     validity = DateRange(now.today(), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertTrue(active.isEmpty())
     }
 
@@ -525,8 +520,15 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `active templates endpoint does not return templates in swedish when placement unit is finnish`() {
         val childId =
             db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea(shortName = "area2"))
-                val daycareId = tx.insert(DevDaycare(areaId = areaId, language = Language.fi))
+                val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            name = "Finnish Daycare",
+                            language = Language.fi,
+                        )
+                    )
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
@@ -541,16 +543,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     language = UiLanguage.SV,
                     validity = DateRange(now.today(), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, childId)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
         assertTrue(active.isEmpty())
     }
 
@@ -559,7 +561,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     placementTypes = setOf(PlacementType.PRESCHOOL),
@@ -567,22 +569,22 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     validity = DateRange(now.today(), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, child.id)
         assertTrue(active.isEmpty())
     }
 
     @Test
     fun `active templates endpoint returns templates when placement is changing`() {
-
         val childId =
             db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea(shortName = "area2"))
+                val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
                 val daycareId =
                     tx.insert(
                         DevDaycare(
                             areaId = areaId,
+                            name = "Finnish Daycare",
                             language = Language.fi,
                             enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
                         )
@@ -611,7 +613,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val template =
             controller.createTemplate(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 testCreationRequest.copy(
                     type = ChildDocumentType.CITIZEN_BASIC,
@@ -620,9 +622,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     validity = DateRange(now.today().minusMonths(3), null),
                 ),
             )
-        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
 
-        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, childId)
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
         assertEquals(1, active.size)
         assertEquals(template.id, active.first().id)
     }
@@ -630,12 +632,12 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `section ids must be unique`() {
         val created =
-            controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
+            controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
 
         assertThrows<BadRequest> {
             controller.updateDraftTemplateContent(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 created.id,
                 DocumentTemplateContent(
@@ -652,12 +654,12 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `question ids must be unique`() {
         val created =
-            controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
+            controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
 
         assertThrows<BadRequest> {
             controller.updateDraftTemplateContent(
                 dbInstance(),
-                employeeUser,
+                employee.user,
                 now,
                 created.id,
                 DocumentTemplateContent(
