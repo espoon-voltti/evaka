@@ -13,24 +13,21 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.shared.FeeThresholdsId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
-import java.util.*
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,11 +39,22 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val adult =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2020, 1, 1))
+    private val employee = DevEmployee()
+
     val originalRange = dateRange(10, 20)
 
     val now = MockEvakaClock(2023, 1, 1, 0, 0)
-    val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
-    val placementId = PlacementId(UUID.randomUUID())
+    val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
     val originalFeeThresholdRange = DateRange(originalRange.start.minusYears(10), null)
     val newFeeThresholdRange = DateRange(day(10), null)
     lateinit var sentDecision: FeeDecision
@@ -55,30 +63,29 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.RAW_ROW)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(employee)
             tx.insert(
                 DevPlacement(
-                    id = placementId,
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = originalRange.start,
                     endDate = originalRange.end!!,
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child.id,
+                    headOfChildId = adult.id,
                     startDate = originalRange.start.minusYears(1),
                     endDate = originalRange.end!!.plusYears(1),
                 )
             )
             feeThresholdId =
                 tx.insert(testFeeThresholds.copy(validDuring = originalFeeThresholdRange))
-            tx.insert(testDecisionMaker_1)
             tx.insertServiceNeedOptions()
         }
         generate()
@@ -122,7 +129,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     }
 
     private fun generate() {
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult.id) }
     }
 
     private fun sendAllFeeDecisions() {
