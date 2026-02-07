@@ -16,16 +16,14 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -40,6 +38,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Autowired private lateinit var feeAlterationController: FeeAlterationController
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
+    private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+    private val child = DevPerson()
+
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
@@ -51,15 +52,14 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
     private val testFeeAlterationId = FeeAlterationId(UUID.randomUUID())
-    private val user =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-    private val personId = testChild_1.id
+    private val user = employee.user
+    private val personId = child.id
     private val clock = MockEvakaClock(2019, 1, 10, 12, 0)
 
     private val testFeeAlteration =
@@ -72,7 +72,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
-            modifiedBy = testDecisionMaker_1.toEvakaUser(),
+            modifiedBy = employee.evakaUser,
         )
 
     @Test
@@ -114,7 +114,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(
-            listOf(testFeeAlteration.copy(modifiedBy = testDecisionMaker_1.toEvakaUser())),
+            listOf(testFeeAlteration.copy(modifiedBy = employee.evakaUser)),
             result.map { it.data },
         )
     }
@@ -135,7 +135,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         val result = getFeeAlterations(personId)
         assertEqualEnough(
-            listOf(updated.copy(modifiedBy = testDecisionMaker_1.toEvakaUser())),
+            listOf(updated.copy(modifiedBy = employee.evakaUser)),
             result.map { it.data },
         )
     }
