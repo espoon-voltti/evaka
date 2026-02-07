@@ -12,18 +12,16 @@ import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -35,8 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired
 class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: ParentshipController
 
-    private val parent = testAdult_1
-    private val child = testChild_1
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val parent = DevPerson()
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2020, 1, 1))
+    private val sibling = DevPerson(dateOfBirth = LocalDate.of(2019, 1, 1))
 
     private val clock = RealEvakaClock()
     private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
@@ -46,20 +47,20 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     fun init() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(parent, DevPersonType.ADULT)
+            listOf(child, sibling).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(serviceWorker)
             tx.insert(financeAdmin)
             tx.insert(unitSupervisor)
             tx.insertDaycareAclRow(
-                daycareId = testDaycare.id,
+                daycareId = daycare.id,
                 employeeId = unitSupervisor.id,
                 role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
-                DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
+                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
             )
         }
     }
@@ -113,7 +114,6 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         }
 
-        val sibling = testChild_2
         val startDate = sibling.dateOfBirth
         val endDate = startDate.plusDays(200)
         val reqBody =
