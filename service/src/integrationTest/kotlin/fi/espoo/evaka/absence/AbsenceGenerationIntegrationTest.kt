@@ -10,11 +10,14 @@ import fi.espoo.evaka.dailyservicetimes.deleteChildDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -23,13 +26,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
@@ -52,18 +48,21 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
 
     private val present = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
+    private val child3 = DevPerson()
+    private val child4 = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(
-                unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
-            )
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
-                tx.insert(it, DevPersonType.CHILD)
-            }
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            listOf(child1, child2, child3, child4).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
@@ -73,8 +72,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // No daily service times at all
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
@@ -83,15 +82,15 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // Regular daily service times
             tx.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.REGULAR,
                     regularTimes = present,
@@ -101,15 +100,15 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // Irregular daily service times, no time for any day
             tx.insert(
                 DevPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.IRREGULAR,
                 )
@@ -118,7 +117,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // Irregular daily service times but no placement
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_4.id,
+                    childId = child4.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.IRREGULAR,
                     mondayTimes = null,
@@ -131,7 +130,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         }
 
         db.transaction { tx ->
-            listOf(testChild_1.id, testChild_2.id).forEach {
+            listOf(child1.id, child2.id).forEach {
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, it)
             }
         }
@@ -143,7 +142,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     fun `generates correct absence categories`() {
         db.transaction { tx ->
             // Absent on mondays
-            listOf(testChild_1.id, testChild_2.id, testChild_3.id).forEach {
+            listOf(child1.id, child2.id, child3.id).forEach {
                 tx.insert(
                     DevDailyServiceTimes(
                         childId = it,
@@ -161,8 +160,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // Daycare placement -> BILLABLE absences are generated
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
@@ -172,8 +171,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
@@ -183,8 +182,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
@@ -192,13 +191,13 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         }
 
         db.transaction { tx ->
-            listOf(testChild_1.id, testChild_2.id, testChild_3.id).forEach {
+            listOf(child1.id, child2.id, child3.id).forEach {
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, it)
             }
         }
 
         val absences = getAllAbsences().groupBy { it.childId }
-        absences[testChild_1.id]!!.let { child1Absences ->
+        absences[child1.id]!!.let { child1Absences ->
             child1Absences.forEach {
                 assertEquals(AbsenceCategory.BILLABLE, it.category)
                 assertEquals(AbsenceType.OTHER_ABSENCE, it.absenceType)
@@ -207,7 +206,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             }
             assertEquals(mondays, child1Absences.map { it.date })
         }
-        absences[testChild_2.id]!!.let { child2Absences ->
+        absences[child2.id]!!.let { child2Absences ->
             val byDate = child2Absences.groupBy { it.date }
             assertEquals(mondays, byDate.keys.sorted())
             byDate.values.forEach { dateAbsences ->
@@ -222,7 +221,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                 }
             }
         }
-        absences[testChild_3.id]!!.let { child3Absences ->
+        absences[child3.id]!!.let { child3Absences ->
             child3Absences.forEach {
                 assertEquals(AbsenceCategory.NONBILLABLE, it.category)
                 assertEquals(AbsenceType.OTHER_ABSENCE, it.absenceType)
@@ -239,15 +238,15 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.IRREGULAR,
                     mondayTimes = null,
@@ -260,47 +259,45 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
 
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = mondays[1],
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    createdBy = employee.evakaUserId,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = tuesdays[1],
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    createdBy = employee.evakaUserId,
                 )
             )
             // Reservation with no times
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = tuesdays[2],
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    createdBy = employee.evakaUserId,
                 )
             )
             tx.insert(
                 DevAbsence(
                     id = existingAbsenceId,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = mondays[3],
                     absenceType = AbsenceType.SICKLEAVE,
-                    modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
 
-        db.transaction { tx ->
-            generateAbsencesFromIrregularDailyServiceTimes(tx, now, testChild_1.id)
-        }
+        db.transaction { tx -> generateAbsencesFromIrregularDailyServiceTimes(tx, now, child1.id) }
 
         // The absence created above is not overridden, and absences are created for "empty" mondays
         // only. Monday reservations are cleared, tuesdays not.
@@ -318,8 +315,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = placementPeriod.start,
                     endDate = placementPeriod.end,
                 )
@@ -329,7 +326,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.insert(
                 DevDailyServiceTimes(
                     id = dailyServiceTimesId,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.IRREGULAR,
                     mondayTimes = null,
@@ -343,19 +340,17 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.insert(
                 DevAbsence(
                     id = existingAbsenceId,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = wednesdays[0],
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedAt = now.minusDays(1),
-                    modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
 
-        db.transaction { tx ->
-            generateAbsencesFromIrregularDailyServiceTimes(tx, now, testChild_1.id)
-        }
+        db.transaction { tx -> generateAbsencesFromIrregularDailyServiceTimes(tx, now, child1.id) }
 
         run {
             val absences = getAllAbsences()
@@ -384,7 +379,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             // Absent on mondays and wednesdays
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.IRREGULAR,
                     mondayTimes = null,
@@ -397,7 +392,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         }
 
         db.transaction { tx ->
-            generateAbsencesFromIrregularDailyServiceTimes(tx, now.plusHours(1), testChild_1.id)
+            generateAbsencesFromIrregularDailyServiceTimes(tx, now.plusHours(1), child1.id)
         }
 
         run {
