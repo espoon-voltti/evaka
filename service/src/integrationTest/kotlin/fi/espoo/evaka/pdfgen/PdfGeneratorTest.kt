@@ -40,6 +40,9 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -50,9 +53,6 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.getValidPreschoolApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testVoucherDaycare
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
@@ -67,9 +67,20 @@ import org.springframework.context.annotation.Bean
 
 val logger = KotlinLogging.logger {}
 
+private val testArea = DevCareArea()
+private val voucherDaycare =
+    DevDaycare(
+        areaId = testArea.id,
+        name = "Test Voucher Daycare",
+        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    )
+
+private val testAdult = DevPerson(ssn = "010180-1232", dateOfBirth = LocalDate.of(1980, 1, 1))
+private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+
 private val application = getValidPreschoolApplication()
 private val transferApplication = application.copy(transferApplication = true)
-private val voucherApplication = getValidPreschoolApplication(testVoucherDaycare)
+private val voucherApplication = getValidPreschoolApplication(voucherDaycare)
 
 private val voucherDecisionUnit =
     DecisionUnit(
@@ -131,9 +142,9 @@ private val voucherDecision =
 private val settings = mapOf<SettingType, String>()
 private val child =
     PersonDTO(
-        testChild_1.id,
+        testChild.id,
         null,
-        ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
+        ExternalIdentifier.SSN.getInstance(testChild.ssn!!),
         false,
         "Kullervo Kyöstinpoika",
         "Pöysti",
@@ -142,7 +153,7 @@ private val child =
         "",
         "",
         null,
-        testChild_1.dateOfBirth,
+        testChild.dateOfBirth,
         null,
         "Kuusikallionrinne 26 A 4",
         "02270",
@@ -152,9 +163,9 @@ private val child =
     )
 private val guardian =
     PersonDTO(
-        testAdult_1.id,
+        testAdult.id,
         null,
-        ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
+        ExternalIdentifier.SSN.getInstance(testAdult.ssn!!),
         false,
         "Kyösti Taavetinpoika",
         "Pöysti",
@@ -163,7 +174,7 @@ private val guardian =
         "+358914822",
         "+358914829",
         null,
-        testAdult_1.dateOfBirth,
+        testAdult.dateOfBirth,
         null,
         "Kuusikallionrinne 26 A 4",
         "02270",
