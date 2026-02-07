@@ -23,19 +23,13 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -51,23 +45,38 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
-    private val daycareInArea1 = DevDaycare(areaId = area1.id)
-    private val daycareInArea2 = DevDaycare(areaId = area2.id)
+    private val daycareInArea1 = DevDaycare(areaId = area1.id, name = "Daycare 1")
+    private val daycareInArea2 = DevDaycare(areaId = area2.id, name = "Daycare 2")
+    private val employee = DevEmployee()
+    private val adult1 =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult2 =
+        DevPerson(
+            ssn = "010279-123L",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult3 = DevPerson()
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2018, 9, 1))
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
+            tx.insert(employee)
             tx.insert(area1)
             tx.insert(area2)
             tx.insert(daycareInArea1)
             tx.insert(daycareInArea2)
-            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
-                tx.insert(it, DevPersonType.ADULT)
-            }
-            listOf(testChild_1, testChild_2, testChild_3).forEach {
-                tx.insert(it, DevPersonType.CHILD)
-            }
+            listOf(adult1, adult2, adult3).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(child1, child2, child3).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
@@ -109,8 +118,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             daycareInArea1.id,
             87000,
             0,
-            testAdult_1.id,
-            testChild_1,
+            adult1.id,
+            child1,
             janFreeze.plusSeconds(3600),
         )
 
@@ -131,8 +140,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             daycareInArea2.id,
             87000,
             28800,
-            testAdult_1.id,
-            testChild_1,
+            adult1.id,
+            child1,
             janFreeze.plusSeconds(3600),
         )
 
@@ -155,7 +164,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     private val adminUser =
-        AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
+        AuthenticatedUser.Employee(id = employee.id, roles = setOf(UserRole.ADMIN))
 
     private fun getAreaReport(
         areaId: AreaId,
@@ -177,39 +186,15 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
 
     private fun createTestSetOfDecisions(): Int {
         return listOf(
-                createVoucherDecision(
-                    janFirst,
-                    daycareInArea1.id,
-                    87000,
-                    28800,
-                    testAdult_1.id,
-                    testChild_1,
-                ),
-                createVoucherDecision(
-                    janFirst,
-                    daycareInArea1.id,
-                    52200,
-                    28800,
-                    testAdult_2.id,
-                    testChild_2,
-                ),
-                createVoucherDecision(
-                    janFirst,
-                    daycareInArea1.id,
-                    134850,
-                    0,
-                    testAdult_3.id,
-                    testChild_3,
-                ),
+                createVoucherDecision(janFirst, daycareInArea1.id, 87000, 28800, adult1.id, child1),
+                createVoucherDecision(janFirst, daycareInArea1.id, 52200, 28800, adult2.id, child2),
+                createVoucherDecision(janFirst, daycareInArea1.id, 134850, 0, adult3.id, child3),
             )
             .sumOf { decision -> decision.voucherValue - decision.coPayment }
     }
 
     private val financeUser =
-        AuthenticatedUser.Employee(
-            id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN),
-        )
+        AuthenticatedUser.Employee(id = employee.id, roles = setOf(UserRole.FINANCE_ADMIN))
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
