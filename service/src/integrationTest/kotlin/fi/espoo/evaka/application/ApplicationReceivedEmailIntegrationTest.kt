@@ -18,7 +18,6 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -28,6 +27,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -36,11 +37,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.test.validClubApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
@@ -58,14 +55,26 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val guardian =
+        DevPerson(
+            ssn = "010180-1232",
+            firstName = "John",
+            lastName = "Doe",
+            email = "john.doe@espootest.com",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child1 = DevPerson(ssn = "010617A123U")
+    private val child2 = DevPerson(ssn = "070714A9126")
 
     private val validDaycareForm =
         DaycareFormV0.fromApplication2(getValidDaycareApplication(preferredUnit = daycare))
 
     private val serviceWorker =
-        AuthenticatedUser.Employee(EmployeeId(testAdult_1.id.raw), setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
-    private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
+        AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
     private val guardianAsDaycareAdult =
         Adult(
             firstName = guardian.firstName,
@@ -89,10 +98,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_6).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(employee)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
         }
-        MockPersonDetailsService.add(legacyMockVtjDataset())
+        MockPersonDetailsService.addPersons(guardian, child1, child2)
+        MockPersonDetailsService.addDependants(guardian, child1, child2)
     }
 
     @Test
@@ -100,7 +112,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.DAYCARE,
@@ -143,7 +155,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             db.transaction { tx ->
                 tx.insert(daycareSv)
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.DAYCARE,
@@ -189,7 +201,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     hideFromGuardian = false,
@@ -237,7 +249,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 tx.insert(clubTerm2021)
                 tx.insert(club)
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.CLUB,
@@ -276,6 +288,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(preschoolTerm2021)
             tx.insertApplication(
                 guardian = guardian,
+                child = child1,
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2021, 8, 11),
@@ -312,7 +325,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     hideFromGuardian = true,
@@ -344,8 +357,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
-                    guardianId = testAdult_1.id,
+                    childId = child1.id,
+                    guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.DAYCARE,
                     document =
@@ -378,8 +391,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
-                    guardianId = testAdult_1.id,
+                    childId = child1.id,
+                    guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     sentDate = manuallySetSentDate,
                     type = ApplicationType.DAYCARE,
@@ -405,10 +418,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `valid email is sent`() {
-        setPersonEmail(testAdult_1.id, "working@test.fi")
+        setPersonEmail(guardian.id, "working@test.fi")
         applicationReceivedEmailService.sendApplicationEmail(
             db,
-            testAdult_1.id,
+            guardian.id,
             Language.fi,
             ApplicationType.DAYCARE,
         )
@@ -421,10 +434,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika",
         )
 
-        setPersonEmail(testAdult_1.id, "Working.Email@Test.Com")
+        setPersonEmail(guardian.id, "Working.Email@Test.Com")
         applicationReceivedEmailService.sendApplicationEmail(
             db,
-            testAdult_1.id,
+            guardian.id,
             Language.sv,
             ApplicationType.DAYCARE,
         )
