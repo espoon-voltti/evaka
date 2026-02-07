@@ -16,9 +16,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testChild_1
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -44,13 +41,18 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     lateinit var service: VTJBatchRefreshService
 
-    val lastDayBefore18YearsOld = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+    private val adult1 = DevPerson(ssn = "010180-1232")
+    private val adult2 = DevPerson(ssn = "010279-123L")
+    private val child = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+
+    private val lastDayBefore18YearsOld = child.dateOfBirth.plusYears(18).minusDays(1)
     private val user = AuthenticatedUser.SystemInternalUser
 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(adult1, DevPersonType.ADULT)
+            tx.insert(adult2, DevPersonType.ADULT)
         }
         service =
             VTJBatchRefreshService(
@@ -90,18 +92,18 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `children in same address are added`() {
-        val dto = getDto(testAdult_1).copy(children = listOf(getDto(testChild_1)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
+        val dto = getDto(adult1).copy(children = listOf(getDto(child)))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
             .thenReturn(dto)
         whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
-        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))
         verify(parentshipService)
             .createParentship(
                 any(),
                 any(),
-                eq(testChild_1.id),
-                eq(testAdult_1.id),
+                eq(child.id),
+                eq(adult1.id),
                 eq(LocalDate.now()),
                 eq(lastDayBefore18YearsOld),
                 eq(Creator.DVV),
@@ -111,9 +113,9 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `children in different address are not added`() {
         val dto =
-            getDto(testAdult_1)
+            getDto(adult1)
                 .copy(
-                    children = listOf(getDto(testChild_1)),
+                    children = listOf(getDto(child)),
                     address =
                         PersonAddressDTO(
                             origin = PersonAddressDTO.Origin.VTJ,
@@ -123,9 +125,9 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                             residenceCode = "2",
                         ),
                 )
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
             .thenReturn(dto)
-        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))
         verifyNoInteractions(parentshipService)
     }
 
@@ -140,7 +142,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partnershipId = partnershipId,
                     indx = 1,
                     otherIndx = 2,
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     startDate = startDate,
                     createdAt = createdAt,
                 )
@@ -150,28 +152,28 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partnershipId = partnershipId,
                     indx = 2,
                     otherIndx = 1,
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     startDate = startDate,
                     createdAt = createdAt,
                 )
             )
         }
 
-        val dto1 = getDto(testAdult_1)
-        val dto2 = getDto(testAdult_2).copy(children = listOf(getDto(testChild_1)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
+        val dto1 = getDto(adult1)
+        val dto2 = getDto(adult2).copy(children = listOf(getDto(child)))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
             .thenReturn(dto1)
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult2.id), any()))
             .thenReturn(dto2)
         whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
-        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))
         verify(parentshipService)
             .createParentship(
                 any(),
                 any(),
-                eq(testChild_1.id),
-                eq(testAdult_1.id),
+                eq(child.id),
+                eq(adult1.id),
                 eq(LocalDate.now()),
                 eq(lastDayBefore18YearsOld),
                 eq(Creator.DVV),
@@ -190,7 +192,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partnershipId = partnershipId,
                     indx = 1,
                     otherIndx = 2,
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     startDate = startDate,
                     endDate = endDate,
                     createdAt = createdAt,
@@ -201,7 +203,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partnershipId = partnershipId,
                     indx = 2,
                     otherIndx = 1,
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     startDate = startDate,
                     endDate = endDate,
                     createdAt = createdAt,
@@ -209,14 +211,14 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         }
 
-        val dto1 = getDto(testAdult_1)
-        val dto2 = getDto(testAdult_2).copy(children = listOf(getDto(testChild_1)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
+        val dto1 = getDto(adult1)
+        val dto2 = getDto(adult2).copy(children = listOf(getDto(child)))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
             .thenReturn(dto1)
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult2.id), any()))
             .thenReturn(dto2)
 
-        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))
         verifyNoInteractions(parentshipService)
     }
 }
