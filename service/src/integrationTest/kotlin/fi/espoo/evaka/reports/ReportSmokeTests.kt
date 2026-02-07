@@ -6,36 +6,37 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.core.Request
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
-    private val testUser =
-        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(employee)
         }
     }
 
@@ -115,8 +116,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.of(2022, 1, 1),
                     endDate = LocalDate.of(2022, 3, 1),
                 )
@@ -126,7 +127,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         assertOkResponse(
             http
                 .get(
-                    "/employee/reports/family-contacts?unitId=${testDaycare.id}&date=${now.toLocalDate()}"
+                    "/employee/reports/family-contacts?unitId=${daycare.id}&date=${now.toLocalDate()}"
                 )
                 .withMockedTime(now)
         )
@@ -162,36 +163,21 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         assertOkResponse(
             http.get(
                 "/employee/reports/occupancy-by-unit",
-                listOf(
-                    "type" to "PLANNED",
-                    "careAreaId" to testArea.id,
-                    "year" to 2020,
-                    "month" to 1,
-                ),
+                listOf("type" to "PLANNED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
             )
         )
 
         assertOkResponse(
             http.get(
                 "/employee/reports/occupancy-by-unit",
-                listOf(
-                    "type" to "CONFIRMED",
-                    "careAreaId" to testArea.id,
-                    "year" to 2020,
-                    "month" to 1,
-                ),
+                listOf("type" to "CONFIRMED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
             )
         )
 
         assertOkResponse(
             http.get(
                 "/employee/reports/occupancy-by-unit",
-                listOf(
-                    "type" to "REALIZED",
-                    "careAreaId" to testArea.id,
-                    "year" to 2020,
-                    "month" to 1,
-                ),
+                listOf("type" to "REALIZED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
             )
         )
     }
@@ -201,24 +187,14 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         assertOkResponse(
             http.get(
                 "/employee/reports/occupancy-by-group",
-                listOf(
-                    "type" to "CONFIRMED",
-                    "careAreaId" to testArea.id,
-                    "year" to 2020,
-                    "month" to 1,
-                ),
+                listOf("type" to "CONFIRMED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
             )
         )
 
         assertOkResponse(
             http.get(
                 "/employee/reports/occupancy-by-group",
-                listOf(
-                    "type" to "REALIZED",
-                    "careAreaId" to testArea.id,
-                    "year" to 2020,
-                    "month" to 1,
-                ),
+                listOf("type" to "REALIZED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
             )
         )
     }
@@ -272,7 +248,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     }
 
     private fun assertOkResponse(req: Request) {
-        val (_, response, _) = req.asUser(testUser).response()
+        val (_, response, _) = req.asUser(employee.user).response()
         assertEquals(200, response.statusCode)
     }
 }
