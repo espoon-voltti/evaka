@@ -11,23 +11,19 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -41,71 +37,61 @@ import org.springframework.beans.factory.annotation.Autowired
 class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: PartnershipsController
 
-    private val person = testAdult_1
-    private val partner = testAdult_2
-
-    private val unitSupervisorId = EmployeeId(UUID.randomUUID())
-    private val serviceWorkerId = EmployeeId(UUID.randomUUID())
-    private val decisionMakerId = EmployeeId(UUID.randomUUID())
-    private val testDecisionMakerEmployee =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-    private val partnershipCreator = testDecisionMakerEmployee.evakaUserId
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val person = DevPerson()
+    private val partner = DevPerson()
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2020, 1, 1))
+    private val financeAdmin = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+    private val unitSupervisor = DevEmployee()
+    private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+    private val partnershipCreator = financeAdmin.evakaUserId
     private val clock = RealEvakaClock()
 
     @BeforeEach
     fun init() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(DevEmployee(unitSupervisorId))
-            tx.insert(DevEmployee(serviceWorkerId))
-            tx.insert(DevEmployee(decisionMakerId))
+            tx.insert(area)
+            tx.insert(daycare)
+            listOf(person, partner).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(financeAdmin)
+            tx.insert(unitSupervisor)
+            tx.insert(serviceWorker)
             tx.insert(
                 DevParentship(
-                    id = ParentshipId(UUID.randomUUID()),
                     headOfChildId = person.id,
-                    childId = testChild_1.id,
-                    startDate = testChild_1.dateOfBirth,
+                    childId = child.id,
+                    startDate = child.dateOfBirth,
                     endDate = LocalDate.now(),
                 )
             )
             tx.insertDaycareAclRow(
-                daycareId = testDaycare.id,
-                employeeId = unitSupervisorId,
+                daycareId = daycare.id,
+                employeeId = unitSupervisor.id,
                 role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    endDate = LocalDate.now(),
-                )
+                DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
             )
         }
     }
 
     @Test
     fun `service worker can create and fetch partnerships`() {
-        `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
-        )
+        `can create and fetch partnerships`(serviceWorker.user)
     }
 
     @Test
     fun `unit supervisor can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
         )
     }
 
     @Test
     fun `finance admin can create and fetch partnerships`() {
-        `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(decisionMakerId, setOf(UserRole.FINANCE_ADMIN))
-        )
+        `can create and fetch partnerships`(financeAdmin.user)
     }
 
     fun `can create and fetch partnerships`(user: AuthenticatedUser.Employee) {
@@ -174,23 +160,19 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `service worker can update partnerships`() {
-        canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
-        )
+        canUpdatePartnershipDuration(serviceWorker.user)
     }
 
     @Test
     fun `unit supervisor can update partnerships`() {
         canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
         )
     }
 
     @Test
     fun `finance admin can update partnerships`() {
-        canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(decisionMakerId, setOf(UserRole.FINANCE_ADMIN))
-        )
+        canUpdatePartnershipDuration(financeAdmin.user)
     }
 
     private fun canUpdatePartnershipDuration(user: AuthenticatedUser.Employee) {
@@ -283,10 +265,10 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 )
             }
 
-        controller.retryPartnership(dbInstance(), testDecisionMakerEmployee, clock, partnership1.id)
+        controller.retryPartnership(dbInstance(), financeAdmin.user, clock, partnership1.id)
 
         val getResponse =
-            controller.getPartnerships(dbInstance(), testDecisionMakerEmployee, clock, person.id)
+            controller.getPartnerships(dbInstance(), financeAdmin.user, clock, person.id)
         assertEquals(1, getResponse.size)
         with(getResponse.first().data) { assertFalse(this.conflict) }
     }
