@@ -5,16 +5,14 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.toEvakaUser
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -24,21 +22,26 @@ import org.junit.jupiter.api.Test
 
 class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0, 0))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
     private val employee = DevEmployee()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insert(employee)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
         }
     }
 
     @Test
     fun empty() {
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertTrue(attendances.isEmpty())
     }
 
@@ -46,24 +49,24 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `ongoing attendance`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now,
                 departed = null,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now,
                             departed = null,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     )
             ),
@@ -75,24 +78,24 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `ended attendance`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusHours(1),
                 departed = now,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
                             departed = now,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     )
             ),
@@ -104,41 +107,41 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `multiple children`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusHours(1),
                 departed = now,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_2.id,
+                unitId = daycare.id,
+                childId = child2.id,
                 arrived = now.minusHours(2),
                 departed = null,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
                             departed = now,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     ),
-                testChild_2.id to
+                child2.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(2),
                             departed = null,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     ),
             ),
@@ -150,70 +153,70 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `multiple attendances per child`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusHours(3),
                 departed = now.minusHours(2),
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusHours(1),
                 departed = now,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_2.id,
+                unitId = daycare.id,
+                childId = child2.id,
                 arrived = now.minusHours(4),
                 departed = now.minusHours(3),
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_2.id,
+                unitId = daycare.id,
+                childId = child2.id,
                 arrived = now.minusHours(2),
                 departed = null,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
                 // Newest attendance is first
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
                             departed = now,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         ),
                         AttendanceTimes(
                             arrived = now.minusHours(3),
                             departed = now.minusHours(2),
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         ),
                     ),
-                testChild_2.id to
+                child2.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(2),
                             departed = null,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         ),
                         AttendanceTimes(
                             arrived = now.minusHours(4),
                             departed = now.minusHours(3),
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         ),
                     ),
             ),
@@ -225,32 +228,32 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `ongoing attendance started yesterday`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusDays(1),
                 departed = now.minusDays(1).atEndOfDay(),
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.atStartOfDay(),
                 departed = null,
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusDays(1),
                             departed = null,
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     )
             ),
@@ -262,32 +265,32 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `attendance started yesterday`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.minusDays(1),
                 departed = now.minusDays(1).atEndOfDay(),
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child1.id,
                 arrived = now.atStartOfDay(),
                 departed = now.minusMinutes(45),
                 modifiedAt = now,
                 modifiedBy = employee.evakaUserId,
             )
         }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
         assertEquals(
             mapOf(
-                testChild_1.id to
+                child1.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusDays(1),
                             departed = now.minusMinutes(45),
                             modifiedAt = now,
-                            modifiedBy = employee.toEvakaUser(),
+                            modifiedBy = employee.evakaUser,
                         )
                     )
             ),
