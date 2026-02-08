@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.PaymentController
 import fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.PaymentSortParam
@@ -24,7 +25,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -32,6 +32,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -40,17 +44,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testVoucherDaycare
-import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
 import java.time.LocalTime
@@ -65,6 +58,50 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var paymentController: PaymentController
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id, name = "Daycare")
+    private val voucherDaycare1 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Voucher Daycare 1",
+            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            invoicedByMunicipality = false,
+            businessId = "1234567-8",
+            iban = "FI12 3456 7891 2345 67",
+            providerId = "1234",
+            partnerCode = "abcdefg",
+        )
+    private val voucherDaycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Voucher Daycare 2",
+            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            invoicedByMunicipality = false,
+            businessId = "8765432-1-8",
+            iban = "FI98 7654 3210 9876 54",
+            providerId = "4321",
+            partnerCode = "gfedcba",
+        )
+    private val employee = DevEmployee()
+    private val adult1 =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult2 =
+        DevPerson(
+            ssn = "010279-123L",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult3 = DevPerson()
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val janLast = LocalDate.of(2020, 1, 31)
     private val janFreeze = HelsinkiDateTime.of(LocalDate.of(2020, 1, 25), LocalTime.of(2, 0))
@@ -76,17 +113,13 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testVoucherDaycare)
-            tx.insert(testVoucherDaycare2)
-            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
-                tx.insert(it, DevPersonType.ADULT)
-            }
-            listOf(testChild_1, testChild_2, testChild_3).forEach {
-                tx.insert(it, DevPersonType.CHILD)
-            }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(voucherDaycare1)
+            tx.insert(voucherDaycare2)
+            listOf(adult1, adult2, adult3).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(child1, child2, child3).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
@@ -140,7 +173,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             searchPayments(
-                defaultSearchParams.copy(unit = testVoucherDaycare.id, status = PaymentStatus.SENT)
+                defaultSearchParams.copy(unit = voucherDaycare1.id, status = PaymentStatus.SENT)
             )
         assertEquals(1, result.total)
         assertEquals(listOf(sentId1), result.data.map { it.id })
@@ -155,17 +188,17 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `create payment drafts`() {
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare2.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = voucherDaycare2.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 134850,
             coPayment = 28800,
         )
@@ -180,13 +213,13 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         payments.first().let { payment ->
             assertEquals(PaymentStatus.DRAFT, payment.status)
             assertEquals(DateRange(janFirst, janLast), payment.period)
-            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(voucherDaycare1.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
         }
         payments.last().let { payment ->
             assertEquals(PaymentStatus.DRAFT, payment.status)
             assertEquals(DateRange(janFirst, janLast), payment.period)
-            assertEquals(testVoucherDaycare2.id, payment.unit.id)
+            assertEquals(voucherDaycare2.id, payment.unit.id)
             assertEquals(134850 - 28800, payment.amount)
         }
     }
@@ -195,17 +228,17 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `delete payment draft`() {
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare2.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = voucherDaycare2.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 134850,
             coPayment = 28800,
         )
@@ -226,27 +259,27 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         createVoucherDecision(
             janFirst,
             // Doesn't have payment details
-            unitId = testDaycare.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = daycare.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 134850,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
             // Has payment details
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
             // Has payment details
-            unitId = testVoucherDaycare2.id,
-            headOfFamilyId = testAdult_3.id,
-            childId = testChild_3.id,
+            unitId = voucherDaycare2.id,
+            headOfFamilyId = adult3.id,
+            childId = child3.id,
             value = 35000,
             coPayment = 28800,
         )
@@ -261,28 +294,27 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val payments = db.read { it.readPayments() }
         assertEquals(3, payments.size)
 
-        // assert respective details
         payments.first().let { payment ->
             assertEquals(DateRange(janFirst, janLast), payment.period)
             assertEquals(PaymentStatus.DRAFT, payment.status)
-            assertEquals(testDaycare.id, payment.unit.id)
-            assertEquals(testDaycare.name, payment.unit.name)
-            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(daycare.id, payment.unit.id)
+            assertEquals(daycare.name, payment.unit.name)
+            assertEquals(daycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments[1].let { payment ->
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
-            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(voucherDaycare1.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
-            assertEquals(testVoucherDaycare.name, payment.unit.name)
-            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(voucherDaycare1.name, payment.unit.name)
+            assertEquals(voucherDaycare1.costCenter, payment.unit.costCenter)
         }
         payments.last().let { payment ->
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
-            assertEquals(testVoucherDaycare2.id, payment.unit.id)
+            assertEquals(voucherDaycare2.id, payment.unit.id)
             assertEquals(35000 - 28800, payment.amount)
-            assertEquals(testVoucherDaycare2.name, payment.unit.name)
-            assertEquals(testVoucherDaycare2.costCenter, payment.unit.costCenter)
+            assertEquals(voucherDaycare2.name, payment.unit.name)
+            assertEquals(voucherDaycare2.costCenter, payment.unit.costCenter)
         }
 
         // assert that sending details remain unset
@@ -318,18 +350,18 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         createVoucherDecision(
             janFirst,
             // Doesn't have payment details
-            unitId = testDaycare.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = daycare.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 134850,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
             // Has payment details
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
@@ -345,19 +377,18 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val payments = db.read { it.readPayments() }
         assertEquals(2, payments.size)
 
-        // assert respective details
         payments.first().let { payment ->
             assertEquals(DateRange(janFirst, janLast), payment.period)
-            assertEquals(testDaycare.id, payment.unit.id)
-            assertEquals(testDaycare.name, payment.unit.name)
-            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(daycare.id, payment.unit.id)
+            assertEquals(daycare.name, payment.unit.name)
+            assertEquals(daycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments.last().let { payment ->
-            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(voucherDaycare1.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
-            assertEquals(testVoucherDaycare.name, payment.unit.name)
-            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(voucherDaycare1.name, payment.unit.name)
+            assertEquals(voucherDaycare1.costCenter, payment.unit.costCenter)
         }
 
         // assert that status is set and sending details remain unset
@@ -380,18 +411,18 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         createVoucherDecision(
             janFirst,
             // Doesn't have payment details
-            unitId = testDaycare.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = daycare.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 134850,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
             // Has payment details
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
@@ -413,25 +444,25 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         payments.first().let { payment ->
             assertEquals(PaymentStatus.CONFIRMED, payment.status)
             assertEquals(DateRange(janFirst, janLast), payment.period)
-            assertEquals(testDaycare.id, payment.unit.id)
-            assertEquals(testDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(daycare.id, payment.unit.id)
+            assertEquals(daycare.costCenter, payment.unit.costCenter)
             assertEquals(134850 - 28800, payment.amount)
         }
         payments.last().let { payment ->
             assertEquals(PaymentStatus.SENT, payment.status)
-            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(voucherDaycare1.id, payment.unit.id)
             assertEquals(87000 - 28800, payment.amount)
             assertEquals(febSecond, payment.paymentDate)
             assertEquals(febLast, payment.dueDate)
             assertEquals(9000000000, payment.number)
-            assertEquals(EvakaUserId(testDecisionMaker_1.id.raw), payment.sentBy)
+            assertEquals(employee.evakaUserId, payment.sentBy)
             assertEquals(HelsinkiDateTime.of(febFirst, LocalTime.of(10, 0)), payment.sentAt)
-            assertEquals(testVoucherDaycare.name, payment.unit.name)
-            assertEquals(testVoucherDaycare.businessId, payment.unit.businessId)
-            assertEquals(testVoucherDaycare.iban, payment.unit.iban)
-            assertEquals(testVoucherDaycare.providerId, payment.unit.providerId)
-            assertEquals(testVoucherDaycare.partnerCode, payment.unit.partnerCode)
-            assertEquals(testVoucherDaycare.costCenter, payment.unit.costCenter)
+            assertEquals(voucherDaycare1.name, payment.unit.name)
+            assertEquals(voucherDaycare1.businessId, payment.unit.businessId)
+            assertEquals(voucherDaycare1.iban, payment.unit.iban)
+            assertEquals(voucherDaycare1.providerId, payment.unit.providerId)
+            assertEquals(voucherDaycare1.partnerCode, payment.unit.partnerCode)
+            assertEquals(voucherDaycare1.costCenter, payment.unit.costCenter)
         }
     }
 
@@ -452,26 +483,26 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun createSearchTestData(): List<PaymentId> {
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare.id,
-            headOfFamilyId = testAdult_1.id,
-            childId = testChild_1.id,
+            unitId = voucherDaycare1.id,
+            headOfFamilyId = adult1.id,
+            childId = child1.id,
             value = 87000,
             coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
-            unitId = testVoucherDaycare2.id,
-            headOfFamilyId = testAdult_2.id,
-            childId = testChild_2.id,
+            unitId = voucherDaycare2.id,
+            headOfFamilyId = adult2.id,
+            childId = child2.id,
             value = 87000,
             coPayment = 7000,
         )
         createVoucherDecision(
             febFirst,
             // Doesn't have payment details
-            unitId = testDaycare.id,
-            headOfFamilyId = testAdult_3.id,
-            childId = testChild_3.id,
+            unitId = daycare.id,
+            headOfFamilyId = adult3.id,
+            childId = child3.id,
             value = 134850,
             coPayment = 0,
         )
@@ -498,10 +529,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private val financeUser =
-        AuthenticatedUser.Employee(
-            id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN),
-        )
+        AuthenticatedUser.Employee(id = employee.id, roles = setOf(UserRole.FINANCE_ADMIN))
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
@@ -522,7 +550,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validTo = validFrom.plusYears(1),
                     headOfFamilyId = headOfFamilyId,
                     childId = childId,
-                    dateOfBirth = testChild_1.dateOfBirth,
+                    dateOfBirth = child1.dateOfBirth,
                     unitId = unitId,
                     value = value,
                     coPayment = coPayment,
