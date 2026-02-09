@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -101,15 +102,34 @@ export default React.memo(function ActionPickerModal({
   )
 })
 
+const baseBottomValue = 46
+
 const Container = styled.div`
   position: fixed;
-  bottom: calc(46px + ${defaultMargins.L} + ${mobileBottomNavHeight}px);
+  bottom: calc(
+    ${baseBottomValue}px + ${defaultMargins.L} + ${mobileBottomNavHeight}px
+  );
   right: ${defaultMargins.s};
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
   gap: ${defaultMargins.s};
+  @media (max-width: ${zoomedMobileMax}) {
+    align-items: flex-start;
+    left: 0;
+    right: 0;
+    padding: 0 ${defaultMargins.xs};
+    row-gap: clamp(4px, 1.5vh, ${defaultMargins.xs});
+    bottom: calc(
+      ${baseBottomValue}px + ${defaultMargins.s} + ${mobileBottomNavHeight}px
+    );
+    button {
+      white-space: normal;
+      text-align: left;
+      min-height: ${defaultMargins.L};
+    }
+  }
 `
 
 const Action = styled(LegacyButton)`
@@ -130,4 +150,7 @@ const IconBackground = styled.div`
   background: ${(p) => p.theme.colors.grayscale.g0};
   margin-left: ${defaultMargins.s};
   border-radius: 50%;
+  @media (max-width: ${zoomedMobileMax}) {
+    display: none;
+  }
 `
