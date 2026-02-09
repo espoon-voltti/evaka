@@ -9,8 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.util.UUID
 
@@ -32,9 +30,9 @@ internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) = exe
     sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
 }
 
-internal fun Database.Transaction.setUnitOids() {
-    setUnitOid(testDaycare.id, "1.2.246.562.10.1111111111")
-    setUnitOid(testDaycare2.id, "1.2.246.562.10.2222222222")
+internal fun Database.Transaction.setUnitOids(daycareId: DaycareId, daycare2Id: DaycareId) {
+    setUnitOid(daycareId, "1.2.246.562.10.1111111111")
+    setUnitOid(daycare2Id, "1.2.246.562.10.2222222222")
 }
 
 internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
