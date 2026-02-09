@@ -391,14 +391,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/flagging-core@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@datadog/flagging-core@npm:0.2.0"
+"@datadog/flagging-core@npm:0.3.3":
+  version: 0.3.3
+  resolution: "@datadog/flagging-core@npm:0.3.3"
   dependencies:
     spark-md5: "npm:^3.0.2"
-  peerDependencies:
-    "@openfeature/core": ^1.8.1
-  checksum: 10/8e1ae6c926e402613c65fd515bd58e789da357e9fa07d07e26a6de9580da4524059b071020f1bfa6a5f843bf8edc1b3049ff321193f7251b4472b3d68e515f07
+  checksum: 10/6da20dc83c9150b19a5343854e4bc4e3c70182a1c0cbc27ba3f94cbe6770476cead1134e620c0c8edaacbc283893597e27fc6dd6adcf88b6846f62042dd38710
   languageName: node
   linkType: hard
 
@@ -440,15 +438,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/openfeature-node-server@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@datadog/openfeature-node-server@npm:0.2.0"
+"@datadog/openfeature-node-server@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "@datadog/openfeature-node-server@npm:0.3.3"
   dependencies:
-    "@datadog/flagging-core": "npm:0.2.0"
-    "@openfeature/server-sdk": "npm:~1.18.0"
+    "@datadog/flagging-core": "npm:0.3.3"
   peerDependencies:
-    "@openfeature/server-sdk": ~1.18.0
-  checksum: 10/536df820c66e8649279de472b8ab34792565e534f01ee88fca6f268a9380089f715c68352e8d5fea073140aaa9d61529b10769982ee9e2e9a2191607c9689acb
+    "@openfeature/server-sdk": ">=1.15.0 <2.0.0"
+  peerDependenciesMeta:
+    "@openfeature/server-sdk":
+      optional: true
+  checksum: 10/6657705d1801ad2ce073943f86709be2823adbd1be700fd82a639013a8b8f75adea2b187c5d7f6ba1c7a27fc64f33df67861d1a9f0617a634197eb9294962495
   languageName: node
   linkType: hard
 
@@ -1077,15 +1077,6 @@ __metadata:
   version: 2.1.0
   resolution: "@open-draft/until@npm:2.1.0"
   checksum: 10/622be42950afc8e89715d0fd6d56cbdcd13e36625e23b174bd3d9f06f80e25f9adf75d6698af93bca1e1bf465b9ce00ec05214a12189b671fb9da0f58215b6f4
-  languageName: node
-  linkType: hard
-
-"@openfeature/server-sdk@npm:~1.18.0":
-  version: 1.18.0
-  resolution: "@openfeature/server-sdk@npm:1.18.0"
-  peerDependencies:
-    "@openfeature/core": ^1.7.0
-  checksum: 10/96d8a3726dc8ac99e400d88cc2678d36353ada6ed480164b2f604f78f9c09bfe07e57ee1f877b3b63f43ec7a394390b42c90ae3336c0d03c6b9a9d27741db96e
   languageName: node
   linkType: hard
 
@@ -2689,15 +2680,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.83.0":
-  version: 5.83.0
-  resolution: "dd-trace@npm:5.83.0"
+"dd-trace@npm:5.84.0":
+  version: 5.84.0
+  resolution: "dd-trace@npm:5.84.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
     "@datadog/native-appsec": "npm:10.3.0"
     "@datadog/native-iast-taint-tracking": "npm:4.1.0"
     "@datadog/native-metrics": "npm:3.1.1"
-    "@datadog/openfeature-node-server": "npm:^0.2.0"
+    "@datadog/openfeature-node-server": "npm:^0.3.3"
     "@datadog/pprof": "npm:5.13.2"
     "@datadog/wasm-js-rewriter": "npm:5.0.1"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
@@ -2723,7 +2714,7 @@ __metadata:
       optional: true
     "@opentelemetry/api-logs":
       optional: true
-  checksum: 10/d89f472d875f939ce527d2bb8d87e5a7f7d8ef93c35f5c8c91520204b69692b7b21d52dc3e4dfa7cd0b1e1827c00a25350d9171fb1364811cdaf4b512fa37013
+  checksum: 10/68d1fa6b23eebc2c1acd17ac32adef5745de44c5e177bef0a52bdd85f28d3b3db732767371a1665c174824280a3885220c6945de25ce57ce5578367e441a15dc
   languageName: node
   linkType: hard
 
@@ -3365,7 +3356,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.83.0"
+    dd-trace: "npm:5.84.0"
     eslint: "npm:9.39.2"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
