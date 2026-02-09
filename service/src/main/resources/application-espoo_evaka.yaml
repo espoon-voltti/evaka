@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 ---
 evaka:
+  job:
+    send_aromi_orders:
+      enabled: true
   email:
     sender_address: "no-reply.evaka@espoo.fi"
     sender_name:
