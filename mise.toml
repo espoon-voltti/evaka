@@ -84,6 +84,19 @@ echo ""
 echo "- Run 'mise run start' to start the development environment"
 echo "- Alternatively, run 'docker-compose' and 'pm2' manually in compose/ directory."
 echo "- Run 'mise run deactivate' to return to default."
+
+MARKER="# evaka-prompt-start"
+SHELL_NAME=$(basename "$SHELL")
+case "$SHELL_NAME" in
+  bash) RC_FILE="$HOME/.bashrc" ;;
+  zsh)  RC_FILE="$HOME/.zshrc" ;;
+  *)    RC_FILE="" ;;
+esac
+
+if [ -n "$RC_FILE" ] && [ -f "$RC_FILE" ] && ! grep -q "$MARKER" "$RC_FILE"; then
+  echo ""
+  echo "Tip: Run 'mise run install-prompt' to show the active instance in your shell prompt."
+fi
 """
 
 [tasks.deactivate]
@@ -130,6 +143,96 @@ if [ "$found" = false ]; then
   echo "No running eVaka instances found."
 fi
 {% endraw %}"""
+
+[tasks.install-prompt]
+description = "Install shell prompt indicator for active eVaka instance"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+MARKER_START="# evaka-prompt-start"
+MARKER_END="# evaka-prompt-end"
+
+SHELL_NAME=$(basename "$SHELL")
+case "$SHELL_NAME" in
+  bash) RC_FILE="$HOME/.bashrc" ;;
+  zsh)  RC_FILE="$HOME/.zshrc" ;;
+  *)
+    echo "Unsupported shell: $SHELL_NAME (only bash and zsh are supported)"
+    exit 1
+    ;;
+esac
+
+if grep -q "$MARKER_START" "$RC_FILE" 2>/dev/null; then
+  echo "Prompt support is already installed in $RC_FILE"
+  exit 0
+fi
+
+BASH_SNIPPET='
+_evaka_prompt_cmd() {
+  local clean="${PS1#\\[evaka:*\\] }"
+  if [ -n "$EVAKA_INSTANCE" ]; then
+    PS1="[evaka:$EVAKA_INSTANCE] $clean"
+  else
+    PS1="$clean"
+  fi
+}
+PROMPT_COMMAND="_evaka_prompt_cmd${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+'
+
+ZSH_SNIPPET='
+_evaka_update_prompt() {
+  local clean="${PROMPT#\\[evaka:*\\] }"
+  if [[ -n "$EVAKA_INSTANCE" ]]; then
+    PROMPT="[evaka:$EVAKA_INSTANCE] $clean"
+  else
+    PROMPT="$clean"
+  fi
+}
+precmd_functions+=(_evaka_update_prompt)
+'
+
+case "$SHELL_NAME" in
+  bash) SNIPPET="$BASH_SNIPPET" ;;
+  zsh)  SNIPPET="$ZSH_SNIPPET" ;;
+esac
+
+printf '\\n%s\\n%s\\n%s\\n' "$MARKER_START" "$SNIPPET" "$MARKER_END" >> "$RC_FILE"
+
+echo "Installed eVaka prompt support in $RC_FILE"
+echo "Restart your shell or run: source $RC_FILE"
+"""
+
+[tasks.uninstall-prompt]
+description = "Remove shell prompt indicator for active eVaka instance"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+MARKER_START="# evaka-prompt-start"
+MARKER_END="# evaka-prompt-end"
+
+SHELL_NAME=$(basename "$SHELL")
+case "$SHELL_NAME" in
+  bash) RC_FILE="$HOME/.bashrc" ;;
+  zsh)  RC_FILE="$HOME/.zshrc" ;;
+  *)
+    echo "Unsupported shell: $SHELL_NAME (only bash and zsh are supported)"
+    exit 1
+    ;;
+esac
+
+if ! grep -q "$MARKER_START" "$RC_FILE" 2>/dev/null; then
+  echo "Prompt support is not installed in $RC_FILE"
+  exit 0
+fi
+
+sed -i.bak "/$MARKER_START/,/$MARKER_END/d" "$RC_FILE"
+rm -f "$RC_FILE.bak"
+
+echo "Removed eVaka prompt support from $RC_FILE"
+echo "Restart your shell or run: source $RC_FILE"
+"""
 
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"
