@@ -48,6 +48,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -66,19 +67,6 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycarePartDay25
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testAdult_7
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toEmployeeWithName
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toPersonBasic
@@ -102,33 +90,151 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
-    private val daycare1 = DevDaycare(areaId = area1.id)
-    private val daycare2 = DevDaycare(areaId = area2.id)
+    private val daycare1 = DevDaycare(areaId = area1.id, name = "Daycare 1")
+    private val daycare2 = DevDaycare(areaId = area2.id, name = "Daycare 2")
 
-    private val user =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-    private val adminUser =
-        AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
+    private val decisionMaker1 =
+        DevEmployee(
+            firstName = "Decision",
+            lastName = "Maker",
+            roles = setOf(UserRole.FINANCE_ADMIN),
+        )
+    private val decisionMaker2 = DevEmployee(firstName = "Decision2", lastName = "Maker2")
+
+    private val user = AuthenticatedUser.Employee(decisionMaker1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(decisionMaker2.id, setOf(UserRole.ADMIN))
+
+    private val adult1 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1980, 1, 1),
+            ssn = "010180-1232",
+            firstName = "John",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val adult2 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1979, 2, 1),
+            ssn = "010279-123L",
+            firstName = "Joan",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    // No SSN, no address — used for "does not send if ssn missing" test
+    private val adult3 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1985, 6, 7),
+            firstName = "Mark",
+            lastName = "Foo",
+            email = "mark.foo@example.com",
+        )
+    private val adult4 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1981, 3, 2),
+            firstName = "Dork",
+            lastName = "Aman",
+            streetAddress = "Muutie 66",
+            postalCode = "02230",
+            postOffice = "Espoo",
+            email = "dork.aman@example.com",
+        )
+    private val adult5 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1944, 6, 7),
+            ssn = "070644-937X",
+            firstName = "Johannes Olavi Antero Tapio",
+            lastName = "Karhula",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val adult6 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1999, 12, 31),
+            ssn = "311299-999E",
+            firstName = "Ville",
+            lastName = "Vilkas",
+            streetAddress = "Toistie 33",
+            postalCode = "02230",
+            postOffice = "Espoo",
+            email = "ville.vilkas@test.com",
+        )
+    // restrictedDetailsEnabled = true
+    private val adult7 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(1980, 1, 1),
+            ssn = "010180-969B",
+            firstName = "Tepi",
+            lastName = "Turvakiellollinen",
+            streetAddress = "Suojatie 112",
+            postalCode = "02230",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = true,
+        )
+    private val child1 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2017, 6, 1),
+            ssn = "010617A123U",
+            firstName = "Ricky",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child2 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2016, 3, 1),
+            ssn = "010316A1235",
+            firstName = "Micky",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child3 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2018, 9, 1),
+            ssn = "120220A995L",
+            firstName = "Hillary",
+            lastName = "Foo",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child4 =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2019, 3, 2),
+            ssn = "020319A990J",
+            firstName = "Maisa",
+            lastName = "Farang",
+            streetAddress = "Mannerheimintie 1",
+            postalCode = "00100",
+            postOffice = "Helsinki",
+        )
 
     private val testDecisions =
         listOf(
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
+                headOfFamilyId = adult1.id,
                 period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         ),
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -140,13 +246,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.SENT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
+                headOfFamilyId = adult1.id,
                 period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -156,13 +262,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.SENT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_2.id,
+                headOfFamilyId = adult2.id,
                 period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -172,13 +278,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_3.id,
+                headOfFamilyId = adult3.id,
                 period = FiniteDateRange(LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_3.id,
-                            dateOfBirth = testChild_3.dateOfBirth,
+                            childId = child3.id,
+                            dateOfBirth = child3.dateOfBirth,
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -188,13 +294,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_3.id,
+                headOfFamilyId = adult3.id,
                 period = FiniteDateRange(LocalDate.of(2016, 5, 1), LocalDate.of(2016, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_4.id,
-                            dateOfBirth = testChild_4.dateOfBirth,
+                            childId = child4.id,
+                            dateOfBirth = child4.dateOfBirth,
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -204,13 +310,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_ACCEPTED,
-                headOfFamilyId = testAdult_3.id,
+                headOfFamilyId = adult3.id,
                 period = FiniteDateRange(LocalDate.of(2017, 5, 1), LocalDate.of(2017, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_4.id,
-                            dateOfBirth = testChild_4.dateOfBirth,
+                            childId = child4.id,
+                            dateOfBirth = child4.dateOfBirth,
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -220,13 +326,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_PARTLY_ACCEPTED,
-                headOfFamilyId = testAdult_3.id,
+                headOfFamilyId = adult3.id,
                 period = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_4.id,
-                            dateOfBirth = testChild_4.dateOfBirth,
+                            childId = child4.id,
+                            dateOfBirth = child4.dateOfBirth,
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -236,13 +342,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.RELIEF_REJECTED,
-                headOfFamilyId = testAdult_3.id,
+                headOfFamilyId = adult3.id,
                 period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_4.id,
-                            dateOfBirth = testChild_4.dateOfBirth,
+                            childId = child4.id,
+                            dateOfBirth = child4.dateOfBirth,
                             placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -256,20 +362,20 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
+                headOfFamilyId = adult1.id,
                 period = FiniteDateRange(LocalDate.of(2018, 8, 1), LocalDate.of(2018, 8, 31)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.PRESCHOOL_CLUB,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         ),
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -281,20 +387,20 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
+                headOfFamilyId = adult1.id,
                 period = FiniteDateRange(LocalDate.of(2018, 9, 1), LocalDate.of(2018, 9, 30)),
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         ),
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.PRESCHOOL_CLUB,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
@@ -331,18 +437,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     private val allAreas = listOf(area1, area2)
     private val allDaycares = listOf(daycare1, daycare2)
-    private val allWorkers = listOf(testDecisionMaker_1, testDecisionMaker_2)
-    private val allAdults =
-        listOf(
-            testAdult_1,
-            testAdult_2,
-            testAdult_3,
-            testAdult_4,
-            testAdult_5,
-            testAdult_6,
-            testAdult_7,
-        )
-    private val allChildren = listOf(testChild_1, testChild_2, testChild_3, testChild_4)
+    private val allWorkers = listOf(decisionMaker1, decisionMaker2)
+    private val allAdults = listOf(adult1, adult2, adult3, adult4, adult5, adult6, adult7)
+    private val allChildren = listOf(child1, child2, child3, child4)
 
     @BeforeEach
     fun beforeEach() {
@@ -555,30 +652,30 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val clock = RealEvakaClock()
         val decisionWithHandledStatement =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_1,
-                partner = testAdult_2,
-                familyChildren = listOf(testChild_1),
+                headOfFamily = adult1,
+                partner = adult2,
+                familyChildren = listOf(child1),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
         val decisionWithOpenAdultStatement =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_3,
-                partner = testAdult_4,
-                familyChildren = listOf(testChild_2),
+                headOfFamily = adult3,
+                partner = adult4,
+                familyChildren = listOf(child2),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
         val decisionWithFarAwayAndFutureOpenStatements =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_5,
-                partner = testAdult_6,
-                familyChildren = listOf(testChild_3),
+                headOfFamily = adult5,
+                partner = adult6,
+                familyChildren = listOf(child3),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
         val decisionWithOpenChildStatement =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_7,
+                headOfFamily = adult7,
                 partner = null,
-                familyChildren = listOf(testChild_4),
+                familyChildren = listOf(child4),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
 
@@ -594,7 +691,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -602,14 +699,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker1.id,
                 )
             )
 
-            // testAdult_2 statement not submitted
+            // adult2 statement not submitted
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -622,7 +719,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_3.id,
+                    personId = adult3.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -630,14 +727,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker1.id,
                 )
             )
 
-            // testAdult_4 statement not handled
+            // adult4 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_4.id,
+                    personId = adult4.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -649,10 +746,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
 
-            // testAdult_5 statement not handled
+            // adult5 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_5.id,
+                    personId = adult5.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(20),
@@ -664,10 +761,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
 
-            // testAdult_6 statement not handled
+            // adult6 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_6.id,
+                    personId = adult6.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().plusMonths(9),
@@ -681,7 +778,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_7.id,
+                    personId = adult7.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -689,14 +786,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker1.id,
                 )
             )
 
-            // testChild_4 statement not handled
+            // child4 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testChild_4.id,
+                    personId = child4.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -731,15 +828,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val clock = RealEvakaClock()
         val decisionWithHandledStatements =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_1,
-                partner = testAdult_2,
+                headOfFamily = adult1,
+                partner = adult2,
                 familyChildren = listOf(),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
         val decisionWithOpenStatements =
             createFeeDecisionsForFamily(
-                headOfFamily = testAdult_3,
-                partner = testAdult_4,
+                headOfFamily = adult3,
+                partner = adult4,
                 familyChildren = listOf(),
                 period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
             )
@@ -748,7 +845,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             tx.upsertFeeDecisions(listOf(decisionWithHandledStatements, decisionWithOpenStatements))
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -756,13 +853,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker1.id,
                 )
             )
-            // testAdult_2 statement not submitted
+            // adult2 statement not submitted
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -774,7 +871,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_3.id,
+                    personId = adult3.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -782,13 +879,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker1.id,
                 )
             )
-            // testAdult_4 statement not handled
+            // adult4 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_4.id,
+                    personId = adult4.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -878,12 +975,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    searchTerms =
-                        "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}",
+                    searchTerms = "${adult1.streetAddress} ${adult1.firstName.substring(0, 2)}",
                 )
             )
 
-        val expectedDecisions = testDecisions.filter { it.headOfFamilyId != testAdult_3.id }
+        val expectedDecisions = testDecisions.filter { it.headOfFamilyId != adult3.id }
 
         assertEqualEnough(expectedDecisions.map(::toSummary), result.data)
     }
@@ -896,7 +992,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}",
+                    searchTerms = "${adult1.lastName.substring(0, 2)} ${adult1.firstName}",
                 )
             )
 
@@ -911,7 +1007,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch",
+                    searchTerms = "${adult1.lastName} ${adult1.streetAddress} nomatch",
                 )
             )
 
@@ -926,7 +1022,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    searchTerms = testChild_2.firstName,
+                    searchTerms = child2.firstName,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.ASC,
                 )
@@ -956,8 +1052,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val result =
-            searchDecisions(SearchFeeDecisionRequest(page = 0, searchTerms = testAdult_1.ssn))
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, searchTerms = adult1.ssn))
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
     }
@@ -968,7 +1063,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(page = 0, searchTerms = testAdult_1.ssn!!.substring(0, 6))
+                SearchFeeDecisionRequest(page = 0, searchTerms = adult1.ssn!!.substring(0, 6))
             )
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
@@ -996,21 +1091,21 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `getting head of family's fee decisions works`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val feeDecisions = getHeadOfFamilyDecisions(testAdult_1.id)
+        val feeDecisions = getHeadOfFamilyDecisions(adult1.id)
 
         assertEquals(2, feeDecisions.size)
         feeDecisions
             .find { it.status == FeeDecisionStatus.DRAFT }
             .let { draft ->
                 assertNotNull(draft)
-                assertEquals(testAdult_1.id, draft.headOfFamilyId)
+                assertEquals(adult1.id, draft.headOfFamilyId)
                 assertEquals(28900 + 14500, draft.totalFee)
             }
         feeDecisions
             .find { it.status == FeeDecisionStatus.SENT }
             .let { sent ->
                 assertNotNull(sent)
-                assertEquals(testAdult_1.id, sent.headOfFamilyId)
+                assertEquals(adult1.id, sent.headOfFamilyId)
                 assertEquals(28900, sent.totalFee)
             }
     }
@@ -1036,8 +1131,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.SENT,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1083,8 +1178,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1106,8 +1201,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1128,8 +1223,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1155,7 +1250,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 sql(
                     """
                     UPDATE daycare
-                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
                 """
                 )
@@ -1170,8 +1265,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.SENT,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_2.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker2.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1188,7 +1283,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 sql(
                     """
                     UPDATE daycare
-                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
                     """
                 )
@@ -1203,8 +1298,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1227,7 +1322,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 sql(
                     """
                     UPDATE daycare
-                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    SET finance_decision_handler = ${bind(decisionMaker2.id)}
                     WHERE id = ${bind(oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
                 """
                 )
@@ -1242,8 +1337,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             oldDecision.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.SENT,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${oldDecision.id}_fi.pdf",
             )
 
@@ -1255,7 +1350,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `sendDecisions does not send if ssn missing`() {
         val draft =
             testDecisions.find {
-                it.status == FeeDecisionStatus.DRAFT && it.headOfFamilyId == testAdult_3.id
+                it.status == FeeDecisionStatus.DRAFT && it.headOfFamilyId == adult3.id
             }!!
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
@@ -1270,8 +1365,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draft.id}_fi.pdf",
             )
 
@@ -1325,8 +1420,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draftWithFutureDates.copy(
                 decisionNumber = 1,
                 status = FeeDecisionStatus.SENT,
-                approvedById = testDecisionMaker_1.id,
-                decisionHandlerId = testDecisionMaker_1.id,
+                approvedById = decisionMaker1.id,
+                decisionHandlerId = decisionMaker1.id,
                 documentKey = "feedecision_${draftWithFutureDates.id}_fi.pdf",
             )
         assertEqualEnough(toDetailed(expected), actual)
@@ -1555,13 +1650,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val secondDraft =
             draft.copy(
                 id = FeeDecisionId(UUID.randomUUID()),
-                headOfFamilyId = testAdult_5.id,
+                headOfFamilyId = adult5.id,
                 validDuring = draft.validDuring.copy(start = draft.validFrom.plusDays(15)),
             )
         val secondConflict =
             secondDraft.copy(
                 id = FeeDecisionId(UUID.randomUUID()),
-                headOfFamilyId = testAdult_5.id,
+                headOfFamilyId = adult5.id,
                 status = FeeDecisionStatus.SENT,
                 validDuring = draft.validDuring.copy(start = secondDraft.validFrom.minusDays(15)),
             )
@@ -1597,16 +1692,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.SENT,
                     decisionType = FeeDecisionType.NORMAL,
-                    headOfFamilyId = testAdult_1.id,
-                    partnerId = testAdult_2.id,
+                    headOfFamilyId = adult1.id,
+                    partnerId = adult2.id,
                     period = decisionPeriod,
                     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                     familySize = 4,
                     children =
                         listOf(
                             createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
+                                childId = child1.id,
+                                dateOfBirth = child1.dateOfBirth,
                                 placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1619,16 +1714,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.SENT,
                     decisionType = FeeDecisionType.NORMAL,
-                    headOfFamilyId = testAdult_2.id,
-                    partnerId = testAdult_1.id,
+                    headOfFamilyId = adult2.id,
+                    partnerId = adult1.id,
                     period = decisionPeriod,
                     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                     familySize = 4,
                     children =
                         listOf(
                             createFeeDecisionChildFixture(
-                                childId = testChild_2.id,
-                                dateOfBirth = testChild_2.dateOfBirth,
+                                childId = child2.id,
+                                dateOfBirth = child2.dateOfBirth,
                                 placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1644,16 +1739,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                partnerId = testAdult_2.id,
+                headOfFamilyId = adult1.id,
+                partnerId = adult2.id,
                 period = decisionPeriod,
                 feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                 familySize = 4,
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1662,8 +1757,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             fee = 28900,
                         ),
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
@@ -1708,16 +1803,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.SENT,
                     decisionType = FeeDecisionType.NORMAL,
-                    headOfFamilyId = testAdult_1.id,
-                    partnerId = testAdult_2.id,
+                    headOfFamilyId = adult1.id,
+                    partnerId = adult2.id,
                     period = decisionPeriod,
                     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                     familySize = 4,
                     children =
                         listOf(
                             createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
+                                childId = child1.id,
+                                dateOfBirth = child1.dateOfBirth,
                                 placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1730,16 +1825,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.SENT,
                     decisionType = FeeDecisionType.NORMAL,
-                    headOfFamilyId = testAdult_2.id,
-                    partnerId = testAdult_1.id,
+                    headOfFamilyId = adult2.id,
+                    partnerId = adult1.id,
                     period = decisionPeriod,
                     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                     familySize = 4,
                     children =
                         listOf(
                             createFeeDecisionChildFixture(
-                                childId = testChild_2.id,
-                                dateOfBirth = testChild_2.dateOfBirth,
+                                childId = child2.id,
+                                dateOfBirth = child2.dateOfBirth,
                                 placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1755,16 +1850,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                partnerId = testAdult_2.id,
+                headOfFamilyId = adult1.id,
+                partnerId = adult2.id,
                 period = decisionPeriod.copy(start = decisionPeriod.start.plusDays(31)),
                 feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
                 familySize = 4,
                 children =
                     listOf(
                         createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
+                            childId = child1.id,
+                            dateOfBirth = child1.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
@@ -1773,8 +1868,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             fee = 28900,
                         ),
                         createFeeDecisionChildFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
+                            childId = child2.id,
+                            dateOfBirth = child2.dateOfBirth,
                             placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
@@ -2113,14 +2208,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Fee decision indicates elementary family for a family with two partners and 2 common children`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult1.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
 
-        val decision =
-            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+        val decision = createFeeDecisionsForFamily(adult1, adult2, listOf(child1, child2))
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
@@ -2131,14 +2225,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Fee decision indicates elementary family for a family with two partners and one common child and one child not in fee decision`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult2.id, child1.id)
 
             // Adult 2 has a custodian in another family
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
 
-        val decision = createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1))
+        val decision = createFeeDecisionsForFamily(adult1, adult2, listOf(child1))
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
@@ -2149,15 +2243,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Fee decision indicates elementary family for a family with two partners and one common child and one not common child`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult1.id, child2.id)
 
             // Adult 2 is the parent of child 2 -> an elementary family
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
 
-        val decision =
-            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+        val decision = createFeeDecisionsForFamily(adult1, adult2, listOf(child1, child2))
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
@@ -2168,13 +2261,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Fee decision indicates elementary family for a family with two partners and partner has no dependants child`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult1.id, child2.id)
             // Adult 2 is not a guardian of either child -> not an elementary family
         }
 
-        val decision =
-            createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+        val decision = createFeeDecisionsForFamily(adult1, adult2, listOf(child1, child2))
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
@@ -2185,17 +2277,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `PDF can be downloaded`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult1.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
-        val decision =
-            createAndConfirmFeeDecisionsForFamily(
-                testAdult_1,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
-            )
+        val decision = createAndConfirmFeeDecisionsForFamily(adult1, adult2, listOf(child1, child2))
 
         getPdf(decision.id, user)
     }
@@ -2203,16 +2290,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Legacy PDF can be downloaded`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult1.id, child1.id)
+            it.insertGuardian(adult1.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_1,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
+                adult1,
+                adult2,
+                listOf(child1, child2),
                 legacyPdfWithContactInfo = true,
             )
 
@@ -2221,18 +2308,18 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `Legacy PDF can not be downloaded if head of family has restricted details`() {
-        // testAdult_7 has restricted details on
+        // adult7 has restricted details on
         db.transaction {
-            it.insertGuardian(testAdult_7.id, testChild_1.id)
-            it.insertGuardian(testAdult_7.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult7.id, child1.id)
+            it.insertGuardian(adult7.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_7,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
+                adult7,
+                adult2,
+                listOf(child1, child2),
                 legacyPdfWithContactInfo = true,
             )
 
@@ -2246,23 +2333,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Legacy PDF can not be downloaded if a child has restricted details`() {
         val testChildRestricted =
-            testChild_1.copy(
+            child1.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = "010617A125W",
                 restrictedDetailsEnabled = true,
             )
         db.transaction {
             it.insert(testChildRestricted, DevPersonType.RAW_ROW)
-            it.insertGuardian(testAdult_1.id, testChildRestricted.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChildRestricted.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult1.id, testChildRestricted.id)
+            it.insertGuardian(adult1.id, child2.id)
+            it.insertGuardian(adult2.id, testChildRestricted.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_1,
-                testAdult_2,
-                listOf(testChildRestricted, testChild_2),
+                adult1,
+                adult2,
+                listOf(testChildRestricted, child2),
                 legacyPdfWithContactInfo = true,
             )
 
@@ -2274,18 +2361,18 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `PDF without contact info can be downloaded even if head of family has restricted details`() {
-        // testAdult_7 has restricted details on
+        // adult7 has restricted details on
         db.transaction {
-            it.insertGuardian(testAdult_7.id, testChild_1.id)
-            it.insertGuardian(testAdult_7.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult7.id, child1.id)
+            it.insertGuardian(adult7.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_7,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
+                adult7,
+                adult2,
+                listOf(child1, child2),
                 legacyPdfWithContactInfo = false,
             )
 
@@ -2295,23 +2382,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `PDF without contact info can be downloaded even if a child has restricted details`() {
         val testChildRestricted =
-            testChild_1.copy(
+            child1.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = "010617A125W",
                 restrictedDetailsEnabled = true,
             )
         db.transaction {
             it.insert(testChildRestricted, DevPersonType.RAW_ROW)
-            it.insertGuardian(testAdult_1.id, testChildRestricted.id)
-            it.insertGuardian(testAdult_1.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChildRestricted.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult1.id, testChildRestricted.id)
+            it.insertGuardian(adult1.id, child2.id)
+            it.insertGuardian(adult2.id, testChildRestricted.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_1,
-                testAdult_2,
-                listOf(testChildRestricted, testChild_2),
+                adult1,
+                adult2,
+                listOf(testChildRestricted, child2),
                 legacyPdfWithContactInfo = false,
             )
 
@@ -2320,18 +2407,18 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `Legacy PDF can be downloaded by admin even if someone in the family has restricted details`() {
-        // testAdult_7 has restricted details on
+        // adult7 has restricted details on
         db.transaction {
-            it.insertGuardian(testAdult_7.id, testChild_1.id)
-            it.insertGuardian(testAdult_7.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult7.id, child1.id)
+            it.insertGuardian(adult7.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_7,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
+                adult7,
+                adult2,
+                listOf(child1, child2),
                 legacyPdfWithContactInfo = true,
             )
 
@@ -2342,7 +2429,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `Email notification is sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
         // optInAdult has an email address, and does not require manual sending of PDF decision
         val optInAdult =
-            testAdult_6.copy(
+            adult6.copy(
                 id = PersonId(UUID.randomUUID()),
                 email = "optin@test.com",
                 forceManualFeeDecisions = false,
@@ -2353,16 +2440,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             it.insert(
                 DevParentship(
                     ParentshipId(UUID.randomUUID()),
-                    testChild_2.id,
+                    child2.id,
                     optInAdult.id,
-                    testChild_2.dateOfBirth,
-                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    child2.dateOfBirth,
+                    child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
                 )
             )
-            it.insertTestPartnership(adult1 = optInAdult.id, adult2 = testAdult_7.id)
+            it.insertTestPartnership(adult1 = optInAdult.id, adult2 = adult7.id)
         }
-        createAndConfirmFeeDecisionsForFamily(optInAdult, testAdult_7, listOf(testChild_2))
+        createAndConfirmFeeDecisionsForFamily(optInAdult, adult7, listOf(child2))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -2384,21 +2471,20 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Email notification is sent to hof when decision in WAITING_FOR_MANUAL_SENDING is set to SENT`() {
         db.transaction {
-            // testAdult_3 has an email address, but no mail address -> marked for manual sending
+            // adult3 has an email address, but no mail address -> marked for manual sending
             it.insert(
                 DevParentship(
                     ParentshipId(UUID.randomUUID()),
-                    testChild_2.id,
-                    testAdult_3.id,
-                    testChild_2.dateOfBirth,
-                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    child2.id,
+                    adult3.id,
+                    child2.dateOfBirth,
+                    child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
                 )
             )
-            it.insertTestPartnership(adult1 = testAdult_3.id, adult2 = testAdult_4.id)
+            it.insertTestPartnership(adult1 = adult3.id, adult2 = adult4.id)
         }
-        val feeDecision =
-            createAndConfirmFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf(testChild_2))
+        val feeDecision = createAndConfirmFeeDecisionsForFamily(adult3, adult4, listOf(child2))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -2419,13 +2505,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         // assert that only hof has mail
         assertEquals(
-            setOfNotNull(testAdult_3.email),
+            setOfNotNull(adult3.email),
             MockEmailClient.emails.map { it.toAddress }.toSet(),
         )
-        assertEquals(emailContent.subject, getEmailFor(testAdult_3).content.subject)
+        assertEquals(emailContent.subject, getEmailFor(adult3).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(testAdult_3).fromAddress.address,
+            getEmailFor(adult3).fromAddress.address,
         )
     }
 
@@ -2433,7 +2519,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `Email notification is not sent to hof when opted out of decision emails`() {
         // optOutAdult is eligible, but has elected to not receive decision emails
         val optOutAdult =
-            testAdult_6.copy(
+            adult6.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = "291090-9986",
                 email = "optout@test.com",
@@ -2445,16 +2531,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             it.insert(
                 DevParentship(
                     ParentshipId(UUID.randomUUID()),
-                    testChild_2.id,
+                    child2.id,
                     optOutAdult.id,
-                    testChild_2.dateOfBirth,
-                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    child2.dateOfBirth,
+                    child2.dateOfBirth.plusYears(18).minusDays(1),
                     HelsinkiDateTime.now(),
                 )
             )
-            it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = testAdult_7.id)
+            it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = adult7.id)
         }
-        createAndConfirmFeeDecisionsForFamily(optOutAdult, testAdult_7, listOf(testChild_2))
+        createAndConfirmFeeDecisionsForFamily(optOutAdult, adult7, listOf(child2))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -2465,18 +2551,18 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `Sfi message event is stored correctly`() {
 
-        // testAdult_7 has restricted details on
+        // adult7 has restricted details on
         db.transaction {
-            it.insertGuardian(testAdult_7.id, testChild_1.id)
-            it.insertGuardian(testAdult_7.id, testChild_2.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_2.id)
+            it.insertGuardian(adult7.id, child1.id)
+            it.insertGuardian(adult7.id, child2.id)
+            it.insertGuardian(adult2.id, child1.id)
+            it.insertGuardian(adult2.id, child2.id)
         }
         val decision =
             createAndConfirmFeeDecisionsForFamily(
-                testAdult_7,
-                testAdult_2,
-                listOf(testChild_1, testChild_2),
+                adult7,
+                adult2,
+                listOf(child1, child2),
                 legacyPdfWithContactInfo = true,
             )
 
