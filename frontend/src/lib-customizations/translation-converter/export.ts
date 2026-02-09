@@ -14,11 +14,11 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const MOBILE = true
+const MOBILE = false
 
 const relPath = MOBILE
   ? '../defaults/employee-mobile-frontend/i18n/fi.ts'
-  : '../defaults/employee-frontend/i18n/fi.tsx'
+  : '../defaults/employee/i18n/fi.tsx'
 
 function main() {
   // Read the fi.tsx file as text
