@@ -16,6 +16,9 @@ import fi.espoo.evaka.application.PersonBasics
 import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -30,6 +33,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevApplicationWithForm
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
@@ -48,14 +52,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -73,16 +69,23 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private val startDate = LocalDate.of(2019, 1, 1)
     private val endDate = LocalDate.of(2021, 12, 31)
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val adult = DevPerson()
+    // Children with specific dateOfBirth values that determine under-3/over-3 capacity factors
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2018, 9, 1))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_2, testChild_3).forEach {
-                tx.insert(it, DevPersonType.CHILD)
-            }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2, child3).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(preschoolTerm2020)
             tx.insertServiceNeedOptions()
         }
@@ -90,11 +93,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `No caretakers, cannot compute`() {
-        val applicationId = createApplication(testChild_1.id)
+        val applicationId = createApplication(child1.id)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
                 preschoolDaycarePeriod = null,
@@ -106,7 +109,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `No previous placements`() {
         db.transaction { tx ->
-            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
             tx.insert(
                 DevDaycareCaretaker(
                     groupId = groupId,
@@ -116,11 +119,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 )
             )
         }
-        val applicationId = createApplication(testChild_1.id)
+        val applicationId = createApplication(child1.id)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
                 preschoolDaycarePeriod = null,
@@ -168,7 +171,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Has previous placements`() {
         db.transaction { tx ->
-            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
             tx.insert(
                 DevDaycareCaretaker(
                     groupId = groupId,
@@ -181,8 +184,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Under 3 years (coefficient 1.75)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -191,8 +194,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
             tx.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusMonths(4),
                     endDate = endDate,
                 )
@@ -200,11 +203,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         // Under 3 years (coefficient 1.75)
-        val applicationId = createApplication(testChild_1.id)
+        val applicationId = createApplication(child1.id)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
                 preschoolDaycarePeriod = null,
@@ -252,7 +255,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool speculation`() {
         db.transaction { tx ->
-            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
             tx.insert(
                 DevDaycareCaretaker(
                     groupId = groupId,
@@ -265,8 +268,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Under 3 years (coefficient 1.75)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -275,8 +278,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
                 )
@@ -285,15 +288,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // Over 3 years (coefficient 1)
         val applicationId =
-            createApplication(
-                testChild_2.id,
-                type = ApplicationType.PRESCHOOL,
-                connectedDaycare = false,
-            )
+            createApplication(child2.id, type = ApplicationType.PRESCHOOL, connectedDaycare = false)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
                 preschoolDaycarePeriod = null,
@@ -341,7 +340,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool and connected daycare speculation`() {
         db.transaction { tx ->
-            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
             tx.insert(
                 DevDaycareCaretaker(
                     groupId = groupId,
@@ -354,8 +353,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Under 3 years (coefficient 1.75)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -364,8 +363,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
                 )
@@ -374,15 +373,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // Over 3 years (coefficient 1)
         val applicationId =
-            createApplication(
-                testChild_2.id,
-                type = ApplicationType.PRESCHOOL,
-                connectedDaycare = true,
-            )
+            createApplication(child2.id, type = ApplicationType.PRESCHOOL, connectedDaycare = true)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
                 preschoolDaycarePeriod =
@@ -433,7 +428,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool and connected daycare speculation, child already has a placement`() {
         db.transaction { tx ->
-            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
             tx.insert(
                 DevDaycareCaretaker(
                     groupId = groupId,
@@ -446,8 +441,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Under 3 years (coefficient 1.75)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    childId = child3.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -456,8 +451,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
                     endDate = endDate,
                 )
@@ -466,8 +461,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             // Over 3 years (coefficient 1), will be speculated for preschool
             tx.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -475,15 +470,11 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         val applicationId =
-            createApplication(
-                testChild_2.id,
-                type = ApplicationType.PRESCHOOL,
-                connectedDaycare = true,
-            )
+            createApplication(child2.id, type = ApplicationType.PRESCHOOL, connectedDaycare = true)
 
         val occupancies =
             getSpeculatedOccupancies(
-                testDaycare.id,
+                daycare.id,
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
                 preschoolDaycarePeriod =
@@ -535,20 +526,15 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `getUnitOccupancies returns correct data`() {
         val start = today.minusDays(2)
         val end = today.plusDays(2)
-        val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "g1")
-        val group2 = DevDaycareGroup(daycareId = testDaycare.id, name = "g2")
+        val group1 = DevDaycareGroup(daycareId = daycare.id, name = "g1")
+        val group2 = DevDaycareGroup(daycareId = daycare.id, name = "g2")
         val caretakers1 =
             DevDaycareCaretaker(groupId = group1.id, amount = BigDecimal("2.0"), startDate = start)
         val caretakers2 =
             DevDaycareCaretaker(groupId = group2.id, amount = BigDecimal("1.0"), startDate = start)
 
         val placement1 =
-            DevPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = start,
-                endDate = end,
-            )
+            DevPlacement(childId = child1.id, unitId = daycare.id, startDate = start, endDate = end)
         val groupPlacement1a =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement1.id,
@@ -565,9 +551,9 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         val placement2 =
             DevPlacement(
-                childId = testChild_2.id,
+                childId = child2.id,
                 type = PlacementType.PRESCHOOL,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = start.plusDays(1),
                 endDate = end,
             )
@@ -580,8 +566,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         val placement3 =
             DevPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
+                childId = child3.id,
+                unitId = daycare.id,
                 startDate = start,
                 endDate = end.minusDays(1),
             )
@@ -597,15 +583,15 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val application1 =
             createTestApplication(
                 child = plannedChild,
-                guardian = testAdult_1,
-                preferredUnits = listOf(testDaycare),
+                guardian = adult,
+                preferredUnits = listOf(daycare),
                 status = ApplicationStatus.WAITING_DECISION,
                 preferredStart = start,
             )
         val placementPlan =
             DevPlacementPlan(
                 applicationId = application1.id,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = start,
                 endDate = end,
             )
@@ -614,19 +600,19 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val application2 =
             createTestApplication(
                 child = draftPlacedChild,
-                guardian = testAdult_1,
-                preferredUnits = listOf(testDaycare),
+                guardian = adult,
+                preferredUnits = listOf(daycare),
                 preferredStart = start,
             )
         val placementDraft =
             DevPlacementDraft(
                 applicationId = application2.id,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = application2.form.preferences.preferredStartDate!!,
                 createdAt = mockClock.now(),
-                createdBy = testDecisionMaker_1.evakaUserId,
+                createdBy = employee.evakaUserId,
                 modifiedAt = mockClock.now(),
-                modifiedBy = testDecisionMaker_1.evakaUserId,
+                modifiedBy = employee.evakaUserId,
             )
 
         db.transaction { tx ->
@@ -982,41 +968,36 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `getUnitOccupancies does not show draft occupancies to unit supervisor`() {
         val start = today.minusDays(2)
         val end = today.plusDays(2)
-        val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "g1")
+        val group1 = DevDaycareGroup(daycareId = daycare.id, name = "g1")
         val caretakers1 =
             DevDaycareCaretaker(groupId = group1.id, amount = BigDecimal("2.0"), startDate = start)
         val unitSupervisor = DevEmployee()
 
         val placement1 =
-            DevPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = start,
-                endDate = end,
-            )
+            DevPlacement(childId = child1.id, unitId = daycare.id, startDate = start, endDate = end)
         val draftPlacedChild = DevPerson()
         val application =
             createTestApplication(
                 child = draftPlacedChild,
-                guardian = testAdult_1,
-                preferredUnits = listOf(testDaycare),
+                guardian = adult,
+                preferredUnits = listOf(daycare),
                 preferredStart = start,
             )
         val placementDraft =
             DevPlacementDraft(
                 applicationId = application.id,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = application.form.preferences.preferredStartDate!!,
                 createdAt = mockClock.now(),
-                createdBy = testDecisionMaker_1.evakaUserId,
+                createdBy = employee.evakaUserId,
                 modifiedAt = mockClock.now(),
-                modifiedBy = testDecisionMaker_1.evakaUserId,
+                modifiedBy = employee.evakaUserId,
             )
 
         db.transaction { tx ->
             tx.insert(group1)
             tx.insert(caretakers1)
-            tx.insert(unitSupervisor, mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(unitSupervisor, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
             tx.insert(placement1)
             tx.insert(draftPlacedChild, DevPersonType.CHILD)
             tx.insertApplication(application)
@@ -1073,14 +1054,14 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `getUnitRealizedOccupanciesForDay returns correct data for current day`() {
         // children 1 and 2 are in group 1, child 3 in group 2
         // staff 1 and 2 are in group 1, staff 3 in group 2
-        val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "g1")
-        val group2 = DevDaycareGroup(daycareId = testDaycare.id, name = "g2")
+        val group1 = DevDaycareGroup(daycareId = daycare.id, name = "g1")
+        val group2 = DevDaycareGroup(daycareId = daycare.id, name = "g2")
 
         val placementRange = FiniteDateRange(today.minusMonths(3), today.plusMonths(3))
         val placement1 =
             DevPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child1.id,
+                unitId = daycare.id,
                 startDate = placementRange.start,
                 endDate = placementRange.end,
             )
@@ -1093,9 +1074,9 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         val placement2 =
             DevPlacement(
-                childId = testChild_2.id,
+                childId = child2.id,
                 type = PlacementType.PRESCHOOL,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = placementRange.start,
                 endDate = placementRange.end,
             )
@@ -1108,8 +1089,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         val placement3 =
             DevPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
+                childId = child3.id,
+                unitId = daycare.id,
                 startDate = placementRange.start,
                 endDate = placementRange.end,
             )
@@ -1122,24 +1103,24 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         val childAttendance1 =
             DevChildAttendance(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child1.id,
+                unitId = daycare.id,
                 date = today,
                 arrived = LocalTime.of(9, 15),
                 departed = LocalTime.of(14, 55),
             )
         val childAttendance2 =
             DevChildAttendance(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
+                childId = child2.id,
+                unitId = daycare.id,
                 date = today,
                 arrived = LocalTime.of(10, 0),
                 departed = null,
             )
         val childAttendance3 =
             DevChildAttendance(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
+                childId = child3.id,
+                unitId = daycare.id,
                 date = today,
                 arrived = LocalTime.of(9, 0),
                 departed = LocalTime.of(14, 0),
@@ -1203,19 +1184,19 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childAttendances =
                     listOf(
                         ChildOccupancyAttendance(
-                            childId = testChild_3.id,
+                            childId = child3.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 0)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
                             capacity = 1.0,
                         ),
                         ChildOccupancyAttendance(
-                            childId = testChild_1.id,
+                            childId = child1.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 15)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 55)),
                             capacity = 1.0,
                         ),
                         ChildOccupancyAttendance(
-                            childId = testChild_2.id,
+                            childId = child2.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
                             capacity = 0.5,
@@ -1249,13 +1230,13 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childAttendances =
                     listOf(
                         ChildOccupancyAttendance(
-                            childId = testChild_1.id,
+                            childId = child1.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 15)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 55)),
                             capacity = 1.0,
                         ),
                         ChildOccupancyAttendance(
-                            childId = testChild_2.id,
+                            childId = child2.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
                             capacity = 0.5,
@@ -1287,7 +1268,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.transaction { tx ->
             tx.createParentship(
                 childId = childId,
-                headOfChildId = testAdult_1.id,
+                headOfChildId = adult.id,
                 startDate = startDate,
                 endDate = endDate,
                 creator = Creator.DVV,
@@ -1295,11 +1276,17 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             tx.insertTestApplication(
                 status = ApplicationStatus.WAITING_PLACEMENT,
                 childId = childId,
-                guardianId = testAdult_1.id,
+                guardianId = adult.id,
                 type = type,
                 document =
-                    DaycareFormV0.fromApplication2(validDaycareApplication)
-                        .copy(type = type, connectedDaycare = connectedDaycare),
+                    DaycareFormV0(
+                        type = type,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        connectedDaycare =
+                            if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
+                    ),
             )
         }
 
@@ -1311,7 +1298,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     ): OccupancyResponseSpeculated {
         return occupancyController.getOccupancyPeriodsSpeculated(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+            AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER)),
             mockClock,
             unitId,
             applicationId,
@@ -1327,13 +1314,13 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         endDate: LocalDate,
         groupId: GroupId?,
         user: AuthenticatedUser.Employee =
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+            AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER)),
     ) =
         occupancyController.getUnitOccupancies(
             dbInstance(),
             user,
             mockClock,
-            testDaycare.id,
+            daycare.id,
             startDate,
             endDate,
             groupId,
@@ -1343,9 +1330,9 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         occupancyController
             .getUnitRealizedOccupanciesForDay(
                 dbInstance(),
-                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
+                AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER)),
                 mockClock,
-                testDaycare.id,
+                daycare.id,
                 OccupancyController.GetUnitOccupanciesForDayBody(date, groupIds),
             )
             .let { occupancies ->
