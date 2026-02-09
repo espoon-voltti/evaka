@@ -103,9 +103,33 @@ echo "Current environment:"
 mise env | grep EVAKA_ | sort
 """
 
-[tasks.dump-schema]
-description = "Dump the database schema to docs/db/schema.sql"
-run = "bin/dump-db-schema.sh > docs/db/schema.sql"
+[tasks.instances]
+description = "List running eVaka instances"
+run = """{% raw %}
+#!/usr/bin/env bash
+set -euo pipefail
+
+found=false
+
+while IFS= read -r project; do
+  case "$project" in
+    compose)  instance="(default)" ;;
+    evaka-*)  instance="${project#evaka-}" ;;
+    *)        continue ;;
+  esac
+
+  services=$(docker ps --filter "label=com.docker.compose.project=$project" \
+    --format '{{.Label "com.docker.compose.service"}}' | sort | paste -sd, -)
+
+  printf "%-20s  Services: %s\n" "Instance $instance" "$services"
+  found=true
+done < <(docker ps --filter "label=com.docker.compose.service=db" \
+  --format '{{.Label "com.docker.compose.project"}}' 2>/dev/null | sort -u)
+
+if [ "$found" = false ]; then
+  echo "No running eVaka instances found."
+fi
+{% endraw %}"""
 
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"
@@ -116,3 +140,7 @@ run = "docker compose exec -T db reset-local-db"
 description = "Drop and recreate the evaka_it integration test database"
 dir = "compose"
 run = "docker compose exec -T db reset-it-db"
+
+[tasks.dump-schema]
+description = "Dump the database schema to docs/db/schema.sql"
+run = "bin/dump-db-schema.sh > docs/db/schema.sql"
