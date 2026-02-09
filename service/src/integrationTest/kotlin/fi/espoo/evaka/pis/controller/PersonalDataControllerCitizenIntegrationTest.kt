@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
@@ -27,14 +26,16 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
     @Autowired private lateinit var personalDataController: PersonalDataControllerCitizen
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val adult = DevPerson()
+
     @Test
     fun `all notifications are enabled by default`() {
-        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.RAW_ROW) }
+        db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
 
         val disabledTypes =
             personalDataController.getNotificationSettings(
                 dbInstance(),
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
+                AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                 RealEvakaClock(),
             )
         assertEquals(emptySet(), disabledTypes)
@@ -42,11 +43,11 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `notification settings can be updated`() {
-        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.RAW_ROW) }
+        db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
 
         personalDataController.updateNotificationSettings(
             dbInstance(),
-            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
+            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
             RealEvakaClock(),
             setOf(
                 EmailMessageType.BULLETIN_NOTIFICATION,
@@ -59,7 +60,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
         val settings =
             personalDataController.getNotificationSettings(
                 dbInstance(),
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
+                AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                 RealEvakaClock(),
             )
         assertEquals(

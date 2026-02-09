@@ -8,16 +8,19 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
@@ -26,11 +29,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testVoucherDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -47,18 +45,23 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val voucherDaycare =
+        DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val adult = DevPerson()
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
     private val today = LocalDate.of(2021, 5, 5)
     private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 1, 0)))
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testVoucherDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(voucherDaycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
@@ -66,8 +69,8 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testVoucherDaycare.id,
+                        childId = child.id,
+                        unitId = voucherDaycare.id,
                         startDate = today,
                         endDate = today.plusDays(30),
                     )
@@ -79,16 +82,16 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     startDate = period.start,
                     endDate = period.end,
                     optionId = snDefaultDaycare.id,
-                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedBy = employee.evakaUserId,
                     confirmedAt = HelsinkiDateTime.now(),
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
-                    startDate = testChild_1.dateOfBirth,
-                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1),
+                    childId = child.id,
+                    headOfChildId = adult.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
         }
@@ -105,7 +108,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
             )
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertEquals(testChild_1.id, created.childId)
+        assertEquals(child.id, created.childId)
         assertEquals(BigDecimal("2.00"), created.coefficient)
         assertEquals(FiniteDateRange(today, today.plusDays(30)), created.validityPeriod)
         assertEquals(listOf(BigDecimal("2.00")), readVoucherValueDecisionAssistanceCoefficients())
@@ -120,7 +123,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
             )
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertEquals(testChild_1.id, updated.childId)
+        assertEquals(child.id, updated.childId)
         assertEquals(BigDecimal("3.00"), updated.coefficient)
         assertEquals(
             FiniteDateRange(today.plusDays(10), today.plusDays(20)),
@@ -141,9 +144,9 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     ): AssistanceNeedVoucherCoefficient {
         return assistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient(
             dbInstance(),
-            user,
+            employee.user,
             clock,
-            testChild_1.id,
+            child.id,
             body,
         )
     }
@@ -154,7 +157,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     ): AssistanceNeedVoucherCoefficient {
         return assistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient(
             dbInstance(),
-            user,
+            employee.user,
             clock,
             id,
             body,
@@ -164,7 +167,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     private fun deleteAssistanceNeedVoucherCoefficient(id: AssistanceNeedVoucherCoefficientId) {
         assistanceNeedVoucherCoefficientController.deleteAssistanceNeedVoucherCoefficient(
             dbInstance(),
-            user,
+            employee.user,
             clock,
             id,
         )

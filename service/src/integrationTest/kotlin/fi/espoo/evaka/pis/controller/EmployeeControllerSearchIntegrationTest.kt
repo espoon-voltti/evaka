@@ -12,14 +12,11 @@ import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
-import fi.espoo.evaka.testDecisionMaker_3
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -32,18 +29,22 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Autowired lateinit var controller: EmployeeController
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+    private val employee2 = DevEmployee()
+    private val employee3 = DevEmployee()
+    private val supervisor = DevEmployee(firstName = "Sammy", lastName = "Supervisor")
+
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1.copy(roles = setOf(UserRole.SERVICE_WORKER)))
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testDecisionMaker_3)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(
-                unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
-            )
+            tx.insert(serviceWorker)
+            tx.insert(employee2)
+            tx.insert(employee3)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(supervisor, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
         }
     }
 
@@ -67,23 +68,22 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(4, body.size)
 
         val decisionMaker =
-            body.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
+            body.find { it.id == serviceWorker.id } ?: fail("serviceWorker not found")
         assertEquals(listOf(UserRole.SERVICE_WORKER), decisionMaker.globalRoles)
         assertEquals(0, decisionMaker.daycareRoles.size)
 
-        val supervisor =
-            body.find { it.id == unitSupervisorOfTestDaycare.id } ?: fail("supervisor not found")
-        assertEquals(0, supervisor.globalRoles.size)
+        val foundSupervisor = body.find { it.id == supervisor.id } ?: fail("supervisor not found")
+        assertEquals(0, foundSupervisor.globalRoles.size)
         assertEquals(
             listOf(
                 DaycareRole(
-                    daycareId = testDaycare.id,
-                    daycareName = testDaycare.name,
+                    daycareId = daycare.id,
+                    daycareName = daycare.name,
                     role = UserRole.UNIT_SUPERVISOR,
                     endDate = null,
                 )
             ),
-            supervisor.daycareRoles,
+            foundSupervisor.daycareRoles,
         )
     }
 

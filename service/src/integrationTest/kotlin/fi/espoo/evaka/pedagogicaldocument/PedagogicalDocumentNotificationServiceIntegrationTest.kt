@@ -14,8 +14,6 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -23,6 +21,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -33,13 +33,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import java.io.File
 import java.time.Duration
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -51,6 +47,13 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
+    private val staffEmployee = DevEmployee()
+    private val staffUser =
+        AuthenticatedUser.Employee(id = staffEmployee.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+
     private val testGuardianFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testGuardianSv = DevPerson(email = "sv@example.com", language = "sv")
     private val testGuardianNoEmail = DevPerson(language = "en")
@@ -61,35 +64,25 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     private val testNotificationRecipients = listOf(testGuardianFi, testGuardianSv)
     private val testAddresses = testNotificationRecipients.mapNotNull { it.email }
 
-    private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employee =
-        AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
-
     @BeforeEach
     fun beforeEach() {
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
 
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.addUnitFeatures(listOf(daycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
 
-            val groupId = GroupId(UUID.randomUUID())
-            tx.insert(
-                DevDaycareGroup(
-                    id = groupId,
-                    daycareId = testDaycare.id,
-                    startDate = placementStart,
-                )
-            )
+            val group = DevDaycareGroup(daycareId = daycare.id, startDate = placementStart)
+            tx.insert(group)
 
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child.id,
+                        unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
                     )
@@ -97,32 +90,32 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = groupId,
+                    daycareGroupId = group.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
 
             testPersons.forEach { tx.insert(it, DevPersonType.RAW_ROW) }
-            tx.insertGuardian(testGuardianFi.id, testChild_1.id)
-            tx.insertGuardian(testGuardianSv.id, testChild_1.id)
+            tx.insertGuardian(testGuardianFi.id, child.id)
+            tx.insertGuardian(testGuardianSv.id, child.id)
             tx.createParentship(
-                testChild_1.id,
+                child.id,
                 testHeadOfChild.id,
                 LocalDate.now().minusYears(1),
                 LocalDate.now().plusYears(1),
                 Creator.DVV,
             )
 
-            tx.insert(DevEmployee(id = employeeId))
-            tx.upsertEmployeeMessageAccount(employeeId)
-            tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+            tx.insert(staffEmployee)
+            tx.upsertEmployeeMessageAccount(staffEmployee.id)
+            tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
         }
     }
 
     @Test
     fun `notifications are sent to guardians but not heads`() {
-        postNewDocument(user = employee, PedagogicalDocumentPostBody(testChild_1.id, "foobar"))
+        postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, "foobar"))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
@@ -138,8 +131,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
     @Test
     fun `sending of notifications are tracked in the database`() {
-        val doc =
-            postNewDocument(user = employee, PedagogicalDocumentPostBody(testChild_1.id, "foobar"))
+        val doc = postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, "foobar"))
 
         db.read {
             val emailJobCreatedAt =
@@ -162,16 +154,12 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
     @Test
     fun `notifications are not sent before document has content`() {
-        val doc = postNewDocument(user = employee, PedagogicalDocumentPostBody(testChild_1.id, ""))
+        val doc = postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, ""))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id, false)
 
-        updateDocument(
-            user = employee,
-            doc.id,
-            PedagogicalDocumentPostBody(testChild_1.id, "babar"),
-        )
+        updateDocument(user = staffUser, doc.id, PedagogicalDocumentPostBody(child.id, "babar"))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -180,12 +168,12 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
     @Test
     fun `notifications are sent after document has an attachment`() {
-        val doc = postNewDocument(user = employee, PedagogicalDocumentPostBody(testChild_1.id, ""))
+        val doc = postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, ""))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id, false)
 
-        uploadDocumentAttachment(employee, doc.id)
+        uploadDocumentAttachment(staffUser, doc.id)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -206,9 +194,9 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
     @Test
     fun `notifications are sent to the guardians with email addresses even if one guardian has no email address`() {
-        db.transaction { tx -> tx.insertGuardian(testGuardianNoEmail.id, testChild_1.id) }
+        db.transaction { tx -> tx.insertGuardian(testGuardianNoEmail.id, child.id) }
 
-        postNewDocument(user = employee, PedagogicalDocumentPostBody(testChild_1.id, "foobar"))
+        postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, "foobar"))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())

@@ -6,18 +6,16 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.varda.Henkilo
 import fi.espoo.evaka.varda.VardaUpdater
 import fi.espoo.evaka.varda.addNewChildrenForVardaUpdate
@@ -42,9 +40,12 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
     private val clock = MockEvakaClock(now)
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id)
+
     private val jimmyNoSsn =
         DevPerson(
-            id = PersonId(UUID.randomUUID()),
             firstName = "Jimmy",
             lastName = "No SSN",
             dateOfBirth = today.minusYears(3),
@@ -54,7 +55,6 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val jackieNoSsn =
         DevPerson(
-            id = PersonId(UUID.randomUUID()),
             firstName = "Jackie",
             lastName = "No SSN",
             dateOfBirth = today.minusYears(4),
@@ -65,15 +65,15 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
             tx.insert(jimmyNoSsn, DevPersonType.CHILD)
             tx.insert(jackieNoSsn, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
                     childId = jimmyNoSsn.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = today.minusDays(7),
                     endDate = today.plusYears(1),
                 )
@@ -81,7 +81,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = jackieNoSsn.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = today.minusDays(7),
                     endDate = today.plusYears(1),
                 )

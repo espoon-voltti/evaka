@@ -7,17 +7,19 @@ package fi.espoo.evaka.emailclient
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.updateDisabledEmailTypes
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val adult = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.RAW_ROW) }
+        db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
     }
 
     @Test
@@ -37,7 +39,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         // Only some notification types are enabled
         db.transaction { tx ->
             tx.updateDisabledEmailTypes(
-                testAdult_1.id,
+                adult.id,
                 // Disable all but three
                 EmailMessageType.entries.toSet() -
                     setOf(
@@ -68,13 +70,11 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         val fromAddress = FromAddress("Foo <foo@example.com>", null)
         db.transaction { tx ->
             tx.createUpdate {
-                    sql(
-                        "UPDATE person SET email = ${bind(toAddress)} WHERE id = ${bind(testAdult_1.id)}"
-                    )
+                    sql("UPDATE person SET email = ${bind(toAddress)} WHERE id = ${bind(adult.id)}")
                 }
                 .execute()
         }
-        return Email.create(db, testAdult_1.id, emailType, fromAddress, testContent, "traceid")
+        return Email.create(db, adult.id, emailType, fromAddress, testContent, "traceid")
     }
 }
 

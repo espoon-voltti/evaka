@@ -12,17 +12,13 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -32,14 +28,20 @@ import org.junit.jupiter.api.Test
 class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     val today = LocalDate.now()
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id)
+    private val adult = DevPerson(ssn = "010180-1232")
+    private val child = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -48,10 +50,10 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                     conflict = true,
                 )
             )
@@ -65,17 +67,17 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                     conflict = true,
                 )
             )
         }
-        insertPlacement(testChild_1.id, today, today)
+        insertPlacement(child.id, today, today)
 
-        getAndAssert(today, today, listOf(toReportRow(testAdult_1, 0, 1)))
+        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1)))
     }
 
     @Test
@@ -83,15 +85,15 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                     conflict = false,
                 )
             )
         }
-        insertPlacement(testChild_1.id, today, today)
+        insertPlacement(child.id, today, today)
 
         getAndAssert(today, today, listOf())
     }
@@ -101,17 +103,17 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                     conflict = true,
                 )
             )
         }
-        insertPlacement(testChild_1.id, today.plusDays(7), today.plusDays(14))
+        insertPlacement(child.id, today.plusDays(7), today.plusDays(14))
 
-        getAndAssert(today, today, listOf(toReportRow(testAdult_1, 0, 1)))
+        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1)))
     }
 
     @Test
@@ -119,18 +121,18 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = today,
                     endDate = today.plusYears(1),
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                     conflict = true,
                 )
             )
         }
-        insertPlacement(testChild_1.id, today.plusDays(8), today.plusDays(14), testDaycare.id)
-        insertPlacement(testChild_1.id, today.plusDays(1), today.plusDays(7), testDaycare2.id)
+        insertPlacement(child.id, today.plusDays(8), today.plusDays(14), daycare.id)
+        insertPlacement(child.id, today.plusDays(1), today.plusDays(7), daycare2.id)
 
-        getAndAssert(today, today, listOf(toReportRow(testAdult_1, 0, 1, testDaycare2)))
+        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1, daycare2)))
     }
 
     private val testUser =
@@ -155,7 +157,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId,
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: DaycareId = testDaycare.id,
+        unitId: DaycareId = daycare.id,
     ) =
         db.transaction { tx ->
             tx.insert(
@@ -172,10 +174,10 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         person: DevPerson,
         partnerConflictCount: Int,
         childConflictCount: Int,
-        unit: DevDaycare = testDaycare,
+        unit: DevDaycare = daycare,
     ) =
         FamilyConflictReportRow(
-            careAreaName = testArea.name,
+            careAreaName = area.name,
             unitId = unit.id,
             unitName = unit.name,
             id = person.id,
