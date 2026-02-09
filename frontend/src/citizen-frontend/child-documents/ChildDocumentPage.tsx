@@ -14,7 +14,11 @@ import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { desktopMinPx, tabletMin } from 'lib-components/breakpoints'
+import {
+  desktopMinPx,
+  tabletMin,
+  zoomedMobileMax
+} from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
 import {
@@ -54,6 +58,12 @@ import {
 const TopButtonRow = styled(FixedSpaceRow)`
   @media (max-width: 1215px) {
     margin-right: ${defaultMargins.s};
+  }
+
+  @media (max-width: ${zoomedMobileMax}) {
+    overflow-x: auto;
+    width: max-content;
+    gap: ${defaultMargins.m};
   }
 
   @media print {
