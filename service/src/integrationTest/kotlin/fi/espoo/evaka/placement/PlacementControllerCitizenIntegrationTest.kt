@@ -8,29 +8,35 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.AbsenceId
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -39,14 +45,8 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.test.getApplicationStatus
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -67,16 +67,26 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
     @Autowired private lateinit var placementController: PlacementController
 
-    private val child = testChild_1
-    private val parent = testAdult_1
-    private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            enabledPilotFeatures =
+                setOf(
+                    PilotFeature.MESSAGING,
+                    PilotFeature.MOBILE,
+                    PilotFeature.RESERVATIONS,
+                    PilotFeature.PLACEMENT_TERMINATION,
+                ),
+        )
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val child = DevPerson()
+    private val parent = DevPerson()
+    private val authenticatedParent = parent.user(CitizenAuthLevel.STRONG)
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
 
-    private val daycareId = testDaycare.id
-    private val daycare2Id = testDaycare2.id
-
-    private val daycareGroup = DevDaycareGroup(daycareId = daycareId)
-    private val daycareGroup2 = DevDaycareGroup(daycareId = daycare2Id)
+    private val daycareGroup = DevDaycareGroup(daycareId = daycare.id)
+    private val daycareGroup2 = DevDaycareGroup(daycareId = daycare2.id)
 
     private val today = LocalDate.of(2024, 8, 5)
     private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(15, 0)))
@@ -87,12 +97,12 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(parent, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(admin)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.CHILD)
             listOf(snPreschoolDaycare45, snPreschoolDaycarePartDay35).forEach { tx.insert(it) }
             tx.insert(daycareGroup)
             tx.insert(daycareGroup2)
@@ -106,7 +116,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -114,7 +124,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -141,14 +151,14 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         val placement1 =
             DevPlacement(
                 childId = child.id,
-                unitId = daycareId,
+                unitId = daycare.id,
                 startDate = placementStart,
                 endDate = placementEnd,
             )
         val placement2 =
             DevPlacement(
                 childId = child.id,
-                unitId = daycare2Id,
+                unitId = daycare2.id,
                 startDate = placementEnd.plusDays(1),
                 endDate = placementEnd.plusMonths(2),
             )
@@ -181,7 +191,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
@@ -232,7 +242,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 DevPlacement(
                     type = PlacementType.DAYCARE,
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     // placement in the past unaffected
                     startDate = today.minusYears(3),
                     endDate = today.minusYears(2),
@@ -242,7 +252,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     // placement in the past unaffected
                     startDate = today.minusMonths(12),
                     endDate = today.minusMonths(6),
@@ -252,7 +262,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = startPreschool,
                     endDate = endPreschool,
                 )
@@ -261,7 +271,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 DevPlacement(
                     type = PlacementType.DAYCARE,
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = startDaycare,
                     endDate = endDaycare,
                 )
@@ -270,7 +280,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 DevPlacement(
                     type = PlacementType.CLUB,
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = startClub,
                     endDate = endClub,
                 )
@@ -282,7 +292,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
@@ -348,7 +358,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     DevPlacement(
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = child.id,
-                        unitId = daycareId,
+                        unitId = daycare.id,
                         startDate = startPreschool,
                         endDate = endPreschool,
                     )
@@ -396,7 +406,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -501,7 +511,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -563,7 +573,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = terminationDate2,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -623,7 +633,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -666,7 +676,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = terminationDate2,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -737,7 +747,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = true,
             ),
         )
@@ -805,7 +815,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     DevPlacement(
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = childId,
-                        unitId = daycareId,
+                        unitId = daycare.id,
                         startDate = startPreschool,
                         endDate = endPreschool,
                     )
@@ -844,7 +854,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     DevPlacement(
                         type = PlacementType.DAYCARE,
                         childId = childId,
-                        unitId = daycareId,
+                        unitId = daycare.id,
                         startDate = startDaycare,
                         endDate = endDaycare,
                     )
@@ -863,7 +873,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     DevPlacement(
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = childId,
-                        unitId = daycareId,
+                        unitId = daycare.id,
                         startDate = startNextPreschoolDaycare,
                         endDate = endNextPreschoolDaycare,
                     )
@@ -887,7 +897,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -895,7 +905,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -906,12 +916,12 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = today.plusDays(1),
-                unitId = daycare2Id,
+                unitId = daycare2.id,
                 terminateDaycareOnly = false,
             )
         assertThrows<Forbidden> { terminatePlacements(child.id, body) }
         db.transaction {
-            it.addUnitFeatures(listOf(daycare2Id), listOf(PilotFeature.PLACEMENT_TERMINATION))
+            it.addUnitFeatures(listOf(daycare2.id), listOf(PilotFeature.PLACEMENT_TERMINATION))
         }
         terminatePlacements(child.id, body)
     }
@@ -922,7 +932,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -930,7 +940,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -941,26 +951,39 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         val applicationBeforeTermination =
             db.transaction { tx ->
-                // given
-                tx.insertApplication(
-                    guardian = parent,
-                    child = child,
-                    applicationId = ApplicationId(UUID.randomUUID()),
-                    preferredStartDate = placementTerminationDate.plusDays(-1),
+                tx.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = parent.id,
+                    childId = child.id,
                     transferApplication = true,
                     status = ApplicationStatus.SENT,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementTerminationDate.plusDays(-1),
+                        ),
                 )
             }
 
         val applicationAfterTermination =
             db.transaction { tx ->
-                tx.insertApplication(
-                    guardian = parent,
-                    child = child,
-                    applicationId = ApplicationId(UUID.randomUUID()),
-                    preferredStartDate = placementTerminationDate.plusDays(1),
+                tx.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = parent.id,
+                    childId = child.id,
                     transferApplication = true,
                     status = ApplicationStatus.SENT,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementTerminationDate.plusDays(1),
+                        ),
                 )
             }
 
@@ -969,18 +992,18 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
 
         assertEquals(
             ApplicationStatus.CANCELLED,
-            db.read { it.getApplicationStatus(applicationBeforeTermination.id) },
+            db.read { it.getApplicationStatus(applicationBeforeTermination) },
         )
         assertEquals(
             ApplicationStatus.CANCELLED,
-            db.read { it.getApplicationStatus(applicationAfterTermination.id) },
+            db.read { it.getApplicationStatus(applicationAfterTermination) },
         )
 
         val childPlacements = getChildPlacements(child.id)
@@ -1009,7 +1032,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1017,7 +1040,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -1025,7 +1048,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevBackupCare(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     period = FiniteDateRange(today.minusMonths(1), today.plusMonths(1)),
                 )
             )
@@ -1038,7 +1061,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
@@ -1054,7 +1077,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1062,7 +1085,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -1070,7 +1093,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevBackupCare(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     period = FiniteDateRange(today.plusDays(2), today.plusDays(12)),
                 )
             )
@@ -1083,7 +1106,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
@@ -1101,7 +1124,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 tx.insert(
                     DevPlacement(
                         childId = child.id,
-                        unitId = daycareId,
+                        unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
                     )
@@ -1109,7 +1132,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = daycare2Id,
+                    unitId = daycare2.id,
                     startDate = placementEnd.plusDays(1),
                     endDate = placementEnd.plusMonths(2),
                 )
@@ -1123,12 +1146,12 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             PlacementControllerCitizen.PlacementTerminationRequestBody(
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
-                unitId = daycareId,
+                unitId = daycare.id,
                 terminateDaycareOnly = false,
             ),
         )
 
-        assertTrue(capturedOutput.out.contains("\"targetId\":[\"$daycareId\",\"${child.id}"))
+        assertTrue(capturedOutput.out.contains("\"targetId\":[\"${daycare.id}\",\"${child.id}"))
         assertTrue(capturedOutput.out.contains("\"objectId\":[\"$terminatedPlacementId\"]"))
         assertTrue(
             capturedOutput.out.contains(
