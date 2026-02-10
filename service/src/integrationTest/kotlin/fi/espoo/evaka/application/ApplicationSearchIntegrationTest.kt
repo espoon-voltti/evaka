@@ -5,6 +5,10 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.CareDetails
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.placement.PlacementType
@@ -27,7 +31,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -50,15 +53,13 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
 
     private val adult = DevPerson()
-    private val child1 = DevPerson()
-    private val child2 = DevPerson(ssn = "010316A1235")
+    private val child1 = DevPerson(lastName = "Doe", firstName = "Ricky")
+    private val child2 = DevPerson(ssn = "010316A1235", lastName = "Doe", firstName = "Micky")
     private val child3 = DevPerson()
     private val child4 = DevPerson()
     private val child5 = DevPerson()
     private val child6 = DevPerson()
     private val child7 = DevPerson()
-
-    private val daycareApplication = getValidDaycareApplication(preferredUnit = daycare)
 
     lateinit var applicationId_1: ApplicationId
     lateinit var applicationId_2: ApplicationId
@@ -340,24 +341,17 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = adult.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            daycareApplication.copy(
-                                childId = child4.id,
-                                guardianId = adult.id,
-                                type = ApplicationType.DAYCARE,
-                                form =
-                                    daycareApplication.form.copy(
-                                        preferences =
-                                            daycareApplication.form.preferences.copy(
-                                                siblingBasis =
-                                                    SiblingBasis(
-                                                        siblingSsn = child2.ssn!!,
-                                                        siblingName = "does not matter",
-                                                        siblingUnit = "does not matter",
-                                                    )
-                                            )
-                                    ),
-                            )
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply =
+                                Apply(
+                                    preferredUnits = listOf(daycare.id),
+                                    siblingBasis = true,
+                                    siblingSsn = child2.ssn!!,
+                                    siblingName = "does not matter",
+                                ),
                         ),
                 )
             }
@@ -435,22 +429,22 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     type = type,
                     additionalDaycareApplication = additionalDaycareApplication,
                     document =
-                        DaycareFormV0.fromApplication2(
-                                daycareApplication.copy(
-                                    childId = child.id,
-                                    guardianId = guardian.id,
-                                    type = type,
-                                )
-                            )
-                            .copy(urgent = urgent)
-                            .copy(extendedCare = extendedCare)
-                            .copy(connectedDaycare = connectedDaycare)
-                            .copy(serviceNeedOption = serviceNeedOption)
-                            .let {
-                                if (preparatory)
-                                    it.copy(careDetails = it.careDetails.copy(preparatory = true))
-                                else it
-                            },
+                        DaycareFormV0(
+                            type = type,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            urgent = urgent,
+                            extendedCare = extendedCare,
+                            connectedDaycare =
+                                if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
+                            serviceNeedOption = serviceNeedOption,
+                            careDetails =
+                                CareDetails(
+                                    preparatory =
+                                        if (type == ApplicationType.PRESCHOOL) preparatory else null
+                                ),
+                        ),
                 )
             }
 
