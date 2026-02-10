@@ -17,7 +17,8 @@ This guide helps developers to discover and understand the custom frameworks, ut
 
 - **[General Conventions](frontend/conventions.md)** - Conventions and best practices for front-end development (TODO)
 - **[Form Framework](frontend/forms.md)** - Custom form handling utilities (TODO)
-- **[Query Framework](frontend/queries.md)** - Data fetching and caching patterns (TODO)
+- **[Query Framework](frontend/queries.md)** - Data fetching and caching patterns
+- **[Result Type & Async State](frontend/api-result.md)** - Handling Loading/Failure/Success states
 - **[E2E Testing](frontend/e2e-testing.md)** - End-to-end testing conventions (TODO)
 
 ## Service (Backend)
