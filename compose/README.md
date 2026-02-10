@@ -190,6 +190,7 @@ If you work with multiple git worktrees and need to run several eVaka instances 
 mise run use 1           # Activate instance 1
 mise run start           # Start instance 1
 mise run status          # Show current port configuration
+mise run instances       # List running instances across all terminals
 mise run stop            # Stop instance 1
 mise run deactivate      # Return to default instance
 ```
