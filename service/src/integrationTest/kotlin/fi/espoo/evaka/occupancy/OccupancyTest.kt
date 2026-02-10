@@ -9,6 +9,9 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.clubTerms
@@ -50,7 +53,6 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPartDayDaycare
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -991,10 +993,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
                     type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.DAYCARE, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1030,10 +1029,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
                     type = ApplicationType.PRESCHOOL,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.PRESCHOOL, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1149,10 +1145,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.DAYCARE, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1186,10 +1179,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.DAYCARE, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1230,10 +1220,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.DAYCARE, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1275,10 +1262,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.DAYCARE, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -1320,10 +1304,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.PRESCHOOL,
                     status = ApplicationStatus.WAITING_DECISION,
                     confidential = true,
-                    document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycareInArea1)
-                        ),
+                    document = daycareFormV0(ApplicationType.PRESCHOOL, daycareInArea1.id),
                 )
                 .also { applicationId ->
                     tx.insert(
@@ -2148,6 +2129,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
         }
     }
+
+    private fun daycareFormV0(type: ApplicationType, unitId: DaycareId) =
+        DaycareFormV0(
+            type = type,
+            child = Child(dateOfBirth = null),
+            guardian = Adult(),
+            apply = Apply(preferredUnits = listOf(unitId)),
+        )
 
     private fun getAndAssertOccupancyInUnit(
         tx: Database.Read,
