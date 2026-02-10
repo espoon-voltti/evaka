@@ -16,7 +16,7 @@ This guide helps developers to discover and understand the custom frameworks, ut
 ## Frontend
 
 - **[General Conventions](frontend/conventions.md)** - Conventions and best practices for front-end development (TODO)
-- **[Component Library](frontend/lib-components.md)** - Reusable UI components and F-postfix form components (TODO)
+- **[Component Library](frontend/lib-components.md)** - Reusable UI components
 - **[Form Framework](frontend/forms.md)** - Custom form handling utilities
 - **[Query Framework](frontend/queries.md)** - Data fetching and caching patterns
 - **[Result Type & Async State](frontend/api-result.md)** - Handling Loading/Failure/Success states
