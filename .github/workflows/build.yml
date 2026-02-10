@@ -433,6 +433,50 @@ jobs:
               ${{ needs.service.outputs.builder_image }} \
               sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
+  check-schema:
+    needs:
+      - service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Login to GitHub Container Registry
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start database
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          cd compose
+          docker compose up -d --wait db
+
+      - name: Apply migrations
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
+        run: |
+          docker run --rm --network=host \
+            "ghcr.io/espoon-voltti/evaka/service-builder:${TAG}" \
+            ./gradlew --no-daemon -Dorg.gradle.configuration-cache=false flywayMigrate
+
+      - name: Check schema documentation is up-to-date
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          bin/dump-db-schema.sh > /tmp/schema.sql
+          if ! diff -q docs/db/schema.sql /tmp/schema.sql > /dev/null 2>&1; then
+            echo "::error::docs/db/schema.sql is out of date. Run 'mise run dump-schema' to update it."
+            diff -u docs/db/schema.sql /tmp/schema.sql || true
+            exit 1
+          fi
+
+      - name: Docker cleanup
+        if: always()
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+
   service-integration-test:
     needs:
       - service
@@ -645,6 +689,7 @@ jobs:
       - frontend-test
       - lint-shell
       - check-licenses
+      - check-schema
     steps:
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
