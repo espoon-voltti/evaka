@@ -48,7 +48,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
-import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
@@ -125,7 +125,12 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceApplicationSummary(
                     id = id,
                     createdAt = clock.now(),
-                    createdBy = adult.toEvakaUser(EvakaUserType.CITIZEN),
+                    createdBy =
+                        EvakaUser(
+                            id = adult.evakaUserId(),
+                            name = "${adult.lastName} ${adult.firstName}",
+                            type = EvakaUserType.CITIZEN,
+                        ),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
                     startDate = LocalDate.of(2022, 8, 10),
                     endDate = LocalDate.of(2022, 8, 10),
@@ -174,7 +179,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 expected1.copy(
                     status = AbsenceApplicationStatus.ACCEPTED,
                     decidedAt = clock.now(),
-                    decidedBy = unitSupervisor.toEvakaUser(),
+                    decidedBy = unitSupervisor.evakaUser,
                 )
             assertEquals(
                 listOf(expected2),
@@ -439,7 +444,12 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceApplicationSummary(
                     id = id,
                     createdAt = clock.now(),
-                    createdBy = adult.toEvakaUser(EvakaUserType.CITIZEN),
+                    createdBy =
+                        EvakaUser(
+                            id = adult.evakaUserId(),
+                            name = "${adult.lastName} ${adult.firstName}",
+                            type = EvakaUserType.CITIZEN,
+                        ),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
                     startDate = LocalDate.of(2022, 8, 10),
                     endDate = LocalDate.of(2022, 8, 10),
@@ -491,7 +501,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     status = AbsenceApplicationStatus.REJECTED,
                     rejectedReason = "ei käy",
                     decidedAt = clock.now(),
-                    decidedBy = unitSupervisor.toEvakaUser(),
+                    decidedBy = unitSupervisor.evakaUser,
                 )
             assertEquals(
                 listOf(expected2),
