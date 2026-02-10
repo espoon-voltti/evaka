@@ -4,6 +4,17 @@
 
 package fi.espoo.evaka.pdfgen
 
+import fi.espoo.evaka.application.Address
+import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ApplicationForm
+import fi.espoo.evaka.application.ApplicationOrigin
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.ChildDetails
+import fi.espoo.evaka.application.Guardian
+import fi.espoo.evaka.application.PersonBasics
+import fi.espoo.evaka.application.Preferences
+import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.caseprocess.DocumentConfidentiality
 import fi.espoo.evaka.daycare.UnitManager
@@ -42,6 +53,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -52,11 +64,11 @@ import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import fi.espoo.evaka.test.getValidPreschoolApplication
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
@@ -68,6 +80,7 @@ import org.springframework.context.annotation.Bean
 val logger = KotlinLogging.logger {}
 
 private val testArea = DevCareArea()
+private val testDaycare = DevDaycare(areaId = testArea.id)
 private val voucherDaycare =
     DevDaycare(
         areaId = testArea.id,
@@ -77,10 +90,109 @@ private val voucherDaycare =
 
 private val testAdult = DevPerson(ssn = "010180-1232", dateOfBirth = LocalDate.of(1980, 1, 1))
 private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+private val decisionMaker = DevEmployee()
 
-private val application = getValidPreschoolApplication()
+private fun preschoolApplication(preferredUnit: DevDaycare) =
+    ApplicationDetails(
+        id = ApplicationId(UUID.randomUUID()),
+        type = ApplicationType.PRESCHOOL,
+        status = ApplicationStatus.WAITING_DECISION,
+        origin = ApplicationOrigin.ELECTRONIC,
+        childId = testChild.id,
+        guardianId = testAdult.id,
+        otherGuardianLivesInSameAddress = null,
+        childRestricted = false,
+        guardianRestricted = false,
+        guardianDateOfDeath = null,
+        checkedByAdmin = true,
+        confidential = false,
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdBy = decisionMaker.evakaUser,
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        modifiedBy = decisionMaker.evakaUser,
+        sentDate = LocalDate.of(2021, 1, 15),
+        sentTime = null,
+        dueDate = null,
+        dueDateSetManuallyAt = null,
+        transferApplication = false,
+        additionalDaycareApplication = false,
+        hideFromGuardian = false,
+        allowOtherGuardianAccess = true,
+        attachments = listOf(),
+        hasOtherGuardian = false,
+        form =
+            ApplicationForm(
+                child =
+                    ChildDetails(
+                        person =
+                            PersonBasics(
+                                firstName = testChild.firstName,
+                                lastName = testChild.lastName,
+                                socialSecurityNumber = testChild.ssn,
+                            ),
+                        dateOfBirth = testChild.dateOfBirth,
+                        address =
+                            Address(
+                                street = testChild.streetAddress,
+                                postalCode = testChild.postalCode,
+                                postOffice = testChild.postOffice,
+                            ),
+                        futureAddress = null,
+                        nationality = "fi",
+                        language = "fi",
+                        allergies = "allergies",
+                        diet = "diet",
+                        assistanceNeeded = true,
+                        assistanceDescription = "This is a description for assistance.",
+                    ),
+                guardian =
+                    Guardian(
+                        person =
+                            PersonBasics(
+                                firstName = testAdult.firstName,
+                                lastName = testAdult.lastName,
+                                socialSecurityNumber = testAdult.ssn,
+                            ),
+                        address =
+                            Address(
+                                street = testAdult.streetAddress,
+                                postalCode = testAdult.postalCode,
+                                postOffice = testAdult.postOffice,
+                            ),
+                        futureAddress = null,
+                        phoneNumber = "0504139432",
+                        email = "joku@maili.fi",
+                    ),
+                secondGuardian = null,
+                otherPartner = null,
+                otherChildren = emptyList(),
+                preferences =
+                    Preferences(
+                        preferredUnits =
+                            listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
+                        preferredStartDate = LocalDate.of(2021, 8, 15),
+                        connectedDaycarePreferredStartDate = null,
+                        serviceNeed =
+                            ServiceNeed(
+                                startTime = "08:00",
+                                endTime = "17:00",
+                                shiftCare = false,
+                                partTime = false,
+                                serviceNeedOption = null,
+                            ),
+                        siblingBasis = null,
+                        preparatory = false,
+                        urgent = false,
+                    ),
+                maxFeeAccepted = false,
+                otherInfo = "other info",
+                clubDetails = null,
+            ),
+    )
+
+private val application = preschoolApplication(testDaycare)
 private val transferApplication = application.copy(transferApplication = true)
-private val voucherApplication = getValidPreschoolApplication(voucherDaycare)
+private val voucherApplication = preschoolApplication(voucherDaycare)
 
 private val voucherDecisionUnit =
     DecisionUnit(
