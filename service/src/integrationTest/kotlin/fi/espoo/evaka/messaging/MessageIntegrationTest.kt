@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.incomestatement.IncomeStatementBody
+import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -2766,7 +2768,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         @Test
-        fun `citizen can reply to message from finance`() {
+        fun `citizen can reply to message from finance when they have an unhandled income statement`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevIncomeStatement(
+                        personId = testAdult_1.id,
+                        data =
+                            IncomeStatementBody.HighestFee(
+                                startDate = placementStart,
+                                endDate = null,
+                            ),
+                        status = IncomeStatementStatus.SENT,
+                    )
+                )
+            }
             postNewThread(
                 title = "Vastaa heti",
                 message = "Viestin sisältö",
@@ -2784,6 +2799,74 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = clock.now(),
             )
             assertEquals(1, unreadMessagesCount(financeAccount, financeAdmin.user))
+        }
+
+        @Test
+        fun `citizen cannot reply to finance thread when income statement is handled`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevIncomeStatement(
+                        personId = testAdult_1.id,
+                        data =
+                            IncomeStatementBody.HighestFee(
+                                startDate = placementStart,
+                                endDate = null,
+                            ),
+                        status = IncomeStatementStatus.HANDLED,
+                        handlerId = financeAdmin.id,
+                        handledAt = HelsinkiDateTime.of(placementStart, LocalTime.of(10, 0)),
+                    )
+                )
+            }
+            postNewThread(
+                title = "Tuloselvitys",
+                message = "Toimita tuloselvitys",
+                messageType = MessageType.MESSAGE,
+                sender = financeAccount,
+                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                user = financeAdmin.user,
+            )
+            val thread = getRegularMessageThreads(person1)[0]
+            assertThrows<Forbidden> {
+                replyToThread(
+                    threadId = thread.id,
+                    content = "Vastaus",
+                    recipientAccountIds = setOf(financeAccount),
+                    user = person1,
+                    now = clock.now(),
+                )
+            }
+        }
+
+        @Test
+        fun `finance account is not in recipients when citizen has no unhandled income statements`() {
+            val recipients = getCitizenRecipients(person1)
+            val financeReplyAccess =
+                recipients.childrenToMessageAccounts.find { it.childId == null }
+            assertNotNull(financeReplyAccess)
+            assertTrue(financeReplyAccess.reply.isEmpty())
+        }
+
+        @Test
+        fun `finance account is in recipients when citizen has an unhandled income statement`() {
+            db.transaction { tx ->
+                tx.insert(
+                    DevIncomeStatement(
+                        personId = testAdult_1.id,
+                        data =
+                            IncomeStatementBody.HighestFee(
+                                startDate = placementStart,
+                                endDate = null,
+                            ),
+                        status = IncomeStatementStatus.SENT,
+                    )
+                )
+            }
+            val recipients = getCitizenRecipients(person1)
+            val financeReplyAccess =
+                recipients.childrenToMessageAccounts.find { it.childId == null }
+            assertNotNull(financeReplyAccess)
+            assertTrue(financeReplyAccess.reply.contains(financeAccount))
         }
 
         @Test
@@ -2869,6 +2952,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
                 getFolders(financeAdmin.user).toSet(),
             )
+
+            db.transaction { tx ->
+                tx.insert(
+                    DevIncomeStatement(
+                        personId = testAdult_1.id,
+                        data =
+                            IncomeStatementBody.HighestFee(
+                                startDate = placementStart,
+                                endDate = null,
+                            ),
+                        status = IncomeStatementStatus.SENT,
+                    )
+                )
+            }
 
             postNewThread(
                 title = "Vastaa heti",
