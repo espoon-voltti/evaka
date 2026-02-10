@@ -7,6 +7,9 @@ package fi.espoo.evaka.attachments
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
@@ -30,7 +33,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.test.getValidDaycareApplication
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,8 +70,11 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = child,
                         guardianId = guardian.id,
                         document =
-                            DaycareFormV0.fromApplication2(
-                                getValidDaycareApplication(preferredUnit = daycare)
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
                             ),
                     )
                 )
