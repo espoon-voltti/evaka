@@ -23,6 +23,8 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
+import fi.espoo.evaka.invoicing.domain.PersonBasic
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
 import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.ProductKey
@@ -52,8 +54,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import fi.espoo.evaka.toPersonBasic
-import fi.espoo.evaka.toPersonDetailed
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -892,6 +892,38 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
         db.transaction { tx -> tx.searchInvoices(status) }
+
+    private fun DevPerson.toPersonBasic() =
+        PersonBasic(
+            id = id,
+            dateOfBirth = dateOfBirth,
+            firstName = firstName,
+            lastName = lastName,
+            ssn = ssn,
+        )
+
+    private fun DevPerson.toPersonDetailed() =
+        PersonDetailed(
+            id = id,
+            dateOfBirth = dateOfBirth,
+            dateOfDeath = dateOfDeath,
+            firstName = firstName,
+            lastName = lastName,
+            ssn = ssn,
+            streetAddress = streetAddress,
+            postalCode = postalCode,
+            postOffice = postOffice,
+            residenceCode = residenceCode,
+            email = email,
+            phone = phone,
+            language = language,
+            invoiceRecipientName = invoiceRecipientName,
+            invoicingStreetAddress = invoicingStreetAddress,
+            invoicingPostalCode = invoicingPostalCode,
+            invoicingPostOffice = invoicingPostOffice,
+            restrictedDetailsEnabled = restrictedDetailsEnabled,
+            forceManualFeeDecisions = forceManualFeeDecisions,
+        )
 
     private fun toDetailed(
         invoice: DevInvoice,
