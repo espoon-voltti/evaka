@@ -5,6 +5,9 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.CareDetails
+import fi.espoo.evaka.application.persistence.daycare.DaycareAdditionalDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
 import fi.espoo.evaka.shared.ApplicationId
@@ -27,7 +30,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -77,8 +79,28 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
     private val citizen = AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG)
 
-    private val validDaycareApplication = getValidDaycareApplication(preferredUnit = daycare)
-    private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
+    private val daycareForm =
+        DaycareFormV0(
+            type = ApplicationType.DAYCARE,
+            child = child1.toDaycareFormChild(),
+            guardian = adult1.toDaycareFormAdult(),
+            apply = Apply(preferredUnits = listOf(daycare.id)),
+            careDetails =
+                CareDetails(
+                    assistanceNeeded = true,
+                    assistanceDescription = "assistance description",
+                ),
+            additionalDetails =
+                DaycareAdditionalDetails(
+                    allergyType = "allergies",
+                    dietType = "diet",
+                    otherInfo = "other info",
+                ),
+            preferredStartDate = LocalDate.of(2021, 8, 15),
+            serviceStart = "08:00",
+            serviceEnd = "17:00",
+            maxFeeAccepted = false,
+        )
 
     @BeforeEach
     fun beforeEach() {
@@ -108,10 +130,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     childId = child1.id,
                     guardianId = adult1.id,
                     type = ApplicationType.DAYCARE,
-                    document =
-                        validDaycareForm.copy(
-                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id))
-                        ),
+                    document = daycareForm,
                 )
             }
 
@@ -126,7 +145,18 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(ApplicationStatus.SENT, data.application.status)
         assertEquals(ApplicationOrigin.ELECTRONIC, data.application.origin)
 
-        assertEquals(validDaycareApplication.form, data.application.form)
+        val expectedForm =
+            ApplicationForm.fromV0(daycareForm, childRestricted = false, guardianRestricted = false)
+                .let {
+                    it.copy(
+                        preferences =
+                            it.preferences.copy(
+                                preferredUnits =
+                                    listOf(PreferredUnit(id = daycare.id, name = daycare.name))
+                            )
+                    )
+                }
+        assertEquals(expectedForm, data.application.form)
         assertEquals(0, data.decisions.size)
     }
 
@@ -144,9 +174,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     guardianId = adult1.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        validDaycareForm.copy(
+                        daycareForm.copy(
                             child =
-                                validDaycareForm.child.copy(
+                                daycareForm.child.copy(
                                     address =
                                         fi.espoo.evaka.application.persistence.daycare.Address(
                                             street = "foo",
@@ -177,9 +207,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     guardianId = guardianId,
                     type = ApplicationType.DAYCARE,
                     document =
-                        validDaycareForm.copy(
+                        daycareForm.copy(
                             guardian =
-                                validDaycareForm.guardian.copy(
+                                daycareForm.guardian.copy(
                                     address =
                                         fi.espoo.evaka.application.persistence.daycare.Address(
                                             street = "foo",
@@ -314,10 +344,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                         otherGuardians = setOf(adult2.id),
                         allowOtherGuardianAccess = true,
                         document =
-                            validDaycareForm.copy(
+                            daycareForm.copy(
                                 apply =
-                                    validDaycareForm.apply.copy(
-                                        preferredUnits = listOf(daycare.id),
+                                    daycareForm.apply.copy(
                                         siblingBasis = true,
                                         siblingSsn = "secret",
                                         siblingName = "secret",
@@ -409,7 +438,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     guardianId = citizen.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                    document = daycareForm,
                 )
             }
         uploadAttachment(applicationId, citizen, ApplicationAttachmentType.URGENCY)
