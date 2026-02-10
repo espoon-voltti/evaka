@@ -84,11 +84,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 unitSupervisorA.user,
-                null,
-                testData.daycareAId,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareAId,
+                    groupId = null,
+                ),
             )
 
         assertThat(results.isNotEmpty())
@@ -102,11 +103,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 adminLoginUser,
-                null,
-                testData.daycareAId,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareAId,
+                    groupId = null,
+                ),
             )
         assertThat(results.isNotEmpty())
     }
@@ -119,11 +121,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 unitSupervisorA.user,
-                testData.areaAId,
-                null,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = testData.areaAId,
+                    unitId = null,
+                    groupId = null,
+                ),
             )
         }
     }
@@ -136,11 +139,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 unitSupervisorA.user,
-                null,
-                testData.daycareBId,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareBId,
+                    groupId = null,
+                ),
             )
         }
     }
@@ -154,11 +158,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 adminLoginUser,
-                null,
-                testData.daycareAId,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareAId,
+                    groupId = null,
+                ),
             )
 
         val (groupAExpectation, groupBExpectation, groupCExpectation) = getExpectedResults(testData)
@@ -196,11 +201,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 adminLoginUser,
-                null,
-                testData.daycareAId,
-                testData.groupBId,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareAId,
+                    groupId = testData.groupBId,
+                ),
             )
 
         val (_, groupBExpectation, _) = getExpectedResults(testData)
@@ -217,11 +223,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 adminLoginUser,
-                null,
-                testData.daycareAId,
-                testData.groupCId,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = testData.daycareAId,
+                    groupId = testData.groupCId,
+                ),
             )
 
         val (_, _, groupCExpectation) = getExpectedResults(testData)
@@ -238,11 +245,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 adminLoginUser,
-                testData.areaAId,
-                null,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = testData.areaAId,
+                    unitId = null,
+                    groupId = null,
+                ),
             )
 
         val (groupAExpectation, groupBExpectation, groupCExpectation) = getExpectedResults(testData)
@@ -313,11 +321,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 unitSupervisorA.user,
-                null,
-                null,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = null,
+                    unitId = null,
+                    groupId = null,
+                ),
             )
         }
 
@@ -326,11 +335,12 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 mockClock,
                 unitSupervisorA.user,
-                testData.areaAId,
-                testData.daycareAId,
-                null,
-                testData.preschoolTerm.start,
-                testData.preschoolTerm.end,
+                PreschoolAbsenceReport.PreschoolAbsenceReportBody(
+                    term = testData.preschoolTerm,
+                    areaId = testData.areaAId,
+                    unitId = testData.daycareAId,
+                    groupId = null,
+                ),
             )
         }
     }

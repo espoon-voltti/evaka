@@ -62,6 +62,7 @@ import type { PlacementCountReportResult } from 'lib-common/generated/api-types/
 import type { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import type { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PreschoolAbsenceReportBody } from 'lib-common/generated/api-types/reports'
 import type { PreschoolApplicationReportRow } from 'lib-common/generated/api-types/reports'
 import type { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import type { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
@@ -980,24 +981,13 @@ export async function getPlacementSketchingReport(
 */
 export async function getPreschoolAbsenceReport(
   request: {
-    areaId?: AreaId | null,
-    unitId?: DaycareId | null,
-    groupId?: GroupId | null,
-    termStart: LocalDate,
-    termEnd: LocalDate
+    body: PreschoolAbsenceReportBody
   }
 ): Promise<ChildPreschoolAbsenceRowWithUnitAndGroup[]> {
-  const params = createUrlSearchParams(
-    ['areaId', request.areaId],
-    ['unitId', request.unitId],
-    ['groupId', request.groupId],
-    ['termStart', request.termStart.formatIso()],
-    ['termEnd', request.termEnd.formatIso()]
-  )
   const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRowWithUnitAndGroup[]>>({
     url: uri`/employee/reports/preschool-absence`.toString(),
-    method: 'GET',
-    params
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<PreschoolAbsenceReportBody>
   })
   return json
 }
