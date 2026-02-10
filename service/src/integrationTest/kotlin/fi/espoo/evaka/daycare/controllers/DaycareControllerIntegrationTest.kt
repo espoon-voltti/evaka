@@ -7,6 +7,9 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
@@ -47,7 +50,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -398,8 +400,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = adult.id,
                     childId = child5.id,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycare2)
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare2.id)),
                         ),
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
@@ -433,8 +438,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = adult.id,
                     childId = child6.id,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycare2)
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare2.id)),
                         ),
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
@@ -475,8 +483,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = adult.id,
                     childId = child7.id,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycare2)
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare2.id)),
                         ),
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
