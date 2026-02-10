@@ -6,6 +6,9 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.syncApplicationOtherGuardians
 import fi.espoo.evaka.document.DocumentTemplateContent
@@ -47,7 +50,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -174,8 +176,11 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     guardianId = applicationOwner,
                     childId = child,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycare)
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
                         ),
                 )
             tx.syncApplicationOtherGuardians(application, testDate)
