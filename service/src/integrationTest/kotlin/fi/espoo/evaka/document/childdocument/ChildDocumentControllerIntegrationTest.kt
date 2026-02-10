@@ -22,7 +22,6 @@ import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.rest.EventType
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DaycareId
@@ -30,13 +29,13 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -57,10 +56,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -83,7 +78,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Autowired lateinit var templateController: DocumentTemplateController
     @Autowired lateinit var metadataController: ProcessMetadataController
 
-    lateinit var areaId: AreaId
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            language = Language.sv,
+            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
+        )
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1), ssn = "010617A123U")
+    private val adult = DevPerson(ssn = "010180-1232")
     val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
     lateinit var unitSupervisorUser: AuthenticatedUser.Employee
 
@@ -206,14 +209,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     internal fun setUp() {
         MockSfiMessagesClient.reset()
         db.transaction { tx ->
-            areaId = tx.insert(testArea)
-            val unitId =
-                tx.insert(
-                    testDaycare.copy(
-                        language = Language.sv,
-                        enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
-                    )
-                )
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insert(employeeUser)
             val unitSupervisorId = tx.insert(DevEmployee())
             unitSupervisorUser =
@@ -221,13 +218,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
                 }
             tx.insertDaycareAclRow(
-                daycareId = unitId,
+                daycareId = daycare.id,
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR,
             )
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insertGuardian(adult.id, child.id)
             tx.insert(devTemplatePed)
             tx.insert(devTemplatePedagogicalReport)
             tx.insert(devTemplateHojks)
@@ -239,10 +236,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     private fun createPlacement(
         startDate: LocalDate = clock.today(),
         endDate: LocalDate = clock.today().plusDays(5),
-        childId: PersonId = testChild_1.id,
-        unitId: DaycareId = testDaycare.id,
-    ): PlacementId {
-        return db.transaction { tx ->
+        childId: PersonId = child.id,
+        unitId: DaycareId = daycare.id,
+    ) =
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     childId = childId,
@@ -252,13 +249,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 )
             )
         }
-    }
 
     private fun createPlacementWithGroup(
         startDate: LocalDate = clock.today(),
         endDate: LocalDate = clock.today().plusDays(5),
-        childId: PersonId = testChild_1.id,
-        unitId: DaycareId = testDaycare.id,
+        childId: PersonId = child.id,
+        unitId: DaycareId = daycare.id,
     ): GroupId {
         val placementId = createPlacement(startDate, endDate, childId, unitId)
 
@@ -293,10 +289,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         publishedContent = null,
                         child =
                             ChildBasics(
-                                id = testChild_1.id,
-                                firstName = testChild_1.firstName,
-                                lastName = testChild_1.lastName,
-                                dateOfBirth = testChild_1.dateOfBirth,
+                                id = child.id,
+                                firstName = child.firstName,
+                                lastName = child.lastName,
+                                dateOfBirth = child.dateOfBirth,
                             ),
                         template =
                             DocumentTemplate(
@@ -338,7 +334,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             document,
         )
 
-        val summaries = getDocuments(testChild_1.id)
+        val summaries = getDocuments(child.id)
         assertEquals(
             listOf(
                 ChildDocumentSummary(
@@ -347,8 +343,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     type = devTemplatePed.type,
                     templateId = devTemplatePed.id,
                     templateName = devTemplatePed.name,
-                    childFirstName = testChild_1.firstName,
-                    childLastName = testChild_1.lastName,
+                    childFirstName = child.firstName,
+                    childLastName = child.lastName,
                     modifiedAt = clock.now(),
                     modifiedBy = employeeUser.lastName + " " + employeeUser.firstName,
                     publishedAt = null,
@@ -369,7 +365,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         db.transaction {
             it.insert(
                 veoInPlacementUnit,
-                unitRoles = mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
         }
 
@@ -379,12 +375,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             documentId,
             controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId).data.id,
         )
-        assertEquals(1, getDocuments(testChild_1.id, user = veoInPlacementUnit.user).size)
+        assertEquals(1, getDocuments(child.id, user = veoInPlacementUnit.user).size)
         // remove child placement so child is not in VEO's unit so no document should be visible
         db.transaction { tx ->
-                tx.createUpdate {
-                    sql("DELETE FROM placement WHERE child_id = ${bind(testChild_1.id)}")
-                }
+                tx.createUpdate { sql("DELETE FROM placement WHERE child_id = ${bind(child.id)}") }
             }
             .execute()
 
@@ -392,7 +386,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId)
         }
 
-        assertThrows<Forbidden> { getDocuments(testChild_1.id, user = veoInPlacementUnit.user) }
+        assertThrows<Forbidden> { getDocuments(child.id, user = veoInPlacementUnit.user) }
     }
 
     @Test
@@ -467,7 +461,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         asyncJobRunner.runPendingJobsSync(clock)
 
         // Mark document as read by guardian
-        val guardianUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+        val guardianUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
         db.transaction { tx -> tx.markChildDocumentAsRead(guardianUser, documentId, clock.now()) }
 
         templateController.forceUnpublishTemplate(
@@ -482,7 +476,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 .getTemplate(dbInstance(), employeeUser.user, clock, templateIdAssistanceDecision)
                 .published
         )
-        assertEquals(0, getDocuments(testChild_1.id).size)
+        assertEquals(0, getDocuments(child.id).size)
     }
 
     @Test
@@ -680,7 +674,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     sql(
                         """
                     INSERT INTO child_document_read (document_id, person_id, read_at)
-                    VALUES (${bind(documentId)}, ${bind(testAdult_1.id)}, ${bind(clock.now())})
+                    VALUES (${bind(documentId)}, ${bind(adult.id)}, ${bind(clock.now())})
                 """
                     )
                 }
@@ -1007,7 +1001,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
             assertEquals(10_000, doc.decision?.decisionNumber)
             assertNotNull(doc.publishedAt)
-            assertEquals(testDaycare.name, doc.decision?.daycareName)
+            assertEquals(daycare.name, doc.decision?.daycareName)
         }
 
         // sfi message was sent
@@ -1017,9 +1011,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         asyncJobRunner.runPendingJobsSync(clock)
         assertThat(MockSfiMessagesClient.getMessages())
             .extracting({ it.ssn }, { it.messageHeader })
-            .containsExactly(
-                Tuple(testAdult_1.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset")
-            )
+            .containsExactly(Tuple(adult.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset"))
 
         // cannot cancel decision
         assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
@@ -1047,9 +1039,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         assertThat(metadata.primaryDocument.sfiDeliveries)
             .extracting({ it.recipientName }, { it.method })
-            .containsExactly(
-                Tuple("${testAdult_1.lastName} ${testAdult_1.firstName}", SfiMethod.PENDING)
-            )
+            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.PENDING))
         // mock sfi event
         db.transaction { tx ->
             tx.insert(
@@ -1061,9 +1051,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         }
         assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
             .extracting({ it.recipientName }, { it.method })
-            .containsExactly(
-                Tuple("${testAdult_1.lastName} ${testAdult_1.firstName}", SfiMethod.ELECTRONIC)
-            )
+            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC))
     }
 
     @Test
@@ -1093,9 +1081,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         asyncJobRunner.runPendingJobsSync(clock)
         assertThat(MockSfiMessagesClient.getMessages())
             .extracting({ it.ssn }, { it.messageHeader })
-            .containsExactly(
-                Tuple(testAdult_1.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset")
-            )
+            .containsExactly(Tuple(adult.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset"))
 
         // cannot cancel decision
         assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
@@ -1266,9 +1252,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
         val duplicateId =
             db.transaction { tx ->
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
+                val unitId = tx.insert(DevDaycare(areaId = area.id))
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId,
@@ -1289,9 +1275,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `unit supervisor doesn't see pedagogical report document from duplicate`() {
         val duplicateId =
             db.transaction { tx ->
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
+                val unitId = tx.insert(DevDaycare(areaId = area.id))
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId,
@@ -1317,12 +1303,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 val unitId =
                     tx.insert(
                         DevDaycare(
-                            areaId = areaId,
+                            areaId = area.id,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                         )
                     )
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId,
@@ -1377,7 +1363,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(staffEmployee)
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1523,7 +1509,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1534,16 +1520,16 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 employeeUser.user,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdCitizenBasic),
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
             )
 
         // STAFF should be able to read the document (permission check happens in controller)
         val document = controller.getDocument(dbInstance(), staffUser, clock, documentId)
-        assertEquals(testChild_1.id, document.data.child.id)
+        assertEquals(child.id, document.data.child.id)
         assertTrue(document.permittedActions.contains(Action.ChildDocument.READ))
 
         // STAFF should be able to see documents in getDocuments list
-        val documents = controller.getDocuments(dbInstance(), staffUser, clock, testChild_1.id)
+        val documents = controller.getDocuments(dbInstance(), staffUser, clock, child.id)
         assertEquals(1, documents.size)
         assertTrue(documents[0].permittedActions.contains(Action.ChildDocument.READ))
     }
@@ -1559,7 +1545,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1570,7 +1556,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 employeeUser.user,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdCitizenBasic),
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
             )
 
         // STAFF should NOT be able to read the document (too far in future)
@@ -1580,7 +1566,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // STAFF should NOT see documents in getDocuments list (also throws Forbidden)
         assertThrows<Forbidden> {
-            controller.getDocuments(dbInstance(), staffUser, clock, testChild_1.id)
+            controller.getDocuments(dbInstance(), staffUser, clock, child.id)
         }
     }
 
@@ -1595,7 +1581,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1605,7 +1591,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 employeeUser.user,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdCitizenBasic),
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
             )
 
         // STAFF should NOT be able to access expired placement documents
@@ -1615,7 +1601,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         // STAFF should NOT see documents in list (also throws Forbidden)
         assertThrows<Forbidden> {
-            controller.getDocuments(dbInstance(), staffUser, clock, testChild_1.id)
+            controller.getDocuments(dbInstance(), staffUser, clock, child.id)
         }
     }
 
@@ -1629,7 +1615,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1640,14 +1626,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 staffUser,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdCitizenBasic),
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
             )
 
         assertNotNull(documentId)
 
         // Verify document was created
         val document = controller.getDocument(dbInstance(), staffUser, clock, documentId)
-        assertEquals(testChild_1.id, document.data.child.id)
+        assertEquals(child.id, document.data.child.id)
     }
 
     @Test
@@ -1661,7 +1647,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1672,7 +1658,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 employeeUser.user,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+                ChildDocumentCreateRequest(child.id, templateIdAssistanceDecision),
             )
 
         // STAFF should be able to READ the decision document
@@ -1704,7 +1690,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1727,7 +1713,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     dbInstance(),
                     employeeUser.user,
                     creationClock,
-                    ChildDocumentCreateRequest(testChild_1.id, templateId),
+                    ChildDocumentCreateRequest(child.id, templateId),
                 )
 
             // Use a later clock for STAFF operations (admin's lock has expired)
@@ -1782,7 +1768,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val staffUser =
             db.transaction { tx ->
                 val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
                 tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
                 AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
             }
@@ -1792,7 +1778,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 employeeUser.user,
                 clock,
-                ChildDocumentCreateRequest(testChild_1.id, templateIdAssistanceDecision),
+                ChildDocumentCreateRequest(child.id, templateIdAssistanceDecision),
             )
 
         val document = controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
@@ -1814,7 +1800,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     private fun createDocument(
-        childId: PersonId = testChild_1.id,
+        childId: PersonId = child.id,
         templateId: DocumentTemplateId = templateIdPed,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
@@ -1845,7 +1831,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     ) = controller.getDocuments(dbInstance(), user, clockOverride, childId)
 
     private fun createDecisionDocument(
-        childId: PersonId = testChild_1.id,
+        childId: PersonId = child.id,
         templateId: DocumentTemplateId = templateIdAssistanceDecision,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
