@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.varda.ensureTrailingSlash
 import java.net.URI
 import java.time.Duration
 import okhttp3.OkHttpClient
@@ -36,7 +37,7 @@ fun buildHttpClient(
 
     return ConfiguredHttpClient(
         client = builder.build(),
-        rootUrl = rootUrl,
+        rootUrl = rootUrl?.ensureTrailingSlash(),
         jsonMapper = jsonMapper,
     )
 }

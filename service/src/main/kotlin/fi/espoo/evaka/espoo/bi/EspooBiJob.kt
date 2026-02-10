@@ -12,7 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.time.Duration
 
-class EspooBiJob(private val client: EspooBiClient) {
+class EspooBiJob(private val client: EspooBiHttpClient) {
     fun sendBiTable(db: Database.Connection, clock: EvakaClock, msg: EspooAsyncJob.SendBiTable) =
         sendBiTable(db, clock, msg.table.fileName, msg.table.query)
 

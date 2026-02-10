@@ -36,7 +36,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor
 import fi.espoo.evaka.shared.utils.executeGetRequest
-import fi.espoo.evaka.shared.utils.executePostRequest
+import fi.espoo.evaka.shared.utils.executePostJsonRequest
 import fi.espoo.evaka.specialdiet.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -406,7 +406,7 @@ class JamixClient(env: JamixEnv, private val jsonMapper: JsonMapper) {
     fun getCustomers(): List<Customer> = httpClient.executeGetRequest("customers")
 
     fun createMealOrder(order: MealOrder) {
-        httpClient.executePostRequest("v2/mealorders", order)
+        httpClient.executePostJsonRequest("v2/mealorders", order)
     }
 
     fun getDiets(): List<JamixSpecialDiet> = httpClient.executeGetRequest("diets")

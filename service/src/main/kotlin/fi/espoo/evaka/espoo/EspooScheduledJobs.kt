@@ -6,6 +6,7 @@ package fi.espoo.evaka.espoo
 
 import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.espoo.bi.EspooBiTable
 import fi.espoo.evaka.linkity.LinkityHttpClient
 import fi.espoo.evaka.linkity.generateDateRangesForStaffAttendancePlanRequests
@@ -53,6 +54,7 @@ class EspooScheduledJobs(
     env: ScheduledJobsEnv<EspooScheduledJob>,
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
+    private val espooBiJob: EspooBiJob?,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -67,6 +69,10 @@ class EspooScheduledJobs(
     }
 
     fun planBiJobs(db: Database.Connection, clock: EvakaClock) {
+        if (espooBiJob == null) {
+            logger.info { "BI integration not configured, skipping" }
+            return
+        }
         val tables = EspooBiTable.entries
         logger.info { "Planning BI jobs for ${tables.size} tables" }
         db.transaction { tx ->

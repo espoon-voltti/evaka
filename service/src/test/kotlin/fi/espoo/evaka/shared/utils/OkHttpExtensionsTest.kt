@@ -4,14 +4,20 @@
 
 package fi.espoo.evaka.shared.utils
 
+import fi.espoo.evaka.shared.ConfiguredHttpClient
+import java.io.ByteArrayInputStream
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import okhttp3.Credentials
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okio.Buffer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -291,6 +297,26 @@ class OkHttpExtensionsTest {
     }
 
     @Test
+    fun `executeWithRetries throws immediately for one-shot body on 429`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(429).addHeader("Retry-After", "1"))
+
+        val body =
+            streamRequestBody(
+                "text/csv".toMediaType(),
+                ByteArrayInputStream("test data".toByteArray()),
+            )
+        val request = Request.Builder().url(mockWebServer.url("/test")).put(body).build()
+
+        val exception =
+            assertThrows<IllegalStateException> {
+                client.executeWithRetries(request, remainingTries = 5)
+            }
+
+        assertTrue(exception.message?.contains("one-shot body") ?: false)
+        assertEquals(1, mockWebServer.requestCount)
+    }
+
+    @Test
     fun `executeWithRetries handles multiple consecutive 429 responses`() {
         // Queue 2 429 responses, then success
         mockWebServer.enqueue(MockResponse().setResponseCode(429).addHeader("Retry-After", "1"))
@@ -303,5 +329,118 @@ class OkHttpExtensionsTest {
         assertEquals(200, response.code)
         assertEquals("Finally!", response.body.string())
         assertEquals(3, mockWebServer.requestCount)
+    }
+
+    // ===== buildUrl Tests =====
+
+    @Test
+    fun `buildUrl constructs URL with endpoint and no query params`() {
+        val url = buildUrl(URI("https://example.com"), "/api/data")
+        assertEquals("https://example.com/api/data", url)
+    }
+
+    @Test
+    fun `buildUrl constructs URL with query params`() {
+        val url =
+            buildUrl(
+                URI("https://example.com"),
+                "/api/data",
+                mapOf("key" to "value", "page" to "1"),
+            )
+        assertEquals("https://example.com/api/data?key=value&page=1", url)
+    }
+
+    @Test
+    fun `buildUrl constructs URL with empty query params map`() {
+        val url = buildUrl(URI("https://example.com"), "/api/data", emptyMap())
+        assertEquals("https://example.com/api/data", url)
+    }
+
+    @Test
+    fun `buildUrl encodes special characters in query params`() {
+        val url =
+            buildUrl(
+                URI("https://example.com"),
+                "/api/data",
+                mapOf("filename" to "report 2024.csv", "filter" to "a&b=c"),
+            )
+        // OkHttp URL-encodes special characters in query parameter values
+        assertTrue(url.startsWith("https://example.com/api/data?"))
+        assertTrue(
+            url.contains("filename=report%202024.csv") || url.contains("filename=report+2024.csv")
+        )
+        assertTrue(url.contains("filter=a%26b%3Dc"))
+    }
+
+    @Test
+    fun `buildUrl resolves endpoint against root URL with path`() {
+        val url = buildUrl(URI("https://example.com/v1/"), "reports", mapOf("id" to "42"))
+        assertEquals("https://example.com/v1/reports?id=42", url)
+    }
+
+    // ===== streamRequestBody Tests =====
+
+    @Test
+    fun `streamRequestBody writes input stream content to request body`() {
+        val content = "hello,world\n1,2\n"
+        val body =
+            streamRequestBody("text/csv".toMediaType(), ByteArrayInputStream(content.toByteArray()))
+
+        assertEquals("text/csv", body.contentType().toString())
+        assertTrue(body.isOneShot())
+
+        val buffer = Buffer()
+        body.writeTo(buffer)
+        assertEquals(content, buffer.readUtf8())
+    }
+
+    // ===== ConfiguredHttpClient extension function Tests =====
+
+    @Test
+    fun `executePutRequest sends PUT with correct body and query params`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200))
+
+        val configuredClient =
+            ConfiguredHttpClient(client, mockWebServer.url("/").toUri(), jsonMapper = null)
+        val body = "csv-data".toRequestBody("text/csv".toMediaType())
+
+        configuredClient.executePutRequest("upload", body, mapOf("filename" to "test.csv"))
+
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("PUT", recorded.method)
+        assertEquals("/upload?filename=test.csv", recorded.path)
+        assertEquals("csv-data", recorded.body.readUtf8())
+    }
+
+    @Test
+    fun `executePostRequest sends POST with correct body and query params`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200))
+
+        val configuredClient =
+            ConfiguredHttpClient(client, mockWebServer.url("/").toUri(), jsonMapper = null)
+        val body = "post-data".toRequestBody("text/plain".toMediaType())
+
+        configuredClient.executePostRequest("submit", body, mapOf("type" to "test"))
+
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("POST", recorded.method)
+        assertEquals("/submit?type=test", recorded.path)
+        assertEquals("post-data", recorded.body.readUtf8())
+    }
+
+    @Test
+    fun `executePutRequest throws on non-successful response`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody("Internal Server Error"))
+
+        val configuredClient =
+            ConfiguredHttpClient(client, mockWebServer.url("/").toUri(), jsonMapper = null)
+        val body = "data".toRequestBody("text/plain".toMediaType())
+
+        val exception =
+            assertThrows<IllegalStateException> {
+                configuredClient.executePutRequest("upload", body)
+            }
+
+        assertTrue(exception.message?.contains("Request failed with status 500") ?: false)
     }
 }
