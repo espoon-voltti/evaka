@@ -7,6 +7,9 @@ package fi.espoo.evaka.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
 import fi.espoo.evaka.application.ApplicationStatus.SENT
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -20,7 +23,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -466,13 +468,14 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = adult.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        DaycareFormV0.fromApplication2(
-                                getValidDaycareApplication(
-                                    preferredUnit = daycare,
-                                    shiftCare = shiftCare,
-                                )
-                            )
-                            .copy(urgent = urgent),
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            urgent = urgent,
+                            extendedCare = shiftCare,
+                        ),
                 )
             tx.fetchApplicationDetails(applicationId)!!
         }
