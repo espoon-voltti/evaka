@@ -10,6 +10,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.shared.ApplicationId
@@ -23,7 +26,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
@@ -62,8 +64,11 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 confidential = true,
                 type = ApplicationType.DAYCARE,
                 document =
-                    DaycareFormV0.fromApplication2(
-                        getValidDaycareApplication(preferredUnit = daycare)
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
                     ),
             )
         }
