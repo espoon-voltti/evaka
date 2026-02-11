@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.controller.SearchFeeDecisionRequest
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -29,6 +30,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+import fi.espoo.evaka.invoicing.domain.PersonBasic
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -67,10 +70,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycarePartDay25
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.toEmployeeWithName
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import fi.espoo.evaka.toPersonBasic
-import fi.espoo.evaka.toPersonDetailed
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -2747,4 +2747,39 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             areaName = allAreas.find { it.id == this.areaId }?.name ?: "",
             language = this.language.name,
         )
+
+    private fun DevPerson.toPersonBasic() =
+        PersonBasic(
+            id = id,
+            dateOfBirth = dateOfBirth,
+            firstName = firstName,
+            lastName = lastName,
+            ssn = ssn,
+        )
+
+    private fun DevPerson.toPersonDetailed() =
+        PersonDetailed(
+            id = id,
+            dateOfBirth = dateOfBirth,
+            dateOfDeath = dateOfDeath,
+            firstName = firstName,
+            lastName = lastName,
+            ssn = ssn,
+            streetAddress = streetAddress,
+            postalCode = postalCode,
+            postOffice = postOffice,
+            residenceCode = residenceCode,
+            email = email,
+            phone = phone,
+            language = language,
+            invoiceRecipientName = invoiceRecipientName,
+            invoicingStreetAddress = invoicingStreetAddress,
+            invoicingPostalCode = invoicingPostalCode,
+            invoicingPostOffice = invoicingPostOffice,
+            restrictedDetailsEnabled = restrictedDetailsEnabled,
+            forceManualFeeDecisions = forceManualFeeDecisions,
+        )
+
+    private fun DevEmployee.toEmployeeWithName() =
+        EmployeeWithName(id = id, firstName = firstName, lastName = lastName)
 }

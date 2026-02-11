@@ -752,41 +752,6 @@ private fun addressOf(person: DevPerson): Address =
         postOffice = person.postOffice,
     )
 
-fun DevPerson.toPersonBasic() =
-    PersonBasic(
-        id = this.id,
-        dateOfBirth = this.dateOfBirth,
-        firstName = this.firstName,
-        lastName = this.lastName,
-        ssn = this.ssn,
-    )
-
-fun DevPerson.toPersonDetailed() =
-    PersonDetailed(
-        id = this.id,
-        dateOfBirth = this.dateOfBirth,
-        dateOfDeath = this.dateOfDeath,
-        firstName = this.firstName,
-        lastName = this.lastName,
-        ssn = this.ssn,
-        streetAddress = this.streetAddress,
-        postalCode = this.postalCode,
-        postOffice = this.postOffice,
-        residenceCode = this.residenceCode,
-        email = this.email,
-        phone = this.phone,
-        language = this.language,
-        invoiceRecipientName = this.invoiceRecipientName,
-        invoicingStreetAddress = this.invoicingStreetAddress,
-        invoicingPostalCode = this.invoicingPostalCode,
-        invoicingPostOffice = this.invoicingPostOffice,
-        restrictedDetailsEnabled = this.restrictedDetailsEnabled,
-        forceManualFeeDecisions = this.forceManualFeeDecisions,
-    )
-
-fun DevEmployee.toEmployeeWithName() =
-    EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
-
 fun DevEmployee.toEvakaUser() =
     EvakaUser(
         id = EvakaUserId(this.id.raw),
