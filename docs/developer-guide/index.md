@@ -28,7 +28,7 @@ This guide helps developers to discover and understand the custom frameworks, ut
 - **[Testing Conventions](service/testing.md)** - Unit and integration testing patterns (TODO)
 - **[Database API](service/database.md)** - SQL queries and transactions
 - **[SQL Predicates](service/predicates.md)** - Building dynamic WHERE clauses
-- **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations (TODO)
+- **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations
 - **[ACL API](service/acl.md)** - Access control framework (TODO)
 - **[Logging API](service/logging.md)** - Logging utilities (TODO)
 - **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution (TODO)
