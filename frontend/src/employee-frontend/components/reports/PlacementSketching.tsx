@@ -198,11 +198,18 @@ export default React.memo(function PlacementSketching() {
               }}
               hideErrorsBeforeTouched
               locale={lang}
-              isInvalidDate={(d) =>
-                d.isAfter(currentLocalDate)
-                  ? i18n.validationErrors.dateTooEarly
-                  : null
-              }
+              isInvalidDate={(d) => {
+                if (d.isAfter(currentLocalDate)) {
+                  return i18n.validationErrors.dateTooEarly
+                }
+                if (
+                  filters.latestApplicationSentDate !== null &&
+                  d.isAfter(filters.latestApplicationSentDate)
+                ) {
+                  return i18n.validationErrors.dateRangeNotLinear
+                }
+                return null
+              }}
             />
             <span>{' - '}</span>
 
@@ -214,6 +221,15 @@ export default React.memo(function PlacementSketching() {
               }}
               hideErrorsBeforeTouched
               locale={lang}
+              isInvalidDate={(d) => {
+                if (
+                  filters.earliestApplicationSentDate !== null &&
+                  d.isBefore(filters.earliestApplicationSentDate)
+                ) {
+                  return i18n.validationErrors.dateRangeNotLinear
+                }
+                return null
+              }}
             />
           </FlexRow>
         </FilterRow>

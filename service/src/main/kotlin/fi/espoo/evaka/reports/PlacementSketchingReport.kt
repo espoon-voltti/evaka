@@ -53,6 +53,14 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         latestApplicationSentDate: LocalDate? = null,
     ): List<PlacementSketchingReportRow> {
+        if (
+            earliestApplicationSentDate != null &&
+                latestApplicationSentDate != null &&
+                earliestApplicationSentDate > latestApplicationSentDate
+        ) {
+            return emptyList()
+        }
+
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
