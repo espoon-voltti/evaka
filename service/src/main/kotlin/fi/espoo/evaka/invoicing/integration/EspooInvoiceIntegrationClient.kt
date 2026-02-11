@@ -4,18 +4,19 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.ProductKey
+import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
+import fi.espoo.evaka.shared.utils.executePostJsonRequest
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
 import java.time.LocalDate
 import tools.jackson.databind.json.JsonMapper
 
@@ -25,7 +26,12 @@ class EspooInvoiceIntegrationClient(
     private val env: EspooInvoiceIntegrationEnv,
     private val jsonMapper: JsonMapper,
 ) : InvoiceIntegrationClient {
-    private val fuel = FuelManager()
+    private val httpClient =
+        buildHttpClient(
+            rootUrl = URI(env.url),
+            jsonMapper = jsonMapper,
+            interceptors = listOf(basicAuthInterceptor(env.username, env.password.value)),
+        )
 
     override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
         val (withSSN, withoutSSN) =
@@ -59,31 +65,22 @@ class EspooInvoiceIntegrationClient(
 
     private fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
         val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
-        val payload = jsonMapper.writeValueAsString(batch)
         logger.info(
             mapOf("batchNumber" to batch.batchNumber, "batchLength" to batch.invoices.size)
         ) {
             "Sending invoice batch to integration"
         }
         logger.debug {
-            "Sending invoice batch ${batch.batchNumber} to integration, payload: $payload"
+            "Sending invoice batch ${batch.batchNumber} to integration, payload: ${jsonMapper.writeValueAsString(batch)}"
         }
-        val (_, _, result) =
-            fuel
-                .post("${env.url}/invoice-batches")
-                .authentication()
-                .basic(env.username, env.password.value)
-                .jsonBody(payload)
-                .responseString()
-
-        return result.fold(
-            { true },
-            { error ->
-                val meta = mapOf("errorMessage" to error.errorData.decodeToString())
-                logger.error(error, meta) { "Failed sending invoice batch" }
-                false
-            },
-        )
+        return try {
+            httpClient.executePostJsonRequest("invoice-batches", batch)
+            true
+        } catch (e: Exception) {
+            val meta = mapOf("errorMessage" to (e.message ?: ""))
+            logger.error(e, meta) { "Failed sending invoice batch" }
+            false
+        }
     }
 
     companion object {
