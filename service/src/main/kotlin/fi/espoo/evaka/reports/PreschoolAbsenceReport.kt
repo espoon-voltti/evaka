@@ -180,6 +180,7 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                 row.childId,
                 row.firstName,
                 row.lastName,
+                row.placementType,
                 daycareMap[row.childId]?.daycareName ?: "???",
                 daycareMap[row.childId]?.groupName ?: "???",
                 row.hourlyTypeResults,
@@ -215,6 +216,7 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                     r.childId,
                     r.firstName,
                     r.lastName,
+                    r.placementType,
                     r.absenceType,
                     (r.absenceCount * dailyTimeInMinutes + childAttendanceDeviationMinutes)
                         .floorDiv(60)
@@ -230,6 +232,7 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                     childId = k.key,
                     firstName = k.value[0].firstName,
                     lastName = k.value[0].lastName,
+                    placementType = k.value[0].placementType,
                     hourlyTypeResults = k.value.associateBy({ it.absenceType }, { it.absenceHours }),
                 )
             }
@@ -249,6 +252,7 @@ data class PreschoolAbsenceReportRow(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val placementType: PlacementType,
     val absenceType: AbsenceType,
     val absenceHours: Int,
 )
@@ -267,6 +271,7 @@ data class ChildPreschoolAbsenceRow(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val placementType: PlacementType,
     val hourlyTypeResults: Map<AbsenceType, Int>,
 )
 
@@ -274,6 +279,7 @@ data class ChildPreschoolAbsenceRowWithUnitAndGroup(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
+    val placementType: PlacementType,
     val daycareName: String,
     val groupName: String,
     val hourlyTypeResults: Map<AbsenceType, Int>,

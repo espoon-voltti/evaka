@@ -171,6 +171,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 childCResults[0].childId,
                 childCResults[0].firstName,
                 childCResults[0].lastName,
+                childCResults[0].placementType,
                 "Preschool A",
                 "Testiryhmä A",
                 childCResults[0].hourlyTypeResults.toMutableMap().apply {
@@ -255,6 +256,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 childCResults[0].childId,
                 childCResults[0].firstName,
                 childCResults[0].lastName,
+                childCResults[0].placementType,
                 "Preschool A",
                 "Testiryhmä A",
                 childCResults[0].hourlyTypeResults.toMutableMap().apply {
@@ -359,6 +361,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childA.id,
                     firstName = testData.childA.firstName,
                     lastName = testData.childA.lastName,
+                    PlacementType.PRESCHOOL,
                     "Preschool A",
                     "Testiryhmä A",
                     hourlyTypeResults =
@@ -376,6 +379,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childB.id,
                     firstName = testData.childB.firstName,
                     lastName = testData.childB.lastName,
+                    PlacementType.PRESCHOOL,
                     "Preschool A",
                     "Testiryhmä A",
                     hourlyTypeResults =
@@ -390,6 +394,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childC.id,
                     firstName = testData.childC.firstName,
                     lastName = testData.childC.lastName,
+                    PlacementType.PRESCHOOL_DAYCARE,
                     "Preschool A",
                     "Testiryhmä A",
                     hourlyTypeResults =
@@ -410,6 +415,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childC.id,
                     firstName = testData.childC.firstName,
                     lastName = testData.childC.lastName,
+                    PlacementType.PRESCHOOL_DAYCARE,
                     "Preschool A",
                     "Testiryhmä A",
                     hourlyTypeResults =
@@ -430,6 +436,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childD.id,
                     firstName = testData.childD.firstName,
                     lastName = testData.childD.lastName,
+                    PlacementType.PREPARATORY,
                     "Preschool A",
                     "Testiryhmä C",
                     hourlyTypeResults =
@@ -465,6 +472,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     childId = testData.childE.id,
                     firstName = testData.childE.firstName,
                     lastName = testData.childE.lastName,
+                    PlacementType.PRESCHOOL,
                     "Preschool C",
                     "Testiryhmä D",
                     hourlyTypeResults =

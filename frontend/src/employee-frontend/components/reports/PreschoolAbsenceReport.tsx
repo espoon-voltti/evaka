@@ -15,6 +15,7 @@ import type {
   PreschoolTerm
 } from 'lib-common/generated/api-types/daycare'
 import type { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -232,6 +233,7 @@ type ReportDisplayRow = {
   childId: string
   firstName: string
   lastName: string
+  placementType: PlacementType
   daycareName: string
   groupName: string
   TOTAL: number
@@ -253,6 +255,19 @@ const PreschoolAbsenceGrid = ({
   groupId?: GroupId | null
 }) => {
   const { i18n } = useTranslation()
+
+  const placementTypeText = (type: PlacementType): string => {
+    switch (type) {
+      case 'PRESCHOOL':
+      case 'PRESCHOOL_DAYCARE':
+        return i18n.common.types.PRESCHOOL
+      case 'PREPARATORY':
+      case 'PREPARATORY_DAYCARE':
+        return i18n.common.types.PREPARATORY_EDUCATION
+      default:
+        return type
+    }
+  }
 
   const today = LocalDate.todayInHelsinkiTz()
   const reportResult = useQueryResult(
@@ -291,6 +306,7 @@ const PreschoolAbsenceGrid = ({
           childId: row.childId,
           firstName: row.firstName,
           lastName: row.lastName,
+          placementType: row.placementType,
           daycareName: row.daycareName,
           groupName: row.groupName,
           TOTAL:
@@ -320,6 +336,10 @@ const PreschoolAbsenceGrid = ({
           {
             label: i18n.reports.preschoolAbsences.lastName,
             value: (row) => row.lastName
+          },
+          {
+            label: i18n.reports.common.placementType,
+            value: (row) => placementTypeText(row.placementType)
           },
           {
             label: i18n.reports.preschoolAbsences.daycareName,
@@ -361,6 +381,23 @@ const PreschoolAbsenceGrid = ({
               onClick={() => sortBy(['lastName', 'firstName', 'childId'])}
             >
               {i18n.reports.preschoolAbsences.lastName}
+            </SortableTh>
+            <SortableTh
+              sorted={
+                isEqual(sortColumns, [
+                  'placementType',
+                  'lastName',
+                  'firstName',
+                  'childId'
+                ])
+                  ? sortDirection
+                  : undefined
+              }
+              onClick={() =>
+                sortBy(['placementType', 'lastName', 'firstName', 'childId'])
+              }
+            >
+              {i18n.reports.common.placementType}
             </SortableTh>
             <SortableTh
               sorted={
@@ -464,6 +501,9 @@ const PreschoolAbsenceGrid = ({
               <Tr key={`${rowIndex}`} data-qa="preschool-absence-row">
                 <Td data-qa="first-name-column">{row.firstName}</Td>
                 <Td data-qa="last-name-column">{row.lastName}</Td>
+                <Td data-qa="placement-type-column">
+                  {placementTypeText(row.placementType)}
+                </Td>
                 <Td data-qa="daycare-name-column">{row.daycareName}</Td>
                 <Td data-qa="group-name-column">{row.groupName}</Td>
                 <Td data-qa="total-column">

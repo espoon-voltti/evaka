@@ -243,6 +243,7 @@ export interface ChildPreschoolAbsenceRowWithUnitAndGroup {
   groupName: string
   hourlyTypeResults: Partial<Record<AbsenceType, number>>
   lastName: string
+  placementType: PlacementType
 }
 
 /**
