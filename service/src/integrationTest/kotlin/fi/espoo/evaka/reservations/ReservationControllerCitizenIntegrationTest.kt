@@ -61,7 +61,7 @@ import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
-import fi.espoo.evaka.toEvakaUser
+import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
@@ -1238,7 +1238,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false,
                                             now,
-                                            adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                            EvakaUser(
+                                                id = adult.evakaUserId(),
+                                                name = "${adult.lastName} ${adult.firstName}",
+                                                type = EvakaUserType.CITIZEN,
+                                            ),
                                         )
                                     ),
                                 attendances =
@@ -1268,7 +1272,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false,
                                             now,
-                                            adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                            EvakaUser(
+                                                id = adult.evakaUserId(),
+                                                name = "${adult.lastName} ${adult.firstName}",
+                                                type = EvakaUserType.CITIZEN,
+                                            ),
                                         )
                                     ),
                                 attendances =
@@ -1804,7 +1812,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         TimeRange(startTime, endTime),
                                         false,
                                         now,
-                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                        EvakaUser(
+                                            id = adult.evakaUserId(),
+                                            name = "${adult.lastName} ${adult.firstName}",
+                                            type = EvakaUserType.CITIZEN,
+                                        ),
                                     )
                                 ),
                         ),
@@ -1816,7 +1828,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         TimeRange(startTime, endTime),
                                         false,
                                         now,
-                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                        EvakaUser(
+                                            id = adult.evakaUserId(),
+                                            name = "${adult.lastName} ${adult.firstName}",
+                                            type = EvakaUserType.CITIZEN,
+                                        ),
                                     )
                                 ),
                         ),
@@ -1838,7 +1854,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         TimeRange(startTime, endTime),
                                         false,
                                         now,
-                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                        EvakaUser(
+                                            id = adult.evakaUserId(),
+                                            name = "${adult.lastName} ${adult.firstName}",
+                                            type = EvakaUserType.CITIZEN,
+                                        ),
                                     )
                                 ),
                         ),
@@ -1850,7 +1870,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         TimeRange(startTime, endTime),
                                         false,
                                         now,
-                                        adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                        EvakaUser(
+                                            id = adult.evakaUserId(),
+                                            name = "${adult.lastName} ${adult.firstName}",
+                                            type = EvakaUserType.CITIZEN,
+                                        ),
                                     )
                                 ),
                         ),
@@ -1924,7 +1948,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     TimeRange(startTime, endTime),
                                     false,
                                     now,
-                                    adult.toEvakaUser(EvakaUserType.CITIZEN),
+                                    EvakaUser(
+                                        id = adult.evakaUserId(),
+                                        name = "${adult.lastName} ${adult.firstName}",
+                                        type = EvakaUserType.CITIZEN,
+                                    ),
                                 )
                             ),
                     )
