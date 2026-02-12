@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.invoicing.integration
 
+import fi.espoo.evaka.EspooInvoiceIntegrationEnv
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
@@ -16,14 +18,109 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import okhttp3.Credentials
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class EspooInvoiceIntegrationClientTest {
     private val agreementType = 100
+    private val jsonMapper = defaultJsonMapperBuilder().build()
+
+    private lateinit var mockWebServer: MockWebServer
+
+    @BeforeEach
+    fun setUp() {
+        mockWebServer = MockWebServer()
+        mockWebServer.start()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        mockWebServer.shutdown()
+    }
+
+    private fun createClient(
+        username: String = "testuser",
+        password: String = "testpass",
+    ): EspooInvoiceIntegrationClient =
+        EspooInvoiceIntegrationClient(
+            EspooInvoiceIntegrationEnv(
+                url = mockWebServer.url("/").toString(),
+                username = username,
+                password = Sensitive(password),
+                sendCodebtor = true,
+            ),
+            jsonMapper,
+        )
+
+    @Test
+    fun `send posts invoice batch with correct method, path, auth, and body`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200))
+
+        val client = createClient()
+        val invoice = testInvoice()
+        val result = client.send(listOf(invoice))
+
+        assertEquals(1, result.succeeded.size)
+        assertTrue(result.failed.isEmpty())
+
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("POST", recorded.method)
+        assertEquals("/invoice-batches", recorded.path)
+        assertEquals(Credentials.basic("testuser", "testpass"), recorded.getHeader("Authorization"))
+        assertEquals("application/json", recorded.getHeader("Content-Type")?.substringBefore(";"))
+
+        val body = jsonMapper.readTree(recorded.body.readUtf8())
+        assertEquals(agreementType, body["agreementType"].intValue())
+        assertEquals(agreementType, body["batchNumber"].intValue())
+        assertEquals("EUR", body["currency"].stringValue())
+        assertEquals("EPH", body["systemId"].stringValue())
+
+        val invoices = body["invoices"]
+        assertEquals(1, invoices.size())
+        val sentInvoice = invoices[0]
+        assertEquals(invoice.number, sentInvoice["invoiceNumber"].longValue())
+        assertEquals(invoice.invoiceDate.toString(), sentInvoice["date"].stringValue())
+        assertEquals(invoice.dueDate.toString(), sentInvoice["dueDate"].stringValue())
+        assertEquals(invoice.headOfFamily.ssn, sentInvoice["client"]["ssn"].stringValue())
+        assertEquals(
+            invoice.headOfFamily.lastName,
+            sentInvoice["recipient"]["lastname"].stringValue(),
+        )
+    }
+
+    @Test
+    fun `send places invoices without SSN in manuallySent without making HTTP requests`() {
+        val client = createClient()
+        val invoice = testInvoice(headOfFamily = testPerson(ssn = null))
+        val result = client.send(listOf(invoice))
+
+        assertTrue(result.succeeded.isEmpty())
+        assertTrue(result.failed.isEmpty())
+        assertEquals(1, result.manuallySent.size)
+        assertEquals(0, mockWebServer.requestCount)
+    }
+
+    @Test
+    fun `send returns failed invoices on server error`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody("Internal Server Error"))
+
+        val client = createClient()
+        val invoice = testInvoice()
+        val result = client.send(listOf(invoice))
+
+        assertTrue(result.succeeded.isEmpty())
+        assertEquals(1, result.failed.size)
+    }
 
     @Test
     fun `sending an invoice uses the recipient's actual address if it's valid`() {
@@ -223,6 +320,7 @@ class EspooInvoiceIntegrationClientTest {
         dateOfBirth: LocalDate = LocalDate.of(2000, 1, 1),
         firstName: String = "First name",
         lastName: String = "Last name",
+        ssn: String? = "ssn",
         streetAddress: String = "Address 123",
         postalCode: String = "02100",
         postOffice: String = "Espoo",
@@ -236,7 +334,7 @@ class EspooInvoiceIntegrationClientTest {
             dateOfDeath = null,
             firstName = firstName,
             lastName = lastName,
-            ssn = "ssn",
+            ssn = ssn,
             streetAddress = streetAddress,
             postalCode = postalCode,
             postOffice = postOffice,
