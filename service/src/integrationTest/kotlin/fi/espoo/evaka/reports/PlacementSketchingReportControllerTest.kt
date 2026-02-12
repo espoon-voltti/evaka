@@ -119,6 +119,25 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
+    fun `inverted application sent date range returns empty list`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
+
+        val report =
+            placementSketchingReportController.getPlacementSketchingReport(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                LocalDate.of(2022, 1, 1),
+                LocalDate.of(2022, 8, 1),
+                earliestApplicationSentDate = LocalDate.of(2022, 9, 1),
+                latestApplicationSentDate = LocalDate.of(2022, 8, 1),
+            )
+
+        assertThat(report).isEmpty()
+    }
+
+    @Test
     fun `report works with application service need option`() {
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
