@@ -7,7 +7,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import { combine } from 'lib-common/api'
-import type FiniteDateRange from 'lib-common/finite-date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   AreaJSON,
   Daycare,
@@ -270,14 +270,23 @@ const PreschoolAbsenceGrid = ({
   }
 
   const today = LocalDate.todayInHelsinkiTz()
+  const clampedTerm = term.start.isAfter(today)
+    ? undefined
+    : new FiniteDateRange(
+        term.start,
+        term.end.isAfter(today) ? today : term.end
+      )
   const reportResult = useQueryResult(
-    preschoolAbsenceReportQuery({
-      termStart: term.start,
-      termEnd: term.end.isAfter(today) ? today : term.end,
-      areaId: area?.id ?? null,
-      unitId: daycare?.id ?? null,
-      groupId: groupId ?? null
-    })
+    clampedTerm
+      ? preschoolAbsenceReportQuery({
+          body: {
+            term: clampedTerm,
+            areaId: area?.id ?? null,
+            unitId: daycare?.id ?? null,
+            groupId: groupId ?? null
+          }
+        })
+      : constantQuery([])
   )
 
   const [sortColumns, setSortColumns] = useState<ReportColumnKey[]>([

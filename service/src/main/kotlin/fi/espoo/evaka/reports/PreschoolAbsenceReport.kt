@@ -24,47 +24,50 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
 import java.time.LocalTime
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PreschoolAbsenceReport(private val accessControl: AccessControl) {
 
-    @GetMapping("/employee/reports/preschool-absence")
+    data class PreschoolAbsenceReportBody(
+        val term: FiniteDateRange,
+        val areaId: AreaId?,
+        val unitId: DaycareId?,
+        val groupId: GroupId?,
+    )
+
+    @PostMapping("/employee/reports/preschool-absence")
     fun getPreschoolAbsenceReport(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
-        @RequestParam areaId: AreaId?,
-        @RequestParam unitId: DaycareId?,
-        @RequestParam groupId: GroupId?,
-        @RequestParam termStart: LocalDate,
-        @RequestParam termEnd: LocalDate,
+        @RequestBody body: PreschoolAbsenceReportBody,
     ): List<ChildPreschoolAbsenceRowWithUnitAndGroup> {
-        if (areaId == null && unitId == null)
+        if (body.areaId == null && body.unitId == null)
             throw BadRequest("Must give either area ID or unit ID")
-        if (areaId != null && unitId != null)
+        if (body.areaId != null && body.unitId != null)
             throw BadRequest("Must give only one of area ID or unit ID")
         return db.connect { dbc ->
             dbc.read { tx ->
-                    if (areaId != null)
+                    if (body.areaId != null)
                         accessControl.requirePermissionFor(
                             tx,
                             user,
                             clock,
                             Action.Global.READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA,
                         )
-                    else if (unitId != null)
+                    else if (body.unitId != null)
                         accessControl.requirePermissionFor(
                             tx,
                             user,
                             clock,
                             Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT,
-                            unitId,
+                            body.unitId,
                         )
 
-                    val termRange = FiniteDateRange(termStart, termEnd)
+                    val termRange = body.term
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
 
                     val preschoolAbsenceTypes =
@@ -79,9 +82,9 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                             }
                         }
 
-                    if (unitId != null && groupId != null) {
+                    if (body.unitId != null && body.groupId != null) {
 
-                        val daycare = tx.getDaycare(unitId) ?: throw BadRequest("No such unit")
+                        val daycare = tx.getDaycare(body.unitId) ?: throw BadRequest("No such unit")
 
                         val dailyPreschoolTime =
                             daycare.dailyPreschoolTime
@@ -96,14 +99,14 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                                 getPreschoolAbsenceReportRowsForGroup(
                                     tx,
                                     daycare.id,
-                                    groupId,
+                                    body.groupId,
                                     termRange,
                                     preschoolAbsenceTypes,
                                 ),
                                 calculateDailyPreschoolAttendanceDeviationForGroup(
                                     tx,
                                     daycare.id,
-                                    groupId,
+                                    body.groupId,
                                     termRange,
                                     dailyPreschoolTime,
                                     dailyPreparatoryTime,
@@ -115,9 +118,14 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                         )
                     } else {
                         val daycares =
-                            if (unitId != null)
-                                listOf(tx.getDaycare(unitId) ?: throw BadRequest("No such unit"))
-                            else tx.getDaycaresForArea(areaId ?: throw BadRequest("Can't happen"))
+                            if (body.unitId != null)
+                                listOf(
+                                    tx.getDaycare(body.unitId) ?: throw BadRequest("No such unit")
+                                )
+                            else
+                                tx.getDaycaresForArea(
+                                    body.areaId ?: throw BadRequest("Can't happen")
+                                )
                         addDaycareAndGroupToReportRows(
                             daycares.flatMap { daycare ->
                                 val dailyPreschoolTime =
@@ -160,10 +168,9 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                     Audit.PreschoolAbsenceReport.log(
                         meta =
                             mapOf(
-                                "unitId" to unitId,
-                                "termStart" to termStart,
-                                "termEnd" to termEnd,
-                                "groupId" to groupId,
+                                "unitId" to body.unitId,
+                                "term" to body.term,
+                                "groupId" to body.groupId,
                             )
                     )
                 }
