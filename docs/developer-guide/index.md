@@ -11,6 +11,7 @@ This guide helps developers to discover and understand the custom frameworks, ut
 ## Cross-Cutting Concerns
 
 - **[Design Philosophy](design-philosophy.md)** - Core principles guiding technical decisions
+- **[Date & Time Utilities](date-time-utilities.md)** - Date, time, and range types with cross-platform serialization
 - **[Code Generation](codegen.md)** - Generating front-end types from back-end code. (TODO)
 
 ## Frontend
