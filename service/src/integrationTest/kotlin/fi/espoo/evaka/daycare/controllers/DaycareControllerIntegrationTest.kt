@@ -50,8 +50,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -524,12 +522,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             lastName = child2.lastName,
                             dateOfBirth = child2.dateOfBirth,
                         ),
-                    terminatedBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    terminatedBy = adult.evakaUser(),
                     currentDaycareGroupName = null,
                     connectedDaycareOnly = false,
                 ),
@@ -546,12 +539,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             lastName = child3.lastName,
                             dateOfBirth = child3.dateOfBirth,
                         ),
-                    terminatedBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    terminatedBy = adult.evakaUser(),
                     currentDaycareGroupName = group.name,
                     connectedDaycareOnly = false,
                 ),
@@ -568,12 +556,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             lastName = child4.lastName,
                             dateOfBirth = child4.dateOfBirth,
                         ),
-                    terminatedBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    terminatedBy = adult.evakaUser(),
                     currentDaycareGroupName = group.name,
                     connectedDaycareOnly = true,
                 ),
@@ -590,12 +573,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             lastName = child5.lastName,
                             dateOfBirth = child5.dateOfBirth,
                         ),
-                    terminatedBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    terminatedBy = adult.evakaUser(),
                     currentDaycareGroupName = group.name,
                     connectedDaycareOnly = false,
                 ),
@@ -612,12 +590,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             lastName = child6.lastName,
                             dateOfBirth = child6.dateOfBirth,
                         ),
-                    terminatedBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    terminatedBy = adult.evakaUser(),
                     currentDaycareGroupName = null,
                     connectedDaycareOnly = false,
                 ),

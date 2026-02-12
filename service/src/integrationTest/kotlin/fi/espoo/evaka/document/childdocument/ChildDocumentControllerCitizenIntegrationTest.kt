@@ -314,12 +314,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                             dateOfBirth = child.dateOfBirth,
                         ),
                     answeredAt = clock.now(),
-                    answeredBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    answeredBy = adult.evakaUser(),
                 )
             ),
             documents.filter { it.type == ChildDocumentType.CITIZEN_BASIC },
@@ -613,15 +608,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         assertThat(getDocumentsByChild(child.id))
             .extracting({ it.id }, { it.answeredAt }, { it.answeredBy })
             .containsExactlyInAnyOrder(
-                Tuple(
-                    answeredByCitizenId,
-                    now,
-                    EvakaUser(
-                        id = adult.evakaUserId(),
-                        name = "${adult.lastName} ${adult.firstName}",
-                        type = EvakaUserType.CITIZEN,
-                    ),
-                ),
+                Tuple(answeredByCitizenId, now, adult.evakaUser()),
                 Tuple(
                     answeredByEmployeeId,
                     now,

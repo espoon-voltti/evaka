@@ -2148,6 +2148,9 @@ data class DevPerson(
 
     fun evakaUserId() = EvakaUserId(id.raw)
 
+    fun evakaUser() =
+        EvakaUser(id = evakaUserId(), name = "$lastName $firstName", type = EvakaUserType.CITIZEN)
+
     fun user(authLevel: CitizenAuthLevel) = AuthenticatedUser.Citizen(id, authLevel)
 }
 

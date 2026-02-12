@@ -48,8 +48,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -125,12 +123,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceApplicationSummary(
                     id = id,
                     createdAt = clock.now(),
-                    createdBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    createdBy = adult.evakaUser(),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
                     startDate = LocalDate.of(2022, 8, 10),
                     endDate = LocalDate.of(2022, 8, 10),
@@ -444,12 +437,7 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                 AbsenceApplicationSummary(
                     id = id,
                     createdAt = clock.now(),
-                    createdBy =
-                        EvakaUser(
-                            id = adult.evakaUserId(),
-                            name = "${adult.lastName} ${adult.firstName}",
-                            type = EvakaUserType.CITIZEN,
-                        ),
+                    createdBy = adult.evakaUser(),
                     child = PersonNameDetails(child.id, child.firstName, child.lastName),
                     startDate = LocalDate.of(2022, 8, 10),
                     endDate = LocalDate.of(2022, 8, 10),

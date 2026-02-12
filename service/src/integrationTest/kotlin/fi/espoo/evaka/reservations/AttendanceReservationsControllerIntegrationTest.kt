@@ -63,8 +63,6 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschool
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
@@ -1118,12 +1116,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                                 false,
-                                modifiedBy =
-                                    EvakaUser(
-                                        id = parent.evakaUserId(),
-                                        name = "${parent.lastName} ${parent.firstName}",
-                                        type = EvakaUserType.CITIZEN,
-                                    ),
+                                modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
                             )
                         ),
@@ -1251,12 +1244,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                                 false,
-                                modifiedBy =
-                                    EvakaUser(
-                                        id = parent.evakaUserId(),
-                                        name = "${parent.lastName} ${parent.firstName}",
-                                        type = EvakaUserType.CITIZEN,
-                                    ),
+                                modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
                             )
                         ),
@@ -1385,12 +1373,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0)),
                                 false,
-                                modifiedBy =
-                                    EvakaUser(
-                                        id = parent.evakaUserId(),
-                                        name = "${parent.lastName} ${parent.firstName}",
-                                        type = EvakaUserType.CITIZEN,
-                                    ),
+                                modifiedBy = parent.evakaUser(),
                                 modifiedAt = initialCreatedAt,
                             )
                         ),
