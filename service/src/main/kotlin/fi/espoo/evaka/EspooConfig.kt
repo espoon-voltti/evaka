@@ -32,7 +32,6 @@ import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
-import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuReportingService
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -84,14 +83,12 @@ class EspooConfig {
         env: EspooEnv,
         patuEnv: ObjectProvider<EspooPatuIntegrationEnv>,
         jsonMapper: JsonMapper,
-    ): PatuIntegrationClient =
-        when (env.patuIntegrationEnabled) {
-            true -> EspooPatuIntegrationClient(patuEnv.getObject(), jsonMapper)
-            false -> PatuIntegrationClient.MockPatuClient(jsonMapper)
-        }
+    ): EspooPatuIntegrationClient? =
+        if (env.patuIntegrationEnabled) EspooPatuIntegrationClient(patuEnv.getObject(), jsonMapper)
+        else null
 
     @Bean
-    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService =
+    fun patuReportingService(client: EspooPatuIntegrationClient?): PatuReportingService =
         PatuReportingService(client)
 
     @Bean
