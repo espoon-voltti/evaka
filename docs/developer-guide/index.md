@@ -32,4 +32,4 @@ This guide helps developers to discover and understand the custom frameworks, ut
 - **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations
 - **[ACL API](service/acl.md)** - Access control framework (TODO)
 - **[Logging API](service/logging.md)** - Logging utilities (TODO)
-- **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution (TODO)
+- **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution
