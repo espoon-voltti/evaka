@@ -8,10 +8,17 @@ import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.reports.getRawRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import io.github.oshai.kotlinlogging.KotlinLogging
 
-class PatuReportingService(private val patuIntegrationClient: PatuIntegrationClient) {
+private val logger = KotlinLogging.logger {}
+
+class PatuReportingService(private val patuIntegrationClient: EspooPatuIntegrationClient?) {
 
     fun sendPatuReport(dbc: Database.Connection, dateRange: DateRange) {
+        if (patuIntegrationClient == null) {
+            logger.info { "Patu integration client not configured, skipping sending" }
+            return
+        }
         val rows =
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

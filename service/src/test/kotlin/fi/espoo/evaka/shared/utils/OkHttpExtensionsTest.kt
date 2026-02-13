@@ -131,6 +131,23 @@ class OkHttpExtensionsTest {
     }
 
     @Test
+    fun `headerInterceptor adds custom header to requests`() {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("Success"))
+
+        val clientWithHeader =
+            client
+                .newBuilder()
+                .addInterceptor(headerInterceptor("X-Custom", "custom-value"))
+                .build()
+
+        val request = Request.Builder().url(mockWebServer.url("/test")).build()
+        clientWithHeader.newCall(request).execute()
+
+        val recordedRequest = mockWebServer.takeRequest()
+        assertEquals("custom-value", recordedRequest.getHeader("X-Custom"))
+    }
+
+    @Test
     fun `basicAuthInterceptor handles special characters in credentials`() {
         mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("Success"))
 

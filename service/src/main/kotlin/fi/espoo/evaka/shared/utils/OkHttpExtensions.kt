@@ -52,6 +52,13 @@ fun streamRequestBody(contentType: MediaType, inputStream: InputStream): Request
         }
     }
 
+fun headerInterceptor(name: String, value: String): okhttp3.Interceptor {
+    return okhttp3.Interceptor { chain ->
+        val request = chain.request().newBuilder().header(name, value).build()
+        chain.proceed(request)
+    }
+}
+
 fun tokenAuthInterceptor(token: String): okhttp3.Interceptor {
     return okhttp3.Interceptor { chain ->
         val authenticatedRequest =

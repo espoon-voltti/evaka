@@ -4,47 +4,38 @@
 
 package fi.espoo.evaka.reports.patu
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EspooPatuIntegrationEnv
 import fi.espoo.evaka.reports.RawReportRow
+import fi.espoo.evaka.shared.ConfiguredHttpClient
+import fi.espoo.evaka.shared.buildHttpClient
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
+import fi.espoo.evaka.shared.utils.executePostJsonRequest
+import fi.espoo.evaka.shared.utils.headerInterceptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
 import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 
-class EspooPatuIntegrationClient(
-    private val env: EspooPatuIntegrationEnv,
-    private val jsonMapper: JsonMapper,
-) : PatuIntegrationClient {
-    private val fuel = FuelManager()
+class EspooPatuIntegrationClient(env: EspooPatuIntegrationEnv, jsonMapper: JsonMapper) {
+    private val httpClient: ConfiguredHttpClient =
+        buildHttpClient(
+            rootUrl = URI(env.url),
+            jsonMapper = jsonMapper,
+            interceptors =
+                listOf(
+                    basicAuthInterceptor(env.username, env.password.value),
+                    headerInterceptor("Accept", "application/json"),
+                ),
+        )
 
-    override fun send(patuReport: List<RawReportRow>): PatuIntegrationClient.Result {
+    fun send(patuReport: List<RawReportRow>) {
         logger.info { "Sending patu report of ${patuReport.size} rows" }
-        val payload = jsonMapper.writeValueAsString(patuReport)
-        val (_, _, result) =
-            fuel
-                .post("${env.url}/report")
-                .authentication()
-                .basic(env.username, env.password.value)
-                .header(Headers.ACCEPT, "application/json")
-                .jsonBody(payload)
-                .responseString()
-
-        return when (result) {
-            is Result.Success -> {
-                PatuIntegrationClient.Result(true)
-            }
-
-            is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Sending patu report failed, message: ${String(result.error.errorData)}"
-                }
-                PatuIntegrationClient.Result(false)
-            }
+        try {
+            httpClient.executePostJsonRequest("report", patuReport)
+        } catch (e: Exception) {
+            logger.error(e) { "Sending patu report failed" }
+            throw e
         }
     }
 }
