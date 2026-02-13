@@ -14,7 +14,6 @@ import React, {
 import styled from 'styled-components'
 import { Link, useLocation, useSearchParams } from 'wouter'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   Message,
   MessageChild,
@@ -47,19 +46,17 @@ import colors from 'lib-customizations/common'
 import { faAngleLeft, faBoxArchive, faEnvelope } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
-import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import {
+  archiveThreadMutation,
   markLastReceivedMessageInThreadUnreadMutation,
   markThreadReadMutation,
   replyToThreadMutation
 } from './queries'
 import type { View } from './types-view'
 import { isFolderView, isStandardView } from './types-view'
-
-const archiveThreadResult = wrapResult(archiveThread)
 
 const MessageContainer = styled.div`
   background-color: ${colors.grayscale.g0};
@@ -203,7 +200,7 @@ export function SingleThreadView({
 }: Props) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const { getReplyContent, onReplySent, setReplyContent, refreshMessages } =
+  const { getReplyContent, onReplySent, setReplyContent } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
@@ -248,10 +245,10 @@ export function SingleThreadView({
 
   const handleReplySent = useCallback(
     (response: ThreadReply) => {
-      onReplySent(response)
+      onReplySent(response, account.id)
       setReplyEditorVisible(false)
     },
-    [onReplySent]
+    [account.id, onReplySent]
   )
 
   const onDiscard = useCallback(() => {
@@ -265,16 +262,17 @@ export function SingleThreadView({
   const { mutateAsync: markThreadRead } = useMutationResult(
     markThreadReadMutation
   )
+  const { mutateAsync: archiveThread } = useMutationResult(
+    archiveThreadMutation
+  )
   useEffect(() => {
     const hasUnreadMessages = messages.some(
       (m) => !m.readAt && m.sender.id !== account.id
     )
     if (hasUnreadMessages) {
-      void markThreadRead({ accountId: account.id, threadId }).then(() => {
-        refreshMessages(account.id)
-      })
+      void markThreadRead({ accountId: account.id, threadId })
     }
-  }, [account.id, markThreadRead, messages, refreshMessages, threadId])
+  }, [account.id, markThreadRead, messages, threadId])
 
   const singleCustomer = useMemo(() => {
     if (messages.length === 0) return null
@@ -416,7 +414,7 @@ export function SingleThreadView({
                     data-qa="delete-thread-btn"
                     className="delete-btn"
                     onClick={() =>
-                      archiveThreadResult({ accountId: account.id, threadId })
+                      archiveThread({ accountId: account.id, threadId })
                     }
                     onSuccess={onArchived}
                     text={i18n.messages.archiveThread}
