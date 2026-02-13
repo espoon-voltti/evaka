@@ -1944,15 +1944,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/postcss-text-decoration-shorthand@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "@csstools/postcss-text-decoration-shorthand@npm:5.0.1"
+"@csstools/postcss-text-decoration-shorthand@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "@csstools/postcss-text-decoration-shorthand@npm:5.0.2"
   dependencies:
     "@csstools/color-helpers": "npm:^6.0.1"
     postcss-value-parser: "npm:^4.2.0"
   peerDependencies:
     postcss: ^8.4
-  checksum: 10/3281f2b9c33d57055fbff8b06c53009705e36d398ff1712f271d27776412a9597e44155c3865168bfa2aaadd8b717971d6d706e68a58e17eea26353a8cda6635
+  checksum: 10/75a8dd7a98667190037edb7ab4209b11382bdb54e3be3a26cbb021a23f6763ab9519b0c1ddb843d669936a9c7be5b4c53f2849b1851ed4b076a2685353742458
   languageName: node
   linkType: hard
 
@@ -6552,7 +6552,7 @@ __metadata:
     playwright: "npm:1.58.1"
     polished: "npm:4.3.1"
     postcss: "npm:8.5.6"
-    postcss-preset-env: "npm:11.1.2"
+    postcss-preset-env: "npm:11.1.3"
     prettier: "npm:3.8.1"
     punycode: "npm:2.3.1"
     react: "npm:19.2.4"
@@ -9615,9 +9615,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-preset-env@npm:11.1.2":
-  version: 11.1.2
-  resolution: "postcss-preset-env@npm:11.1.2"
+"postcss-preset-env@npm:11.1.3":
+  version: 11.1.3
+  resolution: "postcss-preset-env@npm:11.1.3"
   dependencies:
     "@csstools/postcss-alpha-function": "npm:^2.0.2"
     "@csstools/postcss-cascade-layers": "npm:^6.0.0"
@@ -9657,7 +9657,7 @@ __metadata:
     "@csstools/postcss-stepped-value-functions": "npm:^5.0.0"
     "@csstools/postcss-syntax-descriptor-syntax-production": "npm:^2.0.0"
     "@csstools/postcss-system-ui-font-family": "npm:^2.0.0"
-    "@csstools/postcss-text-decoration-shorthand": "npm:^5.0.1"
+    "@csstools/postcss-text-decoration-shorthand": "npm:^5.0.2"
     "@csstools/postcss-trigonometric-functions": "npm:^5.0.0"
     "@csstools/postcss-unset-value": "npm:^5.0.0"
     autoprefixer: "npm:^10.4.23"
@@ -9693,7 +9693,7 @@ __metadata:
     postcss-selector-not: "npm:^9.0.0"
   peerDependencies:
     postcss: ^8.4
-  checksum: 10/1a699048be76eda58ddd90bc74f9c088ff9c3cb7dabca5aa8710bea886027ebbab678281fc174f5f4f455f5d419f4814f2d33754ebe5ae08057d6058875b24b4
+  checksum: 10/9462973c101e767416d8ebae552e23aa65b284092340f135ff013b27ec9d6667672e75eb29a73c836eb6790841a82804464a0e0b2f0394e8330eb34fe92a07bb
   languageName: node
   linkType: hard
 
