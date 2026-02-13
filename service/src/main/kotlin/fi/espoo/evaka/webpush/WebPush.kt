@@ -5,8 +5,6 @@
 package fi.espoo.evaka.webpush
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
@@ -19,6 +17,9 @@ import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.http.HttpStatus
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
@@ -120,7 +121,7 @@ private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
 private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
 class WebPush(env: WebPushEnv) {
-    private val fuel = FuelManager()
+    private val httpClient = OkHttpClient()
     private val secureRandom = SecureRandom()
     private val jsonWriter = defaultJsonMapperBuilder().build().writerFor<List<WebPushPayload>>()
     private val vapidKeyPair: WebPushKeyPair =
@@ -158,29 +159,28 @@ class WebPush(env: WebPushEnv) {
                     urgency = Urgency.Normal,
                 )
                 .withVapid(vapidJwt)
-        val (request, _, result) =
-            fuel
-                .post(webPushRequest.uri.toString())
-                .header(*webPushRequest.headers.toTypedArray())
-                .body(webPushRequest.body)
-                // Push server should return 201 Created, but at least Mozilla returns 200 OK
-                // instead
-                .validate { it.statusCode == 200 || it.statusCode == 201 }
-                .response()
-        try {
-            result.get()
-        } catch (e: FuelError) {
-            val meta =
-                mapOf(
-                    "method" to request.method,
-                    "url" to request.url,
-                    "body" to request.body.asString(contentType = null),
+        val requestBuilder = Request.Builder().url(webPushRequest.uri.toString())
+        webPushRequest.headers.toTypedArray().forEach { (name, value) ->
+            requestBuilder.header(name, value)
+        }
+        requestBuilder.post(webPushRequest.body.toRequestBody())
+        val request = requestBuilder.build()
+        val response = httpClient.newCall(request).execute()
+        response.use {
+            val statusCode = response.code
+            // Push server should return 201 Created, but at least Mozilla returns 200 OK instead
+            if (statusCode == 200 || statusCode == 201) return
+            if (statusCode == 404 || statusCode == 410) {
+                throw SubscriptionExpired(
+                    HttpStatus.valueOf(statusCode),
+                    IllegalStateException("Web push failed with status $statusCode"),
                 )
-            if (e.response.statusCode == 404 || e.response.statusCode == 410) {
-                throw SubscriptionExpired(HttpStatus.valueOf(e.response.statusCode), e)
             }
-            logger.error(e, meta) { "Web push failed, status ${e.response.statusCode}" }
-            throw e
+            val meta = mapOf("method" to "POST", "url" to webPushRequest.uri.toString())
+            val body = response.body.string()
+            val error = IllegalStateException("Web push failed with status $statusCode: $body")
+            logger.error(error, meta) { "Web push failed, status $statusCode" }
+            throw error
         }
     }
 }
