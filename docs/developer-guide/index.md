@@ -31,5 +31,6 @@ This guide helps developers to discover and understand the custom frameworks, ut
 - **[SQL Predicates](service/predicates.md)** - Building dynamic WHERE clauses
 - **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations
 - **[ACL API](service/acl.md)** - Access control framework (TODO)
-- **[Logging API](service/logging.md)** - Logging utilities (TODO)
+- **[Audit Logging](audit-logging.md)** - Tracking user actions for security and compliance
+- **[Logging API](service/logging.md)** - Logging utilities
 - **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution
