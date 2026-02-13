@@ -176,8 +176,21 @@ class WebPush(env: WebPushEnv) {
                     "url" to request.url,
                     "body" to request.body.asString(contentType = null),
                 )
-            if (e.response.statusCode == 404 || e.response.statusCode == 410) {
-                throw SubscriptionExpired(HttpStatus.valueOf(e.response.statusCode), e)
+
+            val isRevokedSubscription =
+                e.exception is java.net.UnknownHostException &&
+                    notification.endpoint.uri.host?.endsWith(".invalid") == true
+
+            if (
+                e.response.statusCode == 404 ||
+                    e.response.statusCode == 410 ||
+                    isRevokedSubscription
+            ) {
+                throw SubscriptionExpired(
+                    if (isRevokedSubscription) HttpStatus.GONE
+                    else HttpStatus.valueOf(e.response.statusCode),
+                    e,
+                )
             }
             logger.error(e, meta) { "Web push failed, status ${e.response.statusCode}" }
             throw e
