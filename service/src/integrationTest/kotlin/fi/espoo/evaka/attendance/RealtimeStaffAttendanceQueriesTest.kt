@@ -21,10 +21,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testRoundTheClockDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -36,15 +34,25 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private lateinit var employee1: DevEmployee
-    private lateinit var employee2: DevEmployee
-    private lateinit var employee3: DevEmployee
-    private lateinit var employee4: DevEmployee
-    private val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Koirat")
-    private val group2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kissat")
-    private val group3 = DevDaycareGroup(daycareId = testDaycare.id, name = "Tyhjät")
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val roundTheClockDaycare =
+        DevDaycare(
+            areaId = area.id,
+            name = "Round the Clock Daycare",
+            shiftCareOperationTimes =
+                List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
+            shiftCareOpenOnHolidays = true,
+        )
+    private val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
+    private val employee2 = DevEmployee(firstName = "Two", lastName = "in group 2")
+    private val employee3 = DevEmployee(firstName = "Three", lastName = "in group 1")
+    private val employee4 = DevEmployee(firstName = "Four", lastName = "in group 2")
+    private val group1 = DevDaycareGroup(daycareId = daycare.id, name = "Koirat")
+    private val group2 = DevDaycareGroup(daycareId = daycare.id, name = "Kissat")
+    private val group3 = DevDaycareGroup(daycareId = daycare.id, name = "Tyhjät")
     private val roundTheClockGroup =
-        DevDaycareGroup(daycareId = testRoundTheClockDaycare.id, name = "Kookoskalmarit")
+        DevDaycareGroup(daycareId = roundTheClockDaycare.id, name = "Kookoskalmarit")
 
     private val today = LocalDate.of(2023, 10, 27)
     private val systemUser = AuthenticatedUser.SystemInternalUser
@@ -52,36 +60,32 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testRoundTheClockDaycare)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(roundTheClockDaycare)
             tx.insert(group1)
             tx.insert(group2)
             tx.insert(group3)
             tx.insert(roundTheClockGroup)
-            employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
             tx.insert(
                 employee1,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(group1.id)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(group1.id)),
             )
-            employee2 = DevEmployee(firstName = "Two", lastName = "in group 2")
             tx.insert(
                 employee2,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(group2.id)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(group2.id)),
             )
-            employee3 = DevEmployee(firstName = "Three", lastName = "in group 1")
             tx.insert(
                 employee3,
-                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
-                mapOf(testDaycare.id to listOf(group1.id)),
+                mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
+                mapOf(daycare.id to listOf(group1.id)),
             )
-            employee4 = DevEmployee(firstName = "Four", lastName = "in group 2")
             tx.insert(
                 employee4,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(group2.id)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(group2.id)),
             )
         }
     }
@@ -147,7 +151,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
         db.read {
             val attendances =
-                it.getStaffAttendances(testDaycare.id, now.toLocalDate().toFiniteDateRange(), now)
+                it.getStaffAttendances(daycare.id, now.toLocalDate().toFiniteDateRange(), now)
             assertEquals(4, attendances.size)
             assertEquals(
                 listOf("One", "Three", "Four", "Two"),
@@ -160,7 +164,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             val occupancyAttendances =
                 it.getStaffOccupancyAttendances(
-                    testDaycare.id,
+                    daycare.id,
                     HelsinkiDateTimeRange(now.atStartOfDay(), now.atEndOfDay()),
                 )
             assertEquals(listOf(0.0, 0.0, 3.5, 3.5), occupancyAttendances.map { a -> a.capacity })
@@ -193,7 +197,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 )
             )
         }
-        val externalAttendances = db.read { it.getExternalStaffAttendances(testDaycare.id) }
+        val externalAttendances = db.read { it.getExternalStaffAttendances(daycare.id) }
 
         assertEquals(1, externalAttendances.size)
         assertEquals("Foo Present", externalAttendances[0].name)
@@ -1024,7 +1028,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         Triple<DaycareId, GroupId, AuthenticatedUser.Employee> {
         val (unitId, groupId) =
             db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea().copy(shortName = "better test area"))
+                val areaId =
+                    tx.insert(
+                        DevCareArea(name = "Upsert Test Area", shortName = "upsert_test_area")
+                    )
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
                 unitId to groupId

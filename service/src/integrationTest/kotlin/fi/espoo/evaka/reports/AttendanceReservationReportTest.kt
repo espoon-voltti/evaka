@@ -17,10 +17,14 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -33,23 +37,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testChild_7
-import fi.espoo.evaka.testChild_8
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDaycareGroup
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
@@ -69,35 +56,38 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     private lateinit var attendanceReservationReportController:
         AttendanceReservationReportController
 
-    private val admin =
-        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val adminEmployee = DevEmployee()
+    private val staffEmployee = DevEmployee()
+    private val admin = AuthenticatedUser.Employee(adminEmployee.id, setOf(UserRole.ADMIN))
+    private val staff = AuthenticatedUser.Employee(staffEmployee.id, setOf(UserRole.STAFF))
+    private val daycareGroup = DevDaycareGroup(daycareId = daycare.id)
 
-    private val staff = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.STAFF))
+    // 2 children over 3 on 2020-05-28, 6 children under 3
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2018, 9, 1))
+    private val child4 = DevPerson(dateOfBirth = LocalDate.of(2019, 3, 2))
+    private val child5 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child6 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child7 = DevPerson(dateOfBirth = LocalDate.of(2018, 7, 28))
+    private val child8 = DevPerson(dateOfBirth = LocalDate.of(2013, 3, 10))
 
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(
-                unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
-            )
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8,
-                )
-                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(adminEmployee)
+            tx.insert(staffEmployee)
+            listOf(child1, child2, child3, child4, child5, child6, child7, child8).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insertServiceNeedOptions()
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDaycareGroup)
+            tx.insert(daycareGroup)
         }
     }
 
@@ -126,7 +116,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
@@ -146,15 +136,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
+                    childId = child1.id,
+                    unitId = daycare2.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
@@ -174,15 +164,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -232,8 +222,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
@@ -251,7 +241,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -301,15 +291,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -318,7 +308,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = endDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -391,23 +381,23 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevAssistanceFactor(
-                    childId = testChild_1.id,
-                    modifiedBy = EvakaUser(admin.evakaUserId, "Test Name", EvakaUserType.EMPLOYEE),
+                    childId = child1.id,
+                    modifiedBy = adminEmployee.evakaUser,
                     validDuring = date.toFiniteDateRange(),
                     capacityFactor = 5.0,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -457,15 +447,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             val groupId =
                 tx.insert(
-                    DevDaycareGroup(daycareId = testDaycare2.id, startDate = date, endDate = date)
+                    DevDaycareGroup(daycareId = daycare2.id, startDate = date, endDate = date)
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_1.id,
-                                unitId = testDaycare2.id,
+                                childId = child1.id,
+                                unitId = daycare2.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -477,15 +467,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevBackupCare(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     groupId = null,
                     period = FiniteDateRange(date, date),
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -535,15 +525,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 14),
                     endTime = LocalTime.of(15, 22),
@@ -582,15 +572,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 14),
                     endTime = LocalTime.of(15, 48),
@@ -629,15 +619,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = null,
                     endTime = null,
@@ -660,8 +650,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
@@ -682,15 +672,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(date.plusMonths(1), date.plusMonths(2)),
                 )
             )
@@ -710,15 +700,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(date, date),
                     type = DailyServiceTimesType.VARIABLE_TIME,
                     regularTimes = null,
@@ -740,15 +730,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -795,35 +785,26 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `multiple children is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8,
+            listOf(child1, child2, child3, child4, child5, child6, child7, child8).forEach {
+                testChild ->
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild.id,
+                        unitId = daycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
                 )
-                .forEach { testChild ->
-                    tx.insert(
-                        DevPlacement(
-                            childId = testChild.id,
-                            unitId = testDaycare.id,
-                            startDate = date,
-                            endDate = date,
-                        )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(8, 15),
+                        createdBy = admin.evakaUserId,
                     )
-                    tx.insert(
-                        DevReservation(
-                            childId = testChild.id,
-                            date = date,
-                            startTime = LocalTime.of(8, 0),
-                            endTime = LocalTime.of(8, 15),
-                            createdBy = admin.evakaUserId,
-                        )
-                    )
-                }
+                )
+            }
         }
 
         val result = getReport(date, date)
@@ -866,13 +847,13 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         val date = LocalDate.of(2020, 5, 28)
         val group1 =
             db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")).let {
+                tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 1")).let {
                     Group(it, "Testiläiset 1")
                 }
             }
         val group2 =
             db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")).let {
+                tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 2")).let {
                     Group(it, "Testiläiset 2")
                 }
             }
@@ -882,8 +863,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_1.id,
-                                unitId = testDaycare.id,
+                                childId = child1.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -895,7 +876,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -907,8 +888,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_2.id,
-                                unitId = testDaycare.id,
+                                childId = child2.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -920,7 +901,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -932,8 +913,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_3.id,
-                                unitId = testDaycare.id,
+                                childId = child3.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -945,7 +926,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -954,15 +935,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevPlacement(
-                    childId = testChild_4.id,
-                    unitId = testDaycare.id,
+                    childId = child4.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_4.id,
+                    childId = child4.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1037,16 +1018,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
                 )
             val groupId =
-                tx.insert(
-                    DevDaycareGroup(daycareId = testDaycare.id, startDate = date, endDate = date)
-                )
+                tx.insert(DevDaycareGroup(daycareId = daycare.id, startDate = date, endDate = date))
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
@@ -1057,7 +1036,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1106,15 +1085,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1163,15 +1142,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1181,7 +1160,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             // Full-day absence
             tx.insert(
                 DevAbsence(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = date,
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -1190,8 +1169,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     startDate = date,
                     endDate = date,
@@ -1199,7 +1178,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1209,7 +1188,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             // PRESCHOOL_DAYCARE child with only one absence -> should be included
             tx.insert(
                 DevAbsence(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = date,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -1259,8 +1238,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -1269,7 +1248,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             // Reservation for 8:00-8:15 on the first day only
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
@@ -1280,7 +1259,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             // Daily service times 8-16 on all three days, so these should show on the second day
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     validityPeriod = DateRange(startDate, endDate),
                 )
             )
@@ -1288,7 +1267,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             // Absence on the third day
             tx.insert(
                 DevAbsence(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     date = startDate.plusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -1354,8 +1333,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
@@ -1363,15 +1342,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = testDaycareGroup.id,
+                    daycareGroupId = daycareGroup.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevChildAttendance(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = LocalTime.of(8, 15),
@@ -1380,7 +1359,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevStaffAttendance(
                     employeeId = staff.id,
-                    groupId = testDaycareGroup.id,
+                    groupId = daycareGroup.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
@@ -1429,8 +1408,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
@@ -1438,15 +1417,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = testDaycareGroup.id,
+                    daycareGroupId = daycareGroup.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevChildAttendance(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = LocalTime.of(8, 15),
@@ -1455,7 +1434,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevStaffAttendance(
                     employeeId = staff.id,
-                    groupId = testDaycareGroup.id,
+                    groupId = daycareGroup.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
@@ -1463,11 +1442,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             )
 
-            tx.insert(testDecisionMaker_2)
+            val nonResponsibleStaff = DevEmployee()
+            tx.insert(nonResponsibleStaff)
             tx.insert(
                 DevStaffAttendance(
-                    employeeId = testDecisionMaker_2.id,
-                    groupId = testDaycareGroup.id,
+                    employeeId = nonResponsibleStaff.id,
+                    groupId = daycareGroup.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
@@ -1517,8 +1497,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
@@ -1526,15 +1506,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = testDaycareGroup.id,
+                    daycareGroupId = daycareGroup.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevChildAttendance(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = LocalTime.of(8, 15),
@@ -1544,8 +1524,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             val placementId2 =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
+                        childId = child2.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
@@ -1553,15 +1533,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId2,
-                    daycareGroupId = testDaycareGroup.id,
+                    daycareGroupId = daycareGroup.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevChildAttendance(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 0),
                     departed = null,
@@ -1570,7 +1550,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevStaffAttendance(
                     employeeId = staff.id,
-                    groupId = testDaycareGroup.id,
+                    groupId = daycareGroup.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
@@ -1578,11 +1558,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             )
 
-            tx.insert(testDecisionMaker_2)
+            val nonResponsibleStaff = DevEmployee()
+            tx.insert(nonResponsibleStaff)
             tx.insert(
                 DevStaffAttendance(
-                    employeeId = testDecisionMaker_2.id,
-                    groupId = testDaycareGroup.id,
+                    employeeId = nonResponsibleStaff.id,
+                    groupId = daycareGroup.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(8, 30)),
                     modifiedAt = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
@@ -1635,7 +1616,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             dbInstance(),
             RealEvakaClock(),
             admin,
-            testDaycare.id,
+            daycare.id,
             startDate,
             endDate,
             groupIds,

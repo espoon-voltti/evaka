@@ -5,9 +5,13 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -15,7 +19,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -25,9 +28,11 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -35,20 +40,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,13 +54,28 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
-    private val daycare1 = DevDaycare(areaId = area1.id)
+    private val daycare1 = DevDaycare(areaId = area1.id, name = "Daycare 1")
     private val daycarePurchased =
-        DevDaycare(areaId = area1.id, providerType = ProviderType.PURCHASED)
+        DevDaycare(
+            areaId = area1.id,
+            name = "Purchased Daycare",
+            providerType = ProviderType.PURCHASED,
+        )
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
-    private val daycare2 = DevDaycare(areaId = area2.id)
+    private val daycare2 = DevDaycare(areaId = area2.id, name = "Daycare 2")
 
-    private val citizenId = testAdult_1.id
+    private val adult1 = DevPerson(firstName = "John", lastName = "Doe")
+    private val adult2 = DevPerson(firstName = "Joan", lastName = "Doe")
+    private val adult3 = DevPerson(firstName = "Mark", lastName = "Foo")
+    private val adult4 = DevPerson(firstName = "Dork", lastName = "Aman")
+    private val adult5 = DevPerson(firstName = "Johannes Olavi Antero Tapio", lastName = "Karhula")
+    private val adult6 = DevPerson(firstName = "Ville", lastName = "Vilkas")
+    private val child1 = DevPerson(firstName = "Ricky", lastName = "Doe")
+    private val child2 = DevPerson(firstName = "Micky", lastName = "Doe")
+    private val child3 = DevPerson(firstName = "Hillary", lastName = "Foo")
+    private val child4 = DevPerson(firstName = "Maisa", lastName = "Farang")
+    private val child5 = DevPerson(firstName = "Visa", lastName = "Virén")
+
     private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
 
     private val today = LocalDate.of(2024, 8, 30)
@@ -81,9 +89,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(daycare1)
             tx.insert(daycare2)
             tx.insert(daycarePurchased)
-            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
-                .forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
+            listOf(adult1, adult2, adult3, adult4, adult5, adult6).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(child1, child2, child3, child4, child5).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
             tx.insert(employee)
@@ -97,7 +106,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         val incomeStatement =
             DevIncomeStatement(
-                personId = citizenId,
+                personId = adult1.id,
                 data = IncomeStatementBody.HighestFee(startDate, endDate),
                 status = IncomeStatementStatus.SENT,
                 createdAt = now.minusHours(10),
@@ -111,9 +120,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = citizenId,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 createdAt = incomeStatement.createdAt,
@@ -138,9 +147,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = citizenId,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 createdAt = incomeStatement.createdAt,
@@ -165,9 +174,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = testAdult_1.id,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 createdAt = incomeStatement3.createdAt,
@@ -192,9 +201,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.HighestFee(
                 id = id,
-                personId = testAdult_1.id,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = startDate,
                 endDate = endDate,
                 createdAt = incomeStatement3.createdAt,
@@ -209,7 +218,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         assertEquals(
             listOf(false),
-            getIncomeStatements(citizenId).data.map { it.status == IncomeStatementStatus.HANDLED },
+            getIncomeStatements(adult1.id).data.map { it.status == IncomeStatementStatus.HANDLED },
         )
     }
 
@@ -217,7 +226,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `cannot set to draft`() {
         val incomeStatement =
             DevIncomeStatement(
-                personId = citizenId,
+                personId = adult1.id,
                 data = IncomeStatementBody.HighestFee(today, today.plusDays(30)),
                 status = IncomeStatementStatus.SENT,
                 sentAt = now,
@@ -240,14 +249,14 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `cannot read draft statements`() {
         val sentIncomeStatement =
             DevIncomeStatement(
-                personId = citizenId,
+                personId = adult1.id,
                 data = IncomeStatementBody.HighestFee(today, today.plusDays(9)),
                 status = IncomeStatementStatus.SENT,
                 sentAt = now,
             )
         val draftIncomeStatement =
             DevIncomeStatement(
-                personId = citizenId,
+                personId = adult1.id,
                 data = IncomeStatementBody.HighestFee(today.plusDays(10), today.plusDays(20)),
                 status = IncomeStatementStatus.DRAFT,
                 sentAt = null,
@@ -259,7 +268,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         assertEquals(
             listOf(sentIncomeStatement.id),
-            getIncomeStatements(citizenId).data.map { it.id },
+            getIncomeStatements(adult1.id).data.map { it.id },
         )
         assertEquals(today, getIncomeStatement(sentIncomeStatement.id).startDate)
         assertThrows<NotFound> { getIncomeStatement(draftIncomeStatement.id) }
@@ -269,7 +278,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `add an attachment`() {
         val devIncomeStatement =
             DevIncomeStatement(
-                personId = testAdult_1.id,
+                personId = adult1.id,
                 status = IncomeStatementStatus.SENT,
                 sentAt = now,
                 data =
@@ -299,9 +308,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         assertEquals(
             IncomeStatement.Income(
                 id = id,
-                personId = testAdult_1.id,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = today,
                 endDate = null,
                 gross =
@@ -393,10 +402,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler`() {
         val incomeDate1 = LocalDate.now().minusDays(2)
         val incomeDate2 = LocalDate.now().plusMonths(1)
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
-        val placementId3 = PlacementId(UUID.randomUUID())
-        val placementId4 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         val createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 0, 0))
@@ -404,17 +409,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -424,7 +428,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             // `validTo` of the newest income statement is returned as `incomeEndDate`
             tx.insert(
                 DevIncome(
-                    personId = citizenId,
+                    personId = adult1.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusYears(1),
                     validTo = incomeDate1.minusMonths(1).minusDays(1),
@@ -432,7 +436,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevIncome(
-                    personId = citizenId,
+                    personId = adult1.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate1.minusMonths(1),
                     validTo = incomeDate1,
@@ -441,32 +445,31 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_3.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child3.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insertTestPartnership(
-                testAdult_2.id,
-                testAdult_3.id,
+                adult2.id,
+                adult3.id,
                 startDate = placementStart,
                 endDate = null,
                 createdAt = createdAt,
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -474,9 +477,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId3,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -486,7 +488,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             // Latest income has no end date -> incomeEndDate is null
             tx.insert(
                 DevIncome(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeDate2.minusMonths(1),
                     validTo = incomeDate2.minusDays(1),
@@ -494,7 +496,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevIncome(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     effect = IncomeEffect.MAX_FEE_ACCEPTED,
                     validFrom = incomeDate2,
@@ -504,20 +506,31 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_4.id,
-                    headOfChildId = testAdult_4.id,
+                    childId = child4.id,
+                    headOfChildId = adult4.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
-            tx.insertApplication(testAdult_4, testChild_4, preferredUnit = daycare1)
+            tx.insertTestApplication(
+                type = ApplicationType.PRESCHOOL,
+                guardianId = adult4.id,
+                childId = child4.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.PRESCHOOL,
+                        connectedDaycare = true,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare1.id)),
+                    ),
+            )
 
-            tx.insertGuardian(testAdult_5.id, testChild_5.id)
+            tx.insertGuardian(adult5.id, child5.id)
             tx.insert(
                 DevPlacement(
-                    id = placementId4,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_5.id,
+                    childId = child5.id,
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -525,14 +538,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val incomeStatement1 = createTestIncomeStatement(citizenId, sentAt = now.minusHours(7))
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id, sentAt = now.minusHours(6))
-        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id, sentAt = now.minusHours(5))
-        val incomeStatement4 = createTestIncomeStatement(testAdult_4.id, sentAt = now.minusHours(4))
-        val incomeStatement5 = createTestIncomeStatement(testAdult_5.id, sentAt = now.minusHours(3))
-        val incomeStatement6 = createTestIncomeStatement(testAdult_6.id, sentAt = now.minusHours(2))
-        val incomeStatement7 =
-            createChildTestIncomeStatement(testChild_1.id, sentAt = now.minusHours(1))
+        val incomeStatement1 = createTestIncomeStatement(adult1.id, sentAt = now.minusHours(7))
+        val incomeStatement2 = createTestIncomeStatement(adult2.id, sentAt = now.minusHours(6))
+        val incomeStatement3 = createTestIncomeStatement(adult3.id, sentAt = now.minusHours(5))
+        val incomeStatement4 = createTestIncomeStatement(adult4.id, sentAt = now.minusHours(4))
+        val incomeStatement5 = createTestIncomeStatement(adult5.id, sentAt = now.minusHours(3))
+        val incomeStatement6 = createTestIncomeStatement(adult6.id, sentAt = now.minusHours(2))
+        val incomeStatement7 = createChildTestIncomeStatement(child1.id, sentAt = now.minusHours(1))
 
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(
@@ -544,7 +556,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = incomeDate1,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = citizenId,
+                        personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
                         primaryCareArea = area1.name,
@@ -556,7 +568,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area2.name,
@@ -568,7 +580,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_3.id,
+                        personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
                         primaryCareArea = area2.name,
@@ -580,7 +592,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_4.id,
+                        personId = adult4.id,
                         personLastName = "Aman",
                         personFirstName = "Dork",
                         primaryCareArea = area1.name,
@@ -592,7 +604,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_5.id,
+                        personId = adult5.id,
                         personLastName = "Karhula",
                         personFirstName = "Johannes Olavi Antero Tapio",
                         primaryCareArea = null,
@@ -604,7 +616,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_6.id,
+                        personId = adult6.id,
                         personLastName = "Vilkas",
                         personFirstName = "Ville",
                         primaryCareArea = null,
@@ -616,7 +628,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.CHILD_INCOME,
-                        personId = testChild_1.id,
+                        personId = child1.id,
                         personLastName = "Doe",
                         personFirstName = "Ricky",
                         primaryCareArea = area1.name,
@@ -631,24 +643,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - area filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -657,17 +666,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -675,8 +683,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
 
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(
@@ -688,7 +696,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area2.name,
@@ -708,24 +716,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - unit filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -734,17 +739,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -752,8 +756,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
 
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(
@@ -765,7 +769,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area2.name,
@@ -780,24 +784,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - provider type filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycarePurchased.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -806,17 +807,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -824,8 +824,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
 
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(
@@ -837,7 +837,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -854,24 +854,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - sent date filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -880,17 +877,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -898,8 +894,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val incomeStatement1 = createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+        val incomeStatement1 = createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
 
         val newSentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
@@ -921,7 +917,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = citizenId,
+                        personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
                         primaryCareArea = area1.name,
@@ -948,7 +944,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -963,9 +959,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - placement valid date filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
-        val placementId3 = PlacementId(UUID.randomUUID())
         val placement1Start = LocalDate.of(2022, 9, 19)
         val placement1End = LocalDate.of(2022, 11, 19)
         val placement2Start = LocalDate.of(2022, 10, 19)
@@ -973,17 +966,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placement1Start,
                     endDate = placement1End,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placement1Start,
                     endDate = placement1End,
@@ -992,29 +984,27 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placement2Start,
                     endDate = placement2End,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End,
                 )
             )
 
-            tx.insert(DevGuardian(guardianId = testAdult_3.id, childId = testChild_3.id))
+            tx.insert(DevGuardian(guardianId = adult3.id, childId = child3.id))
             tx.insert(
                 DevPlacement(
-                    id = placementId3,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End,
@@ -1022,9 +1012,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val incomeStatement1 = createTestIncomeStatement(citizenId)
-        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
-        val incomeStatement3 = createTestIncomeStatement(testAdult_3.id)
+        val incomeStatement1 = createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
+        val incomeStatement3 = createTestIncomeStatement(adult3.id)
 
         val newSentAt = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
@@ -1046,7 +1036,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = citizenId,
+                        personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
                         primaryCareArea = area1.name,
@@ -1058,7 +1048,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -1070,7 +1060,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_3.id,
+                        personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
                         primaryCareArea = null,
@@ -1094,7 +1084,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -1119,7 +1109,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = citizenId,
+                        personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
                         primaryCareArea = area1.name,
@@ -1131,7 +1121,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -1149,25 +1139,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - status filter`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
-        val placementId3 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1175,17 +1161,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1193,17 +1178,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevParentship(
-                    childId = testChild_3.id,
-                    headOfChildId = testAdult_3.id,
+                    childId = child3.id,
+                    headOfChildId = adult3.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId3,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1212,11 +1196,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(citizenId, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         val incomeStatement2 =
-            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createTestIncomeStatement(adult2.id, startDate = LocalDate.of(2022, 10, 13))
         val incomeStatement3 =
-            createTestIncomeStatement(testAdult_3.id, startDate = LocalDate.of(2022, 10, 14))
+            createTestIncomeStatement(adult3.id, startDate = LocalDate.of(2022, 10, 14))
 
         setIncomeStatementHandled(
             incomeStatement1.id,
@@ -1243,7 +1227,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -1255,7 +1239,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_3.id,
+                        personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
                         primaryCareArea = area1.name,
@@ -1277,7 +1261,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_3.id,
+                        personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
                         primaryCareArea = area1.name,
@@ -1301,7 +1285,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
-                        personId = testAdult_2.id,
+                        personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
                         primaryCareArea = area1.name,
@@ -1346,24 +1330,21 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - start date sort`() {
-        val placementId1 = PlacementId(UUID.randomUUID())
-        val placementId2 = PlacementId(UUID.randomUUID())
         val placementStart = today.minusDays(30)
         val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1372,17 +1353,16 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1391,9 +1371,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(citizenId, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         val incomeStatement2 =
-            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createTestIncomeStatement(adult2.id, startDate = LocalDate.of(2022, 10, 13))
 
         val newSentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
@@ -1409,7 +1389,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = citizenId,
+                personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
                 primaryCareArea = area1.name,
@@ -1422,7 +1402,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_2.id,
+                personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
                 primaryCareArea = area1.name,
@@ -1456,8 +1436,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = citizenId,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1465,7 +1445,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1473,7 +1453,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevIncome(
-                    personId = citizenId,
+                    personId = adult1.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange1.start,
                     validTo = incomeRange1.end,
@@ -1482,8 +1462,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1491,7 +1471,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1499,7 +1479,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
             tx.insert(
                 DevIncome(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     validFrom = incomeRange2.start,
                     validTo = incomeRange2.end,
@@ -1508,9 +1488,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(citizenId, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         val incomeStatement2 =
-            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createTestIncomeStatement(adult2.id, startDate = LocalDate.of(2022, 10, 13))
 
         val expected1 =
             IncomeStatementAwaitingHandler(
@@ -1520,7 +1500,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = incomeRange1.end,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = citizenId,
+                personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
                 primaryCareArea = area1.name,
@@ -1533,7 +1513,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = incomeRange2.end,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_2.id,
+                personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
                 primaryCareArea = area1.name,
@@ -1565,8 +1545,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1574,7 +1554,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1583,8 +1563,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1592,7 +1572,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1601,9 +1581,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         val incomeStatement2 =
-            createChildTestIncomeStatement(testChild_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createChildTestIncomeStatement(child2.id, startDate = LocalDate.of(2022, 10, 13))
 
         val expected1 =
             IncomeStatementAwaitingHandler(
@@ -1613,7 +1593,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_1.id,
+                personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
                 primaryCareArea = area1.name,
@@ -1626,7 +1606,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.CHILD_INCOME,
-                personId = testChild_2.id,
+                personId = child2.id,
                 personLastName = "Doe",
                 personFirstName = "Micky",
                 primaryCareArea = area1.name,
@@ -1658,8 +1638,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1667,7 +1647,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1676,8 +1656,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1685,7 +1665,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1694,7 +1674,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         setIncomeStatementHandled(
             incomeStatement1.id,
             IncomeStatementController.SetIncomeStatementHandledBody(
@@ -1703,7 +1683,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             ),
         )
         val incomeStatement2 =
-            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createTestIncomeStatement(adult2.id, startDate = LocalDate.of(2022, 10, 13))
         setIncomeStatementHandled(
             incomeStatement2.id,
             IncomeStatementController.SetIncomeStatementHandledBody(
@@ -1720,7 +1700,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "a",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_1.id,
+                personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
                 primaryCareArea = area1.name,
@@ -1733,7 +1713,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "b",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_2.id,
+                personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
                 primaryCareArea = area1.name,
@@ -1765,8 +1745,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1774,7 +1754,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1783,8 +1763,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
             tx.insert(
                 DevParentship(
-                    childId = testChild_2.id,
-                    headOfChildId = testAdult_2.id,
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -1792,7 +1772,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
@@ -1801,9 +1781,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         val incomeStatement1 =
-            createTestIncomeStatement(testAdult_1.id, startDate = LocalDate.of(2022, 10, 12))
+            createTestIncomeStatement(adult1.id, startDate = LocalDate.of(2022, 10, 12))
         val incomeStatement2 =
-            createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+            createTestIncomeStatement(adult2.id, startDate = LocalDate.of(2022, 10, 13))
 
         val expected1 =
             IncomeStatementAwaitingHandler(
@@ -1813,7 +1793,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_1.id,
+                personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
                 primaryCareArea = area1.name,
@@ -1826,7 +1806,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
-                personId = testAdult_2.id,
+                personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
                 primaryCareArea = area1.name,

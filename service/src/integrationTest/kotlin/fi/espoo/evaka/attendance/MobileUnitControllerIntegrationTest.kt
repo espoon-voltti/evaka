@@ -6,20 +6,21 @@ package fi.espoo.evaka.attendance
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
@@ -28,16 +29,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testChild_7
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.withMockedTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -53,51 +44,65 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 5, 1))
     private val placementStart = today.minusDays(30)
     private val placementEnd = today.plusDays(30)
+
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            enabledPilotFeatures =
+                setOf(
+                    PilotFeature.MESSAGING,
+                    PilotFeature.MOBILE,
+                    PilotFeature.RESERVATIONS,
+                    PilotFeature.PLACEMENT_TERMINATION,
+                    PilotFeature.REALTIME_STAFF_ATTENDANCE,
+                ),
+        )
+    private val daycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Test Daycare 2",
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+        )
+
+    // dateOfBirth values affect occupancy coefficients and utilization
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2018, 9, 1))
+    private val child4 = DevPerson(dateOfBirth = LocalDate.of(2019, 3, 2))
+    private val child5 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child6 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child7 = DevPerson(dateOfBirth = LocalDate.of(2018, 7, 28))
+
     private lateinit var groupId: GroupId
 
     @BeforeEach
     fun beforeEach() {
         val groupId2 = GroupId(UUID.randomUUID())
-        val groupName = "Testaajat"
-        val groupName2 = "Tyhjä"
 
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                )
-                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            listOf(child1, child2, child3, child4, child5, child6, child7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insertServiceNeedOptions()
-            tx.addUnitFeatures(
-                listOf(testDaycare.id),
-                listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE),
-            )
-            groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-            tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child
-                ->
-                val daycarePlacementId = PlacementId(UUID.randomUUID())
-                tx.insert(
+            groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testaajat"))
+            tx.insert(DevDaycareGroup(id = groupId2, daycareId = daycare.id, name = "Tyhjä"))
+            listOf(child1, child2, child3, child4, child5).forEach { child ->
+                val placement =
                     DevPlacement(
-                        id = daycarePlacementId,
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = child.id,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
                     )
-                )
+                tx.insert(placement)
                 tx.insert(
                     DevDaycareGroupPlacement(
-                        daycarePlacementId = daycarePlacementId,
+                        daycarePlacementId = placement.id,
                         daycareGroupId = groupId,
                         startDate = placementStart,
                         endDate = placementEnd,
@@ -105,21 +110,19 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             }
 
-            // Add child with multiple group placements
-            val daycarePlacementId = PlacementId(UUID.randomUUID())
-            tx.insert(
+            // child6 has multiple group placements
+            val child6Placement =
                 DevPlacement(
-                    id = daycarePlacementId,
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_6.id,
-                    unitId = testDaycare.id,
+                    childId = child6.id,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
-            )
+            tx.insert(child6Placement)
             tx.insert(
                 DevDaycareGroupPlacement(
-                    daycarePlacementId = daycarePlacementId,
+                    daycarePlacementId = child6Placement.id,
                     daycareGroupId = groupId2,
                     startDate = placementStart,
                     endDate = today.minusDays(1),
@@ -127,58 +130,58 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 DevDaycareGroupPlacement(
-                    daycarePlacementId = daycarePlacementId,
+                    daycarePlacementId = child6Placement.id,
                     daycareGroupId = groupId,
                     startDate = today,
                     endDate = placementEnd,
                 )
             )
 
-            tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
+            tx.createMobileDeviceToUnit(mobileUser.id, daycare.id)
 
             tx.insertAttendance(
-                testChild_1.id,
-                testDaycare.id,
+                child1.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(8, 30), null),
                 now,
                 mobileUser.evakaUserId,
             )
             tx.insertAttendance(
-                testChild_2.id,
-                testDaycare.id,
+                child2.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(9, 0), null),
                 now,
                 mobileUser.evakaUserId,
             )
             tx.insertAttendance(
-                testChild_3.id,
-                testDaycare.id,
+                child3.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(9, 30), null),
                 now,
                 mobileUser.evakaUserId,
             )
             tx.insertAttendance(
-                testChild_4.id,
-                testDaycare.id,
+                child4.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 0), null),
                 now,
                 mobileUser.evakaUserId,
             )
             tx.insertAttendance(
-                testChild_5.id,
-                testDaycare.id,
+                child5.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 15), null),
                 now,
                 mobileUser.evakaUserId,
             )
             tx.insertAttendance(
-                testChild_6.id,
-                testDaycare.id,
+                child6.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(10, 30), null),
                 now,
@@ -188,8 +191,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
             tx.insert(
                 employee1,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(groupId)),
             )
             tx.markStaffArrival(
                 employee1.id,
@@ -203,8 +206,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val employee2 = DevEmployee(firstName = "Two", lastName = "in group 1")
             tx.insert(
                 employee2,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(groupId)),
             )
             tx.markStaffArrival(
                 employee2.id,
@@ -218,8 +221,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val employee3 = DevEmployee(firstName = "Three", lastName = "in group 2")
             tx.insert(
                 employee3,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId2)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(groupId2)),
             )
             tx.markStaffArrival(
                 employee3.id,
@@ -234,8 +237,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `unit utilization is same in both unit info and stats`() {
-        val unitInfo = fetchUnitInfo(testDaycare.id)
-        val allUnitStats = fetchUnitStats(listOf(testDaycare.id))
+        val unitInfo = fetchUnitInfo(daycare.id)
+        val allUnitStats = fetchUnitStats(listOf(daycare.id))
 
         assertEquals(32.1, unitInfo.utilization)
         assertEquals(unitInfo.utilization, allUnitStats.first().utilization)
@@ -244,11 +247,10 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `unit utilization is same in both unit info and stats when backup care is involved`() {
         db.transaction { tx ->
-            val child = testChild_7
             tx.insert(
                 DevPlacement(
-                    childId = child.id,
-                    unitId = testDaycare2.id,
+                    childId = child7.id,
+                    unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                     type = PlacementType.PRESCHOOL_DAYCARE,
@@ -256,23 +258,23 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insert(
                 DevBackupCare(
-                    childId = child.id,
-                    unitId = testDaycare.id,
+                    childId = child7.id,
+                    unitId = daycare.id,
                     period = FiniteDateRange(placementStart, placementEnd),
                     groupId = groupId,
                 )
             )
             tx.insertAttendance(
-                child.id,
-                testDaycare.id,
+                child7.id,
+                daycare.id,
                 today,
                 TimeInterval(LocalTime.of(6, 0), null),
                 now,
                 mobileUser.evakaUserId,
             )
         }
-        val unitInfo = fetchUnitInfo(testDaycare.id)
-        val allUnitStats = fetchUnitStats(listOf(testDaycare.id))
+        val unitInfo = fetchUnitInfo(daycare.id)
+        val allUnitStats = fetchUnitStats(listOf(daycare.id))
 
         assertEquals(36.9, unitInfo.utilization)
         assertEquals(unitInfo.utilization, allUnitStats.first().utilization)

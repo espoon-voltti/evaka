@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -34,15 +35,10 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_7
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -53,19 +49,25 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-
     @Autowired private lateinit var applicationController: ApplicationControllerV2
 
+    private val employee = DevEmployee()
+    private val serviceWorker =
+        AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
+
     private val area = DevCareArea(name = "Area", shortName = "area")
-    private val daycare1 = DevDaycare(areaId = area.id)
-    private val daycare2 = DevDaycare(areaId = area.id)
+    private val daycare1 = DevDaycare(areaId = area.id, name = "Daycare 1")
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Daycare 2")
 
     // isSvebiUnit uses hard-coded area short name "svenska-bildningstjanster"
     private val areaSvebi =
         DevCareArea(name = "Svenska Bildningstjänster", shortName = "svenska-bildningstjanster")
-    private val daycareSvebi = DevDaycare(areaId = areaSvebi.id, language = Language.sv)
+    private val daycareSvebi =
+        DevDaycare(areaId = areaSvebi.id, name = "Svebi Daycare", language = Language.sv)
+
+    private val adult = DevPerson(ssn = "010180-1232")
+    private val restrictedAdult = DevPerson(ssn = "010180-969B", restrictedDetailsEnabled = true)
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1), ssn = "010617A123U")
 
     private val preschoolTerm = preschoolTerm2023
 
@@ -75,17 +77,19 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
+            tx.insert(employee)
             tx.insert(area)
             tx.insert(daycare1)
             tx.insert(daycare2)
             tx.insert(areaSvebi)
             tx.insert(daycareSvebi)
-            listOf(testAdult_1, testAdult_7).forEach { tx.insert(it, DevPersonType.ADULT) }
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            listOf(adult, restrictedAdult).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(preschoolTerm)
         }
-        MockPersonDetailsService.add(legacyMockVtjDataset())
+        MockPersonDetailsService.addPersons(adult, restrictedAdult, child)
+        MockPersonDetailsService.addDependants(adult, child)
+        MockPersonDetailsService.addDependants(restrictedAdult, child)
     }
 
     @Test
@@ -124,7 +128,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 status = ApplicationStatus.WAITING_PLACEMENT,
                 type = ApplicationType.DAYCARE,
                 preferredStartDate = preferredStartDate,
-                adult = testAdult_7,
+                adult = restrictedAdult,
             )
         val defaultEndDate = LocalDate.of(2023, 7, 31)
         checkPlacementPlanDraft(
@@ -360,7 +364,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             assertThrows<Forbidden> {
                 applicationController.getPlacementPlanDraft(
                     dbInstance(),
-                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
+                    AuthenticatedUser.Employee(employee.id, roles),
                     clock,
                     applicationId,
                 )
@@ -375,7 +379,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             assertThrows<Forbidden> {
                 applicationController.createPlacementPlan(
                     dbInstance(),
-                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
+                    AuthenticatedUser.Employee(employee.id, roles),
                     clock,
                     applicationId,
                     proposal,
@@ -587,7 +591,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun checkPlacementPlanDraft(
         applicationId: ApplicationId,
         type: PlacementType,
-        child: DevPerson = testChild_1,
+        child: DevPerson = this.child,
         preferredStartDate: LocalDate,
         dueDate: LocalDate? = null,
         preferredUnits: List<DevDaycare> = listOf(daycare1, daycare2),
@@ -659,14 +663,12 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             period = placementPlanPeriod,
             preschoolDaycarePeriod = null,
             child =
-                testChild_1.let {
-                    PlacementPlanChild(
-                        id = it.id,
-                        firstName = it.firstName,
-                        lastName = it.lastName,
-                        dateOfBirth = it.dateOfBirth,
-                    )
-                },
+                PlacementPlanChild(
+                    id = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    dateOfBirth = child.dateOfBirth,
+                ),
             unitConfirmationStatus = PlacementPlanConfirmationStatus.PENDING,
             unitAcceptDisabled = false,
             unitRejectReason = null,
@@ -713,8 +715,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         status: ApplicationStatus,
         type: ApplicationType,
         preferredStartDate: LocalDate,
-        adult: DevPerson = testAdult_1,
-        child: DevPerson = testChild_1,
+        adult: DevPerson = this.adult,
+        child: DevPerson = this.child,
         partTime: Boolean = false,
         serviceNeedOption: ServiceNeedOption? = null,
         preschoolDaycare: Boolean = false,

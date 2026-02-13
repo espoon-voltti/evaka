@@ -5,11 +5,12 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.insertApplication as insertTestApplication
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -71,13 +72,14 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `user can delete a draft application`() {
-        val applicationDetails =
+        val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    guardian = adult,
-                    child = child,
-                    appliedType = PlacementType.DAYCARE,
-                    preferredUnit = daycare,
+                    guardianId = adult.id,
+                    childId = child.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE,
+                    document = daycareApplicationDocument(),
                 )
             }
 
@@ -85,28 +87,29 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
             clock = clock,
-            applicationId = applicationDetails.id,
+            applicationId = applicationId,
         )
 
-        db.transaction { tx -> assertNull(tx.fetchApplicationDetails(applicationDetails.id)) }
+        db.transaction { tx -> assertNull(tx.fetchApplicationDetails(applicationId)) }
     }
 
     @Test
     fun `user can cancel a sent unprocessed application`() {
-        val application =
+        val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        guardian = adult,
-                        child = child,
-                        appliedType = PlacementType.DAYCARE,
-                        preferredUnit = daycare,
+                        guardianId = adult.id,
+                        childId = child.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.DAYCARE,
+                        document = daycareApplicationDocument(),
                     )
                     .also {
                         stateService.sendApplication(
                             tx = tx,
                             user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                             clock = clock,
-                            applicationId = it.id,
+                            applicationId = it,
                         )
                     }
             }
@@ -115,30 +118,31 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
             clock = clock,
-            applicationId = application.id,
+            applicationId = applicationId,
         )
 
         db.transaction { tx ->
-            assertEquals(ApplicationStatus.CANCELLED, tx.getApplicationStatus(application.id))
+            assertEquals(ApplicationStatus.CANCELLED, tx.getApplicationStatus(applicationId))
         }
     }
 
     @Test
     fun `user can not cancel a processed application`() {
-        val application =
+        val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        guardian = adult,
-                        child = child,
-                        appliedType = PlacementType.DAYCARE,
-                        preferredUnit = daycare,
+                        guardianId = adult.id,
+                        childId = child.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.DAYCARE,
+                        document = daycareApplicationDocument(),
                     )
                     .also {
                         stateService.sendApplication(
                             tx = tx,
                             user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                             clock = clock,
-                            applicationId = it.id,
+                            applicationId = it,
                         )
                         stateService.moveToWaitingPlacement(
                             tx = tx,
@@ -148,7 +152,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     setOf(UserRole.SERVICE_WORKER),
                                 ),
                             clock = clock,
-                            applicationId = it.id,
+                            applicationId = it,
                         )
                     }
             }
@@ -158,7 +162,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 db = dbInstance(),
                 user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                 clock = clock,
-                applicationId = application.id,
+                applicationId = applicationId,
             )
         }
     }
@@ -170,16 +174,16 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child2, DevPersonType.CHILD)
             tx.insert(DevGuardian(guardianId = adult.id, childId = child2.id))
             tx.insertTestApplication(
-                guardian = adult,
-                child = child,
-                appliedType = PlacementType.DAYCARE,
-                preferredUnit = daycare,
+                guardianId = adult.id,
+                childId = child.id,
+                type = ApplicationType.DAYCARE,
+                document = daycareApplicationDocument(),
             )
             tx.insertTestApplication(
-                guardian = adult,
-                child = child2,
-                appliedType = PlacementType.PRESCHOOL,
-                preferredUnit = daycare,
+                guardianId = adult.id,
+                childId = child2.id,
+                type = ApplicationType.PRESCHOOL,
+                document = preschoolApplicationDocument(),
             )
         }
         MockPersonDetailsService.addPersons(child2)
@@ -537,6 +541,26 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
         assertEquals(0, pendingDecisions.size)
     }
+
+    private fun daycareApplicationDocument() =
+        DaycareFormV0(
+            type = ApplicationType.DAYCARE,
+            child = Child(dateOfBirth = null),
+            guardian = Adult(),
+            apply = Apply(preferredUnits = listOf(daycare.id)),
+            preferredStartDate = LocalDate.of(2020, 6, 1),
+            serviceStart = "09:00",
+            serviceEnd = "17:00",
+        )
+
+    private fun preschoolApplicationDocument() =
+        DaycareFormV0(
+            type = ApplicationType.PRESCHOOL,
+            child = Child(dateOfBirth = null),
+            guardian = Adult(),
+            apply = Apply(preferredUnits = listOf(daycare.id)),
+            preferredStartDate = LocalDate.of(2020, 8, 13),
+        )
 
     private fun createTestApplicationDetails(
         guardian: DevPerson,

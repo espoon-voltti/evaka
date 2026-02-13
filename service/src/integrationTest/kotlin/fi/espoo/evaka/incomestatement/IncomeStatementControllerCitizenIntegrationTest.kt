@@ -15,10 +15,13 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgePartnership
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -26,11 +29,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -52,15 +50,20 @@ class IncomeStatementControllerCitizenIntegrationTest :
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 11, 18), LocalTime.of(15, 30)))
 
-    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val adult1 = DevPerson()
+    private val adult2 = DevPerson()
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val citizen = adult1.user(CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -75,9 +78,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
             listOf(
                 IncomeStatement.HighestFee(
                     id = incomeStatements[0].id,
-                    personId = testAdult_1.id,
-                    firstName = testAdult_1.firstName,
-                    lastName = testAdult_1.lastName,
+                    personId = adult1.id,
+                    firstName = adult1.firstName,
+                    lastName = adult1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
                     createdAt = incomeStatements[0].createdAt,
@@ -146,9 +149,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
             listOf(
                 IncomeStatement.Income(
                     id = incomeStatements[0].id,
-                    personId = testAdult_1.id,
-                    firstName = testAdult_1.firstName,
-                    lastName = testAdult_1.lastName,
+                    personId = adult1.id,
+                    firstName = adult1.firstName,
+                    lastName = adult1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
                     gross =
@@ -213,14 +216,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     attachmentIds = listOf(),
                 ),
-                testChild_1.id,
+                child.id,
             )
         }
     }
 
     @Test
     fun `create an income statement for child`() {
-        db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
+        db.transaction { it.insertGuardian(adult1.id, child.id) }
 
         createIncomeStatementForChild(
             IncomeStatementBody.ChildIncome(
@@ -229,17 +232,17 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 otherInfo = "foo bar",
                 attachmentIds = listOf(),
             ),
-            testChild_1.id,
+            child.id,
         )
 
-        val incomeStatements = getIncomeStatementsForChild(testChild_1.id).data
+        val incomeStatements = getIncomeStatementsForChild(child.id).data
         assertEquals(
             listOf(
                 IncomeStatement.ChildIncome(
                     id = incomeStatements[0].id,
-                    personId = testChild_1.id,
-                    firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName,
+                    personId = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
                     otherInfo = "foo bar",
@@ -416,9 +419,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
             listOf(
                 IncomeStatement.Income(
                     id = incomeStatements[0].id,
-                    personId = testAdult_1.id,
-                    firstName = testAdult_1.firstName,
-                    lastName = testAdult_1.lastName,
+                    personId = adult1.id,
+                    firstName = adult1.firstName,
+                    lastName = adult1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2022, 4, 1),
                     gross =
@@ -488,7 +491,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `create an income statement for a child with an attachment`() {
-        db.transaction { it.insertGuardian(testAdult_1.id, testChild_1.id) }
+        db.transaction { it.insertGuardian(adult1.id, child.id) }
         val attachmentId = uploadAttachment()
 
         createIncomeStatementForChild(
@@ -498,17 +501,17 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachmentId),
             ),
-            testChild_1.id,
+            child.id,
         )
 
-        val incomeStatements = getIncomeStatementsForChild(testChild_1.id).data
+        val incomeStatements = getIncomeStatementsForChild(child.id).data
         assertEquals(
             listOf(
                 IncomeStatement.ChildIncome(
                     id = incomeStatements[0].id,
-                    personId = testChild_1.id,
-                    firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName,
+                    personId = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
                     otherInfo = "foo bar",
@@ -553,7 +556,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `create an income statement with someone else's attachment`() {
-        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        val someoneElse = adult2.user(CitizenAuthLevel.STRONG)
         val attachmentId = uploadAttachment(someoneElse)
 
         assertThrows<BadRequest> {
@@ -675,9 +678,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(
             IncomeStatement.Income(
                 id = original.id,
-                personId = testAdult_1.id,
-                firstName = testAdult_1.firstName,
-                lastName = testAdult_1.lastName,
+                personId = adult1.id,
+                firstName = adult1.firstName,
+                lastName = adult1.lastName,
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = LocalDate.of(2022, 6, 1),
                 gross = Gross.NoIncome(noIncomeDescription = "this is a test"),
@@ -843,11 +846,8 @@ WHERE id = ${bind(id)}
     fun `employee attachments are not visible to citizen`() {
         val attachment1 = uploadAttachment()
 
-        val employeeId = EmployeeId(UUID.randomUUID())
-        val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
-        db.transaction {
-            it.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
-        }
+        val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+        db.transaction { it.insert(employee) }
 
         createIncomeStatement(
             IncomeStatementBody.Income(
@@ -899,7 +899,7 @@ WHERE id = ${bind(id)}
 
         val incomeStatementId = getIncomeStatements().data[0].id
 
-        uploadAttachmentAsEmployee(employee, incomeStatementId)
+        uploadAttachmentAsEmployee(employee.user, incomeStatementId)
 
         val incomeStatement = getIncomeStatement(incomeStatementId)
         assertEquals(
@@ -919,15 +919,15 @@ WHERE id = ${bind(id)}
     @Test
     fun `guardian sees children with an active billable placement`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(adult1.id, child.id)
 
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = clock.today(),
                     endDate = clock.today(),
                     type = PlacementType.DAYCARE,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                 )
             )
         }
@@ -938,15 +938,15 @@ WHERE id = ${bind(id)}
     @Test
     fun `guardian does not see children with an inactive billable placement`() {
         db.transaction {
-            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(adult1.id, child.id)
 
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     startDate = clock.today().minusWeeks(1),
                     endDate = clock.today().minusWeeks(1),
                     type = PlacementType.DAYCARE,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                 )
             )
         }
@@ -964,8 +964,8 @@ WHERE id = ${bind(id)}
         db.transaction { tx ->
             tx.insert(
                 DevFridgePartnership(
-                    first = testAdult_1.id,
-                    second = testAdult_2.id,
+                    first = adult1.id,
+                    second = adult2.id,
                     startDate = clock.today().minusDays(1),
                     endDate = null,
                 )
@@ -976,7 +976,7 @@ WHERE id = ${bind(id)}
             IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
                 partner =
                     PartnerIncomeStatementStatus(
-                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = false,
                     )
             ),
@@ -986,7 +986,7 @@ WHERE id = ${bind(id)}
         db.transaction { tx ->
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             startDate = clock.today().plusMonths(3),
@@ -1000,7 +1000,7 @@ WHERE id = ${bind(id)}
             IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
                 partner =
                     PartnerIncomeStatementStatus(
-                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = true,
                     )
             ),
@@ -1013,20 +1013,20 @@ WHERE id = ${bind(id)}
         db.transaction { tx ->
             tx.insert(
                 DevFridgePartnership(
-                    first = testAdult_1.id,
-                    second = testAdult_2.id,
+                    first = adult1.id,
+                    second = adult2.id,
                     startDate = clock.today().minusDays(1),
                     endDate = null,
                 )
             )
-            tx.insert(DevIncome(personId = testAdult_2.id, modifiedBy = testAdult_2.evakaUserId()))
+            tx.insert(DevIncome(personId = adult2.id, modifiedBy = adult2.evakaUserId()))
         }
 
         assertEquals(
             IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse(
                 partner =
                     PartnerIncomeStatementStatus(
-                        name = "${testAdult_2.firstName} ${testAdult_2.lastName}",
+                        name = "${adult2.firstName} ${adult2.lastName}",
                         hasIncomeStatement = true,
                     )
             ),

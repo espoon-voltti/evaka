@@ -13,6 +13,10 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
@@ -27,11 +31,6 @@ import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycare45
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -47,29 +46,32 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired lateinit var serviceNeedController: ServiceNeedController
 
     private val clock = RealEvakaClock()
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val supervisor = DevEmployee()
+    private val admin = DevEmployee()
+    private val child = DevPerson()
+
     private val unitSupervisor =
-        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+        AuthenticatedUser.Employee(supervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val adminUser = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN))
 
     lateinit var placementId: PlacementId
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(
-                unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
-            )
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(admin)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(supervisor, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(child, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
             placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child.id,
+                        unitId = daycare.id,
                         startDate = testDate(1),
                         endDate = testDate(30),
                     )
@@ -93,7 +95,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { res ->
+        getServiceNeeds(child.id, placementId).let { res ->
             assertEquals(1, res.size)
             res.first().let { sn ->
                 assertEquals(testDate(1), sn.startDate)
@@ -210,7 +212,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
@@ -239,7 +241,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { res ->
+        getServiceNeeds(child.id, placementId).let { res ->
             assertEquals(1, res.size)
             res.first().let { sn ->
                 assertEquals(testDate(1), sn.startDate)
@@ -269,7 +271,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
@@ -298,7 +300,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(20) }
@@ -327,7 +329,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
@@ -361,7 +363,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
@@ -381,9 +383,9 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val idToDelete = givenServiceNeed(10, 19, placementId)
         givenServiceNeed(20, 30, placementId)
 
-        serviceNeedController.deleteServiceNeed(dbInstance(), admin, clock, idToDelete)
+        serviceNeedController.deleteServiceNeed(dbInstance(), adminUser, clock, idToDelete)
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
@@ -414,7 +416,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             ),
         )
 
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
@@ -462,7 +464,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             it.insertServiceNeedOption(snDaycareFullDay35.copy(id = optionId, partWeek = null))
         }
         val idToUpdate = givenServiceNeed(1, 30, placementId, optionId)
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(false, serviceNeeds.first().partWeek)
         }
 
@@ -479,7 +481,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 partWeek = true,
             ),
         )
-        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+        getServiceNeeds(child.id, placementId).let { serviceNeeds ->
             assertEquals(true, serviceNeeds.first().partWeek)
         }
     }
@@ -561,7 +563,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 dbInstance(),
                 unitSupervisor,
                 MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
-                testChild_1.id,
+                child.id,
                 today,
             )
 
@@ -606,7 +608,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 dbInstance(),
                 unitSupervisor,
                 MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.MIDNIGHT)),
-                testChild_1.id,
+                child.id,
                 today,
             )
 

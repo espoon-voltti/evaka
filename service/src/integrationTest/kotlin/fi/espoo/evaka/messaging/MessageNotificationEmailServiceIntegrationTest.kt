@@ -15,8 +15,6 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -24,6 +22,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -37,11 +37,8 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.toApplicationType
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -56,6 +53,11 @@ class MessageNotificationEmailServiceIntegrationTest :
     @Autowired lateinit var messageController: MessageController
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+    private val child = DevPerson()
+
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
     private val testPersonEn = DevPerson(email = "en@example.com", language = "en")
@@ -66,9 +68,9 @@ class MessageNotificationEmailServiceIntegrationTest :
         listOf(testPersonFi, testPersonSv, testPersonEn, testPersonEl, testPersonNoEmail)
     private val testAddresses = testPersons.mapNotNull { it.email }
 
-    private val employeeId = EmployeeId(UUID.randomUUID())
+    private val staffEmployee = DevEmployee()
     private val employee =
-        AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
+        AuthenticatedUser.Employee(id = staffEmployee.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
     private lateinit var clock: MockEvakaClock
 
@@ -79,24 +81,18 @@ class MessageNotificationEmailServiceIntegrationTest :
         val placementEnd = clock.today().plusDays(30)
 
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
 
-            val groupId = GroupId(UUID.randomUUID())
-            tx.insert(
-                DevDaycareGroup(
-                    id = groupId,
-                    daycareId = testDaycare.id,
-                    startDate = placementStart,
-                )
-            )
+            val group = DevDaycareGroup(daycareId = daycare.id, startDate = placementStart)
+            tx.insert(group)
 
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child.id,
+                        unitId = daycare.id,
                         startDate = placementStart,
                         endDate = placementEnd,
                     )
@@ -104,7 +100,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = groupId,
+                    daycareGroupId = group.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -112,12 +108,12 @@ class MessageNotificationEmailServiceIntegrationTest :
 
             testPersons.forEach {
                 tx.insert(it, DevPersonType.ADULT)
-                tx.insertGuardian(it.id, testChild_1.id)
+                tx.insertGuardian(it.id, child.id)
             }
 
-            tx.insert(DevEmployee(id = employeeId))
-            tx.upsertEmployeeMessageAccount(employeeId)
-            tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+            tx.insert(staffEmployee)
+            tx.upsertEmployeeMessageAccount(staffEmployee.id)
+            tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
         }
     }
 
@@ -138,7 +134,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         postNewThread(
             sender = employeeAccount,
-            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(child.id)),
             user = employee,
             clock,
         )
@@ -173,7 +169,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         postNewThread(
             sender = municipalAccountId,
-            recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+            recipients = listOf(MessageRecipient.Child(child.id)),
             user = adminUser,
             clock,
             type = MessageType.BULLETIN,
@@ -222,7 +218,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         val contentId =
             postNewThread(
                 sender = employeeAccount,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child.id)),
                 user = employee,
                 clock = clock,
             )
@@ -252,7 +248,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                     sentDate = clock.today(),
                     dueDate = null,
                     guardianId = guardian.id,
-                    childId = testChild_1.id,
+                    childId = child.id,
                     type = PlacementType.DAYCARE.toApplicationType(),
                     document =
                         DaycareFormV0(
@@ -261,7 +257,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                             serviceEnd = "16:00",
                             child = Child(dateOfBirth = clock.today().minusYears(3)),
                             guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(testDaycare.id)),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
                             preferredStartDate = clock.today().plusMonths(5),
                         ),
                 )
@@ -330,8 +326,8 @@ class MessageNotificationEmailServiceIntegrationTest :
                     """
 UPDATE message_recipients mr SET read_at = ${bind(clock.now())}
 WHERE mr.id IN (
-    SELECT mr.id 
-    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
+    SELECT mr.id
+    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id
     WHERE ma.person_id = ${bind(person.id)}
 )
 """

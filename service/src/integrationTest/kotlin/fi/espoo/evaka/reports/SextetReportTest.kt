@@ -13,48 +13,56 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testChild_7
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testRoundTheClockDaycare
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id, name = "Daycare 1")
+    private val daycare2 =
+        DevDaycare(areaId = area.id, name = "Daycare 2", providerType = ProviderType.PURCHASED)
+    private val roundTheClockDaycare =
+        DevDaycare(
+            areaId = area.id,
+            name = "Round the Clock Daycare",
+            shiftCareOperationTimes =
+                List(7) { TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)) },
+            shiftCareOpenOnHolidays = true,
+        )
+    private val employee = DevEmployee()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
+    private val child3 = DevPerson()
+    private val child4 = DevPerson()
+    private val child5 = DevPerson()
+    private val child6 = DevPerson()
+    private val child7 = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2.copy(providerType = ProviderType.PURCHASED))
-            tx.insert(testRoundTheClockDaycare)
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                )
-                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(roundTheClockDaycare)
+            listOf(child1, child2, child3, child4, child5, child6, child7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insertServiceNeedOptions()
         }
     }
@@ -75,8 +83,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -86,15 +94,15 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
             )
             tx.insert(
                 DevAbsence(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = LocalDate.of(2021, 12, 1),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -105,8 +113,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_3.id,
-                    unitId = testDaycare2.id,
+                    childId = child3.id,
+                    unitId = daycare2.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -116,8 +124,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE,
-                        childId = testChild_4.id,
-                        unitId = testRoundTheClockDaycare.id,
+                        childId = child4.id,
+                        unitId = roundTheClockDaycare.id,
                         startDate = startDate,
                         endDate = endDate,
                     )
@@ -130,7 +138,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = endDate,
                             optionId = snDaycareFullDay35.id,
                             shiftCare = ShiftCareType.FULL,
-                            confirmedBy = testDecisionMaker_1.evakaUserId,
+                            confirmedBy = employee.evakaUserId,
                         )
                     )
                 }
@@ -141,8 +149,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_5.id,
-                    unitId = testDaycare.id,
+                    childId = child5.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -150,7 +158,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             // Does not affect because only half day off
             tx.insert(
                 DevAbsence(
-                    childId = testChild_5.id,
+                    childId = child5.id,
                     date = LocalDate.of(2021, 12, 1),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -159,7 +167,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             // Affects because both halves off
             tx.insert(
                 DevAbsence(
-                    childId = testChild_5.id,
+                    childId = child5.id,
                     date = LocalDate.of(2021, 12, 2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -167,7 +175,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.insert(
                 DevAbsence(
-                    childId = testChild_5.id,
+                    childId = child5.id,
                     date = LocalDate.of(2021, 12, 2),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.NONBILLABLE,
@@ -178,8 +186,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_6.id,
-                    unitId = testDaycare.id,
+                    childId = child6.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -187,8 +195,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             // 5 to daycare 2 (backup care)
             tx.insert(
                 DevBackupCare(
-                    childId = testChild_6.id,
-                    unitId = testDaycare2.id,
+                    childId = child6.id,
+                    unitId = daycare2.id,
                     groupId = null,
                     period = FiniteDateRange(startDate, midDate),
                 )
@@ -198,16 +206,16 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = testChild_7.id,
-                    unitId = testDaycare.id,
+                    childId = child7.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
             )
             tx.insert(
                 DevBackupCare(
-                    childId = testChild_7.id,
-                    unitId = testDaycare.id,
+                    childId = child7.id,
+                    unitId = daycare.id,
                     groupId = null,
                     period = FiniteDateRange(startDate, midDate),
                 )
@@ -226,11 +234,11 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(
-                SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.DAYCARE, 10 + 9),
-                SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.DAYCARE, 10),
+                SextetReportRow(daycare.id, daycare.name, PlacementType.DAYCARE, 10 + 9),
+                SextetReportRow(daycare2.id, daycare2.name, PlacementType.DAYCARE, 10),
                 SextetReportRow(
-                    testRoundTheClockDaycare.id,
-                    testRoundTheClockDaycare.name,
+                    roundTheClockDaycare.id,
+                    roundTheClockDaycare.name,
                     PlacementType.DAYCARE,
                     15,
                 ),
@@ -251,17 +259,12 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 SextetReportRow(
-                    testDaycare.id,
-                    testDaycare.name,
+                    daycare.id,
+                    daycare.name,
                     PlacementType.PRESCHOOL_DAYCARE,
                     9 + 5 + 10,
                 ),
-                SextetReportRow(
-                    testDaycare2.id,
-                    testDaycare2.name,
-                    PlacementType.PRESCHOOL_DAYCARE,
-                    5,
-                ),
+                SextetReportRow(daycare2.id, daycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5),
             ),
             report2,
         )
@@ -279,8 +282,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 SextetReportRow(
-                    testDaycare.id,
-                    testDaycare.name,
+                    daycare.id,
+                    daycare.name,
                     PlacementType.PRESCHOOL_DAYCARE,
                     9 + 5 + 10,
                 )
@@ -299,14 +302,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
 
         assertEquals(
-            listOf(
-                SextetReportRow(
-                    testDaycare2.id,
-                    testDaycare2.name,
-                    PlacementType.PRESCHOOL_DAYCARE,
-                    5,
-                )
-            ),
+            listOf(SextetReportRow(daycare2.id, daycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5)),
             report4,
         )
 
@@ -323,17 +319,12 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 SextetReportRow(
-                    testDaycare.id,
-                    testDaycare.name,
+                    daycare.id,
+                    daycare.name,
                     PlacementType.PRESCHOOL_DAYCARE,
                     9 + 5 + 10,
                 ),
-                SextetReportRow(
-                    testDaycare2.id,
-                    testDaycare2.name,
-                    PlacementType.PRESCHOOL_DAYCARE,
-                    5,
-                ),
+                SextetReportRow(daycare2.id, daycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5),
             ),
             report5,
         )

@@ -38,8 +38,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -48,8 +49,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.math.BigDecimal
@@ -69,9 +68,11 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
 
-    private lateinit var headOfFamily: DevPerson
-    private lateinit var partner: DevPerson
-    private lateinit var child: DevPerson
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val headOfFamily = DevPerson()
+    private val partner = DevPerson()
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2020, 2, 2))
 
     private lateinit var feeDecisions: List<FinanceDecisionCitizenInfo>
     private lateinit var voucherValueDecisions: List<FinanceDecisionCitizenInfo>
@@ -79,25 +80,9 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            headOfFamily =
-                DevPerson(id = PersonId(UUID.randomUUID()), firstName = "Hof", lastName = "Person")
-            partner =
-                DevPerson(
-                    id = PersonId(UUID.randomUUID()),
-                    firstName = "Partner",
-                    lastName = "Person",
-                )
-            child =
-                DevPerson(
-                    id = PersonId(UUID.randomUUID()),
-                    firstName = "Only",
-                    lastName = "Child",
-                    dateOfBirth = LocalDate.of(2020, 2, 2),
-                )
-
             tx.insertServiceNeedOptions()
-            tx.insert(testArea)
-            tx.insert(testDaycare)
+            tx.insert(area)
+            tx.insert(daycare)
 
             tx.insert(headOfFamily, DevPersonType.ADULT)
             tx.insert(partner, DevPersonType.ADULT)
@@ -125,7 +110,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                 createFeeDecisionChildFixture(
                                     childId = child.id,
                                     dateOfBirth = child.dateOfBirth,
-                                    placementUnitId = testDaycare.id,
+                                    placementUnitId = daycare.id,
                                     placementType = PlacementType.DAYCARE,
                                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 )
@@ -172,7 +157,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         headOfFamilyId = headOfFamily.id,
                         childId = child.id,
                         dateOfBirth = child.dateOfBirth,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                     )
@@ -213,7 +198,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
-                AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.STRONG),
+                headOfFamily.user(CitizenAuthLevel.STRONG),
                 clock,
             )
 
@@ -229,7 +214,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
-                AuthenticatedUser.Citizen(partner.id, CitizenAuthLevel.STRONG),
+                partner.user(CitizenAuthLevel.STRONG),
                 clock,
             )
 
@@ -245,7 +230,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertThrows<Forbidden> {
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
-                AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.WEAK),
+                headOfFamily.user(CitizenAuthLevel.WEAK),
                 clock,
             )
         }

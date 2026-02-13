@@ -11,21 +11,18 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,38 +37,37 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     private lateinit var realtimeStaffAttendanceController: RealtimeStaffAttendanceController
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2023, 2, 1), LocalTime.of(12, 0))
-    private val unitSupervisor = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf())
-    private val groupId1 = GroupId(UUID.randomUUID())
-    private val groupId2 = GroupId(UUID.randomUUID())
-    private val supervisor = testDecisionMaker_1
-    private val staff = testDecisionMaker_2
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val supervisor = DevEmployee()
+    private val staff = DevEmployee()
+    private val unitSupervisor = AuthenticatedUser.Employee(supervisor.id, setOf())
+    private val group1 = DevDaycareGroup(daycareId = daycare.id)
+    private val group2 = DevDaycareGroup(daycareId = daycare2.id, name = "Group 2")
 
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(
-                DevDaycareGroup(id = groupId1, daycareId = testDaycare.id, name = "Testiläiset 1")
-            )
-            tx.insert(
-                DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = "Testiläiset 2")
-            )
+            tx.insert(supervisor)
+            tx.insert(staff)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(group1)
+            tx.insert(group2)
 
-            tx.insertDaycareAclRow(testDaycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(testDaycare2.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(testDaycare.id, staff.id, UserRole.STAFF)
-            tx.insertDaycareAclRow(testDaycare2.id, staff.id, UserRole.STAFF)
-            tx.syncDaycareGroupAcl(testDaycare.id, staff.id, listOf(groupId1), now)
+            tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(daycare2.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(daycare.id, staff.id, UserRole.STAFF)
+            tx.insertDaycareAclRow(daycare2.id, staff.id, UserRole.STAFF)
+            tx.syncDaycareGroupAcl(daycare.id, staff.id, listOf(group1.id), now)
 
             tx.upsertOccupancyCoefficient(
-                OccupancyCoefficientUpsert(testDaycare.id, staff.id, BigDecimal(7))
+                OccupancyCoefficientUpsert(daycare.id, staff.id, BigDecimal(7))
             )
             tx.upsertOccupancyCoefficient(
-                OccupancyCoefficientUpsert(testDaycare2.id, staff.id, BigDecimal(7))
+                OccupancyCoefficientUpsert(daycare2.id, staff.id, BigDecimal(7))
             )
         }
     }
@@ -79,26 +75,26 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Attendances can be added to multiple units`() {
         upsertDailyStaffAttendances(
-            unitId = testDaycare.id,
-            groupId = groupId1,
+            unitId = daycare.id,
+            groupId = group1.id,
             arrived = now.minusHours(3),
             departed = now.minusHours(2),
             hasStaffOccupancyEffect = true,
         )
         upsertDailyStaffAttendances(
-            unitId = testDaycare2.id,
-            groupId = groupId2,
+            unitId = daycare2.id,
+            groupId = group2.id,
             arrived = now.minusHours(1),
             departed = null,
             hasStaffOccupancyEffect = false,
         )
 
-        val unit1Attendances = getAttendances(testDaycare.id)
+        val unit1Attendances = getAttendances(daycare.id)
         assertEquals(1, unit1Attendances.staff.size)
         assertEquals(0, unit1Attendances.extraAttendances.size)
         unit1Attendances.staff.first().let { attendance ->
             assertEquals(staff.id, attendance.employeeId)
-            assertEquals(listOf(groupId1), attendance.groups)
+            assertEquals(listOf(group1.id), attendance.groups)
             assertEquals(staff.firstName, attendance.firstName)
             assertEquals(staff.lastName, attendance.lastName)
             assertEquals(7.0, attendance.currentOccupancyCoefficient.toDouble())
@@ -115,7 +111,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             }
         }
 
-        val unit2Attendances = getAttendances(testDaycare2.id)
+        val unit2Attendances = getAttendances(daycare2.id)
         assertEquals(1, unit2Attendances.staff.size)
         assertEquals(0, unit2Attendances.extraAttendances.size)
         unit2Attendances.staff.first().let { attendance ->
@@ -142,52 +138,42 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     fun attendanceCannotBeInFuture() {
         assertThrows<BadRequest> {
             upsertDailyStaffAttendances(
-                testDaycare.id,
-                groupId1,
+                daycare.id,
+                group1.id,
                 now.minusHours(3),
                 now.plusMinutes(1),
             )
         }
         assertThrows<BadRequest> {
-            upsertDailyStaffAttendances(testDaycare.id, groupId1, now.plusMinutes(3), null)
+            upsertDailyStaffAttendances(daycare.id, group1.id, now.plusMinutes(3), null)
         }
         assertThrows<BadRequest> {
-            upsertDailyStaffAttendances(
-                testDaycare.id,
-                groupId1,
-                now.plusHours(22),
-                now.plusHours(23),
-            )
+            upsertDailyStaffAttendances(daycare.id, group1.id, now.plusHours(22), now.plusHours(23))
         }
-        upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(7), now.minusHours(3))
-        upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(2), null)
+        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(7), now.minusHours(3))
+        upsertDailyStaffAttendances(daycare.id, group1.id, now.minusHours(2), null)
 
         assertThrows<BadRequest> {
             upsertDailyExternalAttendances(
-                testDaycare.id,
-                groupId1,
+                daycare.id,
+                group1.id,
                 now.minusHours(3),
                 now.plusMinutes(1),
             )
         }
         assertThrows<BadRequest> {
-            upsertDailyExternalAttendances(testDaycare.id, groupId1, now.plusMinutes(3), null)
+            upsertDailyExternalAttendances(daycare.id, group1.id, now.plusMinutes(3), null)
         }
         assertThrows<BadRequest> {
             upsertDailyExternalAttendances(
-                testDaycare.id,
-                groupId1,
+                daycare.id,
+                group1.id,
                 now.plusHours(22),
                 now.plusHours(23),
             )
         }
-        upsertDailyExternalAttendances(
-            testDaycare.id,
-            groupId1,
-            now.minusHours(7),
-            now.minusHours(3),
-        )
-        upsertDailyExternalAttendances(testDaycare.id, groupId1, now.minusHours(2), null)
+        upsertDailyExternalAttendances(daycare.id, group1.id, now.minusHours(7), now.minusHours(3))
+        upsertDailyExternalAttendances(daycare.id, group1.id, now.minusHours(2), null)
     }
 
     @Test
@@ -197,9 +183,9 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             unitSupervisor,
             MockEvakaClock(now),
             RealtimeStaffAttendanceController.StaffAttendanceBody(
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 date = now.toLocalDate(),
-                employeeId = testDecisionMaker_2.id,
+                employeeId = staff.id,
                 entries =
                     listOf(
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
@@ -214,9 +200,9 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             ),
         )
 
-        getAttendances(testDaycare.id).staff.first().let { attendance ->
+        getAttendances(daycare.id).staff.first().let { attendance ->
             assertEquals(staff.id, attendance.employeeId)
-            assertEquals(listOf(groupId1), attendance.groups)
+            assertEquals(listOf(group1.id), attendance.groups)
             assertEquals(staff.firstName, attendance.firstName)
             assertEquals(staff.lastName, attendance.lastName)
             assertEquals(7.0, attendance.currentOccupancyCoefficient.toDouble())
@@ -234,13 +220,13 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             unitSupervisor,
             MockEvakaClock(now),
             RealtimeStaffAttendanceController.StaffAttendanceBody(
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 date = now.toLocalDate(),
-                employeeId = testDecisionMaker_2.id,
+                employeeId = staff.id,
                 entries = emptyList(),
             ),
         )
-        assertEquals(0, getAttendances(testDaycare.id).staff[0].attendances.size)
+        assertEquals(0, getAttendances(daycare.id).staff[0].attendances.size)
     }
 
     @Test
@@ -252,7 +238,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 AuthenticatedUser.Employee(staff.id, setOf()),
                 MockEvakaClock(now),
                 RealtimeStaffAttendanceController.StaffAttendanceBody(
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = now.toLocalDate(),
                     employeeId = supervisor.id,
                     entries =
@@ -279,14 +265,14 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             unitSupervisor,
             MockEvakaClock(now),
             RealtimeStaffAttendanceController.StaffAttendanceBody(
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 date = now.toLocalDate(),
-                employeeId = testDecisionMaker_2.id,
+                employeeId = staff.id,
                 entries =
                     listOf(
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                             id = null,
-                            groupId = groupId1.takeIf { type.presentInGroup() },
+                            groupId = group1.id.takeIf { type.presentInGroup() },
                             arrived = now.minusHours(3),
                             departed = now.minusHours(2),
                             type = type,
@@ -322,7 +308,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             RealtimeStaffAttendanceController.StaffAttendanceBody(
                 unitId = unitId,
                 date = now.toLocalDate(),
-                employeeId = testDecisionMaker_2.id,
+                employeeId = staff.id,
                 entries =
                     listOf(
                         RealtimeStaffAttendanceController.StaffAttendanceUpsert(

@@ -15,27 +15,22 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.placement.cancelPlacement
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -48,36 +43,48 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val adult =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+
     val originalRange = dateRange(10, 20)
 
     val now = MockEvakaClock(2023, 1, 1, 0, 0)
-    val admin = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
-    val placementId = PlacementId(UUID.randomUUID())
+    val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+    private val placement =
+        DevPlacement(
+            childId = child1.id,
+            unitId = daycare.id,
+            startDate = originalRange.start,
+            endDate = originalRange.end,
+        )
     lateinit var sentDecision: FeeDecision
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
-            tx.insert(
-                DevPlacement(
-                    id = placementId,
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = originalRange.start,
-                    endDate = originalRange.end,
-                )
-            )
+            tx.insert(placement)
             tx.insert(
                 DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = testAdult_1.id,
+                    childId = child1.id,
+                    headOfChildId = adult.id,
                     startDate = originalRange.start.minusYears(1),
                     endDate = originalRange.end.plusYears(1),
                 )
@@ -103,11 +110,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves earlier`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(5),
                 day(20),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -128,11 +135,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves later`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(15),
                 day(20),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -153,11 +160,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `end date moves earlier`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(10),
                 day(15),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -173,11 +180,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `end date moves later`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(10),
                 day(25),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -198,11 +205,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves earlier and end date moves earlier`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(5),
                 day(15),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -223,11 +230,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves earlier and end date moves later`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(5),
                 day(25),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -249,11 +256,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves later and end date moves earlier`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(15),
                 day(15),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -274,11 +281,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `start date moves later and end date moves later`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(15),
                 day(25),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -299,17 +306,16 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `break in placement on days 14-15`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(10),
                 day(13),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
             tx.insert(
                 DevPlacement(
-                    id = PlacementId(UUID.randomUUID()),
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = day(16),
                     endDate = originalRange.end,
                 )
@@ -336,7 +342,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             tx.cancelPlacement(
                 now.now(),
                 AuthenticatedUser.SystemInternalUser.evakaUserId,
-                placementId,
+                placement.id,
             )
         }
         generate()
@@ -349,11 +355,11 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `end date moves later then draft is ignored`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(
-                placementId,
+                placement.id,
                 day(10),
                 day(25),
                 now.now(),
-                testDecisionMaker_2.evakaUserId,
+                employee.evakaUserId,
             )
         }
         generate()
@@ -371,8 +377,8 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             db.transaction { tx ->
                 tx.insert(
                     DevParentship(
-                        childId = testChild_2.id,
-                        headOfChildId = testAdult_1.id,
+                        childId = child2.id,
+                        headOfChildId = adult.id,
                         startDate = originalRange.start.minusYears(1),
                         endDate = originalRange.end.plusYears(1),
                     )
@@ -395,12 +401,12 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         db.transaction { tx ->
             tx.insert(
                 DevIncome(
-                    personId = testAdult_1.id,
+                    personId = adult.id,
                     validFrom = originalRange.start,
                     validTo = originalRange.end,
                     data = emptyMap(),
                     effect = IncomeEffect.INCOMPLETE,
-                    modifiedBy = EvakaUserId(testDecisionMaker_2.id.raw),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }
@@ -456,7 +462,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     }
 
     private fun generate() {
-        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, adult.id) }
     }
 
     private fun sendAllFeeDecisions() {

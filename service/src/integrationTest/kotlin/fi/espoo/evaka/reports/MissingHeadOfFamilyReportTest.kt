@@ -7,9 +7,9 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pis.deleteFosterParentRelationship
 import fi.espoo.evaka.pis.deleteParentship
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevFridgeChild
@@ -21,14 +21,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -39,26 +32,26 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     private lateinit var missingHeadOfFamilyReportController: MissingHeadOfFamilyReportController
 
     private val startDate: LocalDate = LocalDate.now()
-    private val employeeId = EmployeeId(UUID.randomUUID())
-    private val user = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
     private val clock = MockEvakaClock(2024, 1, 3, 3, 7)
+
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val adult = DevPerson()
+    private val child1 = DevPerson(firstName = "Ricky", lastName = "Doe")
+    private val child2 = DevPerson(firstName = "Micky", lastName = "Doe")
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
-            tx.insert(
-                DevEmployee(
-                    id = employeeId,
-                    firstName = "Test",
-                    lastName = "Employee",
-                    roles = setOf(UserRole.ADMIN),
-                )
-            )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(employee)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
         }
     }
 
@@ -72,16 +65,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
                 )
@@ -114,16 +107,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
                 )
@@ -160,16 +153,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
                 )
@@ -202,16 +195,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
                 )
@@ -248,16 +241,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate.plusDays(6),
                     endDate = startDate.plusDays(9),
                 )
@@ -329,8 +322,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 headPeriods.map { (start, end) ->
                     tx.insert(
                         DevFridgeChild(
-                            childId = testChild_1.id,
-                            headOfChild = testAdult_1.id,
+                            childId = child1.id,
+                            headOfChild = adult.id,
                             startDate = startDate.plusDays(start.toLong()),
                             endDate = startDate.plusDays(end.toLong()),
                         )
@@ -342,15 +335,15 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 fosterPeriods.map { (start, end) ->
                     tx.insert(
                         DevFosterParent(
-                            childId = testChild_1.id,
-                            parentId = testAdult_1.id,
+                            childId = child1.id,
+                            parentId = adult.id,
                             validDuring =
                                 DateRange(
                                     startDate.plusDays(start.toLong()),
                                     startDate.plusDays(end.toLong()),
                                 ),
                             modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId,
+                            modifiedBy = employee.evakaUserId,
                         )
                     )
                 }
@@ -360,7 +353,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             else
                 listOf(
                     toReportRow(
-                        testChild_1,
+                        child1,
                         expected.map { (start, end) ->
                             FiniteDateRange(
                                 startDate.plusDays(start.toLong()),
@@ -382,8 +375,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
                 )
@@ -391,7 +384,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         }
 
         assertEquals(
-            listOf(toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate)))),
+            listOf(toReportRow(child1, listOf(FiniteDateRange(startDate, startDate)))),
             getReport(startDate, startDate),
         )
     }
@@ -401,8 +394,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
                 )
@@ -418,18 +411,18 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
                 )
             )
             it.insert(
                 DevFridgeChild(
-                    childId = testChild_1.id,
+                    childId = child1.id,
                     startDate = startDate,
                     endDate = startDate,
-                    headOfChild = testAdult_1.id,
+                    headOfChild = adult.id,
                 )
             )
         }
@@ -442,16 +435,16 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = startDate,
                 )
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare2.id,
+                    childId = child2.id,
+                    unitId = daycare2.id,
                     startDate = startDate,
                     endDate = startDate,
                 )
@@ -460,8 +453,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
 
         assertEquals(
             listOf(
-                    toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate))),
-                    toReportRow(testChild_2, listOf(FiniteDateRange(startDate, startDate))),
+                    toReportRow(child1, listOf(FiniteDateRange(startDate, startDate))),
+                    toReportRow(child2, listOf(FiniteDateRange(startDate, startDate))),
                 )
                 .sortedWith(compareBy({ it.lastName }, { it.firstName })),
             getReport(startDate, startDate),
@@ -474,7 +467,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     ): List<MissingHeadOfFamilyReportRow> =
         missingHeadOfFamilyReportController.getMissingHeadOfFamilyReport(
             dbInstance(),
-            user,
+            employee.user,
             RealEvakaClock(),
             from,
             to,

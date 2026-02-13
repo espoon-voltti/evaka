@@ -9,15 +9,13 @@ import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -32,6 +30,25 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     private val preschoolTerm2019 =
         FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
+
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, ophOrganizerOid = defaultMunicipalOrganizerOid)
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val child1 =
+        DevPerson(
+            ssn = "010617A123U",
+            firstName = "Ricky",
+            lastName = "Doe",
+            dateOfBirth = LocalDate.of(2017, 6, 1),
+        )
+    private val child2 =
+        DevPerson(
+            ssn = "010316A1235",
+            firstName = "Micky",
+            lastName = "Doe",
+            dateOfBirth = LocalDate.of(2016, 3, 1),
+        )
 
     @BeforeAll
     fun initDependencies() {
@@ -50,11 +67,12 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
-            tx.setUnitOids()
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.setUnitOid(daycare.id, "1.2.246.562.10.1111111111")
+            tx.setUnitOid(daycare2.id, "1.2.246.562.10.2222222222")
         }
         koskiEndpoint.clearData()
     }
@@ -64,8 +82,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PRESCHOOL,
@@ -163,8 +181,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.of(2018, 8, 1),
                     endDate = LocalDate.of(2018, 12, 31),
                     type = PlacementType.PRESCHOOL,
@@ -172,8 +190,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             )
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
+                    childId = child1.id,
+                    unitId = daycare2.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 5, 31),
                     type = PlacementType.PRESCHOOL,
@@ -186,8 +204,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read { it.getStoredResults() }
                 .let { studyRights ->
                     Pair(
-                        studyRights.single { it.unitId == testDaycare.id },
-                        studyRights.single { it.unitId == testDaycare2.id },
+                        studyRights.single { it.unitId == daycare.id },
+                        studyRights.single { it.unitId == daycare2.id },
                     )
                 }
 
@@ -348,22 +366,22 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.transaction { tx ->
             listOf(
                     DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
+                        childId = child2.id,
+                        unitId = daycare.id,
                         startDate = LocalDate.of(2018, 8, 1),
                         endDate = LocalDate.of(2019, 5, 31),
                         type = PlacementType.PRESCHOOL,
                     ),
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = LocalDate.of(2018, 8, 2),
                         endDate = LocalDate.of(2018, 12, 31),
                         type = PlacementType.PRESCHOOL,
                     ),
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare2.id,
+                        childId = child1.id,
+                        unitId = daycare2.id,
                         startDate = LocalDate.of(2019, 1, 1),
                         endDate = LocalDate.of(2019, 5, 31),
                         type = PlacementType.PRESCHOOL,
@@ -377,13 +395,9 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read { it.getStoredResults() }
                 .let { studyRights ->
                     Triple(
-                        studyRights.single { it.childId == testChild_2.id },
-                        studyRights.single {
-                            it.childId == testChild_1.id && it.unitId == testDaycare.id
-                        },
-                        studyRights.single {
-                            it.childId == testChild_1.id && it.unitId == testDaycare2.id
-                        },
+                        studyRights.single { it.childId == child2.id },
+                        studyRights.single { it.childId == child1.id && it.unitId == daycare.id },
+                        studyRights.single { it.childId == child1.id && it.unitId == daycare2.id },
                     )
                 }
 
@@ -622,8 +636,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
                     type = PlacementType.PREPARATORY,
@@ -766,8 +780,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction {
                 it.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = preschoolTerm2019.start,
                         endDate = preschoolTerm2019.end,
                         type = PlacementType.PRESCHOOL,

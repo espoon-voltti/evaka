@@ -15,13 +15,12 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -33,16 +32,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val mapper = defaultJsonMapperBuilder().build()
     private val incomeTypesProvider = EspooIncomeTypesProvider()
     private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
+    private val adult = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.ADULT) }
+        db.transaction { tx -> tx.insert(adult, DevPersonType.ADULT) }
     }
 
-    private val personId = testAdult_1.id
+    private val personId = adult.id
     private val user = AuthenticatedUser.SystemInternalUser
     private val testIncomeData =
         mapOf(

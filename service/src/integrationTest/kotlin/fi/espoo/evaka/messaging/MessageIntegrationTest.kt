@@ -4,9 +4,12 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.notes.getApplicationNotes
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.CareType
@@ -20,8 +23,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -31,12 +32,20 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.*
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.syncDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.snDefaultFiveYearOldsDaycare
+import fi.espoo.evaka.snDefaultFiveYearOldsPartDayDaycare
+import fi.espoo.evaka.snDefaultPartDayDaycare
+import fi.espoo.evaka.snDefaultPreschool
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -64,18 +73,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val clock = RealEvakaClock()
 
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+    private val daycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Test Daycare 2",
+            type = setOf(CareType.FAMILY),
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+        )
     private val groupId1 = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
+    private val devEmployee1 = DevEmployee()
     private val employee1 =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.UNIT_SUPERVISOR),
-        )
+        AuthenticatedUser.Employee(id = devEmployee1.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val devEmployee2 = DevEmployee(firstName = "Foo", lastName = "Supervisor")
     private val employee2 =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.UNIT_SUPERVISOR),
-        )
+        AuthenticatedUser.Employee(id = devEmployee2.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val serviceWorker =
         DevEmployee(
             firstName = "Service",
@@ -94,13 +109,29 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             lastName = "Admin",
             roles = setOf(UserRole.FINANCE_ADMIN),
         )
-    private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
-    private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
-    private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
-    private val person4 = AuthenticatedUser.Citizen(id = testAdult_4.id, CitizenAuthLevel.STRONG)
-    private val person5 = AuthenticatedUser.Citizen(id = testAdult_5.id, CitizenAuthLevel.STRONG)
-    private val person6 = AuthenticatedUser.Citizen(id = testAdult_6.id, CitizenAuthLevel.STRONG)
-    private val person7 = AuthenticatedUser.Citizen(id = testAdult_7.id, CitizenAuthLevel.STRONG)
+    private val adult1 = DevPerson(firstName = "John", lastName = "Doe", ssn = "010180-1232")
+    private val adult2 = DevPerson(firstName = "Joan", lastName = "Doe", ssn = "010279-123L")
+    private val adult3 = DevPerson(firstName = "Mark", lastName = "Foo")
+    private val adult4 = DevPerson(firstName = "Dork", lastName = "Aman")
+    private val adult5 = DevPerson(firstName = "Johannes", lastName = "Karhula")
+    private val adult6 = DevPerson(firstName = "Ville", lastName = "Vilkas")
+    private val adult7 = DevPerson(firstName = "Tepi", lastName = "Turvakiellollinen")
+    private val person1 = AuthenticatedUser.Citizen(id = adult1.id, CitizenAuthLevel.STRONG)
+    private val person2 = AuthenticatedUser.Citizen(id = adult2.id, CitizenAuthLevel.STRONG)
+    private val person3 = AuthenticatedUser.Citizen(id = adult3.id, CitizenAuthLevel.STRONG)
+    private val person4 = AuthenticatedUser.Citizen(id = adult4.id, CitizenAuthLevel.STRONG)
+    private val person5 = AuthenticatedUser.Citizen(id = adult5.id, CitizenAuthLevel.STRONG)
+    private val person6 = AuthenticatedUser.Citizen(id = adult6.id, CitizenAuthLevel.STRONG)
+    private val person7 = AuthenticatedUser.Citizen(id = adult7.id, CitizenAuthLevel.STRONG)
+    // DOBs matter for yearsOfBirth filter test
+    private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 = DevPerson(dateOfBirth = LocalDate.of(2018, 9, 1))
+    private val child4 = DevPerson(dateOfBirth = LocalDate.of(2019, 3, 2))
+    private val child5 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child6 = DevPerson(dateOfBirth = LocalDate.of(2018, 11, 13))
+    private val child7 = DevPerson(dateOfBirth = LocalDate.of(2018, 7, 28))
+    private val child8 = DevPerson(dateOfBirth = LocalDate.of(2013, 3, 10))
     private val placementStart = LocalDate.of(2022, 5, 14)
     private val placementEnd = placementStart.plusMonths(1)
     private val sendTime = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 11))
@@ -124,30 +155,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(
-                DevDaycare(
-                    areaId = testArea.id,
-                    id = testDaycare.id,
-                    name = testDaycare.name,
-                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                )
-            )
-            tx.insert(
-                DevDaycare(
-                    areaId = testArea.id,
-                    id = testDaycare2.id,
-                    name = testDaycare2.name,
-                    type = setOf(CareType.FAMILY),
-                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-                )
-            )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
 
             fun insertGroup(id: GroupId, name: String? = null): MessageAccountId {
                 tx.insert(
                     DevDaycareGroup(
                         id = id,
-                        daycareId = testDaycare.id,
+                        daycareId = daycare.id,
                         startDate = placementStart,
                         name = name ?: "Testiläiset",
                     )
@@ -161,23 +177,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val id = tx.insert(person, DevPersonType.ADULT)
                 return tx.getCitizenMessageAccount(id)
             }
-            person1Account = insertPerson(testAdult_1)
-            person2Account = insertPerson(testAdult_2)
-            person3Account = insertPerson(testAdult_3)
-            person4Account = insertPerson(testAdult_4)
-            person5Account = insertPerson(testAdult_5)
-            person6Account = insertPerson(testAdult_6)
-            person7Account = insertPerson(testAdult_7)
+            person1Account = insertPerson(adult1)
+            person2Account = insertPerson(adult2)
+            person3Account = insertPerson(adult3)
+            person4Account = insertPerson(adult4)
+            person5Account = insertPerson(adult5)
+            person6Account = insertPerson(adult6)
+            person7Account = insertPerson(adult7)
 
             val fridgeHeadId = person4.id
 
             tx.insertServiceNeedOptions()
-            tx.insert(
-                DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
-            )
+            tx.insert(devEmployee1)
 
             // person 1 and 2 are guardians of child 1
-            testChild_1.let {
+            child1.let {
                 insertChild(tx, it, groupId1, optionId = snDefaultPartDayDaycare.id)
                 tx.insertGuardian(person1.id, it.id)
                 tx.insertGuardian(person2.id, it.id)
@@ -192,13 +206,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             // person 2 and 3 are guardian of child 3
-            testChild_3.let {
+            child3.let {
                 insertChild(tx, it, groupId1, optionId = snDefaultFiveYearOldsDaycare.id)
                 tx.insertGuardian(person2.id, it.id)
                 tx.insertGuardian(person3.id, it.id)
             }
 
-            testChild_4.let {
+            child4.let {
                 insertChild(
                     tx,
                     it,
@@ -209,7 +223,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertGuardian(person4.id, it.id)
             }
 
-            testChild_5.let {
+            child5.let {
                 insertChild(tx, it, groupId1)
                 tx.insert(
                     DevParentship(
@@ -222,19 +236,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             // person 3 and 5 are guardian of child 6
-            testChild_6.let {
+            child6.let {
                 insertChild(tx, it, groupId1)
                 tx.insertGuardian(person3.id, it.id)
                 tx.insertGuardian(person5.id, it.id)
             }
 
-            // person 3 and 5 are guardian of child 6
-            testChild_8.let {
+            // person 6 and 7 are guardian of child 8
+            child8.let {
                 insertChild(
                     tx,
                     it,
                     groupId2,
-                    daycareId = testDaycare2.id,
+                    daycareId = daycare2.id,
                     optionId = snDefaultPreschool.id,
                     shiftCare = ShiftCareType.INTERMITTENT,
                 )
@@ -243,17 +257,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
-            tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
             tx.syncDaycareGroupAcl(
-                testDaycare.id,
+                daycare.id,
                 employee1.id,
                 listOf(groupId1, groupId2),
                 clock.now(),
             )
 
-            tx.insert(DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor"))
+            tx.insert(devEmployee2)
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
-            tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(daycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
 
             tx.insert(serviceWorker)
             serviceWorkerAccount = tx.createServiceWorkerMessageAccount()
@@ -274,7 +288,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -296,8 +310,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     sender = employee1Account,
                     recipients =
                         listOf(
-                            MessageRecipient.Child(testChild_1.id),
-                            MessageRecipient.Child(testChild_2.id),
+                            MessageRecipient.Child(child1.id),
+                            MessageRecipient.Child(child2.id),
                         ),
                     user = employee1,
                     sensitive = true,
@@ -313,7 +327,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = employee1Account,
-                    recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                    recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                     user = employee1,
                     sensitive = true,
                 )
@@ -328,7 +342,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = group1Account,
-                    recipients = listOf(MessageRecipient.Child(testAdult_1.id)),
+                    recipients = listOf(MessageRecipient.Child(adult1.id)),
                     user = employee1,
                     sensitive = true,
                 )
@@ -342,7 +356,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content that should be hidden",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -366,7 +380,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content that should be visible",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -392,11 +406,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.getCitizenMessageAccount(fosterParent.id)
                 tx.insert(
                     DevFosterParent(
-                        childId = testChild_1.id,
+                        childId = child1.id,
                         parentId = fosterParent.id,
                         validDuring = DateRange(placementStart, placementEnd),
                         modifiedAt = HelsinkiDateTime.now(),
-                        modifiedBy = EvakaUserId(employee1.id.raw),
+                        modifiedBy = devEmployee1.evakaUserId,
                     )
                 )
             }
@@ -406,7 +420,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -421,8 +435,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, person2Threads.size)
             assertEquals(1, fosterParentThreads.size)
 
-            val nonGuardianUser =
-                AuthenticatedUser.Citizen(id = testAdult_5.id, CitizenAuthLevel.STRONG)
+            val nonGuardianUser = AuthenticatedUser.Citizen(id = adult5.id, CitizenAuthLevel.STRONG)
             val nonGuardianThreads = getAllCitizenMessageThreads(nonGuardianUser)
             assertEquals(0, nonGuardianThreads.size)
         }
@@ -434,7 +447,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -456,7 +469,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -479,7 +492,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content during active placement",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
                 now = messageTime,
@@ -504,7 +517,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content during active placement",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
                 now = messageTime,
@@ -537,7 +550,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevPlacement(
                             childId = childWithEndedPlacement.id,
-                            unitId = testDaycare.id,
+                            unitId = daycare.id,
                             startDate = endedPlacementStart,
                             endDate = endedPlacementEnd,
                         )
@@ -589,7 +602,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -624,7 +637,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -657,7 +670,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -703,7 +716,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Sensitive content",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 sensitive = true,
             )
@@ -729,7 +742,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         message = "Sensitive content",
                         messageType = MessageType.MESSAGE,
                         sender = group1Account,
-                        recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                        recipients = listOf(MessageRecipient.Child(child1.id)),
                         user = employee1,
                         sensitive = true,
                     )
@@ -749,7 +762,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         message = "Sensitive content",
                         messageType = MessageType.MESSAGE,
                         sender = financeAccount,
-                        recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                        recipients = listOf(MessageRecipient.Child(child1.id)),
                         user = financeAdmin.user,
                         sensitive = true,
                     )
@@ -769,7 +782,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         message = "Sensitive content",
                         messageType = MessageType.MESSAGE,
                         sender = municipalAccount,
-                        recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                        recipients = listOf(MessageRecipient.Child(child1.id)),
                         user = messager.user,
                         sensitive = true,
                     )
@@ -789,7 +802,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         message = "Sensitive content",
                         messageType = MessageType.MESSAGE,
                         sender = serviceWorkerAccount,
-                        recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                        recipients = listOf(MessageRecipient.Child(child1.id)),
                         user = serviceWorker.user,
                         sensitive = true,
                     )
@@ -809,7 +822,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val groupId3 = GroupId(UUID.randomUUID())
             val group3Account =
                 db.transaction { tx ->
-                    testChild_2.let {
+                    child2.let {
                         insertChild(tx, it, groupId2)
                         tx.insertGuardian(person2.id, it.id)
                     }
@@ -817,12 +830,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroup(
                             id = groupId3,
-                            daycareId = testDaycare2.id,
+                            daycareId = daycare2.id,
                             startDate = placementStart,
                         )
                     )
-                    testChild_7.let {
-                        insertChild(tx, it, groupId3, testDaycare2.id)
+                    child7.let {
+                        insertChild(tx, it, groupId3, daycare2.id)
                         tx.insertGuardian(person2.id, it.id)
                     }
 
@@ -834,7 +847,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person2,
                 title = "title",
                 message = "content",
-                children = listOf(testChild_1.id, testChild_3.id),
+                children = listOf(child1.id, child3.id),
                 recipients = listOf(group1Account),
             )
 
@@ -843,7 +856,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person2,
                 title = "title",
                 message = "content",
-                children = listOf(testChild_1.id, testChild_2.id),
+                children = listOf(child1.id, child2.id),
                 recipients = listOf(group1Account, group2Account),
             )
 
@@ -853,7 +866,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "title",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_3.id),
+                    children = listOf(child1.id, child3.id),
                     recipients = listOf(group1Account, group2Account),
                 )
             }
@@ -864,7 +877,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "title",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_7.id),
+                    children = listOf(child1.id, child7.id),
                     recipients = listOf(group1Account, group3Account),
                 )
             }
@@ -878,7 +891,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycareGroup(
                             id = groupId3,
-                            daycareId = testDaycare.id,
+                            daycareId = daycare.id,
                             startDate = placementStart,
                             name = "Group 3",
                         )
@@ -887,7 +900,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
 
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -898,7 +911,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "title",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_2.id),
+                    children = listOf(child1.id, child2.id),
                     recipients = listOf(group3Account),
                 )
             }
@@ -907,7 +920,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen can send message to employee when ALL selected children are related to that employee`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -917,7 +930,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person2,
                 title = "title",
                 message = "content",
-                children = listOf(testChild_1.id, testChild_2.id),
+                children = listOf(child1.id, child2.id),
                 recipients = listOf(employee1Account),
             )
 
@@ -930,11 +943,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen cannot send message to employee when only SOME selected children are related to that employee`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
-                tx.insertGuardian(person2.id, testChild_8.id)
+                tx.insertGuardian(person2.id, child8.id)
             }
 
             assertThrows<BadRequest> {
@@ -942,7 +955,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "title",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_8.id),
+                    children = listOf(child1.id, child8.id),
                     recipients = listOf(employee1Account),
                 )
             }
@@ -951,7 +964,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen can send message with multiple children when all recipients are valid for ALL children`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -961,7 +974,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person2,
                 title = "title",
                 message = "content",
-                children = listOf(testChild_1.id, testChild_2.id),
+                children = listOf(child1.id, child2.id),
                 recipients = listOf(employee1Account, group1Account),
             )
 
@@ -974,7 +987,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen can send message to groups when all selected children are in same unit`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -984,7 +997,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person2,
                 title = "title",
                 message = "content",
-                children = listOf(testChild_1.id, testChild_2.id),
+                children = listOf(child1.id, child2.id),
                 recipients = listOf(group1Account, group2Account),
             )
 
@@ -997,7 +1010,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen can reply to thread with multiple children`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -1008,7 +1021,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "Message about both children",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_2.id),
+                    children = listOf(child1.id, child2.id),
                     recipients = listOf(employee1Account),
                 )
 
@@ -1016,7 +1029,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, threads.size)
             assertEquals(threadId, threads[0].id)
             assertEquals(
-                setOf(testChild_1.id, testChild_2.id),
+                setOf(child1.id, child2.id),
                 threads[0].children.map { it.childId }.toSet(),
             )
 
@@ -1034,7 +1047,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals("reply content", threadsAfterReply[0].messages[1].content)
             // Verify children association is preserved after reply
             assertEquals(
-                setOf(testChild_1.id, testChild_2.id),
+                setOf(child1.id, child2.id),
                 threadsAfterReply[0].children.map { it.childId }.toSet(),
             )
         }
@@ -1044,13 +1057,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // Create child 2 with placement ending early
             val child2PlacementEnd = placementStart.plusDays(10)
             db.transaction { tx ->
-                tx.insert(testChild_2, DevPersonType.CHILD)
-                tx.insertGuardian(person2.id, testChild_2.id)
+                tx.insert(child2, DevPersonType.CHILD)
+                tx.insertGuardian(person2.id, child2.id)
                 val placementId =
                     tx.insert(
                         DevPlacement(
-                            childId = testChild_2.id,
-                            unitId = testDaycare.id,
+                            childId = child2.id,
+                            unitId = daycare.id,
                             startDate = placementStart,
                             endDate = child2PlacementEnd,
                         )
@@ -1084,7 +1097,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = person2,
                     title = "Message about both children",
                     message = "content",
-                    children = listOf(testChild_1.id, testChild_2.id),
+                    children = listOf(child1.id, child2.id),
                     recipients = listOf(employee1Account),
                     now = HelsinkiDateTime.of(placementStart.plusDays(5), LocalTime.NOON),
                 )
@@ -1099,7 +1112,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(threadId, threads[0].id)
             // Verify both children are still associated with the thread
             assertEquals(
-                setOf(testChild_1.id, testChild_2.id),
+                setOf(child1.id, child2.id),
                 threads[0].children.map { it.childId }.toSet(),
             )
             // Verify the message content is accessible
@@ -1186,7 +1199,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen cannot reply to a message if the related placement has ended`() {
             db.transaction { tx ->
-                testChild_2.let {
+                child2.let {
                     insertChild(tx, it, groupId2)
                     tx.insertGuardian(person2.id, it.id)
                 }
@@ -1196,7 +1209,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_2.id)),
+                recipients = listOf(MessageRecipient.Child(child2.id)),
                 user = employee1,
                 now = HelsinkiDateTime.of(placementEnd, LocalTime.NOON),
             )
@@ -1228,10 +1241,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId =
                 db.transaction { tx ->
                     tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
+                        childId = child1.id,
+                        guardianId = adult1.id,
                         type = ApplicationType.DAYCARE,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
+                                preferredStartDate = placementStart,
+                            ),
                     )
                 }
 
@@ -1243,7 +1263,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = messageContent,
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                    recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = applicationId,
                 )
@@ -1272,10 +1292,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId =
                 db.transaction { tx ->
                     tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
+                        childId = child1.id,
+                        guardianId = adult1.id,
                         type = ApplicationType.DAYCARE,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
+                                preferredStartDate = placementStart,
+                            ),
                     )
                 }
 
@@ -1286,7 +1313,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = messageContent,
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = serviceWorker.user,
                 relatedApplicationId = applicationId,
             )
@@ -1332,10 +1359,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId =
                 db.transaction { tx ->
                     tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
+                        childId = child1.id,
+                        guardianId = adult1.id,
                         type = ApplicationType.DAYCARE,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
+                                preferredStartDate = placementStart,
+                            ),
                     )
                 }
 
@@ -1344,7 +1378,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Tähän viestiin pitäisi pystyä vastaamaan",
                 messageType = MessageType.MESSAGE,
                 sender = serviceWorkerAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = serviceWorker.user,
                 relatedApplicationId = applicationId,
                 initialFolder = folder1.id,
@@ -1434,7 +1468,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                    recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = null,
                 )
@@ -1449,7 +1483,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
@@ -1464,7 +1498,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Area(testArea.id)),
+                    recipients = listOf(MessageRecipient.Area(area.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
@@ -1479,7 +1513,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
+                    recipients = listOf(MessageRecipient.Unit(daycare.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = ApplicationId(UUID.randomUUID()),
                 )
@@ -1506,10 +1540,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId =
                 db.transaction { tx ->
                     tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
+                        childId = child1.id,
+                        guardianId = adult1.id,
                         type = ApplicationType.DAYCARE,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
+                                preferredStartDate = placementStart,
+                            ),
                     )
                 }
 
@@ -1519,7 +1560,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = employee1Account,
-                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
                     user = employee1,
                     relatedApplicationId = applicationId,
                 )
@@ -1531,10 +1572,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId =
                 db.transaction { tx ->
                     tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
+                        childId = child1.id,
+                        guardianId = adult1.id,
                         type = ApplicationType.DAYCARE,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                        document =
+                            DaycareFormV0(
+                                type = ApplicationType.DAYCARE,
+                                child = Child(dateOfBirth = null),
+                                guardian = Adult(),
+                                apply = Apply(preferredUnits = listOf(daycare.id)),
+                                preferredStartDate = placementStart,
+                            ),
                     )
                 }
 
@@ -1545,7 +1593,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = serviceWorkerAccount,
-                    recipients = listOf(MessageRecipient.Citizen(testAdult_2.id)),
+                    recipients = listOf(MessageRecipient.Citizen(adult2.id)),
                     user = serviceWorker.user,
                     relatedApplicationId = applicationId,
                 )
@@ -1564,7 +1612,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id, false)),
+                recipients = listOf(MessageRecipient.Child(child1.id, false)),
                 user = employee1,
                 now = sendTime,
             )
@@ -1724,9 +1772,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val content = "This message is sent to several participants and split to threads"
             val recipients =
                 listOf(
-                    MessageRecipient.Child(testChild_1.id),
-                    MessageRecipient.Child(testChild_4.id),
-                    MessageRecipient.Child(testChild_6.id),
+                    MessageRecipient.Child(child1.id),
+                    MessageRecipient.Child(child4.id),
+                    MessageRecipient.Child(child6.id),
                 )
             val recipientNames = listOf("Hippiäiset", "Jani")
             postNewThread(
@@ -1899,7 +1947,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         MessageRecipient.Child(newChild1.id),
                         MessageRecipient.Child(newChild2.id),
                     ),
-                recipientNames = listOf(testAdult_1.firstName, testAdult_2.firstName),
+                recipientNames = listOf(adult1.firstName, adult2.firstName),
                 user = employee1,
             )
 
@@ -1965,8 +2013,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = employee1Account,
                 recipients =
                     listOf(MessageRecipient.Child(child1.id), MessageRecipient.Child(child2.id)),
-                recipientNames =
-                    listOf(testAdult_1.firstName, testAdult_2.firstName, testAdult_3.firstName),
+                recipientNames = listOf(adult1.firstName, adult2.firstName, adult3.firstName),
                 user = employee1,
             )
 
@@ -2021,11 +2068,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = municipalAccount,
                 recipients =
                     listOf(
-                        MessageRecipient.Child(testChild_1.id),
-                        MessageRecipient.Child(testChild_3.id),
-                        MessageRecipient.Child(testChild_4.id),
-                        MessageRecipient.Child(testChild_6.id),
-                        MessageRecipient.Child(testChild_8.id),
+                        MessageRecipient.Child(child1.id),
+                        MessageRecipient.Child(child3.id),
+                        MessageRecipient.Child(child4.id),
+                        MessageRecipient.Child(child6.id),
+                        MessageRecipient.Child(child8.id),
                     ),
                 filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
                 user = messager.user,
@@ -2050,11 +2097,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = municipalAccount,
                 recipients =
                     listOf(
-                        MessageRecipient.Child(testChild_1.id),
-                        MessageRecipient.Child(testChild_3.id),
-                        MessageRecipient.Child(testChild_4.id),
-                        MessageRecipient.Child(testChild_6.id),
-                        MessageRecipient.Child(testChild_8.id),
+                        MessageRecipient.Child(child1.id),
+                        MessageRecipient.Child(child3.id),
+                        MessageRecipient.Child(child4.id),
+                        MessageRecipient.Child(child6.id),
+                        MessageRecipient.Child(child8.id),
                     ),
                 filters =
                     MessageController.PostMessageFilters(
@@ -2083,11 +2130,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = municipalAccount,
                 recipients =
                     listOf(
-                        MessageRecipient.Child(testChild_1.id),
-                        MessageRecipient.Child(testChild_3.id),
-                        MessageRecipient.Child(testChild_4.id),
-                        MessageRecipient.Child(testChild_6.id),
-                        MessageRecipient.Child(testChild_8.id),
+                        MessageRecipient.Child(child1.id),
+                        MessageRecipient.Child(child3.id),
+                        MessageRecipient.Child(child4.id),
+                        MessageRecipient.Child(child6.id),
+                        MessageRecipient.Child(child8.id),
                     ),
                 filters = MessageController.PostMessageFilters(familyDaycare = true),
                 user = messager.user,
@@ -2111,8 +2158,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     sender = municipalAccount,
                     recipients =
                         listOf(
-                            MessageRecipient.Child(testChild_1.id),
-                            MessageRecipient.Child(testChild_3.id),
+                            MessageRecipient.Child(child1.id),
+                            MessageRecipient.Child(child3.id),
                         ),
                     filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018)),
                 )
@@ -2126,10 +2173,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = employee1,
                     sender = employee1Account,
                     recipients =
-                        listOf(
-                            MessageRecipient.Child(testChild_1.id),
-                            MessageRecipient.Child(testChild_3.id),
-                        ),
+                        listOf(MessageRecipient.Child(child1.id), MessageRecipient.Child(child3.id)),
                 )
             assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 3), response)
         }
@@ -2141,9 +2185,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val staffUser =
                 db.transaction { tx ->
                     tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
                     tx.syncDaycareGroupAcl(
-                        testDaycare.id,
+                        daycare.id,
                         staffEmployee.id,
                         listOf(groupId1),
                         readTime.minusMonths(1),
@@ -2186,9 +2230,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val staffUser =
                 db.transaction { tx ->
                     tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
                     tx.syncDaycareGroupAcl(
-                        testDaycare.id,
+                        daycare.id,
                         staffEmployee.id,
                         listOf(groupId1),
                         readTime.minusMonths(1),
@@ -2196,19 +2240,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     staffEmployee.user
                 }
 
-            val allRecipientNames =
-                listOf(
-                    "Test Daycare" // Unit name
-                )
-
             // Send bulletin to unit
             postNewThread(
                 title = "Bulletin to whole unit",
                 message = "This bulletin is sent to whole unit",
                 messageType = MessageType.BULLETIN,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
-                recipientNames = allRecipientNames,
+                recipients = listOf(MessageRecipient.Unit(daycare.id)),
+                recipientNames = listOf(daycare.name),
                 user = employee1,
                 now = sendTime,
             )
@@ -2219,7 +2258,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val staffCopy = staffCopies.first()
 
             // Staff should only see unit name in recipientNames
-            assertEquals(listOf("Test Daycare"), staffCopy.recipientNames)
+            assertEquals(listOf(daycare.name), staffCopy.recipientNames)
         }
 
         @Test
@@ -2229,9 +2268,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val staffUser =
                 db.transaction { tx ->
                     tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(testDaycare.id, staffEmployee.id, UserRole.STAFF)
+                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
                     tx.syncDaycareGroupAcl(
-                        testDaycare.id,
+                        daycare.id,
                         staffEmployee.id,
                         listOf(groupId1),
                         readTime.minusMonths(1),
@@ -2239,19 +2278,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     staffEmployee.user
                 }
 
-            val allRecipientNames =
-                listOf(
-                    "Test Area" // Area name
-                )
-
             // Send bulletin to area
             postNewThread(
                 title = "Bulletin to whole area",
                 message = "This bulletin is sent to whole area",
                 messageType = MessageType.BULLETIN,
                 sender = municipalAccount,
-                recipients = listOf(MessageRecipient.Area(testArea.id)),
-                recipientNames = allRecipientNames,
+                recipients = listOf(MessageRecipient.Area(area.id)),
+                recipientNames = listOf(area.name),
                 user = messager.user,
                 now = sendTime,
             )
@@ -2262,7 +2296,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val staffCopy = staffCopies.first()
 
             // Staff should only see area name in recipientNames
-            assertEquals(listOf("Test Area"), staffCopy.recipientNames)
+            assertEquals(listOf(area.name), staffCopy.recipientNames)
         }
 
         @ParameterizedTest(name = "replyDaysAgo={0}, userRole={1}")
@@ -2278,7 +2312,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "title",
                 "content",
                 listOf(group1Account, employee1Account),
-                listOf(testChild_2.id),
+                listOf(child2.id),
                 now = clock.now().minusWeeks(3),
             )
             val thread2 = getRegularMessageThreads(person2).first()
@@ -2309,7 +2343,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "content",
                 MessageType.MESSAGE,
                 group1Account,
-                listOf(MessageRecipient.Child(testChild_2.id)),
+                listOf(MessageRecipient.Child(child2.id)),
                 user = employee1,
                 now = clock.now().minusDays(sentDaysAgo.toLong()),
             )
@@ -2355,7 +2389,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 "content",
                 MessageType.BULLETIN,
                 employee1Account,
-                listOf(MessageRecipient.Child(testChild_2.id), MessageRecipient.Group(groupId1)),
+                listOf(MessageRecipient.Child(child2.id), MessageRecipient.Group(groupId1)),
                 user = employee1,
                 now = clock.now().minusDays(copyDaysAgo.toLong()),
             )
@@ -2378,7 +2412,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     "title",
                     "content",
                     listOf(group1Account, employee1Account),
-                    listOf(testChild_2.id),
+                    listOf(child2.id),
                     now = clock.now().minusDays(messagesDaysAgo.toLong()),
                 )
 
@@ -2401,7 +2435,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "m1",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
             )
 
@@ -2440,7 +2474,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
             )
             assertEquals(0, unreadMessagesCount(employee1Account, employee1))
@@ -2473,7 +2507,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     title = "t1",
                     message = "m1",
                     recipients = listOf(group1Account),
-                    children = listOf(testChild_1.id),
+                    children = listOf(child1.id),
                 )
 
             val unreadMessagesBefore = getUnreadReceivedMessages(group1Account, employee1)
@@ -2493,7 +2527,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "m2",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
             )
             val person1UnreadMessages = getUnreadReceivedMessages(person1Account, person1)
@@ -2509,7 +2543,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `unread message count excludes messages beyond employee access limit`() {
             val aclCreationDate = placementStart
-            val area = DevCareArea(shortName = "testArea")
+            val area = DevCareArea(name = "Unread Test Area", shortName = "unread_area")
             val unit =
                 DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
             val group =
@@ -2617,7 +2651,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "Juhannus tulee pian",
                     messageType = MessageType.MESSAGE,
                     sender = employee1Account,
-                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
                     user = employee1,
                     now = sendTime,
                 )
@@ -2706,7 +2740,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = group1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_4.id)),
+                recipients = listOf(MessageRecipient.Child(child4.id)),
                 user = employee1,
             )
             assertEquals(0, getRegularMessageThreads(person4).size)
@@ -2716,7 +2750,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.MESSAGE,
                 sender = group2Account,
-                recipients = listOf(MessageRecipient.Child(testChild_4.id)),
+                recipients = listOf(MessageRecipient.Child(child4.id)),
                 user = employee1,
             )
             assertEquals(1, getRegularMessageThreads(person4).size)
@@ -2745,7 +2779,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = financeAdmin.user,
             )
 
@@ -2757,8 +2791,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     sender = financeAccount,
                     recipients =
                         listOf(
-                            MessageRecipient.Citizen(testAdult_1.id),
-                            MessageRecipient.Citizen(testAdult_2.id),
+                            MessageRecipient.Citizen(adult1.id),
+                            MessageRecipient.Citizen(adult2.id),
                         ),
                     user = financeAdmin.user,
                 )
@@ -2772,7 +2806,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.insert(
                     DevIncomeStatement(
-                        personId = testAdult_1.id,
+                        personId = adult1.id,
                         data =
                             IncomeStatementBody.HighestFee(
                                 startDate = placementStart,
@@ -2787,7 +2821,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Viestin sisältö",
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = financeAdmin.user,
             )
             val thread = getRegularMessageThreads(person1)[0]
@@ -2806,7 +2840,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.insert(
                     DevIncomeStatement(
-                        personId = testAdult_1.id,
+                        personId = adult1.id,
                         data =
                             IncomeStatementBody.HighestFee(
                                 startDate = placementStart,
@@ -2823,7 +2857,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Toimita tuloselvitys",
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = financeAdmin.user,
             )
             val thread = getRegularMessageThreads(person1)[0]
@@ -2852,7 +2886,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.insert(
                     DevIncomeStatement(
-                        personId = testAdult_1.id,
+                        personId = adult1.id,
                         data =
                             IncomeStatementBody.HighestFee(
                                 startDate = placementStart,
@@ -2877,7 +2911,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
-                    recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
                     user = financeAdmin.user,
                 )
             }
@@ -2891,7 +2925,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
-                    recipients = listOf(MessageRecipient.Area(testArea.id)),
+                    recipients = listOf(MessageRecipient.Area(area.id)),
                     user = financeAdmin.user,
                 )
             }
@@ -2905,7 +2939,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     message = "content",
                     messageType = MessageType.MESSAGE,
                     sender = financeAccount,
-                    recipients = listOf(MessageRecipient.Unit(testDaycare.id)),
+                    recipients = listOf(MessageRecipient.Unit(daycare.id)),
                     user = financeAdmin.user,
                 )
             }
@@ -2956,7 +2990,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.insert(
                     DevIncomeStatement(
-                        personId = testAdult_1.id,
+                        personId = adult1.id,
                         data =
                             IncomeStatementBody.HighestFee(
                                 startDate = placementStart,
@@ -2972,7 +3006,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Tähän viestiin pitäisi pystyä vastaamaan",
                 messageType = MessageType.MESSAGE,
                 sender = financeAccount,
-                recipients = listOf(MessageRecipient.Citizen(testAdult_1.id)),
+                recipients = listOf(MessageRecipient.Citizen(adult1.id)),
                 user = financeAdmin.user,
                 initialFolder = folder1.id,
             )
@@ -3056,7 +3090,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Juhannus tulee pian",
                 messageType = MessageType.BULLETIN,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
             )
 
@@ -3111,13 +3145,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 insertChild(tx, child, groupId1)
                 tx.insert(
                     secondSupervisor,
-                    unitRoles = mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
+                    unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR),
                 )
                 secondSupervisorAccount = tx.upsertEmployeeMessageAccount(secondSupervisor.id)
-                tx.insert(
-                    veo,
-                    unitRoles = mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
-                )
+                tx.insert(veo, unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER))
                 veoAccount = tx.upsertEmployeeMessageAccount(veo.id)
             }
 
@@ -3204,7 +3235,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "Important announcement to 100 families",
                 messageType = MessageType.BULLETIN,
                 sender = municipalAccount,
-                recipients = listOf(MessageRecipient.Area(testArea.id)),
+                recipients = listOf(MessageRecipient.Area(area.id)),
                 user = messager.user,
                 now = sendTime,
             )
@@ -3270,8 +3301,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `non-municipal message shows only co-guardians as recipients`() {
-            // Setup: testChild_1 has guardians person1 and person2
-            //        testChild_3 has guardians person2 and person3
+            // Setup: child1 has guardians person1 and person2
+            //        child3 has guardians person2 and person3
             // Send message to both children
             postNewThread(
                 title = "Group Message",
@@ -3279,15 +3310,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
                 recipients =
-                    listOf(
-                        MessageRecipient.Child(testChild_1.id),
-                        MessageRecipient.Child(testChild_3.id),
-                    ),
+                    listOf(MessageRecipient.Child(child1.id), MessageRecipient.Child(child3.id)),
                 user = employee1,
                 now = sendTime,
             )
 
-            // person1 should see themselves and person2 (co-guardian of testChild_1)
+            // person1 should see themselves and person2 (co-guardian of child1)
             val person1Threads = getRegularMessageThreads(person1)
             assertEquals(1, person1Threads.size)
             val person1Recipients = person1Threads.first().messages.first().recipients
@@ -3300,7 +3328,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // group)
             val person2Threads = getRegularMessageThreads(person2)
             assertEquals(2, person2Threads.size)
-            // One thread with person1 (for testChild_1)
+            // One thread with person1 (for child1)
             val person2ThreadWithPerson1 =
                 person2Threads.find { thread ->
                     thread.messages.first().recipients.any { it.id == person1Account }
@@ -3309,7 +3337,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 setOf(person1Account, person2Account),
                 person2ThreadWithPerson1.messages.first().recipients.map { it.id }.toSet(),
             )
-            // One thread with person3 (for testChild_3)
+            // One thread with person3 (for child3)
             val person2ThreadWithPerson3 =
                 person2Threads.find { thread ->
                     thread.messages.first().recipients.any { it.id == person3Account }
@@ -3319,7 +3347,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 person2ThreadWithPerson3.messages.first().recipients.map { it.id }.toSet(),
             )
 
-            // person3 should see themselves and person2 (co-guardian of testChild_3)
+            // person3 should see themselves and person2 (co-guardian of child3)
             val person3Threads = getRegularMessageThreads(person3)
             assertEquals(1, person3Threads.size)
             val person3Recipients = person3Threads.first().messages.first().recipients
@@ -3456,7 +3484,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "m1",
                 messageType = MessageType.MESSAGE,
                 sender = employee1Account,
-                recipients = listOf(MessageRecipient.Child(testChild_1.id)),
+                recipients = listOf(MessageRecipient.Child(child1.id)),
                 user = employee1,
                 attachmentIds = attachmentIds,
                 draftId = draftId,
@@ -3540,7 +3568,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         tx: Database.Transaction,
         child: DevPerson,
         groupId: GroupId,
-        daycareId: DaycareId = testDaycare.id,
+        daycareId: DaycareId = daycare.id,
         optionId: ServiceNeedOptionId = snDefaultDaycare.id,
         shiftCare: ShiftCareType = ShiftCareType.NONE,
     ) {
@@ -3580,15 +3608,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime,
     ): AuthenticatedUser.Employee {
         return db.transaction { tx ->
-            testChild_2.let {
+            child2.let {
                 insertChild(tx, it, groupId1)
                 tx.insertGuardian(person2.id, it.id)
             }
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
+                        childId = child2.id,
+                        unitId = daycare.id,
                         startDate = now.toLocalDate().minusMonths(6),
                         endDate = now.toLocalDate().plusMonths(6),
                     )
@@ -3603,8 +3631,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             val employee = DevEmployee(firstName = "New", lastName = "Staff")
             tx.insert(employee)
-            tx.insertDaycareAclRow(testDaycare.id, employee.id, userRole)
-            tx.syncDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId1), now)
+            tx.insertDaycareAclRow(daycare.id, employee.id, userRole)
+            tx.syncDaycareGroupAcl(daycare.id, employee.id, listOf(groupId1), now)
             employee.user
         }
     }

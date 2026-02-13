@@ -5,41 +5,44 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    val childId = testChild_1.id
-    val childId2 = testChild_2.id
-    val guardianId = testAdult_1.id
-    val unitId = testDaycare.id
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val guardian = DevPerson()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
         }
     }
 
     @Test
     fun `no applications means no duplicates`() {
         db.transaction { tx ->
-            assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+            assertFalse(
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+            )
         }
     }
 
@@ -47,7 +50,9 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `duplicate is found`() {
         addDaycareApplication()
         db.transaction { tx ->
-            assertTrue(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+            assertTrue(
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+            )
         }
     }
 
@@ -56,7 +61,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication()
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(childId2, guardianId, ApplicationType.DAYCARE)
+                tx.duplicateApplicationExists(child2.id, guardian.id, ApplicationType.DAYCARE)
             )
         }
     }
@@ -66,7 +71,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication()
         db.transaction { tx ->
             assertFalse(
-                tx.duplicateApplicationExists(childId, guardianId, ApplicationType.PRESCHOOL)
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.PRESCHOOL)
             )
         }
     }
@@ -77,7 +82,9 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication(ApplicationStatus.REJECTED)
         addDaycareApplication(ApplicationStatus.CANCELLED)
         db.transaction { tx ->
-            assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+            assertFalse(
+                tx.duplicateApplicationExists(child1.id, guardian.id, ApplicationType.DAYCARE)
+            )
         }
     }
 
@@ -96,10 +103,15 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     )
                         null
                     else true,
-                childId = childId,
-                guardianId = guardianId,
+                childId = child1.id,
+                guardianId = guardian.id,
                 type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication),
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                    ),
             )
         }
     }

@@ -13,20 +13,16 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -39,22 +35,20 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var incomeController: IncomeController
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
+    private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+    private val adult = DevPerson()
+
     val mockClock = MockEvakaClock(2023, 5, 1, 10, 0)
-    val mockUser =
-        EvakaUser(
-            EvakaUserId(UUID.fromString("00000000-0000-0000-0000-000000000000")),
-            "",
-            EvakaUserType.EMPLOYEE,
-        )
 
     private fun assertEqualEnough(expected: List<IncomeRequest>, actual: List<Income>) {
-        val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
-        val nullTime = mockClock.now()
+        val placeholderId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        val placeholderTime = mockClock.now()
+        val placeholderUser = employee.evakaUser
         assertEquals(
             expected
                 .map {
                     Income(
-                        id = nullId,
+                        id = placeholderId,
                         personId = it.personId,
                         effect = it.effect,
                         data = it.data,
@@ -63,10 +57,10 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         validFrom = it.validFrom,
                         validTo = it.validTo,
                         notes = it.notes,
-                        createdAt = nullTime,
-                        createdBy = mockUser,
-                        modifiedAt = nullTime,
-                        modifiedBy = mockUser,
+                        createdAt = placeholderTime,
+                        createdBy = placeholderUser,
+                        modifiedAt = placeholderTime,
+                        modifiedBy = placeholderUser,
                         attachments = it.attachments,
                         totalIncome = calculateTotalIncome(it.data, coefficientMultiplierProvider),
                         totalExpenses =
@@ -78,11 +72,11 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             actual
                 .map {
                     it.copy(
-                        id = nullId,
-                        createdAt = nullTime,
-                        createdBy = mockUser,
-                        modifiedAt = nullTime,
-                        modifiedBy = mockUser,
+                        id = placeholderId,
+                        createdAt = placeholderTime,
+                        createdBy = placeholderUser,
+                        modifiedAt = placeholderTime,
+                        modifiedBy = placeholderUser,
                     )
                 }
                 .toSet(),
@@ -92,14 +86,14 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(employee)
+            tx.insert(adult, DevPersonType.ADULT)
         }
     }
 
     fun testIncomeRequest() =
         IncomeRequest(
-            personId = testAdult_1.id,
+            personId = adult.id,
             effect = IncomeEffect.INCOME,
             data =
                 mapOf(
@@ -121,17 +115,12 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             notes = "",
         )
 
-    private val financeUser =
-        AuthenticatedUser.Employee(
-            id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN),
-        )
-    private val financeUserName = "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}"
+    private val employeeName = "${employee.lastName} ${employee.firstName}"
     private val clock = MockEvakaClock(2023, 1, 7, 14, 0)
 
     @Test
     fun `getPersonIncomes works with no data in DB`() {
-        val incomes = getPersonIncomes(testAdult_1.id)
+        val incomes = getPersonIncomes(adult.id)
         assertEquals(emptyList(), incomes)
     }
 
@@ -148,10 +137,10 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
         db.transaction { tx ->
-            incomeRequests.forEach { tx.insertIncome(clock.now(), it, financeUser.evakaUserId) }
+            incomeRequests.forEach { tx.insertIncome(clock.now(), it, employee.evakaUserId) }
         }
 
-        val incomes = getPersonIncomes(testAdult_1.id)
+        val incomes = getPersonIncomes(adult.id)
 
         assertEqualEnough(incomeRequests, incomes)
     }
@@ -159,7 +148,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome works with valid income`() {
         createIncome(testIncomeRequest())
-        val incomes = getPersonIncomes(testAdult_1.id)
+        val incomes = getPersonIncomes(adult.id)
         assertEqualEnough(listOf(testIncomeRequest()), incomes)
     }
 
@@ -173,9 +162,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `createIncome ends earlier income without end date`() {
         val firstIncome = testIncomeRequest().copy(validTo = null)
         val firstIncomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), firstIncome, financeUser.evakaUserId)
-            }
+            db.transaction { tx -> tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId) }
 
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusDays(1))
         createIncome(secondIncome)
@@ -197,9 +184,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `createIncome ends earlier income with end date`() {
         val firstIncome = testIncomeRequest()
         val firstIncomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), firstIncome, financeUser.evakaUserId)
-            }
+            db.transaction { tx -> tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId) }
 
         val secondIncome =
             firstIncome.copy(
@@ -224,7 +209,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws if new range overlaps start of old range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
         }
 
         val overlappingIncome =
@@ -237,7 +222,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws with identical date range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
         }
         assertThrows<Conflict> { createIncome(testIncomeRequest()) }
     }
@@ -245,7 +230,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome throws with covering date range`() {
         db.transaction { tx ->
-            tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
         }
 
         val overlappingIncome =
@@ -266,8 +251,8 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val incomes = getPersonIncomes(testIncomeRequest().personId)
         assertEquals(1, incomes.size)
         with(incomes.first()) {
-            assertEquals(financeUserName, createdBy.name)
-            assertEquals(financeUserName, modifiedBy.name)
+            assertEquals(employeeName, createdBy.name)
+            assertEquals(employeeName, modifiedBy.name)
             assertEquals(0, totalIncome)
             assertEquals(0, totalExpenses)
             assertEquals(0, total)
@@ -278,7 +263,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome works with valid income`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
             }
 
         val updateRequest =
@@ -325,7 +310,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome throws with invalid date rage`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
             }
 
         val updated = testIncomeRequest().copy(validTo = testIncomeRequest().validFrom.minusDays(1))
@@ -336,16 +321,14 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome throws with overlapping date rage`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
             }
 
         val anotherIncome =
             with(testIncomeRequest()) {
                 this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
-        db.transaction { tx ->
-            tx.insertIncome(clock.now(), anotherIncome, financeUser.evakaUserId)
-        }
+        db.transaction { tx -> tx.insertIncome(clock.now(), anotherIncome, employee.evakaUserId) }
 
         val updated = testIncomeRequest().copy(validTo = anotherIncome.validTo)
         assertThrows<Conflict> { updateIncome(incomeId, updated) }
@@ -355,17 +338,17 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateIncome removes data if effect is not INCOME`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
             }
 
         val updated =
             with(testIncomeRequest()) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
         updateIncome(incomeId, updated)
 
-        val incomes = getPersonIncomes(testAdult_1.id)
+        val incomes = getPersonIncomes(adult.id)
         assertEquals(1, incomes.size)
         with(incomes.first()) {
-            assertEquals(financeUserName, modifiedBy.name)
+            assertEquals(employeeName, modifiedBy.name)
             assertEquals(0, totalIncome)
             assertEquals(0, totalExpenses)
             assertEquals(0, total)
@@ -376,7 +359,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `deleteIncome works with multiple incomes in DB`() {
         val incomeId =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
             }
         val anotherIncome =
             with(testIncomeRequest()) {
@@ -384,7 +367,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val incomeId2 =
             db.transaction { tx ->
-                tx.insertIncome(clock.now(), anotherIncome, financeUser.evakaUserId)
+                tx.insertIncome(clock.now(), anotherIncome, employee.evakaUserId)
             }
 
         deleteIncome(incomeId)
@@ -396,16 +379,16 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getPersonIncomes(personId: PersonId) =
-        incomeController.getPersonIncomes(dbInstance(), financeUser, mockClock, personId).map {
+        incomeController.getPersonIncomes(dbInstance(), employee.user, mockClock, personId).map {
             it.data
         }
 
     private fun createIncome(incomeRequest: IncomeRequest) =
-        incomeController.createIncome(dbInstance(), financeUser, mockClock, incomeRequest)
+        incomeController.createIncome(dbInstance(), employee.user, mockClock, incomeRequest)
 
     private fun updateIncome(id: IncomeId, incomeRequest: IncomeRequest) =
-        incomeController.updateIncome(dbInstance(), financeUser, mockClock, id, incomeRequest)
+        incomeController.updateIncome(dbInstance(), employee.user, mockClock, id, incomeRequest)
 
     private fun deleteIncome(id: IncomeId) =
-        incomeController.deleteIncome(dbInstance(), financeUser, mockClock, id)
+        incomeController.deleteIncome(dbInstance(), employee.user, mockClock, id)
 }

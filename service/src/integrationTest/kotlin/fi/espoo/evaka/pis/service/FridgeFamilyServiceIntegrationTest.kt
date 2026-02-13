@@ -6,14 +6,13 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.insertTestDecisionMaker
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -21,7 +20,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
@@ -36,13 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired
 class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mockToday = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
+    private val employee = DevEmployee()
+
     lateinit var adult1: PersonDTO
     lateinit var adult2: PersonDTO
     lateinit var child1: PersonDTO
     lateinit var child2: PersonDTO
-    private val partnershipCreator =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-            .evakaUserId
+    private val partnershipCreator = employee.evakaUserId
 
     @BeforeEach
     fun setup() {
@@ -61,7 +59,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         MockPersonDetailsService.addDependants(adult2.identity, child1.identity, child2.identity)
 
         db.transaction {
-            it.insertTestDecisionMaker()
+            it.insert(employee)
             it.createPartnership(
                 adult1.id,
                 adult2.id,
@@ -131,7 +129,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
 
         db.transaction {
-            it.insertTestDecisionMaker()
+            it.insert(employee)
             it.createPartnership(
                 adult1.id,
                 adult2.id,

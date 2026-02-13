@@ -5,13 +5,15 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -30,9 +32,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -52,9 +52,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     private val decisionMaker = DevEmployee()
     private val adult = DevPerson(email = "test@example.com")
     private val child = DevPerson()
-    private val applicationId = ApplicationId(UUID.randomUUID())
     private val startDate = today
     private val endDate = startDate.plusYears(1)
+
+    private lateinit var applicationId: ApplicationId
 
     @BeforeEach
     fun setUp() {
@@ -67,15 +68,21 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
             tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
 
-            tx.insertTestApplication(
-                id = applicationId,
-                status = ApplicationStatus.WAITING_CONFIRMATION,
-                confidential = true,
-                childId = child.id,
-                guardianId = adult.id,
-                type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(getValidDaycareApplication(daycare)),
-            )
+            applicationId =
+                tx.insertTestApplication(
+                    status = ApplicationStatus.WAITING_CONFIRMATION,
+                    confidential = true,
+                    childId = child.id,
+                    guardianId = adult.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                        ),
+                )
         }
     }
 
@@ -163,12 +170,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     fun `Non-guardian does not receive pending decision email`() {
         val nonGuardian = DevPerson(email = "non-guardian@example.com")
         val nonGuardianChild = DevPerson()
-        val nonGuardianApplicationId = ApplicationId(UUID.randomUUID())
 
         createApplicationAndDecision(
             adult = nonGuardian,
             child = nonGuardianChild,
-            applicationId = nonGuardianApplicationId,
             createGuardianship = false,
         )
 
@@ -180,12 +185,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     fun `Foster parent receives pending decision email`() {
         val fosterParent = DevPerson(email = "foster@example.com")
         val fosterChild = DevPerson()
-        val fosterApplicationId = ApplicationId(UUID.randomUUID())
 
         createApplicationAndDecision(
             adult = fosterParent,
             child = fosterChild,
-            applicationId = fosterApplicationId,
             createGuardianship = false,
             fosterParentValidDuring = DateRange(today.minusYears(1), today.plusYears(1)),
         )
@@ -208,12 +211,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     fun `Expired foster parent does not receive pending decision email`() {
         val expiredFosterParent = DevPerson(email = "expired-foster@example.com")
         val fosterChild = DevPerson()
-        val expiredFosterApplicationId = ApplicationId(UUID.randomUUID())
 
         createApplicationAndDecision(
             adult = expiredFosterParent,
             child = fosterChild,
-            applicationId = expiredFosterApplicationId,
             createGuardianship = false,
             fosterParentValidDuring = DateRange(today.minusYears(2), today.minusYears(1)),
         )
@@ -250,7 +251,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                 TestDecision(
                     applicationId = applicationId,
                     status = DecisionStatus.PENDING,
-                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    createdBy = decisionMaker.evakaUserId,
                     unitId = daycare.id,
                     type = type,
                     startDate = startDate,
@@ -273,7 +274,6 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     private fun createApplicationAndDecision(
         adult: DevPerson,
         child: DevPerson,
-        applicationId: ApplicationId,
         createGuardianship: Boolean = true,
         fosterParentValidDuring: DateRange? = null,
     ) {
@@ -292,26 +292,32 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                         childId = child.id,
                         validDuring = fosterParentValidDuring,
                         modifiedAt = clock.now(),
-                        modifiedBy = EvakaUserId(decisionMaker.id.raw),
+                        modifiedBy = decisionMaker.evakaUserId,
                     )
                 )
             }
 
-            tx.insertTestApplication(
-                id = applicationId,
-                status = ApplicationStatus.WAITING_CONFIRMATION,
-                confidential = true,
-                childId = child.id,
-                guardianId = adult.id,
-                type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(getValidDaycareApplication(daycare)),
-            )
+            val appId =
+                tx.insertTestApplication(
+                    status = ApplicationStatus.WAITING_CONFIRMATION,
+                    confidential = true,
+                    childId = child.id,
+                    guardianId = adult.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                        ),
+                )
 
             tx.insertTestDecision(
                 TestDecision(
-                    applicationId = applicationId,
+                    applicationId = appId,
                     status = DecisionStatus.PENDING,
-                    createdBy = EvakaUserId(decisionMaker.id.raw),
+                    createdBy = decisionMaker.evakaUserId,
                     unitId = daycare.id,
                     type = DecisionType.DAYCARE,
                     startDate = startDate,

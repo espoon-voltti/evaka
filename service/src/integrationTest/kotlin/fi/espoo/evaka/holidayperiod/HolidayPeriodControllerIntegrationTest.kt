@@ -8,9 +8,11 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.upsertFullDayAbsences
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -18,11 +20,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -40,18 +37,24 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
     val holidayPeriodStart = LocalDate.of(2023, 6, 1)
     val holidayPeriodEnd = LocalDate.of(2023, 6, 30)
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val adult = DevPerson()
+    private val child = DevPerson()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = today,
                     endDate = today.plusYears(1),
                 )
@@ -63,19 +66,19 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `existing reservations and absences are deleted when a holiday period is created`() {
         db.transaction { tx ->
             tx.upsertFullDayAbsences(
-                EvakaUserId(testAdult_1.id.raw),
+                adult.evakaUserId(),
                 now,
                 listOf(
                     // Outside holiday period
                     FullDayAbsenseUpsert(
-                        testChild_1.id,
+                        child.id,
                         holidayPeriodStart.minusDays(1),
                         AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
                     ),
                     // Inside holiday period
                     FullDayAbsenseUpsert(
-                        testChild_1.id,
+                        child.id,
                         holidayPeriodStart,
                         AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
@@ -83,12 +86,12 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 ),
             )
             tx.upsertFullDayAbsences(
-                EvakaUserId(testDecisionMaker_1.id.raw),
+                employee.evakaUserId,
                 now,
                 listOf(
                     // Inside holiday period, but marked by employee
                     FullDayAbsenseUpsert(
-                        testChild_1.id,
+                        child.id,
                         holidayPeriodStart.plusDays(1),
                         AbsenceType.OTHER_ABSENCE,
                         AbsenceType.OTHER_ABSENCE,
@@ -99,27 +102,27 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             listOf(
                     // Inside holiday period
                     DevReservation(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw),
+                        createdBy = adult.evakaUserId(),
                     ),
                     // Inside holiday period, created by staff
                     DevReservation(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodEnd,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        createdBy = employee.evakaUserId,
                     ),
                     // Outside holiday period
                     DevReservation(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodEnd.plusDays(1),
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw),
+                        createdBy = adult.evakaUserId(),
                     ),
                 )
                 .forEach { tx.insert(it) }
@@ -127,7 +130,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         holidayPeriodController.createHolidayPeriod(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            employee.user,
             MockEvakaClock(now),
             HolidayPeriodCreate(
                 period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
@@ -139,7 +142,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val holidayPeriods =
             holidayPeriodController.getHolidayPeriods(
                 dbInstance(),
-                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+                employee.user,
                 MockEvakaClock(now),
             )
         assertEquals(

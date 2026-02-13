@@ -6,19 +6,12 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -37,7 +30,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
-import fi.espoo.evaka.test.getValidDaycareApplication
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
@@ -48,16 +40,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
-    private lateinit var employeeId: EmployeeId
-    private lateinit var daycareId: DaycareId
-    private lateinit var groupId: GroupId
-    private lateinit var childId: ChildId
-    private lateinit var applicationId: ApplicationId
-    private lateinit var decisionId: DecisionId
-    private lateinit var placementId: PlacementId
-    private lateinit var mobileId: MobileDeviceId
-    private lateinit var fridgeParentId: PersonId
-    private lateinit var guardianId: PersonId
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val group = DevDaycareGroup(daycareId = daycare.id)
+    private val employee = DevEmployee()
+    private val guardian = DevPerson()
+    private val child = DevPerson()
+    private val fridgeParent = DevPerson()
+    private val mobile = DevMobileDevice(unitId = daycare.id)
 
     private lateinit var accessControl: AccessControl
 
@@ -65,55 +55,55 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @BeforeAll
     fun before() {
-        db.transaction {
-            employeeId = it.insert(DevEmployee())
-            val areaId = it.insert(DevCareArea(name = "Test area"))
-            val daycare = DevDaycare(areaId = areaId)
-            daycareId = it.insert(daycare)
-            groupId = it.insert(DevDaycareGroup(daycareId = daycareId))
-            guardianId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
-            childId = it.insert(DevPerson(), DevPersonType.CHILD)
-            fridgeParentId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
-            it.insert(
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee)
+            tx.insert(guardian, DevPersonType.RAW_ROW)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(fridgeParent, DevPersonType.RAW_ROW)
+            tx.insert(
                 DevFridgeChild(
-                    childId = childId,
-                    headOfChild = fridgeParentId,
+                    childId = child.id,
+                    headOfChild = fridgeParent.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2030, 1, 1),
                 )
             )
-            it.insertGuardian(guardianId, childId)
-            applicationId =
-                it.insertTestApplication(
-                    childId = childId,
-                    guardianId = guardianId,
+            tx.insertGuardian(guardian.id, child.id)
+            val applicationId =
+                tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            getValidDaycareApplication(preferredUnit = daycare)
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
                         ),
                 )
-            decisionId =
-                it.insertTestDecision(
-                    TestDecision(
-                        createdBy = EvakaUserId(employeeId.raw),
-                        unitId = daycareId,
-                        applicationId = applicationId,
-                        type = DecisionType.DAYCARE,
-                        startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2100, 1, 1),
-                    )
+            tx.insertTestDecision(
+                TestDecision(
+                    createdBy = employee.evakaUserId,
+                    unitId = daycare.id,
+                    applicationId = applicationId,
+                    type = DecisionType.DAYCARE,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2100, 1, 1),
                 )
-            placementId =
-                it.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2100, 1, 1),
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2100, 1, 1),
                 )
-            mobileId = it.insert(DevMobileDevice(unitId = daycareId))
+            )
+            tx.insert(mobile)
         }
         accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
     }
@@ -126,14 +116,14 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
     fun testGlobalRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employee.id, setOf(role))
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
             )
         }
     }
@@ -141,25 +131,25 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
     fun testAclRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employee.id, setOf(role))
 
         db.read { tx ->
             assertFalse(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
             )
             assertFalse(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
             )
         }
 
-        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
+        db.transaction { it.insertDaycareAclRow(daycare.id, employee.id, role) }
 
         db.read { tx ->
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParent.id)
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardian.id)
             )
         }
     }

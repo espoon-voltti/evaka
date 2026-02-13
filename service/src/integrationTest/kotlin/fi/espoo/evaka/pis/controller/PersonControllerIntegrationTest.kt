@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.controllers.ChildController
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.PersonController
 import fi.espoo.evaka.pis.controllers.SearchPersonBody
@@ -13,21 +12,14 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.blockGuardian
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
-import java.time.LocalDateTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,33 +27,88 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val admin =
-        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-    private val devEmployee = DevEmployee(id = admin.id)
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
     @Autowired lateinit var controller: PersonController
-    @Autowired lateinit var childController: ChildController
 
-    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+    private val clock = MockEvakaClock(2022, 1, 1, 12, 0)
+
+    // VTJ mock persons for guardian blocklist tests
+    private val johannesKarhula =
+        DevPerson(
+            firstName = "Johannes Olavi Antero Tapio",
+            lastName = "Karhula",
+            ssn = "070644-937X",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val villeVilkas =
+        DevPerson(
+            firstName = "Ville",
+            lastName = "Vilkas",
+            ssn = "311299-999E",
+            streetAddress = "Toistie 33",
+            postalCode = "02230",
+            postOffice = "Espoo",
+        )
+    private val jariPetteriKarhula =
+        DevPerson(
+            firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
+            lastName = "Karhula",
+            ssn = "070714A9126",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val kaarinaKarhula =
+        DevPerson(
+            firstName = "Kaarina Veera Nelli",
+            lastName = "Karhula",
+            ssn = "160616A978U",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val porriKarhula =
+        DevPerson(
+            firstName = "Porri Hatter",
+            lastName = "Karhula",
+            ssn = "160620A999J",
+            restrictedDetailsEnabled = true,
+        )
 
     @BeforeEach
     fun beforeEach() {
-        MockPersonDetailsService.add(legacyMockVtjDataset())
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(serviceWorker)
+        }
+        MockPersonDetailsService.addPersons(
+            johannesKarhula,
+            villeVilkas,
+            jariPetteriKarhula,
+            kaarinaKarhula,
+            porriKarhula,
+        )
+        MockPersonDetailsService.addDependants(
+            johannesKarhula,
+            jariPetteriKarhula,
+            kaarinaKarhula,
+            porriKarhula,
+        )
+        MockPersonDetailsService.addDependants(villeVilkas, jariPetteriKarhula)
     }
 
     @Test
     fun `Search finds person by first and last name`() {
-        val user =
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER),
-            )
         val person = createPerson()
 
         val response =
             controller.searchPerson(
                 dbInstance(),
-                user,
+                serviceWorker.user,
                 clock,
                 SearchPersonBody(
                     searchTerm = "${person.firstName} ${person.lastName}",
@@ -75,17 +122,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats tabs as spaces in search terms`() {
-        val user =
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER),
-            )
         val person = createPerson()
 
         val response =
             controller.searchPerson(
                 dbInstance(),
-                user,
+                serviceWorker.user,
                 clock,
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\t${person.lastName}",
@@ -99,17 +141,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats non-breaking spaces as spaces in search terms`() {
-        val user =
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER),
-            )
         val person = createPerson()
 
         val response =
             controller.searchPerson(
                 dbInstance(),
-                user,
+                serviceWorker.user,
                 clock,
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\u00A0${person.lastName}",
@@ -123,11 +160,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats obscure unicode spaces as spaces in search terms`() {
-        val user =
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER),
-            )
         val person = createPerson()
 
         // IDEOGRAPHIC SPACE, not supported by default in regexes
@@ -135,7 +167,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response =
             controller.searchPerson(
                 dbInstance(),
-                user,
+                serviceWorker.user,
                 clock,
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\u3000${person.lastName}",
@@ -149,22 +181,13 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Guardian blocklist prevents dependants from being added from VTJ data`() {
-        val guardianId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPerson(
-                        lastName = "Karhula",
-                        firstName = "Johannes Olavi Antero Tapio",
-                        ssn = "070644-937X",
-                    ),
-                    DevPersonType.RAW_ROW,
-                )
-            }
+        val guardianId = db.transaction { tx -> tx.insert(johannesKarhula, DevPersonType.RAW_ROW) }
 
-        val dependants = controller.getPersonDependants(dbInstance(), admin, clock, guardianId)
+        val dependants = controller.getPersonDependants(dbInstance(), admin.user, clock, guardianId)
         assertEquals(3, dependants.size)
 
-        val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
+        val blockedDependant =
+            dependants.find { it.socialSecurityNumber == jariPetteriKarhula.ssn }!!
         db.transaction { tx ->
             tx.blockGuardian(childId = blockedDependant.id, guardianId = guardianId)
             tx.execute {
@@ -172,29 +195,22 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
         }
 
-        assertEquals(2, controller.getPersonDependants(dbInstance(), admin, clock, guardianId).size)
+        assertEquals(
+            2,
+            controller.getPersonDependants(dbInstance(), admin.user, clock, guardianId).size,
+        )
     }
 
     @Test
     fun `Guardian blocklist prevents guardians from being added from VTJ data`() {
-        val childId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPerson(
-                        lastName = "Karhula",
-                        firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
-                        ssn = "070714A9126",
-                    ),
-                    DevPersonType.RAW_ROW,
-                )
-            }
+        val childId = db.transaction { tx -> tx.insert(jariPetteriKarhula, DevPersonType.RAW_ROW) }
 
-        controller.getPersonGuardians(dbInstance(), admin, clock, childId).let { response ->
+        controller.getPersonGuardians(dbInstance(), admin.user, clock, childId).let { response ->
             assertEquals(2, response.guardians.size)
             assertEquals(0, response.blockedGuardians?.size)
 
             val blockedGuardian =
-                response.guardians.find { it.socialSecurityNumber == "070644-937X" }!!
+                response.guardians.find { it.socialSecurityNumber == johannesKarhula.ssn }!!
             db.transaction { tx ->
                 tx.blockGuardian(childId = childId, guardianId = blockedGuardian.id)
                 tx.execute {
@@ -205,7 +221,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
         }
 
-        controller.getPersonGuardians(dbInstance(), admin, clock, childId).let { response ->
+        controller.getPersonGuardians(dbInstance(), admin.user, clock, childId).let { response ->
             assertEquals(1, response.guardians.size)
             assertEquals(1, response.blockedGuardians?.size)
         }
@@ -213,22 +229,16 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Update person rejects invalid email`() {
-        val person = createPerson(testPerson.copy(id = PersonId(UUID.randomUUID())))
+        val person = createPerson()
 
         val personPatch = PersonPatch(email = "test@example.com ")
 
         assertThrows<BadRequest> {
-            controller.updatePersonDetails(dbInstance(), admin, clock, person.id, personPatch)
+            controller.updatePersonDetails(dbInstance(), admin.user, clock, person.id, personPatch)
         }
     }
 
-    private fun createPerson(person: DevPerson = testPerson): PersonDTO {
-        return db.transaction { tx ->
-            tx.insert(person, DevPersonType.RAW_ROW).let { tx.getPersonById(it)!! }
-        }
-    }
-
-    private val testPerson =
+    private val searchPerson =
         DevPerson(
             ssn = "140881-172X",
             dateOfBirth = getDobFromSsn("140881-172X"),
@@ -237,4 +247,10 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             email = "",
             language = "fi",
         )
+
+    private fun createPerson(): PersonDTO {
+        return db.transaction { tx ->
+            tx.insert(searchPerson, DevPersonType.RAW_ROW).let { tx.getPersonById(it)!! }
+        }
+    }
 }

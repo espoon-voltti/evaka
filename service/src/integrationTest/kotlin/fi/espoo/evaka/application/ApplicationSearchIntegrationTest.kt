@@ -5,7 +5,12 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.CareDetails
+import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -14,6 +19,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -23,19 +31,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
-import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testChild_7
-import fi.espoo.evaka.testClub
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -50,8 +45,21 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private val now =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val club = DevDaycare(areaId = area.id, name = "Test Club", type = setOf(CareType.CLUB))
+    private val employee = DevEmployee()
     private val serviceWorker =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+        AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
+
+    private val adult = DevPerson()
+    private val child1 = DevPerson(lastName = "Doe", firstName = "Ricky")
+    private val child2 = DevPerson(ssn = "010316A1235", lastName = "Doe", firstName = "Micky")
+    private val child3 = DevPerson()
+    private val child4 = DevPerson()
+    private val child5 = DevPerson()
+    private val child6 = DevPerson()
+    private val child7 = DevPerson()
 
     lateinit var applicationId_1: ApplicationId
     lateinit var applicationId_2: ApplicationId
@@ -59,31 +67,24 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testClub)
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                )
-                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(club)
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2, child3, child4, child5, child6, child7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
         }
-        applicationId_1 = createApplication(child = testChild_1, guardian = testAdult_1)
+        applicationId_1 = createApplication(child = child1, guardian = adult)
         applicationId_2 =
             createApplication(
-                child = testChild_2,
-                guardian = testAdult_1,
+                child = child2,
+                guardian = adult,
                 extendedCare = true,
                 attachment = true,
             )
-        createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
+        createApplication(child = child3, guardian = adult, urgent = true)
     }
 
     @Test
@@ -124,16 +125,16 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `application summary can be filtered by preschool types`() {
         val noServiceNeed =
             createApplication(
-                testChild_4,
-                testAdult_1,
+                child4,
+                adult,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 serviceNeedOption = null, // service need option disabled (=espoo)
             )
         val preschoolDaycare =
             createApplication(
-                testChild_5,
-                testAdult_1,
+                child5,
+                adult,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 serviceNeedOption =
@@ -143,16 +144,16 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         val preschoolClub =
             createApplication(
-                testChild_6,
-                testAdult_1,
+                child6,
+                adult,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 serviceNeedOption = ofServiceNeedOption(snPreschoolClub45),
             )
         val preschoolAdditionalDaycare =
             createApplication(
-                testChild_7,
-                testAdult_1,
+                child7,
+                adult,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 additionalDaycareApplication = true,
@@ -160,8 +161,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         val preparatoryAdditionalDaycare =
             createApplication(
-                testChild_7,
-                testAdult_1,
+                child7,
+                adult,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 preparatory = true,
@@ -207,9 +208,9 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `getChildApplicationSummaries returns only given child's applications`() {
         assertEquals(
-            listOf(testChild_1.id),
+            listOf(child1.id),
             applicationControllerV2
-                .getChildApplicationSummaries(dbInstance(), serviceWorker, now, testChild_1.id)
+                .getChildApplicationSummaries(dbInstance(), serviceWorker, now, child1.id)
                 .map { it.childId },
         )
     }
@@ -222,7 +223,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 dbInstance(),
                 serviceWorker,
                 now,
-                testChild_7.id,
+                child7.id,
             ),
         )
     }
@@ -246,8 +247,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevPlacement(
                     type = PlacementType.CLUB,
-                    childId = testChild_1.id,
-                    unitId = testClub.id,
+                    childId = child1.id,
+                    unitId = club.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().minusMonths(6),
                 )
@@ -256,8 +257,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevPlacement(
                     type = PlacementType.CLUB,
-                    childId = testChild_2.id,
-                    unitId = testClub.id,
+                    childId = child2.id,
+                    unitId = club.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().plusMonths(6),
                 )
@@ -267,8 +268,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevPlacement(
                     type = PlacementType.CLUB,
-                    childId = testChild_3.id,
-                    unitId = testClub.id,
+                    childId = child3.id,
+                    unitId = club.id,
                     startDate = now.today().plusMonths(1),
                     endDate = now.today().plusMonths(6),
                 )
@@ -293,8 +294,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().plusMonths(6),
                 )
@@ -304,8 +305,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevPlacement(
                     type = PlacementType.DAYCARE,
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = now.today().minusMonths(12),
                     endDate = now.today().minusDays(1),
                 )
@@ -329,35 +330,28 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 tx.insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE,
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
+                        childId = child2.id,
+                        unitId = daycare.id,
                         startDate = now.today().minusMonths(12),
                         endDate = now.today().plusMonths(6),
                     )
                 )
                 tx.insertTestApplication(
-                    childId = testChild_4.id,
-                    guardianId = testAdult_1.id,
+                    childId = child4.id,
+                    guardianId = adult.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        DaycareFormV0.fromApplication2(
-                            validDaycareApplication.copy(
-                                childId = testChild_4.id,
-                                guardianId = testAdult_1.id,
-                                type = ApplicationType.DAYCARE,
-                                form =
-                                    validDaycareApplication.form.copy(
-                                        preferences =
-                                            validDaycareApplication.form.preferences.copy(
-                                                siblingBasis =
-                                                    SiblingBasis(
-                                                        siblingSsn = testChild_2.ssn!!,
-                                                        siblingName = "does not matter",
-                                                        siblingUnit = "does not matter",
-                                                    )
-                                            )
-                                    ),
-                            )
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply =
+                                Apply(
+                                    preferredUnits = listOf(daycare.id),
+                                    siblingBasis = true,
+                                    siblingSsn = child2.ssn!!,
+                                    siblingName = "does not matter",
+                                ),
                         ),
                 )
             }
@@ -369,8 +363,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .data
                 .first { it.id == applicationId }
         assertEquals(true, summary.siblingBasis)
-        assertEquals("${testChild_2.lastName} ${testChild_2.firstName}", summary.siblingName)
-        assertEquals(testDaycare.name, summary.siblingUnitName)
+        assertEquals("${child2.lastName} ${child2.firstName}", summary.siblingName)
+        assertEquals(daycare.name, summary.siblingUnitName)
     }
 
     private fun getApplicationSummaries(
@@ -435,22 +429,22 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     type = type,
                     additionalDaycareApplication = additionalDaycareApplication,
                     document =
-                        DaycareFormV0.fromApplication2(
-                                validDaycareApplication.copy(
-                                    childId = child.id,
-                                    guardianId = guardian.id,
-                                    type = type,
-                                )
-                            )
-                            .copy(urgent = urgent)
-                            .copy(extendedCare = extendedCare)
-                            .copy(connectedDaycare = connectedDaycare)
-                            .copy(serviceNeedOption = serviceNeedOption)
-                            .let {
-                                if (preparatory)
-                                    it.copy(careDetails = it.careDetails.copy(preparatory = true))
-                                else it
-                            },
+                        DaycareFormV0(
+                            type = type,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            urgent = urgent,
+                            extendedCare = extendedCare,
+                            connectedDaycare =
+                                if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
+                            serviceNeedOption = serviceNeedOption,
+                            careDetails =
+                                CareDetails(
+                                    preparatory =
+                                        if (type == ApplicationType.PRESCHOOL) preparatory else null
+                                ),
+                        ),
                 )
             }
 

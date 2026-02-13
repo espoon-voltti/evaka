@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import fi.espoo.evaka.*
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -20,11 +20,15 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -39,22 +43,45 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
     private val testPeriod = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+
+    private val adult1 = DevPerson(firstName = "John", lastName = "Doe")
+    private val adult2 = DevPerson(firstName = "Joan", lastName = "Doe")
+    private val adult3 = DevPerson(firstName = "Mark", lastName = "Foo")
+    private val adult4 = DevPerson(firstName = "Dork", lastName = "Aman")
+    private val adult5 = DevPerson(firstName = "Johannes", lastName = "Karhula")
+    private val adult6 = DevPerson(firstName = "Ville", lastName = "Vilkas")
+    private val adult7 = DevPerson(firstName = "Tepi", lastName = "Turvakiellollinen")
+
+    private val child1 =
+        DevPerson(firstName = "Ricky", lastName = "Doe", dateOfBirth = LocalDate.of(2017, 6, 1))
+    private val child2 =
+        DevPerson(firstName = "Micky", lastName = "Doe", dateOfBirth = LocalDate.of(2016, 3, 1))
+    private val child3 =
+        DevPerson(firstName = "Hillary", lastName = "Foo", dateOfBirth = LocalDate.of(2018, 9, 1))
+    // postOffice = "Helsinki" makes this child "external" for EXTERNAL_CHILD filter
+    private val child4 =
+        DevPerson(
+            firstName = "Maisa",
+            lastName = "Farang",
+            dateOfBirth = LocalDate.of(2019, 3, 2),
+            postOffice = "Helsinki",
+        )
+    private val child5 =
+        DevPerson(firstName = "Visa", lastName = "Virén", dateOfBirth = LocalDate.of(2018, 11, 13))
+
+    private val decisionMaker = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(
-                    testAdult_1,
-                    testAdult_2,
-                    testAdult_3,
-                    testAdult_4,
-                    testAdult_5,
-                    testAdult_6,
-                    testAdult_7,
-                )
-                .forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
+            tx.insert(area)
+            tx.insert(daycare)
+            listOf(adult1, adult2, adult3, adult4, adult5, adult6, adult7).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(child1, child2, child3, child4, child5).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
         }
@@ -72,18 +99,18 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         headOfFamilyId = PersonId(UUID.randomUUID()),
                         childId = child.id,
                         dateOfBirth = child.dateOfBirth,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                     )
                 }
                 tx.upsertValueDecisions(
                     listOf(
-                        baseDecision(testChild_1)
-                            .copy(headOfFamilyId = testAdult_1.id, headOfFamilyIncome = null),
-                        baseDecision(testChild_2)
+                        baseDecision(child1)
+                            .copy(headOfFamilyId = adult1.id, headOfFamilyIncome = null),
+                        baseDecision(child2)
                             .copy(
-                                headOfFamilyId = testAdult_2.id,
+                                headOfFamilyId = adult2.id,
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
@@ -94,11 +121,11 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         worksAtECHA = false,
                                     ),
                             ),
-                        baseDecision(testChild_3)
+                        baseDecision(child3)
                             .copy(
-                                headOfFamilyId = testAdult_3.id,
+                                headOfFamilyId = adult3.id,
                                 headOfFamilyIncome = null,
-                                partnerId = testAdult_4.id,
+                                partnerId = adult4.id,
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
@@ -109,9 +136,9 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         worksAtECHA = false,
                                     ),
                             ),
-                        baseDecision(testChild_4)
+                        baseDecision(child4)
                             .copy(
-                                headOfFamilyId = testAdult_5.id,
+                                headOfFamilyId = adult5.id,
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
@@ -122,9 +149,9 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         worksAtECHA = false,
                                     ),
                             ),
-                        baseDecision(testChild_5)
+                        baseDecision(child5)
                             .copy(
-                                headOfFamilyId = testAdult_6.id,
+                                headOfFamilyId = adult6.id,
                                 headOfFamilyIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.INCOME,
@@ -134,7 +161,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                                         total = 200000,
                                         worksAtECHA = false,
                                     ),
-                                partnerId = testAdult_7.id,
+                                partnerId = adult7.id,
                                 partnerIncome =
                                     DecisionIncome(
                                         effect = IncomeEffect.MAX_FEE_ACCEPTED,
@@ -159,11 +186,11 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.incomeEffect },
             )
             .containsExactlyInAnyOrder(
-                Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
-                Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
-                Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
-                Tuple(testAdult_5.lastName, testAdult_5.firstName, IncomeEffect.INCOME),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
+                Tuple(adult1.lastName, adult1.firstName, IncomeEffect.NOT_AVAILABLE),
+                Tuple(adult2.lastName, adult2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
+                Tuple(adult3.lastName, adult3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
+                Tuple(adult5.lastName, adult5.firstName, IncomeEffect.INCOME),
+                Tuple(adult6.lastName, adult6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
             )
 
         val result =
@@ -191,9 +218,9 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
             .containsExactly(
-                Tuple(testAdult_2.lastName, testAdult_2.firstName),
-                Tuple(testAdult_3.lastName, testAdult_3.firstName),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName),
+                Tuple(adult2.lastName, adult2.firstName),
+                Tuple(adult3.lastName, adult3.firstName),
+                Tuple(adult6.lastName, adult6.firstName),
             )
     }
 
@@ -208,32 +235,31 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
-                        .copy(headOfFamilyId = testAdult_1.id, difference = emptySet()),
-                    baseDecision(testChild_2)
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id, difference = emptySet()),
+                    baseDecision(child2)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                             difference = setOf(VoucherValueDecisionDifference.INCOME),
                         ),
-                    baseDecision(testChild_3)
+                    baseDecision(child3)
                         .copy(
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             difference =
                                 setOf(
                                     VoucherValueDecisionDifference.INCOME,
                                     VoucherValueDecisionDifference.FAMILY_SIZE,
                                 ),
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             difference = setOf(VoucherValueDecisionDifference.PLACEMENT),
                         ),
                 )
@@ -269,13 +295,13 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
             .containsExactly(
                 Tuple(
-                    testAdult_2.lastName,
-                    testAdult_2.firstName,
+                    adult2.lastName,
+                    adult2.firstName,
                     setOf(VoucherValueDecisionDifference.INCOME),
                 ),
                 Tuple(
-                    testAdult_3.lastName,
-                    testAdult_3.firstName,
+                    adult3.lastName,
+                    adult3.firstName,
                     setOf(
                         VoucherValueDecisionDifference.INCOME,
                         VoucherValueDecisionDifference.FAMILY_SIZE,
@@ -295,31 +321,31 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
+                    baseDecision(child1)
                         .copy(
-                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyId = adult1.id,
                             serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                         ),
-                    baseDecision(testChild_2)
+                    baseDecision(child2)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                             serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                         ),
-                    baseDecision(testChild_3)
+                    baseDecision(child3)
                         .copy(
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                         ),
                 )
@@ -351,8 +377,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
             .containsExactlyInAnyOrder(
-                Tuple(testAdult_2.lastName, testAdult_2.firstName),
-                Tuple(testAdult_3.lastName, testAdult_3.firstName),
+                Tuple(adult2.lastName, adult2.firstName),
+                Tuple(adult3.lastName, adult3.firstName),
             )
     }
 
@@ -367,17 +393,17 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
-                    baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
-                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
-                    baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id),
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id),
+                    baseDecision(child2).copy(headOfFamilyId = adult2.id),
+                    baseDecision(child3).copy(headOfFamilyId = adult3.id),
+                    baseDecision(child4).copy(headOfFamilyId = adult4.id),
                 )
             )
         }
@@ -405,7 +431,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
-            .containsExactly(Tuple(testAdult_4.lastName, testAdult_4.firstName))
+            .containsExactly(Tuple(adult4.lastName, adult4.firstName))
     }
 
     @Test
@@ -421,34 +447,34 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
+                    baseDecision(child1)
                         .copy(
-                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyId = adult1.id,
                             validFrom = testPeriod1.start,
                             validTo = testPeriod1.end,
                         ),
-                    baseDecision(testChild_2)
+                    baseDecision(child2)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                             validFrom = testPeriod1.start,
                             validTo = testPeriod1.end,
                         ),
-                    baseDecision(testChild_3)
+                    baseDecision(child3)
                         .copy(
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             validFrom = testPeriod2.start,
                             validTo = testPeriod2.end,
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             validFrom = testPeriod2.start,
                             validTo = testPeriod2.end,
                         ),
@@ -480,8 +506,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
             .containsExactlyInAnyOrder(
-                Tuple(testAdult_1.lastName, testAdult_1.firstName),
-                Tuple(testAdult_2.lastName, testAdult_2.firstName),
+                Tuple(adult1.lastName, adult1.firstName),
+                Tuple(adult2.lastName, adult2.firstName),
             )
     }
 
@@ -496,31 +522,31 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
+                    baseDecision(child1)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
                                 ),
-                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyId = adult1.id,
                         ),
-                    baseDecision(testChild_2)
+                    baseDecision(child2)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
                                 ),
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                         ),
-                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
-                    baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id),
+                    baseDecision(child3).copy(headOfFamilyId = adult3.id),
+                    baseDecision(child4).copy(headOfFamilyId = adult4.id),
                 )
             )
         }
@@ -548,10 +574,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_1.lastName, testChild_1.firstName),
-                Tuple(testChild_2.lastName, testChild_2.firstName),
-                Tuple(testChild_4.lastName, testChild_4.firstName),
-                Tuple(testChild_3.lastName, testChild_3.firstName),
+                Tuple(child1.lastName, child1.firstName),
+                Tuple(child2.lastName, child2.firstName),
+                Tuple(child4.lastName, child4.firstName),
+                Tuple(child3.lastName, child3.firstName),
             )
         assertThat(sortByChild(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName })
@@ -572,42 +598,42 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
+                    baseDecision(child1)
                         .copy(
-                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyId = adult1.id,
                             validFrom = LocalDate.of(2022, 10, 22),
                             validTo = LocalDate.of(2022, 10, 22),
                         ),
-                    baseDecision(testChild_2)
+                    baseDecision(child2)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                             validFrom = LocalDate.of(2022, 9, 22),
                             validTo = LocalDate.of(2022, 10, 22),
                         ),
-                    baseDecision(testChild_3)
+                    baseDecision(child3)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
                                 ),
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             validFrom = LocalDate.of(2022, 8, 22),
                             validTo = LocalDate.of(2022, 9, 22),
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
                                 ),
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             validFrom = LocalDate.of(2022, 8, 22),
                             validTo = LocalDate.of(2022, 12, 31),
                         ),
@@ -638,10 +664,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_3.lastName, testChild_3.firstName, LocalDate.of(2022, 8, 22)),
-                Tuple(testChild_4.lastName, testChild_4.firstName, LocalDate.of(2022, 8, 22)),
-                Tuple(testChild_2.lastName, testChild_2.firstName, LocalDate.of(2022, 9, 22)),
-                Tuple(testChild_1.lastName, testChild_1.firstName, LocalDate.of(2022, 10, 22)),
+                Tuple(child3.lastName, child3.firstName, LocalDate.of(2022, 8, 22)),
+                Tuple(child4.lastName, child4.firstName, LocalDate.of(2022, 8, 22)),
+                Tuple(child2.lastName, child2.firstName, LocalDate.of(2022, 9, 22)),
+                Tuple(child1.lastName, child1.firstName, LocalDate.of(2022, 10, 22)),
             )
         assertThat(sortByValidity(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName }, { it.validFrom })
@@ -662,39 +688,38 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
-                        .copy(headOfFamilyId = testAdult_1.id, voucherValue = 29100),
-                    baseDecision(testChild_2)
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id, voucherValue = 29100),
+                    baseDecision(child2)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
+                            headOfFamilyId = adult2.id,
                             baseCoPayment = 0,
                             coPayment = 0,
                             finalCoPayment = 0,
                             voucherValue = 0,
                         ),
-                    baseDecision(testChild_3)
+                    baseDecision(child3)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
                                 ),
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             voucherValue = 64400,
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
                                 ),
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             voucherValue = 64400,
                         ),
                 )
@@ -724,10 +749,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_2.lastName, testChild_2.firstName, 0),
-                Tuple(testChild_1.lastName, testChild_1.firstName, 29100),
-                Tuple(testChild_3.lastName, testChild_3.firstName, 64400),
-                Tuple(testChild_4.lastName, testChild_4.firstName, 64400),
+                Tuple(child2.lastName, child2.firstName, 0),
+                Tuple(child1.lastName, child1.firstName, 29100),
+                Tuple(child3.lastName, child3.firstName, 64400),
+                Tuple(child4.lastName, child4.firstName, 64400),
             )
         assertThat(sortByVoucherValue(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName }, { it.voucherValue })
@@ -748,33 +773,31 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
-                        .copy(headOfFamilyId = testAdult_1.id, finalCoPayment = 21300),
-                    baseDecision(testChild_2)
-                        .copy(headOfFamilyId = testAdult_2.id, finalCoPayment = 12300),
-                    baseDecision(testChild_3)
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id, finalCoPayment = 21300),
+                    baseDecision(child2).copy(headOfFamilyId = adult2.id, finalCoPayment = 12300),
+                    baseDecision(child3)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
                                 ),
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             finalCoPayment = 55500,
                         ),
-                    baseDecision(testChild_4)
+                    baseDecision(child4)
                         .copy(
                             id =
                                 VoucherValueDecisionId(
                                     UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
                                 ),
-                            headOfFamilyId = testAdult_4.id,
+                            headOfFamilyId = adult4.id,
                             finalCoPayment = 55500,
                         ),
                 )
@@ -804,10 +827,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_2.lastName, testChild_2.firstName, 12300),
-                Tuple(testChild_1.lastName, testChild_1.firstName, 21300),
-                Tuple(testChild_3.lastName, testChild_3.firstName, 55500),
-                Tuple(testChild_4.lastName, testChild_4.firstName, 55500),
+                Tuple(child2.lastName, child2.firstName, 12300),
+                Tuple(child1.lastName, child1.firstName, 21300),
+                Tuple(child3.lastName, child3.firstName, 55500),
+                Tuple(child4.lastName, child4.firstName, 55500),
             )
         assertThat(sortByFinalCoPayment(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName }, { it.finalCoPayment })
@@ -828,21 +851,17 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
-                        .copy(headOfFamilyId = testAdult_1.id, decisionNumber = 202203),
-                    baseDecision(testChild_2)
-                        .copy(headOfFamilyId = testAdult_2.id, decisionNumber = 202201),
-                    baseDecision(testChild_3)
-                        .copy(headOfFamilyId = testAdult_3.id, decisionNumber = 202312),
-                    baseDecision(testChild_4)
-                        .copy(headOfFamilyId = testAdult_4.id, decisionNumber = 202204),
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id, decisionNumber = 202203),
+                    baseDecision(child2).copy(headOfFamilyId = adult2.id, decisionNumber = 202201),
+                    baseDecision(child3).copy(headOfFamilyId = adult3.id, decisionNumber = 202312),
+                    baseDecision(child4).copy(headOfFamilyId = adult4.id, decisionNumber = 202204),
                 )
             )
         }
@@ -870,10 +889,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_2.lastName, testChild_2.firstName, 202201L),
-                Tuple(testChild_1.lastName, testChild_1.firstName, 202203L),
-                Tuple(testChild_4.lastName, testChild_4.firstName, 202204L),
-                Tuple(testChild_3.lastName, testChild_3.firstName, 202312L),
+                Tuple(child2.lastName, child2.firstName, 202201L),
+                Tuple(child1.lastName, child1.firstName, 202203L),
+                Tuple(child4.lastName, child4.firstName, 202204L),
+                Tuple(child3.lastName, child3.firstName, 202312L),
             )
         assertThat(sortByNumber(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName }, { it.decisionNumber })
@@ -893,16 +912,16 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 headOfFamilyId = PersonId(UUID.randomUUID()),
                 childId = child.id,
                 dateOfBirth = child.dateOfBirth,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 placementType = PlacementType.DAYCARE,
                 serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
             )
         }
         listOf(
-                baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
-                baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
-                baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
-                baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id),
+                baseDecision(child1).copy(headOfFamilyId = adult1.id),
+                baseDecision(child2).copy(headOfFamilyId = adult2.id),
+                baseDecision(child3).copy(headOfFamilyId = adult3.id),
+                baseDecision(child4).copy(headOfFamilyId = adult4.id),
             )
             .forEach { decision ->
                 db.transaction { tx -> tx.upsertValueDecisions(listOf(decision)) }
@@ -932,10 +951,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         }
         val expectedAsc =
             listOf(
-                Tuple(testChild_1.lastName, testChild_1.firstName),
-                Tuple(testChild_2.lastName, testChild_2.firstName),
-                Tuple(testChild_3.lastName, testChild_3.firstName),
-                Tuple(testChild_4.lastName, testChild_4.firstName),
+                Tuple(child1.lastName, child1.firstName),
+                Tuple(child2.lastName, child2.firstName),
+                Tuple(child3.lastName, child3.firstName),
+                Tuple(child4.lastName, child4.firstName),
             )
         assertThat(sortByCreated(SortDirection.ASC).data)
             .extracting({ it.child.lastName }, { it.child.firstName })
@@ -956,21 +975,21 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
-                    baseDecision(testChild_2).copy(headOfFamilyId = testAdult_1.id),
-                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_2.id),
+                    baseDecision(child1).copy(headOfFamilyId = adult1.id),
+                    baseDecision(child2).copy(headOfFamilyId = adult1.id),
+                    baseDecision(child3).copy(headOfFamilyId = adult2.id),
                 )
             )
         }
 
-        val decisions = db.read { tx -> tx.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }
+        val decisions = db.read { tx -> tx.getHeadOfFamilyVoucherValueDecisions(adult1.id) }
 
         assertThat(decisions)
             .extracting(
@@ -979,8 +998,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.child.dateOfBirth },
             )
             .containsExactlyInAnyOrder(
-                Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_1.dateOfBirth),
-                Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_2.dateOfBirth),
+                Tuple(adult1.lastName, adult1.firstName, child1.dateOfBirth),
+                Tuple(adult1.lastName, adult1.firstName, child2.dateOfBirth),
             )
     }
 
@@ -995,10 +1014,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         status = VoucherValueDecisionStatus.DRAFT,
                         validFrom = now.today(),
                         validTo = now.today(),
-                        headOfFamilyId = testAdult_1.id,
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        unitId = testDaycare.id,
+                        headOfFamilyId = adult1.id,
+                        childId = child1.id,
+                        dateOfBirth = child1.dateOfBirth,
+                        unitId = daycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                     )
@@ -1016,7 +1035,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
                         sortDirection = SortDirection.ASC,
                         statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                        areas = listOf(testArea.shortName),
+                        areas = listOf(area.shortName),
                         unit = null,
                         startDate = null,
                         endDate = null,
@@ -1031,8 +1050,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child1.id,
+                    unitId = daycare.id,
                     startDate = now.today(),
                     endDate = now.today(),
                 )
@@ -1076,20 +1095,17 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 headOfFamilyId = headOfFamilyId,
                 partnerId = partnerId,
                 childId = childId,
-                dateOfBirth = testChild_1.dateOfBirth,
-                unitId = testDaycare.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
                 placementType = PlacementType.DAYCARE,
                 serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
             )
 
-        val decisionWithHandledStatement =
-            createTestDecision(testAdult_1.id, testChild_1.id, testAdult_2.id)
-        val decisionWithOpenAdultStatement =
-            createTestDecision(testAdult_3.id, testChild_2.id, testAdult_4.id)
+        val decisionWithHandledStatement = createTestDecision(adult1.id, child1.id, adult2.id)
+        val decisionWithOpenAdultStatement = createTestDecision(adult3.id, child2.id, adult4.id)
         val decisionWithFarAwayAndFutureOpenStatements =
-            createTestDecision(testAdult_5.id, testChild_3.id, testAdult_6.id)
-        val decisionWithOpenChildStatement =
-            createTestDecision(testAdult_7.id, testChild_4.id, null)
+            createTestDecision(adult5.id, child3.id, adult6.id)
+        val decisionWithOpenChildStatement = createTestDecision(adult7.id, child4.id, null)
 
         db.transaction { tx ->
             tx.upsertValueDecisions(
@@ -1100,10 +1116,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     decisionWithOpenChildStatement,
                 )
             )
-            tx.insert(testDecisionMaker_1)
+            tx.insert(decisionMaker)
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_1.id,
+                    personId = adult1.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1111,14 +1127,14 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker.id,
                 )
             )
 
-            // testAdult_2 statement not submitted
+            // adult2 statement not submitted
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_2.id,
+                    personId = adult2.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1131,7 +1147,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_3.id,
+                    personId = adult3.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1139,14 +1155,14 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker.id,
                 )
             )
 
-            // testAdult_4 statement not handled
+            // adult4 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_4.id,
+                    personId = adult4.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1158,10 +1174,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 )
             )
 
-            // testAdult_5 statement not handled
+            // adult5 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_5.id,
+                    personId = adult5.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(20),
@@ -1173,10 +1189,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 )
             )
 
-            // testAdult_6 statement not handled
+            // adult6 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_6.id,
+                    personId = adult6.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().plusDays(1),
@@ -1190,7 +1206,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
             tx.insert(
                 DevIncomeStatement(
-                    personId = testAdult_7.id,
+                    personId = adult7.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1198,14 +1214,14 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         ),
                     status = IncomeStatementStatus.HANDLED,
                     handledAt = clock.now(),
-                    handlerId = testDecisionMaker_1.id,
+                    handlerId = decisionMaker.id,
                 )
             )
 
-            // testChild_4 statement not handled
+            // child4 statement not handled
             tx.insert(
                 DevIncomeStatement(
-                    personId = testChild_4.id,
+                    personId = child4.id,
                     data =
                         IncomeStatementBody.HighestFee(
                             clock.today().minusMonths(2),
@@ -1237,7 +1253,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 )
 
             assertThat(result.data.map { it.child.id })
-                .containsExactlyInAnyOrder(testChild_1.id, testChild_3.id)
+                .containsExactlyInAnyOrder(child1.id, child3.id)
         }
     }
 
@@ -1252,26 +1268,23 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     headOfFamilyId = PersonId(UUID.randomUUID()),
                     childId = child.id,
                     dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1)
+                    baseDecision(child1)
                         .copy(
-                            headOfFamilyId = testAdult_1.id,
+                            headOfFamilyId = adult1.id,
                             status = VoucherValueDecisionStatus.DRAFT,
                         ),
-                    baseDecision(testChild_2)
+                    baseDecision(child2)
+                        .copy(headOfFamilyId = adult2.id, status = VoucherValueDecisionStatus.SENT),
+                    baseDecision(child3)
                         .copy(
-                            headOfFamilyId = testAdult_2.id,
-                            status = VoucherValueDecisionStatus.SENT,
-                        ),
-                    baseDecision(testChild_3)
-                        .copy(
-                            headOfFamilyId = testAdult_3.id,
+                            headOfFamilyId = adult3.id,
                             status = VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                         ),
                 )

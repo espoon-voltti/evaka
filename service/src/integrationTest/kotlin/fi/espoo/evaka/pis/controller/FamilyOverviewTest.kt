@@ -16,24 +16,19 @@ import fi.espoo.evaka.pis.controllers.FamilyController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -45,113 +40,106 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private val clock = RealEvakaClock()
-    private val financeUser =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(employee.id, setOf(UserRole.FINANCE_ADMIN))
+    private val adult1 = DevPerson()
+    private val adult2 = DevPerson()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }
 
     @Test
     fun `handles 1 + 1`() {
         createTestFixture1plus1()
-        val result =
-            familyController.getFamilyByPerson(dbInstance(), financeUser, clock, testAdult_1.id)
+        val result = familyController.getFamilyByPerson(dbInstance(), financeUser, clock, adult1.id)
 
         assertEquals(1, result.children.size)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
 
-        assertEquals(setOf(testChild_1.id), result.children.map { it.personId }.toSet())
+        assertEquals(setOf(child1.id), result.children.map { it.personId }.toSet())
     }
 
     @Test
     fun `handles 1 + 2`() {
         createTestFixture1plus2()
-        val result =
-            familyController.getFamilyByPerson(dbInstance(), financeUser, clock, testAdult_1.id)
+        val result = familyController.getFamilyByPerson(dbInstance(), financeUser, clock, adult1.id)
 
         assertEquals(2, result.children.size)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
 
-        assertEquals(
-            setOf(testChild_1.id, testChild_2.id),
-            result.children.map { it.personId }.toSet(),
-        )
+        assertEquals(setOf(child1.id, child2.id), result.children.map { it.personId }.toSet())
     }
 
     @Test
     fun `handles 2 + 2`() {
         createTestFixture2plus2()
-        val result =
-            familyController.getFamilyByPerson(dbInstance(), financeUser, clock, testAdult_1.id)
+        val result = familyController.getFamilyByPerson(dbInstance(), financeUser, clock, adult1.id)
 
         assertEquals(2, result.children.size)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
 
-        assertEquals(testAdult_2.id, result.partner!!.personId)
+        assertEquals(adult2.id, result.partner!!.personId)
 
-        assertEquals(
-            setOf(testChild_1.id, testChild_2.id),
-            result.children.map { it.personId }.toSet(),
-        )
+        assertEquals(setOf(child1.id, child2.id), result.children.map { it.personId }.toSet())
     }
 
     @Test
     fun `doesn't explode if children are missing`() {
-        val result =
-            familyController.getFamilyByPerson(dbInstance(), financeUser, clock, testAdult_1.id)
+        val result = familyController.getFamilyByPerson(dbInstance(), financeUser, clock, adult1.id)
 
         assertEquals(0, result.children.size)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
     }
 
     @Test
     fun `show income total if user is finance admin`() {
-        val incomeTotal = addIncome(testAdult_1.id)
+        val incomeTotal = addIncome(adult1.id)
         createTestFixture1plus1()
-        val result =
-            familyController.getFamilyByPerson(dbInstance(), financeUser, clock, testAdult_1.id)
+        val result = familyController.getFamilyByPerson(dbInstance(), financeUser, clock, adult1.id)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
         assertEquals(IncomeEffect.INCOME, result.headOfFamily.income?.effect)
         assertEquals(incomeTotal, result.headOfFamily.income?.total)
     }
 
     @Test
     fun `hide income total if user is unit supervisor`() {
-        val unitSupervisor = initializeUnitSupervisorUserAndRights(testChild_1.id)
-        addIncome(testAdult_1.id)
+        val unitSupervisor = initializeUnitSupervisorUserAndRights(child1.id)
+        addIncome(adult1.id)
         createTestFixture1plus1()
         val result =
-            familyController.getFamilyByPerson(dbInstance(), unitSupervisor, clock, testAdult_1.id)
+            familyController.getFamilyByPerson(dbInstance(), unitSupervisor, clock, adult1.id)
 
-        assertEquals(testAdult_1.id, result.headOfFamily.personId)
+        assertEquals(adult1.id, result.headOfFamily.personId)
         assertEquals(null, result.headOfFamily.income)
     }
 
     private fun createTestFixture1plus1() {
         val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
-        db.transaction {
-            it.createParentship(testChild_1.id, testAdult_1.id, from, to, Creator.DVV)
-        }
+        db.transaction { it.createParentship(child1.id, adult1.id, from, to, Creator.DVV) }
     }
 
     private fun createTestFixture1plus2() {
         val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction {
-            it.createParentship(testChild_1.id, testAdult_1.id, from, to, Creator.DVV)
-            it.createParentship(testChild_2.id, testAdult_1.id, from, to, Creator.DVV)
+            it.createParentship(child1.id, adult1.id, from, to, Creator.DVV)
+            it.createParentship(child2.id, adult1.id, from, to, Creator.DVV)
         }
     }
 
@@ -159,11 +147,11 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction {
             val creator = financeUser.evakaUserId
-            it.createParentship(testChild_1.id, testAdult_1.id, from, to, Creator.DVV)
-            it.createParentship(testChild_2.id, testAdult_1.id, from, to, Creator.DVV)
+            it.createParentship(child1.id, adult1.id, from, to, Creator.DVV)
+            it.createParentship(child2.id, adult1.id, from, to, Creator.DVV)
             it.createPartnership(
-                testAdult_1.id,
-                testAdult_2.id,
+                adult1.id,
+                adult2.id,
                 from,
                 to,
                 false,
@@ -182,13 +170,13 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
             it.insert(
                 DevPlacement(
                     childId = childId,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = LocalDate.now(),
                     endDate = LocalDate.now().plusYears(1),
                 )
             )
             it.insert(unitSupervisor)
-            it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)
+            it.updateDaycareAcl(daycare.id, externalId, UserRole.UNIT_SUPERVISOR)
         }
         return AuthenticatedUser.Employee(unitSupervisor.id, setOf())
     }
@@ -215,7 +203,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     ),
                                 )
                         ),
-                    modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }

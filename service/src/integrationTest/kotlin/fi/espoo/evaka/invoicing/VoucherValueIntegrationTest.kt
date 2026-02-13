@@ -14,16 +14,15 @@ import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueR
 import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -39,11 +38,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     val mockClock = MockEvakaClock(2024, 4, 1, 10, 0)
 
-    private val financeUser =
-        AuthenticatedUser.Employee(
-            id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN),
-        )
+    private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
 
     val testVoucherValue =
         ServiceNeedOptionVoucherValueRange(
@@ -60,7 +55,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
+            tx.insert(employee)
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
         }
@@ -297,13 +292,13 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     fun deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
-        financeBasicsController.deleteVoucherValue(dbInstance(), financeUser, mockClock, id)
+        financeBasicsController.deleteVoucherValue(dbInstance(), employee.user, mockClock, id)
     }
 
     fun addVoucherValue(voucherValue: ServiceNeedOptionVoucherValueRange) {
         financeBasicsController.createVoucherValue(
             dbInstance(),
-            financeUser,
+            employee.user,
             mockClock,
             voucherValue,
         )
@@ -315,7 +310,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     ) {
         financeBasicsController.updateVoucherValue(
             dbInstance(),
-            financeUser,
+            employee.user,
             mockClock,
             id,
             voucherValue,

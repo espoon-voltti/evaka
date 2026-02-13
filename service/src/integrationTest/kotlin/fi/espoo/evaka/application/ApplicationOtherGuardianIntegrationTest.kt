@@ -31,9 +31,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.test.getApplicationStatus
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -51,10 +48,29 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
     @Autowired private lateinit var applicationStateService: ApplicationStateService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val guardian = testAdult_5
-    private val otherVtjGuardian = testAdult_6
+    private val guardian =
+        DevPerson(
+            ssn = "070644-937X",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val otherVtjGuardian =
+        DevPerson(
+            ssn = "311299-999E",
+            streetAddress = "Toistie 33",
+            postalCode = "02230",
+            postOffice = "Espoo",
+        )
     private val fosterParent = DevPerson(ssn = "010106A981M")
-    private val child = testChild_6
+    private val child =
+        DevPerson(
+            ssn = "070714A9126",
+            dateOfBirth = LocalDate.of(2018, 11, 13),
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))

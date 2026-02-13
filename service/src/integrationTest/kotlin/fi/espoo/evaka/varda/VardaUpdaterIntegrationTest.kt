@@ -6,10 +6,14 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.Adult
+import fi.espoo.evaka.application.persistence.daycare.Apply
+import fi.espoo.evaka.application.persistence.daycare.Child
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.getPersonById
@@ -30,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevVoucherValueDecision
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -1456,19 +1461,28 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
+            val applicationDocument =
+                DaycareFormV0(
+                    type = ApplicationType.PRESCHOOL,
+                    child = Child(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(unit1.id)),
+                )
+
             // This application is picked up!
-            tx.insertApplication(
-                    guardian = guardian,
-                    child = child,
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate1,
-                    preferredUnit = unit1,
+                    type = ApplicationType.PRESCHOOL,
+                    document = applicationDocument,
                 )
-                .let { applicationDetails ->
+                .let { applicationId ->
                     tx.insertTestDecision(
                         TestDecision(
-                            applicationId = applicationDetails.id,
+                            applicationId = applicationId,
                             unitId = unit1.id,
                             startDate = placementRange.start,
                             endDate = placementRange.end,
@@ -1481,18 +1495,19 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // This application is not picked up because its sent date is before the previous one:
             // The latest application is always picked up
-            tx.insertApplication(
-                    guardian = guardian,
-                    child = child,
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate1.minusDays(1),
-                    preferredUnit = unit1,
+                    type = ApplicationType.PRESCHOOL,
+                    document = applicationDocument,
                 )
-                .let { applicationDetails ->
+                .let { applicationId ->
                     tx.insertTestDecision(
                         TestDecision(
-                            applicationId = applicationDetails.id,
+                            applicationId = applicationId,
                             unitId = unit1.id,
                             startDate = placementRange.start,
                             endDate = placementRange.end,
@@ -1505,18 +1520,19 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // This application is not picked up because the decision's date range doesn't overlap
             // with the placement
-            tx.insertApplication(
-                    guardian = guardian,
-                    child = child,
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate2,
-                    preferredUnit = unit1,
+                    type = ApplicationType.PRESCHOOL,
+                    document = applicationDocument,
                 )
-                .let { applicationDetails ->
+                .let { applicationId ->
                     tx.insertTestDecision(
                         TestDecision(
-                            applicationId = applicationDetails.id,
+                            applicationId = applicationId,
                             unitId = unit1.id,
                             startDate = placementRange.start.minusDays(1),
                             endDate = placementRange.start.minusDays(1),
@@ -1528,18 +1544,20 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
 
             // This application is not picked up because the decision targets a wrong unit
-            tx.insertApplication(
-                    guardian = guardian,
-                    child = child,
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
                     status = ApplicationStatus.ACTIVE,
                     confidential = true,
                     sentDate = applicationDate3,
-                    preferredUnit = unit2,
+                    type = ApplicationType.PRESCHOOL,
+                    document =
+                        applicationDocument.copy(apply = Apply(preferredUnits = listOf(unit2.id))),
                 )
-                .let { applicationDetails ->
+                .let { applicationId ->
                     tx.insertTestDecision(
                         TestDecision(
-                            applicationId = applicationDetails.id,
+                            applicationId = applicationId,
                             unitId = unit2.id,
                             startDate = placementRange.start,
                             endDate = placementRange.end,

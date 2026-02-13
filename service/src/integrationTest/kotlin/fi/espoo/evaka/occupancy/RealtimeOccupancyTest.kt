@@ -11,11 +11,11 @@ import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.insertServiceNeedOptions
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -28,13 +28,9 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -42,16 +38,19 @@ import org.junit.jupiter.api.Test
 
 class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val date = LocalDate.of(2022, 5, 23)
-    private val groupId = GroupId(UUID.randomUUID())
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val group = DevDaycareGroup(daycareId = daycare.id)
+    private val decisionMaker = DevEmployee()
 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
+            tx.insert(decisionMaker)
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insertServiceNeedOptions()
-            tx.insert(DevDaycareGroup(groupId, testDaycare.id))
+            tx.insert(group)
         }
     }
 
@@ -63,7 +62,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
@@ -71,7 +70,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevChildAttendance(
                     childId = child1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(7, 45),
                     departed = LocalTime.of(16, 30),
@@ -83,7 +82,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
@@ -98,7 +97,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevChildAttendance(
                     childId = child2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 15),
                     departed = LocalTime.of(16, 30),
@@ -110,7 +109,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child3.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
@@ -118,7 +117,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevChildAttendance(
                     childId = child3.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 15),
                     departed = null,
@@ -130,7 +129,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             val placement4 =
                 DevPlacement(
                     childId = child4.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
@@ -141,13 +140,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     optionId = snDaycareContractDays10.id,
                     startDate = date,
                     endDate = date,
-                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedBy = decisionMaker.evakaUserId,
                 )
             )
             tx.insert(
                 DevChildAttendance(
                     childId = child4.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 30),
                     departed = LocalTime.of(16, 30),
@@ -157,13 +156,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             val employee = DevEmployee()
             tx.insert(
                 employee,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(group.id)),
             )
             tx.insert(
                 DevStaffAttendance(
                     employeeId = employee.id,
-                    groupId = groupId,
+                    groupId = group.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(7, 0)),
                     departed = HelsinkiDateTime.of(date, LocalTime.of(16, 45)),
                     occupancyCoefficient = occupancyCoefficientSeven,
@@ -175,7 +174,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.markExternalStaffArrival(
                     ExternalStaffArrival(
                         "Matti",
-                        groupId,
+                        group.id,
                         HelsinkiDateTime.of(date, LocalTime.of(10, 0)),
                         BigDecimal("3.5"),
                     )
@@ -193,7 +192,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.markExternalStaffArrival(
                     ExternalStaffArrival(
                         "Nolla Sijainen",
-                        groupId,
+                        group.id,
                         HelsinkiDateTime.of(date, LocalTime.of(11, 0)),
                         BigDecimal.ZERO,
                     )
@@ -346,7 +345,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevChildAttendance(
                     childId = child.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     date = date,
                     arrived = LocalTime.of(7, 45),
                     departed = LocalTime.of(16, 30),
@@ -369,8 +368,8 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     ): RealtimeOccupancy {
         return db.read { tx ->
             RealtimeOccupancy(
-                childAttendances = tx.getChildOccupancyAttendances(testDaycare.id, timeRange),
-                staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange),
+                childAttendances = tx.getChildOccupancyAttendances(daycare.id, timeRange),
+                staffAttendances = tx.getStaffOccupancyAttendances(daycare.id, timeRange),
             )
         }
     }
@@ -384,7 +383,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date.plusMonths(2),
                 )
@@ -392,14 +391,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                     DevChildAttendance(
                         childId = child1.id,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         date = date,
                         arrived = LocalTime.of(20, 45),
                         departed = LocalTime.of(23, 59),
                     ),
                     DevChildAttendance(
                         childId = child1.id,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         date = tomorrow,
                         arrived = LocalTime.of(0, 0),
                         departed = LocalTime.of(8, 15),
@@ -412,7 +411,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date.plusMonths(2),
                 )
@@ -420,14 +419,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                     DevChildAttendance(
                         childId = child2.id,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         date = date,
                         arrived = LocalTime.of(21, 5),
                         departed = LocalTime.of(23, 59),
                     ),
                     DevChildAttendance(
                         childId = child2.id,
-                        unitId = testDaycare.id,
+                        unitId = daycare.id,
                         date = tomorrow,
                         arrived = LocalTime.of(0, 0),
                         departed = LocalTime.of(8, 50),
@@ -438,13 +437,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             val employee = DevEmployee()
             tx.insert(
                 employee,
-                mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId)),
+                mapOf(daycare.id to UserRole.STAFF),
+                mapOf(daycare.id to listOf(group.id)),
             )
             tx.insert(
                 DevStaffAttendance(
                     employeeId = employee.id,
-                    groupId = groupId,
+                    groupId = group.id,
                     arrived = HelsinkiDateTime.of(date, LocalTime.of(19, 45)),
                     departed = HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)),
                     occupancyCoefficient = occupancyCoefficientSeven,
