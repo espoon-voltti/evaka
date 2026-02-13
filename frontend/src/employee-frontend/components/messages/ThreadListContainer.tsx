@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { Failure, Loading, Success, wrapResult } from 'lib-common/api'
+import { Failure, Loading, Success } from 'lib-common/api'
 import type {
   MessageAccount,
   MessageThread,
@@ -18,6 +18,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { formatPersonName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -26,17 +27,15 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
-import { moveThreadToFolder } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
 import type { ThreadListItem } from './ThreadList'
 import { ThreadList } from './ThreadList'
+import { moveThreadToFolderMutation } from './queries'
 import type { View } from './types-view'
 import { isFolderView, isStandardView } from './types-view'
-
-const moveThreadToFolderResult = wrapResult(moveThreadToFolder)
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -83,7 +82,6 @@ export default React.memo(function ThreadListContainer({
     page,
     setPage,
     pages,
-    refreshMessages,
     selectedThread,
     selectThread,
     setSelectedDraft,
@@ -96,8 +94,7 @@ export default React.memo(function ThreadListContainer({
 
   const onMessageMoved = useCallback(() => {
     selectThread(undefined)
-    refreshMessages()
-  }, [refreshMessages, selectThread])
+  }, [selectThread])
 
   const hasMessages = useMemo<boolean>(() => {
     if (view === 'received' && receivedMessages.isSuccess) {
@@ -307,6 +304,9 @@ const FolderChangeModal = React.memo(function FolderChangeModal({
   onClose: () => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doMoveThreadToFolder } = useMutationResult(
+    moveThreadToFolderMutation
+  )
   const [folder, setFolder] = useState<MessageThreadFolder | null>(null)
   return (
     <AsyncFormModal
@@ -314,7 +314,7 @@ const FolderChangeModal = React.memo(function FolderChangeModal({
       title={i18n.messages.changeFolder.modalTitle}
       resolveAction={() =>
         folder
-          ? moveThreadToFolderResult({
+          ? doMoveThreadToFolder({
               accountId: accountId,
               threadId: threadId,
               folderId: folder.id

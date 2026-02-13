@@ -5,17 +5,16 @@
 import React from 'react'
 
 import type { Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
 import type {
   MessageAccountId,
   MessageThreadId
 } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult } from 'lib-common/query'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 
-import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import EllipsisMenu from '../common/EllipsisMenu'
@@ -30,8 +29,7 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
-
-const archiveThreadResult = wrapResult(archiveThread)
+import { archiveThreadMutation } from './queries'
 
 export type ThreadListItem = {
   id: MessageThreadId
@@ -62,6 +60,9 @@ export function ThreadList({
   onArchived
 }: Props) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doArchiveThread } = useMutationResult(
+    archiveThreadMutation
+  )
 
   return renderResult(messages, (threads) => (
     <>
@@ -112,7 +113,7 @@ export function ThreadList({
                         id: 'archive',
                         label: i18n.common.archive,
                         onClick: () =>
-                          archiveThreadResult({
+                          doArchiveThread({
                             accountId,
                             threadId: item.id
                           }).then(onArchived)
