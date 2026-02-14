@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [tools]
-node = "24.13.0"
+node = "24.13.1"
 
 [tasks.start]
 description = "Start the development environment"
