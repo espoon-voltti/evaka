@@ -51,8 +51,8 @@ dependencies {
         api(libs.ktlint.test)
 
         // These constraints are needed for CVE fixes
-        api("ch.qos.logback:logback-classic:1.5.27")
-        api("ch.qos.logback:logback-core:1.5.27")
+        api("ch.qos.logback:logback-classic:1.5.28")
+        api("ch.qos.logback:logback-core:1.5.28")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.21.0"))
