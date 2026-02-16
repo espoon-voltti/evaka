@@ -32,6 +32,8 @@ import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage

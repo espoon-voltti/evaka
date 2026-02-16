@@ -35,6 +35,8 @@ import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 
 beforeEach(async () => {

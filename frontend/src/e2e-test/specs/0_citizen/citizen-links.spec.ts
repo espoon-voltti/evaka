@@ -11,6 +11,8 @@ import {
 import { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 describe('Citizen links', () => {
   let page: Page
   const credentials = {

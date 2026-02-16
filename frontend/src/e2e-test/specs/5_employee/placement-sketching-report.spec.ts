@@ -32,6 +32,8 @@ import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 
 const mockToday = LocalDate.of(2021, 2, 1)

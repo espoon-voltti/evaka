@@ -25,6 +25,8 @@ import {
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedDate = LocalDate.of(2021, 4, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(15, 0))
 

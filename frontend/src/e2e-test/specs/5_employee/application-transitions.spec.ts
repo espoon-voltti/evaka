@@ -45,6 +45,8 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedDate = LocalDate.of(2021, 8, 16)
 let page: Page
 let applicationListView: ApplicationListView

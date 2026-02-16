@@ -16,6 +16,8 @@ import UnitListPage from '../../pages/mobile/unit-list-page'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 let page: Page
 let unitListPage: UnitListPage
 let unit: DevDaycare

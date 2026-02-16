@@ -17,6 +17,8 @@ import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage

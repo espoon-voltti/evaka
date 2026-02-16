@@ -27,6 +27,8 @@ import { waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let nav: EmployeeNav
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0, 0)

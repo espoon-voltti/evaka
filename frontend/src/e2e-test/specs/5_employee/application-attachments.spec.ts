@@ -32,6 +32,8 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page, testFileName } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let applicationListView: ApplicationListView
 

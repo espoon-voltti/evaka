@@ -14,6 +14,8 @@ import { ChildDocumentPage } from '../../pages/employee/documents/child-document
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 

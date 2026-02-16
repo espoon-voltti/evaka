@@ -32,6 +32,8 @@ import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let messagingPage: Page
 let messenger: DevEmployee
 let staffPage: Page

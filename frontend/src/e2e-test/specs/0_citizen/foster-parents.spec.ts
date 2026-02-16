@@ -40,6 +40,8 @@ import { minimalDaycareForm } from '../../utils/application-forms'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let activeRelationshipPage: Page
 let activeRelationshipHeader: CitizenHeader
 let fosterParent: DevPerson

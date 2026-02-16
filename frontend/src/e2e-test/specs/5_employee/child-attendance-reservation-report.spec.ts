@@ -27,6 +27,8 @@ import { ChildAttendanceReservationByChildReport } from '../../pages/employee/re
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let child: DevPerson
 let unitId: DaycareId

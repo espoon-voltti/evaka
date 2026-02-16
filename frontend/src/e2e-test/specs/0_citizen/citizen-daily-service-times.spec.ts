@@ -19,6 +19,8 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 
 const child = testChild

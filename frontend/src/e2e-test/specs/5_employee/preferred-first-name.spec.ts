@@ -11,6 +11,8 @@ import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-pr
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let admin: DevEmployee
 let page: Page
 let nav: EmployeeNav

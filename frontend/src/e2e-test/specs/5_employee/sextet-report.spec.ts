@@ -14,6 +14,8 @@ import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 beforeEach(async () => await resetServiceState())
 
 describe('Sextet report', () => {
