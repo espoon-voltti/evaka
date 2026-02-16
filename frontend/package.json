@@ -23,7 +23,7 @@
     "@fortawesome/fontawesome-svg-core": "6.7.2",
     "@fortawesome/free-regular-svg-icons": "6.7.2",
     "@fortawesome/free-solid-svg-icons": "6.7.2",
-    "@fortawesome/react-fontawesome": "3.1.1",
+    "@fortawesome/react-fontawesome": "3.2.0",
     "@react-spring/web": "10.0.3",
     "@sentry/browser": "10.38.0",
     "@sentry/react": "10.38.0",
