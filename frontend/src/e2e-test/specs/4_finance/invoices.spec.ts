@@ -35,6 +35,8 @@ import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 
 const now = HelsinkiDateTime.of(2024, 11, 1, 12, 0)

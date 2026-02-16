@@ -13,6 +13,8 @@ import FinanceBasicsPage from '../../pages/employee/finance-basics'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let financeBasicsPage: FinanceBasicsPage
 let nav: EmployeeNav

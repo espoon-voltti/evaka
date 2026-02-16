@@ -24,6 +24,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { envs, Page, testFileName } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let header: CitizenHeader
 let listPage: CitizenChildIncomeStatementListPage

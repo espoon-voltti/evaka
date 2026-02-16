@@ -22,6 +22,8 @@ import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let childInformationPage: ChildInformationPage
 
 let page: Page

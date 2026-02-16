@@ -33,6 +33,8 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 let page: Page

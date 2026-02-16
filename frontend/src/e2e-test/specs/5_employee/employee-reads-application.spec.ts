@@ -20,6 +20,8 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let applicationReadView: ApplicationReadView
 

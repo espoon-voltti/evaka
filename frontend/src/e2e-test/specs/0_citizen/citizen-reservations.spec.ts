@@ -42,6 +42,8 @@ import { envs, Page } from '../../utils/page'
 import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 const today = LocalDate.of(2022, 1, 5)
 
 let page: Page

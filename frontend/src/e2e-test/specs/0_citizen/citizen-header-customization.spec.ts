@@ -8,6 +8,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 beforeEach(async () => {
   await resetServiceState()
   await testAdult.saveAdult({ updateMockVtjWithDependants: [] })

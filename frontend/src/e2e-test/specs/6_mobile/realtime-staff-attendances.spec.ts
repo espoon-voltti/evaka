@@ -43,6 +43,8 @@ import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let nav: MobileNav
 let mobileSignupUrl: string

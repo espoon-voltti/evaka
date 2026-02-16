@@ -16,6 +16,8 @@ import type { EnvType } from '../../utils/page'
 import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let header: CitizenHeader
 let incomeStatementsPage: IncomeStatementsPage

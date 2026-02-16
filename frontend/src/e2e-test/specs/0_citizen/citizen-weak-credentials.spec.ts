@@ -19,6 +19,8 @@ import { getVerificationCodeFromEmail } from '../../utils/email'
 import { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 const mockedTime = HelsinkiDateTime.of(2024, 1, 1, 12, 0)
 let page: Page
 

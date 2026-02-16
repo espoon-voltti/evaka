@@ -40,6 +40,8 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 let staffPage: Page
 let unitSupervisorPage: Page
 let citizenPage: Page

@@ -16,6 +16,8 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedTime = LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
   LocalTime.of(12, 0)
 )

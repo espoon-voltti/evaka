@@ -40,6 +40,8 @@ import { ChildDocumentPage } from '../../pages/employee/documents/child-document
 import { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let child: DevPerson
 let decisionMaker: DevEmployee

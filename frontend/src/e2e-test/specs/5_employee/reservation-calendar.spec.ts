@@ -39,6 +39,8 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let child1Fixture: DevPerson
 let child1DaycarePlacementId: PlacementId

@@ -27,6 +27,8 @@ import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let admin: DevEmployee
 let page: Page
 

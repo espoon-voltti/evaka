@@ -31,6 +31,8 @@ import {
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage

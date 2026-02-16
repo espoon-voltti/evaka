@@ -18,6 +18,8 @@ import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let guardianPage: GuardianInformationPage
 let financeAdmin: DevEmployee

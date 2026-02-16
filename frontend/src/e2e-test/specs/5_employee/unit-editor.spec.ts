@@ -21,6 +21,8 @@ import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const today = LocalDate.of(2024, 3, 1)
 const now = today.toHelsinkiDateTime(LocalTime.of(12, 0))
 

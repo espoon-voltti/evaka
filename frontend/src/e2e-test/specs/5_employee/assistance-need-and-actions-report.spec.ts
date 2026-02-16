@@ -30,6 +30,8 @@ import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let childId: PersonId
 let unitId: DaycareId

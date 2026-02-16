@@ -25,6 +25,8 @@ import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedToday = LocalDate.of(2024, 9, 9)
 let period: HolidayPeriod
 let child: DevPerson
