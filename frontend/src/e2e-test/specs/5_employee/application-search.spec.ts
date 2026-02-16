@@ -29,6 +29,8 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let admin: DevEmployee
 
 beforeEach(async () => {

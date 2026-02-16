@@ -35,6 +35,8 @@ import { waitUntilEqual } from '../../utils'
 import { envs, Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 
 const mockedDate = LocalDate.of(2022, 3, 1)

@@ -13,6 +13,8 @@ import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-det
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let header: CitizenHeader
 let personalDetailsPage: CitizenPersonalDetailsPage
 let page: Page

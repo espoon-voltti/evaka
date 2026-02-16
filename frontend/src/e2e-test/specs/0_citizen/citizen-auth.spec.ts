@@ -11,6 +11,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 describe('Citizen authentication', () => {
   let page: Page
   const credentials = {

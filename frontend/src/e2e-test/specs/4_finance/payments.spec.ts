@@ -11,6 +11,8 @@ import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let financePage: FinancePage
 let paymentsPage: PaymentsPage

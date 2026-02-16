@@ -29,6 +29,8 @@ import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let unitFixture: DevDaycare
 let groupFixture: DevDaycareGroup
 let childFixture: DevPerson

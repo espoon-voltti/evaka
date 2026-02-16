@@ -24,6 +24,8 @@ import { OutOfOfficePage } from '../../pages/employee/messages/out-of-office-pag
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let supervisor: DevEmployee
 
 beforeEach(async () => {

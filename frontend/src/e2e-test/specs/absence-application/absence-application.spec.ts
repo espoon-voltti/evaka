@@ -16,6 +16,8 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 beforeEach(() => resetServiceState())
 
 describe('Absence application', () => {

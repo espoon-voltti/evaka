@@ -22,6 +22,8 @@ import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let applicationsPage: ApplicationListView
 

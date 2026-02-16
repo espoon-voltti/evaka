@@ -37,6 +37,8 @@ import type { EnvType } from '../../utils/page'
 import { envs, Modal, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let header: CitizenHeader
 let calendarPage: CitizenCalendarPage

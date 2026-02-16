@@ -16,6 +16,8 @@ import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let admin: DevEmployee
 
 beforeEach(async () => {

@@ -15,6 +15,8 @@ import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let unitPage: UnitPage
 const groupId1 = randomId<GroupId>()

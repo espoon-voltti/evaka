@@ -26,6 +26,8 @@ import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let personId: PersonId
 let incomesSection: IncomeSection
