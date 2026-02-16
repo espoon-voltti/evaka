@@ -483,7 +483,7 @@ WITH relevant_placements AS
      relevant_gaps AS (SELECT rpl.child_id,
                               unnest(
                                       range_agg(rpl.period * rd.period)
-                                          - range_agg(rsn.period)
+                                          - coalesce(range_agg(rsn.period), '{}'::datemultirange)
                               ) AS period,
                               rd.contract_days_per_month,
                               rd.daycare_hours_per_month
