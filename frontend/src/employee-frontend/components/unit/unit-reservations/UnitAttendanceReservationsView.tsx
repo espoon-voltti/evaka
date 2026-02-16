@@ -5,7 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading, wrapResult } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import type { Child } from 'lib-common/generated/api-types/reservations'
@@ -13,7 +13,6 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   FixedSpaceColumn,
@@ -26,22 +25,20 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { getRealtimeStaffAttendances } from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import { renderResult } from '../../async-rendering'
 import type { AttendanceGroupFilter } from '../TabCalendar'
-import { unitAttendanceReservationsQuery } from '../queries'
+import {
+  realtimeStaffAttendancesQuery,
+  unitAttendanceReservationsQuery
+} from '../queries'
 
 import type { ChildDateEditorTarget } from './ChildDateModal'
 import ChildDateModal from './ChildDateModal'
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import StaffAttendanceTable from './StaffAttendanceTable'
-
-const getRealtimeStaffAttendancesResult = wrapResult(
-  getRealtimeStaffAttendances
-)
 
 const Time = styled.span`
   font-weight: ${fontWeights.normal};
@@ -89,14 +86,12 @@ export default React.memo(function UnitAttendanceReservationsView({
     })
   )
 
-  const [staffAttendances, reloadStaffAttendances] = useApiState(
-    () =>
-      getRealtimeStaffAttendancesResult({
-        unitId,
-        start: weekRange.start,
-        end: weekRange.end
-      }),
-    [unitId, weekRange]
+  const staffAttendances = useQueryResult(
+    realtimeStaffAttendancesQuery({
+      unitId,
+      start: weekRange.start,
+      end: weekRange.end
+    })
   )
 
   const [creatingReservationChild, setCreatingReservationChild] =
@@ -159,7 +154,6 @@ export default React.memo(function UnitAttendanceReservationsView({
             operationalDays={childData.days}
             staffAttendances={staffData.staff}
             externalAttendances={staffData.extraAttendances}
-            reloadStaffAttendances={reloadStaffAttendances}
             groups={groups}
             groupFilter={null}
             defaultGroup={null}
@@ -222,7 +216,6 @@ export default React.memo(function UnitAttendanceReservationsView({
                 operationalDays={childData.days}
                 staffAttendances={staffData.staff}
                 externalAttendances={staffData.extraAttendances}
-                reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
                 defaultGroup={selectedGroup.id}

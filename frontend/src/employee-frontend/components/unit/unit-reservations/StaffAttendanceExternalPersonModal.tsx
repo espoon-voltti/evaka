@@ -7,7 +7,7 @@ import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Failure, wrapResult } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
@@ -27,6 +27,7 @@ import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useMutationResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -48,12 +49,8 @@ import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { upsertDailyExternalRealtimeAttendances } from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
-
-const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
-  upsertDailyExternalRealtimeAttendances
-)
+import { upsertExternalAttendancesMutation } from '../queries'
 
 type ExternalPersonModalProps = {
   onClose: () => void
@@ -150,6 +147,9 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   defaultGroupId
 }: ExternalPersonModalProps) {
   const { i18n, lang } = useTranslation()
+  const { mutateAsync: doUpsertExternalAttendances } = useMutationResult(
+    upsertExternalAttendancesMutation
+  )
 
   const form = useForm(
     externalPersonForm,
@@ -162,8 +162,8 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
       return Promise.resolve(Failure.of({ message: 'Form not valid' }))
     }
 
-    return upsertDailyExternalRealtimeAttendancesResult({ body: form.value() })
-  }, [form])
+    return doUpsertExternalAttendances({ body: form.value() })
+  }, [form, doUpsertExternalAttendances])
 
   const date = useFormField(form, 'date')
   const arrivalTime = useFormField(form, 'arrivalTime')

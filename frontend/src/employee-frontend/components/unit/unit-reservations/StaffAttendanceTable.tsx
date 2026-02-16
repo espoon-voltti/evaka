@@ -12,8 +12,6 @@ import uniqBy from 'lodash/uniqBy'
 import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import type { ErrorKey } from 'lib-common/form-validation'
 import type {
@@ -39,6 +37,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { formatPersonName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -53,11 +52,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faCircleEllipsis } from 'lib-icons'
 
-import {
-  upsertDailyExternalRealtimeAttendances,
-  upsertDailyStaffRealtimeAttendances
-} from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
+import {
+  upsertExternalAttendancesMutation,
+  upsertStaffAttendancesMutation
+} from '../queries'
 
 import type {
   EditedAttendance,
@@ -75,13 +74,6 @@ import {
   NameWrapper
 } from './attendance-elements'
 
-const upsertDailyStaffRealtimeAttendancesResult = wrapResult(
-  upsertDailyStaffRealtimeAttendances
-)
-const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
-  upsertDailyExternalRealtimeAttendances
-)
-
 type GroupFilter = (ids: UUID[]) => boolean
 
 interface Props {
@@ -89,7 +81,6 @@ interface Props {
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   externalAttendances: ExternalAttendance[]
-  reloadStaffAttendances: () => Promise<Result<unknown>>
   groups: DaycareGroup[]
   groupFilter: GroupFilter | null
   defaultGroup: GroupId | null
@@ -112,7 +103,6 @@ export default React.memo(function StaffAttendanceTable({
   staffAttendances,
   externalAttendances,
   operationalDays,
-  reloadStaffAttendances,
   groups,
   groupFilter,
   defaultGroup
@@ -266,17 +256,13 @@ export default React.memo(function StaffAttendanceTable({
           unitId={unitId}
           groups={groups}
           defaultGroupId={defaultGroup}
-          reloadStaffAttendances={reloadStaffAttendances}
           onClose={closeDetailsModal}
         />
       ) : null}
       {showExternalPersonModal && (
         <StaffAttendanceExternalPersonModal
           onClose={toggleAddPersonModal}
-          onSave={async () => {
-            await reloadStaffAttendances()
-            toggleAddPersonModal()
-          }}
+          onSave={toggleAddPersonModal}
           unitId={unitId}
           groups={groups}
           defaultGroupId={defaultGroup ?? groups[0].id}
@@ -292,7 +278,6 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   unitId,
   groups,
   defaultGroupId,
-  reloadStaffAttendances,
   onClose
 }: {
   detailsModalConfig: DetailsModalConfig
@@ -303,18 +288,19 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   unitId: DaycareId
   groups: DaycareGroup[]
   defaultGroupId: GroupId | null
-  reloadStaffAttendances: () => Promise<Result<unknown>>
   onClose: () => void
 }) {
-  const onSuccess = useCallback(() => {
-    void reloadStaffAttendances()
-    onClose()
-  }, [onClose, reloadStaffAttendances])
+  const { mutateAsync: doUpsertStaffAttendances } = useMutationResult(
+    upsertStaffAttendancesMutation
+  )
+  const { mutateAsync: doUpsertExternalAttendances } = useMutationResult(
+    upsertExternalAttendancesMutation
+  )
   const { target, date } = detailsModalConfig
   const onSaveStaff = useCallback(
     (entries: StaffAttendanceUpsert[]) =>
       target.type === 'employee'
-        ? upsertDailyStaffRealtimeAttendancesResult({
+        ? doUpsertStaffAttendances({
             body: {
               unitId,
               employeeId: target.employeeId,
@@ -323,12 +309,12 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
             }
           })
         : undefined,
-    [date, target, unitId]
+    [date, target, unitId, doUpsertStaffAttendances]
   )
   const onSaveExternal = useCallback(
     (entries: ExternalAttendanceUpsert[]) =>
       target.type === 'external'
-        ? upsertDailyExternalRealtimeAttendancesResult({
+        ? doUpsertExternalAttendances({
             body: {
               unitId,
               name: target.name,
@@ -337,7 +323,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
             }
           })
         : undefined,
-    [date, target, unitId]
+    [date, target, unitId, doUpsertExternalAttendances]
   )
   return target.type === 'employee' ? (
     <StaffAttendanceDetailsModal
@@ -353,7 +339,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       groups={groups}
       defaultGroupId={defaultGroupId}
       onClose={onClose}
-      onSuccess={onSuccess}
+      onSuccess={onClose}
       unitId={unitId}
     />
   ) : (
@@ -372,7 +358,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       groups={groups}
       defaultGroupId={defaultGroupId}
       onClose={onClose}
-      onSuccess={onSuccess}
+      onSuccess={onClose}
       unitId={unitId}
     />
   )

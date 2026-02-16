@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { isLoading, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import type { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import type {
   DaycareId,
   MobileDeviceId
 } from 'lib-common/generated/api-types/shared'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -24,18 +25,15 @@ import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import {
-  deleteMobileDevice,
-  getMobileDevices,
-  putMobileDeviceName
-} from '../../../generated/api-clients/pairing'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { renderResult } from '../../async-rendering'
 
-const getMobileDevicesResult = wrapResult(getMobileDevices)
-const deleteMobileDeviceResult = wrapResult(deleteMobileDevice)
-const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
+import {
+  deleteMobileDeviceMutation,
+  mobileDevicesQuery,
+  putMobileDeviceNameMutation
+} from './queries'
 
 type Props = {
   unitId: DaycareId
@@ -175,9 +173,13 @@ export default React.memo(function UnitMobileDevices({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [mobileDevices, reloadMobileDevices] = useApiState(
-    () => getMobileDevicesResult({ unitId }),
-    [unitId]
+  const queryClient = useQueryClient()
+  const mobileDevices = useQueryResult(mobileDevicesQuery({ unitId }))
+  const { mutateAsync: doDeleteMobileDevice } = useMutationResult(
+    deleteMobileDeviceMutation
+  )
+  const { mutateAsync: doPutMobileDeviceName } = useMutationResult(
+    putMobileDeviceNameMutation
   )
   const [mobileId, setMobileId] = useState<MobileDeviceId | undefined>(
     undefined
@@ -188,11 +190,10 @@ export default React.memo(function UnitMobileDevices({
 
   const confirmRemoveDevice = useCallback(async () => {
     if (mobileId) {
-      await deleteMobileDeviceResult({ id: mobileId })
-      void reloadMobileDevices()
+      await doDeleteMobileDevice({ id: mobileId })
     }
     clearUiMode()
-  }, [clearUiMode, mobileId, reloadMobileDevices])
+  }, [clearUiMode, mobileId, doDeleteMobileDevice])
 
   const openRemoveMobileDeviceModal = useCallback(
     (id: MobileDeviceId) => {
@@ -210,19 +211,23 @@ export default React.memo(function UnitMobileDevices({
     [toggleUiMode, unitId]
   )
 
+  const invalidateMobileDevices = useCallback(
+    () => void queryClient.invalidateQueries(mobileDevicesQuery({ unitId })),
+    [queryClient, unitId]
+  )
+
   const openPairMobileDeviceModal = useCallback(() => {
-    startPairing({ unitId }, reloadMobileDevices)
-  }, [startPairing, unitId, reloadMobileDevices])
+    startPairing({ unitId }, invalidateMobileDevices)
+  }, [startPairing, unitId, invalidateMobileDevices])
 
   const saveMobileDevice = useCallback(
     async (name: string) => {
       if (mobileId) {
-        await putMobileDeviceNameResult({ id: mobileId, body: { name } })
-        void reloadMobileDevices()
+        await doPutMobileDeviceName({ id: mobileId, body: { name } })
         clearUiMode()
       }
     },
-    [clearUiMode, mobileId, reloadMobileDevices]
+    [clearUiMode, mobileId, doPutMobileDeviceName]
   )
 
   return (
