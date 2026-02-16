@@ -10,7 +10,12 @@ import {
   getUnitApplications,
   respondToPlacementProposal
 } from '../../generated/api-clients/application'
-import { getOpenGroupAttendance } from '../../generated/api-clients/attendance'
+import {
+  getOpenGroupAttendance,
+  getRealtimeStaffAttendances,
+  upsertDailyExternalRealtimeAttendances,
+  upsertDailyStaffRealtimeAttendances
+} from '../../generated/api-clients/attendance'
 import {
   addFullAclForRole,
   createDaycare,
@@ -264,3 +269,17 @@ export const respondToPlacementProposalMutation = q.parametricMutation<{
 export const openAttendanceQuery = q.query(getOpenGroupAttendance)
 
 export const nekkuManualOrderMutation = q.mutation(nekkuManualOrder)
+
+export const realtimeStaffAttendancesQuery = q.query(
+  getRealtimeStaffAttendances
+)
+
+export const upsertStaffAttendancesMutation = q.mutation(
+  upsertDailyStaffRealtimeAttendances,
+  [realtimeStaffAttendancesQuery.prefix]
+)
+
+export const upsertExternalAttendancesMutation = q.mutation(
+  upsertDailyExternalRealtimeAttendances,
+  [realtimeStaffAttendancesQuery.prefix]
+)
