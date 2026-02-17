@@ -1,0 +1,55 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import config from '../../config'
+import { Fixture } from '../../dev-api/fixtures'
+import { resetServiceState } from '../../generated/api-clients'
+import type { DevEmployee } from '../../generated/api-types'
+import EmployeeNav from '../../pages/employee/employee-nav'
+import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
+import { employeeLogin } from '../../utils/user'
+
+const firstName = 'Matti-Teppo Seppo'
+const lastName = 'Sorsa'
+
+test.describe('Employee preferred first name', () => {
+  let admin: DevEmployee
+  let page: Page
+  let nav: EmployeeNav
+  let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    admin = await Fixture.employee({ firstName, lastName }).admin().save()
+
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    nav = new EmployeeNav(page)
+    employeePreferredFirstNamePage = new EmployeePreferredFirstNamePage(page)
+    await nav.openAndClickDropdownMenuItem('preferred-first-name')
+  })
+
+  test('preferred first name can be set', async () => {
+    await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
+      'Matti-Teppo'
+    )
+    await employeePreferredFirstNamePage.assertPreferredFirstNameOptions([
+      'Matti-Teppo',
+      'Matti',
+      'Teppo',
+      'Seppo'
+    ])
+
+    await employeePreferredFirstNamePage.preferredFirstName('Teppo')
+    await employeePreferredFirstNamePage.confirm()
+    await page.findByDataQa('username').assertTextEquals('Teppo Sorsa')
+
+    await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
+      'Teppo'
+    )
+  })
+})
