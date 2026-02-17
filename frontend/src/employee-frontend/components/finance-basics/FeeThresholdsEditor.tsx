@@ -6,13 +6,13 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import type { Failure, Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import type { FeeThresholdsId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
+import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -29,10 +29,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 
-import {
-  createFeeThresholds,
-  updateFeeThresholds
-} from '../../generated/api-clients/invoicing'
 import type { Translations } from '../../state/i18n'
 import type {
   FamilySize,
@@ -41,9 +37,10 @@ import type {
 import { familySizes } from '../../types/finance-basics'
 
 import type { FormState } from './FeesSection'
-
-const createFeeThresholdsResult = wrapResult(createFeeThresholds)
-const updateFeeThresholdsResult = wrapResult(updateFeeThresholds)
+import {
+  createFeeThresholdsMutation,
+  updateFeeThresholdsMutation
+} from './queries'
 
 interface FeeThresholdsWithId {
   id: string
@@ -55,16 +52,20 @@ export default React.memo(function FeeThresholdsEditor({
   id,
   initialState,
   close,
-  reloadData,
   existingThresholds
 }: {
   i18n: Translations
   id: FeeThresholdsId | undefined
   initialState: FormState
   close: () => void
-  reloadData: () => void
   existingThresholds: Result<FeeThresholdsWithId[]>
 }) {
+  const { mutateAsync: doCreateFeeThresholds } = useMutationResult(
+    createFeeThresholdsMutation
+  )
+  const { mutateAsync: doUpdateFeeThresholds } = useMutationResult(
+    updateFeeThresholdsMutation
+  )
   const [editorState, setEditorState] = useState<FormState>(initialState)
   const validationResult = validateForm(
     i18n,
@@ -436,16 +437,13 @@ export default React.memo(function FeeThresholdsEditor({
             }
 
             return id === undefined
-              ? createFeeThresholdsResult({ body: validationResult.payload })
-              : updateFeeThresholdsResult({
+              ? doCreateFeeThresholds({ body: validationResult.payload })
+              : doUpdateFeeThresholds({
                   id,
                   body: validationResult.payload
                 })
           }}
-          onSuccess={() => {
-            close()
-            reloadData()
-          }}
+          onSuccess={close}
           onFailure={handleSaveErrors}
           disabled={'errors' in validationResult}
           data-qa="save"
@@ -469,13 +467,12 @@ export default React.memo(function FeeThresholdsEditor({
                 return
               }
               await (id === undefined
-                ? createFeeThresholdsResult({ body: validationResult.payload })
-                : updateFeeThresholdsResult({
+                ? doCreateFeeThresholds({ body: validationResult.payload })
+                : doUpdateFeeThresholds({
                     id,
                     body: validationResult.payload
                   }))
               close()
-              reloadData()
             },
             label: i18n.financeBasics.fees.modals.saveRetroactive.resolve
           }}

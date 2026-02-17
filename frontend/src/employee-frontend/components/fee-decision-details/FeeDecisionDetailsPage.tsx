@@ -5,15 +5,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Redirect } from 'wouter'
 
-import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
-import type {
-  FeeDecisionResponse,
-  FeeDecisionType
-} from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
 import type { FeeDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -21,10 +16,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  confirmFeeDecisionDrafts,
-  getFeeDecision
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -36,9 +27,7 @@ import Actions from './Actions'
 import ChildSection from './ChildSection'
 import Heading from './Heading'
 import Summary from './Summary'
-
-const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
-const getFeeDecisionResult = wrapResult(getFeeDecision)
+import { confirmFeeDecisionDraftsMutation, feeDecisionQuery } from './queries'
 
 const FeeDecisionMetadataSection = React.memo(
   function FeeDecisionMetadataSection({
@@ -55,19 +44,14 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const id = useIdRouteParam<FeeDecisionId>('id')
   const { i18n } = useTranslation()
-  const [decisionResponse, setDecisionResponse] = useState<
-    Result<FeeDecisionResponse>
-  >(Loading.of())
+  const decisionResponse = useQueryResult(feeDecisionQuery({ id }))
+  const { mutateAsync: doConfirmFeeDecisionDrafts } = useMutationResult(
+    confirmFeeDecisionDraftsMutation
+  )
   const [modified, setModified] = useState<boolean>(false)
   const [newDecisionType, setNewDecisionType] =
     useState<FeeDecisionType>('NORMAL')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
-
-  const loadDecision = useCallback(
-    () => getFeeDecisionResult({ id }).then(setDecisionResponse),
-    [id]
-  )
-  useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (decisionResponse.isSuccess) {
@@ -115,12 +99,11 @@ export default React.memo(function FeeDecisionDetailsPage() {
               {showHandlerSelectModal && (
                 <FinanceDecisionHandlerSelectModal
                   onResolve={async (decisionHandlerId) => {
-                    const result = await confirmFeeDecisionDraftsResult({
+                    const result = await doConfirmFeeDecisionDrafts({
                       decisionHandlerId,
                       body: [decision.id]
                     })
                     if (result.isSuccess) {
-                      await loadDecision()
                       setShowHandlerSelectModal(false)
                     }
                     return result
@@ -155,7 +138,6 @@ export default React.memo(function FeeDecisionDetailsPage() {
                 <Actions
                   decision={decision}
                   goToDecisions={goBack}
-                  loadDecision={loadDecision}
                   modified={modified}
                   setModified={setModified}
                   newDecisionType={newDecisionType}

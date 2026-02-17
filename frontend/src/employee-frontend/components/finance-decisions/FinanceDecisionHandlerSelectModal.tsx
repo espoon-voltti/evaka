@@ -6,23 +6,19 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faArrowRight } from 'lib-icons'
 
-import { getSelectableFinanceDecisionHandlers } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 
-const getSelectableFinanceDecisionHandlersResult = wrapResult(
-  getSelectableFinanceDecisionHandlers
-)
+import { selectableFinanceDecisionHandlersQuery } from './queries'
 
 interface Props {
   onResolve: (
@@ -43,9 +39,8 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
   const { i18n, lang } = useTranslation()
   const [selectedFinanceDecisionHandler, setFinanceDecisionHandler] =
     useState<EmployeeId>()
-  const [financeDecisionHandlersResult] = useApiState(
-    getSelectableFinanceDecisionHandlersResult,
-    []
+  const financeDecisionHandlersResult = useQueryResult(
+    selectableFinanceDecisionHandlersQuery()
   )
   const [error, setError] = useState<string>()
 
