@@ -4,6 +4,8 @@
 
 import assert from 'assert'
 
+import { expect } from '@playwright/test'
+
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
