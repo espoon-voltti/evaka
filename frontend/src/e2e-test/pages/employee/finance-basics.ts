@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
 import { waitUntilTrue } from '../../utils'

@@ -40,9 +40,13 @@ export const test = base.extend<EvakaFixtures>({
 
   evakaOptions: [{}, { option: true }],
 
-  page: async ({ page, evakaOptions }, use) => {
+  context: async ({ context, evakaOptions }, use) => {
+    await context.addInitScript({ content: initScript(evakaOptions) })
+    await use(context)
+  },
+
+  page: async ({ page }, use) => {
     page.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
-    await page.addInitScript({ content: initScript(evakaOptions) })
     await use(page)
   },
 
