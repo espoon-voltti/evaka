@@ -5,7 +5,6 @@
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import { required, validate } from 'lib-common/form-validation'
 import type {
   ApplicationType,
@@ -16,6 +15,7 @@ import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -28,7 +28,6 @@ import { applicationTypes } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
-import { createPaperApplication } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { errorToInputInfo } from '../../utils/validation/input-info-helper'
@@ -38,7 +37,7 @@ import {
   VtjPersonSearch
 } from '../common/PersonSearch'
 
-const createPaperApplicationResult = wrapResult(createPaperApplication)
+import { createPaperApplicationMutation } from './queries'
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 
@@ -62,6 +61,9 @@ function CreateApplicationModal({
   const { i18n } = useTranslation()
   const i18nView = i18n.childInformation.application.create
   const { clearUiMode } = useContext(UIContext)
+  const { mutateAsync: doCreatePaperApplication } = useMutationResult(
+    createPaperApplicationMutation
+  )
 
   const sortedGuardians = useMemo(
     () => sortBy(guardians, ['lastName', 'firstName']),
@@ -157,7 +159,7 @@ function CreateApplicationModal({
     const apiCall =
       personType === 'GUARDIAN'
         ? () =>
-            createPaperApplicationResult({
+            doCreatePaperApplication({
               body: {
                 ...commonBody,
                 guardianId: guardian?.id ?? null
@@ -165,7 +167,7 @@ function CreateApplicationModal({
             })
         : personType === 'DB_SEARCH'
           ? () =>
-              createPaperApplicationResult({
+              doCreatePaperApplication({
                 body: {
                   ...commonBody,
                   guardianId: personId ?? null
@@ -173,7 +175,7 @@ function CreateApplicationModal({
               })
           : personType === 'VTJ'
             ? () =>
-                createPaperApplicationResult({
+                doCreatePaperApplication({
                   body: {
                     ...commonBody,
                     guardianSsn: newVtjPersonSsn ?? null
@@ -181,7 +183,7 @@ function CreateApplicationModal({
                 })
             : personType === 'NEW_NO_SSN' && !!validCreatePersonInfo
               ? () =>
-                  createPaperApplicationResult({
+                  doCreatePaperApplication({
                     body: {
                       ...commonBody,
                       guardianToBeCreated: validCreatePersonInfo

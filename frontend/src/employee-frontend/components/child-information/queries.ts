@@ -14,7 +14,10 @@ import {
   getAbsenceApplications,
   rejectAbsenceApplication
 } from '../../generated/api-clients/absence'
-import { getChildApplicationSummaries } from '../../generated/api-clients/application'
+import {
+  createPaperApplication,
+  getChildApplicationSummaries
+} from '../../generated/api-clients/application'
 import {
   createAssistanceAction,
   createAssistanceFactor,
@@ -525,3 +528,5 @@ export const deletePedagogicalDocumentMutation = q.parametricMutation<{
 }>()(deletePedagogicalDocument, [
   ({ childId }) => childPedagogicalDocumentsQuery({ childId })
 ])
+
+export const createPaperApplicationMutation = q.mutation(createPaperApplication)

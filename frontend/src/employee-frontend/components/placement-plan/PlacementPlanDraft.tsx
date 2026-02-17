@@ -4,12 +4,12 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { useLocation } from 'wouter'
 
-import type { Result, Success } from 'lib-common/api'
-import { isLoading, Loading, wrapResult } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { isLoading, Loading, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -24,7 +24,11 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import {
+  pendingQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -41,11 +45,6 @@ import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faHeart, faLink, faPen, faSection } from 'lib-icons'
 
-import {
-  createPlacementPlan,
-  getPlacementPlanDraft
-} from '../../generated/api-clients/application'
-import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { asUnitType } from '../../types/daycare'
 import { useTitle } from '../../utils/useTitle'
@@ -57,10 +56,11 @@ import { getPreschoolTermsQuery } from '../unit/queries'
 import PlacementPlanDraftRow from './PlacementPlanDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
-
-const getPlacementPlanDraftResult = wrapResult(getPlacementPlanDraft)
-const createPlacementPlanResult = wrapResult(createPlacementPlan)
-const getApplicationUnitsResult = wrapResult(getApplicationUnits)
+import {
+  applicationUnitsQuery,
+  createPlacementPlanMutation,
+  placementPlanDraftQuery
+} from './queries'
 
 const SendButtonContainer = styled.div`
   display: flex;
@@ -113,7 +113,7 @@ function calculateOverLaps(
       })
     )
     setPlacementPlanDraft(
-      placementPlanDraft.map((draft) => ({ ...draft, placements }))
+      Success.of({ ...placementPlanDraft.value, placements })
     )
   }
 }
@@ -150,10 +150,13 @@ export default React.memo(function PlacementPlanDraft() {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
   const [, navigate] = useLocation()
+  const rawDraft = useQueryResult(placementPlanDraftQuery({ applicationId }))
+  const { mutateAsync: doCreatePlacementPlan } = useMutationResult(
+    createPlacementPlanMutation
+  )
   const [placementPlanDraft, setPlacementPlanDraft] = useState<
     Result<PlacementPlanDraftWithOverlaps>
   >(Loading.of())
-  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
   const [formState, setFormState] = useState<DaycarePlacementPlanForm>({
     unitId: null,
     period: null,
@@ -165,6 +168,16 @@ export default React.memo(function PlacementPlanDraft() {
     useState<boolean>(false)
 
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
+
+  const units = useQueryResult(
+    rawDraft.isSuccess
+      ? applicationUnitsQuery({
+          type: asUnitType(rawDraft.value.type),
+          date: formState.period?.start ?? rawDraft.value.period.start,
+          shiftCare: null
+        })
+      : pendingQuery<PublicUnit[]>()
+  )
 
   useEffect(() => {
     if (units.isSuccess && formState.unitId) {
@@ -192,44 +205,41 @@ export default React.memo(function PlacementPlanDraft() {
     () => navigate('/applications'),
     [navigate]
   )
+  const initialized = useRef(false)
+  useEffect(() => {
+    initialized.current = false
+  }, [applicationId])
 
   useEffect(() => {
-    setPlacementPlanDraft(Loading.of())
-    void getPlacementPlanDraftResult({ applicationId }).then(
-      (placementPlanDraft) => {
-        const withoutOldPlacements = removeOldPlacements(placementPlanDraft)
-        setPlacementPlanDraft(withoutOldPlacements)
-        if (withoutOldPlacements.isSuccess) {
-          const preselectedUnit =
-            withoutOldPlacements.value.placementDraft?.unit?.id ?? null
-          if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
-            setFormState({
-              unitId: preselectedUnit,
-              period: withoutOldPlacements.value.period,
-              hasPreschoolDaycarePeriod: true,
-              preschoolDaycarePeriod:
-                withoutOldPlacements.value.preschoolDaycarePeriod
-            })
-          } else {
-            setFormState({
-              unitId: preselectedUnit,
-              period: withoutOldPlacements.value.period,
-              hasPreschoolDaycarePeriod: false
-            })
-          }
-          calculateOverLaps(withoutOldPlacements, setPlacementPlanDraft)
-        }
-
-        // Application has already changed its status
-        if (
-          placementPlanDraft.isFailure &&
-          placementPlanDraft.statusCode === 409
-        ) {
-          redirectToMainPage()
-        }
+    const withoutOldPlacements = removeOldPlacements(rawDraft)
+    if (withoutOldPlacements.isSuccess && !initialized.current) {
+      initialized.current = true
+      setPlacementPlanDraft(Success.of(withoutOldPlacements.value))
+      const preselectedUnit =
+        withoutOldPlacements.value.placementDraft?.unit?.id ?? null
+      if (withoutOldPlacements.value.preschoolDaycarePeriod !== null) {
+        setFormState({
+          unitId: preselectedUnit,
+          period: withoutOldPlacements.value.period,
+          hasPreschoolDaycarePeriod: true,
+          preschoolDaycarePeriod:
+            withoutOldPlacements.value.preschoolDaycarePeriod
+        })
+      } else {
+        setFormState({
+          unitId: preselectedUnit,
+          period: withoutOldPlacements.value.period,
+          hasPreschoolDaycarePeriod: false
+        })
       }
-    )
-  }, [applicationId, redirectToMainPage])
+      calculateOverLaps(withoutOldPlacements, setPlacementPlanDraft)
+    }
+
+    // Application has already changed its status
+    if (rawDraft.isFailure && rawDraft.statusCode === 409) {
+      redirectToMainPage()
+    }
+  }, [rawDraft, redirectToMainPage])
 
   const isPreschoolPlacement = (placementType: PlacementType) =>
     placementType === 'PRESCHOOL' ||
@@ -286,16 +296,6 @@ export default React.memo(function PlacementPlanDraft() {
       return false
     }
   }, [preschoolTermsResult, placementPlanDraft, formState])
-
-  useEffect(() => {
-    if (placementPlanDraft.isSuccess) {
-      void getApplicationUnitsResult({
-        type: asUnitType(placementPlanDraft.value.type),
-        date: formState.period?.start ?? placementPlanDraft.value.period.start,
-        shiftCare: null
-      }).then(setUnits)
-    }
-  }, [placementPlanDraft, formState.period?.start, preschoolTermsResult])
 
   useTitle(
     placementPlanDraft.map(
@@ -569,7 +569,7 @@ export default React.memo(function PlacementPlanDraft() {
                 disabled={validPlan === null}
                 data-qa="send-placement-button"
                 onClick={() =>
-                  createPlacementPlanResult({
+                  doCreatePlacementPlan({
                     applicationId,
                     body: validPlan!
                   })
