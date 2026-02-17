@@ -5,7 +5,6 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   Absence,
   AbsenceCategory,
@@ -13,7 +12,7 @@ import type {
 } from 'lib-common/generated/api-types/absence'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -22,7 +21,6 @@ import { fontWeights } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 import { faAbacus } from 'lib-icons'
 
-import { getAbsencesOfChild } from '../../generated/api-clients/absence'
 import type { Lang, Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -30,7 +28,7 @@ import PeriodPicker from '../absences/PeriodPicker'
 import { renderResult } from '../async-rendering'
 import ColorInfoItem from '../common/ColorInfoItem'
 
-const getAbsencesOfChildResult = wrapResult(getAbsencesOfChild)
+import { absencesOfChildQuery } from './queries'
 
 const Section = styled.section``
 
@@ -72,14 +70,12 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
   const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const [selectedDate, setSelectedDate] = useState<LocalDate>(date)
-  const [absences] = useApiState(
-    () =>
-      getAbsencesOfChildResult({
-        childId: child.id,
-        year: selectedDate.getYear(),
-        month: selectedDate.getMonth()
-      }),
-    [child.id, selectedDate]
+  const absences = useQueryResult(
+    absencesOfChildQuery({
+      childId: child.id,
+      year: selectedDate.getYear(),
+      month: selectedDate.getMonth()
+    })
   )
 
   return (
