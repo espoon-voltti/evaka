@@ -6,8 +6,9 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import type { Pairing } from 'lib-common/generated/api-types/pairing'
+import { useMutationResult } from 'lib-common/query'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
@@ -18,12 +19,12 @@ import EvakaLogo from '../assets/EvakaLogo.svg'
 import { authMobile } from '../auth/api'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
-import {
-  getPairingStatus,
-  postPairingChallenge
-} from '../generated/api-clients/pairing'
 
 import { FullHeightContainer, WideLinkButton } from './components'
+import {
+  getPairingStatusMutation,
+  postPairingChallengeMutation
+} from './queries'
 
 const CenteredColumn = styled.div`
   display: flex;
@@ -63,9 +64,6 @@ export const ResponseKey = styled.div`
 
 const Bottom = styled.div``
 
-const getPairingStatusResult = wrapResult(getPairingStatus)
-const postPairingChallengeResult = wrapResult(postPairingChallenge)
-
 export default React.memo(function ParingWizard() {
   const { i18n } = useTranslation()
   const { refreshAuthStatus } = useContext(UserContext)
@@ -76,10 +74,17 @@ export default React.memo(function ParingWizard() {
     Loading.of()
   )
 
+  const { mutateAsync: postChallenge } = useMutationResult(
+    postPairingChallengeMutation
+  )
+  const { mutateAsync: checkStatus } = useMutationResult(
+    getPairingStatusMutation
+  )
+
   useEffect(() => {
     const polling = setInterval(() => {
       if (pairingResponse.isSuccess) {
-        void getPairingStatusResult({
+        void checkStatus({
           id: pairingResponse.value.id
         }).then((status) => {
           if (status.isSuccess) {
@@ -104,9 +109,7 @@ export default React.memo(function ParingWizard() {
   }, [pairingResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function sendRequest() {
-    await postPairingChallengeResult({ body: { challengeKey } }).then(
-      setPairingResponse
-    )
+    await postChallenge({ body: { challengeKey } }).then(setPairingResponse)
     setPhase(2)
   }
 
