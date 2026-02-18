@@ -459,6 +459,36 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `expiring income is not notified if there is a new income statement being handled`() {
+        val incomeExpirationDate = clock.today().plusWeeks(4)
+
+        db.transaction {
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChild.id,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = incomeExpirationDate.minusWeeks(4),
+                    validTo = incomeExpirationDate,
+                )
+            )
+
+            it.insert(
+                DevIncomeStatement(
+                    id = IncomeStatementId(UUID.randomUUID()),
+                    personId = fridgeHeadOfChild.id,
+                    data = createGrossIncome(clock.today()),
+                    status = IncomeStatementStatus.HANDLING,
+                    handlerId = null,
+                )
+            )
+        }
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
     fun `expiring income is notified if there is a handled income statement`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
         val employee = DevEmployee()
