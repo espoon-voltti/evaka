@@ -30,7 +30,7 @@ The framework separates form definition from form usage:
 2. **Create form instance** - Use `useForm()` hook with initial state and error messages
 3. **Bind to components** - Use F-postfix components (InputFieldF, DatePickerF, etc.)
 
-**F-postfix components**: Components ending in `F` (like `InputFieldF`, `DatePickerF`, `SelectF`) are versions that integrate directly with the form framework. See the lib-components documentation (TODO) for the full list.
+**F-postfix components**: Components ending in `F` (like `InputFieldF`, `DatePickerF`, `SelectF`) are versions that integrate directly with the form framework. See [Component Library](lib-components.md) for the full list.
 
 ## Simple Form Example
 
@@ -384,4 +384,4 @@ const customField = transformed(string(), (value) => {
 ## See Also
 
 - Form Types & Validators (`frontend/src/lib-common/form/types.ts`, `validators.ts`)
-- Lib-Components Documentation (TODO) - Full list of F-postfix components
+- [Component Library](lib-components.md) - Full list of F-postfix components
