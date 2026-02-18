@@ -17,6 +17,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import {
   desktopMinPx,
   tabletMin,
+  tabletMinPx,
   zoomedMobileMax
 } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -93,6 +94,20 @@ const StickyContainer = styled(Container)`
     @media (min-width: 1216px) {
       margin-left: ${defaultMargins.m};
     }
+  }
+`
+
+const ResponsiveWrapper = styled(FixedSpaceRow)`
+  @media (max-width: ${tabletMin}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${defaultMargins.s};
+  }
+`
+
+const StatusColumn = styled(FixedSpaceColumn)`
+  @media (min-width: ${tabletMinPx + 1}px) {
+    align-items: flex-end;
   }
 `
 
@@ -197,7 +212,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
     <>
       <Container>
         <ContentArea opaque>
-          <FixedSpaceRow justifyContent="space-between">
+          <ResponsiveWrapper justifyContent="space-between">
             <FixedSpaceColumn>
               <H1 noMargin>{document.template.name}</H1>
               <H2 noMargin>
@@ -207,7 +222,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                   : ''}
               </H2>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs" alignItems="flex-end">
+            <StatusColumn spacing="xs">
               {document.decision && (
                 <>
                   <div>
@@ -224,8 +239,8 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
                 <Label>{i18n.children.childDocuments.confidential}</Label>
               )}
               <span>{document.template.legalBasis}</span>
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
+            </StatusColumn>
+          </ResponsiveWrapper>
           <Gap />
           <DocumentView
             bind={bind}
