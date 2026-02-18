@@ -13,6 +13,7 @@ RUN apt-get update \
 RUN yarn exec playwright install --with-deps
 
 COPY ./playwright/bin/run-tests.sh /bin/
+COPY ./playwright/bin/run-e2e-playwright.sh /bin/
 COPY ./playwright/bin/wait-for-url.sh /bin/
 
 CMD ["/bin/run-tests.sh"]

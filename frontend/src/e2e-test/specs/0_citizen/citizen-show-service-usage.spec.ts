@@ -21,6 +21,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 const today = LocalDate.of(2022, 1, 14)
 const yesterday = today.subDays(1)
 let page: Page

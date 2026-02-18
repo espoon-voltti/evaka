@@ -25,6 +25,8 @@ import MobileReservationsPage from '../../pages/mobile/reservations-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('when placement is ending tomorrow', () => {

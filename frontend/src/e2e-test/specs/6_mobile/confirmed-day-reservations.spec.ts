@@ -32,6 +32,8 @@ import MobileListPage from '../../pages/mobile/list-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 let page: Page
 let confirmedReservationPage: ConfirmedDayReservationPage
 let attendanceListPage: MobileListPage

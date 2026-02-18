@@ -38,6 +38,8 @@ import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let citizenPage: Page
 let staffPage: Page
 let serviceWorker: DevEmployee

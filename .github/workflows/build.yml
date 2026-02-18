@@ -634,6 +634,70 @@ jobs:
             compose/e2e-all.log
           retention-days: 2
 
+  e2e-playwright:
+    needs:
+      - service
+      - api-gateway
+      - frontend-common
+      - frontend
+    runs-on: ubuntu-latest
+
+    env:
+      PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Login to Docker Hub
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run e2e-playwright tests
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
+          BUILD: "false"
+          FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
+        run: |
+          set -eo pipefail
+          cd ./compose
+          ./test-e2e pull
+          ./test-e2e run playwright /repo/compose/e2e/playwright/bin/run-e2e-playwright.sh | tee e2e-playwright.log
+
+      - name: Run e2e-playwright tests for fork
+        if: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          set -eo pipefail
+          cd ./compose
+          ./test-e2e run playwright /repo/compose/e2e/playwright/bin/run-e2e-playwright.sh | tee e2e-playwright.log
+
+      - name: Get logs
+        if: always()
+        run: |
+          cd compose
+          ./test-e2e logs > e2e-playwright-all.log
+
+      - name: Store test results and logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-playwright-test-results
+          path: |
+            frontend/test-results/
+            compose/e2e-playwright.log
+            compose/e2e-playwright-all.log
+          retention-days: 2
+
   frontend-s3:
     if: ${{ github.ref == 'refs/heads/master' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
     needs:

@@ -11,6 +11,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { employeeSfiLogin, enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 beforeEach(async () => resetServiceState())
 
 describe('SFI authentication', () => {

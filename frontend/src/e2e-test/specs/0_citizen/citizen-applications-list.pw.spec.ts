@@ -1,0 +1,231 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
+import { execSimpleApplicationActions } from '../../dev-api'
+import {
+  applicationFixture,
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare
+} from '../../dev-api/fixtures'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
+import type { DevPerson } from '../../generated/api-types'
+import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
+import { enduserLogin } from '../../utils/user'
+
+const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
+
+test.beforeEach(async () => {
+  await resetServiceState()
+  await testCareArea.save()
+  await testDaycare.save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+})
+
+async function openApplicationsPage(page: Page, citizen: DevPerson) {
+  await enduserLogin(page, citizen)
+  const header = new CitizenHeader(page)
+  await header.selectTab('applications')
+  const applicationsPage = new CitizenApplicationsPage(page)
+  return {
+    header,
+    applicationsPage
+  }
+}
+
+test.describe('Citizen applications list', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: now,
+      citizenCustomizations: {
+        featureFlags: {
+          showMetadataToCitizen: true
+        }
+      }
+    }
+  })
+
+  test('Citizen sees their children and applications', async ({ evaka }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'PRESCHOOL',
+      null,
+      [testDaycare.id],
+      true
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    const child = testChild
+    await applicationsPage.assertChildIsShown(
+      child.id,
+      `${child.firstName} ${child.lastName}`
+    )
+    await applicationsPage.assertApplicationIsListed(
+      application.id,
+      'Esiopetushakemus',
+      application.form.preferences.preferredStartDate?.format() ?? '',
+      'Lähetetty'
+    )
+  })
+
+  test('Guardian sees their children and applications made by the other guardian', async ({
+    evaka
+  }) => {
+    const child = await Fixture.person({ ssn: '010116A9219' }).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person({ ssn: '010106A973C' }).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
+    const otherGuardian = await Fixture.person({
+      ssn: '010106A9388'
+    }).saveAdult({ updateMockVtjWithDependants: [child] })
+
+    const application = applicationFixture(
+      child,
+      guardian,
+      otherGuardian,
+      'PRESCHOOL',
+      null,
+      [testDaycare.id],
+      true
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(
+      evaka,
+      otherGuardian
+    )
+
+    await applicationsPage.assertChildIsShown(
+      child.id,
+      `${child.firstName} ${child.lastName}`
+    )
+    await applicationsPage.assertApplicationIsListed(
+      application.id,
+      'Esiopetushakemus',
+      application.form.preferences.preferredStartDate?.format() ?? '',
+      'Lähetetty'
+    )
+  })
+
+  test('Citizen sees application that is waiting for decision acceptance', async ({
+    evaka
+  }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true
+    )
+    await createApplications({ body: [application] })
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'MOVE_TO_WAITING_PLACEMENT',
+        'CREATE_DEFAULT_PLACEMENT_PLAN',
+        'SEND_DECISIONS_WITHOUT_PROPOSAL'
+      ],
+      now
+    )
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    await evaka.reload()
+    await applicationsPage.assertApplicationIsListed(
+      application.id,
+      'Varhaiskasvatushakemus',
+      application.form.preferences.preferredStartDate?.format() ?? '',
+      'Vahvistettavana huoltajalla'
+    )
+  })
+
+  test('Citizen can cancel a draft application', async ({ evaka }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'CREATED'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    await applicationsPage.cancelApplication(application.id)
+    await applicationsPage.assertApplicationDoesNotExist(application.id)
+  })
+
+  test('Citizen can cancel a sent application', async ({ evaka }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'SENT'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    await applicationsPage.cancelApplication(application.id)
+    await applicationsPage.assertApplicationDoesNotExist(application.id)
+  })
+
+  test('Citizen can open and view draft application has no metadata', async ({
+    evaka
+  }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'CREATED'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    await applicationsPage.assertApplicationHasNoMetadata(application.id)
+  })
+
+  test('Citizen can open and view sent application metadata', async ({
+    evaka
+  }) => {
+    const application = applicationFixture(
+      testChild,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [testDaycare.id],
+      true,
+      'SENT'
+    )
+    await createApplications({ body: [application] })
+    const { applicationsPage } = await openApplicationsPage(evaka, testAdult)
+
+    await applicationsPage.viewApplicationMetadata(application.id)
+  })
+})

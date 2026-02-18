@@ -13,6 +13,8 @@ import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 let page: Page
 let pairingFlow: PairingFlow
 

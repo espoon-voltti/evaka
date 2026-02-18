@@ -21,6 +21,8 @@ import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
+import '../../jest'
+
 describe('Citizen login redirects', () => {
   let page: Page
   const credentials = {

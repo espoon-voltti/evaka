@@ -70,7 +70,9 @@ export async function waitUntilDefined<T>(
     f,
     (value): value is NonNullable<T> => value != null,
     (value) => {
-      expect(value).toBeDefined()
+      throw new Error(
+        `Expected value to be defined, got ${JSON.stringify(value)}`
+      )
     }
   )
 }
@@ -85,7 +87,11 @@ export async function waitUntilEqual<T>(
   return waitForCondition(
     f,
     (value) => isEqual(value, expected),
-    (value) => expect(value).toEqual(expected)
+    (value) => {
+      throw new Error(
+        `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(value)}`
+      )
+    }
   )
 }
 
@@ -99,7 +105,11 @@ export async function waitUntilNotEqual<T>(
   return waitForCondition(
     f,
     (value) => !isEqual(value, expected),
-    (value) => expect(value).not.toEqual(expected)
+    (value) => {
+      throw new Error(
+        `Expected value to differ from ${JSON.stringify(expected)}, got ${JSON.stringify(value)}`
+      )
+    }
   )
 }
 
@@ -110,7 +120,9 @@ export async function waitUntilTrue(f: () => Promise<boolean>) {
   return waitForCondition(
     f,
     (value) => value,
-    (value) => expect(value).toStrictEqual(true)
+    (value) => {
+      throw new Error(`Expected true, got ${JSON.stringify(value)}`)
+    }
   )
 }
 
@@ -121,7 +133,9 @@ export async function waitUntilFalse(f: () => Promise<boolean>) {
   return waitForCondition(
     f,
     (value) => !value,
-    (value) => expect(value).toStrictEqual(false)
+    (value) => {
+      throw new Error(`Expected false, got ${JSON.stringify(value)}`)
+    }
   )
 }
 

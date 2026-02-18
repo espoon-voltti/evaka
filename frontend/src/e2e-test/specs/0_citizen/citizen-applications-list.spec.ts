@@ -23,6 +23,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 beforeEach(async () => {

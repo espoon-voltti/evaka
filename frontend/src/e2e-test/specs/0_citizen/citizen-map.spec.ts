@@ -24,6 +24,8 @@ import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
+import '../../jest'
+
 const swedishDaycare: DevDaycare = {
   ...testDaycare2,
   name: 'Svart hål svenska daghem',

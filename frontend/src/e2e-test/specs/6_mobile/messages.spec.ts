@@ -41,6 +41,8 @@ import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage

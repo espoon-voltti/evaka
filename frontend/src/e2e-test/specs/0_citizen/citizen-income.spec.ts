@@ -27,6 +27,8 @@ import { waitUntilEqual } from '../../utils'
 import { envs, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
+import '../../jest'
+
 describe.each(envs)('Citizen income (%s)', (env) => {
   let page: Page
   const child = testChild

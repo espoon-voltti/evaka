@@ -32,6 +32,8 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+import '../../jest'
+
 const mockedTime = LocalDate.of(2021, 8, 16)
 let page: Page
 let applicationListView: ApplicationListView
