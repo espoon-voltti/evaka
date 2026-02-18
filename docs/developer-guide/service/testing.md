@@ -74,6 +74,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
+    private val group = DevDaycareGroup(daycareId = daycare.id)
     private val employee = DevEmployee()
     private val child = DevPerson()
 
@@ -82,6 +83,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
+            tx.insert(group)
             tx.insert(employee)
             tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
             tx.insert(child, DevPersonType.CHILD)
@@ -108,13 +110,9 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // Execute async jobs
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
-        // Assert via database query
-        val emails = db.read { tx ->
-            tx.createQuery { sql("SELECT * FROM email_message") }
-                .toList<EmailMessage>()
-        }
-        assertEquals(1, emails.size)
-        assertEquals("Absence notification", emails[0].subject)
+        // Assert via mock email client
+        assertEquals(1, MockEmailClient.emails.size)
+        assertEquals("Absence notification", MockEmailClient.emails[0].content.subject)
     }
 
     // Helper method with defaults
@@ -132,10 +130,11 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 AbsenceUpsert(
                     childId = childId,
                     date = date,
-                    absenceType = absenceType,
-                    category = AbsenceCategory.BILLABLE
+                    category = AbsenceCategory.BILLABLE,
+                    absenceType = absenceType
                 )
-            )
+            ),
+            group.id
         )
     }
 }

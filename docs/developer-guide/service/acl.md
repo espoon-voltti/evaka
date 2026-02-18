@@ -165,7 +165,7 @@ Steps:
 
 ## Adding a New Rule Method
 
-When introducing a new resource type, you may find that no existing rule suffix captures the relationship you need — for example, there's no `.inPlacementUnitOfChildOfYourNewThing()` yet. In that case, add one to the relevant rule class(es) (`HasUnitRole.kt`, `HasGroupRole.kt`, `IsCitizen.kt`, `IsMobile.kt`), all of which follow the same two-helper pattern. Examples below use `HasUnitRole.kt`.
+When introducing a new resource type, you may find that no existing rule suffix captures the relationship you need — for example, there's no `.inPlacementUnitOfChildOfYourNewThing()` yet. In that case, add one to the relevant rule class(es) (`HasUnitRole.kt`, `HasGroupRole.kt`, `IsEmployee.kt`, `IsCitizen.kt`, `IsMobile.kt`), all of which follow the same two-helper pattern. Examples below use `HasUnitRole.kt`.
 
 ### `rule<T>` — write the full SQL including the ACL join
 

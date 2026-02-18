@@ -26,6 +26,7 @@ These database migrations are shared across all municipalities using eVaka. Migr
 - Modify schema structure (CREATE TABLE, ALTER TABLE, CREATE INDEX, etc.)
 - Cannot be changed after deployment
 - **After adding a new migration, run `./list-migrations.sh`** - This updates `migrations.txt` and causes explicit git conflicts if two developers add migrations simultaneously, ensuring migration numbering conflicts are detected early
+- Older migrations are periodically moved to `archive/` for organization — Flyway tracks them by version number, not file path
 
 **Repeatable migrations** (`R__description.sql`):
 - Re-executed whenever their checksum changes

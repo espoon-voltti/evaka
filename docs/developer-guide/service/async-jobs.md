@@ -109,14 +109,15 @@ Adding a new job type requires three steps: define the payload, register the han
 
 ### Step 1: Define the Payload
 
-Add a sealed class to `AsyncJob.kt`:
+Add a data class to the `AsyncJob` sealed interface in `AsyncJob.kt`:
 
 ```kotlin
 data class SendWelcomeEmail(
     val userId: PersonId,
-    val language: Language,
-    override val user: AuthenticatedUser?
-) : AsyncJob
+    val language: Language
+) : AsyncJob {
+    override val user: AuthenticatedUser? = null
+}
 ```
 
 ### Step 2: Register the Handler
@@ -302,4 +303,3 @@ End-to-end tests can also call `runPendingJobsSync()` through a dev API request.
 
 - [Database API](database.md) - Transaction management and queries
 - [Testing Conventions](testing.md) - Testing patterns and fixtures
-- [Service Conventions](conventions.md) - Service architecture patterns

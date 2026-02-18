@@ -29,24 +29,35 @@ cd service
 
 **File:** `service/codegen/src/main/kotlin/evaka/codegen/api/Config.kt`
 
-Type mappings define how Kotlin types convert to TypeScript. Add entries to the `defaultMetadata` map:
+Type mappings define how Kotlin types convert to TypeScript. Add entries to the `defaultMetadata` map using `TsRepresentation` types:
 
-- **Simple types:** Direct string mapping (e.g., `String::class to "string"`)
-- **Complex types:** Use `MetadataItem` with custom serializers for special formatting
-- **Common scenarios:** Custom date/time types, ID wrappers, sealed classes
+- **Primitives:** `TsPlain(type = "string")` — direct TS type, no transformation
+- **External types with serialization:** `TsExternalTypeRef(...)` — for types that need custom serialization/deserialization (dates, UUIDs, etc.)
+- **Generic wrappers:** `GenericWrapper(default = ...)` — wrapper disappears in TS, inner type is used (e.g., `Id<T>` becomes `string`)
 
-**Example pattern:**
+**Examples from `Config.kt`:**
 ```kotlin
-// Simple mapping
-UUID::class to "UUID"
+// Primitives — map directly to TS types
+String::class to TsPlain(type = "string"),
+Int::class to TsPlain(type = "number"),
+Boolean::class to TsPlain(type = "boolean"),
 
-// Complex mapping with serializers
-ChildDocumentId::class to MetadataItem(
-    tsType = "ChildDocumentId",
-    serializePathVariable = { "childDocumentId" },
-    serializeRequestParam = { "childDocumentId.toString()" },
-    deserializeJson = { "ChildDocumentId($it)" }
-)
+// External type with serialization — needs parse/format for JSON, URLs, query params
+LocalDate::class to TsExternalTypeRef(
+    "LocalDate",
+    keyRepresentation = TsCode("string"),
+    deserializeJson = { json ->
+        TsCode { "${ref(Imports.localDate)}.parseIso(${inline(json)})" }
+    },
+    serializePathVariable = { value -> value + ".formatIso()" },
+    serializeRequestParam = { value, nullable ->
+        value + if (nullable) "?.formatIso()" else ".formatIso()"
+    },
+    Imports.localDate,
+),
+
+// Generic wrapper — Id<T> disappears, becomes the inner type (default: string)
+Id::class to GenericWrapper(default = String::class),
 ```
 
 ### Excluding Endpoints from Generation
@@ -63,16 +74,13 @@ ChildDocumentId::class to MetadataItem(
 
 **File:** `service/codegen/src/main/kotlin/evaka/codegen/api/Config.kt`
 
-When adding types that require special formatting, define a `MetadataItem` in `defaultMetadata` with three serializers:
+When adding types that need custom formatting, use `TsExternalTypeRef` in `defaultMetadata`. It has three optional serialization hooks:
 
-- **`serializePathVariable`** - Format for URL path segments (e.g., `/api/documents/{id}`)
-- **`serializeRequestParam`** - Format for query string parameters (e.g., `?startDate=2024-01-01`)
-- **`deserializeJson`** - Parse API responses into TypeScript objects
+- **`serializePathVariable`** `(valueExpr: TsCode) -> TsCode` — format for URL path segments (e.g., `.formatIso()`)
+- **`serializeRequestParam`** `(valueExpr: TsCode, nullable: Boolean) -> TsCode` — format for query string parameters
+- **`deserializeJson`** `(jsonExpr: TsCode) -> TsCode` — parse JSON responses into TypeScript objects (e.g., `LocalDate.parseIso(json)`)
 
-**Use cases:**
-- Custom date formats that need string conversion
-- Wrapper types that need unwrapping/wrapping
-- Types requiring URL encoding or special escaping
+Set a hook to `null` if the type can't be used in that context (e.g., complex objects can't be path variables).
 
 ### Adding Frontend Targets
 
@@ -103,13 +111,9 @@ val employeeApiClients = endpoints
 | File | Purpose |
 |------|---------|
 | `service/codegen/src/main/kotlin/evaka/codegen/api/Config.kt` | Type mappings, exclusions, imports |
+| `service/codegen/src/main/kotlin/evaka/codegen/api/TsRepresentation.kt` | `TsPlain`, `TsExternalTypeRef`, `GenericWrapper`, and all other representation types |
+| `service/codegen/src/main/kotlin/evaka/codegen/api/TsCode.kt` | `TsProject` enum, `TsFile`, `TsImport` |
 | `service/codegen/src/main/kotlin/evaka/codegen/api/ApiFiles.kt` | Frontend targets, output paths |
 | `service/codegen/src/main/kotlin/evaka/codegen/Generate.kt` | Generation entry point |
 | `service/codegen/src/main/kotlin/evaka/codegen/Check.kt` | Validation entry point |
-
-### Debugging Generation Failures
-
-| Error                 | Cause                  | Quick Fix                                   |
-|-----------------------|------------------------|---------------------------------------------|
-| -                     | -                      | -                                           |
 

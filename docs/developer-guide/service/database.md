@@ -309,12 +309,12 @@ For building complex, reusable WHERE clauses. See [Predicates Guide](predicates.
 
 **Basic example:**
 ```kotlin
-val predicate = Predicate { where("$it.status = ${bind(status)}") }
+val statusFilter = Predicate { where("$it.status = ${bind(status)}") }
 
 tx.createQuery {
     sql("""
         SELECT * FROM users u
-        WHERE ${predicate(predicate.forTable("u"))}
+        WHERE ${predicate(statusFilter.forTable("u"))}
     """)
 }
 ```
@@ -323,5 +323,4 @@ tx.createQuery {
 
 - [SQL Predicates Guide](predicates.md)
 - [Database Schema & Migrations](migrations.md)
-- [Service Conventions](conventions.md)
 - [Testing Conventions](testing.md)

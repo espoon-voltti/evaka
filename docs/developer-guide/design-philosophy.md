@@ -53,6 +53,4 @@ This document captures the core principles and design philosophies that guide te
 
 ## See Also
 
-- [Frontend Conventions](frontend/conventions.md)
-- [Service Conventions](service/conventions.md)
 - [Code Generation](codegen.md)

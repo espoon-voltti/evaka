@@ -35,7 +35,8 @@ The framework separates form definition from form usage:
 ## Simple Form Example
 
 ```typescript
-import { object, required, string, number } from 'lib-common/form/form'
+import { object, required } from 'lib-common/form/form'
+import { string, number } from 'lib-common/form/fields'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 
@@ -80,8 +81,7 @@ function UserForm() {
 ### Basic Field Types
 
 ```typescript
-import { string, number, boolean } from 'lib-common/form/form'
-import { localDate, localDateRange } from 'lib-common/form/fields'
+import { string, number, boolean, localDate, localDateRange } from 'lib-common/form/fields'
 
 const basicForm = object({
   name: string(),           // Trims whitespace automatically

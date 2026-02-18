@@ -53,10 +53,10 @@ const userName: Result<string> = user.map(u => u.name)
 **chain()** - Transform into another Result (flat map):
 ```typescript
 const user: Result<User> = useQueryResult(userQuery())
-const settings: Result<Settings> = user.chain(u =>
-  useQueryResult(settingsQuery(u.id))
-)
-// Use for dependent queries (though useChainedQuery is often better)
+const parsed: Result<Date> = user.chain(u => {
+  const date = parseDate(u.birthDate)
+  return date ? Success.of(date) : Failure.of({ message: 'Invalid date', statusCode: 400 })
+})
 ```
 
 **getOrElse()** - Extract value with fallback:
@@ -109,7 +109,8 @@ const message = result.mapAll({
 Most common way to render Result in JSX - shows spinner while loading, error message on failure:
 
 ```typescript
-import { renderResult } from 'lib-components/async-rendering'
+// Each app re-exports from its own async-rendering module, e.g.:
+import { renderResult } from 'employee-frontend/components/async-rendering'
 
 function UserProfile() {
   const user = useQueryResult(userQuery())
@@ -134,7 +135,7 @@ function UserProfile() {
 Component form for custom loading/failure handling:
 
 ```typescript
-import { UnwrapResult } from 'lib-components/async-rendering'
+import { UnwrapResult } from 'employee-frontend/components/async-rendering'
 
 <UnwrapResult
   result={user}

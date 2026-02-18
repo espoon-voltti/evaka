@@ -90,11 +90,10 @@ Time range with both start and end required.
 - Frontend: `frontend/src/lib-common/time-range.ts`
 - Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/TimeRange.kt` (data class)
 
-**Structure:** `TimeRange(start: LocalTime, end: LocalTime)`
+**Structure:** `TimeRange(start: TimeRangeEndpoint.Start, end: TimeRangeEndpoint.End)` (convenience constructor accepts `LocalTime` values)
 
-**Type-Specific Methods:**
-- `format()` - formats as "HH:mm - HH:mm"
-- `asTimeInterval()` - converts to TimeInterval
+**Type-Specific Methods (frontend only):**
+- `format()` - formats as "HH:mm–HH:mm" (en-dash, no spaces)
 
 ### TimeInterval
 
@@ -104,7 +103,7 @@ Time range with finite start and nullable end.
 - Frontend: `frontend/src/lib-common/time-interval.ts`
 - Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/TimeInterval.kt` (data class)
 
-**Structure:** `TimeInterval(start: LocalTime, end: LocalTime | null)`
+**Structure:** `TimeInterval(start: TimeRangeEndpoint.Start, end: TimeRangeEndpoint.End?)` (convenience constructor accepts `LocalTime` values)
 
 **Type-Specific Methods:**
 - `asTimeRange()` - converts to TimeRange if end is non-null
@@ -145,7 +144,7 @@ Checks if two ranges have any overlap. Not implemented for TimeRange frontend an
 
 ### contains()
 
-Checks if one range fully contains another range. Not implemented for TimeInterval or HelsinkiDateTimeRange.
+Checks if one range fully contains another range. Not implemented for TimeInterval (no `BoundedRange`).
 
 ### intersection()
 
@@ -159,9 +158,10 @@ The following operations are only available on the backend and are part of the `
 - `merge()` - combines two overlapping or adjacent ranges
 - `subtract()` - removes one range from another
 - `relationTo()` - determines spatial relationship between ranges
-- `complement()` - finds the inverse of a range
 
 **Available on:** FiniteDateRange, TimeRange, and HelsinkiDateTimeRange (types with required start and end). Not available on DateRange or TimeInterval (types with nullable end).
+
+Additionally, `FiniteDateRange` has a `complement()` method that finds the inverse of a range (delegates to `subtract`).
 
 These operations are used heavily by range-based collections (DateSet, DateMap, etc.). For detailed documentation, see [Range-based Collections](range-based-collections.md).
 

@@ -11,6 +11,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 Each test runs against a clean database. Call `resetServiceState()` in `beforeEach` before setting up any fixtures:
 
 ```typescript
+import { resetServiceState } from '../../generated/api-clients'
+
 beforeEach(async () => {
   await resetServiceState()
   // fixture setup follows...
@@ -47,7 +49,7 @@ const page = await Page.open({
 Dev-api functions also accept `mockedTime` to stamp server-side operations at the correct time:
 
 ```typescript
-await execSimpleApplicationActions(applicationId, ['SEND'], mockedNow)
+await execSimpleApplicationActions(applicationId, ['MOVE_TO_WAITING_PLACEMENT'], mockedNow)
 ```
 
 Open a new page with a different time when a test needs to observe how the UI looks at multiple points in time.
@@ -133,12 +135,15 @@ Key wrappers and their main methods:
 |---|---|
 | `TextInput` | `.fill()`, `.type()`, `.clear()`, `.assertValueEquals()` |
 | `Checkbox` / `Radio` | `.check()`, `.uncheck()`, `.waitUntilChecked()` |
-| `DatePicker` | `.fill(localDate)`, `.clear()` |
+| `DatePicker` | `.fill(localDate \| string)`, `.clear()` |
 | `DateRangePicker` | `.fill(start, end)`, `.start`, `.end` |
 | `Select` | `.selectOption()`, `.assertOptions()` |
-| `Combobox` | `.fill()`, `.fillAndSelectFirst()` |
-| `FileUpload` | `.upload(path)`, `.deleteUploadedFile()` |
+| `Combobox` | `.fill()`, `.fillAndSelectFirst()`, `.fillAndSelectItem()`, `.selectItem()` |
+| `MultiSelect` | `.fill()`, `.selectItem()`, `.fillAndSelectFirst()`, `.assertOptions()` |
+| `FileUpload` | `.upload(path)`, `.deleteUploadedFile(index?)` |
 | `AsyncButton` | `.waitUntilIdle()`, `.waitUntilSuccess()` |
+| `Modal` | `.submit()`, `.close()`, `.submitButton`, `.closeButton` |
+| `Collapsible` | `.isOpen()`, `.open()` |
 
 All wrappers are defined in `frontend/src/e2e-test/utils/page.ts`.
 
@@ -164,6 +169,7 @@ For polling async state that isn't tied to a specific element:
 import { waitUntilEqual, waitUntilTrue, waitUntilDefined } from 'e2e-test/utils'
 
 await waitUntilEqual(() => page.getFeeDecisionCount(), 3)
+await waitUntilNotEqual(() => page.getStatus(), 'LOADING')
 await waitUntilTrue(() => page.isSubmitEnabled())
 const result = await waitUntilDefined(() => page.getFirstRow())
 ```
@@ -177,6 +183,7 @@ await element.assertTextEquals('expected')
 await element.assertText((t) => t.includes('partial'))
 await collection.assertCount(5)
 await collection.assertTextsEqual(['A', 'B', 'C'])
+await collection.assertTextsEqualAnyOrder(['C', 'A', 'B'])
 ```
 
 ## Common Gotchas

@@ -35,11 +35,12 @@ For security-critical operations, log at **both the start and end**. Use separat
 fun getEmployee(
     db: Database,
     user: AuthenticatedUser,
+    clock: EvakaClock,
     @PathVariable id: EmployeeId
 ): Employee {
     return db.connect { dbc ->
         dbc.read {
-            accessControl.requirePermissionFor(it, user, Action.Employee.READ, id)
+            accessControl.requirePermissionFor(it, user, clock, Action.Employee.READ_DETAILS, id)
             it.getEmployee(id)
         }
     }.also {

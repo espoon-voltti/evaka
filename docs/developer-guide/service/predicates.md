@@ -182,10 +182,11 @@ val filter = Predicate {
 | `${predicate(...)}` | Embed in SQL | `WHERE ${predicate(p.forTable("u"))}` |
 | `Predicate.all()` | AND conditions | `Predicate.all(filter1, filter2)` |
 | `Predicate.allNotNull()` | AND with nulls | `Predicate.allNotNull(f1, nullableF2)` |
+| `Predicate.anyNotNull()` | OR with nulls | `Predicate.anyNotNull(f1, nullableF2)` |
 | `Predicate.any()` | OR conditions | `Predicate.any(filter1, filter2)` |
 | `Predicate.alwaysTrue()` | No-op filter | Default for optional filters |
-| `.and()` on PredicateSql | Combine bound predicates | `p1.forTable("u").and(p2.forTable("o"))` |
-| `.or()` on PredicateSql | OR bound predicates | `p1.forTable("u").or(p2.forTable("u"))` |
+| `.and()` / `.or()` on Predicate | Combine unbound | `filter1.and(filter2)` |
+| `.and()` / `.or()` on PredicateSql | Combine bound | `p1.forTable("u").and(p2.forTable("o"))` |
 
 ## Common Pitfalls
 
@@ -221,8 +222,10 @@ sql("""
 
 ### ❌ Mixing Predicate and PredicateSql in Combinators
 
+`Predicate.and()` takes a `Predicate`, and `PredicateSql.and()` takes a `PredicateSql`. Mixing them is a compile-time type error:
+
 ```kotlin
-// WRONG - mixing bound and unbound
+// WON'T COMPILE - Predicate.and() expects Predicate, not PredicateSql
 val combined = myPredicate.and(otherPredicate.forTable("u"))
 ```
 

@@ -166,11 +166,15 @@ import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 
 <MutateFormModal
-  mutation={createInvoiceMutation}
+  resolveMutation={createInvoiceMutation}
+  resolveAction={() => ({ ...formData })}
+  resolveLabel={i18n.common.save}
   onSuccess={() => setModalOpen(false)}
-  resolveAction={(form) => ({ ...form })}
-  renderForm={() => <InvoiceForm />}
-/>
+  rejectAction={() => setModalOpen(false)}
+  rejectLabel={i18n.common.cancel}
+>
+  <InvoiceForm />
+</MutateFormModal>
 ```
 
 ⚠️ **Deprecated**: `AsyncButton` and `AsyncFormModal` are deprecated. Use `MutateButton` and `MutateFormModal` instead for better integration with the query framework.
