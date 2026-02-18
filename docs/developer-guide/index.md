@@ -16,7 +16,6 @@ This guide helps developers to discover and understand the custom frameworks, ut
 
 ## Frontend
 
-- **[General Conventions](frontend/conventions.md)** - Conventions and best practices for front-end development (TODO)
 - **[Component Library](frontend/lib-components.md)** - Reusable UI components
 - **[Form Framework](frontend/forms.md)** - Custom form handling utilities
 - **[Query Framework](frontend/queries.md)** - Data fetching and caching patterns
@@ -25,7 +24,6 @@ This guide helps developers to discover and understand the custom frameworks, ut
 
 ## Service (Backend)
 
-- **[General Conventions](service/conventions.md)** - Conventions and best practices for back-end development (TODO)
 - **[Testing Conventions](service/testing.md)** - Unit and integration testing patterns
 - **[Database API](service/database.md)** - SQL queries and transactions
 - **[SQL Predicates](service/predicates.md)** - Building dynamic WHERE clauses
