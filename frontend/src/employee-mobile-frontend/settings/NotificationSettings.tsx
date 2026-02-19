@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -41,7 +41,7 @@ import {
   ExpandingInfoBox,
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import { fontWeights, H2 } from 'lib-components/typography'
+import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
@@ -106,20 +106,14 @@ export const NotificationSettings = React.memo(function NotificationSettings({
   )
   return (
     <div data-qa="notification-settings">
-      <H2>
-        {t.title}
-        {permissionState === 'granted' && !editing ? (
-          <>
-            <Gap size="s" horizontal />
-            <EditButton
-              appearance="inline"
-              data-qa="edit"
-              text={i18n.common.edit}
-              onClick={startEditing}
-            />
-          </>
-        ) : undefined}
-      </H2>
+      {permissionState === 'granted' && !editing ? (
+        <EditButton
+          appearance="inline"
+          data-qa="edit"
+          text={i18n.common.edit}
+          onClick={startEditing}
+        />
+      ) : undefined}
       <div>
         <SectionLabel>{t.permission.label}</SectionLabel>
         <Gap size="s" />
