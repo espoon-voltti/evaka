@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -23,7 +23,6 @@ import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
-import type { Lang } from '../common/i18n'
 import { I18nContext, useTranslation } from '../common/i18n'
 import { toUnitOrGroup } from '../common/unit-or-group'
 import { MessageContextProvider } from '../messages/state'
@@ -31,10 +30,6 @@ import { RememberContext } from '../remember'
 import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
-
-const SectionHeader = styled(FixedSpaceRow)`
-  align-items: center;
-`
 
 const SectionIcon = styled(FontAwesomeIcon)`
   font-size: 20px;
@@ -48,7 +43,7 @@ export const SettingsPage = React.memo(function SettingsPage({
 }) {
   const [, navigate] = useLocation()
   const { i18n } = useTranslation()
-  const { lang, setLang } = useContext(I18nContext)
+  const { lang, selectLang } = useContext(I18nContext)
   const { groupId } = useContext(RememberContext)
   const unitOrGroup = useMemo(
     () => toUnitOrGroup(unitId, groupId),
@@ -56,8 +51,6 @@ export const SettingsPage = React.memo(function SettingsPage({
   )
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
-
-  const selectLang = useCallback((l: Lang) => () => setLang(l), [setLang])
 
   return (
     <MessageContextProvider unitOrGroup={unitOrGroup}>
@@ -83,10 +76,10 @@ export const SettingsPage = React.memo(function SettingsPage({
                 <H1>{i18n.common.settings}</H1>
                 {featureFlags.employeeLanguageSelection && (
                   <>
-                    <SectionHeader spacing="s">
+                    <FixedSpaceRow spacing="s" alignItems="center">
                       <SectionIcon icon={faGlobe} />
                       <H2 noMargin>{i18n.settings.language.title}</H2>
-                    </SectionHeader>
+                    </FixedSpaceRow>
                     <Gap size="s" />
                     <ChipWrapper data-qa="language-selection">
                       <SelectionChip
@@ -109,10 +102,10 @@ export const SettingsPage = React.memo(function SettingsPage({
                 )}
                 {unit.features.includes('PUSH_NOTIFICATIONS') && (
                   <>
-                    <SectionHeader spacing="s">
+                    <FixedSpaceRow spacing="s" alignItems="center">
                       <SectionIcon icon={faBell} />
                       <H2 noMargin>{i18n.settings.notifications.title}</H2>
-                    </SectionHeader>
+                    </FixedSpaceRow>
                     <Gap size="s" />
                     <NotificationSettings unitId={unitId} />
                   </>

@@ -4,7 +4,9 @@
 
 import components from '../../components/i18n/sv'
 
-export const sv = {
+import type { fi } from './fi'
+
+export const sv: typeof fi = {
   common: {
     yesIDo: 'Ja',
     noIDoNot: 'Nej',
