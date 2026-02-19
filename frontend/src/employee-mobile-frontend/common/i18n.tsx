@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, createContext, useContext, useEffect } from 'react'
+import React, {
+  useCallback,
+  useMemo,
+  createContext,
+  useContext,
+  useEffect
+} from 'react'
 
 import useLocalStorage from 'lib-common/utils/useLocalStorage'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -13,11 +19,13 @@ import { langs, translations } from 'lib-customizations/employeeMobile'
 interface I18nState {
   lang: Lang
   setLang: (l: Lang) => void
+  selectLang: (l: Lang) => () => void
 }
 
-const defaultState = {
+const defaultState: I18nState = {
   lang: 'fi' as const,
-  setLang: () => undefined
+  setLang: () => undefined,
+  selectLang: () => () => undefined
 }
 
 export const I18nContext = createContext<I18nState>(defaultState)
@@ -40,7 +48,12 @@ export const I18nContextProvider = React.memo(function I18nContextProvider({
     document.documentElement.lang = lang
   }, [lang])
 
-  const value = useMemo(() => ({ lang, setLang }), [lang, setLang])
+  const selectLang = useCallback((l: Lang) => () => setLang(l), [setLang])
+
+  const value = useMemo(
+    () => ({ lang, setLang, selectLang }),
+    [lang, setLang, selectLang]
+  )
 
   return (
     <I18nContext.Provider value={value}>
