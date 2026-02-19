@@ -20,7 +20,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { useTranslations } from 'lib-components/i18n'
 import { faCalendarAlt } from 'lib-icons'
 
-import type { InputInfo } from '../../atoms/form/InputField'
+import { inputWidths, type InputInfo } from '../../atoms/form/InputField'
 import { zoomedMobileMax } from '../../breakpoints'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
@@ -29,13 +29,13 @@ import DatePickerDay from './DatePickerDay'
 import DatePickerInput from './DatePickerInput'
 import { nativeDatePickerEnabled } from './helpers'
 
-const inputWidth = 120
+const inputWidth = inputWidths.chs
 const iconWidth = 36
 
 const DatePickerWrapper = styled.div`
   position: relative;
   display: inline-flex;
-  width: ${inputWidth + iconWidth}px;
+  width: calc(${inputWidth} + ${iconWidth}px);
 `
 
 const DayPickerPositioner = styled.div`
