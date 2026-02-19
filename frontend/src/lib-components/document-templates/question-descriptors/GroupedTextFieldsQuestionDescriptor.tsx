@@ -16,6 +16,7 @@ import type {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -226,6 +227,7 @@ const EditableQuestionRow = React.memo(function EditableQuestionRow({
 }) {
   const i18n = useTranslations()
   const fields = useFormElems(bind)
+  const uniqueId = useUniqueId('input')
   return (
     <FixedSpaceColumn>
       <TabletAndDesktop>
@@ -233,8 +235,8 @@ const EditableQuestionRow = React.memo(function EditableQuestionRow({
           <ResponsiveGrid $fieldCount={fieldLabels.length}>
             {fieldLabels.map((label, j) => (
               <GridColumn key={j}>
-                <Label>{label}</Label>
-                <InputFieldF bind={fields[j]} />
+                <Label htmlFor={`${uniqueId}-${j}`}>{label}</Label>
+                <InputFieldF bind={fields[j]} id={`${uniqueId}-${j}`} />
               </GridColumn>
             ))}
           </ResponsiveGrid>
@@ -251,8 +253,8 @@ const EditableQuestionRow = React.memo(function EditableQuestionRow({
         <FixedSpaceColumn>
           {fieldLabels.map((label, j) => (
             <FixedSpaceColumn key={j}>
-              <Label>{label}</Label>
-              <InputFieldF bind={fields[j]} />
+              <Label htmlFor={`m-${uniqueId}-${j}`}>{label}</Label>
+              <InputFieldF bind={fields[j]} id={`m-${uniqueId}-${j}`} />
             </FixedSpaceColumn>
           ))}
           {showDelete && (
