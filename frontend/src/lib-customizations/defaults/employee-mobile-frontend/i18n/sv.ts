@@ -533,6 +533,11 @@ export const sv = {
     }
   },
   settings: {
+    language: {
+      title: 'Språk',
+      fi: 'Suomi',
+      sv: 'Svenska'
+    },
     notifications: {
       title: 'Ilmoitusasetukset',
       permission: {
