@@ -19,16 +19,17 @@ import type { InfoStatus } from '../StatusIcon'
 import UnderRowStatusIcon from '../StatusIcon'
 import { IconOnlyButton } from '../buttons/IconOnlyButton'
 
-const inputWidths = {
+export const inputWidths = {
   xs: '60px',
   s: '120px',
   m: '240px',
   L: '480px',
   XL: '720px',
-  full: '100%'
+  full: '100%',
+  chs: '12ch' // for date inputs, to fix text zooming overflowing the input field
 } as const
 
-type InputWidth = keyof typeof inputWidths
+export type InputWidth = keyof typeof inputWidths
 
 const width = (width: InputWidth) => css`
   width: ${inputWidths[width]};
