@@ -18,7 +18,7 @@ import styled from 'styled-components'
 import { Link, useLocation, useParams, useSearchParams } from 'wouter'
 
 import type { Result } from 'lib-common/api'
-import { combine, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
@@ -36,9 +36,8 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -65,21 +64,17 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
-import {
-  createCalendarEvent,
-  deleteCalendarEvent,
-  getUnitCalendarEvents,
-  modifyCalendarEvent
-} from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import type { DayOfWeek } from '../../../types'
 import { renderResult } from '../../async-rendering'
 import { unitGroupDetailsQuery, daycareQuery } from '../queries'
 
-const createCalendarEventResult = wrapResult(createCalendarEvent)
-const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
-const modifyCalendarEventResult = wrapResult(modifyCalendarEvent)
-const deleteCalendarEventResult = wrapResult(deleteCalendarEvent)
+import {
+  createCalendarEventMutation,
+  deleteCalendarEventMutation,
+  modifyCalendarEventMutation,
+  unitCalendarEventsQuery
+} from './queries'
 
 const EventsWeekContainer = styled.div`
   display: grid;
@@ -215,14 +210,12 @@ export default React.memo(function CalendarEventsSection({
   operationalDays: DayOfWeek[]
   groupId: UUID | null // null means all groups
 }) {
-  const [events, reloadEvents] = useApiState(
-    () =>
-      getUnitCalendarEventsResult({
-        unitId,
-        start: dateRange.start,
-        end: dateRange.end
-      }),
-    [unitId, dateRange]
+  const events = useQueryResult(
+    unitCalendarEventsQuery({
+      unitId,
+      start: dateRange.start,
+      end: dateRange.end
+    })
   )
 
   const groupData = useQueryResult(
@@ -283,10 +276,7 @@ export default React.memo(function CalendarEventsSection({
         <EditEventModal
           event={editingEvent}
           unitInformation={unitInformation}
-          onClose={(shouldRefresh) => {
-            if (shouldRefresh) {
-              void reloadEvents()
-            }
+          onClose={() => {
             navigate(`/units/${unitId}/calendar`)
           }}
         />
@@ -295,11 +285,8 @@ export default React.memo(function CalendarEventsSection({
       {createEventModalVisible && (
         <CreateEventModal
           unitId={unitId}
-          onClose={(shouldRefresh) => {
+          onClose={() => {
             setCreateEventModalVisible(false)
-            if (shouldRefresh) {
-              void reloadEvents()
-            }
           }}
           groupId={groupId}
         />
@@ -516,10 +503,13 @@ const CreateEventModal = React.memo(function CreateEventModal({
   groupId
 }: {
   unitId: DaycareId
-  onClose: (shouldRefresh: boolean) => void
+  onClose: () => void
   groupId: UUID | null
 }) {
   const { i18n, lang } = useTranslation()
+  const { mutateAsync: doCreateCalendarEvent } = useMutationResult(
+    createCalendarEventMutation
+  )
 
   const unitInformation = useQueryResult(daycareQuery({ daycareId: unitId }))
 
@@ -744,7 +734,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
       icon={faCalendarPlus}
       type="info"
       resolveAction={() =>
-        createCalendarEventResult({
+        doCreateCalendarEvent({
           body: {
             unitId,
             title: form.title,
@@ -758,8 +748,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
         })
       }
       resolveLabel={i18n.unit.calendar.events.create.add}
-      onSuccess={() => onClose(true)}
-      rejectAction={() => onClose(false)}
+      onSuccess={onClose}
+      rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
       resolveDisabled={!formIsValid}
     >
@@ -892,9 +882,15 @@ const EditEventModal = React.memo(function EditEventModal({
 }: {
   event: CalendarEvent
   unitInformation: Result<DaycareResponse>
-  onClose: (shouldRefresh: boolean) => void
+  onClose: () => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doModifyCalendarEvent } = useMutationResult(
+    modifyCalendarEventMutation
+  )
+  const { mutateAsync: doDeleteCalendarEvent } = useMutationResult(
+    deleteCalendarEventMutation
+  )
 
   const [form, setForm] = useState<{
     title: string
@@ -926,7 +922,7 @@ const EditEventModal = React.memo(function EditEventModal({
           title={i18n.unit.calendar.events.edit.title}
           type="info"
           width="wide"
-          close={() => onClose(false)}
+          close={onClose}
           closeLabel={i18n.common.closeModal}
           padding="L"
         >
@@ -1029,9 +1025,9 @@ const EditEventModal = React.memo(function EditEventModal({
             <AsyncButton
               primary
               onClick={() =>
-                modifyCalendarEventResult({ id: event.id, body: form })
+                doModifyCalendarEvent({ id: event.id, body: form })
               }
-              onSuccess={() => onClose(true)}
+              onSuccess={onClose}
               text={i18n.unit.calendar.events.edit.saveChanges}
               data-qa="save"
             />
@@ -1046,11 +1042,11 @@ const EditEventModal = React.memo(function EditEventModal({
           title="Haluatko varmasti poistaa tapahtuman?"
           text="Tapahtuma poistetaan sekä henkilökunnan että huoltajien kalenterista."
           type="warning"
-          resolveAction={() => deleteCalendarEventResult({ id: event.id })}
+          resolveAction={() => doDeleteCalendarEvent({ id: event.id })}
           resolveLabel="Poista tapahtuma"
           onSuccess={() => {
             setShowDeletionModal(false)
-            onClose(true)
+            onClose()
           }}
           rejectAction={() => setShowDeletionModal(false)}
           rejectLabel="Älä poista"

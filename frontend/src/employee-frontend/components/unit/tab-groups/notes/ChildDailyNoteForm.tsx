@@ -4,7 +4,6 @@
 
 import React, { Fragment, useCallback, useState } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type {
   ChildDailyNote,
@@ -16,6 +15,7 @@ import {
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
+import { useMutationResult } from 'lib-common/query'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
@@ -31,16 +31,13 @@ import { H1, H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
 
-import {
-  createChildDailyNote,
-  deleteChildDailyNote,
-  updateChildDailyNote
-} from '../../../../generated/api-clients/note'
 import { useTranslation } from '../../../../state/i18n'
 
-const createChildDailyNoteResult = wrapResult(createChildDailyNote)
-const updateChildDailyNoteResult = wrapResult(updateChildDailyNote)
-const deleteChildDailyNoteResult = wrapResult(deleteChildDailyNote)
+import {
+  createChildDailyNoteMutation,
+  deleteChildDailyNoteMutation,
+  updateChildDailyNoteMutation
+} from './queries'
 
 interface ChildDailyNoteFormData extends Omit<
   ChildDailyNoteBody,
@@ -106,6 +103,15 @@ export default React.memo(function ChildDailyNoteForm({
   onSuccess
 }: Props) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doCreateChildDailyNote } = useMutationResult(
+    createChildDailyNoteMutation
+  )
+  const { mutateAsync: doUpdateChildDailyNote } = useMutationResult(
+    updateChildDailyNoteMutation
+  )
+  const { mutateAsync: doDeleteChildDailyNote } = useMutationResult(
+    deleteChildDailyNoteMutation
+  )
 
   const [form, setForm] = useState<ChildDailyNoteFormData>(
     initialFormData(note)
@@ -128,9 +134,9 @@ export default React.memo(function ChildDailyNoteForm({
     setSubmitting(true)
     const body = formDataToRequestBody(form)
     return note
-      ? updateChildDailyNoteResult({ noteId: note.id, body })
-      : createChildDailyNoteResult({ childId, body })
-  }, [childId, form, note])
+      ? doUpdateChildDailyNote({ noteId: note.id, body })
+      : doCreateChildDailyNote({ childId, body })
+  }, [childId, form, note, doUpdateChildDailyNote, doCreateChildDailyNote])
   const submitSuccess = useCallback(() => {
     setSubmitting(false)
     onSuccess()
@@ -145,13 +151,13 @@ export default React.memo(function ChildDailyNoteForm({
       return Promise.reject()
     }
     setDeleting(true)
-    return deleteChildDailyNoteResult({ noteId: note.id }).then((res) => {
+    return doDeleteChildDailyNote({ noteId: note.id }).then((res) => {
       setDeleting(false)
       if (res.isSuccess) {
         onRemove()
       }
     })
-  }, [note, onRemove])
+  }, [note, onRemove, doDeleteChildDailyNote])
 
   return (
     <>

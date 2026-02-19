@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type {
-  CalendarEventId,
-  DaycareId,
-  GroupId
-} from 'lib-common/generated/api-types/shared'
+import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import { Queries } from 'lib-common/query'
 
 import {
@@ -18,6 +14,8 @@ import {
   getCalendarEvent,
   getGroupDiscussionReservationDays,
   getGroupDiscussionSurveys,
+  getUnitCalendarEvents,
+  modifyCalendarEvent,
   setCalendarEventTimeReservation,
   updateCalendarEvent
 } from '../../../generated/api-clients/calendarevent'
@@ -32,13 +30,15 @@ export const groupDiscussionReservationDaysQuery = q.query(
   getGroupDiscussionReservationDays
 )
 
-export const createCalendarEventMutation = q.mutation(createCalendarEvent)
+export const unitCalendarEventsQuery = q.query(getUnitCalendarEvents)
 
-export const deleteCalendarEventMutation = q.parametricMutation<{
-  unitId: DaycareId
-  groupId: GroupId
-}>()(deleteCalendarEvent, [
-  ({ unitId, groupId }) => groupDiscussionSurveysQuery({ unitId, groupId })
+export const createCalendarEventMutation = q.mutation(createCalendarEvent, [
+  unitCalendarEventsQuery.prefix
+])
+
+export const deleteCalendarEventMutation = q.mutation(deleteCalendarEvent, [
+  groupDiscussionSurveysQuery.prefix,
+  unitCalendarEventsQuery.prefix
 ])
 
 export const updateCalendarEventMutation = q.mutation(updateCalendarEvent, [
@@ -65,4 +65,8 @@ export const deleteCalendarEventTimeMutation = q.parametricMutation<{
   eventId: CalendarEventId
 }>()(deleteCalendarEventTime, [
   ({ eventId }) => discussionSurveyQuery({ id: eventId })
+])
+
+export const modifyCalendarEventMutation = q.mutation(modifyCalendarEvent, [
+  unitCalendarEventsQuery.prefix
 ])

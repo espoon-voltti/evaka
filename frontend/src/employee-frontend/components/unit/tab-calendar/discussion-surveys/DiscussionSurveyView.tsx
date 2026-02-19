@@ -27,7 +27,7 @@ import type { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import type { ChildBasics } from 'lib-common/generated/api-types/placement'
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useMutation, useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -198,7 +198,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 }) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const { mutateAsync: deleteCalendarEvent } = useMutation(
+  const { mutateAsync: deleteCalendarEvent } = useMutationResult(
     deleteCalendarEventMutation
   )
 
@@ -315,21 +315,20 @@ export default React.memo(function DiscussionReservationSurveyView({
           }}
           resolve={{
             action: () => {
-              deleteCalendarEvent({ id: eventData.id, unitId, groupId })
-                .catch(() => {
+              void deleteCalendarEvent({ id: eventData.id }).then((result) => {
+                if (result.isFailure) {
                   setErrorMessage({
                     title: t.discussionReservation.deleteConfirmation.error,
                     type: 'error',
                     resolveLabel: i18n.common.close
                   })
-                })
-                .finally(() => {
-                  setDeleteConfirmModalVisible(false)
-                  navigate(
-                    `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
-                    { replace: true }
-                  )
-                })
+                }
+                setDeleteConfirmModalVisible(false)
+                navigate(
+                  `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
+                  { replace: true }
+                )
+              })
             },
             label: i18n.common.remove
           }}
