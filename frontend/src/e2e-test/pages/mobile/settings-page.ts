@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,16 +8,33 @@ import type { Page } from '../../utils/page'
 import { Element, Checkbox } from '../../utils/page'
 
 export class SettingsPage {
+  languageSelection: LanguageSelection
   notificationSettings: NotificationSettings
 
   goBack: Element
+  title: Element
 
   constructor(readonly page: Page) {
+    this.languageSelection = new LanguageSelection(
+      page.findByDataQa('language-selection')
+    )
     this.notificationSettings = new NotificationSettings(
       page.findByDataQa('notification-settings')
     )
 
     this.goBack = page.findByDataQa('go-back')
+    this.title = page.find('h1')
+  }
+}
+
+export class LanguageSelection extends Element {
+  fi: Element
+  sv: Element
+
+  constructor(parent: Element) {
+    super(parent)
+    this.fi = this.findByDataQa('lang-fi')
+    this.sv = this.findByDataQa('lang-sv')
   }
 }
 
