@@ -15,4 +15,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring-boot-devtools@.*$</packageUrl>
 		<cve>CVE-2022-31691</cve>
 	</suppress>
+    <suppress>
+        <notes>
+            False positive: CVE-2026-24734 targets OCSP, which is not used in our project.
+        </notes>
+        <cve>CVE-2026-24734</cve>
+    </suppress>
 </suppressions>
