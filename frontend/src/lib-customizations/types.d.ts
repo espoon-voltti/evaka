@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -319,6 +319,11 @@ interface BaseFeatureFlags {
    * Enable option to display applications in a service worker placement desktop mode
    */
   placementDesktop?: boolean
+
+  /**
+   * Enable language selection in employee frontends
+   */
+  employeeLanguageSelection?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
