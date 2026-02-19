@@ -6,8 +6,9 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { useMutationResult } from 'lib-common/query'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -16,11 +17,10 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { getOrCreatePersonBySsn } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { isSsnValid } from '../../utils/validation/validations'
 
-const getOrCreatePersonBySsnResult = wrapResult(getOrCreatePersonBySsn)
+import { getOrCreatePersonBySsnMutation } from './queries'
 
 export default React.memo(function VTJModal({
   closeModal
@@ -28,6 +28,9 @@ export default React.memo(function VTJModal({
   closeModal: () => void
 }) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doGetOrCreatePersonBySsn } = useMutationResult(
+    getOrCreatePersonBySsnMutation
+  )
   const [ssn, setSsn] = useState('')
   const [person, setPerson] = useState<Result<PersonJSON>>()
   const [requestInFlight, setRequestInFlight] = useState(false)
@@ -36,11 +39,11 @@ export default React.memo(function VTJModal({
   useEffect(() => {
     if (isSsnValid(ssn)) {
       setPerson(Loading.of())
-      void getOrCreatePersonBySsnResult({ body: { ssn, readonly: true } }).then(
+      void doGetOrCreatePersonBySsn({ body: { ssn, readonly: true } }).then(
         setPerson
       )
     }
-  }, [ssn])
+  }, [ssn, doGetOrCreatePersonBySsn])
 
   const updateSsn = (ssn: string) => {
     setSsn(ssn)
@@ -50,7 +53,7 @@ export default React.memo(function VTJModal({
   const onConfirm = () => {
     setRequestInFlight(true)
     setSaveError(false)
-    getOrCreatePersonBySsnResult({ body: { ssn, readonly: false } })
+    doGetOrCreatePersonBySsn({ body: { ssn, readonly: false } })
       .then((result) => {
         if (result.isSuccess) {
           closeModal()

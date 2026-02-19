@@ -6,9 +6,9 @@ import { set } from 'lodash/fp'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import type { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -18,10 +18,9 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { createPerson } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 
-const createPersonResult = wrapResult(createPerson)
+import { createPersonMutation } from './queries'
 
 type Form = Omit<CreatePersonBody, 'dateOfBirth'> & {
   dateOfBirth: LocalDate | null
@@ -33,6 +32,8 @@ export default React.memo(function CreatePersonModal({
   closeModal: () => void
 }) {
   const { i18n, lang } = useTranslation()
+  const { mutateAsync: doCreatePerson } =
+    useMutationResult(createPersonMutation)
   const [form, setForm] = useState<Form>({
     firstName: '',
     lastName: '',
@@ -51,7 +52,7 @@ export default React.memo(function CreatePersonModal({
     if (validForm !== undefined) {
       setRequestInFlight(true)
       setSaveError(false)
-      createPersonResult({ body: validForm })
+      doCreatePerson({ body: validForm })
         .then((result) => {
           if (result.isSuccess) {
             closeModal()
