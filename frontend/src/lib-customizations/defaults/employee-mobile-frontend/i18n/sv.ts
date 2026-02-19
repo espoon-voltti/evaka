@@ -6,530 +6,528 @@ import components from '../../components/i18n/sv'
 
 export const sv = {
   common: {
-    yesIDo: 'Kyllä',
-    noIDoNot: 'En',
-    loadingFailed: 'Tietojen haku epäonnistui',
-    noAccess: 'Oikeudet puuttuvat',
-    add: 'Lisää',
-    cancel: 'Peruuta',
-    confirm: 'Vahvista',
-    sort: 'Järjestä',
-    all: 'Kaikki',
+    yesIDo: 'Ja',
+    noIDoNot: 'Nej',
+    loadingFailed: 'Hämtning av information misslyckades',
+    noAccess: 'Behörighet saknas',
+    add: 'Lägg till',
+    cancel: 'Avbryt',
+    confirm: 'Bekräfta',
+    sort: 'Sortera',
+    all: 'Alla',
     statuses: {
-      active: 'Aktiivinen',
-      coming: 'Tulossa',
-      completed: 'Päättynyt',
-      conflict: 'Konflikti'
+      active: 'Aktiv',
+      coming: 'Kommande',
+      completed: 'Avslutad',
+      conflict: 'Konflikt'
     },
     types: {
-      CLUB: 'Kerho',
-      FAMILY: 'Perhepäivähoito',
-      GROUP_FAMILY: 'Ryhmäperhepäivähoito',
-      CENTRE: 'Päiväkoti',
-      PRESCHOOL: 'Esiopetus',
-      DAYCARE: 'Varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PREPARATORY_EDUCATION: 'Valmistava esiopetus',
-      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus',
-      DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
-      DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
+      CLUB: 'Klubbverksamhet',
+      FAMILY: 'Familjedagvård',
+      GROUP_FAMILY: 'Gruppfamiljedagvård',
+      CENTRE: 'Daghem',
+      PRESCHOOL: 'Förskola',
+      DAYCARE: 'Småbarnspedagogik',
+      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
+      PREPARATORY_EDUCATION: 'Förberedande förskola',
+      PREPARATORY_DAYCARE: 'Kompletterande småbarnspedagogik',
+      DAYCARE_5YO_FREE: 'Avgiftsfri småbarnspedagogik för 5-åringar',
+      DAYCARE_5YO_PAID: 'Småbarnspedagogik (avgiftsbelagd)'
     },
     placement: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      CLUB: 'Klubbverksamhet',
+      DAYCARE: 'Småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Halvdags småbarnspedagogik',
+      DAYCARE_FIVE_YEAR_OLDS: 'Småbarnspedagogik för 5-åringar',
       DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
-        '5-vuotiaiden osapäiväinen varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE_ONLY: 'Pelkkä liittyvä',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-      PREPARATORY: 'Valmistava',
-      PREPARATORY_DAYCARE: 'Valmistava',
-      PREPARATORY_DAYCARE_ONLY: 'Pelkkä liittyvä',
-      TEMPORARY_DAYCARE: 'Väliaikainen',
-      TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen',
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
+        'Halvdags småbarnspedagogik för 5-åringar',
+      PRESCHOOL: 'Förskola',
+      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
+      PRESCHOOL_DAYCARE_ONLY: 'Enbart kompletterande',
+      PRESCHOOL_CLUB: 'Förskoleklubb',
+      PREPARATORY: 'Förberedande',
+      PREPARATORY_DAYCARE: 'Förberedande',
+      PREPARATORY_DAYCARE_ONLY: 'Enbart kompletterande',
+      TEMPORARY_DAYCARE: 'Tillfällig',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig deltid',
+      SCHOOL_SHIFT_CARE: 'Skiftesomvårdnad för skolbarn'
     },
-    code: 'Koodi',
-    children: 'Lapset',
-    name: 'Nimi',
-    staff: 'Henkilökunta',
-    messages: 'Viestit',
-    settings: 'Asetukset',
-    back: 'Takaisin',
-    return: 'Palaa',
-    close: 'Sulje',
-    open: 'Avaa',
-    hours: 'Tuntia',
-    remove: 'Poista',
-    doNotRemove: 'Älä poista',
-    clear: 'Tyhjennä',
-    edit: 'Muokkaa',
-    save: 'Tallenna',
-    saveChanges: 'Tallenna muutokset',
-    saving: 'Tallennetaan',
-    saved: 'Tallennettu',
-    search: 'Hae',
-    noResults: 'Ei hakutuloksia',
-    doNotSave: 'Älä tallenna',
-    starts: 'Alkaa',
-    ends: 'Päättyy',
-    information: 'Tiedot',
-    dailyNotes: 'Muistiinpanot',
-    saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
-    hourShort: 't',
+    code: 'Kod',
+    children: 'Barn',
+    name: 'Namn',
+    staff: 'Personal',
+    messages: 'Meddelanden',
+    settings: 'Inställningar',
+    back: 'Tillbaka',
+    return: 'Tillbaka',
+    close: 'Stäng',
+    open: 'Öppna',
+    hours: 'Timmar',
+    remove: 'Ta bort',
+    doNotRemove: 'Ta inte bort',
+    clear: 'Rensa',
+    edit: 'Redigera',
+    save: 'Spara',
+    saveChanges: 'Spara ändringar',
+    saving: 'Sparar',
+    saved: 'Sparat',
+    search: 'Sök',
+    noResults: 'Inga sökresultat',
+    doNotSave: 'Spara inte',
+    starts: 'Börjar',
+    ends: 'Slutar',
+    information: 'Information',
+    dailyNotes: 'Anteckningar',
+    saveBeforeClosing: 'Vill du spara innan du stänger',
+    hourShort: 'h',
     minuteShort: 'min',
-    week: 'Viikko',
-    yearsShort: 'v',
+    week: 'Vecka',
+    yearsShort: 'år',
     errors: {
-      minutes: 'Korkeintaan 59 minuuttia'
+      minutes: 'Högst 59 minuter'
     },
-    child: 'Lapsi',
-    group: 'Ryhmä',
-    yesterday: 'eilen',
+    child: 'Barn',
+    group: 'Grupp',
+    yesterday: 'igår',
     validation: {
-      dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`,
+      dateLte: (date: string) => `Måste vara ${date} eller tidigare`,
       dateBetween: (start: string, end: string) =>
-        `Oltava välillä ${start}-${end}`
+        `Måste vara mellan ${start}-${end}`
     },
-    nb: 'Huom',
-    validity: 'Voimassaolo',
-    lastModified: (dateTime: string) => `Viimeksi muokattu: ${dateTime}`,
-    validTo: (date: string) => `Voimassa ${date} saakka`,
-    lastName: 'Sukunimi',
-    firstName: 'Etunimi',
-    openExpandingInfo: 'Avaa lisätietokenttä'
+    nb: 'Obs',
+    validity: 'Giltighet',
+    lastModified: (dateTime: string) => `Senast ändrad: ${dateTime}`,
+    validTo: (date: string) => `Giltig till ${date}`,
+    lastName: 'Efternamn',
+    firstName: 'Förnamn',
+    openExpandingInfo: 'Öppna detaljer'
   },
   systemNotification: {
-    title: 'Ilmoitus'
+    title: 'Meddelande'
   },
   errorPage: {
-    reload: 'Lataa sivu uudelleen',
-    text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
-    title: 'Jotain meni pieleen'
+    reload: 'Ladda om sidan',
+    text: 'Vi stötte på ett oväntat problem. Felinformationen har vidarebefordrats.',
+    title: 'Något gick fel'
   },
   absences: {
-    title: 'Poissaolomerkintä',
+    title: 'Frånvaromarkering',
     absenceTypes: {
-      OTHER_ABSENCE: 'Poissaolo',
-      SICKLEAVE: 'Sairaus',
-      UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
-      PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
-      TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
-      PARENTLEAVE: 'Vanhempainvapaa',
-      FORCE_MAJEURE: 'Maksuton päivä',
-      FREE_ABSENCE: 'Maksuton poissaolo',
-      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-      NO_ABSENCE: 'Ei poissaoloa'
+      OTHER_ABSENCE: 'Frånvaro',
+      SICKLEAVE: 'Sjukdom',
+      UNKNOWN_ABSENCE: 'Oanmäld frånvaro',
+      PLANNED_ABSENCE: 'Skiftesarbetsfrånvaro',
+      TEMPORARY_RELOCATION: 'Barnet ersättningsplacerat på annat ställe',
+      PARENTLEAVE: 'Föräldraledighet',
+      FORCE_MAJEURE: 'Avgiftsfri dag',
+      FREE_ABSENCE: 'Avgiftsfri frånvaro',
+      UNAUTHORIZED_ABSENCE: 'Oanmäld jourfrånvaro',
+      NO_ABSENCE: 'Ingen frånvaro'
     },
     careTypes: {
-      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
-      PRESCHOOL: 'Esiopetus',
-      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
-      DAYCARE_5YO_FREE: '5-vuotiaiden varhaiskasvatus',
-      DAYCARE: 'Varhaiskasvatus',
-      CLUB: 'Kerho'
+      SCHOOL_SHIFT_CARE: 'Skiftesomvårdnad för skolbarn',
+      PRESCHOOL: 'Förskola',
+      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
+      PRESCHOOL_CLUB: 'Förskoleklubb',
+      DAYCARE_5YO_FREE: 'Småbarnspedagogik för 5-åringar',
+      DAYCARE: 'Småbarnspedagogik',
+      CLUB: 'Klubbverksamhet'
     },
-    chooseStartDate: 'Valitse tuleva päivä',
-    startBeforeEnd: 'Aloitus oltava ennen päättymispäivää.',
-    reason: 'Poissaolon syy',
-    fullDayHint: 'Poissaolomerkintä tehdään koko päivälle',
-    confirmDelete: 'Haluatko poistaa tämän poissaolon?',
-    futureAbsence: 'Tulevat poissaolot',
+    chooseStartDate: 'Välj ett kommande datum',
+    startBeforeEnd: 'Startdatum måste vara före slutdatum.',
+    reason: 'Orsak till frånvaro',
+    fullDayHint: 'Frånvaromarkeringen gäller hela dagen',
+    confirmDelete: 'Vill du ta bort denna frånvaro?',
+    futureAbsence: 'Kommande frånvaron',
     laterAbsence: {
-      closed: 'Näytä myöhemmät poissaolot',
-      open: 'Piilota myöhemmät poissaolot'
+      closed: 'Visa senare frånvaron',
+      open: 'Dölj senare frånvaron'
     }
   },
   attendances: {
     views: {
-      TODAY: 'Tänään',
-      NEXT_DAYS: 'Seuraavat päivät'
+      TODAY: 'Idag',
+      NEXT_DAYS: 'Följande dagar'
     },
     types: {
-      COMING: 'Tulossa',
-      PRESENT: 'Läsnä',
-      DEPARTED: 'Lähtenyt',
-      ABSENT: 'Poissa'
+      COMING: 'Kommande',
+      PRESENT: 'Närvarande',
+      DEPARTED: 'Gått',
+      ABSENT: 'Frånvarande'
     },
     status: {
-      COMING: 'Tulossa',
-      PRESENT: 'Saapunut',
-      DEPARTED: 'Lähtenyt',
-      ABSENT: 'Poissa'
+      COMING: 'Kommande',
+      PRESENT: 'Anlänt',
+      DEPARTED: 'Gått',
+      ABSENT: 'Frånvarande'
     },
     staffTypes: {
-      PRESENT: 'Paikalla',
-      OTHER_WORK: 'Työasia',
-      TRAINING: 'Koulutus',
-      OVERTIME: 'Ylityö',
-      JUSTIFIED_CHANGE: 'Perusteltu muutos',
-      SICKNESS: 'Muu syy (oma)',
-      CHILD_SICKNESS: 'Muu syy (lapsi)'
+      PRESENT: 'På plats',
+      OTHER_WORK: 'Arbetsärende',
+      TRAINING: 'Utbildning',
+      OVERTIME: 'Övertid',
+      JUSTIFIED_CHANGE: 'Motiverad ändring',
+      SICKNESS: 'Annan orsak (egen)',
+      CHILD_SICKNESS: 'Annan orsak (barn)'
     },
-    groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
+    groupSelectError: 'Den valda gruppens namn hittades inte',
     actions: {
       multiselect: {
-        toggle: 'Kirjaa useampi lapsi',
+        toggle: 'Registrera flera barn',
         confirmArrival: (count: number) =>
-          `Merkitse saapuneeksi${
-            count > 1 ? `: ${count} lasta` : count === 1 ? ': 1 lapsi' : ''
+          `Markera som anlänt${
+            count > 1 ? `: ${count} barn` : count === 1 ? ': 1 barn' : ''
           }`,
         confirmDeparture: (count: number) =>
-          `Merkitse lähteneeksi${
-            count > 1 ? `: ${count} lasta` : count === 1 ? ': 1 lapsi' : ''
+          `Markera som gått${
+            count > 1 ? `: ${count} barn` : count === 1 ? ': 1 barn' : ''
           }`,
-        select: 'Valitse',
-        selected: 'Valittu'
+        select: 'Välj',
+        selected: 'Vald'
       },
       sortType: {
-        CHILD_FIRST_NAME: 'Aakkosjärjestys',
-        RESERVATION_START_TIME: 'Saapumisjärjestys',
-        RESERVATION_END_TIME: 'Lähtöjärjestys'
+        CHILD_FIRST_NAME: 'Alfabetisk ordning',
+        RESERVATION_START_TIME: 'Ankomstordning',
+        RESERVATION_END_TIME: 'Avreseordning'
       },
-      markAbsent: 'Merkitse poissaolevaksi',
-      cancelAbsence: 'Peruuta poissaolo',
+      markAbsent: 'Markera som frånvarande',
+      cancelAbsence: 'Ångra frånvaro',
       markPresent: (count: number) =>
-        count > 1
-          ? `Merkitse saapuneeksi ${count} lasta`
-          : 'Merkitse saapuneeksi',
-      markDeparted: 'Merkitse lähteneeksi',
-      returnToComing: 'Palauta tulossa oleviin',
-      returnToPresent: 'Palauta läsnäolevaksi',
-      or: 'tai',
+        count > 1 ? `Markera ${count} barn som anlända` : 'Markera som anlänt',
+      markDeparted: 'Markera som gått',
+      returnToComing: 'Flytta tillbaka till kommande',
+      returnToPresent: 'Flytta tillbaka till närvarande',
+      or: 'eller',
       returnToPresentNoTimeNeeded:
-        'Palauta läsnäolevaksi ilman uutta saapumisaikaa',
-      markAbsentBeforehand: 'Tulevat poissaolot',
-      markReservations: 'Tulevat varaukset ja poissaolot',
+        'Flytta tillbaka till närvarande utan ny ankomsttid',
+      markAbsentBeforehand: 'Kommande frånvaron',
+      markReservations: 'Kommande reservationer och frånvaron',
       confirmedRangeReservations: {
-        markReservations: 'Muokkaa varauksia',
-        markAbsentBeforehand: 'Merkitse poissaolo'
+        markReservations: 'Redigera reservationer',
+        markAbsentBeforehand: 'Markera frånvaro'
       }
     },
     validationErrors: {
-      required: 'Pakollinen',
-      timeFormat: 'Tarkista',
-      overlap: 'Päällekkäisiä merkintöjä'
+      required: 'Obligatorisk',
+      timeFormat: 'Kontrollera',
+      overlap: 'Överlappande markeringar'
     },
-    timeLabel: 'Merkintä',
-    termBreak: 'Ei toimintaa tänään',
-    departureTime: 'Lähtöaika',
-    arrivalTime: 'Saapumisaika',
-    chooseGroup: 'Valitse ryhmä',
-    chooseGroupInfo: 'Lapsia: Läsnä nyt/Ryhmässä yhteensä',
-    searchPlaceholder: 'Etsi lapsen nimellä',
-    noAbsences: 'Ei poissaoloja',
-    removeAbsence: 'Peru poissaolo',
-    timeError: 'Virheellinen aika',
-    arrived: 'Saapui',
-    departed: 'Lähti',
-    noGroup: 'Ei ryhmää',
+    timeLabel: 'Markering',
+    termBreak: 'Ingen verksamhet idag',
+    departureTime: 'Avgångstid',
+    arrivalTime: 'Ankomsttid',
+    chooseGroup: 'Välj grupp',
+    chooseGroupInfo: 'Barn: Närvarande nu/Totalt i gruppen',
+    searchPlaceholder: 'Sök med barnets namn',
+    noAbsences: 'Inga frånvaron',
+    removeAbsence: 'Ångra frånvaro',
+    timeError: 'Felaktig tid',
+    arrived: 'Anlände',
+    departed: 'Gick',
+    noGroup: 'Ingen grupp',
     serviceTime: {
-      reservation: 'Varaus',
-      reservations: 'Varaukset',
+      reservation: 'Reservation',
+      reservations: 'Reservationer',
       serviceToday: (start: string, end: string) =>
-        `Varhaiskasvatusaika tänään ${start}-${end}`,
+        `Småbarnspedagogiktid idag ${start}-${end}`,
       serviceTodayShort: (start: string, end: string) =>
-        `Sop.aika ${start}-${end}`,
-      noServiceToday: 'Ei varattua varhaiskasvatusaikaa tänään',
-      noServiceTodayShort: 'Ei sop.aikaa tänään',
-      notSet: 'Läsnäoloilmoitus puuttuu',
-      notSetShort: 'Ilmoitus puuttuu',
-      variableTimes: 'Vaihteleva varhaiskasvatusaika',
-      variableTimesShort: 'Sop.aika vaihtelee',
-      present: 'Läsnä',
-      yesterday: 'eilen',
-      tomorrow: 'huomenna'
+        `Avtalstid ${start}-${end}`,
+      noServiceToday: 'Ingen reserverad småbarnspedagogiktid idag',
+      noServiceTodayShort: 'Ingen avtalstid idag',
+      notSet: 'Närvaroanmälan saknas',
+      notSetShort: 'Anmälan saknas',
+      variableTimes: 'Varierande småbarnspedagogiktid',
+      variableTimesShort: 'Avtalstiden varierar',
+      present: 'Närvarande',
+      yesterday: 'igår',
+      tomorrow: 'imorgon'
     },
     confirmedDays: {
-      noChildren: 'Ei lapsia',
-      tomorrow: 'Huomenna',
-      inOtherUnit: 'Muussa yksikössä',
+      noChildren: 'Inga barn',
+      tomorrow: 'Imorgon',
+      inOtherUnit: 'I en annan enhet',
       status: {
-        ABSENT: 'Poissa',
-        ON_TERM_BREAK: 'Ei toimintaa'
+        ABSENT: 'Frånvarande',
+        ON_TERM_BREAK: 'Ingen verksamhet'
       },
-      noHolidayReservation: 'Lomavaraus puuttuu'
+      noHolidayReservation: 'Semesterreservation saknas'
     },
     notes: {
-      day: 'Päivä',
-      dailyNotes: 'Muistiinpanot',
-      addNew: 'Lisää uusi',
+      day: 'Dag',
+      dailyNotes: 'Anteckningar',
+      addNew: 'Lägg till ny',
       labels: {
-        stickyNote: 'Huomioitavaa lähipäivinä',
-        note: 'Tänään koettua ja opittua',
-        feedingNote: 'Lapsi söi tänään',
-        sleepingNote: 'Lapsi nukkui tänään',
-        reminderNote: 'Muistettavia asioita',
-        groupNotesHeader: 'Koko ryhmän muistiinpanot'
+        stickyNote: 'Att observera de närmaste dagarna',
+        note: 'Dagens upplevelser och lärdomar',
+        feedingNote: 'Barnet åt idag',
+        sleepingNote: 'Barnet sov idag',
+        reminderNote: 'Saker att komma ihåg',
+        groupNotesHeader: 'Anteckningar för hela gruppen'
       },
       sleepingValues: {
-        GOOD: 'Hyvin',
-        MEDIUM: 'Vähän',
-        NONE: 'Ei ollenkaan'
+        GOOD: 'Bra',
+        MEDIUM: 'Lite',
+        NONE: 'Inte alls'
       },
       feedingValues: {
-        GOOD: 'Hyvin',
-        MEDIUM: 'Vähän',
-        NONE: 'Ei ollenkaan/maistoi'
+        GOOD: 'Bra',
+        MEDIUM: 'Lite',
+        NONE: 'Inte alls/smakade'
       },
       reminders: {
-        DIAPERS: 'Lisää vaippoja',
-        CLOTHES: 'Lisää varavaatteita',
-        LAUNDRY: 'Repussa pyykkiä'
+        DIAPERS: 'Fler blöjor',
+        CLOTHES: 'Fler ombyteskläder',
+        LAUNDRY: 'Tvätt i ryggsäcken'
       },
       placeholders: {
-        note: 'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
+        note: 'Lekar, framgångar, glädje och lärdomar idag (inte hälsouppgifter eller sekretessbelagda uppgifter).',
         childStickyNote:
-          'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
-        groupNote: 'Koko ryhmää koskeva muistiinpano',
-        reminderNote: 'Muuta muistettavaa (esim. aurinkovoide)',
-        hours: 'tunnit',
-        minutes: 'minuutit'
+          'Anteckning för personalen (inte hälsouppgifter eller sekretessbelagda uppgifter).',
+        groupNote: 'Anteckning som gäller hela gruppen',
+        reminderNote: 'Annat att komma ihåg (t.ex. solkräm)',
+        hours: 'timmar',
+        minutes: 'minuter'
       },
-      noNotes: 'Ei merkintöjä tälle päivälle',
-      clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?',
-      confirmTitle: 'Tallennetaanko tehdyt merkinnät ennen sulkemista?',
-      closeWithoutSaving: 'Sulje tallentamatta',
-      groupNote: 'Ryhmän muistiinpanot',
-      note: 'Tänään koettua ja opittua',
-      otherThings: 'Muut asiat',
-      childStickyNotes: 'Huomioitavaa lähipäivinä'
+      noNotes: 'Inga anteckningar för denna dag',
+      clearTitle: 'Vill du rensa anteckningarna för denna dag?',
+      confirmTitle: 'Vill du spara anteckningarna innan du stänger?',
+      closeWithoutSaving: 'Stäng utan att spara',
+      groupNote: 'Gruppanteckningar',
+      note: 'Dagens upplevelser och lärdomar',
+      otherThings: 'Övrigt',
+      childStickyNotes: 'Att observera de närmaste dagarna'
     },
-    absenceTitle: 'Poissaolomerkinnät',
+    absenceTitle: 'Frånvaromarkeringar',
     staff: {
       errors: {
-        employeeNotFound: 'Työntekijää ei löytynyt',
-        wrongPin: 'Väärä PIN-koodi'
+        employeeNotFound: 'Arbetstagaren hittades inte',
+        wrongPin: 'Fel PIN-kod'
       },
-      previousDays: 'Aiemmat kirjaukset',
-      nextDays: 'Tulevat työvuorot ja poissaolot',
-      continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
-      editContinuationAttendance: 'Siirry muokkaamaan',
-      absent: 'Poissa',
-      externalPerson: 'Muu henkilö',
-      markExternalPerson: 'Kirjaa muu henkilö',
-      markExternalPersonTitle: 'Kirjaa muu työntekijä sisään',
-      markArrived: 'Kirjaudu läsnäolevaksi',
-      markDeparted: 'Kirjaudu poissaolevaksi',
-      loginWithPin: 'Kirjaudu PIN-koodilla',
-      pinNotSet: 'Aseta itsellesi PIN-koodi',
-      pinLocked: 'Vaihda lukkiutunut PIN-koodi',
-      plannedAttendance: 'Työvuoro tänään',
-      differenceReason: 'Kirjaa syy tarvittaessa',
-      differenceInfo: 'Aika poikkeaa työvuorostasi',
+      previousDays: 'Tidigare registreringar',
+      nextDays: 'Kommande arbetsskift och frånvaron',
+      continuationAttendance: '* registrering som påbörjats föregående dag',
+      editContinuationAttendance: 'Gå till redigering',
+      absent: 'Frånvarande',
+      externalPerson: 'Annan person',
+      markExternalPerson: 'Registrera annan person',
+      markExternalPersonTitle: 'Registrera annan arbetstagare som närvarande',
+      markArrived: 'Registrera dig som närvarande',
+      markDeparted: 'Registrera dig som frånvarande',
+      loginWithPin: 'Logga in med PIN-kod',
+      pinNotSet: 'Ange en PIN-kod för dig själv',
+      pinLocked: 'Byt låst PIN-kod',
+      plannedAttendance: 'Arbetsskift idag',
+      differenceReason: 'Ange orsak vid behov',
+      differenceInfo: 'Tiden avviker från ditt arbetsskift',
       hasFutureAttendance:
-        'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.',
-      summary: 'Yhteenveto',
-      plan: 'Työvuoro',
-      realization: 'Toteuma',
-      rows: 'Päivän kirjaukset',
-      noRows: 'Ei kirjauksia',
-      open: 'Avoin',
+        'Du har en framtida närvaroregistrering, så du kan inte registrera dig som närvarande.',
+      summary: 'Sammandrag',
+      plan: 'Arbetsskift',
+      realization: 'Utfall',
+      rows: 'Dagens registreringar',
+      noRows: 'Inga registreringar',
+      open: 'Öppen',
       validationErrors: {
-        required: 'Pakollinen',
-        timeFormat: 'Tarkista',
-        future: 'Tulevaisuudessa',
-        overlap: 'Päällekkäisiä merkintöjä',
-        dateTooEarly: 'Tarkista',
-        dateTooLate: 'Tarkista'
+        required: 'Obligatorisk',
+        timeFormat: 'Kontrollera',
+        future: 'I framtiden',
+        overlap: 'Överlappande markeringar',
+        dateTooEarly: 'Kontrollera',
+        dateTooLate: 'Kontrollera'
       },
-      add: '+ Lisää uusi kirjaus',
-      openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
+      add: '+ Lägg till ny registrering',
+      openAttendanceInAnotherUnitWarning: 'Öppen registrering ',
       openAttendanceInAnotherUnitWarningCont:
-        '. Kirjaus on päätettävä ennen uuden lisäystä.',
-      noPlan: 'Ei suunniteltua työvuoroa',
+        '. Registreringen måste avslutas innan en ny kan läggas till.',
+      noPlan: 'Inget planerat arbetsskift',
       planWarnings: {
-        maybeInOtherUnit: 'Työvuoro voi olla toisessa yksikössä',
-        maybeInOtherGroup: 'Työvuoro voi olla toisessa ryhmässä'
+        maybeInOtherUnit: 'Arbetsskiftet kan vara i en annan enhet',
+        maybeInOtherGroup: 'Arbetsskiftet kan vara i en annan grupp'
       },
       plansInfo:
-        'Ainoastaan työvuorojärjestelmään merkityt poissaolot näkyvät listalla.',
+        'Enbart frånvaron registrerade i skiftplaneringssystemet visas i listan.',
       staffMemberPlanInfo:
-        'Sisältää vain työvuorojärjestelmään suunnitellut poissaolot.',
+        'Innehåller enbart frånvaron planerade i skiftplaneringssystemet.',
       staffMemberMultipleUnits:
-        'Tällä henkilöllä näkyvät työvuorot voivat olla toisessa yksikössä'
+        'Arbetsskiften som visas för denna person kan vara i en annan enhet'
     },
     timeDiffTooBigNotification:
-      'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
+      'Du kan göra en registrering +/- 30 min från nuvarande tid. Registreringar kan vid behov redigeras via skrivbordsversionen.',
     departureCannotBeDoneInFuture:
-      'Työvuoron uloskirjausta ei voi merkitä ennakkoon.',
+      'Utcheckning från arbetsskiftet kan inte registreras i förväg.',
     arrivalIsBeforeDeparture: (departure: string) =>
-      `Annettu aika on ennen edellistä lähtöaikaa ${departure}`,
+      `Angiven tid är före föregående avgångstid ${departure}`,
     departureIsBeforeArrival: (arrival: string) =>
-      `Annettu aika on ennen viimeisintä saapumisaikaa ${arrival}`,
+      `Angiven tid är före senaste ankomsttid ${arrival}`,
     confirmAttendanceChangeCancel:
-      'Haluatko varmasti peruuttaa viimeisimmän lähtö- tai saapumismerkinnän?',
+      'Vill du verkligen ångra den senaste avgångs- eller ankomstmarkeringen?',
     notOperationalDate:
-      'Yksikköön ei voi kirjautua läsnäolevaksi, koska yksikkö on suljettu.'
+      'Du kan inte registrera dig som närvarande i enheten, eftersom enheten är stängd.'
   },
   childInfo: {
-    header: 'Lapsen tiedot',
-    personalInfoHeader: 'Lapsen henkilötiedot',
-    childName: 'Lapsen nimi',
-    preferredName: 'Kutsumanimi',
-    dateOfBirth: 'Syntymäaika',
-    address: 'Lapsen kotiosoite',
-    type: 'Sijoitustyyppi',
-    otherInfoHeader: 'Muut tiedot',
-    allergies: 'Allergiat',
-    diet: 'Ruokavalio',
-    medication: 'Lääkitys',
-    additionalInfo: 'Lisätiedot',
-    contactInfoHeader: 'Yhteystiedot',
-    contact: 'Yhteyshenkilö',
-    name: 'Nimi',
-    phone: 'Puhelinnumero',
-    backupPhone: 'Varapuhelinnumero',
-    email: 'Sähköpostiosoite',
-    backupPickup: 'Varahakija',
-    backupPickupName: 'Varahakijan nimi',
+    header: 'Barnets uppgifter',
+    personalInfoHeader: 'Barnets personuppgifter',
+    childName: 'Barnets namn',
+    preferredName: 'Tilltalsnamn',
+    dateOfBirth: 'Födelsedatum',
+    address: 'Barnets hemadress',
+    type: 'Placeringstyp',
+    otherInfoHeader: 'Övriga uppgifter',
+    allergies: 'Allergier',
+    diet: 'Kost',
+    medication: 'Medicinering',
+    additionalInfo: 'Tilläggsinformation',
+    contactInfoHeader: 'Kontaktuppgifter',
+    contact: 'Kontaktperson',
+    name: 'Namn',
+    phone: 'Telefonnummer',
+    backupPhone: 'Reservtelefonnummer',
+    email: 'E-postadress',
+    backupPickup: 'Reservhämtare',
+    backupPickupName: 'Reservhämtarens namn',
     image: {
       modalMenu: {
-        title: 'Lapsen profiilikuva',
-        takeImageButton: 'Valitse kuva',
-        deleteImageButton: 'Poista kuva',
+        title: 'Barnets profilbild',
+        takeImageButton: 'Välj bild',
+        deleteImageButton: 'Ta bort bild',
         deleteConfirm: {
-          title: 'Haluatko varmasti poistaa lapsen kuvan?',
-          resolve: 'Poista kuva',
-          reject: 'Älä poista'
+          title: 'Vill du verkligen ta bort barnets bild?',
+          resolve: 'Ta bort bild',
+          reject: 'Ta inte bort'
         },
         disclaimer:
-          'Kuvan tallennuksessa on lyhyt viive, jonka aikana kuva ei näy. Kuva alkaa näkyä viimeistään noin minuutti tallennuksen jälkeen.'
+          'Det finns en kort fördröjning vid sparande av bilden, under vilken bilden inte visas. Bilden börjar visas senast ungefär en minut efter sparandet.'
       }
     },
-    showSensitiveInfo: 'Näytä arkaluontoiset tiedot',
-    noGuardians: 'Huoltajia ei voi tavoittaa eVakan kautta'
+    showSensitiveInfo: 'Visa känsliga uppgifter',
+    noGuardians: 'Vårdnadshavare kan inte nås via eVaka'
   },
   staff: {
-    title: 'Henkilökunnan määrä tänään',
-    daycareResponsible: 'Kasvatusvastuullisia',
-    staffOccupancyEffect: 'Olen kasvatusvastuullinen',
-    other: 'Muita (esim. avustajat, opiskelijat, veot)',
-    cancel: 'Peru muokkaus',
-    realizedGroupOccupancy: 'Ryhmän käyttöaste tänään',
-    realizedUnitOccupancy: 'Yksikön käyttöaste tänään',
-    notUpdated: 'Tietoja ei ole päivitetty',
-    updatedToday: 'Tiedot päivitetty tänään',
-    updated: 'Tiedot päivitetty'
+    title: 'Personalantal idag',
+    daycareResponsible: 'Fostringsansvariga',
+    staffOccupancyEffect: 'Jag är fostringsansvarig',
+    other: 'Övriga (t.ex. assistenter, studerande, seo)',
+    cancel: 'Ångra redigering',
+    realizedGroupOccupancy: 'Gruppens beläggningsgrad idag',
+    realizedUnitOccupancy: 'Enhetens beläggningsgrad idag',
+    notUpdated: 'Uppgifterna har inte uppdaterats',
+    updatedToday: 'Uppgifterna uppdaterade idag',
+    updated: 'Uppgifterna uppdaterade'
   },
   pin: {
-    header: 'Lukituksen avaaminen',
-    info: 'Anna PIN-koodi avataksesi lapsen tiedot',
-    selectStaff: 'Valitse käyttäjä',
-    staff: 'Käyttäjä',
-    noOptions: 'Ei vaihtoehtoja',
-    pinCode: 'PIN-koodi',
+    header: 'Lås upp',
+    info: 'Ange PIN-kod för att öppna barnets uppgifter',
+    selectStaff: 'Välj användare',
+    staff: 'Användare',
+    noOptions: 'Inga alternativ',
+    pinCode: 'PIN-kod',
     status: {
-      SUCCESS: 'Oikea PIN-koodi',
-      WRONG_PIN: 'Väärä PIN-koodi',
-      PIN_LOCKED: 'PIN-koodi on lukittu',
-      NOT_FOUND: 'Tuntematon käyttäjä'
+      SUCCESS: 'Rätt PIN-kod',
+      WRONG_PIN: 'Fel PIN-kod',
+      PIN_LOCKED: 'PIN-koden är låst',
+      NOT_FOUND: 'Okänd användare'
     },
-    unknownError: 'Tuntematon virhe',
-    logOut: 'Kirjaudu ulos',
-    login: 'Kirjaudu',
-    loggedIn: 'Kirjautunut sisään'
+    unknownError: 'Okänt fel',
+    logOut: 'Logga ut',
+    login: 'Logga in',
+    loggedIn: 'Inloggad'
   },
   messages: {
     tabs: {
-      received: 'Saapuneet',
-      sent: 'Lähetetyt',
-      drafts: 'Luonnokset'
+      received: 'Mottagna',
+      sent: 'Skickade',
+      drafts: 'Utkast'
     },
-    inputPlaceholder: 'Kirjoita...',
-    newMessage: 'Uusi viesti',
+    inputPlaceholder: 'Skriv...',
+    newMessage: 'Nytt meddelande',
     thread: {
-      reply: 'Vastaa viestiin'
+      reply: 'Svara på meddelandet'
     },
-    draft: 'Luonnos',
-    draftReply: '- Luonnos -',
+    draft: 'Utkast',
+    draftReply: '- Utkast -',
     messageEditor: {
-      newMessage: 'Uusi viesti',
+      newMessage: 'Nytt meddelande',
       to: {
-        label: 'Vastaanottaja',
-        placeholder: 'Valitse ryhmä',
-        noOptions: 'Ei ryhmiä'
+        label: 'Mottagare',
+        placeholder: 'Välj grupp',
+        noOptions: 'Inga grupper'
       },
       type: {
-        label: 'Viestin tyyppi',
-        message: 'Viesti',
-        bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
+        label: 'Meddelandetyp',
+        message: 'Meddelande',
+        bulletin: 'Bulletin (mottagaren kan inte svara)'
       },
       urgent: {
-        heading: 'Merkitse kiireelliseksi',
-        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-        label: 'Kiireellinen'
+        heading: 'Markera som brådskande',
+        info: 'Skicka meddelandet som brådskande enbart om du vill att vårdnadshavaren läser det under arbetsdagen.',
+        label: 'Brådskande'
       },
-      sender: 'Lähettäjä',
-      receivers: 'Vastaanottajat',
-      recipientsPlaceholder: 'Valitse...',
-      starters: 'aloittavat lapset',
+      sender: 'Avsändare',
+      receivers: 'Mottagare',
+      recipientsPlaceholder: 'Välj...',
+      starters: 'börjande barn',
       subject: {
-        heading: 'Otsikko',
-        placeholder: 'Kirjoita...'
+        heading: 'Rubrik',
+        placeholder: 'Skriv...'
       },
       message: {
-        heading: 'Viesti',
-        placeholder: 'Viestin sisältö...'
+        heading: 'Meddelande',
+        placeholder: 'Meddelandeinnehåll...'
       },
-      deleteDraft: 'Hylkää luonnos',
-      send: 'Lähetä',
-      sending: 'Lähetetään',
-      recipientCount: 'Vastaanottajia',
+      deleteDraft: 'Radera utkast',
+      send: 'Skicka',
+      sending: 'Skickar',
+      recipientCount: 'Mottagare',
       manyRecipientsWarning: {
-        title: (count: number) => `Viestillä on ${count} vastaanottajaa.`,
+        title: (count: number) => `Meddelandet har ${count} mottagare.`,
         text: (count: number) =>
-          `Tämä viesti on lähdössä ${count} vastaanottajalle. Oletko varma, että haluat lähettää viestin?`
+          `Detta meddelande skickas till ${count} mottagare. Är du säker på att du vill skicka meddelandet?`
       }
     },
-    emptyInbox: 'Viestilaatikkosi on tyhjä',
-    noSentMessages: 'Ei lähetettyjä viestejä',
-    noDrafts: 'Ei luonnoksia',
-    unreadMessages: 'Uudet viestit',
-    openPinLock: 'Avaa lukitus',
+    emptyInbox: 'Din inkorg är tom',
+    noSentMessages: 'Inga skickade meddelanden',
+    noDrafts: 'Inga utkast',
+    unreadMessages: 'Nya meddelanden',
+    openPinLock: 'Lås upp',
     pinLockInfo:
-      'Lukeaksesi viestit sinun tulee avata lukitus PIN-koodilla. Voit lukea vain oman ryhmäsi viestit.',
+      'För att läsa meddelanden måste du låsa upp med PIN-kod. Du kan enbart läsa din egen grupps meddelanden.',
     noAccountAccess:
-      'Viestejä ei voi näyttää, koska sinua ei ole luvitettu ryhmään. Pyydä lupa esimieheltäsi.',
-    noRecipients: 'Vastaanottajalle ei voi lähettää viestiä'
+      'Meddelanden kan inte visas eftersom du inte har behörighet till gruppen. Be din chef om behörighet.',
+    noRecipients: 'Det går inte att skicka meddelande till mottagaren'
   },
   mobile: {
     landerText1:
-      'Tervetuloa käyttämään Espoon varhaiskasvatuksen mobiilisovellusta!',
+      'Välkommen att använda Esbo småbarnspedagogiks mobilapplikation!',
     landerText2:
-      'Ottaaksesi sovelluksen käyttöön valitse alta ‘Lisää laite’ ja rekisteröi mobiililaite eVakassa oman yksikkösi sivulla.',
+      'För att ta applikationen i bruk välj \u2019Lägg till enhet\u2019 nedan och registrera mobilenheten i eVaka på din enhets sida.',
     actions: {
-      ADD_DEVICE: 'Lisää laite',
-      START: 'Aloitetaan'
+      ADD_DEVICE: 'Lägg till enhet',
+      START: 'Vi börjar'
     },
     wizard: {
-      text1: 'Syötä eVakasta saatava 6-merkkinen koodi kenttään alla.',
-      text2: 'Syötä alla oleva vahvistuskoodi eVakaan.',
-      title1: 'eVaka-mobiilin käyttöönotto, vaihe 1/3',
-      title2: 'eVaka-mobiilin käyttöönotto, vaihe 2/3',
-      title3: 'Tervetuloa käyttämään eVaka-mobiilia!',
-      text3: 'eVaka-mobiili on nyt käytössä tässä laitteessa.',
+      text1: 'Ange den 6-siffriga koden från eVaka i fältet nedan.',
+      text2: 'Ange bekräftelsekoden nedan i eVaka.',
+      title1: 'Ibruktagande av eVaka-mobilen, steg 1/3',
+      title2: 'Ibruktagande av eVaka-mobilen, steg 2/3',
+      title3: 'Välkommen att använda eVaka-mobilen!',
+      text3: 'eVaka-mobilen är nu i bruk på denna enhet.',
       text4:
-        'Turvataksesi lasten tiedot muistathan asettaa laitteeseen pääsykoodin, jos et ole sitä vielä tehnyt.'
+        'För att skydda barnens uppgifter, kom ihåg att ställa in en åtkomstkod på enheten om du inte redan har gjort det.'
     },
     emptyList: (status: 'COMING' | 'ABSENT' | 'PRESENT' | 'DEPARTED') => {
       const statusText = (() => {
         switch (status) {
           case 'COMING':
-            return 'tulossa olevia'
+            return 'kommande'
           case 'ABSENT':
-            return 'poissaolevia'
+            return 'frånvarande'
           case 'PRESENT':
-            return 'läsnäolevia'
+            return 'närvarande'
           case 'DEPARTED':
-            return 'lähteneitä'
+            return 'avresta'
         }
       })()
-      return `Ei ${statusText} lapsia`
+      return `Inga ${statusText} barn`
     }
   },
   settings: {
@@ -539,75 +537,74 @@ export const sv = {
       sv: 'Svenska'
     },
     notifications: {
-      title: 'Ilmoitusasetukset',
+      title: 'Notifikationsinställningar',
       permission: {
-        label: 'Ilmoitukset',
-        enable: 'Ota käyttöön',
+        label: 'Notifikationer',
+        enable: 'Aktivera',
         state: {
-          unsupported: 'Puhelin tai selain ei tue ilmoituksia',
-          granted: 'Käytössä',
-          prompt: 'Ei käytössä',
-          denied: 'Estetty'
+          unsupported: 'Telefonen eller webbläsaren stöder inte notifikationer',
+          granted: 'Aktiverad',
+          prompt: 'Inte aktiverad',
+          denied: 'Blockerad'
         },
         info: {
           unsupported:
-            'Ilmoitukset eivät toimi tällä puhelimella, tai käytössä olevalla selaimen versiolla. Ongelma saattaa korjaantua päivittämällä selain.',
+            'Notifikationer fungerar inte på denna telefon eller med den aktuella webbläsarversionen. Problemet kan åtgärdas genom att uppdatera webbläsaren.',
           denied:
-            'Ilmoitukset on estetty puhelimen asetuksissa. Asia voi korjaantua muuttamalla puhelimen tai selaimen ilmoitusasetuksia.'
+            'Notifikationer har blockerats i telefonens inställningar. Problemet kan åtgärdas genom att ändra telefonens eller webbläsarens notifikationsinställningar.'
         }
       },
       categories: {
-        label: 'Aiheet, joista lähetetään ilmoitus tähän puhelimeen',
+        label: 'Ämnen för vilka notifikationer skickas till denna telefon',
         values: {
-          RECEIVED_MESSAGE: 'Saapuneet viestit',
-          NEW_ABSENCE: 'Lasten kuluvan päivän poissaolomerkinnät',
-          CALENDAR_EVENT_RESERVATION: 'Varatut ja perutut keskusteluajat'
+          RECEIVED_MESSAGE: 'Mottagna meddelanden',
+          NEW_ABSENCE: 'Frånvaromarkeringar för barnens aktuella dag',
+          CALENDAR_EVENT_RESERVATION: 'Bokade och avbokade samtalstider'
         }
       },
       groups: {
-        label: 'Ryhmät, joita koskevista asioista lähetetään ilmoitus'
+        label: 'Grupper om vilka notifikationer skickas'
       }
     }
   },
   childButtons: {
-    messages: 'Viestit'
+    messages: 'Meddelanden'
   },
   fileUpload: {
     upload: {
-      loading: 'Ladataan...',
-      loaded: 'Ladattu',
+      loading: 'Laddar...',
+      loaded: 'Laddad',
       error: {
-        EXTENSION_MISSING: 'Tiedostopääte puuttuu',
-        EXTENSION_INVALID: 'Virheellinen tiedostopääte',
-        INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
-        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 25 MB)',
-        SERVER_ERROR: 'Lataus ei onnistunut'
+        EXTENSION_MISSING: 'Filändelse saknas',
+        EXTENSION_INVALID: 'Felaktig filändelse',
+        INVALID_CONTENT_TYPE: 'Felaktigt filformat',
+        FILE_TOO_LARGE: 'För stor fil (max. 25 MB)',
+        SERVER_ERROR: 'Uppladdning misslyckades'
       },
       input: {
-        title: 'Lisää liite',
+        title: 'Lägg till bilaga',
         text: [
-          'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-          'Tiedoston maksimikoko: 25 MB.',
-          'Sallitut tiedostomuodot:',
-          'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+          'Klicka här eller dra bilagan till rutan en åt gången.',
+          'Maximal filstorlek: 25 MB.',
+          'Tillåtna filformat:',
+          'PDF, JPEG/JPG, PNG och DOC/DOCX'
         ]
       },
-      deleteFile: 'Poista tiedosto'
+      deleteFile: 'Ta bort fil'
     },
     download: {
-      modalHeader: 'Tiedoston käsittely on kesken',
-      modalMessage:
-        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-      modalClose: 'Sulje'
+      modalHeader: 'Filen bearbetas',
+      modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+      modalClose: 'Stäng'
     }
   },
   units: {
-    title: 'Yksiköt',
-    children: 'Lapset',
-    staff: 'Henkilökunta',
-    utilization: 'Käyttöaste',
+    title: 'Enheter',
+    children: 'Barn',
+    staff: 'Personal',
+    utilization: 'Beläggningsgrad',
     description:
-      'Yksiköidesi henkilökunnan ja lasten määrä sekä käyttöaste tällä hetkellä.'
+      'Antal personal och barn samt beläggningsgrad för dina enheter just nu.'
   },
   components
 }
