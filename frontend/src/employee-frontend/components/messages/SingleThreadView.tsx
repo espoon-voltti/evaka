@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faReply } from '@fortawesome/free-solid-svg-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import React, {
   useCallback,
   useContext,
@@ -14,7 +15,6 @@ import React, {
 import styled from 'styled-components'
 import { Link, useLocation, useSearchParams } from 'wouter'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   Message,
   MessageChild,
@@ -47,19 +47,18 @@ import colors from 'lib-customizations/common'
 import { faAngleLeft, faBoxArchive, faEnvelope } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
-import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import {
+  archiveThreadMutation,
   markLastReceivedMessageInThreadUnreadMutation,
   markThreadReadMutation,
-  replyToThreadMutation
+  replyToThreadMutation,
+  threadQuery
 } from './queries'
 import type { View } from './types-view'
 import { isFolderView, isStandardView } from './types-view'
-
-const archiveThreadResult = wrapResult(archiveThread)
 
 const MessageContainer = styled.div`
   background-color: ${colors.grayscale.g0};
@@ -203,7 +202,8 @@ export function SingleThreadView({
 }: Props) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const { getReplyContent, onReplySent, setReplyContent, refreshMessages } =
+  const queryClient = useQueryClient()
+  const { getReplyContent, onReplySent, setReplyContent } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
@@ -248,10 +248,16 @@ export function SingleThreadView({
 
   const handleReplySent = useCallback(
     (response: ThreadReply) => {
+      queryClient.setQueryData(
+        threadQuery({ accountId: account.id, threadId }).queryKey,
+        (old: MessageThread | undefined) =>
+          old ? { ...old, messages: [...old.messages, response.message] } : old
+      )
+      setReplyContent(threadId, '')
       onReplySent(response)
       setReplyEditorVisible(false)
     },
-    [onReplySent]
+    [account.id, threadId, queryClient, setReplyContent, onReplySent]
   )
 
   const onDiscard = useCallback(() => {
@@ -265,16 +271,17 @@ export function SingleThreadView({
   const { mutateAsync: markThreadRead } = useMutationResult(
     markThreadReadMutation
   )
+  const { mutateAsync: doArchiveThread } = useMutationResult(
+    archiveThreadMutation
+  )
   useEffect(() => {
     const hasUnreadMessages = messages.some(
       (m) => !m.readAt && m.sender.id !== account.id
     )
     if (hasUnreadMessages) {
-      void markThreadRead({ accountId: account.id, threadId }).then(() => {
-        refreshMessages(account.id)
-      })
+      void markThreadRead({ accountId: account.id, threadId })
     }
-  }, [account.id, markThreadRead, messages, refreshMessages, threadId])
+  }, [account.id, markThreadRead, messages, threadId])
 
   const singleCustomer = useMemo(() => {
     if (messages.length === 0) return null
@@ -416,7 +423,7 @@ export function SingleThreadView({
                     data-qa="delete-thread-btn"
                     className="delete-btn"
                     onClick={() =>
-                      archiveThreadResult({ accountId: account.id, threadId })
+                      doArchiveThread({ accountId: account.id, threadId })
                     }
                     onSuccess={onArchived}
                     text={i18n.messages.archiveThread}

@@ -11,8 +11,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { Failure, wrapResult } from 'lib-common/api'
 import type {
   PostMessageBody,
   SelectableRecipientsResponse
@@ -25,16 +23,16 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import { formatPersonName } from 'lib-common/names'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import {
+  pendingQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, messageAttachment } from '../../api/attachments'
-import {
-  createMessage,
-  deleteDraftMessage
-} from '../../generated/api-clients/messaging'
-import { getPersonIdentity } from '../../generated/api-clients/pis'
+import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { headerHeight } from '../Header'
@@ -43,10 +41,7 @@ import { MessageContext } from './MessageContext'
 import MessageEditor from './MessageEditor'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
-
-const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
-const createMessageResult = wrapResult(createMessage)
+import { createMessageMutation, deleteDraftMutation } from './queries'
 
 const PanelContainer = styled.div`
   height: calc(100vh - ${headerHeight} - ${defaultMargins.m});
@@ -67,7 +62,6 @@ export default React.memo(function MessagesPage({
     selectDefaultAccount,
     selectAccount,
     setSelectedThread,
-    refreshMessages,
     prefilledRecipient,
     prefilledTitle,
     relatedApplicationId,
@@ -77,15 +71,16 @@ export default React.memo(function MessagesPage({
   const { setErrorMessage } = useContext(UIContext)
   const { i18n } = useTranslation()
 
-  const [prefilledRecipientPerson] = useApiState(
-    (): Promise<Result<PersonJSON>> =>
-      prefilledRecipient
-        ? getPersonIdentityResult({ personId: prefilledRecipient })
-        : Promise.resolve(Failure.of({ message: 'No person id given' })),
-    [prefilledRecipient]
+  const prefilledRecipientPerson = useQueryResult(
+    prefilledRecipient
+      ? personIdentityQuery({ personId: prefilledRecipient })
+      : pendingQuery<PersonJSON>()
   )
 
-  useEffect(() => refreshMessages(), [refreshMessages])
+  const { mutateAsync: doCreateMessage } = useMutationResult(
+    createMessageMutation
+  )
+  const { mutateAsync: doDeleteDraft } = useMutationResult(deleteDraftMutation)
   const [sending, setSending] = useState(false)
   const [showEditor, setShowEditor] = useState<boolean>(
     initialShowEditor ?? false
@@ -121,7 +116,7 @@ export default React.memo(function MessagesPage({
       initialFolder: MessageThreadFolderId | null
     ) => {
       setSending(true)
-      void createMessageResult({
+      void doCreateMessage({
         accountId,
         initialFolder,
         body: {
@@ -130,7 +125,6 @@ export default React.memo(function MessagesPage({
         }
       }).then((res) => {
         if (res.isSuccess) {
-          refreshMessages(accountId)
           const senderAccount = accounts
             .map((accounts) =>
               accounts.find((acc) => acc.account.id === accountId)
@@ -162,7 +156,7 @@ export default React.memo(function MessagesPage({
       hideEditor,
       i18n.common.error.unknown,
       i18n.common.ok,
-      refreshMessages,
+      doCreateMessage,
       selectAccount,
       setErrorMessage,
       setSelectedThread,
@@ -172,16 +166,7 @@ export default React.memo(function MessagesPage({
 
   const onDiscard = (accountId: MessageAccountId, draftId: MessageDraftId) => {
     hideEditor()
-    void deleteDraftMessageResult({ accountId, draftId }).then(() =>
-      refreshMessages(accountId)
-    )
-  }
-
-  const onHide = (didChanges: boolean) => {
-    hideEditor()
-    if (didChanges) {
-      refreshMessages()
-    }
+    void doDeleteDraft({ accountId, draftId })
   }
 
   const prefilledOrRecipients = useMemo(():
@@ -258,7 +243,7 @@ export default React.memo(function MessagesPage({
               getAttachmentUrl={getAttachmentUrl}
               accounts={accounts.value}
               folders={folders.value}
-              onClose={onHide}
+              onClose={hideEditor}
               onDiscard={onDiscard}
               onSend={onSend}
               saveMessageAttachment={messageAttachment}
