@@ -37,7 +37,9 @@ export default React.memo(function Applications() {
     >
       <Gap size="s" />
       <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{t.applicationsList.title}</H1>
+        <H1 noMargin hyphenate>
+          {t.applicationsList.title}
+        </H1>
         {t.applicationsList.summary}
         <P noMargin>{t.loginPage.applying.mapText}</P>
         <Gap size="xs" />

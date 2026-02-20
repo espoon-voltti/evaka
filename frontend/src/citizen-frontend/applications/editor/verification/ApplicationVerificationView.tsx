@@ -70,7 +70,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   return (
     <Container>
       <ContentArea opaque>
-        <H1>{t.applications.editor.verification.title[type]}</H1>
+        <H1 hyphenate>{t.applications.editor.verification.title[type]}</H1>
         {application.status === 'CREATED'
           ? t.applications.editor.verification.notYetSent
           : t.applications.editor.verification.notYetSaved}

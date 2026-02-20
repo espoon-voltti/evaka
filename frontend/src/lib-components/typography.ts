@@ -6,7 +6,7 @@ import styled, { css } from 'styled-components'
 
 import { defaultMargins } from 'lib-components/white-space'
 
-import { tabletMin } from './breakpoints'
+import { tabletMin, zoomedMobileMax } from './breakpoints'
 import type { BaseProps } from './utils'
 
 export const fontWeights = {
@@ -32,7 +32,20 @@ export type HeadingProps = BaseProps & {
   noMargin?: boolean
   smaller?: boolean
   primary?: boolean
+  hyphenate?: boolean
 }
+
+const hyphenateMixin = css<HeadingProps>`
+  @media (max-width: ${zoomedMobileMax}) {
+    ${(p) =>
+      p.hyphenate
+        ? css`
+            hyphens: auto;
+            word-break: break-word;
+          `
+        : ''}
+  }
+`
 
 export const H1 = styled.h1<HeadingProps>`
   color: ${(p) =>
@@ -70,6 +83,7 @@ export const H1 = styled.h1<HeadingProps>`
         font-weight: ${p.theme.typography.h1.mobile?.weight};
       `}
   }
+  ${hyphenateMixin}
 `
 
 export const H2 = styled.h2<HeadingProps>`
@@ -106,6 +120,7 @@ export const H2 = styled.h2<HeadingProps>`
         font-weight: ${p.theme.typography.h2.mobile?.weight};
       `}
   }
+  ${hyphenateMixin}
 `
 
 export const H3 = styled.h3<HeadingProps>`
@@ -141,6 +156,7 @@ export const H3 = styled.h3<HeadingProps>`
         font-weight: ${p.theme.typography.h3.mobile?.weight};
       `}
   }
+  ${hyphenateMixin}
 `
 
 export const H4 = styled.h4<HeadingProps>`
@@ -176,6 +192,7 @@ export const H4 = styled.h4<HeadingProps>`
         font-weight: ${p.theme.typography.h4.mobile?.weight};
       `}
   }
+  ${hyphenateMixin}
 `
 
 export interface LabelProps {

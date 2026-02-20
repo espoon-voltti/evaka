@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { zoomedMobileMax } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 import { cityLogo } from 'lib-customizations/citizen'
 
@@ -25,4 +26,8 @@ const Img = styled.img`
   max-width: 150px;
   width: auto;
   height: 100%;
+  @media (max-width: ${zoomedMobileMax}) {
+    max-width: 60px;
+    height: auto;
+  }
 `

@@ -72,7 +72,9 @@ export default React.memo(function LoginPage() {
       <Container>
         <FixedSpaceColumn spacing="s">
           <ContentArea opaque>
-            <H1 noMargin>{i18n.loginPage.title}</H1>
+            <H1 noMargin hyphenate>
+              {i18n.loginPage.title}
+            </H1>
             {systemNotifications.isSuccess &&
               systemNotifications.value.notification && (
                 <>
@@ -108,7 +110,9 @@ export default React.memo(function LoginPage() {
             </MobileOnly>
           </ContentArea>
           <ContentArea opaque>
-            <H2 noMargin>{i18n.loginPage.login.title}</H2>
+            <H2 noMargin hyphenate>
+              {i18n.loginPage.login.title}
+            </H2>
             <Gap size="m" />
             <P noMargin>
               {i18n.loginPage.login.paragraph}
@@ -153,11 +157,11 @@ export default React.memo(function LoginPage() {
                 close={() => setShowInfoBoxText2(false)}
               />
             )}
-            <ul>
+            <UnorderedList>
               {i18n.loginPage.applying.infoBullets.map((item, index) => (
                 <li key={`bullet-item-${index}`}>{item}</li>
               ))}
-            </ul>
+            </UnorderedList>
             <Gap size="s" />
             <LinkButton
               href={getStrongLoginUri(unvalidatedNextPath ?? '/')}

@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+export const zoomedMobileMaxPx = 319
+export const zoomedMobileMax = `${zoomedMobileMaxPx}px`
+
 export const tabletMinPx = 600
 export const tabletMin = `${tabletMinPx}px`
 

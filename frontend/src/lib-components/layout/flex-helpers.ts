@@ -5,6 +5,7 @@
 import type { Property } from 'csstype'
 import styled from 'styled-components'
 
+import { zoomedMobileMax } from '../breakpoints'
 import type { SpacingSize } from '../white-space'
 import { defaultMargins, isSpacingSize } from '../white-space'
 
@@ -53,6 +54,14 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   }
 `
 
+export const MobileFixedSpaceRow = styled(FixedSpaceRow)`
+  @media (max-width: ${zoomedMobileMax}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${defaultMargins.xs};
+  }
+`
+
 interface FixedSpaceColumnProps {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string
@@ -89,6 +98,13 @@ export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
     &:last-child {
       margin-bottom: 0;
     }
+  }
+`
+
+export const MobileFixedSpaceColumn = styled(FixedSpaceColumn)`
+  @media (max-width: ${zoomedMobileMax}) {
+    width: 100vw;
+    align-items: center;
   }
 `
 

@@ -12,7 +12,8 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
-  FixedSpaceRow
+  FixedSpaceRow,
+  MobileFixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import {
   MobileOnly,
@@ -125,14 +126,14 @@ const ServiceNeedTableMobile = ({ serviceNeeds }: ServiceNeedTableProps) => {
               key={serviceNeed.startDate.formatIso()}
               data-qa="service-need-table-row-mobile"
             >
-              <FixedSpaceRow justifyContent="space-between">
+              <MobileFixedSpaceRow justifyContent="space-between">
                 <strong data-qa="service-need-date-range">
                   {dateRange.format()}
                 </strong>
-                <StaticChip color={colorsByTense[tense]}>
+                <StaticChip color={colorsByTense[tense]} fitContent>
                   {t.common.tense[tense]}
                 </StaticChip>
-              </FixedSpaceRow>
+              </MobileFixedSpaceRow>
               <FixedSpaceRow data-qa="service-need-description">
                 {serviceNeed.isDefault && serviceNeed.hasNonDefaultOptions
                   ? t.children.serviceNeed.empty

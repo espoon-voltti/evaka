@@ -40,7 +40,7 @@ export default React.memo(function Heading({
 
   return (
     <ContentArea opaque paddingVertical="L">
-      <H1 noMargin data-qa="application-type-title">
+      <H1 noMargin data-qa="application-type-title" hyphenate>
         {t.applications.editor.heading.title[type]}
         {transferApplication && ` (${t.applicationsList.transferApplication})`}
       </H1>
