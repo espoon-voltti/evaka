@@ -7,7 +7,7 @@
   "license": "LGPL-2.1-or-later",
   "scripts": {
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
-    "dev": "concurrently -n tsc,vite -c blue,green 'yarn type-check:watch' vite",
+    "dev": "concurrently -n tsc,vite -c blue,green 'yarn type-check:watch' 'vite --host'",
     "lint": "eslint --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc --build --force .",
