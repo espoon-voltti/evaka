@@ -49,10 +49,10 @@ class AsyncJobPool<T : AsyncJobPayload>(
     data class Config(val concurrency: Int = 1, val throttleInterval: Duration? = null)
 
     data class Handler<T : AsyncJobPayload>(
-        val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
+        val handler: (db: Database, clock: EvakaClock, msg: T, remainingAttempts: Int) -> Unit
     ) {
-        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
-            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
+        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload, remainingAttempts: Int) =
+            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T, remainingAttempts)
     }
 
     interface Registration<T : AsyncJobPayload> {
@@ -202,7 +202,9 @@ class AsyncJobPool<T : AsyncJobPayload>(
                             MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                             Span.current().setAttribute(Tracing.enduserIdHash, it.rawIdHash)
                         }
-                        registration.handlerFor(job.jobType).run(Database(jdbi, tracer), clock, msg)
+                        registration
+                            .handlerFor(job.jobType)
+                            .run(Database(jdbi, tracer), clock, msg, job.remainingAttempts)
                         tx.completeJob(job, clock.now())
                         true
                     } ?: false
