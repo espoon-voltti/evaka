@@ -239,6 +239,12 @@ echo "Removed eVaka prompt support from $RC_FILE"
 echo "Restart your shell or run: source $RC_FILE"
 """
 
+[tasks.devbox]
+description = "Manage the devbox container"
+dir = ".devbox"
+usage = 'arg "[args]" var=#true'
+run = "node devbox.mjs {{arg(name='args')}}"
+
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"
 dir = "compose"
