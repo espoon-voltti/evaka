@@ -251,7 +251,13 @@ function exec(cmd) {
   ensureRunning();
   const command = cmd.length > 0 ? cmd : ["bash"];
   const ttyFlag = process.stdin.isTTY ? "-it" : "-i";
-  docker(["exec", ttyFlag, containerName, ...command]);
+  const envArgs = [];
+  for (const name of ["TERM", "COLORTERM"]) {
+    if (process.env[name]) {
+      envArgs.push("-e", `${name}=${process.env[name]}`);
+    }
+  }
+  docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
 }
 
 function recreate(options) {
