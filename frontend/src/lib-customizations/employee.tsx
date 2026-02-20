@@ -74,8 +74,8 @@ export {
 }
 
 export type Lang = 'fi' | 'sv'
-
 export type Translations = typeof fi
+export const langs: Lang[] = ['fi', 'sv']
 
 export const translations: Record<Lang, Translations> = {
   fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
