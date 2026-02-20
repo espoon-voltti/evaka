@@ -4,10 +4,14 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { compute as computeScrollIntoView } from 'compute-scroll-into-view'
-import type { UseComboboxStateChange } from 'downshift'
-import { useCombobox } from 'downshift'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled, { css } from 'styled-components'
 
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
@@ -160,21 +164,6 @@ function defaultGetItemLabel<T>(item: T) {
   return String(item)
 }
 
-function stopPropagation(e: React.SyntheticEvent) {
-  e.stopPropagation()
-}
-
-function ensureElementIsInView(element: HTMLElement) {
-  computeScrollIntoView(element, {
-    block: 'end',
-    inline: 'nearest',
-    scrollMode: 'if-needed'
-  }).forEach(({ el, top, left }) => {
-    el.scrollTop = top
-    el.scrollLeft = left
-  })
-}
-
 function Combobox<T>(props: ComboboxProps<T>) {
   const {
     id,
@@ -199,6 +188,20 @@ function Combobox<T>(props: ComboboxProps<T>) {
     'aria-labelledby': ariaLabelledby
   } = props
   const i18n = useTranslations()
+
+  const [isOpen, setIsOpenRaw] = useState(false)
+  const [inputValue, setInputValue] = useState(() =>
+    selectedItem ? getItemLabel(selectedItem) : ''
+  )
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const baseId = useId()
+  const menuId = `${baseId}-listbox`
+
+  const setIsOpen = useCallback((open: boolean) => {
+    setIsOpenRaw(open)
+    if (!open) setHighlightedIndex(-1)
+  }, [])
+
   const defaultFilterItems = useCallback(
     (inputValue: string, items: readonly T[]) => {
       const filter = inputValue.toLowerCase()
@@ -245,64 +248,82 @@ function Combobox<T>(props: ComboboxProps<T>) {
     [filterItems, items, currentFilter]
   )
 
-  const menuRef = useRef<HTMLElement>(undefined)
+  const toggleMenu = () => setIsOpen(!isOpen)
 
-  const onInputValueChange = useCallback(
-    ({ isOpen, inputValue }: UseComboboxStateChange<T>) => {
-      if (isOpen) {
-        setCurrentFilter(inputValue ?? '')
-        onInputChange?.(inputValue ?? '')
-      } else {
-        setCurrentFilter('')
-      }
-    },
-    [onInputChange, setCurrentFilter]
-  )
-  const onIsOpenChange = useCallback(
-    ({ isOpen }: UseComboboxStateChange<T>) => {
-      if (isOpen && menuRef.current) {
-        ensureElementIsInView(menuRef.current)
-      }
-    },
-    [menuRef]
-  )
-  const onSelectedItemChange = useCallback(
-    ({ selectedItem }: UseComboboxStateChange<T>) => {
-      if (onChange) {
-        onChange(selectedItem ?? null)
-      }
-    },
-    [onChange]
-  )
-  const {
-    isOpen,
-    getInputProps,
-    getToggleButtonProps,
-    getMenuProps,
-    getItemProps,
-    highlightedIndex,
-    setInputValue,
-    reset
-  } = useCombobox({
-    selectedItem,
-    itemToString,
-    items: filteredItems,
-    onInputValueChange,
-    onIsOpenChange,
-    onSelectedItemChange
-  })
-  const onClickClear = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation()
-      reset()
-    },
-    [reset]
-  )
+  const reset = useCallback(() => {
+    onChange?.(null)
+    setInputValue('')
+    setIsOpen(false)
+    setCurrentFilter('')
+  }, [onChange, setIsOpen])
+
   useEffect(() => {
     if (!isOpen) {
       setInputValue(itemToString(selectedItem))
+      setCurrentFilter('')
     }
-  }, [isOpen, setInputValue, itemToString, selectedItem])
+  }, [isOpen, itemToString, selectedItem])
+
+  const prevSelectedItemRef = useRef(selectedItem)
+  useEffect(() => {
+    if (!isOpen && prevSelectedItemRef.current !== selectedItem) {
+      setInputValue(itemToString(selectedItem))
+    }
+    prevSelectedItemRef.current = selectedItem
+  }, [isOpen, selectedItem, itemToString])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        if (!isOpen) {
+          setIsOpen(true)
+          setHighlightedIndex(0)
+        } else {
+          setHighlightedIndex((prev) =>
+            prev >= filteredItems.length - 1 ? 0 : prev + 1
+          )
+        }
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        if (isOpen) {
+          setHighlightedIndex((prev) =>
+            prev <= 0 ? filteredItems.length - 1 : prev - 1
+          )
+        }
+        break
+      case 'Enter':
+        if (isOpen) {
+          e.preventDefault()
+          if (
+            highlightedIndex >= 0 &&
+            highlightedIndex < filteredItems.length
+          ) {
+            onChange?.(filteredItems[highlightedIndex] ?? null)
+          }
+          setIsOpen(false)
+        }
+        break
+      case 'Escape':
+        setIsOpen(false)
+        setInputValue(itemToString(selectedItem))
+        break
+      case 'Home':
+        if (isOpen) {
+          e.preventDefault()
+          setHighlightedIndex(0)
+        }
+        break
+      case 'End':
+        if (isOpen) {
+          e.preventDefault()
+          setHighlightedIndex(filteredItems.length - 1)
+        }
+        break
+    }
+  }
+
   return (
     <>
       <Root
@@ -313,21 +334,46 @@ function Combobox<T>(props: ComboboxProps<T>) {
           className={classNames({ active: isOpen }, props.info?.status)}
         >
           <Input
-            {...getInputProps({
-              id,
-              name,
-              disabled,
-              placeholder,
-              onFocus,
-              'aria-labelledby': ariaLabelledby
-            })}
+            value={inputValue}
+            onChange={(e) => {
+              const newValue = e.target.value
+              setInputValue(newValue)
+              if (!isOpen) setIsOpen(true)
+              setCurrentFilter(newValue)
+              onInputChange?.(newValue)
+            }}
+            onClick={() => setIsOpen(!isOpen)}
+            onKeyDown={handleKeyDown}
+            onBlur={() => setIsOpen(false)}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-controls={menuId}
+            aria-activedescendant={
+              highlightedIndex >= 0
+                ? `${baseId}-option-${highlightedIndex}`
+                : undefined
+            }
+            aria-autocomplete="list"
+            id={id}
+            name={name}
+            disabled={disabled}
+            placeholder={placeholder}
+            onFocus={onFocus}
+            aria-labelledby={ariaLabelledby}
           />
           {clearable && selectedItem && (
             <>
               <Button
                 data-qa="clear"
                 type="button"
-                onClick={disabled ? undefined : onClickClear}
+                onClick={
+                  disabled
+                    ? undefined
+                    : (e) => {
+                        e.stopPropagation()
+                        reset()
+                      }
+                }
               >
                 <FontAwesomeIcon icon={faTimes} />
               </Button>
@@ -337,27 +383,24 @@ function Combobox<T>(props: ComboboxProps<T>) {
           <Button
             data-qa="toggle"
             type="button"
+            disabled={disabled}
             aria-label={
               isOpen ? i18n.combobox.closeDropdown : i18n.combobox.openDropdown
             }
-            {...getToggleButtonProps({
-              disabled,
-              // avoid toggling the menu twice
-              onClick: stopPropagation
-            })}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              toggleMenu()
+            }}
           >
             <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
           </Button>
         </InputWrapper>
-        <MenuWrapper onClick={stopPropagation}>
+        <MenuWrapper>
           <Menu
+            id={menuId}
+            role="listbox"
             $openAbove={openAbove}
             className={classNames({ closed: !isOpen })}
-            {...getMenuProps({
-              // styled-components and downshift typings don't play nice together
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
-              ref: menuRef as any
-            })}
           >
             {isOpen && (
               <>
@@ -374,7 +417,20 @@ function Combobox<T>(props: ComboboxProps<T>) {
                     <MenuItemWrapper
                       data-qa="item"
                       key={index}
-                      {...getItemProps({ item, index })}
+                      id={`${baseId}-option-${index}`}
+                      role="option"
+                      aria-selected={item === selectedItem}
+                      onClick={() => {
+                        onChange?.(item)
+                        setIsOpen(false)
+                      }}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      ref={
+                        highlightedIndex === index
+                          ? (el) => el?.scrollIntoView({ block: 'nearest' })
+                          : undefined
+                      }
                     >
                       {renderMenuItem({
                         item,
