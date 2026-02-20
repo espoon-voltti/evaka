@@ -40,6 +40,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -361,6 +362,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             originalDate.toLocalDate(),
             asyncJobRunner,
             now,
+            remainingAttempts = 3,
         )
 
         // Monday
@@ -398,14 +400,17 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         // Original order
         val originalDate = HelsinkiDateTime.of(LocalDate.of(2025, 3, 28), LocalTime.of(2, 25))
-        createAndSendNekkuOrder(
-            client,
-            db,
-            group.id,
-            originalDate.toLocalDate(),
-            asyncJobRunner,
-            now,
-        )
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                originalDate.toLocalDate(),
+                asyncJobRunner,
+                now,
+                remainingAttempts = 0,
+            )
+        }
 
         // Monday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 24), LocalTime.of(2, 25))
@@ -496,14 +501,17 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         // Original order
         val originalDate = HelsinkiDateTime.of(LocalDate.of(2025, 3, 30), LocalTime.of(2, 25))
-        createAndSendNekkuOrder(
-            client,
-            db,
-            group.id,
-            originalDate.toLocalDate(),
-            asyncJobRunner,
-            now,
-        )
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                originalDate.toLocalDate(),
+                asyncJobRunner,
+                now,
+                remainingAttempts = 0,
+            )
+        }
 
         // Wednesday
         val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 26), LocalTime.of(2, 25))
@@ -593,8 +601,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -699,7 +723,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -837,7 +869,17 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                monday,
+                asyncJobRunner,
+                now,
+                remainingAttempts = 0,
+            )
+        }
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -955,8 +997,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1132,8 +1190,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group1.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group2.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group1.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group2.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1266,8 +1340,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1406,7 +1496,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1500,7 +1598,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1599,8 +1705,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1715,8 +1837,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1836,8 +1974,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -1969,8 +2123,24 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -2093,8 +2263,26 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 .forEach { tx.insert(it) }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
-        createAndSendNekkuOrder(client, db, group.id, tuesday, asyncJobRunner, now)
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                monday,
+                asyncJobRunner,
+                now,
+                remainingAttempts = 0,
+            )
+        }
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            tuesday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -2263,7 +2451,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -2499,7 +2695,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -2769,7 +2973,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertOrdersListEquals(
             listOf(
@@ -3006,7 +3218,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, LocalDate.of(2025, 7, 1), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            LocalDate.of(2025, 7, 1),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         planNekkuDailyOrderJobs(
             db,
@@ -3053,7 +3273,17 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(employee, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
         }
 
-        createAndSendNekkuOrder(client, db, group.id, LocalDate.of(2025, 5, 5), asyncJobRunner, now)
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                LocalDate.of(2025, 5, 5),
+                asyncJobRunner,
+                now,
+                remainingAttempts = 0,
+            )
+        }
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
@@ -3069,6 +3299,58 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         assertEquals(
             listOf("supervisor@city.fi" to expectedContent),
             MockEmailClient.emails.map { it.toAddress to it.content.text },
+        )
+    }
+
+    @Test
+    fun `should not send warning email or write error report when there are remaining attempts`() {
+        val client =
+            FailingNekkuClient(
+                customers = basicTestClientCustomers,
+                nekkuProducts = nekkuProductsForOrder,
+                specialDiets = listOf(getNekkuSpecialDiet()),
+            )
+
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+        fetchAndUpdateNekkuProducts(client, db)
+        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val group =
+            DevDaycareGroup(
+                daycareId = daycare.id,
+                name = "Testiryhmä",
+                nekkuCustomerNumber = "2501K6089",
+            )
+        val employee = DevEmployee(email = "supervisor@city.fi")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+            tx.insert(employee, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+        }
+
+        assertThrows<RuntimeException> {
+            createAndSendNekkuOrder(
+                client,
+                db,
+                group.id,
+                LocalDate.of(2025, 5, 5),
+                asyncJobRunner,
+                now,
+                remainingAttempts = 2,
+            )
+        }
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        assertEquals(0, MockEmailClient.emails.size)
+        assertEquals(
+            0,
+            db.read { tx -> tx.getNekkuOrderReport(daycare.id, group.id, LocalDate.of(2025, 5, 5)) }
+                .size,
         )
     }
 
@@ -3234,7 +3516,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, sunday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            sunday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertEquals(1, client.orders.size)
         val order = client.orders.first()
@@ -3346,7 +3636,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             }
         }
 
-        createAndSendNekkuOrder(client, db, group.id, sunday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            sunday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         assertEquals(0, client.orders.size)
 
@@ -3414,7 +3712,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.forEach { assertNotEquals("31000011", it.sku) }
@@ -3493,7 +3799,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.forEach { assertNotEquals("31000011", it.sku) }
@@ -3560,7 +3874,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.forEach { assertNotEquals("31000011", it.sku) }
@@ -3639,7 +3961,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.forEach { assertNotEquals("31000011", it.sku) }
@@ -3725,7 +4055,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee2)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.filter { it.sku == "31000011" }.forEach { assertEquals(1, it.quantity) }
@@ -3811,7 +4149,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee2)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         order.items.filter { it.sku == "31000011" }.forEach { assertEquals(1, it.quantity) }
@@ -3929,7 +4275,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             tx.insert(attendee3)
         }
 
-        createAndSendNekkuOrder(client, db, group.id, monday.plusDays(2), asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday.plusDays(2),
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         val order = client.orders.first().orders.first()
         assertEquals(1, order.items.size)
@@ -4047,7 +4401,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -4314,7 +4676,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Pähkinätön",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)
@@ -4511,7 +4881,15 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             "Laktoositon ruokavalio",
         )
 
-        createAndSendNekkuOrder(client, db, group.id, monday, asyncJobRunner, now)
+        createAndSendNekkuOrder(
+            client,
+            db,
+            group.id,
+            monday,
+            asyncJobRunner,
+            now,
+            remainingAttempts = 3,
+        )
 
         db.transaction { tx ->
             val nekkuOrderReportResult = tx.getNekkuOrderReport(daycare.id, group.id, monday)

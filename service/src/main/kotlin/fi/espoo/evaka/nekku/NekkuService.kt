@@ -190,7 +190,12 @@ class NekkuService(
         dbc.transaction { tx -> tx.cleanNekkuOrderReportRows(job.cutOffDate) }
     }
 
-    fun sendNekkuOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendNekkuOrder) {
+    fun sendNekkuOrder(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendNekkuOrder,
+        remainingAttempts: Int,
+    ) {
         if (client == null) error("Cannot send Nekku order: NekkuEnv is not configured")
 
         createAndSendNekkuOrder(
@@ -200,6 +205,7 @@ class NekkuService(
             date = job.date,
             asyncJobRunner = asyncJobRunner,
             clock.now(),
+            remainingAttempts,
         )
     }
 
@@ -472,6 +478,7 @@ fun createAndSendNekkuOrder(
     date: LocalDate,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
+    remainingAttempts: Int,
 ) {
     try {
 
@@ -557,36 +564,39 @@ fun createAndSendNekkuOrder(
             }
         }
     } catch (e: Exception) {
-        logger.warn(e) {
-            "Failed to send meal order to Nekku: date=$date, groupId=$groupId,error=${e.localizedMessage}"
-        }
+        if (remainingAttempts == 0) {
+            logger.warn(e) {
+                "Failed to send meal order to Nekku: date=$date, groupId=$groupId,error=${e.localizedMessage}"
+            }
 
-        dbc.transaction { tx ->
-            tx.setNekkuReportOrderErrorReport(groupId, date, e.localizedMessage, now)
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderErrorReport(groupId, date, e.localizedMessage, now)
 
-            val daycareId = tx.getDaycareIdByGroup(groupId)
-            val groupName = tx.getGroupName(groupId) ?: "Tuntematon ryhmä"
-            val supervisors =
-                tx.getDaycareAclRows(
-                    daycareId = daycareId,
-                    includeStaffOccupancy = false,
-                    includeStaffEmployeeNumber = false,
-                    role = UserRole.UNIT_SUPERVISOR,
-                )
-            asyncJobRunner.plan(
-                tx,
-                supervisors.map {
-                    AsyncJob.SendNekkuOrderFailureWarningEmail(
-                        groupId,
-                        groupName,
-                        date,
-                        it.employee.id,
-                        e.localizedMessage,
+                val daycareId = tx.getDaycareIdByGroup(groupId)
+                val groupName = tx.getGroupName(groupId) ?: "Tuntematon ryhmä"
+                val supervisors =
+                    tx.getDaycareAclRows(
+                        daycareId = daycareId,
+                        includeStaffOccupancy = false,
+                        includeStaffEmployeeNumber = false,
+                        role = UserRole.UNIT_SUPERVISOR,
                     )
-                },
-                runAt = now,
-            )
+                asyncJobRunner.plan(
+                    tx,
+                    supervisors.map {
+                        AsyncJob.SendNekkuOrderFailureWarningEmail(
+                            groupId,
+                            groupName,
+                            date,
+                            it.employee.id,
+                            e.localizedMessage,
+                        )
+                    },
+                    runAt = now,
+                )
+            }
         }
+        throw e
     }
 }
 

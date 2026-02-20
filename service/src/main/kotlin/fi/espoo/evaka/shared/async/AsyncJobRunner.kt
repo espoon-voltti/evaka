@@ -80,13 +80,21 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     inline fun <reified P : T> registerHandler(
         noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
     ) =
-        registerHandler(AsyncJobType(P::class)) { db, clock, msg ->
+        registerHandler(AsyncJobType(P::class)) { db, clock, msg, _ ->
             db.connect { handler(it, clock, msg) }
+        }
+
+    inline fun <reified P : T> registerHandler(
+        noinline handler:
+            (db: Database.Connection, clock: EvakaClock, msg: P, remainingAttempts: Int) -> Unit
+    ) =
+        registerHandler(AsyncJobType(P::class)) { db, clock, msg, remainingAttempts ->
+            db.connect { handler(it, clock, msg, remainingAttempts) }
         }
 
     fun <P : T> registerHandler(
         jobType: AsyncJobType<out P>,
-        handler: (db: Database, clock: EvakaClock, msg: P) -> Unit,
+        handler: (db: Database, clock: EvakaClock, msg: P, remainingAttempts: Int) -> Unit,
     ): Unit =
         stateLock.write {
             require(jobsPerPool.values.any { it.contains(jobType) }) {
