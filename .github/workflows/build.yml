@@ -468,7 +468,7 @@ jobs:
         run: |
           bin/dump-db-schema.sh > /tmp/schema.sql
           if ! diff -q docs/db/schema.sql /tmp/schema.sql > /dev/null 2>&1; then
-            echo "::error::docs/db/schema.sql is out of date. Run 'mise run dump-schema' to update it."
+            echo "::error::docs/db/schema.sql is out of date. Run 'mise dump-schema' to update it."
             diff -u docs/db/schema.sql /tmp/schema.sql || true
             exit 1
           fi
