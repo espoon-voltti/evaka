@@ -564,7 +564,16 @@ fun createAndSendNekkuOrder(
             }
         }
     } catch (e: Exception) {
-        if (remainingAttempts == 0) {
+        if (remainingAttempts > 0) {
+            dbc.transaction { tx ->
+                tx.setNekkuReportOrderErrorReport(
+                    groupId,
+                    date,
+                    "Failed to send meal order to Nekku at $now, retry in one hour.  $remainingAttempts retry attempts left",
+                    now,
+                )
+            }
+        } else {
             logger.warn(e) {
                 "Failed to send meal order to Nekku: date=$date, groupId=$groupId,error=${e.localizedMessage}"
             }

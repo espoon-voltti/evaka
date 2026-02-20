@@ -3303,7 +3303,7 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `should not send warning email or write error report when there are remaining attempts`() {
+    fun `should not send warning email when there are remaining attempts`() {
         val client =
             FailingNekkuClient(
                 customers = basicTestClientCustomers,
@@ -3347,11 +3347,6 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
         assertEquals(0, MockEmailClient.emails.size)
-        assertEquals(
-            0,
-            db.read { tx -> tx.getNekkuOrderReport(daycare.id, group.id, LocalDate.of(2025, 5, 5)) }
-                .size,
-        )
     }
 
     @Test
