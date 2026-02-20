@@ -5,5 +5,9 @@
 import { fi } from './fi'
 
 export const sv = {
-  ...fi
+  ...fi,
+  language: {
+    ...fi.language,
+    title: 'Språk'
+  }
 }

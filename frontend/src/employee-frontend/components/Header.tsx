@@ -10,20 +10,26 @@ import styled, { useTheme } from 'styled-components'
 import { Link } from 'wouter'
 
 import { combine } from 'lib-common/api'
+import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import NavLink, { useIsRouteActive } from 'lib-components/atoms/NavLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { desktopMin } from 'lib-components/breakpoints'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { isGroupMessageAccount } from 'lib-components/messages/types'
 import { fontWeights, NavLinkText } from 'lib-components/typography'
 import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
+import { featureFlags } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp, faGlobe, faSignOut } from 'lib-icons'
 
 import { logoutUrl } from '../api/auth'
-import { useTranslation } from '../state/i18n'
+import { I18nContext, useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 
 import { MessageContext } from './messages/MessageContext'
@@ -189,6 +195,7 @@ const UserPopup = styled.div`
 
 export default React.memo(function Header() {
   const { i18n } = useTranslation()
+  const { lang, selectLang } = useContext(I18nContext)
   const { user, loggedIn } = useContext(UserContext)
   const { accounts, unreadCountsByAccount } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
@@ -344,6 +351,41 @@ export default React.memo(function Header() {
         )}
         {popupVisible && (
           <UserPopup>
+            {featureFlags.employeeLanguageSelection && (
+              <>
+                <FixedSpaceRow
+                  spacing="s"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <FixedSpaceRow spacing="s" alignItems="center">
+                    <FontAwesomeIcon
+                      icon={faGlobe}
+                      color={colors.main.m2}
+                      fontSize="20px"
+                    />
+                    <span>{i18n.language.title}</span>
+                  </FixedSpaceRow>
+                  <ChipWrapper data-qa="language-selection" margin="zero">
+                    <SelectionChip
+                      text="FI"
+                      selected={lang === 'fi'}
+                      onChange={selectLang('fi')}
+                      data-qa="lang-fi"
+                      translate="no"
+                    />
+                    <SelectionChip
+                      text="SV"
+                      selected={lang === 'sv'}
+                      onChange={selectLang('sv')}
+                      data-qa="lang-sv"
+                      translate="no"
+                    />
+                  </ChipWrapper>
+                </FixedSpaceRow>
+                <HorizontalLine slim />
+              </>
+            )}
             <FixedSpaceColumn spacing="m">
               {user?.accessibleFeatures.employees && (
                 <Link

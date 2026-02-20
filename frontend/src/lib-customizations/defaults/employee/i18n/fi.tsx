@@ -281,6 +281,7 @@ export const fi = {
     linkHref: 'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus'
   },
   language: {
+    title: 'Kieli',
     fi: 'Suomi',
     sv: 'Ruotsi',
     en: 'Englanti'
