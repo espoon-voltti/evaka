@@ -9,7 +9,7 @@ javaPlatform { allowDependencies() }
 dependencies {
     constraints {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.9")
-        api("com.auth0:java-jwt:4.5.0")
+        api("com.auth0:java-jwt:4.5.1")
         api("com.github.kagkarlsson:db-scheduler:16.7.1")
         api(libs.fuel)
         api(libs.fuel.jackson)
