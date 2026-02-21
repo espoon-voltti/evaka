@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [tools]
+devcontainer-cli = "0.83.2"
+java = "zulu-25"
+lefthook = "2.1.1"
 node = "24.13.1"
+"npm:pm2" = "6.0.14"
+yarn = "4.12.0"
 
 [tasks.start]
 description = "Start the development environment"
