@@ -2680,9 +2680,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.85.0":
-  version: 5.85.0
-  resolution: "dd-trace@npm:5.85.0"
+"dd-trace@npm:5.86.0":
+  version: 5.86.0
+  resolution: "dd-trace@npm:5.86.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.7.0"
     "@datadog/native-appsec": "npm:10.3.0"
@@ -2714,7 +2714,7 @@ __metadata:
       optional: true
     "@opentelemetry/api-logs":
       optional: true
-  checksum: 10/0cf214be86c861257df1417cf0464a77e831604b902e42c3238429fc9b4e0c8e8f88be267d324ca8602870d95313e407fa5198c0cfaf4d49c0fa72376ea4aebc
+  checksum: 10/7ea3166b9b1885226640653cfa55bc901c54219753e97463167c87272d86cfb5db01ec9b38f1035ab33ed63a0740078b12a766bf515f857a525253af768080c8
   languageName: node
   linkType: hard
 
@@ -3356,7 +3356,7 @@ __metadata:
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     date-fns: "npm:4.1.0"
-    dd-trace: "npm:5.85.0"
+    dd-trace: "npm:5.86.0"
     eslint: "npm:9.39.2"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
