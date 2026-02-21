@@ -63,7 +63,7 @@ dependencies {
     api(platform("org.apache.cxf:cxf-bom:4.2.0"))
     api(platform("org.jdbi:jdbi3-bom:3.51.0"))
     api(platform(libs.kotlin.bom))
-    api(platform("org.junit:junit-bom:6.0.2"))
+    api(platform("org.junit:junit-bom:6.0.3"))
     api(platform(libs.spring.boot.dependencies))
     api(platform("software.amazon.awssdk:bom:2.41.25"))
 }
