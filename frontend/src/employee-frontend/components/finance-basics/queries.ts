@@ -5,8 +5,11 @@
 import { Queries } from 'lib-common/query'
 
 import {
+  createFeeThresholds,
   createVoucherValue,
+  getFeeThresholds,
   getVoucherValues,
+  updateFeeThresholds,
   updateVoucherValue
 } from '../../generated/api-clients/invoicing'
 import { deleteVoucherValue } from '../../generated/api-clients/invoicing'
@@ -25,4 +28,14 @@ export const updateVoucherValueMutation = q.mutation(updateVoucherValue, [
 
 export const deleteVoucherValueMutation = q.mutation(deleteVoucherValue, [
   voucherValuesQuery
+])
+
+export const feeThresholdsQuery = q.query(getFeeThresholds)
+
+export const createFeeThresholdsMutation = q.mutation(createFeeThresholds, [
+  feeThresholdsQuery.prefix
+])
+
+export const updateFeeThresholdsMutation = q.mutation(updateFeeThresholds, [
+  feeThresholdsQuery.prefix
 ])

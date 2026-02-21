@@ -4,31 +4,27 @@
 
 import React, { useCallback } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
-import {
-  confirmFeeDecisionDrafts,
-  setFeeDecisionSent,
-  setFeeDecisionType
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 
-const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
-const setFeeDecisionSentResult = wrapResult(setFeeDecisionSent)
-const setFeeDecisionTypeResult = wrapResult(setFeeDecisionType)
+import {
+  confirmFeeDecisionDraftsMutation,
+  setFeeDecisionSentMutation,
+  setFeeDecisionTypeMutation
+} from './queries'
 
 interface Props {
   decision: FeeDecisionDetailed
   goToDecisions: () => void
-  loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: FeeDecisionType
@@ -38,28 +34,36 @@ interface Props {
 const Actions = React.memo(function Actions({
   decision,
   goToDecisions,
-  loadDecision,
   modified,
   setModified,
   newDecisionType,
   onHandlerSelectModal
 }: Props) {
   const { i18n } = useTranslation()
+  const { mutateAsync: doSetFeeDecisionType } = useMutationResult(
+    setFeeDecisionTypeMutation
+  )
+  const { mutateAsync: doConfirmFeeDecisionDrafts } = useMutationResult(
+    confirmFeeDecisionDraftsMutation
+  )
+  const { mutateAsync: doSetFeeDecisionSent } = useMutationResult(
+    setFeeDecisionSentMutation
+  )
   const updateType = useCallback(
     () =>
-      setFeeDecisionTypeResult({
+      doSetFeeDecisionType({
         id: decision.id,
         body: { type: newDecisionType }
       }),
-    [decision.id, newDecisionType]
+    [decision.id, newDecisionType, doSetFeeDecisionType]
   )
   const confirmDecision = useCallback(
-    () => confirmFeeDecisionDraftsResult({ body: [decision.id] }),
-    [decision.id]
+    () => doConfirmFeeDecisionDrafts({ body: [decision.id] }),
+    [decision.id, doConfirmFeeDecisionDrafts]
   )
   const markSent = useCallback(
-    () => setFeeDecisionSentResult({ body: [decision.id] }),
-    [decision.id]
+    () => doSetFeeDecisionSent({ body: [decision.id] }),
+    [decision.id, doSetFeeDecisionSent]
   )
 
   const isDraft = decision.status === 'DRAFT'
@@ -80,7 +84,7 @@ const Actions = React.memo(function Actions({
             textInProgress={i18n.common.saving}
             textDone={i18n.common.saved}
             onClick={updateType}
-            onSuccess={() => loadDecision().then(() => setModified(false))}
+            onSuccess={() => setModified(false)}
             disabled={!modified}
             data-qa="decision-actions-save"
           />
@@ -97,7 +101,7 @@ const Actions = React.memo(function Actions({
               primary
               text={i18n.feeDecisions.buttons.createDecision(1)}
               onClick={confirmDecision}
-              onSuccess={loadDecision}
+              onSuccess={() => undefined}
               disabled={modified}
               data-qa="decision-actions-confirm-decision"
             />
@@ -109,7 +113,7 @@ const Actions = React.memo(function Actions({
           primary
           text={i18n.feeDecisions.buttons.markSent}
           onClick={markSent}
-          onSuccess={loadDecision}
+          onSuccess={() => undefined}
           data-qa="decision-actions-mark-sent"
         />
       ) : null}

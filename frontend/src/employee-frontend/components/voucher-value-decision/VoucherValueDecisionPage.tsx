@@ -5,24 +5,15 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Redirect } from 'wouter'
 
-import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
-import type {
-  VoucherValueDecisionResponse,
-  VoucherValueDecisionType
-} from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import type { VoucherValueDecisionId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getVoucherValueDecision,
-  sendVoucherValueDecisionDrafts
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { useTitle } from '../../utils/useTitle'
 import MetadataSection from '../archive-metadata/MetadataSection'
@@ -34,11 +25,10 @@ import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
-
-const getVoucherValueDecisionResult = wrapResult(getVoucherValueDecision)
-const sendVoucherValueDecisionDraftsResult = wrapResult(
-  sendVoucherValueDecisionDrafts
-)
+import {
+  sendVoucherValueDecisionDraftsMutation,
+  voucherValueDecisionQuery
+} from './queries'
 
 const VoucherValueDecisionMetadataSection = React.memo(
   function VoucherValueDecisionMetadataSection({
@@ -57,25 +47,20 @@ export default React.memo(function VoucherValueDecisionPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const id = useIdRouteParam<VoucherValueDecisionId>('id')
   const { i18n } = useTranslation()
-  const [decisionResponse, setDecisionResponse] = useState<
-    Result<VoucherValueDecisionResponse>
-  >(Loading.of())
+  const decisionResponse = useQueryResult(voucherValueDecisionQuery({ id }))
+  const { mutateAsync: doSendVoucherValueDecisionDrafts } = useMutationResult(
+    sendVoucherValueDecisionDraftsMutation
+  )
   const [modified, setModified] = useState<boolean>(false)
   const [newDecisionType, setNewDecisionType] =
     useState<VoucherValueDecisionType>('NORMAL')
-
-  const loadDecision = useCallback(
-    () => getVoucherValueDecisionResult({ id }).then(setDecisionResponse),
-    [id]
-  )
-  useEffect(() => void loadDecision(), [loadDecision])
 
   useEffect(() => {
     if (decisionResponse.isSuccess) {
       const decision = decisionResponse.value.data
       setNewDecisionType(decision.decisionType)
     }
-  }, [decisionResponse, i18n])
+  }, [decisionResponse])
 
   useTitle(
     decisionResponse.map(
@@ -112,12 +97,11 @@ export default React.memo(function VoucherValueDecisionPage() {
             {showHandlerSelectModal && (
               <FinanceDecisionHandlerSelectModal
                 onResolve={async (decisionHandlerId) => {
-                  const result = await sendVoucherValueDecisionDraftsResult({
+                  const result = await doSendVoucherValueDecisionDrafts({
                     decisionHandlerId,
                     body: [decision.id]
                   })
                   if (result.isSuccess) {
-                    await loadDecision()
                     setShowHandlerSelectModal(false)
                   }
                   return result
@@ -142,7 +126,6 @@ export default React.memo(function VoucherValueDecisionPage() {
               <VoucherValueDecisionActionBar
                 decision={decision}
                 goToDecisions={goBack}
-                loadDecision={loadDecision}
                 modified={modified}
                 setModified={setModified}
                 newDecisionType={newDecisionType}

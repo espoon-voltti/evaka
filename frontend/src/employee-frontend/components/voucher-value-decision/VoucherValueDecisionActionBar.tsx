@@ -4,39 +4,29 @@
 
 import React, { useCallback, useContext } from 'react'
 
-import { wrapResult } from 'lib-common/api'
 import type {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
-import {
-  markVoucherValueDecisionSent,
-  sendVoucherValueDecisionDrafts,
-  setVoucherValueDecisionType
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import StickyActionBar from '../common/StickyActionBar'
 
-const sendVoucherValueDecisionDraftsResult = wrapResult(
-  sendVoucherValueDecisionDrafts
-)
-const setVoucherValueDecisionTypeResult = wrapResult(
-  setVoucherValueDecisionType
-)
-const markVoucherValueDecisionSentResult = wrapResult(
-  markVoucherValueDecisionSent
-)
+import {
+  markVoucherValueDecisionSentMutation,
+  sendVoucherValueDecisionDraftsMutation,
+  setVoucherValueDecisionTypeMutation
+} from './queries'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
   goToDecisions: () => void
-  loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: VoucherValueDecisionType
@@ -46,7 +36,6 @@ type Props = {
 export default React.memo(function VoucherValueDecisionActionBar({
   decision,
   goToDecisions,
-  loadDecision,
   modified,
   setModified,
   newDecisionType,
@@ -54,21 +43,26 @@ export default React.memo(function VoucherValueDecisionActionBar({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage, clearErrorMessage } = useContext(UIContext)
+  const { mutateAsync: doSetVoucherValueDecisionType } = useMutationResult(
+    setVoucherValueDecisionTypeMutation
+  )
+  const { mutateAsync: doSendVoucherValueDecisionDrafts } = useMutationResult(
+    sendVoucherValueDecisionDraftsMutation
+  )
+  const { mutateAsync: doMarkVoucherValueDecisionSent } = useMutationResult(
+    markVoucherValueDecisionSentMutation
+  )
   const updateType = useCallback(
     () =>
-      setVoucherValueDecisionTypeResult({
+      doSetVoucherValueDecisionType({
         id: decision.id,
         body: { type: newDecisionType }
       }),
-    [decision.id, newDecisionType]
-  )
-  const reloadDecision = useCallback(
-    () => loadDecision().then(() => setModified(false)),
-    [loadDecision, setModified]
+    [decision.id, newDecisionType, doSetVoucherValueDecisionType]
   )
   const sendDecision = useCallback(
-    () => sendVoucherValueDecisionDraftsResult({ body: [decision.id] }),
-    [decision.id]
+    () => doSendVoucherValueDecisionDrafts({ body: [decision.id] }),
+    [decision.id, doSendVoucherValueDecisionDrafts]
   )
 
   const isDraft = decision.status === 'DRAFT'
@@ -91,7 +85,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
             onClick={updateType}
             onSuccess={() => {
               clearErrorMessage()
-              void reloadDecision()
+              setModified(false)
             }}
             onFailure={() => {
               setErrorMessage({
@@ -119,10 +113,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
               disabled={modified}
               text={i18n.common.send}
               onClick={sendDecision}
-              onSuccess={() => {
-                clearErrorMessage()
-                void loadDecision()
-              }}
+              onSuccess={clearErrorMessage}
               onFailure={(result) => {
                 setErrorMessage({
                   title: i18n.common.error.unknown,
@@ -146,10 +137,10 @@ export default React.memo(function VoucherValueDecisionActionBar({
             primary
             text={i18n.valueDecisions.buttons.markSent}
             onClick={() =>
-              markVoucherValueDecisionSentResult({ body: [decision.id] })
+              doMarkVoucherValueDecisionSent({ body: [decision.id] })
             }
+            onSuccess={() => undefined}
             disabled={modified}
-            onSuccess={loadDecision}
           />
         </StickyActionBar>
       )}

@@ -4,23 +4,21 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { isLoading, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
-import { getFeeThresholds } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import FeeThresholdsEditor from './FeeThresholdsEditor'
 import { FeeThresholdsItem } from './FeeThresholdsItem'
-
-const getFeeThresholdsResult = wrapResult(getFeeThresholds)
+import { feeThresholdsQuery } from './queries'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -28,7 +26,7 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, loadData] = useApiState(() => getFeeThresholdsResult(), [])
+  const data = useQueryResult(feeThresholdsQuery())
 
   const [editorState, setEditorState] = useState<EditorState>({})
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
@@ -90,7 +88,6 @@ export default React.memo(function FeesSection() {
           id={undefined}
           initialState={editorState.form}
           close={closeEditor}
-          reloadData={loadData}
           existingThresholds={data}
         />
       ) : null}
@@ -104,7 +101,6 @@ export default React.memo(function FeesSection() {
                 id={feeThresholds.id}
                 initialState={editorState.form}
                 close={closeEditor}
-                reloadData={loadData}
                 existingThresholds={data}
               />
             ) : (
