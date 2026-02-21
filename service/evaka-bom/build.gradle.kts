@@ -17,7 +17,7 @@ dependencies {
         api("com.google.guava:guava:33.5.0-jre")
         api("com.networknt:json-schema-validator:3.0.0")
         api("com.zaxxer:HikariCP:7.0.2")
-        api("io.github.oshai:kotlin-logging-jvm:7.0.14")
+        api("io.github.oshai:kotlin-logging-jvm:8.0.01")
         api("io.kotest:kotest-property:6.1.3")
         api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
