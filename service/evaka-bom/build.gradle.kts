@@ -8,7 +8,7 @@ javaPlatform { allowDependencies() }
 
 dependencies {
     constraints {
-        api("ch.qos.logback.access:logback-access-tomcat:2.0.9")
+        api("ch.qos.logback.access:logback-access-tomcat:2.0.12")
         api("com.auth0:java-jwt:4.5.1")
         api("com.github.kagkarlsson:db-scheduler:16.7.1")
         api(libs.fuel)
@@ -51,8 +51,8 @@ dependencies {
         api(libs.ktlint.test)
 
         // These constraints are needed for CVE fixes
-        api("ch.qos.logback:logback-classic:1.5.29")
-        api("ch.qos.logback:logback-core:1.5.29")
+        api("ch.qos.logback:logback-classic:1.5.32")
+        api("ch.qos.logback:logback-core:1.5.32")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.21.0"))
