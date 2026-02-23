@@ -26,12 +26,11 @@ export const Table = styled.table`
 `
 
 interface ThProps {
-  sticky?: boolean
-  stickyColumn?: boolean
-  top?: string
-  hidden?: boolean
-  align?: 'left' | 'right' | 'center'
-  minimalWidth?: boolean
+  $sticky?: boolean
+  $stickyColumn?: boolean
+  $top?: string
+  $align?: 'left' | 'right' | 'center'
+  $minimalWidth?: boolean
 }
 
 export const Th = styled.th<ThProps>`
@@ -45,19 +44,19 @@ export const Th = styled.th<ThProps>`
   border-color: ${(p) => p.theme.colors.grayscale.g15};
   border-width: 0 0 1px;
   padding: ${defaultMargins.s};
-  text-align: ${({ align }) => align ?? 'left'};
-  position: ${(p) => (p.sticky ? 'sticky' : 'static')};
-  top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
-  background: ${(p) => (p.sticky ? p.theme.colors.grayscale.g0 : 'none')};
+  text-align: ${({ $align }) => $align ?? 'left'};
+  position: ${(p) => (p.$sticky ? 'sticky' : 'static')};
+  top: ${(p) => (p.$sticky && p.$top ? p.$top : 'auto')};
+  background: ${(p) => (p.$sticky ? p.theme.colors.grayscale.g0 : 'none')};
   ${(p) =>
-    p.minimalWidth
+    p.$minimalWidth
       ? `
           width: 0;
           white-space: nowrap;
         `
       : ''}
   ${(p) =>
-    p.stickyColumn
+    p.$stickyColumn
       ? `
           left: 0;
           z-index: 3 !important;
@@ -66,48 +65,48 @@ export const Th = styled.th<ThProps>`
 `
 
 export const Td = styled.td<{
-  align?: 'right' | 'left' | 'center'
-  verticalAlign?: 'top' | 'middle' | 'bottom'
-  color?: string
-  minimalWidth?: boolean
-  maximalWidth?: boolean
-  topBorder?: boolean
-  borderStyle?: Property.BorderStyle
-  horizontalPadding?: SpacingSize
-  verticalPadding?: SpacingSize
-  sticky?: boolean
+  $align?: 'right' | 'left' | 'center'
+  $verticalAlign?: 'top' | 'middle' | 'bottom'
+  $color?: string
+  $minimalWidth?: boolean
+  $maximalWidth?: boolean
+  $topBorder?: boolean
+  $borderStyle?: Property.BorderStyle
+  $horizontalPadding?: SpacingSize
+  $verticalPadding?: SpacingSize
+  $sticky?: boolean
 }>`
   line-height: 1.3em;
-  border-style: ${(p) => p.borderStyle ?? 'solid'};
+  border-style: ${(p) => p.$borderStyle ?? 'solid'};
   border-color: ${(p) => p.theme.colors.grayscale.g15};
-  border-width: ${(p) => (p.topBorder ? '1px 0 0 0' : '0 0 1px')};
+  border-width: ${(p) => (p.$topBorder ? '1px 0 0 0' : '0 0 1px')};
   padding: ${(p) =>
     `${
-      p.verticalPadding ? defaultMargins[p.verticalPadding] : defaultMargins.s
+      p.$verticalPadding ? defaultMargins[p.$verticalPadding] : defaultMargins.s
     } ${
-      p.horizontalPadding
-        ? defaultMargins[p.horizontalPadding]
+      p.$horizontalPadding
+        ? defaultMargins[p.$horizontalPadding]
         : defaultMargins.s
     }`};
-  vertical-align: ${(p) => p.verticalAlign ?? 'top'};
-  text-align: ${(p) => p.align ?? 'left'};
-  ${(p) => (p.color ? `color: ${p.color};` : '')}
+  vertical-align: ${(p) => p.$verticalAlign ?? 'top'};
+  text-align: ${(p) => p.$align ?? 'left'};
+  ${(p) => (p.$color ? `color: ${p.$color};` : '')}
   ${(p) =>
-    p.minimalWidth
+    p.$minimalWidth
       ? `
           width: 0;
           white-space: nowrap;
         `
       : ''}
   ${(p) =>
-    p.maximalWidth
+    p.$maximalWidth
       ? `
           width: 100%;
           white-space: nowrap;
         `
       : ''}
   ${(p) =>
-    p.sticky
+    p.$sticky
       ? `
           position: sticky;
           left: 0;
@@ -135,12 +134,12 @@ export const Tr = styled.tr<TrProps>`
       : ''}
 `
 
-export const Thead = styled.thead<{ sticky?: boolean | string }>`
+export const Thead = styled.thead<{ $sticky?: boolean | string }>`
   ${(p) =>
-    p.sticky !== undefined
+    p.$sticky !== undefined
       ? `
   position: sticky;
-  top: ${typeof p.sticky === 'boolean' ? 0 : p.sticky};
+  top: ${typeof p.$sticky === 'boolean' ? 0 : p.$sticky};
   z-index: 9;
   background-color: ${p.theme.colors.grayscale.g0};`
       : ''}
@@ -195,10 +194,10 @@ export const SortableTh = React.memo(function SortableTh({
     colors: { grayscale }
   } = useTheme()
   return (
-    <Th sticky={sticky} top={top} className={className}>
+    <Th $sticky={sticky} $top={top} className={className}>
       <CustomButton onClick={onClick} data-qa={dataQa}>
         <span>{children}</span>
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <SortableIconContainer>
           <FontAwesomeIcon
             icon={sorted === 'ASC' ? fasChevronUp : faChevronUp}

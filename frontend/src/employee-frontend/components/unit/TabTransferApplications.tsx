@@ -40,7 +40,7 @@ export default React.memo(function TabTransferApplications({
           {sortedTransferApplications.length})
         </Title>
       }
-      opaque
+      $opaque
       open={open}
       toggleOpen={toggleOpen}
       data-qa="transfer-applications-section"

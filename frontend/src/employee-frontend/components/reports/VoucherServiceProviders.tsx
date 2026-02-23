@@ -166,9 +166,9 @@ export default React.memo(function VoucherServiceProviders() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} data-qa="return-button" />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H2>{i18n.reports.voucherServiceProviders.title}</H2>
-        <Gap size="m" />
+        <Gap $size="m" />
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
@@ -234,7 +234,7 @@ export default React.memo(function VoucherServiceProviders() {
         {renderResult(combine(report, mappedData), ([report, mappedData]) => (
           <>
             {report.locked && (
-              <LockedDate spacing="xs" alignItems="center">
+              <LockedDate $spacing="xs" $alignItems="center">
                 <FontAwesomeIcon icon={faLockAlt} />
                 <span>
                   {`${
@@ -244,7 +244,7 @@ export default React.memo(function VoucherServiceProviders() {
               </LockedDate>
             )}
 
-            <HorizontalLine slim />
+            <HorizontalLine $slim />
 
             <ReportDownload
               data={mappedData}

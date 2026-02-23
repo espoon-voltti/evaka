@@ -26,37 +26,37 @@ export const fontSizesMobile = {
 
 export type HeadingProps = BaseProps & {
   children: React.ReactNode
-  fitted?: boolean
+  $fitted?: boolean
   'data-qa'?: string
-  centered?: boolean
-  noMargin?: boolean
-  smaller?: boolean
-  primary?: boolean
+  $centered?: boolean
+  $noMargin?: boolean
+  $smaller?: boolean
+  $primary?: boolean
 }
 
 export const H1 = styled.h1<HeadingProps>`
   color: ${(p) =>
-    p.primary || p.primary === undefined
+    p.$primary || p.$primary === undefined
       ? p.theme.colors.main.m1
       : p.theme.colors.grayscale.g100};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h1 : '32px')};
-  line-height: ${(p) => (p.smaller ? fontSizesMobile.h1 : 'initial')};
+  font-size: ${(p) => (p.$smaller ? fontSizesMobile.h1 : '32px')};
+  line-height: ${(p) => (p.$smaller ? fontSizesMobile.h1 : 'initial')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => p.theme.typography.h1.weight};
   ${(p) =>
-    !p.fitted
+    !p.$fitted
       ? css`
           margin-bottom: ${defaultMargins.m};
         `
       : ''}
   ${(p) =>
-    p.centered
+    p.$centered
       ? css`
           text-align: center;
         `
       : ''}
   ${(p) =>
-    p.noMargin
+    p.$noMargin
       ? css`
           margin: 0;
         `
@@ -74,24 +74,24 @@ export const H1 = styled.h1<HeadingProps>`
 
 export const H2 = styled.h2<HeadingProps>`
   color: ${(p) =>
-    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h2 : '24px')};
+    p.$primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
+  font-size: ${(p) => (p.$smaller ? fontSizesMobile.h2 : '24px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => p.theme.typography.h2.weight};
   ${(p) =>
-    !p.fitted
+    !p.$fitted
       ? css`
           margin-bottom: ${defaultMargins.s};
         `
       : ''}
   ${(p) =>
-    p.centered
+    p.$centered
       ? css`
           text-align: center;
         `
       : ''}
   ${(p) =>
-    p.noMargin
+    p.$noMargin
       ? css`
           margin: 0;
         `
@@ -110,24 +110,24 @@ export const H2 = styled.h2<HeadingProps>`
 
 export const H3 = styled.h3<HeadingProps>`
   color: ${(p) =>
-    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h3 : '20px')};
+    p.$primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
+  font-size: ${(p) => (p.$smaller ? fontSizesMobile.h3 : '20px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => p.theme.typography.h3.weight};
   ${(p) =>
-    !p.fitted
+    !p.$fitted
       ? css`
           margin-bottom: ${defaultMargins.s};
         `
       : ''}
   ${(p) =>
-    p.centered
+    p.$centered
       ? css`
           text-align: center;
         `
       : ''}
   ${(p) =>
-    p.noMargin
+    p.$noMargin
       ? css`
           margin: 0;
         `
@@ -145,24 +145,24 @@ export const H3 = styled.h3<HeadingProps>`
 
 export const H4 = styled.h4<HeadingProps>`
   color: ${(p) =>
-    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h4 : '18px')};
+    p.$primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
+  font-size: ${(p) => (p.$smaller ? fontSizesMobile.h4 : '18px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => p.theme.typography.h4.weight};
   ${(p) =>
-    !p.fitted
+    !p.$fitted
       ? css`
           margin-bottom: ${defaultMargins.s};
         `
       : ''}
   ${(p) =>
-    p.centered
+    p.$centered
       ? css`
           text-align: center;
         `
       : ''}
   ${(p) =>
-    p.noMargin
+    p.$noMargin
       ? css`
           margin: 0;
         `
@@ -179,20 +179,20 @@ export const H4 = styled.h4<HeadingProps>`
 `
 
 export interface LabelProps {
-  inputRow?: boolean
-  primary?: boolean
-  white?: boolean
+  $inputRow?: boolean
+  $primary?: boolean
+  $white?: boolean
 }
 
 const labelMixin = css<LabelProps>`
   font-weight: ${fontWeights.semibold};
   color: ${(p) =>
-    p.primary
+    p.$primary
       ? p.theme.colors.main.m1
-      : p.white
+      : p.$white
         ? p.theme.colors.grayscale.g0
         : p.theme.colors.grayscale.g100};
-  ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
+  ${(p) => (p.$inputRow ? 'margin-top: 6px;' : '')}
 `
 
 export const Label = styled.label<LabelProps>`
@@ -204,21 +204,21 @@ export const LabelLike = styled.div<LabelProps>`
 `
 
 type ParagraphProps = {
-  fitted?: boolean
-  noMargin?: boolean
-  centered?: boolean
-  width?: string
-  preserveWhiteSpace?: boolean
-  color?: string
+  $fitted?: boolean
+  $noMargin?: boolean
+  $centered?: boolean
+  $width?: string
+  $preserveWhiteSpace?: boolean
+  $color?: string
 }
 
 export const P = styled.p<ParagraphProps>`
-  ${(p) => (p.centered ? `text-align: center;` : '')};
-  max-width: ${(p) => p.width || '960px'};
+  ${(p) => (p.$centered ? `text-align: center;` : '')};
+  max-width: ${(p) => p.$width || '960px'};
   ${(p) =>
-    p.noMargin ? `margin: 0` : `margin-block: ${p.fitted ? `0` : '1.5em'}`};
-  ${(p) => (p.preserveWhiteSpace ? 'white-space: pre-line' : '')};
-  ${(p) => (p.color ? `color: ${p.color};` : '')};
+    p.$noMargin ? `margin: 0` : `margin-block: ${p.$fitted ? `0` : '1.5em'}`};
+  ${(p) => (p.$preserveWhiteSpace ? 'white-space: pre-line' : '')};
+  ${(p) => (p.$color ? `color: ${p.$color};` : '')};
 
   strong {
     color: ${(p) => p.theme.colors.grayscale.g100};
@@ -266,38 +266,38 @@ export const Light = styled.span`
   color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
-export const Title = styled.span<{ primary?: boolean; centered?: boolean }>`
+export const Title = styled.span<{ $primary?: boolean; $centered?: boolean }>`
   font-family: Montserrat, sans-serif;
   font-size: 20px;
   font-weight: ${fontWeights.semibold};
   color: ${(p) =>
-    p.primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
+    p.$primary ? p.theme.colors.main.m1 : p.theme.colors.grayscale.g100};
   ${(p) =>
-    p.centered &&
+    p.$centered &&
     css`
       text-align: center;
     `}
 `
 
-export const BigNumber = styled.span<{ centered?: boolean }>`
+export const BigNumber = styled.span<{ $centered?: boolean }>`
   font-family: Montserrat, sans-serif;
   font-size: 60px;
   font-weight: ${fontWeights.light};
   line-height: 73px;
   color: ${(p) => p.theme.colors.main.m1};
   ${(p) =>
-    p.centered &&
+    p.$centered &&
     css`
       text-align: center;
     `}
 `
 
-export const InformationText = styled.span<{ centered?: boolean }>`
+export const InformationText = styled.span<{ $centered?: boolean }>`
   color: ${(p) => p.theme.colors.grayscale.g70};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
   ${(p) =>
-    p.centered
+    p.$centered
       ? css`
           text-align: center;
         `

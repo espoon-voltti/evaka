@@ -75,7 +75,7 @@ export default React.memo(function DateRangePickerLowLevel({
       data-qa={dataQa}
       aria-labelledby={ariaId}
       role="group"
-      flexWrap="wrap"
+      $flexWrap="wrap"
     >
       <DatePickerLowLevel
         value={start}

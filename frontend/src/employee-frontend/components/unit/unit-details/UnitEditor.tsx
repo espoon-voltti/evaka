@@ -1011,7 +1011,7 @@ export default function UnitEditor(props: Props) {
         <>
           {' '}
           <StaticChip
-            color={colors.accents.a1greenDark}
+            $color={colors.accents.a1greenDark}
             title={i18n.unitEditor.info.varda}
           >
             V
@@ -1026,7 +1026,7 @@ export default function UnitEditor(props: Props) {
         <>
           {' '}
           <StaticChip
-            color={colors.accents.a6turquoise}
+            $color={colors.accents.a6turquoise}
             title={i18n.unitEditor.info.koski}
           >
             K
@@ -1079,7 +1079,7 @@ export default function UnitEditor(props: Props) {
     <form action="#" data-qa="unit-editor-container">
       {props.unit && (
         <TopBar>
-          <H1 fitted>{props.unit.name}</H1>
+          <H1 $fitted>{props.unit.name}</H1>
           {!props.editable && (
             <FixedSpaceRow>
               <Button
@@ -1185,7 +1185,7 @@ export default function UnitEditor(props: Props) {
           {showRequired(i18n.unitEditor.label.careTypes)}
           {vardaIcon()}
         </div>
-        <FixedSpaceColumn fullWidth={true}>
+        <FixedSpaceColumn $fullWidth={true}>
           <DaycareTypeSelectContainer>
             <Checkbox
               disabled={!props.editable}
@@ -1230,7 +1230,7 @@ export default function UnitEditor(props: Props) {
               />
               {form.careTypes.PRESCHOOL && (
                 <IndentCheckboxLabel>
-                  <FixedSpaceRow alignItems="center">
+                  <FixedSpaceRow $alignItems="center">
                     <span>
                       {showRequired(i18n.unitEditor.label.dailyPreschoolTime)}
                     </span>
@@ -1266,7 +1266,7 @@ export default function UnitEditor(props: Props) {
               />
               {form.careTypes.PREPARATORY_EDUCATION && (
                 <IndentCheckboxLabel>
-                  <FixedSpaceRow alignItems="center">
+                  <FixedSpaceRow $alignItems="center">
                     <span>
                       {showRequired(i18n.unitEditor.label.dailyPreparatoryTime)}
                     </span>
@@ -1324,9 +1324,9 @@ export default function UnitEditor(props: Props) {
               />
               {period != null && (
                 <>
-                  <Gap size="xs" />
+                  <Gap $size="xs" />
                   <IndentCheckboxLabel>
-                    <FixedSpaceRow alignItems="center">
+                    <FixedSpaceRow $alignItems="center">
                       <div>{i18n.unitEditor.field.applyPeriod}</div>
                       <FixedSpaceRow>
                         {props.editable ? (
@@ -1488,14 +1488,14 @@ export default function UnitEditor(props: Props) {
 
       <FormPart>
         <div>{i18n.unitEditor.label.operationDays}</div>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           {form.operationTimes.map((timesToday, index) => {
             const dayOfWeek = (index + 1) as DayOfWeek
             return (
               <FixedSpaceRow
                 key={`"weekday-${dayOfWeek}"`}
-                spacing="s"
-                alignItems="center"
+                $spacing="s"
+                $alignItems="center"
               >
                 <FixedDayLabel>
                   {i18n.unitEditor.label.operationDay[dayOfWeek]}
@@ -1555,14 +1555,14 @@ export default function UnitEditor(props: Props) {
       {form.providesShiftCare && (
         <FormPart>
           <div>{i18n.unitEditor.label.shiftCareOperationDays}</div>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             {form.shiftCareOperationTimes.map((timesToday, index) => {
               const dayOfWeek = (index + 1) as DayOfWeek
               return (
                 <FixedSpaceRow
                   key={`"weekday-${dayOfWeek}"`}
-                  spacing="s"
-                  alignItems="center"
+                  $spacing="s"
+                  $alignItems="center"
                 >
                   <FixedDayLabel>
                     {i18n.unitEditor.label.operationDay[dayOfWeek]}
@@ -2141,8 +2141,8 @@ export default function UnitEditor(props: Props) {
           <H3>{i18n.unitEditor.title.mealOrderIntegration}</H3>
           <FormPart>
             <div>{i18n.unitEditor.title.mealtime}</div>
-            <FixedSpaceColumn spacing="xs">
-              <FixedSpaceRow alignItems="center">
+            <FixedSpaceColumn $spacing="xs">
+              <FixedSpaceRow $alignItems="center">
                 <label>{i18n.unitEditor.label.mealTime.breakfast}</label>
                 <MealtimeInput
                   mealtimeKey="mealtimeBreakfast"
@@ -2151,7 +2151,7 @@ export default function UnitEditor(props: Props) {
                   editable={props.editable}
                 />
               </FixedSpaceRow>
-              <FixedSpaceRow alignItems="center">
+              <FixedSpaceRow $alignItems="center">
                 <label>{i18n.unitEditor.label.mealTime.lunch}</label>
                 <MealtimeInput
                   mealtimeKey="mealtimeLunch"
@@ -2161,7 +2161,7 @@ export default function UnitEditor(props: Props) {
                 />
               </FixedSpaceRow>
 
-              <FixedSpaceRow alignItems="center">
+              <FixedSpaceRow $alignItems="center">
                 <label>{i18n.unitEditor.label.mealTime.snack}</label>
 
                 <MealtimeInput
@@ -2171,7 +2171,7 @@ export default function UnitEditor(props: Props) {
                   editable={props.editable}
                 />
               </FixedSpaceRow>
-              <FixedSpaceRow alignItems="center">
+              <FixedSpaceRow $alignItems="center">
                 <label>{i18n.unitEditor.label.mealTime.supper}</label>
                 <MealtimeInput
                   mealtimeKey="mealtimeSupper"
@@ -2180,7 +2180,7 @@ export default function UnitEditor(props: Props) {
                   editable={props.editable}
                 />
               </FixedSpaceRow>
-              <FixedSpaceRow alignItems="center">
+              <FixedSpaceRow $alignItems="center">
                 <label>{i18n.unitEditor.label.mealTime.eveningSnack}</label>
                 <MealtimeInput
                   mealtimeKey="mealtimeEveningSnack"

@@ -71,8 +71,8 @@ export default React.memo(function FeesSection() {
 
   return (
     <CollapsibleContentArea
-      opaque
-      title={<H2 noMargin>{i18n.financeBasics.fees.title}</H2>}
+      $opaque
+      title={<H2 $noMargin>{i18n.financeBasics.fees.title}</H2>}
       open={open}
       toggleOpen={toggleOpen}
       data-qa="fees-section"

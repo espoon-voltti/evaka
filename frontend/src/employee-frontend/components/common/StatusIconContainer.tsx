@@ -7,11 +7,11 @@ import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 
 interface StatusIconContainerProps {
-  color: string
+  $color: string
 }
 
 export const StatusIconContainer = styled.div<StatusIconContainerProps>`
-  background: ${(p) => p.color};
+  background: ${(p) => p.$color};
   border-radius: 100%;
   display: flex;
   justify-content: center;

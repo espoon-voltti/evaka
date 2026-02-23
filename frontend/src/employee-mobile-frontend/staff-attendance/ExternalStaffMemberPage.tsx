@@ -114,7 +114,7 @@ export default React.memo(function ExternalStaffMemberPage({
                 )}
                 data-qa="departure-before-arrival-notification"
               />
-              <Gap size="xs" />
+              <Gap $size="xs" />
             </>
           ) : undefined}
 

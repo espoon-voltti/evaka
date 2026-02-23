@@ -272,7 +272,7 @@ export default React.memo(function ApplicationEditView({
               />
               {errors['form.preferences.preferredStartDate'] ? (
                 <>
-                  <Gap size="s" horizontal />
+                  <Gap $size="s" $horizontal />
                   <InputWarning
                     text={errors['form.preferences.preferredStartDate']}
                   />
@@ -323,7 +323,7 @@ export default React.memo(function ApplicationEditView({
                     />
                     {partTimeOptions.length > 0 && serviceNeed.partTime && (
                       <SubRadios>
-                        <FixedSpaceColumn spacing="xs">
+                        <FixedSpaceColumn $spacing="xs">
                           {partTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
@@ -361,7 +361,7 @@ export default React.memo(function ApplicationEditView({
                     />
                     {!serviceNeed.partTime && fullTimeOptions.length > 0 && (
                       <SubRadios>
-                        <FixedSpaceColumn spacing="xs">
+                        <FixedSpaceColumn $spacing="xs">
                           {fullTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
@@ -445,7 +445,7 @@ export default React.memo(function ApplicationEditView({
                         )}
                         data-qa="start-time"
                       />
-                      <Gap size="s" horizontal />
+                      <Gap $size="s" $horizontal />
                       <InputField
                         width="m"
                         placeholder={
@@ -463,7 +463,7 @@ export default React.memo(function ApplicationEditView({
                         data-qa="end-time"
                       />
                     </HorizontalContainer>
-                    <Gap size="m" />
+                    <Gap $size="m" />
                   </div>
                 </>
               )}
@@ -496,7 +496,7 @@ export default React.memo(function ApplicationEditView({
                         'form.preferences.connectedDaycarePreferredStartDate'
                       ] ? (
                         <>
-                          <Gap size="s" horizontal />
+                          <Gap $size="s" $horizontal />
                           <InputWarning
                             text={
                               errors[
@@ -540,7 +540,7 @@ export default React.memo(function ApplicationEditView({
                           />
                           {placementType === type && (
                             <SubRadios>
-                              <FixedSpaceColumn spacing="xs">
+                              <FixedSpaceColumn $spacing="xs">
                                 {options.map((option) => (
                                   <Radio
                                     data-qa={`preschool-service-need-option-${option.nameFi}`}
@@ -569,7 +569,7 @@ export default React.memo(function ApplicationEditView({
                         'form.preferences.serviceNeed.serviceNeedOption'
                       ] ? (
                         <>
-                          <Gap size="s" horizontal />
+                          <Gap $size="s" $horizontal />
                           <InputWarning
                             text={
                               errors[
@@ -714,7 +714,7 @@ export default React.memo(function ApplicationEditView({
               menuEmptyLabel={i18n.common.noResults}
               data-qa="select-preferred-unit"
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             {preferredUnits.length === 0 ? (
               <InputWarning
                 text={i18n.application.preferences.missingPreferredUnits}
@@ -783,7 +783,7 @@ export default React.memo(function ApplicationEditView({
             ))}
           </VerticalContainer>
         </ListGrid>
-        <Gap size="s" />
+        <Gap $size="s" />
         <ListGrid>
           <Label>{i18n.application.preferences.siblingBasisLabel}</Label>
           <Checkbox
@@ -879,7 +879,7 @@ export default React.memo(function ApplicationEditView({
                 <span data-qa="child-address">
                   {child.address && formatAddress(child.address)}
                 </span>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <Checkbox
                   label={i18n.application.person.hasFutureAddress}
                   checked={child.futureAddress !== null}
@@ -934,7 +934,7 @@ export default React.memo(function ApplicationEditView({
         title={i18n.application.guardians.title}
         icon={faUserFriends}
       >
-        <FixedSpaceColumn spacing="L">
+        <FixedSpaceColumn $spacing="L">
           <div>
             <H4>{i18n.application.guardians.appliedGuardian}</H4>
             <ListGrid>
@@ -963,7 +963,7 @@ export default React.memo(function ApplicationEditView({
                     <span data-qa="guardian-address">
                       {guardian.address && formatAddress(guardian.address)}
                     </span>
-                    <Gap size="xs" />
+                    <Gap $size="xs" />
                     <Checkbox
                       label="Väestorekisterissä oleva osoite on muuttunut / muuttumassa"
                       checked={guardian.futureAddress !== null}
@@ -1055,7 +1055,7 @@ export default React.memo(function ApplicationEditView({
 
               {secondGuardian && (
                 <>
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <ListGrid>
                     <Label>{i18n.application.person.phone}</Label>
                     <InputField
@@ -1084,7 +1084,7 @@ export default React.memo(function ApplicationEditView({
                       {selectableOtherGuardianAgreementStatuses.map(
                         (id, index) => (
                           <React.Fragment key={id ?? 'NOT_SET'}>
-                            {index !== 0 ? <Gap size="xxs" /> : null}
+                            {index !== 0 ? <Gap $size="xxs" /> : null}
                             <Radio
                               label={
                                 i18n.application.person
@@ -1124,7 +1124,7 @@ export default React.memo(function ApplicationEditView({
             title={i18n.application.otherPeople.title}
             icon={faUsers}
           >
-            <FixedSpaceColumn spacing="L">
+            <FixedSpaceColumn $spacing="L">
               <div>
                 <H4>{i18n.application.otherPeople.adult}</H4>
                 <Checkbox
@@ -1146,7 +1146,7 @@ export default React.memo(function ApplicationEditView({
                 />
                 {otherPartner && (
                   <>
-                    <Gap size="s" />
+                    <Gap $size="s" />
                     <HorizontalContainer>
                       <WithLabel label={i18n.common.form.firstName}>
                         <InputField
@@ -1159,7 +1159,7 @@ export default React.memo(function ApplicationEditView({
                           }}
                         />
                       </WithLabel>
-                      <Gap size="s" horizontal />
+                      <Gap $size="s" $horizontal />
                       <WithLabel label={i18n.common.form.lastName}>
                         <InputField
                           width="m"
@@ -1171,7 +1171,7 @@ export default React.memo(function ApplicationEditView({
                           }}
                         />
                       </WithLabel>
-                      <Gap size="s" horizontal />
+                      <Gap $size="s" $horizontal />
                       <WithLabel label={i18n.application.person.ssn}>
                         <InputField
                           width="m"
@@ -1214,7 +1214,7 @@ export default React.memo(function ApplicationEditView({
                 {otherChildren.map(
                   ({ firstName, lastName, socialSecurityNumber }, index) => (
                     <React.Fragment key={index}>
-                      <Gap size="s" />
+                      <Gap $size="s" />
                       <HorizontalContainer>
                         <WithLabel label={i18n.common.form.firstName}>
                           <InputField
@@ -1230,7 +1230,7 @@ export default React.memo(function ApplicationEditView({
                             }}
                           />
                         </WithLabel>
-                        <Gap size="s" horizontal />
+                        <Gap $size="s" $horizontal />
                         <WithLabel label={i18n.common.form.lastName}>
                           <InputField
                             width="m"
@@ -1245,7 +1245,7 @@ export default React.memo(function ApplicationEditView({
                             }}
                           />
                         </WithLabel>
-                        <Gap size="s" horizontal />
+                        <Gap $size="s" $horizontal />
                         <WithLabel label={i18n.application.person.ssn}>
                           <InputField
                             width="m"
@@ -1268,7 +1268,7 @@ export default React.memo(function ApplicationEditView({
                             )}
                           />
                         </WithLabel>
-                        <Gap size="s" horizontal />
+                        <Gap $size="s" $horizontal />
                         <Button
                           appearance="inline"
                           icon={faTimes}
@@ -1400,7 +1400,7 @@ function FutureAddressInputs({
           setApplication(set(['form', path, 'futureAddress', 'street'], value))
         }}
       />
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <HorizontalContainer>
         <InputField
           width="s"
@@ -1412,7 +1412,7 @@ function FutureAddressInputs({
             )
           }}
         />
-        <Gap size="xs" horizontal />
+        <Gap $size="xs" $horizontal />
         <InputField
           width="m"
           placeholder={i18n.common.form.postOffice}

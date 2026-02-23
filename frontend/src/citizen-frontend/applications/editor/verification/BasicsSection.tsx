@@ -40,9 +40,9 @@ export default React.memo(function BasicsSection({
       </H2>
 
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{t.applications.editor.verification.basics.created}</Label>
         <span>{created?.format() ?? ''}</span>

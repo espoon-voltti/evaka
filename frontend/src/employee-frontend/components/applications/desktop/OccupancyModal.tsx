@@ -49,10 +49,10 @@ export default React.memo(function OccupancyModal({
       <StyledSubtitle>
         {i18n.applications.placementDesktop.occupancies}
       </StyledSubtitle>
-      <FixedSpaceFlexWrap verticalSpacing="xs" horizontalSpacing="m">
+      <FixedSpaceFlexWrap $verticalSpacing="xs" $horizontalSpacing="m">
         {(['confirmed', 'planned', 'draft'] as const).map((type) => (
-          <FixedSpaceRow key={type} alignItems="center" spacing="xs">
-            <LegendSquare color={occupancyGraphColors[type]} />
+          <FixedSpaceRow key={type} $alignItems="center" $spacing="xs">
+            <LegendSquare $color={occupancyGraphColors[type]} />
             <div>{i18n.applications.placementDesktop.occupancyTypes[type]}</div>
           </FixedSpaceRow>
         ))}
@@ -91,9 +91,9 @@ const StyledSubtitle = styled(H2)`
   text-align: center;
 `
 
-const LegendSquare = styled.div<{ color: string }>`
+const LegendSquare = styled.div<{ $color: string }>`
   width: 16px;
   height: 16px;
-  background-color: ${(p) => p.color};
+  background-color: ${(p) => p.$color};
   display: inline-block;
 `

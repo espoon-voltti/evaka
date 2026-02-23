@@ -108,7 +108,7 @@ export default React.memo(function SecondGuardianSubSection({
               {formData.otherGuardianAgreementStatus === 'NOT_AGREED' && (
                 <>
                   <Gap />
-                  <AdaptiveFlex breakpoint="1060px">
+                  <AdaptiveFlex $breakpoint="1060px">
                     <FixedSpaceColumn>
                       <Label htmlFor="other-guardian-phone">
                         {t.applications.editor.contactInfo.secondGuardianPhone}

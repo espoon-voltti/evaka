@@ -43,22 +43,22 @@ function ToolbarAccordion({
   return (
     <section data-qa={dataQa} data-status={open ? 'open' : 'closed'}>
       <AccordionCollapseWrapper>
-        <TitleRow showBorder={showBorder}>
+        <TitleRow $showBorder={showBorder}>
           <Title>
-            <H4 noMargin data-qa="toolbar-accordion-title">
+            <H4 $noMargin data-qa="toolbar-accordion-title">
               {title}
             </H4>
-            <Gap size="s" horizontal />
-            <H4 noMargin data-qa="toolbar-accordion-subtitle">
+            <Gap $size="s" $horizontal />
+            <H4 $noMargin data-qa="toolbar-accordion-subtitle">
               {subtitle}
             </H4>
           </Title>
-          <Gap size="m" horizontal />
+          <Gap $size="m" $horizontal />
           <Toolbar>
             {toolbar ? (
               <>
                 {toolbar}
-                <Gap size="s" horizontal />
+                <Gap $size="s" $horizontal />
               </>
             ) : null}
             <IconOnlyButton
@@ -72,7 +72,7 @@ function ToolbarAccordion({
         <div data-qa="content">
           {open ? (
             <>
-              <Gap size="m" />
+              <Gap $size="m" />
               {children}
             </>
           ) : null}
@@ -98,9 +98,9 @@ export function RestrictedToolbar({
   return (
     <TitleRow>
       <Title>
-        <H4 noMargin>{title}</H4>
-        <Gap size="s" horizontal />
-        <H4 noMargin>{subtitle}</H4>
+        <H4 $noMargin>{title}</H4>
+        <Gap $size="s" $horizontal />
+        <H4 $noMargin>{subtitle}</H4>
       </Title>
       <StatusContainer>
         <StatusLabel status={statusLabel} />
@@ -118,7 +118,7 @@ const AccordionCollapseWrapper = styled.div`
 `
 
 interface GaplessColumnsProps {
-  showBorder?: boolean
+  $showBorder?: boolean
 }
 
 const TitleRow = styled.div<GaplessColumnsProps>`
@@ -128,8 +128,8 @@ const TitleRow = styled.div<GaplessColumnsProps>`
   justify-content: space-between;
   align-items: center;
   border: ${(p) =>
-    p.showBorder ? 'border-bottom: 1px solid $grey-light' : 'none'};
-  padding-bottom: ${(p) => (p.showBorder ? '11px' : '0')};
+    p.$showBorder ? 'border-bottom: 1px solid $grey-light' : 'none'};
+  padding-bottom: ${(p) => (p.$showBorder ? '11px' : '0')};
 `
 
 const Title = styled.div`

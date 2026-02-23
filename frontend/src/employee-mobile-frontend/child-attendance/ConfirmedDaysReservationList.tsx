@@ -36,9 +36,9 @@ export default React.memo(function ConfirmedDaysReservationList({
   return (
     <>
       <ContentArea
-        opaque={false}
-        paddingVertical="zero"
-        paddingHorizontal="zero"
+        $opaque={false}
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
       >
         <DayList
           reservationStatistics={groupReservations}

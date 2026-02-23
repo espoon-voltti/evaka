@@ -26,9 +26,9 @@ export default React.memo(function ServiceNeedConnectedDaycare({
 
   return (
     <ListGrid
-      labelWidth={ApplicationDataGridLabelWidth}
-      rowGap="s"
-      columnGap="L"
+      $labelWidth={ApplicationDataGridLabelWidth}
+      $rowGap="s"
+      $columnGap="L"
     >
       <Label>{tLocal.connectedDaycare.label}</Label>
       <span>

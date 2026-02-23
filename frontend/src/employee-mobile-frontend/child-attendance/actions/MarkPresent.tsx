@@ -93,9 +93,9 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <div>
         {childList.length === 1 ? (
@@ -112,10 +112,10 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
         )}
       </div>
       <ContentArea
-        shadow
-        opaque={true}
-        paddingHorizontal="s"
-        paddingVertical="m"
+        $shadow
+        $opaque={true}
+        $paddingHorizontal="s"
+        $paddingVertical="m"
       >
         <TimeWrapper>
           <TitleNoMargin size={2}>
@@ -125,9 +125,9 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
           </TitleNoMargin>
           <TimeInput onChange={setTime} value={time} data-qa="set-time" />
         </TimeWrapper>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Actions>
-          <FixedSpaceRow fullWidth>
+          <FixedSpaceRow $fullWidth>
             <LegacyButton
               text={i18n.common.cancel}
               onClick={() => history.go(-1)}
@@ -171,7 +171,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
           </>
         )}
       </ContentArea>
-      <Gap size="s" />
+      <Gap $size="s" />
       <FixedSpaceColumn>
         {childList.map(({ child }) => (
           <ChildNotesSummary child={child} key={child.id} />

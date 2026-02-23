@@ -34,7 +34,7 @@ export default React.memo(function SettingsPageWrapper() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{i18n.titles.settings}</H1>
         {renderResult(settings, (settings) => (
           <SettingsPage initialSettings={settings} />
@@ -81,7 +81,7 @@ const SettingsPage = React.memo(function SettingsPage({
           ))}
         </Tbody>
       </Table>
-      <Gap size="s" />
+      <Gap $size="s" />
       <MutateButton
         primary
         text={i18n.common.save}

@@ -21,7 +21,7 @@ interface Props {
 export default React.memo(function AbsenceDay({ type, staffCreated }: Props) {
   const { i18n } = useTranslation()
   return (
-    <FixedSpaceRow spacing="xs" alignItems="center" data-qa="absence">
+    <FixedSpaceRow $spacing="xs" $alignItems="center" data-qa="absence">
       <AbsenceTooltip
         tooltip={
           staffCreated && i18n.unit.attendanceReservations.createdByEmployee

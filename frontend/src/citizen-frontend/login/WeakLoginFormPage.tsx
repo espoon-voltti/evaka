@@ -49,17 +49,17 @@ export default React.memo(function WeakLoginFormPage() {
   return (
     <Main>
       <TabletAndDesktop>
-        <Gap size="L" />
+        <Gap $size="L" />
       </TabletAndDesktop>
       <MobileOnly>
-        <Gap size="xs" />
+        <Gap $size="xs" />
       </MobileOnly>
       <Container>
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
-          <ContentArea opaque>
-            <H1 noMargin>{i18n.loginPage.login.title}</H1>
-            <Gap size="m" />
+          <ContentArea $opaque>
+            <H1 $noMargin>{i18n.loginPage.login.title}</H1>
+            <Gap $size="m" />
             <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
           </ContentArea>
         </FixedSpaceColumn>
@@ -107,9 +107,9 @@ const WeakLoginForm = React.memo(function WeakLogin({
       onSubmit={(e) => e.preventDefault()}
       data-qa="weak-login-form"
     >
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn $spacing="L">
         {rateLimitError && <AlertBox message={t.rateLimitError} />}
-        <FixedSpaceColumn spacing="zero">
+        <FixedSpaceColumn $spacing="zero">
           <Label htmlFor="username">{t.username}</Label>
           <InputFieldF
             id="username"
@@ -121,7 +121,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
             hideErrorsBeforeTouched={true}
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="zero">
+        <FixedSpaceColumn $spacing="zero">
           <Label htmlFor="password">{t.password}</Label>
           <PasswordInputF
             id="password"

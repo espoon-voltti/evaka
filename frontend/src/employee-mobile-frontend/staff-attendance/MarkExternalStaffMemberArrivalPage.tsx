@@ -71,9 +71,9 @@ export default function MarkExternalStaffMemberArrivalPage({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <div>
         <BackButtonInline
@@ -83,12 +83,12 @@ export default function MarkExternalStaffMemberArrivalPage({
         />
       </div>
       <ContentArea
-        shadow
-        opaque={true}
-        paddingHorizontal="s"
-        paddingVertical="m"
+        $shadow
+        $opaque={true}
+        $paddingHorizontal="s"
+        $paddingVertical="m"
       >
-        <H1 centered>{i18n.attendances.staff.markExternalPersonTitle}</H1>
+        <H1 $centered>{i18n.attendances.staff.markExternalPersonTitle}</H1>
         <HorizontalLine />
         {renderResult(unitInfoResponse, (unit) => (
           <>
@@ -134,11 +134,11 @@ export default function MarkExternalStaffMemberArrivalPage({
                 />
               </ListGrid>
             ) : (
-              <H4 centered={true}>{i18n.attendances.notOperationalDate}</H4>
+              <H4 $centered={true}>{i18n.attendances.notOperationalDate}</H4>
             )}
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <Actions>
-              <FixedSpaceRow fullWidth>
+              <FixedSpaceRow $fullWidth>
                 <LegacyButton
                   text={i18n.common.cancel}
                   onClick={() => history.go(-1)}

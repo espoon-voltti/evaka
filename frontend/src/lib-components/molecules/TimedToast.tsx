@@ -72,7 +72,7 @@ export default React.memo(function TimedToast({
       onClick={onClose}
     >
       <ToastContainer>
-        <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow $alignItems="center">
           <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
           <ToastContent
             aria-label={ariaLabel || undefined}

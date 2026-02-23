@@ -7,14 +7,14 @@ import styled from 'styled-components'
 import { fontWeights } from 'lib-components/typography'
 
 interface DataListProps {
-  labelWidth?: string
-  marginBottom?: string
+  $labelWidth?: string
+  $marginBottom?: string
 }
 
 export const DataList = styled.div<DataListProps>`
   display: flex;
   flex-direction: column;
-  margin-bottom: ${(p) => p.marginBottom || '0'};
+  margin-bottom: ${(p) => p.$marginBottom || '0'};
 
   > div {
     display: flex;
@@ -23,7 +23,7 @@ export const DataList = styled.div<DataListProps>`
 
     label {
       font-weight: ${fontWeights.semibold};
-      width: ${(p) => p.labelWidth || '250px'};
+      width: ${(p) => p.$labelWidth || '250px'};
     }
   }
 `

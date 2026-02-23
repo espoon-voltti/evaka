@@ -73,7 +73,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
           navigate(`/units/${unitId}/calendar/?group=${groupId}`)
         }}
       />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(unitInformation, ({ daycare, groups }) => (
           <>
             <H1>{daycare.name}</H1>

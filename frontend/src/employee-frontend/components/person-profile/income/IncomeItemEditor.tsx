@@ -283,7 +283,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
     <>
       <div data-qa="income-date-range">
         <Label>{i18n.personProfile.income.details.dateRange}</Label>
-        <Gap size="m" />
+        <Gap $size="m" />
         <DateRangePicker
           start={editedIncome.validFrom}
           end={editedIncome.validTo || null}
@@ -293,11 +293,11 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           required
         />
       </div>
-      <Gap size="L" />
+      <Gap $size="L" />
 
       <Label>{i18n.personProfile.income.details.effect}</Label>
-      <Gap size="m" />
-      <FixedSpaceColumn alignItems="flex-start" data-qa="income-effect">
+      <Gap $size="m" />
+      <FixedSpaceColumn $alignItems="flex-start" data-qa="income-effect">
         {incomeEffects.map((effect) => (
           <Radio
             key={effect}
@@ -308,10 +308,10 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           />
         ))}
       </FixedSpaceColumn>
-      <Gap size="L" />
+      <Gap $size="L" />
 
       <Label>{i18n.personProfile.income.details.miscTitle}</Label>
-      <Gap size="m" />
+      <Gap $size="m" />
       <FixedSpaceColumn>
         <Checkbox
           label={i18n.personProfile.income.details.echa}
@@ -334,10 +334,10 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           }
         />
       </FixedSpaceColumn>
-      <Gap size="L" />
+      <Gap $size="L" />
       <div data-qa="income-notes">
         <Label>{i18n.personProfile.income.details.notes}</Label>
-        <Gap size="m" />
+        <Gap $size="m" />
         <InputField
           width="L"
           value={editedIncome.notes}
@@ -348,8 +348,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
       </div>
       {isUpdate(props) ? (
         <>
-          <Gap size="L" />
-          <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+          <Gap $size="L" />
+          <ListGrid $labelWidth="fit-content(40%)" $rowGap="xs" $columnGap="L">
             <Label>{i18n.personProfile.income.details.created}</Label>
             <span>{props.baseIncome.createdAt.toLocalDate().format()}</span>
             <Label>{i18n.personProfile.income.details.handler}</Label>
@@ -398,7 +398,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
       />
       {retroactive && (
         <>
-          <Gap size="m" />
+          <Gap $size="m" />
           <RetroactiveConfirmation
             confirmed={confirmedRetroactive}
             setConfirmed={setConfirmedRetroactive}

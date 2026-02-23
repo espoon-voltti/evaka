@@ -65,7 +65,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{i18n.personalMobileDevices.title}</H1>
         <P>{i18n.personalMobileDevices.infoParagraph1}</P>
         <P>{i18n.personalMobileDevices.infoParagraph2}</P>
@@ -75,15 +75,15 @@ export default React.memo(function PersonalMobileDevicesPage() {
               <Thead>
                 <Tr>
                   <Th>{i18n.personalMobileDevices.name}</Th>
-                  <Th align="right" />
+                  <Th $align="right" />
                 </Tr>
               </Thead>
               <Tbody>
                 {devices.map(({ id, name }) => (
                   <Tr key={id}>
                     <Td>{name}</Td>
-                    <Td align="right">
-                      <FixedSpaceRow justifyContent="flex-end" spacing="L">
+                    <Td $align="right">
+                      <FixedSpaceRow $justifyContent="flex-end" $spacing="L">
                         <IconOnlyButton
                           icon={faPen}
                           onClick={() =>
@@ -108,7 +108,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
                 ))}
               </Tbody>
             </Table>
-            <Gap size="m" />
+            <Gap $size="m" />
             <AddButton
               onClick={pairNewDevice}
               text={i18n.personalMobileDevices.addDevice}
@@ -156,7 +156,7 @@ const EditNameModal = React.memo(function EditNameModal({
         label: i18n.common.save
       }}
     >
-      <FixedSpaceColumn alignItems="center">
+      <FixedSpaceColumn $alignItems="center">
         <InputField
           value={newName}
           onChange={setNewName}

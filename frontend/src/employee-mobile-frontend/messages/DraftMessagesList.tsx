@@ -72,21 +72,21 @@ const DraftMessagePreview = React.memo(function DraftMessagePreview({
   const { i18n } = useTranslation()
   return (
     <Container
-      isRead={true}
-      active={false}
+      $isRead={true}
+      $active={false}
       data-qa="draft-message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>
-        <Header isRead={true}>
+        <Header $isRead={true}>
           <Truncated data-qa="message-recipients">
             {message.recipientNames.join(', ')}
           </Truncated>
-          <MessageTypeChip color={colors.accents.a5orangeLight}>
+          <MessageTypeChip $color={colors.accents.a5orangeLight}>
             {i18n.messages.draft}
           </MessageTypeChip>
         </Header>
-        <TitleAndDate isRead={true}>
+        <TitleAndDate $isRead={true}>
           <Truncated data-qa="message-preview-title">{message.title}</Truncated>
         </TitleAndDate>
         <Truncated>

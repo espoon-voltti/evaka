@@ -240,7 +240,7 @@ export default React.memo(function StaffAttendanceTable({
             <BottomSumTd>{i18n.unit.staffAttendance.personCount}</BottomSumTd>
             {operationalDays.map(({ date }) => (
               <BottomSumTd
-                centered
+                $centered
                 key={date.toString()}
                 data-qa="person-count-sum"
               >
@@ -502,9 +502,9 @@ const BottomSumTr = styled.tr`
   font-weight: ${fontWeights.semibold};
 `
 
-const BottomSumTd = styled.td<{ centered?: boolean }>`
+const BottomSumTd = styled.td<{ $centered?: boolean }>`
   padding: ${defaultMargins.xs} ${defaultMargins.s};
-  text-align: ${(p) => (p.centered ? 'center' : 'left')};
+  text-align: ${(p) => (p.$centered ? 'center' : 'left')};
 `
 
 interface AttendanceRowAttendance {
@@ -611,8 +611,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
 
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
-      <NameTd partialRow={false} rowIndex={rowIndex}>
-        <FixedSpaceRow spacing="xs">
+      <NameTd $partialRow={false} $rowIndex={rowIndex}>
+        <FixedSpaceRow $spacing="xs">
           <Tooltip
             tooltip={
               isPositiveOccupancyCoefficient
@@ -665,8 +665,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
             <DayTd
               key={date.formatIso()}
               className={classNames({ 'is-today': date.isToday() })}
-              partialRow={false}
-              rowIndex={rowIndex}
+              $partialRow={false}
+              $rowIndex={rowIndex}
               data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
             >
               <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
@@ -731,7 +731,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   )}
                 </AttendanceTimes>
                 {allowDetailsModal && (
-                  <DetailsToggle showAlways={hasHiddenAttendances}>
+                  <DetailsToggle $showAlways={hasHiddenAttendances}>
                     <IconOnlyButton
                       icon={faCircleEllipsis}
                       onClick={() => openDetails(date)}
@@ -1081,12 +1081,12 @@ const validateGroupId = (
   return [item.groupId, undefined]
 }
 
-const DetailsToggle = styled.div<{ showAlways: boolean }>`
+const DetailsToggle = styled.div<{ $showAlways: boolean }>`
   display: flex;
   align-items: center;
   padding: ${defaultMargins.xxs};
   margin-left: -${defaultMargins.s};
-  visibility: ${({ showAlways }) => (showAlways ? 'visible' : 'hidden')};
+  visibility: ${({ $showAlways }) => ($showAlways ? 'visible' : 'hidden')};
   position: absolute;
   bottom: 0;
   right: 0;

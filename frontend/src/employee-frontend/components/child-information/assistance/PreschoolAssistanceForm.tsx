@@ -202,7 +202,7 @@ export const PreschoolAssistanceForm = React.memo(
           />
         </Td>
         <Td>
-          <FixedSpaceColumn spacing="s">
+          <FixedSpaceColumn $spacing="s">
             <SelectF
               data-qa="level"
               bind={level}
@@ -225,7 +225,7 @@ export const PreschoolAssistanceForm = React.memo(
           ) : undefined}
         </Td>
         <Td>
-          <FixedSpaceRow justifyContent="flex-end" spacing="m">
+          <FixedSpaceRow $justifyContent="flex-end" $spacing="m">
             <Button
               appearance="inline"
               onClick={props.onClose}

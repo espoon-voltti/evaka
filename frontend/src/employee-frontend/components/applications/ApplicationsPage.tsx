@@ -120,19 +120,19 @@ export default React.memo(function ApplicationsPage() {
   )
 
   return (
-    <Container wide data-qa="applications-page">
-      <ContentArea opaque>
-        <Gap size="xs" />
+    <Container $wide data-qa="applications-page">
+      <ContentArea $opaque>
+        <Gap $size="xs" />
         <ApplicationFilters />
       </ContentArea>
 
-      <Gap size="XL" />
+      <Gap $size="XL" />
 
       {searchFilters &&
         featureFlags.placementDesktop &&
         searchFilters?.status === 'WAITING_PLACEMENT' && (
-          <ContentArea opaque>
-            <FixedSpaceRow alignItems="center">
+          <ContentArea $opaque>
+            <FixedSpaceRow $alignItems="center">
               <Label>{i18n.applications.show}:</Label>
               <Radio
                 checked={placementMode === 'list'}
@@ -157,13 +157,13 @@ export default React.memo(function ApplicationsPage() {
             searchFilters?.status === 'WAITING_PLACEMENT'
           ) {
             return (
-              <ContentArea opaque={false} paddingHorizontal="zero">
+              <ContentArea $opaque={false} $paddingHorizontal="zero">
                 <PlacementDesktop applicationSummaries={applications} />
               </ContentArea>
             )
           } else {
             return (
-              <ContentArea opaque paddingVertical="zero">
+              <ContentArea $opaque $paddingVertical="zero">
                 <ApplicationsList
                   applicationsResult={applications}
                   sortBy={sortBy}

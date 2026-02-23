@@ -121,7 +121,7 @@ const SurveyStatusChip = React.memo(function SurveyStatusChip({
     ENDED: theme.colors.grayscale.g15
   }
   return (
-    <StaticChip fitContent color={statusColor[status]}>
+    <StaticChip $fitContent $color={statusColor[status]}>
       {t.surveyStatus[status]}
     </StaticChip>
   )
@@ -167,11 +167,11 @@ const ReservationCalendarSection = React.memo(
         />
         {calendarRange.end.isBefore(maxCalendarRange.end) && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
             <FixedSpaceRow
-              fullWidth
-              alignItems="center"
-              justifyContent="center"
+              $fullWidth
+              $alignItems="center"
+              $justifyContent="center"
             >
               <ExpandHorizonButton
                 onClick={expandCalendarAction}
@@ -179,7 +179,7 @@ const ReservationCalendarSection = React.memo(
                 data-qa="expand-horizon-button"
               />
             </FixedSpaceRow>
-            <Gap size="m" />
+            <Gap $size="m" />
           </>
         )}
       </TimesCalendarContainer>
@@ -339,10 +339,10 @@ export default React.memo(function DiscussionReservationSurveyView({
       )}
       <Container>
         <ReturnButton label={i18n.common.goBack} />
-        <ContentArea opaque>
-          <FixedSpaceRow alignItems="center" justifyContent="space-between">
+        <ContentArea $opaque>
+          <FixedSpaceRow $alignItems="center" $justifyContent="space-between">
             <H2 data-qa="survey-title">{eventData.title}</H2>
-            <FixedSpaceRow alignItems="center" spacing="L">
+            <FixedSpaceRow $alignItems="center" $spacing="L">
               <Button
                 appearance="inline"
                 icon={faTrash}
@@ -358,7 +358,7 @@ export default React.memo(function DiscussionReservationSurveyView({
             <Label>{t.discussionReservation.surveyModifiedAt}</Label>
             <p>{eventData.contentModifiedAt.format()}</p>
           </FormFieldGroup>
-          <FixedSpaceRow justifyContent="space-between" alignItems="center">
+          <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
             <H3>{t.discussionReservation.surveyBasicsTitle}</H3>
             <Button
               appearance="inline"
@@ -413,7 +413,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
                   <FormSectionGroup>
                     <BorderedBox>
-                      <H3 noMargin data-qa="survey-reservation-calendar-title">
+                      <H3 $noMargin data-qa="survey-reservation-calendar-title">
                         {t.discussionReservation.surveyDiscussionTimesTitle}
                       </H3>
                     </BorderedBox>
@@ -446,7 +446,7 @@ const ExpandHorizonButton = styled(LegacyButton)`
 const WidthLimiter = styled.div`
   max-width: 400px;
 `
-const FormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
-const FormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
+const FormFieldGroup = styled(FixedSpaceColumn).attrs({ $spacing: 'S' })``
+const FormSectionGroup = styled(FixedSpaceColumn).attrs({ $spacing: 'L' })`
   margin-bottom: 60px;
 `

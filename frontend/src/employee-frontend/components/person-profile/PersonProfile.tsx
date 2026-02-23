@@ -82,11 +82,11 @@ function section({
     }
     return (
       <CollapsibleContentArea
-        title={<H2 noMargin>{title(i18n)}</H2>}
+        title={<H2 $noMargin>{title(i18n)}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
+        $opaque
+        $paddingVertical="L"
         data-qa={dataQa}
       >
         <Component id={id} />
@@ -270,7 +270,7 @@ const PersonProfile = React.memo(function PersonProfile({
   return (
     <Container>
       <div className="person-profile-wrapper" data-person-id={id}>
-        <ContentArea opaque>
+        <ContentArea $opaque>
           <HeaderRow>
             <Title size={1} noMargin>
               {i18n.titles.personProfile}
@@ -298,7 +298,7 @@ const PersonProfile = React.memo(function PersonProfile({
                     )}
                   </InfoLabelContainer>
                 )}
-              <FixedSpaceRow spacing="L">
+              <FixedSpaceRow $spacing="L">
                 {person.isSuccess &&
                   getAge(person.value.dateOfBirth) >= 10 &&
                   getAge(person.value.dateOfBirth) < 18 && (
@@ -323,10 +323,10 @@ const PersonProfile = React.memo(function PersonProfile({
             </FixedSpaceColumn>
           </HeaderRow>
         </ContentArea>
-        <Gap size="s" />
+        <Gap $size="s" />
         <PersonFridgeHead />
-        <Gap size="s" />
-        <FixedSpaceColumn spacing="s">
+        <Gap $size="s" />
+        <FixedSpaceColumn $spacing="s">
           {layout.map(({ component, open }) => {
             const Component = components[component]
             return <Component key={component} id={id} open={open} />

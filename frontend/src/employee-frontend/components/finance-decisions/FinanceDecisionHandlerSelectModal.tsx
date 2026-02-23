@@ -106,7 +106,7 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
           )
         }
       })}
-      <Gap size="s" />
+      <Gap $size="s" />
       <CheckedRowsInfo>
         {i18n.financeDecisions.handlerSelectModal.decisionCount(
           props.checkedIds.length
@@ -114,7 +114,7 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
       </CheckedRowsInfo>
       {error ? (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <ErrorMessage>{error}</ErrorMessage>
         </>
       ) : null}

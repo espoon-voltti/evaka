@@ -126,7 +126,7 @@ export default React.memo(function ChildDayAttendance({
             data-qa={`attendance-${date.formatIso()}-${attendanceIndex}`}
           >
             {requiresBackupCare ? (
-              <TimeCell data-qa="backup-care-required-warning" warning>
+              <TimeCell data-qa="backup-care-required-warning" $warning>
                 {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
                 <FontAwesomeIcon
                   icon={faExclamationTriangle}
@@ -137,7 +137,7 @@ export default React.memo(function ChildDayAttendance({
               <>
                 <AttendanceTime
                   data-qa="attendance-start"
-                  warning={
+                  $warning={
                     attendance
                       ? !isWithinExpectedTimes(attendance.interval.start)
                       : false
@@ -147,7 +147,7 @@ export default React.memo(function ChildDayAttendance({
                 </AttendanceTime>
                 <AttendanceTime
                   data-qa="attendance-end"
-                  warning={
+                  $warning={
                     attendance?.interval?.end
                       ? !isWithinExpectedTimes(attendance.interval.end)
                       : false

@@ -178,8 +178,8 @@ export default React.memo(function Groups({
         data-status={allGroupsAreOpen ? 'open' : 'closed'}
       >
         <TitleContainer onClick={toggleAllGroups}>
-          <H2 fitted>{i18n.unit.groups.title}</H2>
-          <Gap size="XL" horizontal />
+          <H2 $fitted>{i18n.unit.groups.title}</H2>
+          <Gap $size="XL" $horizontal />
           <IconOnlyButton
             icon={allGroupsAreOpen ? faAngleUp : faAngleDown}
             size="L"
@@ -188,7 +188,7 @@ export default React.memo(function Groups({
             aria-label={allGroupsAreOpen ? i18n.common.close : i18n.common.open}
           />
         </TitleContainer>
-        <FixedSpaceRow spacing="L" alignItems="center">
+        <FixedSpaceRow $spacing="L" $alignItems="center">
           {canSeeFamilyContactsReport && (
             <InlineInternalLinkButton
               to={`/units/${unit.id}/family-contacts`}
@@ -206,8 +206,8 @@ export default React.memo(function Groups({
           ) : null}
         </FixedSpaceRow>
       </TitleBar>
-      <Gap size="s" />
-      <FixedSpaceRow alignItems="center">
+      <Gap $size="s" />
+      <FixedSpaceRow $alignItems="center">
         <Label>{i18n.unit.filters.title}</Label>
         <UnitDataFilters
           canEdit={requireRole(
@@ -222,7 +222,7 @@ export default React.memo(function Groups({
           setFilters={setFilters}
         />
       </FixedSpaceRow>
-      <Gap size="s" />
+      <Gap $size="s" />
       {uiMode === 'create-new-daycare-group' && <GroupModal unitId={unit.id} />}
       {uiMode === 'group-transfer' && transferredPlacement && (
         <>

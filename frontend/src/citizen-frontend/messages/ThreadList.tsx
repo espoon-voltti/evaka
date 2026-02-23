@@ -84,16 +84,16 @@ export default React.memo(function ThreadList({
         </MobileOnly>
       )}
       <Container className={selectedThread ? 'desktop-only' : undefined}>
-        <Gap size="s" sizeOnMobile="m" />
+        <Gap $size="s" $sizeOnMobile="m" />
         <HeaderContainer>
-          <H1 noMargin ref={mainHeading} tabIndex={-1}>
+          <H1 $noMargin ref={mainHeading} tabIndex={-1}>
             {t.messages.inboxTitle}
           </H1>
         </HeaderContainer>
-        <Gap size="xs" sizeOnMobile="m" />
+        <Gap $size="xs" $sizeOnMobile="m" />
         <TabletAndDesktop>
           <DottedLine />
-          <Gap size="s" />
+          <Gap $size="s" />
           <HeaderContainer>
             <LegacyButton
               text={t.messages.messageEditor.newMessage}
@@ -104,7 +104,7 @@ export default React.memo(function ThreadList({
               disabled={!newMessageButtonEnabled}
             />
           </HeaderContainer>
-          <Gap size="s" />
+          <Gap $size="s" />
         </TabletAndDesktop>
         <MobileOnly>
           <FloatingButton
@@ -113,7 +113,7 @@ export default React.memo(function ThreadList({
             data-qa="new-message-btn-mobile"
             disabled={!newMessageButtonEnabled}
           >
-            <FixedSpaceRow spacing="xs" alignItems="center">
+            <FixedSpaceRow $spacing="xs" $alignItems="center">
               <FontAwesomeIcon icon={faPlus} />
               <div>{t.messages.messageEditor.newMessage}</div>
             </FixedSpaceRow>
@@ -147,9 +147,9 @@ export default React.memo(function ThreadList({
             <>
               <SolidLine />
               <ThreadListContainer>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <NoMessagesInfo>{t.messages.noMessagesInfo}</NoMessagesInfo>
-                <Gap size="XXL" />
+                <Gap $size="XXL" />
               </ThreadListContainer>
             </>
           )

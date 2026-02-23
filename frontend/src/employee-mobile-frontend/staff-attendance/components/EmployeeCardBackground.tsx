@@ -43,8 +43,8 @@ const Zindex = styled.div`
   margin-right: -8%;
 `
 
-const EmployeeBackground = styled.div<{ present: boolean }>`
-  background: ${(p) => getBackgroundColorByStatus(p.present)};
+const EmployeeBackground = styled.div<{ $present: boolean }>`
+  background: ${(p) => getBackgroundColorByStatus(p.$present)};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -60,9 +60,9 @@ export function EmployeeCardBackground({
   const { i18n } = useTranslation()
   return (
     <Zindex>
-      <EmployeeBackground present={present}>
+      <EmployeeBackground $present={present}>
         <Center>
-          <IconBox present={present}>
+          <IconBox $present={present}>
             <RoundIcon
               content={farUser}
               color={getColorByStatus(present)}
@@ -70,15 +70,15 @@ export function EmployeeCardBackground({
             />
           </IconBox>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
-          <H2 noMargin centered data-qa="employee-name">
+          <H2 $noMargin $centered data-qa="employee-name">
             {name}
           </H2>
 
           <EmployeeStatus>
             <StaticChip
-              color={getColorByStatus(present)}
+              $color={getColorByStatus(present)}
               data-qa="employee-status"
             >
               {present

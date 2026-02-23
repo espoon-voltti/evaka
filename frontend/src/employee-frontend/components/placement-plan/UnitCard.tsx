@@ -62,7 +62,7 @@ function OccupancyNumbers({
   return (
     <>
       <Bold>{title}</Bold>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <Numbers data-qa={dataQa}>
         <div>
           <InformationText>
@@ -81,12 +81,12 @@ function OccupancyNumbers({
   )
 }
 
-const Card = styled.div<{ selected: boolean }>`
+const Card = styled.div<{ $selected: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  border-color: ${(p) => (p.selected ? colors.main.m2 : colors.grayscale.g35)};
+  border-color: ${(p) => (p.$selected ? colors.main.m2 : colors.grayscale.g35)};
   border-width: 2px;
   border-style: solid;
   border-radius: 4px;
@@ -191,7 +191,7 @@ export default React.memo(function UnitCard({
     <Card
       data-qa={`placement-item-${unitId}`}
       data-isloading={isLoading(occupancies)}
-      selected={isSelectedUnit}
+      $selected={isSelectedUnit}
     >
       {isRemovable && (
         <RemoveBtn role="button">
@@ -204,14 +204,14 @@ export default React.memo(function UnitCard({
         rel="noreferrer"
       >
         <Bold>
-          <Title primary>
+          <Title $primary>
             {!!preferenceNumber && `${preferenceNumber}. `}
             {unitName}
           </Title>{' '}
           <FontAwesomeIcon icon={faLink} />
         </Bold>
       </a>
-      <Gap size="m" />
+      <Gap $size="m" />
       <OccupancyContainer>
         {renderResult(occupancies, (occupancies) => {
           if (!occupancies.max3Months || !occupancies.max6Months) {
@@ -225,7 +225,7 @@ export default React.memo(function UnitCard({
                 num6={occupancies.max6Months.percentage}
                 data-qa="current-occupancies"
               />
-              <Gap size="m" />
+              <Gap $size="m" />
               <OccupancyNumbers
                 title={i18n.placementDraft.card.titleSpeculated}
                 num3={occupancies.max3MonthsSpeculated?.percentage}
@@ -236,13 +236,13 @@ export default React.memo(function UnitCard({
           )
         })}
       </OccupancyContainer>
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {displayGhostUnitWarning && (
         <>
           <WarningLabel
             text={i18n.childInformation.placements.warning.ghostUnit}
           />
-          <Gap size="s" />
+          <Gap $size="s" />
         </>
       )}
       <SelectionChip

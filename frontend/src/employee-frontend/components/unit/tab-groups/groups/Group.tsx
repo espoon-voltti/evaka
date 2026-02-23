@@ -287,10 +287,10 @@ export default React.memo(function Group({
       )}
       <TitleBar>
         <TitleContainer onClick={toggleOpen}>
-          <H3 fitted data-qa="group-name">
+          <H3 $fitted data-qa="group-name">
             {capitalizeFirstLetter(group.name)}
           </H3>
-          <Gap size="L" horizontal />
+          <Gap $size="L" $horizontal />
           <IconOnlyButton
             icon={open ? faAngleUp : faAngleDown}
             size="L"
@@ -300,7 +300,7 @@ export default React.memo(function Group({
           />
           {!open ? (
             <>
-              <Gap size="L" horizontal />
+              <Gap $size="L" $horizontal />
               <TitleSummary
                 items={[
                   {
@@ -323,7 +323,7 @@ export default React.memo(function Group({
             </>
           ) : null}
         </TitleContainer>
-        <Gap size="L" horizontal />
+        <Gap $size="L" $horizontal />
         <Toolbar>
           {permittedActions.includes('UPDATE') && (
             <>
@@ -334,7 +334,7 @@ export default React.memo(function Group({
                 onClick={() => toggleUiMode(`update-group-${group.id}`)}
                 data-qa="btn-update-group"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
             </>
           )}
           {permittedActions.includes('DELETE') && (
@@ -348,7 +348,7 @@ export default React.memo(function Group({
                 disabled={sortedPlacements.length > 0 || !group.deletable}
                 data-qa="btn-remove-group"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
             </>
           )}
           {permittedActions.includes('READ_ABSENCES') && (
@@ -359,7 +359,7 @@ export default React.memo(function Group({
                 text={i18n.unit.groups.diaryButton}
                 data-qa="open-month-calendar-button"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
             </>
           )}
           {featureFlags.nekkuIntegration &&
@@ -373,15 +373,15 @@ export default React.memo(function Group({
                   onClick={() => toggleUiMode(`nekku-order-${group.id}`)}
                   data-qa="btn-nekku-order"
                 />
-                <Gap size="s" horizontal />
+                <Gap $size="s" $horizontal />
               </>
             )}
         </Toolbar>
       </TitleBar>
       {open ? (
         <>
-          <Gap size="m" />
-          <DataList labelWidth="150px" marginBottom="20px">
+          <Gap $size="m" />
+          <DataList $labelWidth="150px" $marginBottom="20px">
             <div>
               <label>{i18n.unit.groups.startDate}</label>{' '}
               <span data-qa="group-start-date">{group.startDate.format()}</span>
@@ -656,7 +656,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
         </Link>
       </Td>
       <Td>
-        <FixedSpaceRow spacing="xs" alignItems="center">
+        <FixedSpaceRow $spacing="xs" $alignItems="center">
           <AgeIndicatorChip
             age={filters.startDate.differenceInYears(dateOfBirth)}
           />
@@ -664,7 +664,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
         </FixedSpaceRow>
       </Td>
       <Td data-qa="placement-type">
-        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+        <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
           <CareTypeChip
             type={'type' in placement ? placement.type : 'backup-care'}
           />
@@ -693,7 +693,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
                 <span>{`${i18n.unit.groups.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.unit.groups.serviceNeedMissing2}`}</span>
               }
             >
-              <StatusIconContainer color={colors.status.warning}>
+              <StatusIconContainer $color={colors.status.warning}>
                 <FontAwesomeIcon icon={faTimes} inverse />
               </StatusIconContainer>
             </Tooltip>
@@ -701,7 +701,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
             <Tooltip
               tooltip={<span>{i18n.unit.groups.serviceNeedChecked}</span>}
             >
-              <StatusIconContainer color={colors.status.success}>
+              <StatusIconContainer $color={colors.status.success}>
                 <FontAwesomeIcon icon={faCheck} inverse />
               </StatusIconContainer>
             </Tooltip>
@@ -740,7 +740,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
           : `${placement.period.start.format()}- ${placement.period.end.format()}`}
       </Td>
       {canTransfer || canDelete ? (
-        <Td align="right">
+        <Td $align="right">
           <RowActionContainer>
             {canTransfer && (
               <>
@@ -751,7 +751,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
                   icon={faExchange}
                   text={i18n.unit.groups.transferBtn}
                 />
-                <Gap size="s" horizontal />
+                <Gap $size="s" $horizontal />
               </>
             )}
             {canDelete && (
@@ -915,11 +915,11 @@ const TitleSummary = React.memo(function TitleSummary({
         <React.Fragment key={label}>
           {index !== 0 ? (
             <>
-              <Gap size="xs" horizontal />|<Gap size="xs" horizontal />
+              <Gap $size="xs" $horizontal />|<Gap $size="xs" $horizontal />
             </>
           ) : null}
           <Label>{label}</Label>
-          <Gap size="xxs" horizontal />
+          <Gap $size="xxs" $horizontal />
           {value}
         </React.Fragment>
       ))}

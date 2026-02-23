@@ -68,19 +68,19 @@ export function ThreadList({
       {threads.map((item) => (
         <MessageRow
           key={item.id}
-          unread={item.unread}
+          $unread={item.unread}
           onClick={item.onClick}
           data-qa={item.dataQa}
         >
           <ParticipantsAndPreview>
-            <Participants unread={item.unread} data-qa="participants">
+            <Participants $unread={item.unread} data-qa="participants">
               {item.participants.length > 0
                 ? item.participants.join(', ')
                 : '-'}{' '}
               {item.messageCount}
             </Participants>
             <Truncated>
-              <Title unread={item.unread} data-qa="thread-list-item-title">
+              <Title $unread={item.unread} data-qa="thread-list-item-title">
                 {item.title}
                 {item.sensitive && ` (${i18n.messages.sensitive})`}
               </Title>

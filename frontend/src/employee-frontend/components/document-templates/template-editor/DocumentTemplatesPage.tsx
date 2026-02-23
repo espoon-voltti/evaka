@@ -83,7 +83,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
   )
 
   return (
-    <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow $alignItems="center">
       <DateRangePickerF bind={form} locale={lang} />
       <IconOnlyButton
         icon={faCheck}
@@ -146,7 +146,7 @@ const TemplateRow = React.memo(function TemplateRow({
             onClose={onCloseEditValidity}
           />
         ) : (
-          <FixedSpaceRow alignItems="center">
+          <FixedSpaceRow $alignItems="center">
             <span>{template.validity.format()}</span>
             <IconOnlyButton
               icon={faPen}
@@ -278,10 +278,10 @@ export default React.memo(function DocumentTemplatesPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{t.title}</H1>
         <FixedSpaceColumn>
-          <FixedSpaceRow alignItems="center">
+          <FixedSpaceRow $alignItems="center">
             <FilterLabel>
               {i18n.documentTemplates.templatesPage.filters.validity}
             </FilterLabel>
@@ -304,7 +304,7 @@ export default React.memo(function DocumentTemplatesPage() {
               />
             </FixedSpaceRow>
           </FixedSpaceRow>
-          <FixedSpaceRow alignItems="center">
+          <FixedSpaceRow $alignItems="center">
             <FilterLabel>
               {i18n.documentTemplates.templatesPage.filters.type}
             </FilterLabel>
@@ -313,7 +313,7 @@ export default React.memo(function DocumentTemplatesPage() {
               placeholder={i18n.documentTemplates.templatesPage.filters.all}
             />
           </FixedSpaceRow>
-          <FixedSpaceRow alignItems="center">
+          <FixedSpaceRow $alignItems="center">
             <FilterLabel>
               {i18n.documentTemplates.templatesPage.filters.language}
             </FilterLabel>
@@ -332,7 +332,7 @@ export default React.memo(function DocumentTemplatesPage() {
           </FixedSpaceRow>
         </FixedSpaceColumn>
         <Gap />
-        <FlexRow justifyContent="flex-end">
+        <FlexRow $justifyContent="flex-end">
           <AddButton
             flipped
             onClick={openImportModal}
@@ -340,7 +340,7 @@ export default React.memo(function DocumentTemplatesPage() {
             text={i18n.documentTemplates.templatesPage.import}
             data-qa="import-template"
           />
-          <Gap horizontal size="m" />
+          <Gap $horizontal $size="m" />
           <AddButton
             flipped
             onClick={() => setTemplateModalMode({ type: 'new' })}

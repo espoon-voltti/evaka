@@ -209,7 +209,7 @@ export default React.memo(function Heading({
         </InfoMarkers>
       </TitleRow>
       <LabelValueList spacing="small" contents={contents()} />
-      <Gap size="L" />
+      <Gap $size="L" />
     </>
   )
 })

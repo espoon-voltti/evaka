@@ -38,7 +38,7 @@ export default React.memo(function PlacementTerminationSection({
       title={t.children.placementTermination.title}
       open={open}
       toggleOpen={() => setOpen(!open)}
-      opaque
+      $opaque
       data-qa="collapsible-termination"
       icon={user?.authLevel === 'WEAK' ? faLockAlt : undefined}
     >

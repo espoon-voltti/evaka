@@ -88,7 +88,7 @@ const View = React.memo(function View({
   const { label, text, infoText } = useFormFields(template)
   return (
     <MoreVerticalMargin>
-      <FixedSpaceColumn fullWidth>
+      <FixedSpaceColumn $fullWidth>
         {!!label.state && (
           <ExpandingInfo
             info={readOnly ? undefined : infoText.value()}

@@ -36,7 +36,7 @@ export default React.memo(function ReportExceededServiceNeeds() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.exceededServiceNeed.title}</Title>
         {renderResult(units, (units) => (
           <Report units={units} />

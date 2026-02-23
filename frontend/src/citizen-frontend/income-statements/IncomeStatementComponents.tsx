@@ -108,18 +108,18 @@ export const Row = React.memo(function Row({
   return (
     <>
       <ListGrid>
-        <LabelColumn light={light}>{label}</LabelColumn>
+        <LabelColumn $light={light}>{label}</LabelColumn>
         <div translate={translate} data-qa={dataQa}>
           {value}
         </div>
       </ListGrid>
-      <Gap size="s" />
+      <Gap $size="s" />
     </>
   )
 })
 
-const LabelColumn = styled(Label)<{ light?: boolean }>`
+const LabelColumn = styled(Label)<{ $light?: boolean }>`
   flex: 0 0 auto;
   width: 250px;
-  ${(p) => (p.light ? 'font-weight: 400;' : '')}
+  ${(p) => (p.$light ? 'font-weight: 400;' : '')}
 `

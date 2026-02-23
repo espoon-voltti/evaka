@@ -37,12 +37,12 @@ export default React.memo(function RoundChildImages({ images }: Props) {
     [images]
   )
   return (
-    <RoundChildImagesContainer borderSize={imageBorder}>
+    <RoundChildImagesContainer $borderSize={imageBorder}>
       {imagesToShow.map((image, index) => (
         <Overlap
           key={image.childId}
-          overlap={imageOverlap}
-          index={index}
+          $overlap={imageOverlap}
+          $index={index}
           data-qa="child-image"
           data-qa-child-id={image.childId}
         >
@@ -56,12 +56,12 @@ export default React.memo(function RoundChildImages({ images }: Props) {
         </Overlap>
       ))}
       {images.length > maxImages ? (
-        <Overlap overlap={imageOverlap} index={imagesToShow.length}>
+        <Overlap $overlap={imageOverlap} $index={imagesToShow.length}>
           <ChildImageFallback
-            textColor={theme.colors.grayscale.g0}
-            backgroundColor={theme.colors.main.m2}
-            size={imageSize}
-            border={imageBorder}
+            $textColor={theme.colors.grayscale.g0}
+            $backgroundColor={theme.colors.main.m2}
+            $size={imageSize}
+            $border={imageBorder}
           >
             +{images.length - maxImages + 1}
           </ChildImageFallback>
@@ -71,14 +71,14 @@ export default React.memo(function RoundChildImages({ images }: Props) {
   )
 })
 
-const RoundChildImagesContainer = styled.div<{ borderSize: number }>`
+const RoundChildImagesContainer = styled.div<{ $borderSize: number }>`
   display: flex;
-  margin-left: -${(p) => p.borderSize}px;
+  margin-left: -${(p) => p.$borderSize}px;
 `
 
-const Overlap = styled.div<{ overlap: number; index: number }>`
+const Overlap = styled.div<{ $overlap: number; $index: number }>`
   flex: 0 0 auto;
-  margin-left: ${(p) => (p.index > 0 ? -p.overlap : 0)}px;
+  margin-left: ${(p) => (p.$index > 0 ? -p.$overlap : 0)}px;
 `
 
 export interface RoundChildImageProps {
@@ -99,29 +99,29 @@ export const RoundChildImage = React.memo(function RoundChildImage({
   return imageId !== null ? (
     <ChildImage
       src={getImageCitizen({ imageId }).url.toString()}
-      size={size}
-      border={border}
+      $size={size}
+      $border={border}
     />
   ) : (
     <ChildImageFallback
-      textColor={theme.colors.grayscale.g100}
-      backgroundColor={accentColors[colorIndex % accentColors.length]}
-      size={size}
-      border={border}
+      $textColor={theme.colors.grayscale.g100}
+      $backgroundColor={accentColors[colorIndex % accentColors.length]}
+      $size={size}
+      $border={border}
     >
       {fallbackText}
     </ChildImageFallback>
   )
 })
 
-const roundMixin = css<{ size: number; border: number }>`
-  width: ${(p) => p.size}px;
-  height: ${(p) => p.size}px;
-  ${(p) => (p.border > 0 ? `border: ${p.border}px solid #fff;` : undefined)};
+const roundMixin = css<{ $size: number; $border: number }>`
+  width: ${(p) => p.$size}px;
+  height: ${(p) => p.$size}px;
+  ${(p) => (p.$border > 0 ? `border: ${p.$border}px solid #fff;` : undefined)};
   border-radius: 50%;
 `
 
-const ChildImage = styled.img<{ size: number; border: number }>`
+const ChildImage = styled.img<{ $size: number; $border: number }>`
   ${roundMixin};
 `
 
@@ -133,14 +133,14 @@ const accentColors = [
 ]
 
 const ChildImageFallback = styled.div<{
-  size: number
-  border: number
-  textColor: string
-  backgroundColor: string
+  $size: number
+  $border: number
+  $textColor: string
+  $backgroundColor: string
 }>`
   ${roundMixin};
-  color: ${(p) => p.textColor ?? p.theme.colors.grayscale.g100};
-  background-color: ${(p) => p.backgroundColor};
+  color: ${(p) => p.$textColor ?? p.theme.colors.grayscale.g100};
+  background-color: ${(p) => p.$backgroundColor};
   font-weight: ${fontWeights.semibold};
   display: flex;
   justify-content: center;

@@ -44,7 +44,7 @@ export default React.memo(function ArrivalAndDeparture({
       {sortedAttendances.map(({ arrived, departed }) => (
         <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
           {arrived ? (
-            <FixedSpaceRow justifyContent="center" alignItems="center">
+            <FixedSpaceRow $justifyContent="center" $alignItems="center">
               <ArrivalTime data-qa="arrival-time">
                 <span>{i18n.attendances.arrivalTime}</span>
                 <span>{`${dateInfo(arrived.toLocalDate())} ${arrived.toLocalTime().format()}`}</span>

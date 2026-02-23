@@ -246,10 +246,10 @@ export default React.memo(function ReservationModal({
           <BottomFooterContainer>
             <div>
               <CalendarModalSection>
-                <Gap size="L" sizeOnMobile="zero" />
+                <Gap $size="L" $sizeOnMobile="zero" />
                 <ModalHeader
                   headingComponent={(props) => (
-                    <H1 noMargin data-qa="title" {...props}>
+                    <H1 $noMargin data-qa="title" {...props}>
                       {props.children}
                     </H1>
                   )}
@@ -258,7 +258,7 @@ export default React.memo(function ReservationModal({
                 </ModalHeader>
               </CalendarModalSection>
 
-              <Gap size="zero" sizeOnMobile="s" />
+              <Gap $size="zero" $sizeOnMobile="s" />
 
               <CalendarModalSection
                 role="group"
@@ -267,7 +267,7 @@ export default React.memo(function ReservationModal({
                 <H2 id="select-children">
                   {i18n.calendar.reservationModal.selectChildren}
                 </H2>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <ChildSelector
                   bind={selectedChildren}
                   childItems={reservationsResponse.children.filter(
@@ -277,11 +277,11 @@ export default React.memo(function ReservationModal({
                 />
               </CalendarModalSection>
 
-              <Gap size="xxs" sizeOnMobile="s" />
+              <Gap $size="xxs" $sizeOnMobile="s" />
 
               <CalendarModalSection>
                 <TabletAndDesktop>
-                  <HorizontalLine slim dashed />
+                  <HorizontalLine $slim $dashed />
                 </TabletAndDesktop>
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
@@ -291,13 +291,13 @@ export default React.memo(function ReservationModal({
                 <Label htmlFor="recurrence">
                   {i18n.calendar.reservationModal.selectRecurrence}
                 </Label>
-                <Gap size="xxs" />
+                <Gap $size="xxs" />
                 <SelectF
                   bind={repetition}
                   data-qa="repetition"
                   id="recurrence"
                 />
-                <Gap size="s" />
+                <Gap $size="s" />
 
                 <ExpandingInfo
                   width="auto"
@@ -341,7 +341,7 @@ export default React.memo(function ReservationModal({
                   />
                 )}
 
-                <Gap size="m" />
+                <Gap $size="m" />
 
                 {selectedRange ? (
                   <RepetitionTimeInputGrid
@@ -367,7 +367,7 @@ export default React.memo(function ReservationModal({
                 )}
               </CalendarModalSection>
             </div>
-            <Gap size="m" />
+            <Gap $size="m" />
             {saveError !== undefined && (
               <AlertBox
                 title={i18n.calendar.reservationModal.saveErrors.failure}

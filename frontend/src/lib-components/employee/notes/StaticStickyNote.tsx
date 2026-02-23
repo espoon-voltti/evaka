@@ -39,8 +39,8 @@ export function StaticStickyNote<IdType extends Id<string>>({
 }: Props<IdType>) {
   const removeNote = useCallback(() => onRemove(note.id), [note.id, onRemove])
   return (
-    <ContentArea opaque paddingHorizontal="s" data-qa="sticky-note">
-      <P noMargin data-qa="sticky-note-note" preserveWhiteSpace>
+    <ContentArea $opaque $paddingHorizontal="s" data-qa="sticky-note">
+      <P $noMargin data-qa="sticky-note-note" $preserveWhiteSpace>
         {note.note}
       </P>
       {note.created &&
@@ -48,18 +48,18 @@ export function StaticStickyNote<IdType extends Id<string>>({
         labels.lastModified &&
         !note.created.isEqual(note.modifiedAt) && (
           <>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <InformationText data-qa="sticky-note-modified">
               {labels.lastModified(note.modifiedAt.format())}
             </InformationText>
           </>
         )}
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <InformationText data-qa="sticky-note-expires">
         {labels.validTo(note.expires.format())}
       </InformationText>
-      <Gap size="xs" />
-      <FixedSpaceRow justifyContent="flex-end">
+      <Gap $size="xs" />
+      <FixedSpaceRow $justifyContent="flex-end">
         <Button
           appearance="inline"
           data-qa="sticky-note-edit"

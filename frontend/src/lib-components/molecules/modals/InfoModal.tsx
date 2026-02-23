@@ -77,7 +77,7 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
           )}
         </ModalButtons>
       ) : (
-        <Gap size="X3L" />
+        <Gap $size="X3L" />
       )}
     </BaseModal>
   )

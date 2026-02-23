@@ -24,7 +24,7 @@ import { TopBarIconContainer } from './TopBarIconContainer'
 import { UserMenu } from './UserMenu'
 
 const UserContainer = styled(TopBarIconContainer)`
-  // smaller gap between user initials and the icon
+  // $smaller gap between user initials and the icon
   button {
     span + svg {
       margin-left: ${defaultMargins.xs};

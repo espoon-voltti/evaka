@@ -82,7 +82,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           </FixedSpaceRow>
         </TitleContainer>
         <H4>{i18n.financeBasics.fees.thresholds} </H4>
-        <RowWithMargin spacing="XL">
+        <RowWithMargin $spacing="XL">
           <FixedSpaceColumn>
             <Label>{i18n.financeBasics.fees.maxFee}</Label>
             <Indent data-qa="maxFee">
@@ -131,7 +131,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           </Indent>
         </ColumnWithMargin>
         <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
-        <RowWithMargin spacing="XL">
+        <RowWithMargin $spacing="XL">
           <FixedSpaceColumn>
             <Label>{i18n.financeBasics.fees.siblingDiscount2}</Label>
             <Indent data-qa="siblingDiscount2">
@@ -147,7 +147,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
         </RowWithMargin>
 
         <H4>{i18n.financeBasics.fees.temporaryFees}</H4>
-        <RowWithMargin spacing="XL">
+        <RowWithMargin $spacing="XL">
           <FixedSpaceColumn>
             <Label>{i18n.financeBasics.fees.temporaryFee}</Label>
             <Indent data-qa="temporaryFee">

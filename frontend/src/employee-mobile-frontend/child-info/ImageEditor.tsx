@@ -121,7 +121,7 @@ export default React.memo(function ImageEditor({
       <Gap />
       <StickyFooter>
         <FooterContainer>
-          <InformationText centered>
+          <InformationText $centered>
             {i18n.childInfo.image.modalMenu.disclaimer}
           </InformationText>
 

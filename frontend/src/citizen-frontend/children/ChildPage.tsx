@@ -41,7 +41,7 @@ export default React.memo(function ChildPage() {
     <>
       <Main>
         <Container>
-          <Gap size="s" />
+          <Gap $size="s" />
           {renderResult(child, (child) => (
             <ChildData child={child} />
           ))}
@@ -60,10 +60,10 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
 
   return (
     <>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <ChildHeader child={child} />
       </ContentArea>
-      <Gap size="s" />
+      <Gap $size="s" />
       <ServiceNeedAndDailyServiceTimeSection
         childId={childId}
         showServiceTimes={child.permittedActions.includes(
@@ -72,20 +72,20 @@ const ChildData = ({ child }: { child: ChildAndPermittedActions }) => {
       />
       {user?.accessibleFeatures.childDocumentation && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <PedagogicalDocumentsSection childId={childId} />
-          <Gap size="s" />
+          <Gap $size="s" />
           <ChildDocumentsSection childId={childId} />
         </>
       )}
       {featureFlags.absenceApplications &&
         child.absenceApplicationCreationPossible && (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <AbsenceApplicationsSection childId={childId} />
           </>
         )}
-      <Gap size="s" />
+      <Gap $size="s" />
       <PlacementTerminationSection childId={childId} />
     </>
   )

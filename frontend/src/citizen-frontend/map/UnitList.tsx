@@ -61,7 +61,7 @@ export default React.memo(function UnitList({
   )
 
   return (
-    <Wrapper opaque className="unit-list">
+    <Wrapper $opaque className="unit-list">
       {renderResult(
         combine(filteredUnits, mappedUnitsWithDistances),
         ([filteredUnits, { accurateUnits, otherUnits }]) => {
@@ -72,10 +72,10 @@ export default React.memo(function UnitList({
           if (selectedAddress) {
             return (
               <>
-                <H3 noMargin>{t.map.nearestUnits}</H3>
-                <Gap size="xxs" />
+                <H3 $noMargin>{t.map.nearestUnits}</H3>
+                <Gap $size="xxs" />
                 <Info>{t.map.distanceWalking}</Info>
-                <Gap size="s" />
+                <Gap $size="s" />
                 {accurateUnits.map((unit) => (
                   <UnitListItem
                     key={unit.id}
@@ -86,9 +86,9 @@ export default React.memo(function UnitList({
                 ))}
                 {showMoreUnits ? (
                   <>
-                    <Gap size="s" />
-                    <H4 noMargin>{t.map.moreUnits}</H4>
-                    <Gap size="s" />
+                    <Gap $size="s" />
+                    <H4 $noMargin>{t.map.moreUnits}</H4>
+                    <Gap $size="s" />
                     {otherUnits.map((unit) => (
                       <UnitListItem
                         key={unit.id}
@@ -100,7 +100,7 @@ export default React.memo(function UnitList({
                   </>
                 ) : (
                   <>
-                    <Gap size="s" />
+                    <Gap $size="s" />
 
                     <Centered>
                       <Button

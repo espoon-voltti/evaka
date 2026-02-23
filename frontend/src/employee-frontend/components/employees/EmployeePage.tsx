@@ -76,8 +76,8 @@ const EmailForm = React.memo(function EmailForm({
   const email = useFormField(form, 'email')
 
   return (
-    <FixedSpaceColumn spacing="m">
-      <FixedSpaceColumn spacing="xs">
+    <FixedSpaceColumn $spacing="m">
+      <FixedSpaceColumn $spacing="xs">
         <InputFieldF bind={email} />
       </FixedSpaceColumn>
       <FixedSpaceRow>
@@ -113,8 +113,8 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
   )
 
   return (
-    <FixedSpaceColumn spacing="m">
-      <FixedSpaceColumn spacing="xs">
+    <FixedSpaceColumn $spacing="m">
+      <FixedSpaceColumn $spacing="xs">
         {globalRoles.map((role) => (
           <Checkbox
             key={role}
@@ -191,7 +191,7 @@ const EmployeePage = React.memo(function EmployeePage({
             onCancel={() => setEditingEmail(false)}
           />
         ) : (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <div>{employee.email}</div>
             <Button
               appearance="inline"
@@ -214,7 +214,7 @@ const EmployeePage = React.memo(function EmployeePage({
           onCancel={() => setEditingGlobalRoles(false)}
         />
       ) : (
-        <FixedSpaceColumn spacing="m">
+        <FixedSpaceColumn $spacing="m">
           <div>
             {employee.globalRoles.length > 0
               ? globalRoles
@@ -235,7 +235,7 @@ const EmployeePage = React.memo(function EmployeePage({
 
       <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
       {user?.id !== employee.id && (
-        <FlexRow justifyContent="space-between">
+        <FlexRow $justifyContent="space-between">
           <Button
             appearance="inline"
             onClick={() => setRolesModalOpen(true)}
@@ -306,7 +306,7 @@ const EmployeePage = React.memo(function EmployeePage({
           })}
         </Tbody>
       </Table>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <span>*{i18n.unit.accessControl.roleChange}</span>
 
       <Gap />
@@ -411,7 +411,7 @@ export default React.memo(function EmployeePageLoader() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(combine(employee, units), ([employee, units]) => (
           <EmployeePage employee={employee} units={units} />
         ))}

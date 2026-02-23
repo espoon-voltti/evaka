@@ -235,9 +235,9 @@ export default React.memo(function MarkReservations({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       {renderResult(child, (child) => (
         <>
@@ -245,15 +245,15 @@ export default React.memo(function MarkReservations({
             <ChildNameBackButton child={child} onClick={goBack} />
           </div>
           <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal="s"
-            paddingVertical="s"
+            $shadow
+            $opaque={true}
+            $paddingHorizontal="s"
+            $paddingVertical="s"
           >
             <Title size={2} primary noMargin>
               {i18n.attendances.actions.markReservations}
             </Title>
-            <Gap size="s" />
+            <Gap $size="s" />
 
             {mode === 'view' &&
               renderResult(
@@ -328,24 +328,24 @@ const ReservationsView = ({
         <React.Fragment key={reservation.date.format()}>
           {minDatesByWeek[reservation.date.getIsoWeek()] ===
             reservation.date && (
-            <Label primary>
+            <Label $primary>
               {i18n.common.week} {reservation.date.getIsoWeek()}
             </Label>
           )}
           <FixedSpaceRow
-            alignItems="baseline"
+            $alignItems="baseline"
             data-qa={`reservation-date-${reservation.date.formatIso()}`}
           >
             <Label>{reservation.date.format('EEEEEE d.M.', lang)}</Label>
             <ReservationView reservation={reservation} />
           </FixedSpaceRow>
-          <Gap size="s" />
+          <Gap $size="s" />
         </React.Fragment>
       ))}
       {laterAbsences.length > 0 ? (
         <>
-          <HorizontalLine slim dashed />
-          <LaterAbsencesLabel primary onClick={toggleLaterAbsencesVisible}>
+          <HorizontalLine $slim $dashed />
+          <LaterAbsencesLabel $primary onClick={toggleLaterAbsencesVisible}>
             {laterAbsencesVisible
               ? i18n.absences.laterAbsence.open
               : i18n.absences.laterAbsence.closed}
@@ -359,13 +359,13 @@ const ReservationsView = ({
           ) : null}
         </>
       ) : null}
-      <HorizontalLine slim />
+      <HorizontalLine $slim />
       <Actions>
         <FixedSpaceRow
-          fullWidth
-          flexWrap="wrap"
-          spacing={defaultMargins.zero}
-          gap={defaultMargins.s}
+          $fullWidth
+          $flexWrap="wrap"
+          $spacing={defaultMargins.zero}
+          $gap={defaultMargins.s}
         >
           <Button
             text={
@@ -477,12 +477,12 @@ const ReservationsEdit = ({
         <React.Fragment key={reservation.state.date.format()}>
           {minDatesByWeek[reservation.state.date.getIsoWeek()] ===
             reservation.state.date && (
-            <Label primary>
+            <Label $primary>
               {i18n.common.week} {reservation.state.date.getIsoWeek()}
             </Label>
           )}
           <FixedSpaceRow
-            alignItems="baseline"
+            $alignItems="baseline"
             data-qa={`reservation-date-${reservation.state.date.formatIso()}`}
           >
             <Label>{reservation.state.date.format('EEEEEE d.M.', lang)}</Label>
@@ -490,16 +490,16 @@ const ReservationsEdit = ({
               <ReservationEdit bind={reservation} />
             </ServiceTime>
           </FixedSpaceRow>
-          <Gap size="s" />
+          <Gap $size="s" />
         </React.Fragment>
       ))}
-      <HorizontalLine slim />
+      <HorizontalLine $slim />
       <Actions>
         <FixedSpaceRow
-          fullWidth
-          flexWrap="wrap"
-          spacing={defaultMargins.zero}
-          gap={defaultMargins.s}
+          $fullWidth
+          $flexWrap="wrap"
+          $spacing={defaultMargins.zero}
+          $gap={defaultMargins.s}
         >
           <Button text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
@@ -588,7 +588,7 @@ const TimesEdit = ({
       {boundTimes.map((time, index) => (
         <FixedSpaceRow
           key={index}
-          alignItems="center"
+          $alignItems="center"
           data-qa="reservation-time"
         >
           <ReservationTimeEdit

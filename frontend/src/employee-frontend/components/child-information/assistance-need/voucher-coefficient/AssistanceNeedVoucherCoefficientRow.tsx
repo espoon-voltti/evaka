@@ -62,7 +62,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
     <>
       <Tr key={id} data-qa="table-assistance-need-voucher-coefficient">
         <Td
-          topBorder
+          $topBorder
           data-qa="assistance-need-voucher-coefficient-validity-period"
         >
           {!isUpdating && (
@@ -71,7 +71,10 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
             </div>
           )}
         </Td>
-        <Td topBorder data-qa="assistance-need-voucher-coefficient-coefficient">
+        <Td
+          $topBorder
+          data-qa="assistance-need-voucher-coefficient-coefficient"
+        >
           {isUpdating ? (
             <ExpandingInfo info={<div>{t.form.titleInfo}</div>} width="full">
               <LabelLike>{t.form.editTitle}</LabelLike>
@@ -84,7 +87,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
             </LabelLike>
           )}
         </Td>
-        <Td topBorder data-qa="assistance-need-voucher-coefficient-modified">
+        <Td $topBorder data-qa="assistance-need-voucher-coefficient-modified">
           {!isUpdating ? (
             <Tooltip
               tooltip={t.lastModifiedBy(modifiedBy.name)}
@@ -96,7 +99,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
             t.unknown
           )}
         </Td>
-        <Td topBorder>
+        <Td $topBorder>
           <TimeBasedStatusChip
             status={
               validityPeriod.start.isAfter(LocalDate.todayInHelsinkiTz())
@@ -109,11 +112,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
           />
         </Td>
         <Td
-          verticalAlign="middle"
-          topBorder
+          $verticalAlign="middle"
+          $topBorder
           data-qa="assistance-need-voucher-coefficient-actions"
         >
-          <FixedSpaceRow spacing="s" justifyContent="flex-end">
+          <FixedSpaceRow $spacing="s" $justifyContent="flex-end">
             {permittedActions.includes('UPDATE') && (
               <IconOnlyButton
                 icon={faPen}

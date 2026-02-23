@@ -46,15 +46,15 @@ export default React.memo(function ChildrenSection({ decision }: Props) {
 
           return (
             <Part key={child.id}>
-              <H4 noMargin>
+              <H4 $noMargin>
                 <PersonName person={child} format="First Last" />
               </H4>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               <PartRow>
                 <span>{mainDescription}</span>
                 <b>{`${formatCents(fee) ?? ''} €`}</b>
               </PartRow>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               {feeAlterations.map((feeAlteration, index) => (
                 <Fragment key={index}>
                   <PartRow>
@@ -63,7 +63,7 @@ export default React.memo(function ChildrenSection({ decision }: Props) {
                     }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
                     <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
                   </PartRow>
-                  <Gap size="xs" />
+                  <Gap $size="xs" />
                 </Fragment>
               ))}
               <PartRow>

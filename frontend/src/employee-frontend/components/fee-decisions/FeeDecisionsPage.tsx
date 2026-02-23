@@ -106,15 +106,15 @@ export default React.memo(function FeeDecisionsPage() {
           checkedIds={checkedIds}
         />
       )}
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <FeeDecisionFilters />
       </ContentArea>
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {searchFilters &&
         searchParams &&
         renderResult(searchResult, (result) => (
           <>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <FeeDecisions
                 decisions={result.data}
                 total={result.total}

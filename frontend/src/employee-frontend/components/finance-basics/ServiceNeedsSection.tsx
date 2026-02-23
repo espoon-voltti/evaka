@@ -34,8 +34,8 @@ export default React.memo(function ServiceNeedsSection() {
 
   return (
     <CollapsibleContentArea
-      opaque
-      title={<H2 noMargin>{i18n.financeBasics.serviceNeeds.title}</H2>}
+      $opaque
+      title={<H2 $noMargin>{i18n.financeBasics.serviceNeeds.title}</H2>}
       open={open}
       toggleOpen={useOpen.toggle}
       data-qa="service-needs-section"

@@ -18,7 +18,7 @@ interface Props {
 export function InputWarning({ text, iconPosition, 'data-qa': dataQa }: Props) {
   return iconPosition === 'after' ? (
     <div data-qa={dataQa}>
-      <WarningText margin="right">{text}</WarningText>
+      <WarningText $margin="right">{text}</WarningText>
       <WarningIcon />
     </div>
   ) : (
@@ -30,14 +30,14 @@ export function InputWarning({ text, iconPosition, 'data-qa': dataQa }: Props) {
 }
 
 const WarningText = styled.span<{
-  smaller?: boolean
-  margin?: 'left' | 'right'
+  $smaller?: boolean
+  $margin?: 'left' | 'right'
 }>`
   color: ${colors.grayscale.g70};
   font-style: italic;
   ${(props) =>
-    props.margin === 'right' ? 'margin-right: 12px' : 'margin-left: 12px'};
-  font-size: ${(props) => (props.smaller === true ? '0.8em' : '1em')};
+    props.$margin === 'right' ? 'margin-right: 12px' : 'margin-left: 12px'};
+  font-size: ${(props) => (props.$smaller === true ? '0.8em' : '1em')};
 `
 
 const WarningIcon = () => (

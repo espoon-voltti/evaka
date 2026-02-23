@@ -133,13 +133,13 @@ export default React.memo(function ChildDayReservation({
           >
             <TimeCell
               data-qa="reservation-start"
-              warning={unitIsNotOpenOnReservationStart}
+              $warning={unitIsNotOpenOnReservationStart}
             >
               {reservation.range.formatStart()}
             </TimeCell>
             <TimeCell
               data-qa="reservation-end"
-              warning={unitIsNotOpenOnReservationEnd}
+              $warning={unitIsNotOpenOnReservationEnd}
             >
               {reservation.range.formatEnd()}
               {(unitIsNotOpenOnReservationStart ||
@@ -167,7 +167,7 @@ export default React.memo(function ChildDayReservation({
               }
               position="top"
             >
-              <TimeCell warning data-qa="holiday-reservation-missing">
+              <TimeCell $warning data-qa="holiday-reservation-missing">
                 {
                   i18n.unit.attendanceReservations
                     .missingHolidayReservationShort
@@ -200,7 +200,7 @@ export default React.memo(function ChildDayReservation({
             </TimeCell>
           ) : (
             // otherwise show missing reservation indicator
-            <TimeCell warning data-qa="reservation-missing">
+            <TimeCell $warning data-qa="reservation-missing">
               {i18n.unit.attendanceReservations.missingReservation}
             </TimeCell>
           )

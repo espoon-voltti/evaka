@@ -64,14 +64,14 @@ export const Reservations = React.memo(function Reservations({
     <Holiday />
   ) : (
     <div>
-      <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="xs">
         {groupedChildren.map((group) => {
           const wordCount = group.text?.split(' ').length ?? 0
           return (
             <FixedSpaceRow
               key={group.key}
-              spacing="xs"
-              alignItems="center"
+              $spacing="xs"
+              $alignItems="center"
               data-qa="reservation-group"
             >
               <RoundChildImages

@@ -57,9 +57,9 @@ export default React.memo(function PersonIncome({ id }: Props) {
     <>
       <H3>{i18n.personProfile.incomeStatement.title}</H3>
       <IncomeStatements personId={id} />
-      <Gap size="L" />
+      <Gap $size="L" />
       <IncomeNotifications personId={id} />
-      <Gap size="L" />
+      <Gap $size="L" />
       {renderResult(children, (children) => (
         <>
           <H3>{i18n.personProfile.incomeStatement.custodianTitle}</H3>
@@ -68,7 +68,7 @@ export default React.memo(function PersonIncome({ id }: Props) {
           )}
           {children.map((child) => (
             <ChildIncomeStatementsContainer key={child.id}>
-              <Gap size="m" />
+              <Gap $size="m" />
               <span data-qa="child-income-statement-title">
                 <PersonName person={child} format="Last First" />
               </span>
@@ -77,7 +77,7 @@ export default React.memo(function PersonIncome({ id }: Props) {
           ))}
         </>
       ))}
-      <Gap size="L" />
+      <Gap $size="L" />
       <Incomes personId={id} permittedActions={permittedActions} />
     </>
   )
@@ -204,8 +204,8 @@ export const Incomes = React.memo(function Incomes({
         combine(incomes, incomeTypeOptions, coefficientMultipliers),
         ([incomes, incomeTypeOptions, coefficientMultipliers]) => (
           <>
-            <FixedSpaceRow justifyContent="space-between" alignItems="center">
-              <H3 noMargin>{i18n.personProfile.income.title}</H3>
+            <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+              <H3 $noMargin>{i18n.personProfile.income.title}</H3>
               {permittedActions.has('CREATE_INCOME') && (
                 <AddButtonRow
                   text={i18n.personProfile.income.add}
@@ -218,7 +218,7 @@ export const Incomes = React.memo(function Incomes({
                 />
               )}
             </FixedSpaceRow>
-            <Gap size="s" />
+            <Gap $size="s" />
             <IncomeList
               personId={personId}
               incomes={incomes}

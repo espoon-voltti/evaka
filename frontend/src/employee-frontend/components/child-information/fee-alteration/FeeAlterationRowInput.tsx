@@ -72,7 +72,7 @@ function IsAbsoluteRadio({
         value="false"
         onChange={() => onChange(false)}
       />
-      <RadioLabelLeft htmlFor="is-absolute-false" selected={!value}>
+      <RadioLabelLeft htmlFor="is-absolute-false" $selected={!value}>
         %
       </RadioLabelLeft>
       <RadioInput
@@ -82,7 +82,7 @@ function IsAbsoluteRadio({
         value="true"
         onChange={() => onChange(true)}
       />
-      <RadioLabelRight htmlFor="is-absolute-true" selected={value}>
+      <RadioLabelRight htmlFor="is-absolute-true" $selected={value}>
         €
       </RadioLabelRight>
     </RadioContainer>
@@ -99,13 +99,14 @@ const RadioInput = styled.input`
   display: none;
 `
 
-const RadioLabel = styled.label<{ selected: boolean }>`
+const RadioLabel = styled.label<{ $selected: boolean }>`
   padding: 6px 22px;
   border: 1px solid ${colors.main.m2};
   color: ${colors.main.m2};
 
-  ${({ selected }) => (selected ? `color: ${colors.grayscale.g0};` : '')}
-  ${({ selected }) => (selected ? `background-color: ${colors.main.m2};` : '')}
+  ${({ $selected }) => ($selected ? `color: ${colors.grayscale.g0};` : '')}
+  ${({ $selected }) =>
+    $selected ? `background-color: ${colors.main.m2};` : ''}
 `
 
 const RadioLabelLeft = styled(RadioLabel)`

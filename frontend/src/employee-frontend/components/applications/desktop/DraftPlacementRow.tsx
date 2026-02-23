@@ -59,7 +59,7 @@ export default React.memo(function DraftPlacementRow({
                   <strong>
                     * {i18n.applications.placementDesktop.notInSearchResults}
                   </strong>
-                  <Gap size="xs" />
+                  <Gap $size="xs" />
                 </>
               )}
               <div>{i18n.applications.placementDesktop.draftedBy}:</div>
@@ -83,9 +83,9 @@ export default React.memo(function DraftPlacementRow({
       </DateTd>
       <ActionsTd>
         <FixedSpaceRow
-          spacing="s"
-          alignItems="center"
-          justifyContent="flex-end"
+          $spacing="s"
+          $alignItems="center"
+          $justifyContent="flex-end"
         >
           <Tooltip
             tooltip={

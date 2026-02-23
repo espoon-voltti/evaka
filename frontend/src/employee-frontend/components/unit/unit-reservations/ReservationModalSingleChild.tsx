@@ -479,7 +479,7 @@ export default React.memo(function ReservationModalSingleChild({
         hideErrorsBeforeTouched={!showAllErrors}
         data-qa="reservation-date-range"
       />
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <TimeInputGrid>
         {repetition.value() === 'DAILY' ? (
@@ -750,7 +750,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
   const inputInfo = bind.inputInfo()
   return (
     <div>
-      <FixedSpaceRow alignItems="center">
+      <FixedSpaceRow $alignItems="center">
         <TimeInputF
           data-qa="reservation-start-time"
           bind={startTime}

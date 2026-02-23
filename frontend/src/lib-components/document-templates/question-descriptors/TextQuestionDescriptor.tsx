@@ -92,7 +92,7 @@ const View = React.memo(function View({
       </div>
     </FixedSpaceColumn>
   ) : (
-    <FixedSpaceColumn fullWidth data-qa="document-question">
+    <FixedSpaceColumn $fullWidth data-qa="document-question">
       <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>

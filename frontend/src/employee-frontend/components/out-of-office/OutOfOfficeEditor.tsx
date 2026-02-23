@@ -80,7 +80,7 @@ export default React.memo(function OutOfOfficeEditor({
         hideErrorsBeforeTouched
         required
       />
-      <Gap size="X4L" />
+      <Gap $size="X4L" />
       <ButtonContainer>
         <AsyncButton
           text={i18n.common.save}
@@ -90,7 +90,7 @@ export default React.memo(function OutOfOfficeEditor({
           onSuccess={onClose}
           data-qa="save-out-of-office"
         />
-        <Gap size="xs" horizontal />
+        <Gap $size="xs" $horizontal />
         <Button
           text={i18n.common.cancel}
           appearance="inline"

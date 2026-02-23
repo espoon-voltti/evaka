@@ -94,7 +94,7 @@ export default React.memo(function IncomeStatementPage() {
         combine(person, incomeStatement),
         ([person, incomeStatement]) => (
           <>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <H1>{i18n.titles.incomeStatement}</H1>
               <H2>
                 <PersonName person={person} format="First Last" />
@@ -118,8 +118,8 @@ export default React.memo(function IncomeStatementPage() {
             </ContentArea>
             {incomeStatement.type === 'INCOME' && (
               <>
-                <Gap size="L" />
-                <ContentArea opaque>
+                <Gap $size="L" />
+                <ContentArea $opaque>
                   <EmployeeAttachments
                     incomeStatementId={incomeStatement.id}
                     attachments={incomeStatement.attachments.filter(
@@ -129,8 +129,8 @@ export default React.memo(function IncomeStatementPage() {
                 </ContentArea>
               </>
             )}
-            <Gap size="L" />
-            <ContentArea opaque>
+            <Gap $size="L" />
+            <ContentArea $opaque>
               <HandlerNotesForm
                 incomeStatementId={incomeStatementId}
                 onSuccess={() => navigateToPersonProfile(incomeStatement)}
@@ -550,7 +550,7 @@ function HandlerNotesForm({
   return (
     <FixedSpaceColumn data-qa="handler-notes-form">
       <H1>{i18n.incomeStatement.handlerNotesForm.title}</H1>
-      <Gap size="x3s" />
+      <Gap $size="x3s" />
 
       <FixedSpaceRow>
         <Label>{i18n.incomeStatement.handlerNotesForm.statusLabel}</Label>
@@ -596,7 +596,7 @@ function HandlerNotesForm({
       )}
 
       {incomeStatementStatus === 'HANDLING' && (
-        <FixedSpaceRow spacing="XXL">
+        <FixedSpaceRow $spacing="XXL">
           <MutateButton
             appearance="inline"
             text={i18n.common.cancel}
@@ -696,10 +696,10 @@ function Row({
   return (
     <>
       <FixedSpaceRow>
-        <LabelColumn light={light}>{label}</LabelColumn>
+        <LabelColumn $light={light}>{label}</LabelColumn>
         <div data-qa={dataQa}>{value}</div>
       </FixedSpaceRow>
-      <Gap size="s" />
+      <Gap $size="s" />
     </>
   )
 }
@@ -708,10 +708,10 @@ function makeYesNo(i18n: Translations) {
   return (value: boolean): string => (value ? i18n.common.yes : i18n.common.no)
 }
 
-const LabelColumn = styled(Label)<{ light?: boolean }>`
+const LabelColumn = styled(Label)<{ $light?: boolean }>`
   flex: 0 0 auto;
   width: 250px;
-  ${(p) => (p.light ? 'font-weight: 400;' : '')}
+  ${(p) => (p.$light ? 'font-weight: 400;' : '')}
 `
 
 const Item = styled.div`

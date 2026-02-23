@@ -72,19 +72,19 @@ const SentMessagePreview = React.memo(function SentMessagePreview({
 }) {
   return (
     <Container
-      isRead={true}
-      active={false}
+      $isRead={true}
+      $active={false}
       data-qa="sent-message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>
-        <Header isRead={true}>
+        <Header $isRead={true}>
           <Truncated data-qa="message-recipients">
             {message.recipientNames.join(', ')}
           </Truncated>
           <MessageCharacteristics type={message.type} urgent={message.urgent} />
         </Header>
-        <TitleAndDate isRead={true}>
+        <TitleAndDate $isRead={true}>
           <Truncated data-qa="message-preview-title">
             {message.threadTitle}
           </Truncated>

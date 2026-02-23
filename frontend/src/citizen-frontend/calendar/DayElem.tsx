@@ -109,9 +109,9 @@ export default React.memo(function DayElem({
       id={`calendar-day-${calendarDay.date.formatIso()}`}
     >
       <DayColumn
-        spacing="xxs"
-        inactive={!isReservable}
-        holiday={calendarDay.holiday}
+        $spacing="xxs"
+        $inactive={!isReservable}
+        $holiday={calendarDay.holiday}
       >
         <div aria-label={calendarDay.date.formatExotic('EEEE', lang)}>
           {capitalizeFirstLetter(calendarDay.date.format('EEEEEE', lang))}
@@ -120,7 +120,7 @@ export default React.memo(function DayElem({
           {calendarDay.date.format('d.M.')}
         </div>
       </DayColumn>
-      <Gap size="s" horizontal />
+      <Gap $size="s" $horizontal />
       <ReservationsContainer data-qa="reservations">
         <Reservations
           data={calendarDay}
@@ -179,14 +179,14 @@ const Day = styled.button<{
   }
 `
 const DayColumn = styled(FixedSpaceColumn)<{
-  inactive: boolean
-  holiday: boolean
+  $inactive: boolean
+  $holiday: boolean
 }>`
   width: 3rem;
   color: ${(p) =>
-    p.inactive
+    p.$inactive
       ? colors.grayscale.g70
-      : p.holiday
+      : p.$holiday
         ? colors.accents.a2orangeDark
         : colors.main.m1};
   font-weight: ${fontWeights.semibold};

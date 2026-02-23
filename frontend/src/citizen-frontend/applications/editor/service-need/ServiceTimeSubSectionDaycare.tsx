@@ -155,7 +155,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         )}
         {formData.partTime && partTimeOptions.length > 0 && (
           <SubRadios>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {partTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
@@ -184,7 +184,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         />
         {!formData.partTime && fullTimeOptions.length > 0 && (
           <SubRadios>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {fullTimeOptions.map((opt) => (
                 <Radio
                   key={opt.id}
@@ -234,10 +234,10 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             </Label>
           </ExpandingInfo>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
-          <FixedSpaceRow spacing="s">
-            <FixedSpaceColumn spacing="xs">
+          <FixedSpaceRow $spacing="s">
+            <FixedSpaceColumn $spacing="xs">
               <Label htmlFor="daily-time-starts">
                 {t.applications.editor.serviceNeed.dailyTime.starts}
               </Label>
@@ -254,7 +254,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
             <Hyphenbox>–</Hyphenbox>
 
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label htmlFor="daily-time-ends">
                 {t.applications.editor.serviceNeed.dailyTime.ends}
               </Label>
@@ -270,7 +270,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             </FixedSpaceColumn>
           </FixedSpaceRow>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           {errors.partTimeLimit && (
             <AlertBox
@@ -291,15 +291,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
       </H3>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       {renderServiceNeedSelection()}
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       {renderServiceNeedDailyTimeSelection()}
 
-      <Gap size="L" />
+      <Gap $size="L" />
 
       <ExpandingInfo
         data-qa="shiftcare-instructions"
@@ -320,14 +320,14 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
       {formData.shiftCare && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
 
           {
             t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
               .DAYCARE
           }
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <AdaptiveFlex>
             <strong>
@@ -344,7 +344,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               )}
           </AdaptiveFlex>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <FileUpload
             files={formData.shiftCareAttachments}

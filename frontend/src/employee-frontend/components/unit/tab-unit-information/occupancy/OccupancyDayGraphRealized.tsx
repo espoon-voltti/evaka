@@ -61,11 +61,11 @@ export default React.memo(function OccupancyDayGraphRealized({
       <H3>{i18n.unit.occupancy.realtime.legendTitle}</H3>
       <FixedSpaceColumn>
         <FixedSpaceRow>
-          <LegendSquare color={colors.status.danger} />
+          <LegendSquare $color={colors.status.danger} />
           <Label>{i18n.unit.occupancy.realtime.childrenMax}</Label>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <LegendSquare color={colors.grayscale.g100} />
+          <LegendSquare $color={colors.grayscale.g100} />
           <Label>{i18n.unit.occupancy.realtime.children}</Label>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -178,13 +178,13 @@ const Graph = React.memo(function Graph({
               .toLocalTime()
               .format()}
           </span>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <table>
             <tbody>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.staffPresent}</span>
                   </FixedSpaceRow>
                 </td>
@@ -194,8 +194,8 @@ const Graph = React.memo(function Graph({
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.staffRequired}</span>
                   </FixedSpaceRow>
                 </td>
@@ -205,8 +205,8 @@ const Graph = React.memo(function Graph({
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color={colors.status.danger} />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color={colors.status.danger} />
                     <span>{i18n.unit.occupancy.realtime.childrenMax}</span>
                   </FixedSpaceRow>
                 </td>
@@ -216,8 +216,8 @@ const Graph = React.memo(function Graph({
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color={colors.grayscale.g100} />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color={colors.grayscale.g100} />
                     <span>{i18n.unit.occupancy.realtime.children}</span>
                   </FixedSpaceRow>
                 </td>
@@ -227,8 +227,8 @@ const Graph = React.memo(function Graph({
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.childrenPresent}</span>
                   </FixedSpaceRow>
                 </td>
@@ -238,8 +238,8 @@ const Graph = React.memo(function Graph({
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.utilization}</span>
                   </FixedSpaceRow>
                 </td>

@@ -110,7 +110,7 @@ export const OtherAssistanceMeasureSection = React.memo(
         {showInfoList && (
           <div>
             {t.otherAssistanceMeasure.infoList}
-            <UnorderedList spacing="zero">
+            <UnorderedList $spacing="zero">
               {otherAssistanceMeasureTypes.map((type) =>
                 t.otherAssistanceMeasure.info[type]() ? (
                   <li key={type}>

@@ -36,7 +36,7 @@ export default React.memo(function HolidayPeriodEditor() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(holidayPeriod, (holiday) =>
           holiday === null ? (
             <HolidayPeriodForm

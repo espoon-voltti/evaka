@@ -334,7 +334,7 @@ const ChildDocumentReadViewInner = React.memo(
           publishedUpToDate && (
             <>
               <Container>
-                <FlexRow justifyContent="flex-end">
+                <FlexRow $justifyContent="flex-end">
                   <a
                     href={downloadChildDocument({
                       documentId: document.id
@@ -342,7 +342,7 @@ const ChildDocumentReadViewInner = React.memo(
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <FixedSpaceRow spacing="xs" alignItems="center">
+                    <FixedSpaceRow $spacing="xs" $alignItems="center">
                       <FontAwesomeIcon icon={faFilePdf} />
                       <span>
                         {
@@ -390,11 +390,11 @@ const ChildDocumentReadViewInner = React.memo(
                     )}
                 </FlexRow>
               </Container>
-              <Gap size="xs" />
+              <Gap $size="xs" />
             </>
           )}
         <Container>
-          <ContentArea opaque>
+          <ContentArea $opaque>
             <DocumentBasics document={document} />
             <OptionalLabelledValue
               label={
@@ -403,7 +403,7 @@ const ChildDocumentReadViewInner = React.memo(
               value={document.decision?.annulmentReason}
               data-qa="reason-for-annulment"
             />
-            <Gap size="XXL" />
+            <Gap $size="XXL" />
             <DocumentView
               bind={bind}
               readOnly={true}
@@ -422,7 +422,7 @@ const ChildDocumentReadViewInner = React.memo(
 
         <ActionBar>
           <Container>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               {validity && (
                 <>
                   <OtherValidDecisionForm
@@ -430,12 +430,12 @@ const ChildDocumentReadViewInner = React.memo(
                     endingDecisionsForm={endingDecisionsForm}
                     document={document}
                   />
-                  <Gap size="X3L" />
+                  <Gap $size="X3L" />
                 </>
               )}
               <FixedSpaceRow
-                justifyContent="space-between"
-                alignItems="flex-end"
+                $justifyContent="space-between"
+                $alignItems="flex-end"
               >
                 {acceptingDecision && !validity ? (
                   <Button
@@ -451,7 +451,7 @@ const ChildDocumentReadViewInner = React.memo(
                     data-qa="cancel-accept-decision-button"
                   />
                 ) : (
-                  <FixedSpaceRow alignItems="flex-end">
+                  <FixedSpaceRow $alignItems="flex-end">
                     <Button
                       text={i18n.common.leavePage}
                       onClick={goToChildProfile}
@@ -542,7 +542,7 @@ const ChildDocumentReadViewInner = React.memo(
                     data-qa="confirm-other-decisions-button"
                   />
                 ) : (
-                  <FixedSpaceRow alignItems="flex-end">
+                  <FixedSpaceRow $alignItems="flex-end">
                     {permittedActions.includes('UPDATE') && isEditable && (
                       <Button
                         text={i18n.common.edit}
@@ -671,8 +671,8 @@ const ChildDocumentReadViewInner = React.memo(
                 {isDecision &&
                   document.status === 'DRAFT' &&
                   permittedActions.includes('PROPOSE_DECISION') && (
-                    <FixedSpaceRow alignItems="flex-end">
-                      <FixedSpaceColumn spacing="xxs">
+                    <FixedSpaceRow $alignItems="flex-end">
+                      <FixedSpaceColumn $spacing="xxs">
                         <Label>
                           {
                             i18n.childInformation.childDocuments.editor
@@ -723,9 +723,12 @@ const ChildDocumentReadViewInner = React.memo(
 
               {isPublishable && (
                 <>
-                  <Gap size="s" />
-                  <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-                    <FixedSpaceRow alignItems="center" spacing="xs">
+                  <Gap $size="s" />
+                  <FixedSpaceRow
+                    $alignItems="center"
+                    $justifyContent="flex-end"
+                  >
+                    <FixedSpaceRow $alignItems="center" $spacing="xs">
                       {publishedUpToDate ? (
                         <>
                           <FontAwesomeIcon
@@ -801,8 +804,8 @@ const AcceptDecisionForm = React.memo(function AcceptDecisionForm({
   const { validity } = useFormFields(form)
 
   return (
-    <FixedSpaceRow alignItems="flex-end">
-      <FixedSpaceColumn spacing="xs">
+    <FixedSpaceRow $alignItems="flex-end">
+      <FixedSpaceColumn $spacing="xs">
         <Label>
           {i18n.childInformation.childDocuments.decisions.validityPeriod}
         </Label>
@@ -957,8 +960,8 @@ const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
         <div key={index} data-qa="other-decision">
           {index ? <HorizontalLine /> : ''}
           <FixedSpaceRow
-            alignItems="flex-end"
-            justifyContent="space-between"
+            $alignItems="flex-end"
+            $justifyContent="space-between"
             key={0}
           >
             <P>
@@ -967,7 +970,7 @@ const OtherValidDecisionForm = React.memo(function OtherValidDecisionForm({
               {otherDecision.state.validity.start + ' - '}
               {(otherDecision.state.validity.end ?? '') + ')'}
             </P>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <OtherValidDecisionRadioButtons
                 otherValidDecisionForm={otherDecision}
                 document={document}
@@ -1099,14 +1102,14 @@ const AnnulDecisionModal = React.memo(function AnnulDecisionModal({
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
-      <FixedSpaceColumn spacing="s">
+      <FixedSpaceColumn $spacing="s">
         <InfoBox
           noMargin
           message={
             i18n.childInformation.childDocuments.decisions.annulInstructions
           }
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <Label>
           {i18n.childInformation.childDocuments.decisions.annulReasonLabel}
         </Label>

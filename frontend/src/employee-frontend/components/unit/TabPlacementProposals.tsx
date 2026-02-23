@@ -28,7 +28,7 @@ export default React.memo(function TabPlacementProposals({
 
   return (
     <CollapsibleContentArea
-      opaque
+      $opaque
       title={
         <Title size={2}>
           {i18n.unit.placementProposals.title}

@@ -36,9 +36,9 @@ export default React.memo(function NewCalendarEventTimeEditor({
 
   return (
     <InputContainer
-      spacing="xxs"
-      alignItems="center"
-      justifyContent="center"
+      $spacing="xxs"
+      $alignItems="center"
+      $justifyContent="center"
       data-qa="time-input-container"
     >
       <TimeInputF

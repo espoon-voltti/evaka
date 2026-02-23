@@ -384,7 +384,11 @@ export const TimesMonth = React.memo(function TimesMonth({
   )
 
   return monthHasCurrentOrFutureDays ? (
-    <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="2px">
+    <ContentArea
+      $opaque={false}
+      key={`${month}${year}`}
+      $paddingHorizontal="2px"
+    >
       <H3 data-qa="calendar-month-header">{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
       <Grid>
         {weeks.map((w) => (
@@ -530,8 +534,8 @@ export const TimesDay = React.memo(function TimesDay({
             <TimesContainer data-qa="times" className="edit">
               {eventTimesToday.map((t, i) => (
                 <FixedSpaceRow
-                  spacing="s"
-                  alignItems="center"
+                  $spacing="s"
+                  $alignItems="center"
                   key={`${day.date.format()}-time-input-${i}`}
                 >
                   <CalendarEventTimeInput bind={t} />

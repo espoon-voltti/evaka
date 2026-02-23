@@ -142,7 +142,7 @@ export default React.memo(function StaffMemberPage({
         ) : (
           <>
             <EmployeeCardBackground staff={toStaff(staffMember)} />
-            <Gap size="s" />
+            <Gap $size="s" />
             <FixedSpaceColumn>
               {isStaffAttendanceTypesEnabled ? (
                 <>
@@ -237,7 +237,7 @@ export default React.memo(function StaffMemberPage({
                   </>
                 )
               )}
-              <ContentArea opaque paddingHorizontal="s">
+              <ContentArea $opaque $paddingHorizontal="s">
                 {openAttendanceInAnotherUnit && (
                   <AlertBox
                     data-qa="open-attendance-in-another-unit-warning"
@@ -248,7 +248,7 @@ export default React.memo(function StaffMemberPage({
                     }${i18n.attendances.staff.openAttendanceInAnotherUnitWarningCont}`}
                   />
                 )}
-                <FixedSpaceColumn alignItems="center">
+                <FixedSpaceColumn $alignItems="center">
                   {staffMember.present ? (
                     <LegacyButton
                       primary
@@ -267,7 +267,7 @@ export default React.memo(function StaffMemberPage({
                   ) : (
                     <>
                       {!isOperationalDate && (
-                        <H4 centered={true}>
+                        <H4 $centered={true}>
                           {i18n.attendances.notOperationalDate}
                         </H4>
                       )}

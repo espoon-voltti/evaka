@@ -17,15 +17,15 @@ import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 import { useTranslation } from '../../../../state/i18n'
 
 interface CardProps {
-  color: string
-  active: boolean
+  $color: string
+  $active: boolean
 }
 
 const Card = styled.div<CardProps>`
   cursor: pointer;
   border-left-style: solid;
   border-left-color: ${(props) =>
-    props.active ? props.color : colors.grayscale.g15};
+    props.$active ? props.$color : colors.grayscale.g15};
   border-left-width: 10px;
   width: 100%;
   margin: 10px;
@@ -91,7 +91,7 @@ export default React.memo(function OccupancyCard({
             : colors.grayscale.g15
 
   return (
-    <Card color={color} active={active} onClick={() => onClick()}>
+    <Card $color={color} $active={active} onClick={() => onClick()}>
       <HeaderContainer>
         <Title size={4} noMargin>
           {i18n.unit.occupancy.subtitles[type]}

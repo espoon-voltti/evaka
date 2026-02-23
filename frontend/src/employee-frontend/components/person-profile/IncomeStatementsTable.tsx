@@ -59,7 +59,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
 
   return (
     <Tr key={incomeStatement.id} data-qa="income-statement-row">
-      <Td verticalAlign="middle">
+      <Td $verticalAlign="middle">
         <Link
           to={`/profile/${personId}/income-statement/${incomeStatement.id}`}
         >
@@ -69,7 +69,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
           {incomeStatement.endDate?.format()}
         </Link>
       </Td>
-      <Td verticalAlign="middle">
+      <Td $verticalAlign="middle">
         {incomeStatement.sentAt?.toLocalDate()?.format() ?? '-'}
       </Td>
       <Td>
@@ -82,7 +82,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
         />
         {!!incomeStatement.handlerNote && (
           <>
-            <Gap size="xxs" />
+            <Gap $size="xxs" />
             <Dimmed>{incomeStatement.handlerNote}</Dimmed>
           </>
         )}

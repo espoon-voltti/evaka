@@ -39,10 +39,10 @@ export function StaffMemberPageContainer({
 
   return (
     <TallContentAreaNoOverflow
-      opaque
-      paddingHorizontal="0px"
-      paddingVertical="0px"
-      shadow
+      $opaque
+      $paddingHorizontal="0px"
+      $paddingVertical="0px"
+      $shadow
     >
       <BackButtonMargin
         onClick={() => (back !== undefined ? navigate(back) : history.go(-1))}

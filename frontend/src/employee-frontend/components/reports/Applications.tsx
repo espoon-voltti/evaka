@@ -72,7 +72,7 @@ export default React.memo(function Applications() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.applications.title}</Title>
 
         <FilterRow>

@@ -100,8 +100,8 @@ export default React.memo(function UnitDetailsPanel({
 
   return (
     <Wrapper data-qa="map-unit-details">
-      <Area opaque>
-        <Gap size="s" />
+      <Area $opaque>
+        <Gap $size="s" />
         <Button
           appearance="inline"
           data-qa="map-unit-details-back"
@@ -109,16 +109,16 @@ export default React.memo(function UnitDetailsPanel({
           icon={faArrowLeft}
           onClick={onClose}
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <H2 data-qa="map-unit-details-name" translate="no">
           {unit.name}
         </H2>
 
         {selectedAddress && distance && distance.isLoading ? null : (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <Label>{t.map.address}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <div translate="no">
               {unit.streetAddress}, {unit.postalCode} {unit.postOffice}
             </div>
@@ -133,23 +133,23 @@ export default React.memo(function UnitDetailsPanel({
                 )}
               </div>
             )}
-            <Gap size="s" />
+            <Gap $size="s" />
             <Label>{t.map.careTypePlural}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <div>{careTypes}</div>
-            <Gap size="s" />
+            <Gap $size="s" />
             <Label>{t.map.language}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <div>
               {capitalizeFirstLetter(t.common.unit.languages[unit.language])}
             </div>
-            <Gap size="s" />
+            <Gap $size="s" />
             <Label>{t.map.providerType}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <div>{t.common.unit.providerTypes[unit.providerType]}</div>
             {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
               <>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <div>
                   <ExternalLink
                     text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
@@ -159,27 +159,27 @@ export default React.memo(function UnitDetailsPanel({
                 </div>
               </>
             )}
-            <Gap size="s" />
+            <Gap $size="s" />
             <Label>{t.map.shiftCareTitle}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <div>
               {unit.providesShiftCare ? t.map.shiftCareYes : t.map.shiftCareNo}
             </div>
             {!!unit.url && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
 
                 <Label>{t.map.unitHomepage}</Label>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <ExternalLink text={t.map.homepage} href={unit.url} newTab />
               </>
             )}
             {!!routeLink && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
 
                 <Label>{t.map.route}</Label>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <ExternalLink
                   text={t.map.routePlanner}
                   href={routeLink}

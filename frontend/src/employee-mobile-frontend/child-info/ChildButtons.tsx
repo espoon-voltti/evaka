@@ -38,10 +38,10 @@ export default React.memo(function ChildButtons({
   return renderResult(unitInfoResponse, (unit) => (
     <IconWrapper>
       <FixedSpaceRow
-        spacing="52px"
-        fullWidth
-        maxWidth="56px"
-        justifyContent="center"
+        $spacing="52px"
+        $fullWidth
+        $maxWidth="56px"
+        $justifyContent="center"
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link

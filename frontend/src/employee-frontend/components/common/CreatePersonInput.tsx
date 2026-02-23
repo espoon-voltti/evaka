@@ -35,7 +35,7 @@ export default React.memo(function CreatePersonInput({
   return (
     <>
       {personType === 'NEW_NO_SSN' && (
-        <ListGrid labelWidth="min-content">
+        <ListGrid $labelWidth="min-content">
           <Label>{i18n.personSearch.createNewPerson.form.firstName}*</Label>
           <InputField
             value={createPersonInfo.firstName ?? ''}
@@ -75,7 +75,7 @@ export default React.memo(function CreatePersonInput({
               width="full"
               data-qa="input-street-address"
             />
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <PostalCodeAndOfficeContainer>
               <PostalCodeContainer>
                 <InputField

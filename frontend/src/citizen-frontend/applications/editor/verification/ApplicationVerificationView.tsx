@@ -69,7 +69,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
     missingUrgencyAttachments || missingShiftCareAttachments
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{t.applications.editor.verification.title[type]}</H1>
         {application.status === 'CREATED'
           ? t.applications.editor.verification.notYetSent
@@ -113,9 +113,9 @@ export default React.memo(function ApplicationVerificationViewDaycare({
         )}
       </ContentArea>
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <BasicsSection application={application} formData={formData} />
         <HorizontalLine />
         <ServiceNeedSection

@@ -167,10 +167,10 @@ export const Notifications = React.memo(function Notifications({
     addNotification
   )
   return (
-    <OuterContainer sticky={sticky} offsetTop={offsetTop}>
+    <OuterContainer $sticky={sticky} $offsetTop={offsetTop}>
       <ColumnContainer
-        spacing="s"
-        alignItems="flex-end"
+        $spacing="s"
+        $alignItems="flex-end"
         aria-live="polite"
         data-qa="notification-container"
       >
@@ -214,17 +214,17 @@ export const Notifications = React.memo(function Notifications({
 })
 
 const OuterContainer = styled.div<{
-  sticky?: boolean
-  offsetTop?: boolean
+  $sticky?: boolean
+  $offsetTop?: boolean
 }>`
   @media (max-width: ${desktopMin}) {
-    position: ${(p) => (p.sticky ? 'sticky' : 'fixed')};
-    top: ${(p) => (p.offsetTop ? '60px' : '0')};
+    position: ${(p) => (p.$sticky ? 'sticky' : 'fixed')};
+    top: ${(p) => (p.$offsetTop ? '60px' : '0')};
   }
 
   @media (min-width: ${desktopMin}) {
-    position: ${(p) => (p.sticky ? 'sticky' : 'fixed')};
-    top: ${(p) => (p.offsetTop ? '160px' : '0')};
+    position: ${(p) => (p.$sticky ? 'sticky' : 'fixed')};
+    top: ${(p) => (p.$offsetTop ? '160px' : '0')};
   }
 
   left: 0;
@@ -338,7 +338,7 @@ const ReloadNotification = React.memo(function ReloadNotification({
   const reload = () => window.location.reload()
 
   return (
-    <FixedSpaceColumn spacing="xs" onClick={reload}>
+    <FixedSpaceColumn $spacing="xs" onClick={reload}>
       <div>{title}</div>
       <div>
         <ReloadButton

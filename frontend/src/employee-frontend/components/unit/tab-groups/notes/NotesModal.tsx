@@ -78,7 +78,7 @@ const Tabs = styled.div`
   flex-grow: 1;
 `
 
-const Tab = styled.div<{ active?: boolean }>`
+const Tab = styled.div<{ $active?: boolean }>`
   flex-grow: 1;
   display: flex;
   justify-content: center;
@@ -86,8 +86,8 @@ const Tab = styled.div<{ active?: boolean }>`
 
   border-bottom-width: 2px;
   border-bottom-style: solid;
-  border-bottom-color: ${({ active, theme }) =>
-    active ? theme.colors.main.m2 : 'transparent'};
+  border-bottom-color: ${({ $active, theme }) =>
+    $active ? theme.colors.main.m2 : 'transparent'};
 
   font-size: 15px;
   font-weight: ${fontWeights.bold};
@@ -226,13 +226,13 @@ export default React.memo(function NotesModal({
         <Tab
           key={type}
           data-qa={`tab-${type}`}
-          active={tab === type}
+          $active={tab === type}
           onClick={() => setTab(type)}
         >
           {title}
           {indicator && (
             <>
-              <Gap horizontal size="xs" />
+              <Gap $horizontal $size="xs" />
               <RoundIcon content="" color={colors.main.m3} size="xs" />
             </>
           )}
@@ -260,7 +260,7 @@ export default React.memo(function NotesModal({
         ({ childStickyNotes, groupNotes, childDailyNotes }) => (
           <>
             {tab === 'child' && child && (
-              <ContentArea opaque={false} paddingHorizontal="s">
+              <ContentArea $opaque={false} $paddingHorizontal="s">
                 <ChildDailyNoteForm
                   note={childDailyNotes[0] ?? null}
                   childId={child.id}

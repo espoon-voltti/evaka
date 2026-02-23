@@ -273,8 +273,8 @@ const PlacementDesktopValidated = React.memo(
     )
 
     return (
-      <FixedSpaceColumn spacing="L">
-        <FixedSpaceRow alignItems="center">
+      <FixedSpaceColumn $spacing="L">
+        <FixedSpaceRow $alignItems="center">
           <div>{i18n.applications.placementDesktop.occupancyPeriod}:</div>
           <DatePicker
             data-qa="occupancy-period-start-picker"
@@ -289,13 +289,13 @@ const PlacementDesktopValidated = React.memo(
             {occupancyPeriodStart.addMonths(3).format()}
           </div>
         </FixedSpaceRow>
-        <ColumnsContainer spacing="L">
+        <ColumnsContainer $spacing="L">
           <DaycaresColumn ref={daycareListRef}>
             <div>
               {i18n.applications.placementDesktop.shownUnitsCount}:{' '}
               {shownDaycares?.length}
             </div>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <Combobox
               items={otherAvailableUnits}
               selectedItem={null}
@@ -304,7 +304,7 @@ const PlacementDesktopValidated = React.memo(
               getItemLabel={(unit) => unit.name}
               fullWidth
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             {shownDaycares !== undefined && (
               <PrefetchedDaycares
                 shownDaycares={shownDaycares}
@@ -327,7 +327,7 @@ const PlacementDesktopValidated = React.memo(
               {i18n.applications.placementDesktop.applicationsCount}:{' '}
               {applications.length}
             </div>
-            <Gap size="s" />
+            <Gap $size="s" />
             <ApplicationsList>
               {shownDaycares !== undefined &&
                 applications.map((application) => (
@@ -471,7 +471,7 @@ const ApplicationsColumn = styled.div`
 `
 
 const ApplicationsList = styled(FixedSpaceColumn).attrs({
-  justifyContent: 'stretch'
+  $justifyContent: 'stretch'
 })`
   flex-grow: 1;
   width: 100%;

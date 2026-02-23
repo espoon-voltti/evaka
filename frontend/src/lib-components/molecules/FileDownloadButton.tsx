@@ -51,7 +51,7 @@ export default React.memo(function FileDownloadButton({
 
   return (
     <DownloadButton onClick={handleClick} data-qa={dataQa}>
-      <FixedSpaceRow spacing="xs" alignItems="center" key={file.id}>
+      <FixedSpaceRow $spacing="xs" $alignItems="center" key={file.id}>
         {icon && (
           <FontAwesomeIcon icon={icon === true ? fileIcon(file) : icon} />
         )}

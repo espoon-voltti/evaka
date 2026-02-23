@@ -131,7 +131,7 @@ export default React.memo(function InvoiceFilters({
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <UnitFilter
             units={units.getOrElse([])}
             selected={units
@@ -155,7 +155,7 @@ export default React.memo(function InvoiceFilters({
             toggled={searchFilters.status}
             toggle={toggleStatus}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <InvoiceDateFilter
             startDate={searchFilters.startDate}
             setStartDate={setStartDate}

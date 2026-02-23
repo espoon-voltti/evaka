@@ -49,7 +49,7 @@ export default React.memo(function InvoiceDetailsPage() {
         {renderResult(
           combine(response, invoiceCodes),
           ([response, invoiceCodes]) => (
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <Title size={1}>
                 {i18n.invoice.title[response.invoice.status]}
               </Title>

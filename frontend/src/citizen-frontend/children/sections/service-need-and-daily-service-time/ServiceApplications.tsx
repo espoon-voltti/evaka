@@ -106,7 +106,7 @@ export default React.memo(function ServiceApplications({
 
       {applications.length > 0 && (
         <div>
-          <Gap size="m" />
+          <Gap $size="m" />
           <TabletAndDesktop>
             <ServiceApplicationsTable
               applications={applications}
@@ -144,27 +144,27 @@ const ServiceApplicationsTable = React.memo(function ServiceApplicationsTable({
     <Table data-qa="service-applications">
       <Thead>
         <Tr>
-          <Th minimalWidth>{i18n.children.serviceApplication.sentAt}</Th>
+          <Th $minimalWidth>{i18n.children.serviceApplication.sentAt}</Th>
           <Th>{i18n.children.serviceApplication.startDate}</Th>
           <Th>{i18n.children.serviceApplication.serviceNeed}</Th>
           <Th />
-          <Th minimalWidth>{i18n.children.serviceApplication.status}</Th>
+          <Th $minimalWidth>{i18n.children.serviceApplication.status}</Th>
         </Tr>
       </Thead>
       <Tbody>
         {sortedApplications.map(({ data: application, permittedActions }) => (
           <Tr key={application.id} data-qa="service-application-row">
-            <Td minimalWidth data-qa="application-sent-date">
+            <Td $minimalWidth data-qa="application-sent-date">
               {application.sentAt.toLocalDate().format()}
             </Td>
-            <Td minimalWidth data-qa="application-start-date">
+            <Td $minimalWidth data-qa="application-start-date">
               {application.startDate.format()}
             </Td>
             <Td data-qa="application-service-need-description">
               {getServiceNeedName(application.serviceNeedOption, lang)}
             </Td>
             <Td>
-              <FixedSpaceRow justifyContent="flex-end">
+              <FixedSpaceRow $justifyContent="flex-end">
                 <Button
                   text={i18n.children.serviceApplication.additionalInfo}
                   icon={faFile}
@@ -187,9 +187,9 @@ const ServiceApplicationsTable = React.memo(function ServiceApplicationsTable({
                 )}
               </FixedSpaceRow>
             </Td>
-            <Td minimalWidth>
+            <Td $minimalWidth>
               <StaticChip
-                color={
+                $color={
                   application.decision?.status === 'REJECTED'
                     ? colors.accents.a5orangeLight
                     : colors.main.m1
@@ -233,9 +233,9 @@ const ServiceApplicationsList = React.memo(function ServiceApplicationsList({
         <FixedSpaceColumn
           key={application.id}
           data-qa="service-application"
-          spacing="xs"
+          $spacing="xs"
         >
-          <FixedSpaceRow justifyContent="space-between">
+          <FixedSpaceRow $justifyContent="space-between">
             <Label>
               <span data-qa="application-sent-date">
                 {application.startDate.format()}
@@ -243,7 +243,7 @@ const ServiceApplicationsList = React.memo(function ServiceApplicationsList({
               -{' '}
             </Label>
             <StaticChip
-              color={
+              $color={
                 application.decision?.status === 'REJECTED'
                   ? colors.accents.a5orangeLight
                   : colors.main.m1
@@ -291,7 +291,7 @@ const ServiceApplicationsList = React.memo(function ServiceApplicationsList({
             )}
           </FixedSpaceRow>
 
-          <HorizontalLine slim />
+          <HorizontalLine $slim />
         </FixedSpaceColumn>
       ))}
     </FixedSpaceColumn>
@@ -319,10 +319,10 @@ const ServiceApplicationsDetails = React.memo(
         >
           <CalendarModalBackground>
             <CalendarModalSection>
-              <Gap size="L" sizeOnMobile="zero" />
+              <Gap $size="L" $sizeOnMobile="zero" />
               <ModalHeader
                 headingComponent={(props) => (
-                  <H1 noMargin data-qa="title" {...props}>
+                  <H1 $noMargin data-qa="title" {...props}>
                     {props.children}
                   </H1>
                 )}
@@ -331,27 +331,27 @@ const ServiceApplicationsDetails = React.memo(
               </ModalHeader>
             </CalendarModalSection>
 
-            <Gap size="zero" sizeOnMobile="s" />
+            <Gap $size="zero" $sizeOnMobile="s" />
 
             <CalendarModalSection>
               <H2>{application.childName}</H2>
               <FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>{i18n.children.serviceApplication.sentAt}</Label>
                   <div>{application.sentAt.format()}</div>
                   <div>{application.personName}</div>
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>{i18n.children.serviceApplication.startDate}</Label>
                   <div>{application.startDate.format()}</div>
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>{i18n.children.serviceApplication.serviceNeed}</Label>
                   <div>
                     {getServiceNeedName(application.serviceNeedOption, lang)}
                   </div>
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>
                     {i18n.children.serviceApplication.additionalInfo}
                   </Label>
@@ -359,7 +359,7 @@ const ServiceApplicationsDetails = React.memo(
                     {application.additionalInfo}
                   </div>
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>{i18n.children.serviceApplication.status}</Label>
                   {application.decision === null ? (
                     <div data-qa="decision-status">
@@ -381,7 +381,7 @@ const ServiceApplicationsDetails = React.memo(
                   )}
                 </FixedSpaceColumn>
                 {!!application.decision?.rejectedReason && (
-                  <FixedSpaceColumn spacing="xxs">
+                  <FixedSpaceColumn $spacing="xxs">
                     <Label>
                       {i18n.children.serviceApplication.decision.rejectedReason}
                     </Label>
@@ -390,11 +390,11 @@ const ServiceApplicationsDetails = React.memo(
                     </div>
                   </FixedSpaceColumn>
                 )}
-                <FixedSpaceRow justifyContent="space-evenly">
+                <FixedSpaceRow $justifyContent="space-evenly">
                   <Button text={i18n.common.close} onClick={onClose} />
                 </FixedSpaceRow>
               </FixedSpaceColumn>
-              <Gap sizeOnMobile="zero" />
+              <Gap $sizeOnMobile="zero" />
             </CalendarModalSection>
           </CalendarModalBackground>
           <CalendarModalCloseButton

@@ -139,9 +139,9 @@ export default React.memo(function MarkAbsentBeforehand({
   return (
     <>
       <TallContentArea
-        opaque={false}
-        paddingHorizontal="zero"
-        paddingVertical="zero"
+        $opaque={false}
+        $paddingHorizontal="zero"
+        $paddingVertical="zero"
       >
         {renderResult(child, (child) => (
           <>
@@ -158,17 +158,17 @@ export default React.memo(function MarkAbsentBeforehand({
               />
             </div>
             <ContentArea
-              shadow
-              opaque={true}
-              paddingHorizontal="s"
-              paddingVertical="m"
+              $shadow
+              $opaque={true}
+              $paddingHorizontal="s"
+              $paddingVertical="m"
             >
               <AbsenceWrapper>
                 <CustomTitle>
                   {i18n.attendances.actions.markAbsentBeforehand}
                 </CustomTitle>
-                <Gap size="m" />
-                <FixedSpaceRow spacing="xxs" alignItems="flex-end">
+                <Gap $size="m" />
+                <FixedSpaceRow $spacing="xxs" $alignItems="flex-end">
                   <TimeInputWrapper>
                     <Label>{i18n.common.starts}</Label>
                     <TimeInput
@@ -204,8 +204,8 @@ export default React.memo(function MarkAbsentBeforehand({
                     />
                   </TimeInputWrapper>
                 </FixedSpaceRow>
-                <Gap size="L" />
-                <FixedSpaceColumn spacing="s">
+                <Gap $size="L" />
+                <FixedSpaceColumn $spacing="s">
                   <Label>{i18n.absences.reason}</Label>
                   <AbsenceSelector
                     absenceTypes={[
@@ -220,7 +220,7 @@ export default React.memo(function MarkAbsentBeforehand({
               </AbsenceWrapper>
               <P>{i18n.absences.fullDayHint}</P>
               <Actions>
-                <FixedSpaceRow fullWidth>
+                <FixedSpaceRow $fullWidth>
                   <LegacyButton text={i18n.common.cancel} onClick={goBack} />
                   {selectedAbsenceType !== undefined &&
                   selectedAbsenceType !== 'NO_ABSENCE' &&

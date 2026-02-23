@@ -144,8 +144,8 @@ function SingleMessage({
       </MessageContent>
       {message.attachments.length > 0 && (
         <>
-          <HorizontalLine slim />
-          <FixedSpaceColumn spacing="xs">
+          <HorizontalLine $slim />
+          <FixedSpaceColumn $spacing="xs">
             {message.attachments.map((attachment) => (
               <FileDownloadButton
                 key={attachment.id}
@@ -171,9 +171,9 @@ const ScrollContainer = styled.div`
   overflow-y: auto;
 `
 
-const AutoScrollPositionSpan = styled.span<{ top: string }>`
+const AutoScrollPositionSpan = styled.span<{ $top: string }>`
   position: absolute;
-  top: ${(p) => p.top};
+  top: ${(p) => p.$top};
 `
 
 interface Props {
@@ -304,7 +304,7 @@ export function SingleThreadView({
 
   return (
     <ThreadContainer>
-      <ContentArea opaque paddingVertical={defaultMargins.xs}>
+      <ContentArea $opaque $paddingVertical={defaultMargins.xs}>
         <LegacyInlineButton
           icon={faAngleLeft}
           text={i18n.common.goBack}
@@ -312,19 +312,19 @@ export function SingleThreadView({
           color={colors.main.m2}
         />
       </ContentArea>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <ScrollContainer>
         <div>
           <ThreadHeader ref={stickyTitleRowRef}>
             <FixedSpaceColumn>
-              <FixedSpaceRow justifyContent="space-between">
-                <H2 noMargin>
+              <FixedSpaceRow $justifyContent="space-between">
+                <H2 $noMargin>
                   {title}
                   {sensitive && ` (${i18n.messages.sensitive})`}
                 </H2>
                 <MessageCharacteristics type={type} urgent={urgent} />
               </FixedSpaceRow>
-              <FixedSpaceRow justifyContent="left">
+              <FixedSpaceRow $justifyContent="left">
                 {singleCustomer && singleCustomer.personId && (
                   <div>
                     {i18n.messages.customer}:{' '}
@@ -352,7 +352,7 @@ export function SingleThreadView({
               {!replyEditorVisible && idx === messages.length - 1 && (
                 <div style={{ position: 'relative' }}>
                   <AutoScrollPositionSpan
-                    top={`-${stickyTitleRowHeight}px`}
+                    $top={`-${stickyTitleRowHeight}px`}
                     ref={autoScrollRef}
                   />
                 </div>
@@ -386,8 +386,8 @@ export function SingleThreadView({
             </MessageContainer>
           ) : (
             <>
-              <Gap size="s" />
-              <ActionRow justifyContent="space-between">
+              <Gap $size="s" />
+              <ActionRow $justifyContent="space-between">
                 <Button
                   appearance="inline"
                   icon={faReply}
@@ -424,7 +424,7 @@ export function SingleThreadView({
                   />
                 )}
               </ActionRow>
-              <Gap size="m" />
+              <Gap $size="m" />
             </>
           ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}

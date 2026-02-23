@@ -35,8 +35,8 @@ export default React.memo(function PersonFridgeHead() {
         title={<H2>{i18n.personProfile.personDetails}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
+        $opaque
+        $paddingVertical="L"
         data-qa="person-info-collapsible"
       >
         {renderResult(person, (person) => (

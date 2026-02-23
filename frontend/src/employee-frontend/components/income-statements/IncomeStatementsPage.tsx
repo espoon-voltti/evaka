@@ -98,7 +98,7 @@ function IncomeStatementsList({
           <SortableTh sorted={isSorted('TYPE')} onClick={toggleSort('TYPE')}>
             {i18n.incomeStatement.table.type}
           </SortableTh>
-          <Th minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
+          <Th $minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
           <SortableTh
             sorted={isSorted('HANDLER_NOTE')}
             onClick={toggleSort('HANDLER_NOTE')}
@@ -198,15 +198,15 @@ export default React.memo(function IncomeStatementsPage() {
       data-qa="income-statements-page"
       data-isloading={isLoading(incomeStatements)}
     >
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{i18n.incomeStatement.table.title}</H1>
         <IncomeStatementFilters />
       </ContentArea>
-      <Gap size="s" />
+      <Gap $size="s" />
       {searchFilters !== undefined &&
         renderResult(incomeStatements, ({ data, pages, total }) => (
-          <ContentArea opaque>
-            <FixedSpaceRow justifyContent="flex-end">
+          <ContentArea $opaque>
+            <FixedSpaceRow $justifyContent="flex-end">
               {i18n.common.resultCount(total)}
             </FixedSpaceRow>
             <IncomeStatementsList
@@ -216,7 +216,7 @@ export default React.memo(function IncomeStatementsPage() {
               sortDirection={sortDirection}
               setSortDirection={setSortDirection}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             {pages > 1 && (
               <Pagination
                 pages={pages}

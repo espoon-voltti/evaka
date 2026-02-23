@@ -34,7 +34,7 @@ export default React.memo(function FuturePreschoolersReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.futurePreschoolers.title}</Title>
 
         {renderResult(preschoolerRows, (rows) => (

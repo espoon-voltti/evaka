@@ -76,11 +76,11 @@ export const AbsenceApplicationsSection = (props: Props) => {
           {incompleted.map((application) => (
             <IncompleteApplicationContainer key={application.data.id}>
               <FixedSpaceColumn data-qa="absence-applications-incompleted-row">
-                <H4 noMargin>
+                <H4 $noMargin>
                   {i18n.childInformation.absenceApplications.absenceApplication}{' '}
                   {application.data.createdAt.toLocalDate().format()}
                 </H4>
-                <FixedSpaceRow gap={defaultMargins.XXL}>
+                <FixedSpaceRow $gap={defaultMargins.XXL}>
                   <div>
                     <Label>
                       {i18n.childInformation.absenceApplications.range}
@@ -123,8 +123,8 @@ export const AbsenceApplicationsSection = (props: Props) => {
                         }
                         noMargin
                       />
-                      <Gap size="xs" />
-                      <FixedSpaceRow justifyContent="flex-end">
+                      <Gap $size="xs" />
+                      <FixedSpaceRow $justifyContent="flex-end">
                         <Button
                           text={
                             i18n.childInformation.absenceApplications.reject

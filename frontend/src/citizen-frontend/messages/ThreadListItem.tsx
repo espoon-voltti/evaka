@@ -80,8 +80,8 @@ export default React.memo(function ThreadListItem({
     : thread.lastMessageSentAt
   return (
     <Container
-      isRead={!hasUnreadMessages}
-      active={active}
+      $isRead={!hasUnreadMessages}
+      $active={active}
       onClick={onClick}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
       data-qa="thread-list-item"
@@ -89,7 +89,7 @@ export default React.memo(function ThreadListItem({
       id={messageThreadIdAttr(thread.id)}
     >
       <FixedSpaceColumn>
-        <Header isRead={!hasUnreadMessages}>
+        <Header $isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-participants" translate="no">
             <ScreenReaderOnly>
               {i18n.messages.threadList.participants}:
@@ -117,7 +117,7 @@ export default React.memo(function ThreadListItem({
             {i18n.messages.openMessage}
           </Link>
         </ScreenReaderOnly>
-        <TitleAndDate isRead={!hasUnreadMessages}>
+        <TitleAndDate $isRead={!hasUnreadMessages}>
           <Truncated>
             <ScreenReaderOnly>
               {i18n.messages.threadList.title}:
@@ -154,7 +154,7 @@ export default React.memo(function ThreadListItem({
         {isRegularThread(thread) &&
           lastMessage &&
           lastMessage.attachments.length > 0 && (
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {lastMessage.attachments.map((attachment) => (
                 <FileDownloadButton
                   key={attachment.id}

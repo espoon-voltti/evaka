@@ -30,7 +30,7 @@ export default React.memo(function TabApplications({ applications }: Props) {
           {i18n.unit.applications.title} ({applications.length})
         </Title>
       }
-      opaque
+      $opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
     >

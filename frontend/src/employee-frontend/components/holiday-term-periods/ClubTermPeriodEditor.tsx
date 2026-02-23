@@ -40,7 +40,7 @@ export default React.memo(function ClubTermPeriodEditor() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(combine(clubTerms, term), ([clubTerms, term]) => (
           <ClubTermForm
             clubTerm={term}

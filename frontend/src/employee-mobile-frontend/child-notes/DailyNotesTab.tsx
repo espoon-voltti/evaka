@@ -230,10 +230,10 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
 
   return (
     <>
-      <ContentArea shadow opaque paddingHorizontal="s">
-        <FixedSpaceColumn spacing="m">
-          <FixedSpaceRow fullWidth justifyContent="space-between">
-            <H2 primary noMargin>
+      <ContentArea $shadow $opaque $paddingHorizontal="s">
+        <FixedSpaceColumn $spacing="m">
+          <FixedSpaceRow $fullWidth $justifyContent="space-between">
+            <H2 $primary $noMargin>
               {i18n.attendances.notes.note}
             </H2>
             {!!dailyNoteId && (
@@ -253,13 +253,13 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             data-qa="daily-note-note-input"
           />
 
-          <H3 primary smaller noMargin>
+          <H3 $primary $smaller $noMargin>
             {i18n.attendances.notes.otherThings}
           </H3>
 
-          <FixedSpaceColumn spacing="s">
+          <FixedSpaceColumn $spacing="s">
             <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-            <ChipWrapper margin="zero">
+            <ChipWrapper $margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <SelectionChip
@@ -274,14 +274,14 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
                     data-qa={`feeding-note-${level}`}
                     hideIcon
                   />
-                  <Gap horizontal size="xxs" />
+                  <Gap $horizontal $size="xxs" />
                 </Fragment>
               ))}
             </ChipWrapper>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="s">
+          <FixedSpaceColumn $spacing="s">
             <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-            <ChipWrapper margin="zero">
+            <ChipWrapper $margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <SelectionChip
@@ -296,7 +296,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
                     data-qa={`sleeping-note-${level}`}
                     hideIcon
                   />
-                  <Gap horizontal size="xxs" />
+                  <Gap $horizontal $size="xxs" />
                 </Fragment>
               ))}
             </ChipWrapper>
@@ -337,9 +337,9 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             />
             <span>{i18n.common.minuteShort}</span>
           </Time>
-          <FixedSpaceColumn spacing="s">
+          <FixedSpaceColumn $spacing="s">
             <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {childDailyNoteReminderValues.map((reminder) => (
                 <Checkbox
                   key={reminder}
@@ -366,7 +366,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         </FixedSpaceColumn>
       </ContentArea>
       <StickyActionContainer>
-        <FixedSpaceRow fullWidth justifyContent="space-evenly" spacing="xxs">
+        <FixedSpaceRow $fullWidth $justifyContent="space-evenly" $spacing="xxs">
           <LegacyButton
             onClick={goBackWithConfirm}
             text={i18n.common.cancel}

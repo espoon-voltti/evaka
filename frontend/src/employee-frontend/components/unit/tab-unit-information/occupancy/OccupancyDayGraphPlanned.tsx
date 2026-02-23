@@ -46,11 +46,11 @@ export default React.memo(function OccupancyDayGraphPlanned({
       <H3>{i18n.unit.occupancy.realtime.legendTitle}</H3>
       <FixedSpaceColumn>
         <FixedSpaceRow>
-          <LegendSquare color={colors.grayscale.g100} />
+          <LegendSquare $color={colors.grayscale.g100} />
           <Label>{i18n.unit.occupancy.realtime.children}</Label>
         </FixedSpaceRow>
         <FixedSpaceRow>
-          <LegendSquare color={colors.main.m3} />
+          <LegendSquare $color={colors.main.m3} />
           <Label>{i18n.unit.occupancy.realtime.staffRequired}</Label>
         </FixedSpaceRow>
       </FixedSpaceColumn>
@@ -139,13 +139,13 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
               .toLocalTime()
               .format()}
           </span>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <table>
             <tbody>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color={colors.grayscale.g100} />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color={colors.grayscale.g100} />
                     <span>{i18n.unit.occupancy.realtime.children}</span>
                   </FixedSpaceRow>
                 </td>
@@ -155,8 +155,8 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.childrenPresent}</span>
                   </FixedSpaceRow>
                 </td>
@@ -166,8 +166,8 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color={colors.main.m3} />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color={colors.main.m3} />
                     <span>{i18n.unit.occupancy.realtime.staffRequired}</span>
                   </FixedSpaceRow>
                 </td>
@@ -177,8 +177,8 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
               </tr>
               <tr>
                 <td>
-                  <FixedSpaceRow alignItems="center" spacing="xs">
-                    <LegendSquare small color="transparent" />
+                  <FixedSpaceRow $alignItems="center" $spacing="xs">
+                    <LegendSquare $small $color="transparent" />
                     <span>{i18n.unit.occupancy.realtime.unknownChildren}</span>
                   </FixedSpaceRow>
                 </td>

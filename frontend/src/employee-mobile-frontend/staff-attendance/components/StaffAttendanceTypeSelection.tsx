@@ -31,10 +31,10 @@ export default React.memo(function StaffAttendanceTypeSelection({
       <InfoBoxContainer>
         <InfoBox message={i18n.attendances.staff.differenceInfo} />
       </InfoBoxContainer>
-      <Gap size="s" />
+      <Gap $size="s" />
       <CustomTitle>{i18n.attendances.staff.differenceReason}</CustomTitle>
-      <Gap size="s" />
-      <ChipWrapper margin="xs" $justifyContent="center">
+      <Gap $size="s" />
+      <ChipWrapper $margin="xs" $justifyContent="center">
         {types.map((type) => (
           <SelectionChip
             key={type}

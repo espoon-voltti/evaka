@@ -125,19 +125,19 @@ const View = React.memo(function View({
       </ul>
     </FixedSpaceColumn>
   ) : (
-    <FixedSpaceColumn fullWidth>
+    <FixedSpaceColumn $fullWidth>
       <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
       <GroupIndentation>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           {optionElems.map((option) => {
             const answerOption = answer.state.find(
               (opt) => opt.optionId === option.state.id
             )
 
             return (
-              <FixedSpaceRow key={option.state.id} alignItems="center">
+              <FixedSpaceRow key={option.state.id} $alignItems="center">
                 <NoShrink>
                   <Checkbox
                     label={option.state.label}
@@ -219,10 +219,10 @@ const OptionView = React.memo(function OptionView({
   const { label, withText } = useFormFields(bind)
 
   return (
-    <FixedSpaceRow alignItems="baseline">
+    <FixedSpaceRow $alignItems="baseline">
       <span>{index + 1}.</span>
-      <FixedSpaceColumn spacing="xxs">
-        <FixedSpaceRow alignItems="center">
+      <FixedSpaceColumn $spacing="xxs">
+        <FixedSpaceRow $alignItems="center">
           <InputFieldF bind={label} hideErrorsBeforeTouched width="m" />
           <IconOnlyButton
             icon={faTrash}
@@ -261,7 +261,7 @@ const TemplateView = React.memo(function TemplateView({
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.options}</Label>
         {optionElems.map((opt, i) => (
-          <FixedSpaceRow key={opt.state.id} alignItems="center">
+          <FixedSpaceRow key={opt.state.id} $alignItems="center">
             <OptionView
               index={i}
               bind={opt}

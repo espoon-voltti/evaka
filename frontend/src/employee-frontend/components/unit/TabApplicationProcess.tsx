@@ -36,20 +36,20 @@ export default React.memo(function TabApplicationProcess({
 
   return (
     <div>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
       </ContentArea>
       {featureFlags.absenceApplications &&
         permittedActions.includes('READ_ABSENCE_APPLICATIONS') && (
           <>
-            <Gap size="m" />
+            <Gap $size="m" />
             <TabAbsenceApplications unitId={unitId} />
           </>
         )}
       {featureFlags.serviceApplications &&
         permittedActions.includes('READ_SERVICE_APPLICATIONS') && (
           <>
-            <Gap size="m" />
+            <Gap $size="m" />
             <TabServiceApplications unitId={unitId} />
           </>
         )}
@@ -78,18 +78,18 @@ const DaycareApplications = React.memo(function DaycareApplications({
       isReloading
     ) => (
       <div data-qa="daycare-applications" data-isloading={isReloading}>
-        <Gap size="m" />
+        <Gap $size="m" />
         <TabWaitingConfirmation placementPlans={placementPlans} />
-        <Gap size="m" />
+        <Gap $size="m" />
         <TabPlacementProposals
           unitId={unitId}
           placementProposals={placementProposals}
         />
-        <Gap size="m" />
+        <Gap $size="m" />
         <TabApplications applications={applications} />
         {transferApplications !== null && (
           <>
-            <Gap size="m" />
+            <Gap $size="m" />
             <TabTransferApplications
               transferApplications={transferApplications}
             />

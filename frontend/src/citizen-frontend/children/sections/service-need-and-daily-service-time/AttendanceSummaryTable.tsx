@@ -51,7 +51,7 @@ export default React.memo(function AttendanceSummaryTable({
     <>
       <ListGrid>
         <H3>{t.children.attendanceSummary.title}</H3>
-        <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow $alignItems="center">
           <IconOnlyButton
             icon={faChevronLeft}
             onClick={() =>
@@ -114,7 +114,7 @@ const AttendanceSummary = ({
               <ListGrid>
                 <Label>{t.children.attendanceSummary.attendanceDays}</Label>
                 <span>
-                  <Days warning={warning}>{attendanceDays}</Days> /{' '}
+                  <Days $warning={warning}>{attendanceDays}</Days> /{' '}
                   {contractDaysPerMonth} {t.common.datetime.dayShort}
                 </span>
               </ListGrid>
@@ -131,9 +131,9 @@ const AttendanceSummary = ({
   )
 }
 
-const Days = styled.span<{ warning: boolean }>`
+const Days = styled.span<{ $warning: boolean }>`
   ${(p) =>
-    p.warning &&
+    p.$warning &&
     `
     color: ${colors.status.warning}
   `}

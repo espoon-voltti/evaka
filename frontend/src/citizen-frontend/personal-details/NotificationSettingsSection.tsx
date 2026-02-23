@@ -131,7 +131,7 @@ export default React.memo(
             data-qa="start-editing"
           />
         </EditButtonRow>
-        <H2 noMargin>{t.personalDetails.notificationsSection.title}</H2>
+        <H2 $noMargin>{t.personalDetails.notificationsSection.title}</H2>
         <P>{t.personalDetails.notificationsSection.info}</P>
         <P>
           <Strong>{t.personalDetails.notificationsSection.subtitle}</Strong>
@@ -144,14 +144,14 @@ export default React.memo(
             data-qa="message"
           />
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <CheckboxF
           bind={bulletin}
           label={t.personalDetails.notificationsSection.bulletin}
           disabled={!editing}
           data-qa="bulletin"
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <ExpandingInfo info={t.personalDetails.notificationsSection.incomeInfo}>
           <CheckboxF
             bind={income}
@@ -162,28 +162,28 @@ export default React.memo(
         </ExpandingInfo>
         {income.state === false ? (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <AlertBox
               noMargin
               message={t.personalDetails.notificationsSection.incomeWarning}
             />
           </>
         ) : null}
-        <Gap size="s" />
+        <Gap $size="s" />
         <CheckboxF
           bind={calendarEvent}
           label={t.personalDetails.notificationsSection.calendarEvent}
           disabled={!editing}
           data-qa="calendar-event"
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <CheckboxF
           bind={decision}
           label={t.personalDetails.notificationsSection.decision}
           disabled={!editing}
           data-qa="decision"
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.documentInfo}
         >
@@ -194,7 +194,7 @@ export default React.memo(
             data-qa="document"
           />
         </ExpandingInfo>
-        <Gap size="s" />
+        <Gap $size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.informalDocumentInfo}
         >
@@ -205,7 +205,7 @@ export default React.memo(
             data-qa="informal-document"
           />
         </ExpandingInfo>
-        <Gap size="s" />
+        <Gap $size="s" />
         <ExpandingInfo
           info={
             t.personalDetails.notificationsSection.attendanceReservationInfo
@@ -218,7 +218,7 @@ export default React.memo(
             data-qa="attendance-reservation"
           />
         </ExpandingInfo>
-        <Gap size="s" />
+        <Gap $size="s" />
         {featureFlags.discussionReservations && (
           <>
             <ExpandingInfo
@@ -231,11 +231,11 @@ export default React.memo(
                 data-qa="discussion-time"
               />
             </ExpandingInfo>
-            <Gap size="s" />
+            <Gap $size="s" />
           </>
         )}
         {editing ? (
-          <FixedSpaceRow justifyContent="flex-end">
+          <FixedSpaceRow $justifyContent="flex-end">
             <Button
               onClick={() => {
                 form.set(getInitialState(initialData))

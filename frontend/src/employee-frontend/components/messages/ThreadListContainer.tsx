@@ -249,7 +249,7 @@ export default React.memo(function ThreadListContainer({
           }
         />
       ) : hasMessages ? (
-        <MessagesContainer opaque>
+        <MessagesContainer $opaque>
           <H1>
             {isStandardView(view)
               ? i18n.messages.messageList.titles[view]

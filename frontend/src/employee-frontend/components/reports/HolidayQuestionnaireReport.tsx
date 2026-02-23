@@ -138,7 +138,7 @@ export default React.memo(function HolidayQuestionnaireReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.holidayQuestionnaire.title}</Title>
         {renderResult(
           combine(daycareOptions, questionnaireOptions),
@@ -387,7 +387,7 @@ const ChildList = React.memo(function ChildList({
       ))}
       {!showFull && extraCount > 0 && (
         <P
-          noMargin
+          $noMargin
         >{`+${extraCount} ${i18n.reports.holidayQuestionnaire.moreText}`}</P>
       )}
     </CellWrapper>

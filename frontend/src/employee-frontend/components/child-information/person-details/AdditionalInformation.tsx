@@ -207,7 +207,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
 
   return (
     <div data-qa="additional-information-section">
-      <FlexRow justifyContent="space-between">
+      <FlexRow $justifyContent="space-between">
         <H4>{i18n.childInformation.additionalInformation.title}</H4>
         {!editing && (
           <RequireRole

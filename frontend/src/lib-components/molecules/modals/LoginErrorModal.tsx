@@ -44,9 +44,9 @@ export const LoginErrorModal = React.memo(function LoginErrorModal() {
       type="danger"
       icon={faTimes}
     >
-      <P centered>{i18n.loginErrorModal.message}</P>
+      <P $centered>{i18n.loginErrorModal.message}</P>
       <ReturnContainer>
-        <P centered>
+        <P $centered>
           <a href="#" onClick={onClose}>
             {i18n.loginErrorModal.returnMessage}
           </a>

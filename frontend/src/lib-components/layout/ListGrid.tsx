@@ -8,23 +8,23 @@ import type { SpacingSize } from '../white-space'
 import { defaultMargins } from '../white-space'
 
 interface ListGridProps {
-  labelWidth?: string
-  rowGap?: SpacingSize
-  columnGap?: SpacingSize
-  mobileMaxWidth?: string
+  $labelWidth?: string
+  $rowGap?: SpacingSize
+  $columnGap?: SpacingSize
+  $mobileMaxWidth?: string
 }
 const ListGrid = styled.div<ListGridProps>`
   display: grid;
-  grid-template-columns: ${(p) => p.labelWidth ?? '235px'} auto;
-  row-gap: ${(p) => defaultMargins[p.rowGap || 'xs']};
-  column-gap: ${(p) => defaultMargins[p.columnGap || 's']};
+  grid-template-columns: ${(p) => p.$labelWidth ?? '235px'} auto;
+  row-gap: ${(p) => defaultMargins[p.$rowGap || 'xs']};
+  column-gap: ${(p) => defaultMargins[p.$columnGap || 's']};
 
-  @media (max-width: ${(p) => p.mobileMaxWidth ?? '600px'}) {
+  @media (max-width: ${(p) => p.$mobileMaxWidth ?? '600px'}) {
     grid-template-columns: auto;
     row-gap: ${defaultMargins.xxs};
 
     > *:nth-child(2n) {
-      margin-bottom: ${(p) => defaultMargins[p.rowGap || 'xs']};
+      margin-bottom: ${(p) => defaultMargins[p.$rowGap || 'xs']};
     }
   }
 `

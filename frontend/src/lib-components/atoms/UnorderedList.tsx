@@ -8,7 +8,7 @@ import type { SpacingSize } from '../white-space'
 import { defaultMargins, isSpacingSize } from '../white-space'
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export default styled.ul<{ spacing?: SpacingSize | string }>`
+export default styled.ul<{ $spacing?: SpacingSize | string }>`
   margin: 0;
   padding: 0 0 0 1.5em;
 
@@ -17,10 +17,10 @@ export default styled.ul<{ spacing?: SpacingSize | string }>`
       color: ${(p) => p.theme.colors.main.m3};
     }
     margin-bottom: ${(p) =>
-      p.spacing
-        ? isSpacingSize(p.spacing)
-          ? defaultMargins[p.spacing]
-          : p.spacing
+      p.$spacing
+        ? isSpacingSize(p.$spacing)
+          ? defaultMargins[p.$spacing]
+          : p.$spacing
         : defaultMargins.s};
 
     &:last-child {

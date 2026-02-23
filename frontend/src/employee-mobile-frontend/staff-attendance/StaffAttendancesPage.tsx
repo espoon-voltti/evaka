@@ -222,7 +222,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
     <>
       <TabLinks tabs={tabs} mobile sticky />
       {renderResult(filteredStaff, (staff) => (
-        <FixedSpaceColumn spacing="zero">
+        <FixedSpaceColumn $spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
             return (
@@ -337,7 +337,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
   )
 
   return renderResult(staffMemberDays, (days) => (
-    <FixedSpaceColumn spacing="xxs">
+    <FixedSpaceColumn $spacing="xxs">
       <DayRow $open={false}>
         <InfoBox message={i18n.attendances.staff.plansInfo} noMargin thin />
       </DayRow>
@@ -348,8 +348,8 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
             onClick={() =>
               setExpandedDate(expandedDate?.isEqual(date) ? null : date)
             }
-            justifyContent="space-between"
-            alignItems="center"
+            $justifyContent="space-between"
+            $alignItems="center"
             $open={expandedDate?.isEqual(date) ?? false}
           >
             <div>{date.formatExotic('EEEEEE d.M.', lang)}</div>
@@ -363,7 +363,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
           </DayRow>
           {expandedDate?.isEqual(date) && (
             <ExpandedStaff
-              spacing="L"
+              $spacing="L"
               data-qa={`expanded-date-${date.formatIso()}`}
             >
               {sortBy(
@@ -373,10 +373,10 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
               ).map((s) => (
                 <FixedSpaceColumn
                   key={s.employeeId}
-                  spacing="xs"
+                  $spacing="xs"
                   data-qa={`present-employee-${s.employeeId}`}
                 >
-                  <FixedSpaceRow spacing="zero" alignItems="center">
+                  <FixedSpaceRow $spacing="zero" $alignItems="center">
                     <IconWrapper>
                       {s.occupancyEffect && (
                         <RoundIcon
@@ -393,7 +393,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   </FixedSpaceRow>
 
                   {s.confidence !== 'full' && (
-                    <FixedSpaceRow spacing="zero" alignItems="center">
+                    <FixedSpaceRow $spacing="zero" $alignItems="center">
                       <IconWrapper>
                         <FontAwesomeIcon
                           icon={fasExclamationTriangle}
@@ -407,7 +407,7 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   )}
 
                   {s.plans.map((p, i) => (
-                    <DetailsRow key={i} alignItems="start">
+                    <DetailsRow key={i} $alignItems="start">
                       <PlanType>{i18n.attendances.staffTypes[p.type]}</PlanType>
                       <div>
                         <div>{`${p.start?.format() ?? '→'} - ${p.end?.format() ?? '→'}`}</div>
@@ -430,8 +430,8 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
                   key={s.employeeId}
                   data-qa={`absent-employee-${s.employeeId}`}
                 >
-                  <FixedSpaceColumn spacing="xxs">
-                    <FixedSpaceRow spacing="zero" alignItems="center">
+                  <FixedSpaceColumn $spacing="xxs">
+                    <FixedSpaceRow $spacing="zero" $alignItems="center">
                       <IconWrapper>
                         {s.occupancyEffect && (
                           <RoundIcon

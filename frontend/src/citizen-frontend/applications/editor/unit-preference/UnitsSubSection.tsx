@@ -121,7 +121,7 @@ export default React.memo(function UnitsSubSection({
         newTab
       />
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       {!preferredStartDate ? (
         <div>
@@ -137,7 +137,7 @@ export default React.memo(function UnitsSubSection({
             <Label id="language-selection-label">
               {t.applications.editor.unitPreference.units.languageFilter.label}
             </Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <FixedSpaceRow>
               <SelectionChip
                 text={
@@ -156,9 +156,9 @@ export default React.memo(function UnitsSubSection({
             </FixedSpaceRow>
           </div>
 
-          <Gap size="m" />
+          <Gap $size="m" />
 
-          <FixedSpaceFlexWrap horizontalSpacing="L" verticalSpacing="s">
+          <FixedSpaceFlexWrap $horizontalSpacing="L" $verticalSpacing="s">
             <FixedWidthDiv>
               <Label htmlFor="unit-selector">
                 {t.applications.editor.unitPreference.units.select.label(
@@ -166,7 +166,7 @@ export default React.memo(function UnitsSubSection({
                 )}{' '}
                 *
               </Label>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               <MultiSelect
                 data-qa="preferredUnits-input"
                 inputId="unit-selector"
@@ -221,7 +221,7 @@ export default React.memo(function UnitsSubSection({
                 showValuesInInput={false}
               />
 
-              <Gap size="s" />
+              <Gap $size="s" />
               <Info>
                 {t.applications.editor.unitPreference.units.preferences.infoByApplicationType[
                   applicationType
@@ -230,7 +230,7 @@ export default React.memo(function UnitsSubSection({
                     maxUnits
                   )}
               </Info>
-              <Gap size="xs" />
+              <Gap $size="xs" />
             </FixedWidthDiv>
             <FixedWidthDiv>
               <Label tabIndex={-1} ref={emptyPreferredUnitsLabel}>
@@ -238,7 +238,7 @@ export default React.memo(function UnitsSubSection({
                   maxUnits
                 )}
               </Label>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               {!verificationRequested &&
                 !isUnitSelectionInvalid &&
                 formData.preferredUnits.length === 0 && (
@@ -258,7 +258,7 @@ export default React.memo(function UnitsSubSection({
                     thin
                   />
                 )}
-              <FixedSpaceColumn spacing="s">
+              <FixedSpaceColumn $spacing="s">
                 <ScreenReaderOnly aria-live="polite" aria-atomic={true}>
                   {screenReaderMessage}
                 </ScreenReaderOnly>

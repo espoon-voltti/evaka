@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 
-const RoundLabel = styled.div<{ background: string; color: string }>`
+const RoundLabel = styled.div<{ $background: string; $color: string }>`
   border-radius: 15px;
   height: 30px;
   padding: 0 10px;
@@ -16,8 +16,8 @@ const RoundLabel = styled.div<{ background: string; color: string }>`
   font-weight: ${fontWeights.semibold};
   white-space: nowrap;
 
-  background: ${({ background }) => background};
-  color: ${({ color }) => color};
+  background: ${({ $background }) => $background};
+  color: ${({ $color }) => $color};
 `
 
 interface Props {
@@ -30,8 +30,8 @@ interface Props {
 function CircularLabel({ text, background, color, 'data-qa': dataQa }: Props) {
   return (
     <RoundLabel
-      background={background}
-      color={color}
+      $background={background}
+      $color={color}
       className="info-label"
       data-qa={dataQa}
     >

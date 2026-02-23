@@ -139,7 +139,7 @@ export function Filters({
           placeholder={searchPlaceholder}
         />
       )}
-      <Gap size="s" />
+      <Gap $size="s" />
       <FilterColumns>
         <Column>{column1}</Column>
         <Column>{column2}</Column>
@@ -154,7 +154,7 @@ export function Filters({
         />
         {onSearch && (
           <>
-            <Gap horizontal size="s" />
+            <Gap $horizontal $size="s" />
             <Button
               primary
               text={i18n.common.search}
@@ -175,10 +175,10 @@ const SearchInputContainer = styled.div`
   align-items: center;
 `
 
-const SearchInput = styled.input<{ background?: string }>`
+const SearchInput = styled.input<{ $background?: string }>`
   width: 100%;
   border: none;
-  background: ${(p) => p.background ?? colors.grayscale.g4};
+  background: ${(p) => p.$background ?? colors.grayscale.g4};
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -246,7 +246,7 @@ export function FreeTextSearch({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
-        background={background}
+        $background={background}
       />
       <CustomIconButton
         icon={faTimes}
@@ -276,8 +276,8 @@ export function AreaFilter({
   return (
     <>
       <Label>{i18n.filters.area}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {areas
           .sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0))
           .map(({ name, shortName }) => (
@@ -317,7 +317,7 @@ export const UnitFilter = React.memo(function UnitFilter({
   return (
     <>
       <Label>{i18n.filters.unit}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <Combobox
         items={units}
         placeholder={i18n.filters.unitPlaceholder}
@@ -355,7 +355,7 @@ export const FinanceDecisionHandlerFilter = React.memo(
     return (
       <>
         <Label>{i18n.filters.financeDecisionHandler}</Label>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Combobox
           items={options}
           placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
@@ -384,8 +384,8 @@ export function FeeDecisionDifferenceFilter({
   return (
     <>
       <Label>{i18n.filters.difference}</Label>
-      <Gap size="xs" />
-      <FixedSpaceRow spacing="xxs" flexWrap="wrap">
+      <Gap $size="xs" />
+      <FixedSpaceRow $spacing="xxs" $flexWrap="wrap">
         <FeeDecisionDifferenceIcons
           difference={feeDecisionDifferences}
           toggle={toggle}
@@ -410,8 +410,8 @@ export function VoucherValueDecisionDifferenceFilter({
   return (
     <>
       <Label>{i18n.filters.difference}</Label>
-      <Gap size="xs" />
-      <FixedSpaceRow spacing="xxs" flexWrap="wrap">
+      <Gap $size="xs" />
+      <FixedSpaceRow $spacing="xxs" $flexWrap="wrap">
         <VoucherValueDecisionDifferenceIcons
           difference={voucherValueDecisionDifferences}
           toggle={toggle}
@@ -445,8 +445,8 @@ export function FeeDecisionStatusFilter({
   return (
     <>
       <Label>{i18n.filters.status}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {statuses.map((id) => (
           <Checkbox
             key={id}
@@ -475,8 +475,8 @@ export function FeeDecisionDistinctionsFilter({
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {feeDecisionDistinctiveParams.map((id) => {
           if (
             id === 'PRESCHOOL_CLUB' &&
@@ -534,7 +534,7 @@ export function FeeDecisionDateFilter({
           locale="fi"
           data-qa="fee-decisions-start-date"
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
@@ -544,10 +544,10 @@ export function FeeDecisionDateFilter({
       </FlexRow>
       {showWarning ? (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -555,7 +555,7 @@ export function FeeDecisionDateFilter({
           </span>
         </>
       ) : null}
-      <Gap size="s" />
+      <Gap $size="s" />
       <Checkbox
         label={i18n.filters.searchByStartDate}
         checked={searchByStartDate}
@@ -588,8 +588,8 @@ export const ValueDecisionStatusFilter = React.memo(
     return (
       <>
         <Label>{i18n.filters.status}</Label>
-        <Gap size="xs" />
-        <FixedSpaceColumn spacing="xs">
+        <Gap $size="xs" />
+        <FixedSpaceColumn $spacing="xs">
           {statuses.map((id) => (
             <Checkbox
               key={id}
@@ -640,7 +640,7 @@ export function ValueDecisionDateFilter({
           locale="fi"
           data-qa="value-decisions-start-date"
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
@@ -650,10 +650,10 @@ export function ValueDecisionDateFilter({
       </FlexRow>
       {showWarning ? (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -662,7 +662,7 @@ export function ValueDecisionDateFilter({
         </>
       ) : null}
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <Checkbox
         label={i18n.filters.searchByStartDate}
@@ -690,8 +690,8 @@ export function VoucherValueDecisionDistinctionsFilter({
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {voucherValueDecisionDistinctiveParams.map((id) => (
           <Checkbox
             key={id}
@@ -738,8 +738,8 @@ export function InvoiceStatusFilter({
   return (
     <>
       <Label>{i18n.filters.status}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {statuses.map((id) => (
           <Radio
             key={id}
@@ -792,7 +792,7 @@ export function InvoiceDateFilter({
           locale="fi"
           data-qa="invoices-start-date"
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
@@ -802,10 +802,10 @@ export function InvoiceDateFilter({
       </FlexRow>
       {showWarning ? (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -814,7 +814,7 @@ export function InvoiceDateFilter({
         </>
       ) : null}
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <Checkbox
         label={i18n.filters.invoiceSearchByStartDate}
@@ -842,7 +842,7 @@ export function InvoiceDistinctionsFilter({
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       {distinctiveDetails.map((id) => (
         <Checkbox
           key={id}
@@ -896,8 +896,8 @@ export function ApplicationStatusFilter({
   return (
     <>
       <Label>{i18n.application.state.title}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {applicationSummaryStatuses.map(
           (id: ApplicationSummaryStatusOptions) => (
             <Radio
@@ -924,7 +924,7 @@ export function ApplicationStatusFilter({
         )}
       </FixedSpaceColumn>
       {toggled === 'ALL' && (
-        <CustomDivWithMargin spacing="xs">
+        <CustomDivWithMargin $spacing="xs">
           {applicationStatusOptions.map((id) => (
             <Checkbox
               key={id}
@@ -981,8 +981,8 @@ export function ApplicationDateFilter({
   return (
     <>
       <Label>{i18n.common.date}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {dates.map((dateType) => (
           <Checkbox
             label={i18n.application.date[dateType]}
@@ -993,7 +993,7 @@ export function ApplicationDateFilter({
           />
         ))}
       </FixedSpaceColumn>
-      <Gap size="s" />
+      <Gap $size="s" />
       <FlexRow>
         <DatePickerLowLevel
           value={startDate}
@@ -1011,10 +1011,10 @@ export function ApplicationDateFilter({
       </FlexRow>
       {showWarning && (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -1039,8 +1039,8 @@ export function ApplicationBasisFilter({
   return (
     <>
       <Label>{i18n.applications.basis}</Label>
-      <Gap size="xs" />
-      <FixedSpaceRow spacing="xxs">
+      <Gap $size="xs" />
+      <FixedSpaceRow $spacing="xxs">
         <Tooltip
           tooltip={i18n.applications.basisTooltip.ADDITIONAL_INFO}
           position="top"
@@ -1211,8 +1211,8 @@ export function MultiSelectUnitFilter({
   return (
     <div data-qa={dataQa}>
       <Label>{i18n.filters.unit}</Label>
-      <Gap size="xs" />
-      <FixedSpaceRow spacing="xs" alignItems="center">
+      <Gap $size="xs" />
+      <FixedSpaceRow $spacing="xs" $alignItems="center">
         <div style={{ flex: 1 }}>
           <MultiSelect
             placeholder={i18n.filters.unitPlaceholder}
@@ -1280,8 +1280,8 @@ export function TransferApplicationsFilter({
   return (
     <>
       <Label>{i18n.applications.list.transferFilter.title}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         <Radio
           data-qa="filter-transfer-only"
           label={i18n.applications.list.transferFilter.transferOnly}
@@ -1341,7 +1341,7 @@ export function DateFilter({
           locale="fi"
           data-qa="start-date-filter-input"
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
@@ -1351,10 +1351,10 @@ export function DateFilter({
       </FlexRow>
       {showWarning ? (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -1380,7 +1380,7 @@ export function ProviderTypeFilter({
   return (
     <>
       <Label>{i18n.filters.providerType}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       {unitProviderTypes.map((id) => (
         <Checkbox
           key={id}

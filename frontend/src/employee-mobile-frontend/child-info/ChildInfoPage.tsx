@@ -45,9 +45,9 @@ export default React.memo(function ChildInfoPage({
 
   return (
     <TallContentAreaNoOverflow
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <TopBar
         title={childName ?? i18n.common.back}
@@ -56,9 +56,14 @@ export default React.memo(function ChildInfoPage({
         invertedColors
       />
 
-      <FixedSpaceColumn spacing="m">
-        <ContentArea shadow opaque paddingHorizontal="s" paddingVertical="xs">
-          <FixedSpaceColumn alignItems="center" spacing="m">
+      <FixedSpaceColumn $spacing="m">
+        <ContentArea
+          $shadow
+          $opaque
+          $paddingHorizontal="s"
+          $paddingVertical="xs"
+        >
+          <FixedSpaceColumn $alignItems="center" $spacing="m">
             <Title noMargin>{i18n.childInfo.header}</Title>
           </FixedSpaceColumn>
         </ContentArea>
@@ -77,7 +82,7 @@ export default React.memo(function ChildInfoPage({
               text={i18n.childInfo.showSensitiveInfo}
               onClick={() => setshowSensitiveInfo(true)}
             />
-            <Gap size="m" />
+            <Gap $size="m" />
           </ShowSensitiveInfoButtonContainer>
         )}
       </FixedSpaceColumn>

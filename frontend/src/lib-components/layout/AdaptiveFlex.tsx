@@ -9,9 +9,9 @@ import type { SpacingSize } from '../white-space'
 import { defaultMargins } from '../white-space'
 
 type AdaptiveFlexProps = {
-  breakpoint?: string
-  horizontalSpacing?: SpacingSize
-  verticalSpacing?: SpacingSize
+  $breakpoint?: string
+  $horizontalSpacing?: SpacingSize
+  $verticalSpacing?: SpacingSize
 }
 
 const AdaptiveFlex = styled.div<AdaptiveFlexProps>`
@@ -21,23 +21,23 @@ const AdaptiveFlex = styled.div<AdaptiveFlexProps>`
 
   > * {
     margin-right: ${(p) =>
-      p.horizontalSpacing
-        ? defaultMargins[p.horizontalSpacing]
+      p.$horizontalSpacing
+        ? defaultMargins[p.$horizontalSpacing]
         : defaultMargins.s};
     &:last-child {
       margin-right: 0;
     }
   }
 
-  @media (max-width: ${(p) => p.breakpoint ?? tabletMin}) {
+  @media (max-width: ${(p) => p.$breakpoint ?? tabletMin}) {
     flex-direction: column;
 
     > * {
       width: 100%;
       margin-right: 0;
       margin-bottom: ${(p) =>
-        p.verticalSpacing
-          ? defaultMargins[p.verticalSpacing]
+        p.$verticalSpacing
+          ? defaultMargins[p.$verticalSpacing]
           : defaultMargins.s};
       &:last-child {
         margin-bottom: 0;

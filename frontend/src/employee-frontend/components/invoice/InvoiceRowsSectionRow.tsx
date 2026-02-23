@@ -83,17 +83,17 @@ export default React.memo(function InvoiceRowSectionRow({
       <Td>
         <span data-qa="amount">{amount}</span>
       </Td>
-      <Td align="right">
+      <Td $align="right">
         <span data-qa="unit-price">{formatCents(unitPrice)}</span>
       </Td>
       <Td align="right" data-qa="total-price">
         {formatCents(price)}
       </Td>
       <Td>
-        <FixedSpaceRow spacing="s" justifyContent="flex-end">
+        <FixedSpaceRow $spacing="s" $justifyContent="flex-end">
           {note !== null ? (
             <Tooltip tooltip={note} data-qa="note-tooltip">
-              <IconButtonWrapper margin={false}>
+              <IconButtonWrapper $margin={false}>
                 <FontAwesomeIcon
                   icon={note ? fasCommentAltLines : faCommentAlt}
                   color={theme.colors.main.m2}
@@ -108,8 +108,8 @@ export default React.memo(function InvoiceRowSectionRow({
   )
 })
 
-const IconButtonWrapper = styled.div<{ margin: boolean }>`
-  ${({ margin }) => (margin ? 'margin: 6px 0;' : '')}
+const IconButtonWrapper = styled.div<{ $margin: boolean }>`
+  ${({ $margin }) => ($margin ? 'margin: 6px 0;' : '')}
 `
 
 const UnitCostCenter = styled.span`

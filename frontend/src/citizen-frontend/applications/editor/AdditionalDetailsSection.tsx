@@ -43,8 +43,8 @@ export default React.memo(function AdditionalDetailsSection({
       validationErrors={verificationRequested ? getErrorCount(errors) : 0}
       data-qa="additionalDetails-section"
     >
-      <Gap size="s" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="s" />
+      <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.additionalDetails.otherInfoLabel}</Label>
         <NarrowTextArea
           value={formData.otherInfo}
@@ -58,9 +58,9 @@ export default React.memo(function AdditionalDetailsSection({
 
       {applicationType !== 'CLUB' ? (
         <>
-          <Gap size="L" />
+          <Gap $size="L" />
 
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <ExpandingInfo
               data-qa="diet-expanding-info"
               info={t.applications.editor.additionalDetails.dietInfo}
@@ -78,9 +78,9 @@ export default React.memo(function AdditionalDetailsSection({
             />
           </FixedSpaceColumn>
 
-          <Gap size="L" />
+          <Gap $size="L" />
 
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>
               {t.applications.editor.additionalDetails.allergiesLabel}
             </Label>

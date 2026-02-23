@@ -9,19 +9,19 @@ import { desktopMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-export const Header = styled.div<{ isRead: boolean }>`
+export const Header = styled.div<{ $isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: ${({ isRead }) =>
-    isRead ? fontWeights.normal : fontWeights.semibold};
+  font-weight: ${({ $isRead }) =>
+    $isRead ? fontWeights.normal : fontWeights.semibold};
   font-size: 16px;
   margin-bottom: 12px;
 `
-export const TitleAndDate = styled.div<{ isRead: boolean }>`
+export const TitleAndDate = styled.div<{ $isRead: boolean }>`
   display: flex;
   justify-content: space-between;
-  font-weight: ${({ isRead }) =>
-    isRead ? fontWeights.normal : fontWeights.semibold};
+  font-weight: ${({ $isRead }) =>
+    $isRead ? fontWeights.normal : fontWeights.semibold};
   margin-bottom: ${defaultMargins.xxs};
 `
 export const Truncated = styled.span`
@@ -34,7 +34,7 @@ export const Truncated = styled.span`
   }
 `
 export const DeleteThreadButton = styled(IconOnlyButton)``
-export const Container = styled.div<{ isRead: boolean; active: boolean }>`
+export const Container = styled.div<{ $isRead: boolean; $active: boolean }>`
   display: block;
   border: 0;
 
@@ -75,7 +75,7 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   }
 
   ${(p) =>
-    !p.isRead
+    !p.$isRead
       ? `
     &:before {
       background-color: ${p.theme.colors.status.success};
@@ -89,7 +89,7 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   `
       : ''}
 
-  ${(p) => (p.active ? `background-color: ${p.theme.colors.main.m4};` : '')}
+  ${(p) => (p.$active ? `background-color: ${p.theme.colors.main.m4};` : '')}
 `
 
 export const ThreadContainer = styled.div`

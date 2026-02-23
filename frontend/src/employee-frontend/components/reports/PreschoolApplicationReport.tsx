@@ -30,7 +30,7 @@ export default React.memo(function PreschoolApplicationReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.preschoolApplications.title}</Title>
         {renderResult(result, (rows) => (
           <PreschoolApplicationReportTable rows={rows} />
@@ -187,7 +187,7 @@ const PreschoolApplicationReportTable = ({
         <Tbody>
           {sortedRows.length === 0 ? (
             <Tr>
-              <Td colSpan={8} align="center" data-qa="no-results">
+              <Td colSpan={8} $align="center" data-qa="no-results">
                 {i18n.common.noResults}
               </Td>
             </Tr>

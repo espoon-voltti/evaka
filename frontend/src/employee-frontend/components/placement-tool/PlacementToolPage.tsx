@@ -30,7 +30,7 @@ export default React.memo(function PlacementToolPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{i18n.placementTool.title}</H1>
         {renderResult(nextPreschoolTerm, (term) => (
           <>

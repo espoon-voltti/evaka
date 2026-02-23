@@ -89,7 +89,7 @@ export default React.memo(function DiscussionSurveyEditor({
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(
           combine(groupData, calendarDays),
           ([groupResult, calendarDaysResult]) => (

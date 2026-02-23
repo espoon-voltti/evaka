@@ -150,7 +150,7 @@ export default React.memo(function VoucherValueDecisions({
   return (
     <div className="value-decisions">
       <TitleRowContainer>
-        <H1 noMargin>{i18n.valueDecisions.table.title}</H1>
+        <H1 $noMargin>{i18n.valueDecisions.table.title}</H1>
         <ResultsContainer>
           <div>{total ? i18n.common.resultCount(total) : null}</div>
           <Pagination

@@ -253,7 +253,7 @@ function CreatePlacementModal({ childId }: Props) {
                   .temporaryDaycareWarning
               }
             />
-            <Gap size="xs" />
+            <Gap $size="xs" />
           </>
         ) : null}
 

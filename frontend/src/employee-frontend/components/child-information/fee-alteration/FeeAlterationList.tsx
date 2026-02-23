@@ -56,9 +56,9 @@ export default React.memo(function FeeAlterationList({
 
   return (
     <ListGrid
-      labelWidth="fit-content(30%)"
-      columnGap="L"
-      rowGap="m"
+      $labelWidth="fit-content(30%)"
+      $columnGap="L"
+      $rowGap="m"
       data-qa="fee-alteration-list"
     >
       {feeAlterations.map(({ data: feeAlteration, permittedActions }) =>
@@ -81,8 +81,8 @@ export default React.memo(function FeeAlterationList({
             } ${feeAlteration.amount}${
               feeAlteration.isAbsolute ? '€' : '%'
             }`}</Label>
-            <FixedSpaceRow justifyContent="space-between">
-              <FixedSpaceRow spacing="L">
+            <FixedSpaceRow $justifyContent="space-between">
+              <FixedSpaceRow $spacing="L">
                 <Dates data-qa="fee-alteration-dates">{`${feeAlteration.validFrom.format()} - ${
                   feeAlteration.validTo?.format() ?? ''
                 }`}</Dates>
@@ -90,7 +90,7 @@ export default React.memo(function FeeAlterationList({
               </FixedSpaceRow>
               <RightHandSide>
                 {feeAlteration.modifiedAt && (
-                  <FixedSpaceRow spacing="L">
+                  <FixedSpaceRow $spacing="L">
                     <Tooltip
                       tooltip={
                         feeAlteration.modifiedBy &&

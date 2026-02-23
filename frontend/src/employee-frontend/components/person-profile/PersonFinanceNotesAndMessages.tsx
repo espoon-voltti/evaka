@@ -240,9 +240,9 @@ export default React.memo(function PersonFinanceNotesAndMessages({
         ))}
 
       <BorderedContentArea
-        opaque
-        paddingHorizontal="0"
-        paddingVertical="s"
+        $opaque
+        $paddingHorizontal="0"
+        $paddingVertical="s"
         data-qa="add-finance-note"
       >
         <ExpandingInfo
@@ -266,7 +266,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                 uiMode.startsWith('edit-finance-note')
               }
             />
-            <Gap horizontal size="m" />
+            <Gap $horizontal $size="m" />
             <AddButton
               icon={faEnvelope}
               text={i18n.personProfile.financeNotesAndMessages.sendMessage}
@@ -284,9 +284,9 @@ export default React.memo(function PersonFinanceNotesAndMessages({
 
       {uiMode === 'add-finance-note' && (
         <BorderedContentArea
-          opaque
-          paddingHorizontal="0"
-          paddingVertical="s"
+          $opaque
+          $paddingHorizontal="0"
+          $paddingVertical="s"
           data-qa="add-finance-note"
         >
           <StyledTextArea
@@ -296,14 +296,14 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             onChange={setText}
             data-qa="finance-note-text-area"
           />
-          <Gap size="xs" />
-          <FixedSpaceRow justifyContent="flex-start">
+          <Gap $size="xs" />
+          <FixedSpaceRow $justifyContent="flex-start">
             <Button
               appearance="inline"
               onClick={() => clearUiMode()}
               text={i18n.common.cancel}
             />
-            <Gap horizontal size="s" />
+            <Gap $horizontal $size="s" />
             <MutateButton
               data-qa="save-finance-note"
               appearance="inline"
@@ -401,18 +401,18 @@ const SingleThread = React.memo(function SingleThread({
   return (
     <BorderedContentArea
       key={thread.id}
-      opaque
-      paddingHorizontal="0"
-      paddingVertical="s"
+      $opaque
+      $paddingHorizontal="0"
+      $paddingVertical="s"
       data-qa="finance-message-thread"
     >
-      <FlexRow justifyContent="space-between">
-        <FixedSpaceColumn spacing="xxs">
+      <FlexRow $justifyContent="space-between">
+        <FixedSpaceColumn $spacing="xxs">
           <Label>
             <FontAwesomeIcon
               icon={thread.messages.length === 1 ? faEnvelope : faReply}
             />
-            <Gap horizontal size="xxs" />
+            <Gap $horizontal $size="xxs" />
             {thread.title} ({thread.messages.length}) (
             <UnderlinedLink
               data-qa="finance-message-thread-link"
@@ -430,7 +430,7 @@ const SingleThread = React.memo(function SingleThread({
             , {thread.messages[0].sender.name}
           </SmallLight>
         </FixedSpaceColumn>
-        <FixedSpaceRow spacing="xs">
+        <FixedSpaceRow $spacing="xs">
           <IconOnlyButton
             icon={faReply}
             onClick={() => {
@@ -466,9 +466,9 @@ const SingleThread = React.memo(function SingleThread({
       {uiMode === `reply-finance-thread_${thread.id}` ? (
         <BorderedMessageArea
           key={thread.id}
-          opaque
-          paddingHorizontal="s"
-          paddingVertical="s"
+          $opaque
+          $paddingHorizontal="s"
+          $paddingVertical="s"
           data-qa="finance-reply"
         >
           <MessageReplyEditor
@@ -507,9 +507,9 @@ const SingleThread = React.memo(function SingleThread({
               .map((m) => (
                 <BorderedMessageArea
                   key={m.id}
-                  opaque
-                  paddingHorizontal="s"
-                  paddingVertical="s"
+                  $opaque
+                  $paddingHorizontal="s"
+                  $paddingVertical="s"
                   data-qa="finance-message"
                 >
                   <SmallLight>
@@ -531,7 +531,7 @@ const SingleThread = React.memo(function SingleThread({
               {threadsOpen[thread.id]
                 ? i18n.personProfile.financeNotesAndMessages.hideMessages
                 : i18n.personProfile.financeNotesAndMessages.showMessages}
-              <Gap horizontal size="xs" />
+              <Gap $horizontal $size="xs" />
               <FontAwesomeIcon
                 icon={threadsOpen[thread.id] ? faChevronUp : faChevronDown}
                 color={theme.colors.main.m2}
@@ -568,13 +568,13 @@ const SingleNote = React.memo(function SingleNote({
   return (
     <BorderedContentArea
       key={note.id}
-      opaque
-      paddingHorizontal="0"
-      paddingVertical="s"
+      $opaque
+      $paddingHorizontal="0"
+      $paddingVertical="s"
       data-qa="finance-note"
     >
-      <FlexRow justifyContent="space-between">
-        <FixedSpaceColumn spacing="xxs">
+      <FlexRow $justifyContent="space-between">
+        <FixedSpaceColumn $spacing="xxs">
           <Label>{i18n.personProfile.financeNotesAndMessages.note}</Label>
           <SmallLight>
             {i18n.personProfile.financeNotesAndMessages.created}{' '}
@@ -591,7 +591,7 @@ const SingleNote = React.memo(function SingleNote({
         </FixedSpaceColumn>
 
         {uiMode !== `edit-finance-note_${note.id}` && (
-          <FixedSpaceRow spacing="xs">
+          <FixedSpaceRow $spacing="xs">
             <IconOnlyButton
               icon={faPen}
               onClick={() => {
@@ -630,8 +630,8 @@ const SingleNote = React.memo(function SingleNote({
             onChange={setText}
             data-qa="finance-note-text-area"
           />
-          <Gap size="xs" />
-          <FixedSpaceRow justifyContent="flex-start">
+          <Gap $size="xs" />
+          <FixedSpaceRow $justifyContent="flex-start">
             <Button
               appearance="inline"
               onClick={() => clearUiMode()}

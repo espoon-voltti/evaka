@@ -220,11 +220,11 @@ const ProgressBarContainer = styled.div`
 `
 
 interface ProgressBarProps {
-  progress: number
+  $progress: number
 }
 
 const ProgressBar = styled.div<ProgressBarProps>`
-  width: ${(props) => props.progress}%;
+  width: ${(props) => props.$progress}%;
   position: absolute;
   top: 0;
   left: 0;
@@ -597,7 +597,7 @@ function FileUpload<T>(
       )}
       {uploadedFiles.length > 0 && (
         <>
-          <Gap horizontal size={slimSingleFile ? 'zero' : 's'} />
+          <Gap $horizontal $size={slimSingleFile ? 'zero' : 's'} />
           <UploadedFiles data-qa="uploaded-files">
             {uploadedFiles.map((file) => (
               <File data-qa="uploaded-file" key={file.key}>
@@ -642,7 +642,7 @@ function FileUpload<T>(
                   </FileHeader>
                   {inProgress(file) && (
                     <ProgressBarContainer>
-                      <ProgressBar progress={file.progress} />
+                      <ProgressBar $progress={file.progress} />
                       {file.error && (
                         <ProgressBarError>
                           <span>{errorMessage(file)}</span>

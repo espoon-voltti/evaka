@@ -43,14 +43,14 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
     combine(unitInfoResponse, groupAccounts, user),
     ([unit, groupAccounts, user]) => (
       <ContentArea
-        opaque
-        fullHeight
-        paddingHorizontal="zero"
-        paddingVertical="zero"
+        $opaque
+        $fullHeight
+        $paddingHorizontal="zero"
+        $paddingVertical="zero"
       >
         <TopBar title={unit.name} unitId={unitId} />
         <HeaderContainer>
-          <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
+          <H1 $noMargin={true}>{i18n.messages.unreadMessages}</H1>
         </HeaderContainer>
         <UnreadCounts>
           {unit.groups.map((group) => (
@@ -77,7 +77,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
         </UnreadCounts>
         {!user?.pinLoginActive && (
           <ButtonContainer>
-            <P noMargin={true} centered={true}>
+            <P $noMargin={true} $centered={true}>
               {i18n.messages.pinLockInfo}
             </P>
             <WideLinkButton

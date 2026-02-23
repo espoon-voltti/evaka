@@ -6,7 +6,7 @@ import type { Property } from 'csstype'
 import styled from 'styled-components'
 
 interface FlexRowProps {
-  justifyContent?: Property.JustifyContent
+  $justifyContent?: Property.JustifyContent
 }
 
 export const FlexRow = styled.div<FlexRowProps>`
@@ -14,7 +14,7 @@ export const FlexRow = styled.div<FlexRowProps>`
   flex-direction: row;
   width: 100%;
   align-items: baseline;
-  ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
+  ${(p) => (p.$justifyContent ? `justify-content: ${p.$justifyContent};` : '')}
 
   > * {
     margin-right: 8px;

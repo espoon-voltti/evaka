@@ -129,7 +129,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
                   checkedIds={[decision.id]}
                 />
               )}
-              <ContentArea opaque>
+              <ContentArea $opaque>
                 <Heading
                   {...decision}
                   changeDecisionType={changeDecisionType}

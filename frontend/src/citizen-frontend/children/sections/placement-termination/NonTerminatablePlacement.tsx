@@ -18,7 +18,7 @@ export default React.memo(function NonTerminatablePlacement({ group }: Props) {
   return (
     <div>
       <H3>{t.placement.type[group.type]}</H3>
-      <P noMargin data-qa="non-terminatable-placement">
+      <P $noMargin data-qa="non-terminatable-placement">
         {group.unitName},{' '}
         {t.children.placementTermination.until(group.endDate.format())}
       </P>

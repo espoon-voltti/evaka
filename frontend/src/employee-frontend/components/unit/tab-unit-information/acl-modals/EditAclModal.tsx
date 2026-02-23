@@ -84,18 +84,18 @@ export default React.memo(function EditAclModal({
       data-qa="edit-acl-modal"
     >
       <FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.unit.accessControl.name}</Label>
           <div>
             <PersonName person={row.employee} format="First Last" />
           </div>
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.unit.accessControl.role}</Label>
           <div>{i18n.roles.adRoles[role]}</div>
         </FixedSpaceColumn>
         {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.unit.accessControl.chooseGroup}</Label>
             <MultiSelect
               data-qa="group-select"
@@ -129,7 +129,7 @@ export default React.memo(function EditAclModal({
         )}
 
         {endDateEditable && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
             <DatePicker
               data-qa="end-date"

@@ -94,7 +94,7 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                 : t.income.table.notSent}
             </Td>
             <Td>
-              <FixedSpaceRow justifyContent="flex-end">
+              <FixedSpaceRow $justifyContent="flex-end">
                 {item.status === 'HANDLED' ? (
                   <Dimmed>{t.income.table.handled}</Dimmed>
                 ) : (
@@ -144,8 +144,8 @@ const IncomeStatementsList = React.memo(function IncomeStatementsList({
         <Fragment key={item.id}>
           {i > 0 && <HorizontalLine />}
           <FixedSpaceColumn
-            spacing="s"
-            alignItems="flex-start"
+            $spacing="s"
+            $alignItems="flex-start"
             data-qa="income-statement-row"
           >
             <H3>
@@ -252,9 +252,9 @@ export default React.memo(function IncomeStatements() {
     <>
       <Main>
         <Container>
-          <Gap size="s" />
-          <ContentArea opaque paddingVertical="L">
-            <H1 noMargin>{t.income.title}</H1>
+          <Gap $size="s" />
+          <ContentArea $opaque $paddingVertical="L">
+            <H1 $noMargin>{t.income.title}</H1>
             {t.income.description}
             {partnerStatus.isSuccess &&
               partnerStatus.value.partner?.hasIncomeStatement === false && (
@@ -265,8 +265,8 @@ export default React.memo(function IncomeStatements() {
                 />
               )}
           </ContentArea>
-          <Gap size="s" />
-          <ContentArea opaque paddingVertical="L">
+          <Gap $size="s" />
+          <ContentArea $opaque $paddingVertical="L">
             <HeadingContainer>
               <H2>{t.income.table.title}</H2>
               <ResponsiveAddButton
@@ -329,7 +329,7 @@ export default React.memo(function IncomeStatements() {
               />
             )}
           </ContentArea>
-          <Gap size="s" />
+          <Gap $size="s" />
           {renderResult(children, (children) =>
             children.length > 0 ? (
               <ChildrenIncomeStatements childInfo={children} />

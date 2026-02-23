@@ -239,17 +239,17 @@ export default React.memo(function MessageEditor({
           onClose()
         }}
       />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Bold>{i18n.messages.messageEditor.sender}</Bold>
-        <Gap size="xs" />
-        <P noMargin data-qa="sender-name">
+        <Gap $size="xs" />
+        <P $noMargin data-qa="sender-name">
           {accountName}
         </P>
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <div>
           <Bold>{i18n.messages.messageEditor.to.label}</Bold>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <TreeDropdown
             tree={recipients.state}
             onChange={recipients.set}
@@ -258,7 +258,7 @@ export default React.memo(function MessageEditor({
           />
         </div>
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <Bold>{i18n.messages.messageEditor.urgent.heading}</Bold>
         <CheckboxF
@@ -268,7 +268,7 @@ export default React.memo(function MessageEditor({
         />
         {urgent.state && (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <InfoBox
               message={i18n.messages.messageEditor.urgent.info}
               noMargin
@@ -276,7 +276,7 @@ export default React.memo(function MessageEditor({
           </>
         )}
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <label>
           <Bold>{i18n.messages.messageEditor.subject.heading}</Bold>
@@ -287,11 +287,11 @@ export default React.memo(function MessageEditor({
           />
         </label>
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <label>
           <Bold>{i18n.messages.messageEditor.message.heading}</Bold>
-          <Gap size="s" />
+          <Gap $size="s" />
           <StyledTextArea
             value={content.state}
             onChange={(e) => content.set(e.target.value)}
@@ -300,7 +300,7 @@ export default React.memo(function MessageEditor({
           />
         </label>
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <div>
           <span>{i18n.messages.messageEditor.recipientCount}: </span>

@@ -36,14 +36,14 @@ function Login({ error }: Props) {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1} centered>
           {i18n.login.title}
         </Title>
         <Title size={2} centered>
           {i18n.login.subtitle}
         </Title>
-        <Gap size="L" />
+        <Gap $size="L" />
         {systemNotification.isSuccess &&
           systemNotification.value.notification && (
             <AlertBox
@@ -58,7 +58,7 @@ function Login({ error }: Props) {
           <LinkButton data-qa="login-btn" href={getLoginUrl('ad')}>
             <span>{i18n.login.loginAD}</span>
           </LinkButton>
-          <Gap horizontal />
+          <Gap $horizontal />
           <LinkButton data-qa="login-btn" href={getLoginUrl('sfi')}>
             <span>{i18n.login.loginEvaka}</span>
           </LinkButton>

@@ -51,7 +51,7 @@ export const TabAbsenceApplications = (props: Props) => {
           ) : null}
         </Title>
       }
-      opaque
+      $opaque
       open={open}
       toggleOpen={toggleOpen}
     >

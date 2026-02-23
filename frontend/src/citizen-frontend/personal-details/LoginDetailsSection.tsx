@@ -78,7 +78,7 @@ export default React.memo(function LoginDetailsSection({
   return (
     <div data-qa="login-details-section">
       <Grid>
-        <H2 noMargin>{t.title}</H2>
+        <H2 $noMargin>{t.title}</H2>
         <div />
         {(!!user.email || !!user.weakLoginUsername) && (
           <>
@@ -104,7 +104,7 @@ export default React.memo(function LoginDetailsSection({
                 <Label>{t.weakLoginUsername}</Label>
                 <div>
                   <span data-qa="username">{user.weakLoginUsername}</span>
-                  <Gap horizontal size="xs" />
+                  <Gap $horizontal $size="xs" />
                   <InfoButton
                     onClick={toggleUsernameInfo}
                     aria-label={i18n.common.openExpandingInfo}
@@ -291,7 +291,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
       resolveDisabled={!form.isValid() || isUnacceptable || isUsernameConflict}
     >
       <form onClick={(e) => e.preventDefault()}>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label htmlFor="username">{t.weakLoginUsername}</Label>
           <UsernameField
             data-qa="username"
@@ -325,7 +325,7 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
             hideErrorsBeforeTouched={true}
             pattern={pattern}
           />
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <LabelLike>{`${t.passwordConstraints.label}:`}</LabelLike>
           <ConstraintsList>
             <li>

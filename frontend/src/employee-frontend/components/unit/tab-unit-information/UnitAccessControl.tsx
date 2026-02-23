@@ -206,7 +206,7 @@ function AclRow({
         </FixedSpaceRow>
       </Td>
       <Td>
-        <FixedSpaceColumn spacing="zero">
+        <FixedSpaceColumn $spacing="zero">
           <span data-qa="name">
             <PersonName person={row.employee} format="First Last" />
           </span>
@@ -227,7 +227,7 @@ function AclRow({
         {roleChangeDate ? `${roleChangeDate.format()}*` : row.endDate?.format()}
       </Td>
       <Td>
-        <FixedSpaceRow justifyContent="flex-end">
+        <FixedSpaceRow $justifyContent="flex-end">
           {isEditable && (
             <IconOnlyButton
               icon={faPen}
@@ -391,7 +391,7 @@ function ScheduledAclTable({
                 <span data-qa="role">{i18n.roles.adRoles[row.role]}</span>
               </Td>
               <Td>
-                <FixedSpaceColumn spacing="zero">
+                <FixedSpaceColumn $spacing="zero">
                   <span data-qa="name">
                     <PersonName person={row} format="First Last" />
                   </span>
@@ -509,7 +509,7 @@ function TemporaryEmployeesTable({
               </Td>
             )}
             <Td>
-              <FixedSpaceRow justifyContent="flex-end">
+              <FixedSpaceRow $justifyContent="flex-end">
                 {editPermitted && (
                   <IconOnlyButton
                     icon={faPen}
@@ -577,7 +577,7 @@ function PreviousTemporaryEmployeesTable({
               <PersonName person={row} format="First Last" />
             </Td>
             <StyledTd $width="400px">
-              <FixedSpaceRow justifyContent="flex-end">
+              <FixedSpaceRow $justifyContent="flex-end">
                 {editPermitted && (
                   <MutateButton
                     appearance="inline"
@@ -745,11 +745,11 @@ export default React.memo(function UnitAccessControl({
         />
       )}
 
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H2>{i18n.unit.accessControl.aclRoles}</H2>
 
-        <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <H3 noMargin>{i18n.unit.accessControl.activeAclRoles}</H3>
+        <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+          <H3 $noMargin>{i18n.unit.accessControl.activeAclRoles}</H3>
           {canInsertAcl && (
             <AddButton
               text={i18n.unit.accessControl.addDaycareAclModal.title}
@@ -774,12 +774,12 @@ export default React.memo(function UnitAccessControl({
             </>
           )
         )}
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <span>*{i18n.unit.accessControl.roleChange}</span>
 
-        <Gap size="XL" />
+        <Gap $size="XL" />
 
-        <H3 noMargin>{i18n.unit.accessControl.scheduledAclRoles}</H3>
+        <H3 $noMargin>{i18n.unit.accessControl.scheduledAclRoles}</H3>
         {renderResult(
           combine(daycareAclRows, scheduledDaycareAclRows),
           ([daycareAclRows, scheduledDaycareAclRows]) => (
@@ -792,10 +792,10 @@ export default React.memo(function UnitAccessControl({
           )
         )}
 
-        <Gap size="XL" />
+        <Gap $size="XL" />
 
-        <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <H3 noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>
+        <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+          <H3 $noMargin>{i18n.unit.accessControl.temporaryEmployees.title}</H3>
           {permittedActions.includes('CREATE_TEMPORARY_EMPLOYEE') && (
             <AddButton
               text={i18n.unit.accessControl.addTemporaryEmployeeModal.title}
@@ -828,8 +828,8 @@ export default React.memo(function UnitAccessControl({
           renderResult(candidateTemporaryEmployees, (employees) =>
             employees.length > 0 ? (
               <>
-                <Gap size="XL" />
-                <H3 noMargin>
+                <Gap $size="XL" />
+                <H3 $noMargin>
                   {
                     i18n.unit.accessControl.temporaryEmployees
                       .previousEmployeesTitle

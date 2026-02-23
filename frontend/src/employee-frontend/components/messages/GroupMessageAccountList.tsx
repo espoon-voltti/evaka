@@ -28,8 +28,8 @@ const CollapseToggle = styled.div`
   align-items: center;
   padding: 12px ${defaultMargins.m};
 `
-const Content = styled.div<{ visible: boolean }>`
-  display: ${(p) => (p.visible ? 'block' : 'none')};
+const Content = styled.div<{ $visible: boolean }>`
+  display: ${(p) => (p.$visible ? 'block' : 'none')};
 `
 
 function CollapsibleRow({
@@ -52,7 +52,7 @@ function CollapsibleRow({
           color={colors.grayscale.g100}
         />
       </CollapseToggle>
-      <Content visible={expanded}>{children}</Content>
+      <Content $visible={expanded}>{children}</Content>
     </AccountContainer>
   )
 }

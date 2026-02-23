@@ -141,7 +141,7 @@ export default React.memo(function Invoices({
           />
         )}
       </ResultsContainer>
-      <Gap size="m" />
+      <Gap $size="m" />
       <Table data-qa="table-of-invoices">
         <InvoiceTableHeader
           invoices={invoices}
@@ -335,7 +335,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <Td data-qa="invoice-created-at">
               {item.createdAt?.toLocalDate().format() ?? ''}
             </Td>
-            <Td align="right" data-qa="invoice-total">
+            <Td $align="right" data-qa="invoice-total">
               {formatCents(item.totalPrice)}
             </Td>
             <Td>
@@ -344,7 +344,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                   tooltip={i18n.personProfile.restrictedDetails}
                   position="right"
                 >
-                  <StatusIconContainer color={colors.status.danger}>
+                  <StatusIconContainer $color={colors.status.danger}>
                     <FontAwesomeIcon icon={faExclamation} inverse />
                   </StatusIconContainer>
                 </Tooltip>

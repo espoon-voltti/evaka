@@ -121,7 +121,7 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
         ) : undefined}
       </Td>
       <Td>
-        <FixedSpaceRow justifyContent="flex-end" spacing="m">
+        <FixedSpaceRow $justifyContent="flex-end" $spacing="m">
           <Button
             appearance="inline"
             onClick={props.onClose}

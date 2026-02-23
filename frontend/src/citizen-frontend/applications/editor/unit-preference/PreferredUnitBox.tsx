@@ -44,17 +44,17 @@ export default React.memo(function PreferredUnitBox({
       ? t.common.unit.providerTypes.PRIVATE
       : t.common.unit.providerTypes[unit.providerType]
 
-  const getProviderTypeColors = (): { color: string } => {
+  const getProviderTypeColors = (): { $color: string } => {
     switch (unit.providerType) {
       case 'MUNICIPAL':
       case 'MUNICIPAL_SCHOOL':
-        return { color: colors.accents.a6turquoise }
+        return { $color: colors.accents.a6turquoise }
       case 'PRIVATE':
       case 'PRIVATE_SERVICE_VOUCHER':
-        return { color: colors.accents.a3emerald }
+        return { $color: colors.accents.a3emerald }
       case 'PURCHASED':
       case 'EXTERNAL_PURCHASED':
-        return { color: colors.main.m4 }
+        return { $color: colors.main.m4 }
     }
   }
 
@@ -65,13 +65,13 @@ export default React.memo(function PreferredUnitBox({
       </MainColLeft>
       <MainColCenter>
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <H4
               aria-label={t.applications.editor.unitPreference.units.preferences.preferenceNameAndNumber(
                 n,
                 unit.name
               )}
-              noMargin
+              $noMargin
             >
               {unit.name}
             </H4>
@@ -86,13 +86,13 @@ export default React.memo(function PreferredUnitBox({
               />
             )}
           </FixedSpaceColumn>
-          <FixedSpaceFlexWrap horizontalSpacing="xs" verticalSpacing="xs">
+          <FixedSpaceFlexWrap $horizontalSpacing="xs" $verticalSpacing="xs">
             {unit.language === 'sv' ? (
-              <StaticChip color={colors.accents.a5orangeLight}>
+              <StaticChip $color={colors.accents.a5orangeLight}>
                 {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (
-              <StaticChip color={colors.main.m3}>
+              <StaticChip $color={colors.main.m3}>
                 {t.applications.editor.unitPreference.units.preferences.fi}
               </StaticChip>
             )}
@@ -100,8 +100,8 @@ export default React.memo(function PreferredUnitBox({
               {providerTypeText.toLowerCase()}
             </StaticChip>
           </FixedSpaceFlexWrap>
-          <Gap size="xs" />
-          <FixedSpaceFlexWrap horizontalSpacing="xs">
+          <Gap $size="xs" />
+          <FixedSpaceFlexWrap $horizontalSpacing="xs">
             <Button
               appearance="inline"
               text={

@@ -228,7 +228,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
           <ExpandingInfo info={<div>{t.form.titleInfo}</div>} width="full">
             <LabelLike>{t.form.title}</LabelLike>
           </ExpandingInfo>
-          <Gap size="s" />
+          <Gap $size="s" />
         </>
       )}
       <LabelValueList
@@ -283,13 +283,13 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
 
       {!!warning && (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <AlertBox message={warning} />
         </>
       )}
 
-      <Gap size="s" />
-      <FixedSpaceRow spacing="s">
+      <Gap $size="s" />
+      <FixedSpaceRow $spacing="s">
         <LegacyButton onClick={clearUiMode} text={i18n.common.cancel} />
         <AsyncButton
           primary

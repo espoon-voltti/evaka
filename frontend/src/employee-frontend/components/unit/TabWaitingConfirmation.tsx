@@ -72,7 +72,7 @@ export default React.memo(function TabWaitingConfirmation({
 
   return (
     <CollapsibleContentArea
-      opaque
+      $opaque
       open={open}
       title={
         <Title size={2}>
@@ -109,7 +109,7 @@ export default React.memo(function TabWaitingConfirmation({
                       <PersonName person={p.child} format="Last First" />
                     </Link>
                   ) : (
-                    <P noMargin color={colors.grayscale.g35}>
+                    <P $noMargin $color={colors.grayscale.g35}>
                       <PersonName person={p.child} format="Last First" />
                     </P>
                   )}
@@ -130,7 +130,7 @@ export default React.memo(function TabWaitingConfirmation({
                       <CircleIconSmallOrange>
                         <FontAwesomeIcon icon={faTimes} />
                       </CircleIconSmallOrange>
-                      <P noMargin>
+                      <P $noMargin>
                         {
                           i18n.unit.placementProposals
                             .citizenHasRejectedPlacement

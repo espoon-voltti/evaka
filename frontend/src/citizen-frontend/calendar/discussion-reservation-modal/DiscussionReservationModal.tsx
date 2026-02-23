@@ -170,7 +170,7 @@ export default React.memo(function DiscussionReservationModal({
                   aria-label={i18n.common.closeModal}
                   icon={faTimes}
                 />
-                <H1 noMargin>{t.surveyModalTitle}</H1>
+                <H1 $noMargin>{t.surveyModalTitle}</H1>
               </DiscussionHeader>
               <div>
                 <BackButtonInline
@@ -186,7 +186,7 @@ export default React.memo(function DiscussionReservationModal({
                   <H2>{eventData?.title}</H2>
                   <p>{eventData?.description}</p>
                   <H3>{t.reservationChildTitle}</H3>
-                  <StaticChip color={colors.main.m1}>
+                  <StaticChip $color={colors.main.m1}>
                     {childData ? (
                       <PersonName person={childData} format="FirstFirst" />
                     ) : (
@@ -195,20 +195,20 @@ export default React.memo(function DiscussionReservationModal({
                   </StaticChip>
                 </WordBreakContainer>
               </CalendarModalSection>
-              <Gap size="zero" sizeOnMobile="s" />
+              <Gap $size="zero" $sizeOnMobile="s" />
               <CalendarModalSection>
-                <FixedSpaceColumn spacing="m">
-                  <FixedSpaceRow justifyContent="space-between">
+                <FixedSpaceColumn $spacing="m">
+                  <FixedSpaceRow $justifyContent="space-between">
                     <div />
-                    <FixedSpaceRow justifyContent="space-between" />
+                    <FixedSpaceRow $justifyContent="space-between" />
                   </FixedSpaceRow>
                   {eventTimeDays.length > 0 && !hasReservations ? (
                     <>
                       <div>
-                        <FixedSpaceRow gap="m" alignItems="center">
+                        <FixedSpaceRow $gap="m" $alignItems="center">
                           <div>
                             <H2
-                              noMargin
+                              $noMargin
                             >{`${i18n.calendar.discussionTimeReservation.freeTimesInfoButtonText}`}</H2>
                           </div>
                           <InfoButton
@@ -259,7 +259,7 @@ export default React.memo(function DiscussionReservationModal({
                   ) : null}
                 </FixedSpaceColumn>
               </CalendarModalSection>
-              <Gap size="zero" sizeOnMobile="s" />
+              <Gap $size="zero" $sizeOnMobile="s" />
 
               {timeAlreadyReserved && (
                 <AlertBoxWrapper>

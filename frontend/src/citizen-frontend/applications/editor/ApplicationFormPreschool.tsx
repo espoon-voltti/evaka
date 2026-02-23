@@ -60,7 +60,7 @@ export default React.memo(function ApplicationFormPreschool({
   )
 
   return renderResult(serviceNeedOptions, (serviceNeedOptions) => (
-    <FixedSpaceColumn spacing="s">
+    <FixedSpaceColumn $spacing="s">
       <Heading
         type={applicationType}
         transferApplication={application.transferApplication}

@@ -55,18 +55,18 @@ const ChildMessagesPage = React.memo(function ChildMessagesPage({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <div>
         <ChildNameBackButton child={child} onClick={() => history.go(-1)} />
       </div>
       <ContentArea
-        opaque
-        paddingVertical="zero"
-        paddingHorizontal="zero"
-        fullHeight={true}
+        $opaque
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
+        $fullHeight={true}
         data-qa="messages-editor-content-area"
       >
         {childGroupAccount === undefined ? (

@@ -38,7 +38,7 @@ export default React.memo(function TabServiceApplications({ unitId }: Props) {
           ) : null}
         </Title>
       }
-      opaque
+      $opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
     >

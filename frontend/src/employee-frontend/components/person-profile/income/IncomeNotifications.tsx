@@ -50,18 +50,18 @@ export const IncomeNotifications = React.memo(function IncomeNotifications({
     <StyledCollapsibleContentArea
       data-qa="income-notifications-collapsible"
       aria-label={i18n.common.showMore}
-      paddingHorizontal="zero"
-      opaque
+      $paddingHorizontal="zero"
+      $opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
       title={
-        <H3 noMargin>
+        <H3 $noMargin>
           {i18n.personProfile.incomeStatement.notificationsTitle}
         </H3>
       }
     >
       {notifications.length > 0 ? (
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.personProfile.incomeStatement.notificationSent}</Label>
           <UnorderedList>
             {notifications
@@ -78,7 +78,7 @@ export const IncomeNotifications = React.memo(function IncomeNotifications({
                 </li>
               ))}
           </UnorderedList>
-          <Gap size="s" />
+          <Gap $size="s" />
           {notifications.length > notificationLimit && (
             <Button
               text={i18n.common.showMore}

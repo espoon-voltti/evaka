@@ -234,7 +234,7 @@ export default React.memo(function ApplicationPage() {
           combine(application, serviceNeedOptions),
           ([applicationData, serviceNeedOptions]) => (
             <FixedSpaceRow>
-              <ApplicationArea opaque>
+              <ApplicationArea $opaque>
                 {editing ? (
                   editedApplication ? (
                     <ApplicationEditView
@@ -254,14 +254,14 @@ export default React.memo(function ApplicationPage() {
                 applicationData.permittedActions.includes(
                   'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
                 )) && (
-                <SidebarArea opaque={false}>
+                <SidebarArea $opaque={false}>
                   <ApplicationNotes
                     applicationId={applicationId}
                     allowCreate={applicationData.permittedActions.includes(
                       'CREATE_NOTE'
                     )}
                   />
-                  <Gap size="m" />
+                  <Gap $size="m" />
                   {application.isSuccess &&
                     application.value.permittedActions.includes(
                       'READ_SERVICE_WORKER_ACCOUNT_MESSAGES'

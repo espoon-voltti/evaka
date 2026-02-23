@@ -18,8 +18,7 @@ import type { BaseProps } from '../utils'
 export type IconSize = 'xs' | 's' | 'm' | 'L' | 'XL' | 'XXL'
 
 type IconContainerProps = {
-  color: string
-  size: IconSize
+  $color: string
   tabIndex?: number
   'aria-hidden'?: 'true' | 'false' | undefined
 }
@@ -40,7 +39,7 @@ const IconContainer = styled.div<IconContainerProps>`
   align-items: center;
 
   border-radius: 100%;
-  border: 2px solid ${(p) => p.color};
+  border: 2px solid ${(p) => p.$color};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   color: ${(p) => p.theme.colors.grayscale.g100};
   user-select: none;
@@ -49,21 +48,21 @@ const IconContainer = styled.div<IconContainerProps>`
   font-weight: ${fontWeights.bold};
 
   &.active {
-    background-color: ${(props) => props.color};
+    background-color: ${(props) => props.$color};
     color: ${(p) =>
       readableColor(
-        p.color,
+        p.$color,
         p.theme.colors.grayscale.g0,
         p.theme.colors.grayscale.g100
       )};
   }
 
   &.clickable:hover {
-    background-color: ${(p) => shade(0.2, p.color)};
-    border-color: ${(p) => shade(0.2, p.color)};
+    background-color: ${(p) => shade(0.2, p.$color)};
+    border-color: ${(p) => shade(0.2, p.$color)};
     color: ${(p) =>
       readableColor(
-        shade(0.2, p.color),
+        shade(0.2, p.$color),
         p.theme.colors.grayscale.g0,
         p.theme.colors.grayscale.g100
       )};
@@ -177,8 +176,7 @@ const RoundIcon = React.memo(function RoundIcon({
 
   return (
     <IconContainer
-      color={color}
-      size={size}
+      $color={color}
       className={classNames(className, size.toLowerCase(), {
         clickable: !!onClick,
         active
@@ -225,7 +223,7 @@ function WithLabel({
   number
 }: WithLabelProps) {
   return (
-    <FixedSpaceColumnRelative spacing="xxs" alignItems="center">
+    <FixedSpaceColumnRelative $spacing="xxs" $alignItems="center">
       <RoundIcon
         content={content}
         color={color}
@@ -239,11 +237,11 @@ function WithLabel({
         aria-label={ariaLabel}
         aria-hidden={ariaHidden}
       />
-      <Text color={color}>{label}</Text>
+      <Text $color={color}>{label}</Text>
       {bubble && (size === 'L' || size === 'XL') && (
         <Circle
-          smaller={size === 'L'}
-          color={bubblecolor}
+          $smaller={size === 'L'}
+          $color={bubblecolor}
           data-qa={dataQa ? `${dataQa}-bubble` : ''}
         >
           {number}
@@ -253,24 +251,24 @@ function WithLabel({
   )
 }
 
-const Text = styled.span<{ color: string }>`
+const Text = styled.span<{ $color: string }>`
   font-style: normal;
   font-weight: ${fontWeights.semibold};
   font-size: 16px;
   line-height: 21px;
-  color: ${(props) => props.color};
+  color: ${(props) => props.$color};
   white-space: nowrap;
 `
 
-const Circle = styled.span<{ smaller: boolean; color?: string }>`
-  min-width: ${(p) => (p.smaller ? '16px' : '20px')};
-  min-height: ${(p) => (p.smaller ? '16px' : '20px')};
+const Circle = styled.span<{ $smaller: boolean; $color?: string }>`
+  min-width: ${(p) => (p.$smaller ? '16px' : '20px')};
+  min-height: ${(p) => (p.$smaller ? '16px' : '20px')};
   padding: 3px 5.5px;
-  font-size: ${(p) => (p.smaller ? '12px' : '16px')};
-  line-height: ${(p) => (p.smaller ? '10px' : '13px')};
+  font-size: ${(p) => (p.$smaller ? '12px' : '16px')};
+  line-height: ${(p) => (p.$smaller ? '10px' : '13px')};
   border-radius: 10px;
   background-color: ${(p) =>
-    p.color ? p.color : p.theme.colors.status.success};
+    p.$color ? p.$color : p.theme.colors.status.success};
   color: ${(p) => p.theme.colors.grayscale.g0};
   display: inline-block;
   position: absolute;

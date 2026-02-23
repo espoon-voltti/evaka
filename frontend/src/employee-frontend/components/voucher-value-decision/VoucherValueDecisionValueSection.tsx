@@ -45,8 +45,8 @@ export default React.memo(function VoucherValueDecisionValueSection({
 
   return (
     <section>
-      <H3 noMargin>{i18n.valueDecision.summary.value}</H3>
-      <Gap size="s" />
+      <H3 $noMargin>{i18n.valueDecision.summary.value}</H3>
+      <Gap $size="s" />
       <PartRow>
         <span>{mainDescription}</span>
         <b>{`${formatCents(voucherValue) ?? ''} €`}</b>

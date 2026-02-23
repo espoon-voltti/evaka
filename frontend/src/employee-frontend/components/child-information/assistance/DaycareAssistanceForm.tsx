@@ -129,7 +129,7 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
         ) : undefined}
       </Td>
       <Td>
-        <FixedSpaceRow justifyContent="flex-end" spacing="m">
+        <FixedSpaceRow $justifyContent="flex-end" $spacing="m">
           <Button
             appearance="inline"
             onClick={props.onClose}

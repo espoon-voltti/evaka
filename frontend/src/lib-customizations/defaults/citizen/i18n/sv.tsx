@@ -773,7 +773,7 @@ const sv: Translations = {
                 </a>
                 .
               </P>
-              <P fitted={true}>
+              <P $fitted={true}>
                 * Informationen markerad med en stjärna är obligatorisk
               </P>
             </>
@@ -806,7 +806,9 @@ const sv: Translations = {
                 </a>
                 -meddelanden.
               </P>
-              <P fitted={true}>* Informationen markerad med en stjärna krävs</P>
+              <P $fitted={true}>
+                * Informationen markerad med en stjärna krävs
+              </P>
             </>
           ),
           CLUB: (
@@ -833,7 +835,7 @@ const sv: Translations = {
                 för att beviljas förskoleundervisning eller privat vårdbidrag
                 kan han inte beviljas klubbplats.
               </P>
-              <P fitted={true}>
+              <P $fitted={true}>
                 * Informationen markerad med en stjärna krävs.
               </P>
             </>
@@ -1101,7 +1103,7 @@ const sv: Translations = {
           label: 'Ansökningen är brådskande (gäller inte ansökan om byte)',
           attachmentsMessage: {
             text: (
-              <P fitted={true}>
+              <P $fitted={true}>
                 Om behovet av en plats inom småbarnspedagogiken beror på att du
                 plötsligt fått sysselsättning eller börjat studera, ska platsen
                 sökas senast <strong>två veckor innan</strong> behovet börjar.
@@ -1850,7 +1852,7 @@ const sv: Translations = {
             Omprövning ska begäras skriftligt. Också elektroniska dokument
             uppfyller kravet på skriftlig form.
           </P>
-          <P noMargin>I omprövningsbegäran ska uppges:</P>
+          <P $noMargin>I omprövningsbegäran ska uppges:</P>
           <ul>
             <li>det beslut i vilket omprövning begärs</li>
             <li>hurdan omprövning som yrkas</li>
@@ -1872,7 +1874,7 @@ const sv: Translations = {
             omprövningsbegäran, ska även denna persons namn och hemkommun uppges
             i omprövningsbegäran.
           </P>
-          <P noMargin>Till omprövningsbegäran ska fogas:</P>
+          <P $noMargin>Till omprövningsbegäran ska fogas:</P>
           <ul>
             <li>det beslut som avses, i original eller kopia</li>
             <li>
@@ -2021,7 +2023,7 @@ const sv: Translations = {
               omprövning ännu under följande vardag.
             </P>
             <H3>Begäran om omprövning</H3>
-            <P noMargin>
+            <P $noMargin>
               Begäran om omprövning ska innehålla följande uppgifter:
             </P>
             <ul>
@@ -2036,7 +2038,7 @@ const sv: Translations = {
               </li>
               <li>På vilka grunder omprövningen begärs</li>
             </ul>
-            <P noMargin>
+            <P $noMargin>
               Till begäran om omprövning bifogas följande handlingar:
             </P>
             <ul>
@@ -2076,7 +2078,7 @@ const sv: Translations = {
   applicationsList: {
     title: 'Ansökan till småbarnspedagogik eller anmälan till förskolan',
     summary: (
-      <P width="800px">
+      <P $width="800px">
         Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka om
         plats i småbarnspedagogisk verksamhet. Med samma ansökan kan du ansöka
         om servicesedel inom småbarnspedagogik när du ansöker om en plats i en
@@ -2119,19 +2121,19 @@ const sv: Translations = {
     noCustodians: 'Inga försörjningsskyldiga barn',
     noCustodiansInfo: (
       <>
-        <P width="100%">
+        <P $width="100%">
           Enligt uppgifter från Myndigheten för digitalisering och
           befolkningsdata har du inte vårdnad om något barn.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Om du ändå har det, kan bristen bero på att myndighetens sammanför
           uppgifterna med fördröjning.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Kontrollera hos myndigheten att du har gjort allt de behöver för att
           registrera vårdnaden.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Du kan inte använda eVaka innan vårdnaden har uppdaterats i
           myndighetens register. Under tiden kan du till exempel ringa eller
           skicka e-post till daghemmets föreståndare.
@@ -2349,7 +2351,7 @@ const sv: Translations = {
         <P>
           <strong>Observera:</strong>
         </P>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <UnorderedList>
           <li>
             Avgiften kan justeras i mitten av verksamhetsperioden om en sådan
@@ -2438,7 +2440,7 @@ const sv: Translations = {
       title: 'Att fylla i uppgifterna om bruttoinkomster',
       description: (
         <>
-          <P noMargin>
+          <P $noMargin>
             Välj nedan om du vill skicka in dina inkomstuppgifter som bilaga,
             eller om myndigheten ska se dina uppgifter direkt i inkomstregistret
             samt hos FPA vid behov.

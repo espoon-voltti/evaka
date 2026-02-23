@@ -20,10 +20,10 @@ import InputField, {
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-const SingleNumberInput = styled(StyledInput)<{ invalid?: boolean }>`
+const SingleNumberInput = styled(StyledInput)<{ $invalid?: boolean }>`
   border: 1px solid
     ${(p) =>
-      p.invalid ? p.theme.colors.status.danger : p.theme.colors.main.m2};
+      p.$invalid ? p.theme.colors.status.danger : p.theme.colors.main.m2};
   text-align: center;
 
   font-family: 'Montserrat', sans-serif;
@@ -106,10 +106,10 @@ export const PinInput = React.memo(function PinInput({
           <SingleNumberInput
             key={i}
             type="password"
-            width="xs"
+            $width="xs"
             inputMode="numeric"
             maxLength={1}
-            invalid={invalid}
+            $invalid={invalid}
             autoFocus={i === 0}
             value={pin[i]}
             ref={refs[i]}

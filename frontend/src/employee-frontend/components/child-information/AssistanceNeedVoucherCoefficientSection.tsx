@@ -101,8 +101,8 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
         <>
           {uiMode === 'create-new-assistance-need-voucher-coefficient' && (
             <>
-              <HorizontalLine slim />
-              <Gap size="s" />
+              <HorizontalLine $slim />
+              <Gap $size="s" />
               <div data-qa="create-new-assistance-need-voucher-coefficient">
                 <AssistanceNeedVoucherCoefficientForm
                   onSuccess={() => undefined}
@@ -112,7 +112,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
                   )}
                 />
               </div>
-              <Gap size="m" />
+              <Gap $size="m" />
             </>
           )}
           {coefficients.length === 0 ? null : (

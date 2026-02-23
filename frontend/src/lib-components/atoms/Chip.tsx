@@ -16,10 +16,10 @@ import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
 export const StaticChip = styled.div<{
-  color: string
-  textColor?: string
-  fitContent?: boolean
-  nowrap?: boolean
+  $color: string
+  $textColor?: string
+  $fitContent?: boolean
+  $nowrap?: boolean
 }>`
   display: inline-block;
   font-family: 'Open Sans', sans-serif;
@@ -27,13 +27,13 @@ export const StaticChip = styled.div<{
   font-size: ${defaultMargins.s};
   line-height: ${defaultMargins.s};
   user-select: none;
-  border: 1px solid ${(p) => p.color};
+  border: 1px solid ${(p) => p.$color};
   border-radius: 1000px;
-  background-color: ${(p) => p.color};
+  background-color: ${(p) => p.$color};
   color: ${(p) =>
-    p.textColor ??
+    p.$textColor ??
     readableColor(
-      p.color,
+      p.$color,
       p.theme.colors.grayscale.g0,
       p.theme.colors.grayscale.g100
     )};
@@ -46,14 +46,14 @@ export const StaticChip = styled.div<{
     outline-offset: 2px;
   }
   ${(p) =>
-    p.fitContent
+    p.$fitContent
       ? css`
           width: fit-content;
           height: fit-content;
         `
       : ''}
   ${(p) =>
-    p.nowrap
+    p.$nowrap
       ? css`
           white-space: nowrap;
         `
@@ -192,7 +192,7 @@ const IconWrapper = styled.div`
 `
 
 export const ChipWrapper = styled.div<{
-  margin?: keyof typeof defaultMargins
+  $margin?: keyof typeof defaultMargins
   $justifyContent?: Property.JustifyContent
 }>`
   display: flex;
@@ -202,7 +202,7 @@ export const ChipWrapper = styled.div<{
 
   ${(p) => css`
     > div {
-      margin-bottom: ${defaultMargins[p.margin ?? 's']};
+      margin-bottom: ${defaultMargins[p.$margin ?? 's']};
     }
   `};
 `

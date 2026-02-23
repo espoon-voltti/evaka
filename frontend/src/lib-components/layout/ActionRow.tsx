@@ -8,7 +8,7 @@ import { tabletMin } from '../breakpoints'
 import { defaultMargins } from '../white-space'
 
 type ActionRowProps = {
-  breakpoint?: string
+  $breakpoint?: string
 }
 
 const ActionRow = styled.div<ActionRowProps>`
@@ -27,7 +27,7 @@ const ActionRow = styled.div<ActionRowProps>`
     flex-grow: 1;
   }
 
-  @media (max-width: ${(p) => p.breakpoint ?? tabletMin}) {
+  @media (max-width: ${(p) => p.$breakpoint ?? tabletMin}) {
     flex-direction: column-reverse;
     padding: 0 ${defaultMargins.s};
 

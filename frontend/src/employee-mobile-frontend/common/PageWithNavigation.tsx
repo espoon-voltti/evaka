@@ -33,7 +33,7 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
   allowedGroupIds = undefined,
   children
 }) => (
-  <FixedSpaceColumn spacing="zero" style={{ height: '100vh' }}>
+  <FixedSpaceColumn $spacing="zero" style={{ height: '100vh' }}>
     <TopBarWithGroupSelector
       unitId={unitOrGroup.unitId}
       onChangeGroup={onChangeGroup}

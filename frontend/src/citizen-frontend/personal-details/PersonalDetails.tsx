@@ -51,9 +51,9 @@ export default React.memo(function PersonalDetails() {
   return (
     <Main>
       <Container>
-        <Gap size="L" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.personalDetails.title}</H1>
+        <Gap $size="L" />
+        <ContentArea $opaque $paddingVertical="L">
+          <H1 $noMargin>{t.personalDetails.title}</H1>
           {t.personalDetails.description}
           <HorizontalLine />
           {renderResult(

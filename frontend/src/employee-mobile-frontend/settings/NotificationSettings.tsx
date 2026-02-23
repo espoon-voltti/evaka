@@ -116,7 +116,7 @@ export const NotificationSettings = React.memo(function NotificationSettings({
       ) : undefined}
       <div>
         <SectionLabel>{t.permission.label}</SectionLabel>
-        <Gap size="s" />
+        <Gap $size="s" />
         <PermissionSection
           state={pushNotifications ? permissionState : 'unsupported'}
           refresh={refreshPermissionState}
@@ -128,7 +128,7 @@ export const NotificationSettings = React.memo(function NotificationSettings({
           combine(pushSettingsResult, groupInfosResponse),
           ([pushSettings, groupInfos]) => (
             <>
-              <Gap size="m" />
+              <Gap $size="m" />
               {editing ? (
                 <SettingsSectionsEditor
                   stopEditing={stopEditing}
@@ -159,13 +159,13 @@ const SettingsSections = React.memo(function SettingsSections(props: {
     <>
       <div data-qa="categories">
         <SectionLabel>{t.categories.label}</SectionLabel>
-        <Gap size="s" />
+        <Gap $size="s" />
         {props.categories}
       </div>
-      <Gap size="m" />
+      <Gap $size="m" />
       <div data-qa="groups">
         <SectionLabel>{t.groups.label}</SectionLabel>
-        <Gap size="s" />
+        <Gap $size="s" />
         {props.groups}
       </div>
     </>
@@ -289,7 +289,7 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
           <GroupCheckbox key={idx} form={f} />
         ))}
       />
-      <Gap size="L" />
+      <Gap $size="L" />
       <FixedSpaceRow>
         <LegacyButton
           data-qa="cancel"
@@ -371,7 +371,7 @@ const PermissionSection = React.memo(function PermissionSection(props: {
       return (
         <FixedSpaceRow>
           <span data-qa="permission-state">{t.state.prompt}</span>
-          <Gap size="s" horizontal />
+          <Gap $size="s" $horizontal />
           <AsyncButton
             appearance="inline"
             data-qa="enable"

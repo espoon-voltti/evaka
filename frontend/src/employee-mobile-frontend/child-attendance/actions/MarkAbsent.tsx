@@ -49,23 +49,23 @@ export default React.memo(function MarkAbsent({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       {renderResult(child, (child) => (
         <>
           <ChildNameBackButton child={child} onClick={() => history.go(-2)} />
           <ContentArea
-            shadow
-            opaque={true}
-            paddingHorizontal="s"
-            paddingVertical="m"
+            $shadow
+            $opaque={true}
+            $paddingHorizontal="s"
+            $paddingVertical="m"
           >
             <AbsenceWrapper>
               <CustomTitle>{i18n.attendances.actions.markAbsent}</CustomTitle>
-              <Gap size="m" />
-              <FixedSpaceColumn spacing="s">
+              <Gap $size="m" />
+              <FixedSpaceColumn $spacing="s">
                 <AbsenceSelector
                   absenceTypes={[
                     'OTHER_ABSENCE',
@@ -78,9 +78,9 @@ export default React.memo(function MarkAbsent({
                 />
               </FixedSpaceColumn>
             </AbsenceWrapper>
-            <Gap size="m" />
+            <Gap $size="m" />
             <Actions>
-              <FixedSpaceRow fullWidth>
+              <FixedSpaceRow $fullWidth>
                 <LegacyButton
                   text={i18n.common.cancel}
                   onClick={() => history.go(-1)}
@@ -114,7 +114,7 @@ export default React.memo(function MarkAbsent({
               </FixedSpaceRow>
             </Actions>
           </ContentArea>
-          <Gap size="s" />
+          <Gap $size="s" />
           <ChildNotesSummary child={child} />
         </>
       ))}

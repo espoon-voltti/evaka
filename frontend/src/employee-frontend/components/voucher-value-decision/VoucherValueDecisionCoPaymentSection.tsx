@@ -38,14 +38,14 @@ export default React.memo(function VoucherValueDecisionCoPaymentSection({
 
   return (
     <section>
-      <H3 noMargin>{i18n.valueDecision.summary.coPayment}</H3>
-      <Gap size="s" />
+      <H3 $noMargin>{i18n.valueDecision.summary.coPayment}</H3>
+      <Gap $size="s" />
       <Part>
         <PartRow>
           <span>{mainDescription}</span>
           <b>{`${formatCents(coPayment) ?? ''} €`}</b>
         </PartRow>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         {feeAlterations.map((feeAlteration, index) => (
           <Fragment key={index}>
             <PartRow>
@@ -54,7 +54,7 @@ export default React.memo(function VoucherValueDecisionCoPaymentSection({
               }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
               <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
             </PartRow>
-            <Gap size="xs" />
+            <Gap $size="xs" />
           </Fragment>
         ))}
         {feeAlterations.length > 0 ? (

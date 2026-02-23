@@ -124,11 +124,11 @@ function section({
     }
     return (
       <CollapsibleContentArea
-        title={<H2 noMargin>{title(i18n)}</H2>}
+        title={<H2 $noMargin>{title(i18n)}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
-        opaque
-        paddingVertical="L"
+        $opaque
+        $paddingVertical="L"
         data-qa={dataQa}
       >
         <Component childId={childId} />
@@ -403,7 +403,7 @@ const ChildInformation = React.memo(function ChildInformation({
   return (
     <Container>
       <div className="child-information-wrapper" data-person-id={id}>
-        <ContentArea opaque>
+        <ContentArea $opaque>
           <HeaderRow>
             <Title size={1} noMargin>
               {i18n.titles.childInformation}
@@ -425,7 +425,7 @@ const ChildInformation = React.memo(function ChildInformation({
                   data-qa="restricted-warning"
                 />
               )}
-              <FixedSpaceRow spacing="L">
+              <FixedSpaceRow $spacing="L">
                 {person.isSuccess &&
                   getAge(person.value.dateOfBirth) >= 10 &&
                   getAge(person.value.dateOfBirth) < 18 && (
@@ -468,13 +468,13 @@ const ChildInformation = React.memo(function ChildInformation({
           )}
         </ContentArea>
 
-        <Gap size="m" />
+        <Gap $size="m" />
 
         <ChildDetails id={id} />
 
-        <Gap size="m" />
+        <Gap $size="m" />
 
-        <FixedSpaceColumn spacing="m">
+        <FixedSpaceColumn $spacing="m">
           {layout.map(({ component, open }) => {
             const Component = components[component]
             return <Component childId={id} key={component} startOpen={open} />

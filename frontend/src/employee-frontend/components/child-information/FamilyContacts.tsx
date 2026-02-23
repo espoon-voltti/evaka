@@ -47,7 +47,7 @@ export default React.memo(function FamilyContacts({ childId }: Props) {
       {renderResult(contacts, (contacts) => (
         <FamilyContactTable childId={childId} contacts={contacts} />
       ))}
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {permittedActions.has('READ_BACKUP_PICKUP') && (
         <BackupPickup childId={childId} />
       )}
@@ -77,8 +77,8 @@ const FamilyContactTable = React.memo(function FamilyContactForm({
 
   return (
     <>
-      <Gap size="m" />
-      <H3 noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
+      <Gap $size="m" />
+      <H3 $noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
       <Table>
         <Thead>
           <Tr>
@@ -157,7 +157,7 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
             onCloseEditor={() => setEditing(false)}
           />
         ) : (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             {contact.email ? (
               <span data-qa="family-contact-email">{contact.email}</span>
             ) : null}
@@ -235,7 +235,7 @@ const EditContactFields = React.memo(function EditFoo({
     setFormData((prev) => ({ ...prev, backupPhone }))
 
   return (
-    <FixedSpaceColumn spacing="xs">
+    <FixedSpaceColumn $spacing="xs">
       <span>
         <InputField
           data-qa="family-contact-email-input"
@@ -261,7 +261,7 @@ const EditContactFields = React.memo(function EditFoo({
         />{' '}
         {`(${i18n.childInformation.familyContacts.backupPhone})`}
       </span>
-      <FixedSpaceRow justifyContent="flex-end" spacing="m">
+      <FixedSpaceRow $justifyContent="flex-end" $spacing="m">
         <Button
           appearance="inline"
           onClick={onCloseEditor}

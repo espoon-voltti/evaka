@@ -31,7 +31,7 @@ export default React.memo(function ApplicationTitle({ application }: Props) {
     <div data-qa="application-title">
       <TitleRow>
         <TitleWrapper>
-          <H1 noMargin>{i18n.application.types[application.type]}</H1>
+          <H1 $noMargin>{i18n.application.types[application.type]}</H1>
           {titleLabels.length > 0 && (
             <span className="title-labels">({titleLabels.join(', ')})</span>
           )}

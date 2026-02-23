@@ -64,7 +64,7 @@ export default React.memo(function TabGroups({
     ([groupData, nekkuData], isReloading) => (
       <FixedSpaceColumn data-qa="unit-groups-page" data-loading={isReloading}>
         {groupData.recentlyTerminatedPlacements.length > 0 && (
-          <ContentArea opaque data-qa="terminated-placements-section">
+          <ContentArea $opaque data-qa="terminated-placements-section">
             <TerminatedPlacements
               recentlyTerminatedPlacements={
                 groupData.recentlyTerminatedPlacements
@@ -76,7 +76,7 @@ export default React.memo(function TabGroups({
         {groupData.missingGroupPlacements.length +
           groupData.missingBackupGroupPlacements.length >
           0 && (
-          <ContentArea opaque data-qa="missing-placements-section">
+          <ContentArea $opaque data-qa="missing-placements-section">
             <MissingGroupPlacements
               unitId={unitId}
               groups={groupData.groups}
@@ -91,7 +91,7 @@ export default React.memo(function TabGroups({
           </ContentArea>
         )}
 
-        <ContentArea opaque>
+        <ContentArea $opaque>
           <Groups
             unit={unitInformation.daycare}
             permittedActions={unitInformation.permittedActions}

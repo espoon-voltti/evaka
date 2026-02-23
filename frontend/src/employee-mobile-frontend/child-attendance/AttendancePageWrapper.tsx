@@ -198,9 +198,9 @@ const ChildSearch = React.memo(function Search({
       style={{ height: containerSpring.x.to((x) => `${100 * x}%`) }}
     >
       <ContentArea
-        opaque={false}
-        paddingVertical="zero"
-        paddingHorizontal="zero"
+        $opaque={false}
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
       >
         <FreeTextSearch
           value={freeText}

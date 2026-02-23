@@ -100,9 +100,9 @@ export default React.memo(function SiblingBasisSubSection({
           )}
           {!formData.vtjSiblings.find((s) => s.selected) && (
             <>
-              <Gap size="s" />
-              <AdaptiveFlex horizontalSpacing="L" breakpoint="1060px">
-                <FixedSpaceColumn spacing="xs">
+              <Gap $size="s" />
+              <AdaptiveFlex $horizontalSpacing="L" $breakpoint="1060px">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor="sibling-names">
                     {t.applications.editor.unitPreference.siblingBasis.names} *
                   </Label>
@@ -126,7 +126,7 @@ export default React.memo(function SiblingBasisSubSection({
                     hideErrorsBeforeTouched={!verificationRequested}
                   />
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xs">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor="sibling-ssn">
                     {t.applications.editor.unitPreference.siblingBasis.ssn} *
                   </Label>
@@ -162,7 +162,7 @@ export default React.memo(function SiblingBasisSubSection({
       {applicationType === 'PRESCHOOL' && formData.siblingBasis && (
         <>
           <Gap />
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label htmlFor="sibling-unit">
               {t.applications.editor.unitPreference.siblingBasis.unit} *
             </Label>

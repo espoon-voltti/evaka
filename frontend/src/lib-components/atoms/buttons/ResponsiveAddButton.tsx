@@ -14,8 +14,8 @@ interface ResponsiveAddButtonProps extends AddButtonProps {
   breakpoint?: string
 }
 
-const ResponsiveText = styled.span<{ breakpoint: string }>`
-  @media (max-width: ${(p) => p.breakpoint}) {
+const ResponsiveText = styled.span<{ $breakpoint: string }>`
+  @media (max-width: ${(p) => p.$breakpoint}) {
     position: absolute;
     left: -10000px;
     top: auto;
@@ -32,7 +32,7 @@ export default React.memo(function ResponsiveAddButton({
 }: ResponsiveAddButtonProps) {
   return (
     <AddButton
-      text={<ResponsiveText breakpoint={breakpoint}>{text}</ResponsiveText>}
+      text={<ResponsiveText $breakpoint={breakpoint}>{text}</ResponsiveText>}
       {...props}
     />
   )

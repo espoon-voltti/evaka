@@ -72,7 +72,7 @@ export default React.memo(function TemplateImportModal({
           onClick={onClickContinue}
           data-qa="continue"
         />
-        <Gap horizontal size="s" />
+        <Gap $horizontal $size="s" />
         <LegacyButton
           onClick={onClose}
           data-qa="cancel"

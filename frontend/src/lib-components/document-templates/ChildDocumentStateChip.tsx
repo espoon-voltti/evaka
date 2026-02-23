@@ -37,9 +37,9 @@ export function ChildDocumentStateChip({ status }: StateChipProps) {
 
   return (
     <StaticChip
-      color={statusColors[status]}
-      fitContent
-      nowrap
+      $color={statusColors[status]}
+      $fitContent
+      $nowrap
       data-qa="document-state-chip"
     >
       {i18n.documentTemplates.documentStates[status]}

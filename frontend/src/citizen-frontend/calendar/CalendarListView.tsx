@@ -84,7 +84,7 @@ export default React.memo(function CalendarListView({
 
   return (
     <>
-      <FixedSpaceColumn spacing="zero">
+      <FixedSpaceColumn $spacing="zero">
         {months.map((m, index) => (
           <MonthElem
             key={`month-${m.year}-${m.monthNumber}`}

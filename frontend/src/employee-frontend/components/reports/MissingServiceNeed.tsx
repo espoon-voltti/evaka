@@ -77,7 +77,7 @@ export default React.memo(function MissingServiceNeed() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.missingServiceNeed.title}</Title>
 
         <FilterRow>
@@ -196,7 +196,7 @@ export default React.memo(function MissingServiceNeed() {
             </>
           ) : (
             <>
-              <Gap size="L" />
+              <Gap $size="L" />
               <div>{i18n.common.noResults}</div>
             </>
           )

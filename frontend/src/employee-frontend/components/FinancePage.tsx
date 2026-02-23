@@ -64,7 +64,7 @@ export default React.memo(function FinancePage() {
   return (
     <>
       <TabLinks tabs={tabs} />
-      <Gap size="s" />
+      <Gap $size="s" />
     </>
   )
 })

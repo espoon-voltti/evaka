@@ -98,7 +98,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
         rejectLabel={i18n.common.cancel}
       >
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.name}</Label>
             <InputField
               value={name}
@@ -108,7 +108,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
               data-qa="backup-pickup-name-input"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.phone}</Label>
             <InputField
               value={phone}
@@ -151,7 +151,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
         rejectLabel={i18n.common.cancel}
       >
         <FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.name}</Label>
             <InputField
               value={name}
@@ -161,7 +161,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
               data-qa="backup-pickup-name-input"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.backupPickups.phone}</Label>
             <InputField
               value={phone}
@@ -190,8 +190,8 @@ function BackupPickup({ childId }: BackupPickupProps) {
     <>
       {renderResult(backupPickups, (backupPickups) => (
         <>
-          <FlexRow justifyContent="space-between">
-            <H3 noMargin>{i18n.childInformation.backupPickups.title}</H3>
+          <FlexRow $justifyContent="space-between">
+            <H3 $noMargin>{i18n.childInformation.backupPickups.title}</H3>
             {permittedActions.has('CREATE_BACKUP_PICKUP') && (
               <AddButton
                 text={i18n.childInformation.backupPickups.add}

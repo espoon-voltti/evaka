@@ -57,19 +57,24 @@ export default React.memo(function DailyServiceTimesRow({
     <>
       <ClickableTr onClick={toggleOpen} data-qa="daily-service-times-row">
         <Td
-          horizontalPadding="zero"
-          topBorder
-          borderStyle="dashed"
-          maximalWidth
+          $horizontalPadding="zero"
+          $topBorder
+          $borderStyle="dashed"
+          $maximalWidth
         >
-          <H4 noMargin data-qa="daily-service-times-row-title">
+          <H4 $noMargin data-qa="daily-service-times-row-title">
             {i18n.childInformation.dailyServiceTimes.dailyServiceTime}{' '}
             {times.validityPeriod.start.format()} –{' '}
             {times.validityPeriod.end?.format() ?? ''}
           </H4>
         </Td>
-        <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
-          <FixedSpaceRow alignItems="center" spacing="s">
+        <Td
+          $minimalWidth
+          $topBorder
+          $borderStyle="dashed"
+          $verticalAlign="middle"
+        >
+          <FixedSpaceRow $alignItems="center" $spacing="s">
             {!hasEnded && !isEditing && permittedActions.includes('UPDATE') ? (
               <IconOnlyButton
                 icon={faPen}
@@ -96,11 +101,16 @@ export default React.memo(function DailyServiceTimesRow({
             ) : null}
           </FixedSpaceRow>
         </Td>
-        <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
+        <Td
+          $minimalWidth
+          $topBorder
+          $borderStyle="dashed"
+          $verticalAlign="middle"
+        >
           <FixedSpaceRow
-            justifyContent="flex-end"
-            alignItems="center"
-            spacing="s"
+            $justifyContent="flex-end"
+            $alignItems="center"
+            $spacing="s"
           >
             <TimeBasedStatusChip
               status={
@@ -129,15 +139,15 @@ export default React.memo(function DailyServiceTimesRow({
         <Tr data-qa="daily-service-times-row-collapsible">
           <Td
             colSpan={3}
-            borderStyle="none"
-            horizontalPadding="zero"
-            verticalPadding="zero"
+            $borderStyle="none"
+            $horizontalPadding="zero"
+            $verticalPadding="zero"
           >
             <LabelLike>
               {i18n.childInformation.dailyServiceTimes.types[times.type]}
             </LabelLike>
             <DailyServiceTimesReadOnly times={times} />
-            <Gap size="s" />
+            <Gap $size="s" />
           </Td>
         </Tr>
       )}
@@ -145,9 +155,9 @@ export default React.memo(function DailyServiceTimesRow({
         <Tr data-qa="daily-service-times-row-editor">
           <Td
             colSpan={3}
-            borderStyle="none"
-            horizontalPadding="zero"
-            verticalPadding="zero"
+            $borderStyle="none"
+            $horizontalPadding="zero"
+            $verticalPadding="zero"
           >
             <DailyServiceTimesEditForm
               childId={childId}
@@ -157,7 +167,7 @@ export default React.memo(function DailyServiceTimesRow({
               }}
               initialData={times}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
           </Td>
         </Tr>
       )}
@@ -187,7 +197,7 @@ export const DailyServiceTimesReadOnly = React.memo(
       case 'REGULAR':
         return (
           <div>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             {i18n.childInformation.dailyServiceTimes.weekdays.monday}–
             {i18n.childInformation.dailyServiceTimes.weekdays.friday}{' '}
             {times.regularTimes.format()}
@@ -196,7 +206,7 @@ export const DailyServiceTimesReadOnly = React.memo(
       case 'IRREGULAR':
         return (
           <div>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             {weekdays
               .filter((weekday) => times[weekday])
               .map(

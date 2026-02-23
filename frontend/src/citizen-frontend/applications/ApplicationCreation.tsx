@@ -81,16 +81,16 @@ export default React.memo(function ApplicationCreation() {
             ) : (
               <Fragment>
                 <ContentArea
-                  opaque
-                  paddingVertical="L"
+                  $opaque
+                  $paddingVertical="L"
                   data-qa="application-options-area"
                 >
-                  <H1 noMargin>{t.applications.creation.title}</H1>
-                  <Gap size="m" />
-                  <H2 noMargin>
+                  <H1 $noMargin>{t.applications.creation.title}</H1>
+                  <Gap $size="m" />
+                  <H2 $noMargin>
                     <PersonName person={child} format="First Last" />
                   </H2>
-                  <Gap size="XL" />
+                  <Gap $size="XL" />
                   <div role="group" aria-labelledby="application-type-label">
                     <ApplicationTypeLabel id="application-type-label">
                       {t.applications.creation.selectApplicationType}
@@ -108,7 +108,7 @@ export default React.memo(function ApplicationCreation() {
                           data-qa="type-radio-DAYCARE"
                         />
                       </ExpandingInfo>
-                      <Gap size="s" />
+                      <Gap $size="s" />
                       {featureFlags.preschool && (
                         <>
                           <Radio
@@ -126,7 +126,7 @@ export default React.memo(function ApplicationCreation() {
                               <ExpandingInfoButtonSlot />
                             </PreschoolDaycareInfo>
                           </ExpandingInfo>
-                          <Gap size="s" />
+                          <Gap $size="s" />
                         </>
                       )}
                       {!featureFlags.hideClubApplication && (
@@ -145,7 +145,7 @@ export default React.memo(function ApplicationCreation() {
                       )}
                     </ApplicationTypeOptions>
                   </div>
-                  <Gap size="m" />
+                  <Gap $size="m" />
                   {duplicateExists ? (
                     <>
                       <AlertBox
@@ -153,7 +153,7 @@ export default React.memo(function ApplicationCreation() {
                         message={t.applications.creation.duplicateWarning}
                         noMargin
                       />
-                      <Gap size="m" />
+                      <Gap $size="m" />
                     </>
                   ) : null}
                   {!duplicateExists && shouldUseTransferApplication && (
@@ -167,12 +167,12 @@ export default React.memo(function ApplicationCreation() {
                           ]
                         }
                       />
-                      <Gap size="m" />
+                      <Gap $size="m" />
                     </>
                   )}
                   {t.applications.creation.applicationInfo}
                 </ContentArea>
-                <ContentArea opaque={false} paddingVertical="L">
+                <ContentArea $opaque={false} $paddingVertical="L">
                   <ButtonContainer justify="center">
                     <MutateButton
                       primary

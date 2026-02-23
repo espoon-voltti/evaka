@@ -36,7 +36,7 @@ export const InlineWideAsyncButton = styled(WideAsyncButton)`
 
 export const FlexColumn = styled.div<{
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  paddingHorizontal?: SpacingSize | string
+  $paddingHorizontal?: SpacingSize | string
 }>`
   @media screen and (max-width: 1023px) {
     justify-content: space-between;
@@ -46,10 +46,10 @@ export const FlexColumn = styled.div<{
   flex-wrap: wrap;
   padding: ${(p) =>
     `0 ${
-      p.paddingHorizontal
-        ? isSpacingSize(p.paddingHorizontal)
-          ? defaultMargins[p.paddingHorizontal]
-          : p.paddingHorizontal
+      p.$paddingHorizontal
+        ? isSpacingSize(p.$paddingHorizontal)
+          ? defaultMargins[p.$paddingHorizontal]
+          : p.$paddingHorizontal
         : 0
     }`};
 `

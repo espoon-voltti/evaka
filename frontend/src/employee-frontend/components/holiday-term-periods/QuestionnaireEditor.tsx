@@ -39,7 +39,7 @@ export default React.memo(function QuestionnaireEditor() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(questionnaire, (questionnaire) =>
           questionnaire === null ? (
             user?.accessibleFeatures.openRangesHolidayQuestionnaire ? (

@@ -25,8 +25,8 @@ export const TimeBasedStatusChip = React.memo(function TimeBasedStatusChip({
 
   return (
     <StaticChip
-      color={statusColor[status]}
-      fitContent
+      $color={statusColor[status]}
+      $fitContent
       data-qa={dataQa}
       data-qa-status={status}
     >

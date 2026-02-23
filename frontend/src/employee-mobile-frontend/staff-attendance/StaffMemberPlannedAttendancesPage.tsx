@@ -58,7 +58,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
         <Gap />
         <DayPlansContainer>
           <ExpandingInfo info={i18n.attendances.staff.staffMemberPlanInfo}>
-            <H3 noMargin>{i18n.attendances.staff.nextDays}</H3>
+            <H3 $noMargin>{i18n.attendances.staff.nextDays}</H3>
           </ExpandingInfo>
           {staffMemberWithOperationalDays.staffMember.unitIds.length > 1 && (
             <div>
@@ -68,7 +68,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
               />
             </div>
           )}
-          <FixedSpaceColumn spacing="s">
+          <FixedSpaceColumn $spacing="s">
             {staffMemberWithOperationalDays.operationalDays.map((date) => {
               const attendances =
                 staffMemberWithOperationalDays.staffMember.plannedAttendances
@@ -94,7 +94,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
                 >
                   <LabelLike>{date.formatExotic('EEEEEE d.M.')}</LabelLike>
                   {attendances.length > 0 ? (
-                    <FixedSpaceColumn spacing="xs">
+                    <FixedSpaceColumn $spacing="xs">
                       {attendances.map((a, i) => (
                         <FixedSpaceRow key={i}>
                           <DayPlanTypeCol>{a.type}</DayPlanTypeCol>
@@ -121,12 +121,12 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
 })
 
 const DayPlansContainer = styled(FixedSpaceColumn).attrs({
-  alignItems: 'stretch'
+  $alignItems: 'stretch'
 })`
   padding: 0 32px 32px;
 `
 
-const DayPlan = styled(FixedSpaceColumn).attrs({ spacing: 'xxs' })``
+const DayPlan = styled(FixedSpaceColumn).attrs({ $spacing: 'xxs' })``
 
 const DayPlanTypeCol = styled.div`
   width: 30%;

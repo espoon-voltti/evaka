@@ -35,9 +35,9 @@ export default React.memo(function ErrorPage({
   return (
     <main>
       <Container>
-        <ErrorContainer opaque paddingVertical="XL">
+        <ErrorContainer $opaque $paddingVertical="XL">
           <H1>{title}</H1>
-          <P centered>{text}</P>
+          <P $centered>{text}</P>
           <LegacyButton primary onClick={onClick}>
             {reload}
           </LegacyButton>

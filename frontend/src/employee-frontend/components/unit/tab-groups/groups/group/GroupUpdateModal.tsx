@@ -98,7 +98,7 @@ export default React.memo(function GroupUpdateModal({
             onChange={(name) => setData((state) => ({ ...state, name }))}
             data-qa="name-input"
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.startDate}</div>
           <DatePicker
             date={data.startDate}
@@ -108,7 +108,7 @@ export default React.memo(function GroupUpdateModal({
             locale="fi"
             data-qa="start-date-input"
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.endDate}</div>
           <DatePicker
             date={data.endDate}
@@ -118,7 +118,7 @@ export default React.memo(function GroupUpdateModal({
           />
           {featureFlags.jamixIntegration && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <div className="bold">
                 {i18n.unit.groups.updateModal.jamixTitle}
               </div>
@@ -142,7 +142,7 @@ export default React.memo(function GroupUpdateModal({
           )}
           {featureFlags.aromiIntegration && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <div className="bold">
                 {i18n.unit.groups.updateModal.aromiTitle}
               </div>
@@ -160,7 +160,7 @@ export default React.memo(function GroupUpdateModal({
               {(data.aromiCustomerId === null ||
                 data.aromiCustomerId.trim().length === 0) && (
                 <>
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <MessageBox
                     color={theme.colors.status.warning}
                     icon={fasExclamation}
@@ -173,7 +173,7 @@ export default React.memo(function GroupUpdateModal({
           )}
           {featureFlags.nekkuIntegration && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <div className="bold">
                 {i18n.unit.groups.updateModal.nekkuUnitTitle}
               </div>
@@ -191,7 +191,7 @@ export default React.memo(function GroupUpdateModal({
                   }))
                 }
               />
-              <Gap size="s" />
+              <Gap $size="s" />
               <div className="bold">
                 {i18n.unit.groups.updateModal.nekkuCustomerNumberTitle}
               </div>

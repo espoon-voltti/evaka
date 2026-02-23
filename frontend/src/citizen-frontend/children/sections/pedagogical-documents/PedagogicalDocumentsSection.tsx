@@ -166,8 +166,8 @@ const ItemDescription = React.memo(function ItemDescription({
   return (
     <ResponsiveDescription>
       <ExpandableText
-        expanded={expanded}
-        clampLines={clampLines}
+        $expanded={expanded}
+        $clampLines={clampLines}
         data-qa={dataQa}
         id={ariaId}
       >
@@ -246,7 +246,7 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
   return (
     <>
       {items.map((item) => (
-        <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
+        <ListItem key={item.id} $documentIsRead={item.isRead} $spacing="xs">
           <ListItemHead>
             <span>{item.createdAt.toLocalDate().format()}</span>
           </ListItemHead>
@@ -286,7 +286,7 @@ const Pagination = React.memo(function Pagination({
   const t = useTranslation()
 
   return (
-    <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+    <FixedSpaceRow $alignItems="center" $justifyContent="flex-end">
       <IconOnlyButton
         icon={faChevronLeft}
         aria-label={t.children.pedagogicalDocuments.previousPage}
@@ -323,7 +323,7 @@ const PedagogicalDocumentsTable = React.memo(
           page={page}
           setPage={setPage}
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <Table>
           <Thead>
             <Tr>
@@ -336,7 +336,7 @@ const PedagogicalDocumentsTable = React.memo(
             {items
               .slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
               .map((item) => (
-                <ItemTr key={item.id} documentIsRead={item.isRead}>
+                <ItemTr key={item.id} $documentIsRead={item.isRead}>
                   <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
                     {!item.isRead && <UnreadIndicator />}
                     {item.createdAt.toLocalDate().format()}
@@ -365,7 +365,7 @@ const PedagogicalDocumentsTable = React.memo(
               ))}
           </Tbody>
         </Table>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Pagination
           total={Math.ceil(items.length / PAGE_SIZE)}
           page={page}
@@ -391,7 +391,7 @@ export default React.memo(function PedagogicalDocumentsSection({
   return (
     <CollapsibleOrWholePageContainer
       title={t.children.pedagogicalDocuments.title}
-      opaque
+      $opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
       data-qa="collapsible-pedagogical-documents"
@@ -429,9 +429,9 @@ const PedagogicalDocumentsContent = React.memo(
   }
 )
 
-const ItemTr = styled(Tr)<{ documentIsRead: boolean }>`
+const ItemTr = styled(Tr)<{ $documentIsRead: boolean }>`
   font-weight: ${(p) =>
-    p.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+    p.$documentIsRead ? fontWeights.normal : fontWeights.semibold};
   position: relative;
 
   button {
@@ -473,18 +473,18 @@ const AttachmentRowContainer = styled.div`
   padding-bottom: 8px;
 `
 
-const ListItem = styled(FixedSpaceColumn)<{ documentIsRead: boolean }>`
+const ListItem = styled(FixedSpaceColumn)<{ $documentIsRead: boolean }>`
   padding: ${defaultMargins.s};
   ${(p) =>
-    !p.documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
+    !p.$documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   border-left: ${(p) =>
-    p.documentIsRead ? 'none' : `6px solid ${p.theme.colors.status.success}`};
+    p.$documentIsRead ? 'none' : `6px solid ${p.theme.colors.status.success}`};
   font-weight: ${fontWeights.semibold};
 
   & > div {
     font-weight: ${(p) =>
-      p.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+      p.$documentIsRead ? fontWeights.normal : fontWeights.semibold};
   }
 `
 
@@ -497,8 +497,8 @@ const ListItemHead = styled.div`
 `
 
 type ExpandableTextProps = {
-  expanded: boolean
-  clampLines: number
+  $expanded: boolean
+  $clampLines: number
 }
 const ExpandableText = styled.span<ExpandableTextProps>`
   flex: 1;
@@ -507,7 +507,7 @@ const ExpandableText = styled.span<ExpandableTextProps>`
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${(props) =>
-    props.expanded ? 'none' : props.clampLines};
+    props.$expanded ? 'none' : props.$clampLines};
 `
 
 const NoDocumentsContainer = styled.div`

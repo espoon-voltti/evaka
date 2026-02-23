@@ -298,7 +298,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
         {i18n.holidayQuestionnaires.types.OPEN_RANGES}
       </H1>
       <ListGrid>
-        <Label inputRow>{i18n.holidayQuestionnaires.absenceType} *</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.absenceType} *</Label>
         <FixedSpaceRow>
           <SelectionChip
             text={i18n.absences.absenceTypes.FREE_ABSENCE}
@@ -310,8 +310,8 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           />
         </FixedSpaceRow>
 
-        <Label inputRow>{i18n.holidayQuestionnaires.active} *</Label>
-        <FixedSpaceRow alignItems="center">
+        <Label $inputRow>{i18n.holidayQuestionnaires.active} *</Label>
+        <FixedSpaceRow $alignItems="center">
           <DatePicker
             info={useMemo(
               () => errorToInputInfo(errors.start, i18n.validationErrors),
@@ -341,7 +341,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           />
         </FixedSpaceRow>
 
-        <Label inputRow>{i18n.holidayQuestionnaires.requiresStrongAuth}</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.requiresStrongAuth}</Label>
         <FixedSpaceRow>
           <Radio
             label={i18n.common.yes}
@@ -355,7 +355,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           />
         </FixedSpaceRow>
 
-        <Label inputRow>{i18n.holidayQuestionnaires.title} *</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.title} *</Label>
         <TextArea
           value={form.titleFi}
           onChange={(titleFi) => update({ titleFi })}
@@ -367,7 +367,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.title} SV</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.title} SV</Label>
         <TextArea
           value={form.titleSv}
           onChange={(titleSv) => update({ titleSv })}
@@ -379,7 +379,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.title} EN</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.title} EN</Label>
         <TextArea
           value={form.titleEn}
           onChange={(titleEn) => update({ titleEn })}
@@ -391,7 +391,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.description} *</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.description} *</Label>
         <TextArea
           value={form.descriptionFi}
           onChange={(descriptionFi) => update({ descriptionFi })}
@@ -403,7 +403,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.description} SV</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.description} SV</Label>
         <TextArea
           value={form.descriptionSv}
           onChange={(descriptionSv) => update({ descriptionSv })}
@@ -415,7 +415,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.description} EN</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.description} EN</Label>
         <TextArea
           value={form.descriptionEn}
           onChange={(descriptionEn) => update({ descriptionEn })}
@@ -427,7 +427,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink}</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.descriptionLink}</Label>
         <InputField
           width="L"
           placeholder="https://example.com"
@@ -442,7 +442,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink} SV</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.descriptionLink} SV</Label>
         <InputField
           width="L"
           value={form.descriptionLinkSv}
@@ -456,7 +456,7 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink} EN</Label>
+        <Label $inputRow>{i18n.holidayQuestionnaires.descriptionLink} EN</Label>
         <InputField
           width="L"
           value={form.descriptionLinkEn}
@@ -470,8 +470,8 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label inputRow>{i18n.holidayQuestionnaires.period} *</Label>
-        <FixedSpaceRow alignItems="center">
+        <Label $inputRow>{i18n.holidayQuestionnaires.period} *</Label>
+        <FixedSpaceRow $alignItems="center">
           <DatePicker
             info={useMemo(
               () => errorToInputInfo(errors.periodStart, i18n.validationErrors),
@@ -501,10 +501,10 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           />
         </FixedSpaceRow>
 
-        <Label inputRow>
+        <Label $inputRow>
           {i18n.holidayQuestionnaires.absenceTypeThreshold} *
         </Label>
-        <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow $alignItems="center">
           <InputField
             width="s"
             placeholder="0"
@@ -529,10 +529,10 @@ export default React.memo(function OpenRangesQuestionnaireForm({
           <span>{i18n.holidayQuestionnaires.days}</span>
         </FixedSpaceRow>
 
-        <Label inputRow>
+        <Label $inputRow>
           {i18n.holidayQuestionnaires.conditionContinuousPlacement}
         </Label>
-        <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow $alignItems="center">
           <DatePicker
             info={useMemo(
               () =>

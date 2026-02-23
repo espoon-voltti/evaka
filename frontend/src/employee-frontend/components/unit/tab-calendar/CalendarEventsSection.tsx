@@ -341,7 +341,7 @@ export default React.memo(function CalendarEventsSection({
         </EventButtonColumn>
         <div />
       </EventButtonRow>
-      <Gap size="s" />
+      <Gap $size="s" />
       {renderResult(events, (events) => (
         <div>
           {datesByWeeks.map((datesInWeek, i) => (
@@ -353,7 +353,7 @@ export default React.memo(function CalendarEventsSection({
                   $isOtherMonth={day.month !== selectedDate.month}
                   data-qa={`calendar-event-day-${day.formatIso()}`}
                 >
-                  <H4 noMargin>
+                  <H4 $noMargin>
                     {
                       i18n.common.datetime.weekdaysShort[
                         day.getIsoDayOfWeek() - 1
@@ -361,8 +361,8 @@ export default React.memo(function CalendarEventsSection({
                     }{' '}
                     {day.format('d.M.')}
                   </H4>
-                  <Gap size="xs" />
-                  <FixedSpaceColumn spacing="s">
+                  <Gap $size="xs" />
+                  <FixedSpaceColumn $spacing="s">
                     {sortBy(
                       events
                         .filter(({ period }) => period.includes(day))
@@ -441,15 +441,15 @@ export default React.memo(function CalendarEventsSection({
                                 to={`/units/${unitId}/calendar/events/${event.id}?eventDay=${day.formatIso()}`}
                                 data-qa="survey"
                               >
-                                <P noMargin>
+                                <P $noMargin>
                                   <Bold>{event.title}</Bold>
                                 </P>
 
                                 <P
-                                  noMargin
+                                  $noMargin
                                 >{`${reservationsToday.length} ${i18n.unit.calendar.events.reservedTimesLabel}`}</P>
                                 <P
-                                  noMargin
+                                  $noMargin
                                 >{`${freeTimesToday.length} ${i18n.unit.calendar.events.freeTimesLabel}`}</P>
                               </Link>
                             </Tooltip>
@@ -764,7 +764,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
       resolveDisabled={!formIsValid}
     >
       <Label>{i18n.unit.calendar.events.create.attendees}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <TreeDropdown
         tree={form.attendees}
         onChange={(tree) => updateForm('attendees', tree)}
@@ -772,7 +772,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         placeholder={i18n.unit.calendar.events.create.attendeesPlaceholder}
       />
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <Label>{i18n.unit.calendar.events.create.eventTitle}</Label>
       <InputField
@@ -784,7 +784,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         data-qa="title-input"
       />
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <Label id="event-create-period">
         {i18n.unit.calendar.events.create.period}
@@ -803,7 +803,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         <AlertBox
           message={
             <>
-              <P noMargin>
+              <P $noMargin>
                 {i18n.unit.calendar.events.create.missingPlacementsWarning}
               </P>
               <ul>
@@ -821,7 +821,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         />
       )}
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <Label>{i18n.unit.calendar.events.create.description}</Label>
       <TextArea
@@ -833,7 +833,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
 
       {featureFlags.nekkuIntegration && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <Label>{i18n.unit.calendar.events.create.unorderedMeals}</Label>
           {nekkuMealList.map((meal) => (
             <Checkbox
@@ -940,20 +940,20 @@ const EditEventModal = React.memo(function EditEventModal({
             data-qa="title-input"
           />
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <Label>{i18n.unit.calendar.events.create.period}</Label>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <div data-qa="period">
             {event.period.start.isEqual(event.period.end)
               ? event.period.start.format()
               : `${event.period.start.format()}–${event.period.end.format()}`}
           </div>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <Label>{i18n.unit.calendar.events.create.attendees}</Label>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <div data-qa="attendee-list">
             {getLongAttendees(
               unitInformation.map(({ daycare }) => daycare.name).getOrElse(''),
@@ -962,7 +962,7 @@ const EditEventModal = React.memo(function EditEventModal({
             )}
           </div>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <Label>{i18n.unit.calendar.events.create.description}</Label>
           <TextArea
@@ -976,7 +976,7 @@ const EditEventModal = React.memo(function EditEventModal({
 
           {featureFlags.nekkuIntegration && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <Label>{i18n.unit.calendar.events.create.unorderedMeals}</Label>
               {nekkuMealList.map((meal) => (
                 <Checkbox
@@ -1002,7 +1002,7 @@ const EditEventModal = React.memo(function EditEventModal({
             </>
           )}
 
-          <Gap size="m" />
+          <Gap $size="m" />
 
           <ListGrid>
             <FixedSpaceColumn>
@@ -1015,8 +1015,8 @@ const EditEventModal = React.memo(function EditEventModal({
             </FixedSpaceColumn>
           </ListGrid>
 
-          <Gap size="L" />
-          <FixedSpaceRow justifyContent="space-between">
+          <Gap $size="L" />
+          <FixedSpaceRow $justifyContent="space-between">
             <Button
               appearance="inline"
               icon={faTrash}
@@ -1036,7 +1036,7 @@ const EditEventModal = React.memo(function EditEventModal({
               data-qa="save"
             />
           </FixedSpaceRow>
-          <Gap size="L" />
+          <Gap $size="L" />
         </BaseModal>
       )}
 
@@ -1119,7 +1119,7 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
       {times.length > 0 && (
         <>
           <Label>{tr.surveyDiscussionTimesTitle}</Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <EventTimeGrid>
             {times.map((t) => {
               const child = t.childId ? childrenById[t.childId][0] : null
@@ -1148,8 +1148,8 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
         </>
       )}
 
-      <Gap size="L" />
-      <FixedSpaceRow justifyContent="center">
+      <Gap $size="L" />
+      <FixedSpaceRow $justifyContent="center">
         <Button
           appearance="button"
           text={i18n.common.close}
@@ -1157,7 +1157,7 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
           data-qa="close"
         />
       </FixedSpaceRow>
-      <Gap size="L" />
+      <Gap $size="L" />
     </BaseModal>
   )
 })

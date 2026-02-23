@@ -32,12 +32,12 @@ export default React.memo(function Title({
       return (
         <H1
           data-qa={dataQa}
-          centered={centered}
-          fitted
+          $centered={centered}
+          $fitted
           className={className}
-          noMargin={noMargin}
-          smaller={smaller}
-          primary={primary}
+          $noMargin={noMargin}
+          $smaller={smaller}
+          $primary={primary}
         >
           {children}
         </H1>
@@ -46,12 +46,12 @@ export default React.memo(function Title({
       return (
         <H2
           data-qa={dataQa}
-          centered={centered}
-          fitted
+          $centered={centered}
+          $fitted
           className={className}
-          noMargin={noMargin}
-          smaller={smaller}
-          primary={primary}
+          $noMargin={noMargin}
+          $smaller={smaller}
+          $primary={primary}
         >
           {children}
         </H2>
@@ -60,12 +60,12 @@ export default React.memo(function Title({
       return (
         <H3
           data-qa={dataQa}
-          centered={centered}
-          fitted
+          $centered={centered}
+          $fitted
           className={className}
-          noMargin={noMargin}
-          smaller={smaller}
-          primary={primary}
+          $noMargin={noMargin}
+          $smaller={smaller}
+          $primary={primary}
         >
           {children}
         </H3>
@@ -74,12 +74,12 @@ export default React.memo(function Title({
       return (
         <H4
           data-qa={dataQa}
-          centered={centered}
-          fitted
+          $centered={centered}
+          $fitted
           className={className}
-          noMargin={noMargin}
-          smaller={smaller}
-          primary={primary}
+          $noMargin={noMargin}
+          $smaller={smaller}
+          $primary={primary}
         >
           {children}
         </H4>

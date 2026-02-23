@@ -142,13 +142,13 @@ const Group = ({
   onClick,
   'data-qa': dataQa
 }: GroupProps) => (
-  <GroupContainer onClick={onClick} data-qa={dataQa} selected={selected}>
-    <SelectionIndicator selected={selected}>
+  <GroupContainer onClick={onClick} data-qa={dataQa} $selected={selected}>
+    <SelectionIndicator $selected={selected}>
       <FontAwesomeIcon icon={faCheck} />
     </SelectionIndicator>
     <GroupName>{name}</GroupName>
     {utilization !== undefined ? (
-      <Utilization warn={utilization.percentage >= 100}>
+      <Utilization $warn={utilization.percentage >= 100}>
         {utilization.percentage.toFixed
           ? utilization.percentage.toFixed(1)
           : '∞'}
@@ -168,28 +168,28 @@ const Group = ({
   </GroupContainer>
 )
 
-const GroupContainer = styled(FixedSpaceRow)<{ selected: boolean }>`
+const GroupContainer = styled(FixedSpaceRow)<{ $selected: boolean }>`
   padding: 15px 16px 15px 16px;
   border-bottom: 1px solid ${colors.grayscale.g15};
-  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
+  color: ${(p) => (p.$selected ? colors.main.m1 : colors.grayscale.g70)};
   font-size: ${fontSizesMobile.h2};
   font-weight: ${theme.typography.h2.mobile?.weight ??
   theme.typography.h2.weight};
   cursor: pointer;
 `
 
-const SelectionIndicator = styled.span<{ selected: boolean }>`
+const SelectionIndicator = styled.span<{ $selected: boolean }>`
   padding-right: 16px;
-  opacity: ${(p) => (p.selected ? 1 : 0)};
+  opacity: ${(p) => (p.$selected ? 1 : 0)};
 `
 
 const GroupName = styled.span`
   flex: 1;
 `
 
-const Utilization = styled.span<{ warn: boolean }>`
+const Utilization = styled.span<{ $warn: boolean }>`
   text-align: right;
-  color: ${(p) => (p.warn ? colors.status.danger : 'inherit')};
+  color: ${(p) => (p.$warn ? colors.status.danger : 'inherit')};
 `
 
 const Capacity = styled.span`

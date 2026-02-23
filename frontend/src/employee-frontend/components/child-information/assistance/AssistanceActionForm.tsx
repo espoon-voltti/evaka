@@ -45,7 +45,7 @@ import {
   updateAssistanceActionMutation
 } from '../queries'
 
-const CheckboxList = styled(FixedSpaceColumn).attrs({ spacing: 'xxs' })``
+const CheckboxList = styled(FixedSpaceColumn).attrs({ $spacing: 'xxs' })``
 
 interface FormState {
   startDate: LocalDate | null
@@ -372,7 +372,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     {form.actions.includes(option.value) &&
                       typeof option.validation === 'string' && (
                         <>
-                          <Gap size="xs" />
+                          <Gap $size="xs" />
                           <AlertBox message={option.validation} thin noMargin />
                           <Gap />
                         </>
@@ -427,7 +427,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
 
       {autoCutWarning && (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <AlertBox
             message={
               i18n.childInformation.assistanceAction.errors.autoCutWarning
@@ -438,7 +438,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
         </>
       )}
 
-      <Gap size="s" />
+      <Gap $size="s" />
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}

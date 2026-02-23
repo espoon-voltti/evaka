@@ -215,7 +215,7 @@ function CreateApplicationModal({
       rejectAction={clearUiMode}
       rejectLabel={i18n.common.cancel}
     >
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn $spacing="L">
         <div>
           <Label>
             <PersonName person={child} format="Last First" />

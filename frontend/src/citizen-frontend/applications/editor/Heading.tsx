@@ -39,8 +39,8 @@ export default React.memo(function Heading({
   const t = useTranslation()
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <H1 noMargin data-qa="application-type-title">
+    <ContentArea $opaque $paddingVertical="L">
+      <H1 $noMargin data-qa="application-type-title">
         {t.applications.editor.heading.title[type]}
         {transferApplication && ` (${t.applicationsList.transferApplication})`}
       </H1>
@@ -52,7 +52,7 @@ export default React.memo(function Heading({
       {t.applications.editor.heading.info[type]}
       {errors && applicationHasErrors(errors) && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <AlertBox
             key={alertTrigger}
             message={
@@ -60,8 +60,8 @@ export default React.memo(function Heading({
                 <span data-qa="application-has-errors-title">
                   {t.applications.editor.heading.hasErrors}
                 </span>
-                <Gap size="s" />
-                <FixedSpaceColumn spacing="xxs">
+                <Gap $size="s" />
+                <FixedSpaceColumn $spacing="xxs">
                   {errors &&
                     (Object.keys(errors) as (keyof ApplicationFormDataErrors)[])
                       .filter((section) => getErrorCount(errors[section]) > 0)

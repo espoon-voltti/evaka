@@ -76,18 +76,18 @@ export default React.memo(function OccupancyContainer({
 
   return (
     <CollapsibleContentArea
-      title={<H3 noMargin>{i18n.unit.occupancies}</H3>}
+      title={<H3 $noMargin>{i18n.unit.occupancies}</H3>}
       open={open}
       toggleOpen={() => setOpen(!open)}
-      opaque
+      $opaque
       data-qa="unit-attendances"
     >
-      <FixedSpaceRow alignItems="center">
+      <FixedSpaceRow $alignItems="center">
         <Label>{i18n.unit.filters.title}</Label>
         <UnitDataFilters canEdit filters={filters} setFilters={setFilters} />
       </FixedSpaceRow>
-      <Gap size="s" />
-      <FixedSpaceRow alignItems="center">
+      <Gap $size="s" />
+      <FixedSpaceRow $alignItems="center">
         {startDate.isEqual(endDate) && realtimeStaffAttendanceEnabled ? (
           <>
             <Label>{i18n.unit.occupancy.display}</Label>

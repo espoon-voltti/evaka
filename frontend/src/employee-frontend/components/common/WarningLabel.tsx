@@ -23,7 +23,7 @@ export default React.memo(function WarningLabel({
   return (
     <Wrapper data-qa={dataQa}>
       <FontAwesomeIcon icon={faExclamationTriangle} inverse />
-      <Gap size="xs" horizontal />
+      <Gap $size="xs" $horizontal />
       {text}
     </Wrapper>
   )

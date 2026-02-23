@@ -9,14 +9,15 @@ import styled from 'styled-components'
 
 import { modalZIndex } from '../../layout/z-helpers'
 
-interface Props extends ZIndexProp {
+interface Props {
   children: ReactNode | ReactNode[]
-}
-
-interface ZIndexProp {
   onClick?: () => void
   zIndex?: number
   onEscapeKey?: () => void
+}
+
+interface ZIndexProp {
+  $zIndex?: number
 }
 
 export default React.memo(function ModalBackground({
@@ -27,8 +28,8 @@ export default React.memo(function ModalBackground({
 }: Props) {
   return (
     <FocusOn onEscapeKey={onEscapeKey}>
-      <BackgroundOverlay zIndex={zIndex} onClick={onClick} />
-      <FormModalLifter zIndex={zIndex}>{children}</FormModalLifter>
+      <BackgroundOverlay $zIndex={zIndex} onClick={onClick} />
+      <FormModalLifter $zIndex={zIndex}>{children}</FormModalLifter>
     </FocusOn>
   )
 })
@@ -40,10 +41,10 @@ const BackgroundOverlay = styled.div<ZIndexProp>`
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: ${(p) => (p.zIndex ? p.zIndex - 2 : modalZIndex - 2)};
+  z-index: ${(p) => (p.$zIndex ? p.$zIndex - 2 : modalZIndex - 2)};
 `
 
 const FormModalLifter = styled.div<ZIndexProp>`
   position: relative;
-  z-index: ${(p) => (p.zIndex ? p.zIndex - 1 : modalZIndex - 1)};
+  z-index: ${(p) => (p.$zIndex ? p.$zIndex - 1 : modalZIndex - 1)};
 `

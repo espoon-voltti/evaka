@@ -26,7 +26,7 @@ export default function AbsenceSelector({
   const { i18n } = useTranslation()
 
   return (
-    <ChipWrapper margin="xxs">
+    <ChipWrapper $margin="xxs">
       {absenceTypes.map((absenceType) => (
         <Fragment key={absenceType}>
           <SelectionChip
@@ -36,7 +36,7 @@ export default function AbsenceSelector({
             data-qa={`mark-absent-${absenceType}`}
             hideIcon
           />
-          <Gap horizontal size="xxs" />
+          <Gap $horizontal $size="xxs" />
         </Fragment>
       ))}
     </ChipWrapper>

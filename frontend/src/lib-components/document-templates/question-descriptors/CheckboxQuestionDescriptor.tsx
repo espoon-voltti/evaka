@@ -79,7 +79,7 @@ const View = React.memo(function View({
   const { template, answer } = useFormFields(bind)
   const { label, infoText } = useFormFields(template)
   return readOnly ? (
-    <FixedSpaceColumn spacing="xs" data-qa="document-question-preview">
+    <FixedSpaceColumn $spacing="xs" data-qa="document-question-preview">
       <Label>{label.state}</Label>
       <span data-qa="answer-preview">
         {answer.state ? i18n.common.yes : i18n.common.no}

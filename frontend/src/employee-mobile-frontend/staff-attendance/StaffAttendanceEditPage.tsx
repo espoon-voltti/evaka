@@ -322,14 +322,14 @@ const StaffAttendancesEditor = ({
   if (mode === 'pin') {
     return (
       <>
-        <ContentArea opaque paddingHorizontal="s">
+        <ContentArea $opaque $paddingHorizontal="s">
           <Title centered noMargin>
             {i18n.pin.pinCode}
           </Title>
           <PinInputF bind={pinCode} invalid={errorCode === 'WRONG_PIN'} />
         </ContentArea>
-        <ContentArea opaque paddingHorizontal="s">
-          <FixedSpaceRow justifyContent="space-between">
+        <ContentArea $opaque $paddingHorizontal="s">
+          <FixedSpaceRow $justifyContent="space-between">
             <LegacyButton
               data-qa="cancel"
               onClick={() => {
@@ -376,9 +376,9 @@ const StaffAttendancesEditor = ({
 
   return (
     <>
-      <ContentArea opaque paddingHorizontal="s">
-        <H4 primary>{toStaff(staffMember).name}</H4>
-        <H2 primary>{date.format('EEEEEE d.M.yyyy', lang)}</H2>
+      <ContentArea $opaque $paddingHorizontal="s">
+        <H4 $primary>{toStaff(staffMember).name}</H4>
+        <H2 $primary>{date.format('EEEEEE d.M.yyyy', lang)}</H2>
         <H3>{i18n.attendances.staff.summary}</H3>
         {staffMember.spanningPlans.length > 0 && (
           <div>
@@ -413,13 +413,13 @@ const StaffAttendancesEditor = ({
 
         {continuationAttendance && (
           <>
-            <ListGrid rowGap="xxs" labelWidth="auto" mobileMaxWidth="0">
+            <ListGrid $rowGap="xxs" $labelWidth="auto" $mobileMaxWidth="0">
               <div>
                 {groups.find((g) => g.id === continuationAttendance.groupId)
                   ?.name ?? i18n.attendances.noGroup}
               </div>
               <TimesDiv>
-                <FixedSpaceRow justifyContent="space-between">
+                <FixedSpaceRow $justifyContent="space-between">
                   <DateInfoDiv>
                     {continuationAttendance.arrived
                       .toLocalDate()
@@ -439,7 +439,7 @@ const StaffAttendancesEditor = ({
               <TimesDiv>
                 <FixedSpaceRow
                   data-qa="continuation-attendance"
-                  justifyContent="space-between"
+                  $justifyContent="space-between"
                 >
                   <TimeDiv>
                     {continuationAttendance.arrived.toLocalTime().format()}
@@ -451,11 +451,11 @@ const StaffAttendancesEditor = ({
                 </FixedSpaceRow>
               </TimesDiv>
             </ListGrid>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <ContinuationInfo>
               {i18n.attendances.staff.continuationAttendance}
             </ContinuationInfo>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <Button
               text={i18n.attendances.staff.editContinuationAttendance}
               icon={faArrowLeft}
@@ -488,13 +488,13 @@ const StaffAttendancesEditor = ({
                   ])
                 }
               />
-              <Gap size="m" />
+              <Gap $size="m" />
             </React.Fragment>
           ))
         ) : (
           <>
             <div>{i18n.attendances.staff.noRows}</div>
-            <Gap size="s" />
+            <Gap $size="s" />
           </>
         )}
         {rowsInputInfo && (
@@ -540,8 +540,8 @@ const StaffAttendancesEditor = ({
             />
           )}
       </ContentArea>
-      <ContentArea opaque paddingHorizontal="s">
-        <FixedSpaceRow justifyContent="space-between">
+      <ContentArea $opaque $paddingHorizontal="s">
+        <FixedSpaceRow $justifyContent="space-between">
           <LegacyButton
             data-qa="cancel"
             onClick={() =>
@@ -601,7 +601,7 @@ const StaffAttendanceEditor = ({
 
   return (
     <FlexColumn>
-      <FixedSpaceRow alignItems="baseline" data-qa="group">
+      <FixedSpaceRow $alignItems="baseline" data-qa="group">
         {groupEditMode.value() ? (
           <SelectF bind={groupId} data-qa="group-selector" />
         ) : (
@@ -628,14 +628,14 @@ const StaffAttendanceEditor = ({
           </>
         )}
       </FixedSpaceRow>
-      <Gap size="s" />
-      <FixedSpaceRow alignItems="end" flexWrap="wrap">
+      <Gap $size="s" />
+      <FixedSpaceRow $alignItems="end" $flexWrap="wrap">
         {isStaffAttendanceTypesEnabled && (
           <div>
             <SelectF bind={type} data-qa="type" />
           </div>
         )}
-        <FixedSpaceRow alignItems="end">
+        <FixedSpaceRow $alignItems="end">
           <div>
             {dateLabelVisible && (
               <DateLabel>{arrivedDate.value().format('d.M.')}</DateLabel>
@@ -671,7 +671,7 @@ const StaffAttendanceEditor = ({
           </IconContainer>
         </FixedSpaceRow>
       </FixedSpaceRow>
-      <Gap size="s" />
+      <Gap $size="s" />
       {isStaffAttendanceTypesEnabled &&
       typesWithoutGroup.includes(type.value()) ? null : (
         <CheckboxF

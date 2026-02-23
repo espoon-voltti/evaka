@@ -366,7 +366,7 @@ const Menu = React.memo(function Menu({
   return (
     <ModalAccessibilityWrapper>
       <MenuContainer>
-        <ResponsiveLanguageRow spacing="xs" justifyContent="flex-end">
+        <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
           {langs.map((l) => (
             <SelectionChip
               key={l}

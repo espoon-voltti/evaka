@@ -29,19 +29,20 @@ const MobileTabContainer = styled.div`
   }
 `
 
-const Tab = styled.div<{ active: boolean }>`
+const Tab = styled.div<{ $active: boolean }>`
   flex: 1 0 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 3px solid ${(p) => (p.active ? colors.main.m2 : 'transparent')};
+  border-bottom: 3px solid
+    ${(p) => (p.$active ? colors.main.m2 : 'transparent')};
   cursor: pointer;
 
   color: ${colors.main.m2};
   font-family: 'Montserrat', 'Open Sans', sans-serif;
   font-size: 14px;
   text-transform: uppercase;
-  font-weight: ${(p) => (p.active ? fontWeights.bold : fontWeights.medium)};
+  font-weight: ${(p) => (p.$active ? fontWeights.bold : fontWeights.medium)};
 `
 
 interface Props {
@@ -56,10 +57,13 @@ export default React.memo(function MobileTabs({
   const t = useTranslation()
   return (
     <MobileTabContainer>
-      <Tab onClick={() => setMobileMode('map')} active={mobileMode === 'map'}>
+      <Tab onClick={() => setMobileMode('map')} $active={mobileMode === 'map'}>
         {t.map.mobileTabs.map}
       </Tab>
-      <Tab onClick={() => setMobileMode('list')} active={mobileMode === 'list'}>
+      <Tab
+        onClick={() => setMobileMode('list')}
+        $active={mobileMode === 'list'}
+      >
         {t.map.mobileTabs.list}
       </Tab>
     </MobileTabContainer>

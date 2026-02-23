@@ -82,7 +82,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       }
       open={open}
       toggleOpen={() => setOpen(!open)}
-      opaque
+      $opaque
       data-qa="collapsible-service-need-and-daily-service-time"
     >
       <H3>{t.children.serviceNeed.title}</H3>
@@ -91,7 +91,7 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       ))}
       {showAttendanceSummary && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <AttendanceSummaryTable
             childId={childId}
             serviceNeedsResponse={serviceNeedsResponse}
@@ -101,10 +101,10 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       {showServiceTimes && (
         <>
           <TabletAndDesktop>
-            <Gap size="m" />
+            <Gap $size="m" />
           </TabletAndDesktop>
           <MobileOnly>
-            <HorizontalLine slim />
+            <HorizontalLine $slim />
           </MobileOnly>
           <H3>{t.children.dailyServiceTime.title}</H3>
           {renderResult(dailyServiceTimesResponse, (dailyServiceTimes) => (
@@ -124,10 +124,10 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
             return (
               <>
                 <TabletAndDesktop>
-                  <Gap size="m" />
+                  <Gap $size="m" />
                 </TabletAndDesktop>
                 <MobileOnly>
-                  <HorizontalLine slim />
+                  <HorizontalLine $slim />
                 </MobileOnly>
                 <H3>{t.children.serviceApplication.title}</H3>
                 <ServiceApplications

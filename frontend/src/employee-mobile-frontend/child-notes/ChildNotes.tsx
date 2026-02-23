@@ -52,7 +52,7 @@ const NoteTypeTab = ({
   title,
   dataQa
 }: NoteTypeTabProps) => (
-  <Tab selected={selected} onClick={onClick} data-qa={dataQa}>
+  <Tab $selected={selected} onClick={onClick} data-qa={dataQa}>
     <TabTitle>{title}</TabTitle>
     {noteCount > 0 && (
       <RoundIcon
@@ -169,23 +169,28 @@ export default React.memo(function ChildNotes({
 
   return renderResult(child, (child) => (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <TopRow>
         <ChildNameBackButton child={child} onClick={() => history.go(-1)} />
       </TopRow>
       <FixedSpaceColumn>
-        <TitleArea shadow opaque paddingHorizontal="s" paddingVertical="6px">
+        <TitleArea
+          $shadow
+          $opaque
+          $paddingHorizontal="s"
+          $paddingVertical="6px"
+        >
           <Title>{i18n.attendances.notes.dailyNotes}</Title>
         </TitleArea>
 
         <TabContainer
-          shadow
-          opaque
-          paddingHorizontal="0px"
-          paddingVertical="0px"
+          $shadow
+          $opaque
+          $paddingHorizontal="0px"
+          $paddingVertical="0px"
         >
           {noteTabs}
         </TabContainer>
@@ -227,7 +232,7 @@ const TabContainer = styled(ContentArea)`
 `
 
 interface TabProps {
-  selected: boolean
+  $selected: boolean
 }
 
 const Tab = styled.div<TabProps>`
@@ -240,7 +245,7 @@ const Tab = styled.div<TabProps>`
 
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  font-weight: ${(props) => (props.selected ? 700 : 600)};
+  font-weight: ${(props) => (props.$selected ? 700 : 600)};
   font-size: 14px;
   line-height: 16px;
   text-align: center;
@@ -248,9 +253,10 @@ const Tab = styled.div<TabProps>`
   text-transform: uppercase;
 
   background: ${(props) =>
-    props.selected ? colors.main.m4 : colors.grayscale.g0};
+    props.$selected ? colors.main.m4 : colors.grayscale.g0};
 
-  color: ${(props) => (props.selected ? colors.main.m1 : colors.grayscale.g70)};
+  color: ${(props) =>
+    props.$selected ? colors.main.m1 : colors.grayscale.g70};
 `
 
 const TopRow = styled.div`

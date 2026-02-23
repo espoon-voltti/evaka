@@ -59,7 +59,7 @@ const MapFullscreenContainer = React.memo(function MapFullscreenContainer({
   children
 }: MapContainerProps) {
   return (
-    <FullScreen data-qa="map-view" loggedIn={loggedIn}>
+    <FullScreen data-qa="map-view" $loggedIn={loggedIn}>
       {children}
     </FullScreen>
   )
@@ -114,9 +114,9 @@ export default React.memo(function MapView() {
     <MapFullscreenContainer loggedIn={!!user}>
       <FlexContainer
         className={`mobile-mode-${mobileMode}`}
-        breakpoint={mapViewBreakpoint}
-        horizontalSpacing="zero"
-        verticalSpacing="zero"
+        $breakpoint={mapViewBreakpoint}
+        $horizontalSpacing="zero"
+        $verticalSpacing="zero"
       >
         {selectedUnit ? (
           <UnitDetailsPanel
@@ -141,7 +141,7 @@ export default React.memo(function MapView() {
               setSelectedUnit={setSelectedUnit}
               navigateBack={navigateBack}
             />
-            <Gap size="xs" />
+            <Gap $size="xs" />
 
             <MobileTabs mobileMode={mobileMode} setMobileMode={setMobileMode} />
 
@@ -233,7 +233,7 @@ const PanelWrapper = styled.div`
   }
 `
 
-const FullScreen = styled.div<{ loggedIn: boolean }>`
+const FullScreen = styled.div<{ $loggedIn: boolean }>`
   position: absolute;
   top: ${headerHeightDesktop}px;
   bottom: 0;

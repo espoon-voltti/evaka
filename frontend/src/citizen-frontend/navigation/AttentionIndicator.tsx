@@ -21,7 +21,7 @@ export default React.memo(function AttentionIndicator({
   return (
     <Wrapper>
       {children}
-      {toggled && <Indicator data-qa={dataQa} position={position} />}
+      {toggled && <Indicator data-qa={dataQa} $position={position} />}
     </Wrapper>
   )
 })
@@ -30,12 +30,12 @@ const Wrapper = styled.div`
   position: relative;
 `
 
-const Indicator = styled.div<{ position: 'top' | 'bottom' }>`
+const Indicator = styled.div<{ $position: 'top' | 'bottom' }>`
   position: absolute;
   height: 12px;
   width: 12px;
-  ${({ position }) =>
-    position === 'top'
+  ${({ $position }) =>
+    $position === 'top'
       ? css`
           top: -2px;
         `

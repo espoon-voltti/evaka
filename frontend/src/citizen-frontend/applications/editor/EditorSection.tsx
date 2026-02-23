@@ -41,7 +41,7 @@ export default React.memo(function EditorSection(props: Props) {
         toggleOpen={toggleOpen}
         title={
           <TitleWrapper>
-            <H2 noMargin>{props.title}</H2>
+            <H2 $noMargin>{props.title}</H2>
             {props.validationErrors !== 0 && (
               <div>
                 <ErrorsIcon
@@ -59,8 +59,8 @@ export default React.memo(function EditorSection(props: Props) {
             )}
           </TitleWrapper>
         }
-        opaque
-        paddingVertical="L"
+        $opaque
+        $paddingVertical="L"
       >
         {props.children}
       </CollapsibleContentArea>

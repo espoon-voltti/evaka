@@ -39,7 +39,7 @@ export default React.memo(function Absences({
 
   return (
     <>
-      <HorizontalLine slim />
+      <HorizontalLine $slim />
 
       <AbsenceLabels>
         <Label>{i18n.absences.title}</Label>{' '}

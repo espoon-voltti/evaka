@@ -403,8 +403,8 @@ export default React.memo(function PlacementPlanDraft() {
       data-qa="placement-draft-page"
       data-isloading={isLoading(placementPlanDraft)}
     >
-      <ContentArea opaque>
-        <Gap size="xs" />
+      <ContentArea $opaque>
+        <Gap $size="xs" />
         {renderResult(placementPlanDraft, (placementPlanDraft) => (
           <>
             <section>
@@ -421,20 +421,20 @@ export default React.memo(function PlacementPlanDraft() {
                   </Tooltip>
                 </FloatRight>
               )}
-              <H1 noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
-              <Gap size="xs" />
-              <H2 noMargin>
+              <H1 $noMargin>{i18n.placementDraft.createPlacementDraft}</H1>
+              <Gap $size="xs" />
+              <H2 $noMargin>
                 <PersonName
                   person={placementPlanDraft.child}
                   format="First Last"
                 />
               </H2>
-              <Gap size="L" />
+              <Gap $size="L" />
               <ListGrid>
                 <Label>{i18n.placementDraft.dateOfBirth}</Label>
                 <span>{placementPlanDraft.child.dob.format()}</span>
               </ListGrid>
-              <Gap size="s" />
+              <Gap $size="s" />
               <a
                 href={`/employee/child-information/${placementPlanDraft.child.id}`}
                 target="_blank"
@@ -448,53 +448,53 @@ export default React.memo(function PlacementPlanDraft() {
             </section>
             {placementPlanDraft.placements && (
               <>
-                <Gap size="XL" />
+                <Gap $size="XL" />
                 <Placements placements={placementPlanDraft.placements} />
               </>
             )}
             {placementPlanDraft.placementDraft && (
               <>
-                <Gap size="XL" />
-                <H2 noMargin>{i18n.placementDraft.applicationDatesTitle}</H2>
-                <Gap size="s" />
+                <Gap $size="XL" />
+                <H2 $noMargin>{i18n.placementDraft.applicationDatesTitle}</H2>
+                <Gap $size="s" />
                 <ApplicationDatesSection>
-                  <FixedSpaceRow spacing="XXL">
-                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                  <FixedSpaceRow $spacing="XXL">
+                    <FixedSpaceRow $spacing="xs" $alignItems="flex-start">
                       <RoundIcon
                         content={faPen}
                         color={colors.grayscale.g15}
                         textColor={colors.grayscale.g100}
                         size="m"
                       />
-                      <FixedSpaceColumn spacing="xxs">
+                      <FixedSpaceColumn $spacing="xxs">
                         <DateLabel>{i18n.placementDraft.drafted}</DateLabel>
                         <span data-qa="drafted-date">
                           {placementPlanDraft.placementDraft.startDate.format()}
                         </span>
                       </FixedSpaceColumn>
                     </FixedSpaceRow>
-                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                    <FixedSpaceRow $spacing="xs" $alignItems="flex-start">
                       <RoundIcon
                         content={faSection}
                         color={colors.grayscale.g15}
                         textColor={colors.grayscale.g100}
                         size="m"
                       />
-                      <FixedSpaceColumn spacing="xxs">
+                      <FixedSpaceColumn $spacing="xxs">
                         <DateLabel>{i18n.placementDraft.dueDate}</DateLabel>
                         <span data-qa="due-date">
                           {placementPlanDraft.dueDate?.format() ?? '-'}
                         </span>
                       </FixedSpaceColumn>
                     </FixedSpaceRow>
-                    <FixedSpaceRow spacing="xs" alignItems="flex-start">
+                    <FixedSpaceRow $spacing="xs" $alignItems="flex-start">
                       <RoundIcon
                         content={faHeart}
                         color={colors.grayscale.g15}
                         textColor={colors.grayscale.g100}
                         size="m"
                       />
-                      <FixedSpaceColumn spacing="xxs">
+                      <FixedSpaceColumn $spacing="xxs">
                         <DateLabel>{i18n.placementDraft.preferred}</DateLabel>
                         <span data-qa="preferred-start-date">
                           {placementPlanDraft.preferredStartDate.format()}
@@ -505,7 +505,7 @@ export default React.memo(function PlacementPlanDraft() {
                 </ApplicationDatesSection>
               </>
             )}
-            <Gap size="XL" />
+            <Gap $size="XL" />
             <PlacementPlanDraftRow
               placementPlanDraft={placementPlanDraft}
               formState={formState}
@@ -533,7 +533,7 @@ export default React.memo(function PlacementPlanDraft() {
                 </WarningContainer>
               </div>
             )}
-            <Gap size="L" />
+            <Gap $size="L" />
             <UnitCards
               additionalUnits={additionalUnits}
               setAdditionalUnits={setAdditionalUnits}
@@ -543,7 +543,7 @@ export default React.memo(function PlacementPlanDraft() {
               placementPlanDraft={placementPlanDraft}
               selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
             />
-            <Gap size="XL" />
+            <Gap $size="XL" />
             <SelectContainer>
               <Label>{i18n.placementDraft.addOtherUnit}</Label>
               <Combobox

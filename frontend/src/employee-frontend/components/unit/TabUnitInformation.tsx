@@ -23,9 +23,9 @@ export default React.memo(function TabUnitInformation({
 
   return (
     <FixedSpaceColumn>
-      <ContentArea opaque data-qa="unit-information">
+      <ContentArea $opaque data-qa="unit-information">
         <H2 data-qa="unit-name">{daycare.name}</H2>
-        <Gap size="xxs" />
+        <Gap $size="xxs" />
         <UnitInformation unit={daycare} permittedActions={permittedActions} />
       </ContentArea>
 

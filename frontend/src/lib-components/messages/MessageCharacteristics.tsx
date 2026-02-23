@@ -44,7 +44,7 @@ export function MessageCharacteristics({
   const theme = useTheme()
   const i18n = useTranslations()
   return (
-    <FixedSpaceRow spacing="xs" alignItems="center">
+    <FixedSpaceRow $spacing="xs" $alignItems="center">
       <ScreenReaderOnly>{i18n.messages.thread.type}:</ScreenReaderOnly>
       {sensitive && <FontAwesomeIcon icon={faLockAlt} />}
       {urgent && (
@@ -56,7 +56,7 @@ export function MessageCharacteristics({
           content="!"
         />
       )}
-      <MessageTypeChip color={chipColor(theme, type)}>
+      <MessageTypeChip $color={chipColor(theme, type)}>
         {i18n.messages.types[type]}
       </MessageTypeChip>
     </FixedSpaceRow>

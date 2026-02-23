@@ -50,10 +50,10 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title>{i18n.preferredFirstName.popupLink}</Title>
         <P>{i18n.preferredFirstName.description}</P>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.preferredFirstName.select}</Label>
           <Select
             items={

@@ -30,10 +30,10 @@ export default React.memo(function TitaniaErrors() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.titaniaErrors.title}</Title>
 
-        <Gap size="xxs" />
+        <Gap $size="xxs" />
         {renderResult(titaniaErrorsResult, (rows) => (
           <>
             {rows.map((row: TitaniaErrorReportRow) => (

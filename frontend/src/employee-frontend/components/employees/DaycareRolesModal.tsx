@@ -215,8 +215,8 @@ export default React.memo(function DaycareRolesModal({
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
-      <FixedSpaceColumn spacing="m">
-        <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="m">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.units}</Label>
           <TreeDropdown
             tree={daycareTree.state}
@@ -224,15 +224,15 @@ export default React.memo(function DaycareRolesModal({
             placeholder={i18n.employees.editor.unitRoles.units}
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.role}</Label>
           <SelectF bind={role} />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.startDate}</Label>
           <DatePickerF bind={startDate} locale={lang} />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.employees.editor.unitRoles.endDate}</Label>
           <DatePickerF bind={endDate} locale={lang} />
         </FixedSpaceColumn>

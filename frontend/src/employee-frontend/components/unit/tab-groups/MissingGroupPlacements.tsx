@@ -69,7 +69,7 @@ function renderMissingGroupPlacementRow(
         </Link>
       </Td>
       <Td>
-        <FixedSpaceRow spacing="xs" alignItems="center">
+        <FixedSpaceRow $spacing="xs" $alignItems="center">
           <AgeIndicatorChip
             age={LocalDate.todayInHelsinkiTz().differenceInYears(dateOfBirth)}
           />
@@ -77,7 +77,7 @@ function renderMissingGroupPlacementRow(
         </FixedSpaceRow>
       </Td>
       <Td data-qa="placement-type">
-        <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+        <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
           <CareTypeChip type={careType} />
           {fromUnits.map((unit) => (
             <Light key={unit}>{unit}</Light>

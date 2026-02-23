@@ -209,7 +209,7 @@ export default React.memo(function PreschoolTermForm({
   return (
     <>
       <H1>{i18n.titles.preschoolTerm}</H1>
-      <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+      <ListGrid $labelWidth="max-content" $rowGap="s" $columnGap="L">
         <div>
           <FixedSpaceRow>
             <Label>{i18n.terms.finnishPreschool} *</Label>
@@ -223,7 +223,7 @@ export default React.memo(function PreschoolTermForm({
           />
         </div>
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         {featureFlags.extendedPreschoolTerm && (
           <>
@@ -239,7 +239,7 @@ export default React.memo(function PreschoolTermForm({
                 info={extendedTermStart.inputInfo()}
               />
             </div>
-            <Gap size="L" />
+            <Gap $size="L" />
           </>
         )}
 
@@ -255,7 +255,7 @@ export default React.memo(function PreschoolTermForm({
           />
         </div>
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         <div>
           <ExpandingInfo info={i18n.terms.termBreaksInfo}>
@@ -266,8 +266,8 @@ export default React.memo(function PreschoolTermForm({
             <FixedSpaceRow
               key={`tb-${i}`}
               data-qa="term-break"
-              alignItems="center"
-              spacing="m"
+              $alignItems="center"
+              $spacing="m"
             >
               <div className="bold">{`${i + 1}.`}</div>
               <DateRangePickerF
@@ -296,7 +296,7 @@ export default React.memo(function PreschoolTermForm({
             </InputFieldUnderRow>
           ) : undefined}
 
-          <Gap size="L" />
+          <Gap $size="L" />
 
           <Button
             appearance="inline"

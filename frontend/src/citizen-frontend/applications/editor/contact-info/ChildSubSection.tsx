@@ -34,41 +34,41 @@ export default React.memo(function ChildSubSection({
 
   return (
     <>
-      <Gap size="m" />
+      <Gap $size="m" />
       {fullFamily ? t.applications.editor.contactInfo.familyInfo : null}
       {t.applications.editor.contactInfo.info}
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
-      <Gap size="xs" />
-      <FixedSpaceRow spacing="XL">
-        <AdaptiveFlex breakpoint="1060px">
-          <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceRow $spacing="XL">
+        <AdaptiveFlex $breakpoint="1060px">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
             <PersonName
               person={{ firstName: formData.childFirstName }}
               format="First"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{t.applications.editor.contactInfo.childLastName}</Label>
             <PersonName
               person={{ lastName: formData.childLastName }}
               format="Last"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{t.applications.editor.contactInfo.childSSN}</Label>
             <span>{formData.childSSN}</span>
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
-      <Gap size="s" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="s" />
+      <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
         <span data-qa="child-street-address" translate="no">
           {formData.childStreet}
         </span>
       </FixedSpaceColumn>
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <ExpandingInfo
         data-qa="child-future-address-info"
@@ -93,8 +93,8 @@ export default React.memo(function ChildSubSection({
 
       {formData.childFutureAddressExists && (
         <>
-          <Gap size="m" />
-          <FixedSpaceColumn spacing="xs">
+          <Gap $size="m" />
+          <FixedSpaceColumn $spacing="xs">
             <Label htmlFor="child-move-date">
               {t.applications.editor.contactInfo.moveDate + ' *'}
             </Label>
@@ -116,10 +116,10 @@ export default React.memo(function ChildSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
             />
           </FixedSpaceColumn>
-          <Gap size="s" />
-          <FixedSpaceRow spacing="XL">
-            <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing="xs">
+          <Gap $size="s" />
+          <FixedSpaceRow $spacing="XL">
+            <AdaptiveFlex $breakpoint="1060px">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="child-future-street">
                   {t.applications.editor.contactInfo.street + ' *'}
                 </Label>
@@ -149,7 +149,7 @@ export default React.memo(function ChildSubSection({
                   width="L"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="child-future-postal-code">
                   {t.applications.editor.contactInfo.postalCode + ' *'}
                 </Label>
@@ -177,7 +177,7 @@ export default React.memo(function ChildSubSection({
                   width="m"
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="child-future-post-office">
                   {t.applications.editor.contactInfo.postOffice + ' *'}
                 </Label>

@@ -49,7 +49,7 @@ export default React.memo(function ApplicationDecision({
 
   return (
     <CollapsibleContentArea
-      opaque={false}
+      $opaque={false}
       open={open}
       toggleOpen={toggleOpen}
       title={
@@ -60,10 +60,10 @@ export default React.memo(function ApplicationDecision({
             t.decisions.applicationDecisions.status[status]
           }`}
         >
-          <H4 noMargin data-qa="decision-sent-date">
+          <H4 $noMargin data-qa="decision-sent-date">
             {sentDate.format()}
           </H4>
-          <H3 noMargin data-qa="title-decision-type">
+          <H3 $noMargin data-qa="title-decision-type">
             {t.decisions.applicationDecisions.type[type]}
           </H3>
         </div>
@@ -86,8 +86,8 @@ export default React.memo(function ApplicationDecision({
           )}
         </AlwaysShownCollapseContent>
       }
-      paddingHorizontal="0"
-      paddingVertical="0"
+      $paddingHorizontal="0"
+      $paddingVertical="0"
       data-qa={`application-decision-${id}`}
     >
       {featureFlags.showMetadataToCitizen && (

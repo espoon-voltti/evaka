@@ -86,11 +86,11 @@ export default React.memo(function EditTemporaryEmployeeModal({
       data-qa="edit-temporary-employee-modal"
     >
       <FixedSpaceColumn>
-        <H1 noMargin>
+        <H1 $noMargin>
           {i18n.unit.accessControl.editTemporaryEmployeeModal.title}
         </H1>
 
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.firstName} *`}
           </Label>
@@ -103,7 +103,7 @@ export default React.memo(function EditTemporaryEmployeeModal({
             data-qa="first-name"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.lastName} *`}
           </Label>
@@ -116,7 +116,7 @@ export default React.memo(function EditTemporaryEmployeeModal({
             data-qa="last-name"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.unit.accessControl.chooseGroup}</Label>
           <MultiSelect
             data-qa="group-select"
@@ -141,7 +141,7 @@ export default React.memo(function EditTemporaryEmployeeModal({
             })
           }}
         />
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.pinCode}`}
           </Label>

@@ -784,7 +784,7 @@ const en: Translations = {
                 </a>
                 .
               </P>
-              <P fitted={true}>* Information marked with a star is required</P>
+              <P $fitted={true}>* Information marked with a star is required</P>
             </>
           ),
           PRESCHOOL: (
@@ -816,7 +816,7 @@ const en: Translations = {
                 </a>{' '}
                 service.
               </P>
-              <P fitted={true}>* Information marked with a star is required</P>
+              <P $fitted={true}>* Information marked with a star is required</P>
             </>
           ),
           CLUB: (
@@ -846,7 +846,7 @@ const en: Translations = {
                 daycare allowance, a place in a club cannot be granted to the
                 child
               </P>
-              <P fitted={true}>
+              <P $fitted={true}>
                 * Information marked with an asterisk is required
               </P>
             </>
@@ -1119,7 +1119,7 @@ const en: Translations = {
             'Application is urgent (does not apply to transfer applications)',
           attachmentsMessage: {
             text: (
-              <P fitted={true}>
+              <P $fitted={true}>
                 If the need for a place in early childhood education arises from
                 sudden employment or a sudden start of studies, you will need to
                 apply for a place no later than{' '}
@@ -1825,7 +1825,7 @@ const en: Translations = {
     title:
       'Applying for early childhood education or a club and enrolling for pre-primary education',
     summary: (
-      <P width="800px">
+      <P $width="800px">
         A child’s guardian can submit an application for early childhood
         education or a club and enroll the child to pre-primary education. You
         can also use the same application to apply for a service voucher for
@@ -1870,19 +1870,19 @@ const en: Translations = {
     noCustodians: 'No dependent children',
     noCustodiansInfo: (
       <>
-        <P width="100%">
+        <P $width="100%">
           No dependent children are listed in your information obtained from the
           Digital and Population Data Services Agency (DVV).
         </P>
-        <P width="100%">
+        <P $width="100%">
           If you do have dependent children, the lack of information may be due
           to a delay in updating the information.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Please check with DVV that you have taken care of all custody-related
           matters they require.
         </P>
-        <P width="100%">
+        <P $width="100%">
           You cannot use eVaka until your custody information is updated in the
           DVV register. Until then, you can contact your preferred day care
           centre by phone or by sending an email to the day care centre’s
@@ -2101,7 +2101,7 @@ const en: Translations = {
         <P>
           <strong>To be noted:</strong>
         </P>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <UnorderedList>
           <li>
             The fee can be reviewed during the operating year if there are
@@ -2187,7 +2187,7 @@ const en: Translations = {
       title: 'Filling in gross income data',
       description: (
         <>
-          <P noMargin>
+          <P $noMargin>
             Select below whether you want to submit your income information as
             attachments, or whether the authority will check your information
             directly from the Incomes Register and Kela, if necessary.

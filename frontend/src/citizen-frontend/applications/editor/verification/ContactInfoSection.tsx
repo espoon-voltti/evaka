@@ -43,15 +43,15 @@ export default React.memo(function ContactInfoSection({
 
   return (
     <div>
-      <H2 noMargin>{tLocal.title}</H2>
+      <H2 $noMargin>{tLocal.title}</H2>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <H3>{tLocal.child.title}</H3>
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{tLocal.child.name}</Label>
         <PersonName
@@ -89,13 +89,13 @@ export default React.memo(function ContactInfoSection({
         )}
       </ListGrid>
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <H3>{tLocal.guardian.title}</H3>
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{tLocal.guardian.name}</Label>
         <PersonName
@@ -136,7 +136,7 @@ export default React.memo(function ContactInfoSection({
 
       {type !== 'CLUB' && (
         <>
-          <Gap size="m" />
+          <Gap $size="m" />
           <H3>{tLocal.secondGuardian.title}</H3>
           {!!formData.otherGuardianAgreementStatus && (
             <ContactInfoSecondGuardian formData={formData} />
@@ -144,13 +144,13 @@ export default React.memo(function ContactInfoSection({
 
           {showFridgeFamilySection && (
             <>
-              <Gap size="m" />
+              <Gap $size="m" />
               <H3>{tLocal.fridgePartner.title}</H3>
               {formData.otherPartnerExists ? (
                 <ListGrid
-                  labelWidth={ApplicationDataGridLabelWidth}
-                  rowGap="s"
-                  columnGap="L"
+                  $labelWidth={ApplicationDataGridLabelWidth}
+                  $rowGap="s"
+                  $columnGap="L"
                 >
                   <Label>{tLocal.fridgePartner.name}</Label>
                   <PersonName
@@ -168,22 +168,22 @@ export default React.memo(function ContactInfoSection({
                 <span>{t.applications.editor.verification.no}</span>
               )}
 
-              <Gap size="m" />
+              <Gap $size="m" />
               <H3>{tLocal.fridgeChildren.title}</H3>
               {otherChildren.length > 0 ? (
                 otherChildren.map(({ socialSecurityNumber, ...name }) => (
                   <ListGrid
                     key={socialSecurityNumber}
-                    labelWidth={ApplicationDataGridLabelWidth}
-                    rowGap="s"
-                    columnGap="L"
+                    $labelWidth={ApplicationDataGridLabelWidth}
+                    $rowGap="s"
+                    $columnGap="L"
                   >
                     <Label>{tLocal.fridgeChildren.name}</Label>
                     <PersonName person={name} format="First Last" />
 
                     <Label>{tLocal.fridgeChildren.ssn}</Label>
                     <span>{socialSecurityNumber}</span>
-                    <Gap size="m" />
+                    <Gap $size="m" />
                   </ListGrid>
                 ))
               ) : (

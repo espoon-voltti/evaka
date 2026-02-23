@@ -51,7 +51,7 @@ export default React.memo(function ErrorSegment({
       </div>
       {!!info && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <p>{info}</p>
         </>
       )}

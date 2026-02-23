@@ -13,8 +13,8 @@ import type { IconSize } from './icon-size'
 import { diameterByIconSize, fontSizeByIconSize } from './icon-size'
 
 interface SizeProps {
-  size: IconSize
-  sizeDesktop?: IconSize
+  $size: IconSize
+  $sizeDesktop?: IconSize
 }
 
 const ImageContainer = styled.div<SizeProps>`
@@ -26,24 +26,24 @@ const ImageContainer = styled.div<SizeProps>`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   color: ${(p) => p.color};
 
-  font-size: ${(p) => fontSizeByIconSize(p.size)}px;
-  width: ${(p) => diameterByIconSize(p.size)}px;
-  height: ${(p) => diameterByIconSize(p.size)}px;
+  font-size: ${(p) => fontSizeByIconSize(p.$size)}px;
+  width: ${(p) => diameterByIconSize(p.$size)}px;
+  height: ${(p) => diameterByIconSize(p.$size)}px;
   @media (min-width: ${desktopMin}) {
-    font-size: ${(p) => fontSizeByIconSize(p.sizeDesktop ?? p.size)}px;
-    width: ${(p) => diameterByIconSize(p.sizeDesktop ?? p.size)}px;
-    height: ${(p) => diameterByIconSize(p.sizeDesktop ?? p.size)}px;
+    font-size: ${(p) => fontSizeByIconSize(p.$sizeDesktop ?? p.$size)}px;
+    width: ${(p) => diameterByIconSize(p.$sizeDesktop ?? p.$size)}px;
+    height: ${(p) => diameterByIconSize(p.$sizeDesktop ?? p.$size)}px;
   }
 `
 
 const Image = styled.img<SizeProps>`
   display: block;
   border-radius: 50%;
-  width: ${(p) => diameterByIconSize(p.size)}px;
-  height: ${(p) => diameterByIconSize(p.size)}px;
+  width: ${(p) => diameterByIconSize(p.$size)}px;
+  height: ${(p) => diameterByIconSize(p.$size)}px;
   @media (min-width: ${desktopMin}) {
-    width: ${(p) => diameterByIconSize(p.sizeDesktop ?? p.size)}px;
-    height: ${(p) => diameterByIconSize(p.sizeDesktop ?? p.size)}px;
+    width: ${(p) => diameterByIconSize(p.$sizeDesktop ?? p.$size)}px;
+    height: ${(p) => diameterByIconSize(p.$sizeDesktop ?? p.$size)}px;
   }
 `
 
@@ -68,13 +68,13 @@ export const RoundImage = React.memo(function RoundImage({
 }: Props) {
   return (
     <ImageContainer
-      size={size}
-      sizeDesktop={sizeDesktop}
+      $size={size}
+      $sizeDesktop={sizeDesktop}
       color={fallbackColor}
       className={className}
     >
       {src ? (
-        <Image size={size} sizeDesktop={sizeDesktop} src={src} alt={alt} />
+        <Image $size={size} $sizeDesktop={sizeDesktop} src={src} alt={alt} />
       ) : (
         <FontAwesomeIcon icon={fallbackContent} />
       )}

@@ -55,12 +55,12 @@ const StaffBoxInfo = styled.div`
   min-height: ${imageHeight};
 `
 
-export const IconBox = styled.div<{ present: boolean }>`
+export const IconBox = styled.div<{ $present: boolean }>`
   background-color: ${(p) =>
-    p.present ? colors.status.success : colors.accents.a6turquoise};
+    p.$present ? colors.status.success : colors.accents.a6turquoise};
   border-radius: 50%;
   box-shadow: ${(p) =>
-    p.present
+    p.$present
       ? `0 0 0 2px ${colors.status.success}`
       : `0 0 0 2px ${colors.accents.a6turquoise}`};
   border: 2px solid ${colors.grayscale.g0};
@@ -85,7 +85,7 @@ export default React.memo(function StaffListItem({
   return (
     <StaffBox data-qa={`staff-${id}`} key={id}>
       <AttendanceLinkBox to={link} data-qa="staff-link">
-        <IconBox present={present}>
+        <IconBox $present={present}>
           <RoundIcon
             content={farUser}
             color={present ? colors.status.success : colors.accents.a6turquoise}

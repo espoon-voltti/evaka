@@ -12,10 +12,10 @@ import { defaultMargins } from '../../white-space'
 import LegacyInlineButton from './LegacyInlineButton'
 
 interface WrapperProps {
-  margin?: string
+  $margin?: string
 }
 export const ReturnButtonWrapper = styled.div<WrapperProps>`
-  margin: ${(p) => p.margin ?? defaultMargins.xs} 0;
+  margin: ${(p) => p.$margin ?? defaultMargins.xs} 0;
 
   button {
     padding-left: 0;
@@ -43,11 +43,11 @@ export default React.memo(function ReturnButton({
   'data-qa': dataQa,
   onClick,
   margin
-}: Props & WrapperProps) {
+}: Props & { margin?: string }) {
   const { colors } = useTheme()
   const defaultBehaviour = useCallback(() => history.go(-1), [])
   return onClick || history.length > 1 ? (
-    <ReturnButtonWrapper margin={margin}>
+    <ReturnButtonWrapper $margin={margin}>
       <LegacyInlineButton
         icon={faAngleLeft}
         text={label}

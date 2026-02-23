@@ -46,20 +46,24 @@ export default React.memo(function DiscussionReservationSurveyListItem({
   return (
     <SurveyItemContainer
       data-qa={`survey-${eventData.id}`}
-      justifyContent="space-between"
-      alignItems="center"
+      $justifyContent="space-between"
+      $alignItems="center"
     >
       <FixedSpaceRow>
         <H3 data-qa="survey-title">{eventData.title}</H3>
       </FixedSpaceRow>
-      <FixedSpaceRow justifyContent="flex-end" spacing="L" alignItems="center">
+      <FixedSpaceRow
+        $justifyContent="flex-end"
+        $spacing="L"
+        $alignItems="center"
+      >
         <ModifiedAtText data-qa="survey-modified-at">
           {`${t.surveyModifiedAt} ${eventData.contentModifiedAt.toLocalDate().format()}`}
         </ModifiedAtText>
         <StaticChip
           data-qa="survey-status"
-          fitContent
-          color={statusColor[status]}
+          $fitContent
+          $color={statusColor[status]}
         >
           {t.surveyStatus[status]}
         </StaticChip>

@@ -115,7 +115,7 @@ export default React.memo(function IncomeStatementsFilters() {
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           {renderResult(unitsResult, (units) => (
             <UnitFilter
               units={units}
@@ -142,14 +142,14 @@ export default React.memo(function IncomeStatementsFilters() {
             endDate={searchFilters.sentEndDate}
             setEndDate={setSentEndDate}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <Label>{i18n.filters.incomeStatementPlacementValidDate}</Label>
           <DatePickerLowLevel
             value={searchFilters.placementValidDate}
             onChange={setPlacementValidDate}
             locale="fi"
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <StatusFilter toggled={searchFilters.status} toggle={toggleStatus} />
         </Fragment>
       }
@@ -171,8 +171,8 @@ function StatusFilter({ toggled, toggle }: StatusFilterProps) {
   return (
     <>
       <Label>{i18n.filters.incomeStatementStatusTitle}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {filterStatuses.map((status) => (
           <Checkbox
             key={status}

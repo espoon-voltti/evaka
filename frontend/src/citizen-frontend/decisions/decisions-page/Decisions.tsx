@@ -165,14 +165,19 @@ export default React.memo(function Decisions() {
   }
   return (
     <Container data-qa="decisions-page">
-      <Gap size="s" />
-      <ContentArea opaque paddingVertical="s" paddingHorizontal="s" id="main">
-        <H1 noMargin>{t.decisions.title}</H1>
-        <Gap size="s" />
+      <Gap $size="s" />
+      <ContentArea
+        $opaque
+        $paddingVertical="s"
+        $paddingHorizontal="s"
+        id="main"
+      >
+        <H1 $noMargin>{t.decisions.title}</H1>
+        <Gap $size="s" />
         {t.decisions.summary}
         {unconfirmedDecisionsCount > 0 && (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <UnconfirmedDecisionsBox>
               <IconContainer>
                 <GavelIcon
@@ -222,7 +227,7 @@ export default React.memo(function Decisions() {
           unconfirmedDecisionCountPerChild,
           (unconfirmedDecisionCountPerChild) => (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               {unconfirmedDecisionCountPerChild.map(
                 ({ child, unconfirmedCount }) => (
                   <LinkRow
@@ -286,15 +291,15 @@ export default React.memo(function Decisions() {
           <>
             {childrenWithSortedDecisions.map((child) => (
               <Fragment key={child.id}>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <ContentArea
-                  opaque
-                  paddingVertical="s"
-                  paddingHorizontal="s"
+                  $opaque
+                  $paddingVertical="s"
+                  $paddingHorizontal="s"
                   data-qa={`child-decisions-${child.id}`}
                   id={`child-decisions-${child.id}`}
                 >
-                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
+                  <H2 $noMargin aria-label={getAriaLabelForChild(child)}>
                     <PersonName person={child} format="First Last" />
                   </H2>
                   {child.decisions.map((decision) => (
@@ -314,15 +319,15 @@ export default React.memo(function Decisions() {
           </>
         )
       )}
-      <Gap size="s" />
+      <Gap $size="s" />
       {renderResult(sortedFinanceDecisions, (decisions) => (
         <FixedSpaceColumn>
-          <ContentArea opaque paddingVertical="L" id="finance-decisions">
-            <H2 noMargin>{t.decisions.financeDecisions.title}</H2>
-            {decisions.length > 0 && <Gap size="xs" />}
+          <ContentArea $opaque $paddingVertical="L" id="finance-decisions">
+            <H2 $noMargin>{t.decisions.financeDecisions.title}</H2>
+            {decisions.length > 0 && <Gap $size="xs" />}
             {decisions.map((decision, index) => (
               <Fragment key={decision.id}>
-                <HorizontalLine dashed slim />
+                <HorizontalLine $dashed $slim />
                 <FinanceDecision
                   decisionData={decision}
                   startOpen={index === 0}
@@ -332,7 +337,7 @@ export default React.memo(function Decisions() {
           </ContentArea>
         </FixedSpaceColumn>
       ))}
-      <Gap size="s" />
+      <Gap $size="s" />
     </Container>
   )
 })

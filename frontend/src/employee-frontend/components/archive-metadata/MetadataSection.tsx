@@ -25,10 +25,10 @@ export default React.memo(function MetadataSection({
 
   return (
     <CollapsibleContentArea
-      title={<H2 noMargin>{i18n.metadata.title}</H2>}
+      title={<H2 $noMargin>{i18n.metadata.title}</H2>}
       open={sectionOpen}
       toggleOpen={toggleOpen}
-      opaque
+      $opaque
     >
       {renderResult(metadataResult, ({ data: metadata }) => {
         return <Metadatas metadata={metadata} />

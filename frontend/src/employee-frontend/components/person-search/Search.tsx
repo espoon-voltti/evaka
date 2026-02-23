@@ -69,8 +69,8 @@ export default React.memo(function Search() {
 
   return (
     <Container>
-      <ContentArea opaque>
-        <Gap size="xs" />
+      <ContentArea $opaque>
+        <Gap $size="xs" />
         <TopBar>
           <Wrapper tabIndex={-1}>
             <InputField
@@ -91,7 +91,7 @@ export default React.memo(function Search() {
                 onClick={() => setShowAddPersonFromVTJModal(true)}
                 data-qa="add-vtj-person-button"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
               <AddButton
                 text={i18n.personSearch.createNewPerson.title}
                 onClick={() => setShowCreatePersonModal(true)}
@@ -100,7 +100,7 @@ export default React.memo(function Search() {
             </ButtonsContainer>
           </RequireRole>
         </TopBar>
-        <Gap size="XL" />
+        <Gap $size="XL" />
 
         {/* TODO: move this to a component */}
         <div className="table-of-units">
@@ -150,7 +150,7 @@ export default React.memo(function Search() {
                 <>
                   {customers.value.map((person) => (
                     <Tr key={person.id} data-qa="person-row">
-                      <Td align="left">
+                      <Td $align="left">
                         <Link
                           to={
                             getAge(person.dateOfBirth) >=
@@ -162,9 +162,9 @@ export default React.memo(function Search() {
                           <PersonName person={person} format="Last First" />
                         </Link>
                       </Td>
-                      <Td align="left">{getAge(person.dateOfBirth)}</Td>
-                      <Td align="left">{person.streetAddress}</Td>
-                      <Td align="left">{person.socialSecurityNumber}</Td>
+                      <Td $align="left">{getAge(person.dateOfBirth)}</Td>
+                      <Td $align="left">{person.streetAddress}</Td>
+                      <Td $align="left">{person.socialSecurityNumber}</Td>
                     </Tr>
                   ))}
                   {customers.value.length > 99 && (
@@ -191,7 +191,7 @@ export default React.memo(function Search() {
             </Tbody>
           </Table>
         </div>
-        <Gap size="XXL" />
+        <Gap $size="XXL" />
       </ContentArea>
       {showAddPersonFromVTJModal ? (
         <AddVTJPersonModal

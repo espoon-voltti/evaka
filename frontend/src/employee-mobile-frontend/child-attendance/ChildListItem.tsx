@@ -59,10 +59,10 @@ const MultiselectBox = styled.div`
   width: 100%;
 `
 
-export const IconBox = styled.div<{ type: AttendanceStatus }>`
-  background-color: ${(props) => attendanceColors[props.type]};
+export const IconBox = styled.div<{ $type: AttendanceStatus }>`
+  background-color: ${(props) => attendanceColors[props.$type]};
   border-radius: 50%;
-  box-shadow: 0 0 0 2px ${(props) => attendanceColors[props.type]};
+  box-shadow: 0 0 0 2px ${(props) => attendanceColors[props.$type]};
   border: 2px solid ${colors.grayscale.g0};
 `
 
@@ -199,7 +199,7 @@ export default React.memo(function ChildListItem({
                 <PersonName person={child} format="First Last (Preferred)" />
               </Bold>
             </NameRow>
-            <FixedSpaceRow spacing="xs">
+            <FixedSpaceRow $spacing="xs">
               <DetailsText>{infoText}</DetailsText>
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
@@ -210,7 +210,7 @@ export default React.memo(function ChildListItem({
             <GroupName data-qa={`child-group-name-${child.id}`}>
               {maybeGroupName}
             </GroupName>
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               {hasActiveStickyNote && (
                 <Link
                   to={routes.childNotes(unitId, child.id).value}
@@ -291,7 +291,7 @@ export const ChildImage = React.memo(function ChildImage({
     child.dateOfBirth
   )
   return (
-    <IconBox type={type ?? 'COMING'}>
+    <IconBox $type={type ?? 'COMING'}>
       {child.imageUrl ? (
         <RoundImage src={child.imageUrl} />
       ) : (

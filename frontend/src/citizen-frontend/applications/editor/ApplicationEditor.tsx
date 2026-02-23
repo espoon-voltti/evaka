@@ -419,7 +419,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const renderActions = () => (
     <>
       {verifying && (
-        <ContentArea opaque>
+        <ContentArea $opaque>
           <div style={{ marginLeft: defaultMargins.s }}>
             <Checkbox
               aria-required
@@ -428,7 +428,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               onChange={setVerified}
               data-qa="verify-checkbox"
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             {hasOtherGuardian && (
               <>
                 <Checkbox
@@ -438,7 +438,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
                   onChange={setAllowOtherGuardianAccess}
                   data-qa="allow-other-guardian-access"
                 />
-                <Gap size="s" />
+                <Gap $size="s" />
               </>
             )}
           </div>
@@ -446,7 +446,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       )}
 
       <StickyContainer>
-        <ActionRow breakpoint="660px">
+        <ActionRow $breakpoint="660px">
           {!verifying && (
             <LegacyButton
               data-qa="cancel-application-button"
@@ -533,7 +533,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         <ExpandingInfoGroup>
           {verifying ? renderVerificationView() : renderEditor()}
 
-          <Gap size="m" />
+          <Gap $size="m" />
 
           {renderActions()}
         </ExpandingInfoGroup>

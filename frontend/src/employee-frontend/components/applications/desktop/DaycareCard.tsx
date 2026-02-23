@@ -93,8 +93,8 @@ export default React.memo(function DaycareCard({
       {isGraphOpen && unitDetails.isSuccess && (
         <OccupancyModal daycare={unitDetails.value} onClose={closeGraph} />
       )}
-      <FixedSpaceColumn spacing="s">
-        <FixedSpaceRow justifyContent="space-between">
+      <FixedSpaceColumn $spacing="s">
+        <FixedSpaceRow $justifyContent="space-between">
           <FixedSpaceRow>
             <a
               href={`/employee/units/${daycare.id}/groups?period=${encodeURIComponent('3 months')}&startDate=${occupancyPeriodStart.formatIso()}`}
@@ -102,7 +102,7 @@ export default React.memo(function DaycareCard({
               rel="noreferrer"
             >
               <H3
-                noMargin
+                $noMargin
                 style={{ color: colors.main.m1 }}
                 data-qa="unit-name"
               >
@@ -141,9 +141,9 @@ export default React.memo(function DaycareCard({
           ([unitDetails, placementDraftsWithApplications]) => (
             <>
               <OccupanciesArea>
-                <FixedSpaceRow justifyContent="space-between">
+                <FixedSpaceRow $justifyContent="space-between">
                   <FixedSpaceRow>
-                    <FixedSpaceColumn spacing="xs">
+                    <FixedSpaceColumn $spacing="xs">
                       <OccupancyLabel>
                         {
                           i18n.applications.placementDesktop.occupancyTypes
@@ -156,7 +156,7 @@ export default React.memo(function DaycareCard({
                         %
                       </OccupancyPercentage>
                     </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing="xs">
+                    <FixedSpaceColumn $spacing="xs">
                       <OccupancyLabel>
                         {
                           i18n.applications.placementDesktop.occupancyTypes
@@ -168,7 +168,7 @@ export default React.memo(function DaycareCard({
                         %
                       </OccupancyPercentage>
                     </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing="xs">
+                    <FixedSpaceColumn $spacing="xs">
                       <OccupancyLabel>
                         {
                           i18n.applications.placementDesktop.occupancyTypes
@@ -178,7 +178,7 @@ export default React.memo(function DaycareCard({
                       {(unitDetails.occupancyDraft?.max?.percentage ?? 0) >=
                       105 ? (
                         <OccupancyWarning>
-                          <FixedSpaceRow alignItems="center" spacing="xs">
+                          <FixedSpaceRow $alignItems="center" $spacing="xs">
                             <OccupancyPercentageDraft data-qa="occupancy-draft">
                               {unitDetails.occupancyDraft?.max?.percentage ??
                                 '??'}{' '}
@@ -210,9 +210,9 @@ export default React.memo(function DaycareCard({
                   </Tooltip>
                 </FixedSpaceRow>
               </OccupanciesArea>
-              <Gap size="s" />
+              <Gap $size="s" />
               <CollapsibleContentArea
-                opaque
+                $opaque
                 open={placementDraftsOpen}
                 toggleOpen={togglePlacementDraftsOpen}
                 title={
@@ -221,9 +221,9 @@ export default React.memo(function DaycareCard({
                     {placementDraftsWithApplications.length})
                   </PlacementDraftsLabel>
                 }
-                slim
-                paddingHorizontal="zero"
-                paddingVertical="zero"
+                $slim
+                $paddingHorizontal="zero"
+                $paddingVertical="zero"
               >
                 <Table
                   style={{

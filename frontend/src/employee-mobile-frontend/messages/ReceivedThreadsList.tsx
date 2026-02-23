@@ -138,19 +138,19 @@ const MessagePreview = React.memo(function MessagePreview({
   const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
   return (
     <Container
-      isRead={!hasUnreadMessages}
-      active={false}
+      $isRead={!hasUnreadMessages}
+      $active={false}
       data-qa="message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>
-        <Header isRead={!hasUnreadMessages}>
+        <Header $isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-participants">
             {participants.join(', ')}
           </Truncated>
           <MessageCharacteristics type={thread.type} urgent={thread.urgent} />
         </Header>
-        <TitleAndDate isRead={!hasUnreadMessages}>
+        <TitleAndDate $isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-preview-title">{thread.title}</Truncated>
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>
         </TitleAndDate>
