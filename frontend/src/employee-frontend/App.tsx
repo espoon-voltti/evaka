@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext } from 'react'
-import { StyleSheetManager, ThemeProvider } from 'styled-components'
+import { ThemeProvider } from 'styled-components'
 import { Redirect, useLocation } from 'wouter'
 
 import { Notifications } from 'lib-components/Notifications'
@@ -40,23 +39,21 @@ export function App({ children }: { children?: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nContextProvider>
-        <StyleSheetManager shouldForwardProp={shouldForwardProp}>
-          <ThemeProvider theme={theme}>
-            <ErrorBoundary
-              fallback={() => (
-                <ErrorPage basePath="/employee" labels={i18n.errorPage} />
-              )}
-            >
-              <UserContextProvider>
-                <StateProvider>
-                  <Content>{children}</Content>
-                  <div id="datepicker-container" />
-                  <div id="tooltip-container" data-qa="tooltip-container" />
-                </StateProvider>
-              </UserContextProvider>
-            </ErrorBoundary>
-          </ThemeProvider>
-        </StyleSheetManager>
+        <ThemeProvider theme={theme}>
+          <ErrorBoundary
+            fallback={() => (
+              <ErrorPage basePath="/employee" labels={i18n.errorPage} />
+            )}
+          >
+            <UserContextProvider>
+              <StateProvider>
+                <Content>{children}</Content>
+                <div id="datepicker-container" />
+                <div id="tooltip-container" data-qa="tooltip-container" />
+              </StateProvider>
+            </UserContextProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
       </I18nContextProvider>
     </QueryClientProvider>
   )
@@ -112,17 +109,6 @@ function Content({ children }: { children?: React.ReactNode }) {
       )}
     </>
   )
-}
-
-// This implements the default behavior from styled-components v5
-// TODO: Prefix all custom props with $, then remove this
-function shouldForwardProp(propName: string, target: unknown) {
-  if (typeof target === 'string') {
-    // For HTML elements, forward the prop if it is a valid HTML attribute
-    return isPropValid(propName)
-  }
-  // For other elements, forward all props
-  return true
 }
 
 export function CloseAfterLogin() {
