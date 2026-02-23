@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,6 +24,7 @@ declare module 'Icons' {
   const faBars: IconDefinition
   const faBarsSort: IconDefinition
   const faBabyCarriage: IconDefinition
+  const faBell: IconDefinition
   const faBoxArchive: IconDefinition
   const faCalendar: IconDefinition
   const faCalendarAlt: IconDefinition
@@ -71,6 +72,7 @@ declare module 'Icons' {
   const faGavel: IconDefinition
   const faGear: IconDefinition
   const fasGear: IconDefinition
+  const faGlobe: IconDefinition
   const faHandHolding: IconDefinition
   const faHiking: IconDefinition
   const faHome: IconDefinition

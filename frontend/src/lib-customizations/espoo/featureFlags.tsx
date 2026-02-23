@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -54,7 +54,8 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
     showMetadataToCitizen: true,
-    placementDesktop: true
+    placementDesktop: true,
+    employeeLanguageSelection: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -98,7 +99,8 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
     showMetadataToCitizen: true,
-    placementDesktop: true
+    placementDesktop: true,
+    employeeLanguageSelection: true
   },
   prod: {
     environmentLabel: null,

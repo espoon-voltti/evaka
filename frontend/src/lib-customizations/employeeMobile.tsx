@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,6 +12,7 @@ import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
+import { sv } from './defaults/employee-mobile-frontend/i18n/sv'
 import type { EmployeeMobileCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -49,9 +50,11 @@ export {
   staffAttendanceTypes
 }
 
-export type Lang = 'fi'
+export type Lang = 'fi' | 'sv'
 export type Translations = typeof fi
+export const langs: Lang[] = ['fi', 'sv']
 
 export const translations: Record<Lang, Translations> = {
-  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer)
+  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
+  sv: mergeWith({}, sv, customizations.translations.sv, mergeCustomizer)
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,6 +16,7 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { fasGear } from 'lib-icons'
 import {
   faChild,
@@ -190,7 +191,8 @@ export default function BottomNavbar({
               </BottomText>
             </Button>
           ) : null}
-          {unit.features.includes('PUSH_NOTIFICATIONS') ? (
+          {unit.features.includes('PUSH_NOTIFICATIONS') ||
+          featureFlags.employeeLanguageSelection ? (
             <Button data-qa="bottomnav-settings">
               <BottomText
                 text={i18n.common.settings}

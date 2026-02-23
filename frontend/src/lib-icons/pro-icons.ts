@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -33,6 +33,7 @@ export { faArrowUp } from '@fortawesome/pro-light-svg-icons/faArrowUp'
 export { faArrowRotateLeft } from '@fortawesome/pro-light-svg-icons/faArrowRotateLeft'
 export { faArrowsRotate } from '@fortawesome/pro-light-svg-icons/faArrowsRotate'
 export { faBabyCarriage } from '@fortawesome/pro-light-svg-icons/faBabyCarriage'
+export { faBell } from '@fortawesome/pro-light-svg-icons/faBell'
 export { faBars } from '@fortawesome/pro-light-svg-icons/faBars'
 export { faBarsSort } from '@fortawesome/pro-solid-svg-icons/faBarsSort'
 export { faBoxArchive } from '@fortawesome/pro-solid-svg-icons/faBoxArchive'
@@ -84,6 +85,7 @@ export { faFileWord } from '@fortawesome/pro-light-svg-icons/faFileWord'
 export { faGavel } from '@fortawesome/pro-light-svg-icons/faGavel'
 export { faGear } from '@fortawesome/pro-light-svg-icons/faGear'
 export { faGear as fasGear } from '@fortawesome/pro-solid-svg-icons/faGear'
+export { faGlobe } from '@fortawesome/pro-light-svg-icons/faGlobe'
 export { faHandHolding } from '@fortawesome/pro-light-svg-icons/faHandHolding'
 export { faHiking } from '@fortawesome/pro-light-svg-icons/faHiking'
 export { faHome } from '@fortawesome/pro-light-svg-icons/faHome'
