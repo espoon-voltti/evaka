@@ -8,7 +8,7 @@ import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.evaka.shared.TimeoutConfig
 import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor
-import fi.espoo.evaka.shared.utils.executePutRequest
+import fi.espoo.evaka.shared.utils.put
 import fi.espoo.evaka.shared.utils.streamRequestBody
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,7 +32,7 @@ class EspooBiHttpClient(env: EspooBiEnv) {
         val body = streamRequestBody("text/csv".toMediaType(), stream)
 
         try {
-            httpClient.executePutRequest("report", body, mapOf("filename" to fileName))
+            httpClient.put<Unit>("report", body = body, queryParams = mapOf("filename" to fileName))
         } catch (e: Exception) {
             logger.error(e, mapOf("errorMessage" to e.message)) {
                 "Failed to send BI CSV file $fileName (${stream.totalBytes} bytes sent before failure)"

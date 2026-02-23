@@ -9,8 +9,8 @@ import fi.espoo.evaka.reports.RawReportRow
 import fi.espoo.evaka.shared.ConfiguredHttpClient
 import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor
-import fi.espoo.evaka.shared.utils.executePostJsonRequest
 import fi.espoo.evaka.shared.utils.headerInterceptor
+import fi.espoo.evaka.shared.utils.post
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import tools.jackson.databind.json.JsonMapper
@@ -32,7 +32,7 @@ class EspooPatuIntegrationClient(env: EspooPatuIntegrationEnv, jsonMapper: JsonM
     fun send(patuReport: List<RawReportRow>) {
         logger.info { "Sending patu report of ${patuReport.size} rows" }
         try {
-            httpClient.executePostJsonRequest("report", patuReport)
+            httpClient.post<Unit>("report", jsonBody = patuReport)
         } catch (e: Exception) {
             logger.error(e) { "Sending patu report failed" }
             throw e

@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor
-import fi.espoo.evaka.shared.utils.executePostJsonRequest
+import fi.espoo.evaka.shared.utils.post
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -74,7 +74,7 @@ class EspooInvoiceIntegrationClient(
             "Sending invoice batch ${batch.batchNumber} to integration, payload: ${jsonMapper.writeValueAsString(batch)}"
         }
         return try {
-            httpClient.executePostJsonRequest("invoice-batches", batch)
+            httpClient.post<Unit>("invoice-batches", jsonBody = batch)
             true
         } catch (e: Exception) {
             val meta = mapOf("errorMessage" to (e.message ?: ""))

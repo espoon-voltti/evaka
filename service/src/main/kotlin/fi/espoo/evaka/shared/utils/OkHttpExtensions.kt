@@ -75,65 +75,43 @@ fun OkHttpClient.executeWithRetries(
     val retryWaitLoggingThresholdSeconds = 10L
     val response = newCall(request).execute()
 
-    return when {
-        response.isSuccessful -> {
-            response
-        }
-
-        response.isTooManyRequests -> {
-            if (remainingTries <= 0) {
-                response.close()
-                throw IllegalStateException(
-                    "Failed to receive a non-throttled response after all retries"
-                )
-            }
-
-            if (request.body?.isOneShot() == true) {
-                response.close()
-                throw IllegalStateException("Cannot retry a request with a one-shot body")
-            }
-
-            val retryAfter =
-                response.getRetryAfterSeconds()
-                    ?: run {
-                        response.close()
-                        throw IllegalStateException(
-                            "Failed to find a valid Retry-After header with throttle response"
-                        )
-                    }
-
-            if (retryAfter > maxRetryAfterWaitSeconds) {
-                response.close()
-                throw IllegalStateException(
-                    "Aborting request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds"
-                )
-            }
-
-            if (retryAfter > retryWaitLoggingThresholdSeconds) {
-                logger.warn { "Waiting for a large Retry-After as requested: $retryAfter seconds" }
-            }
-
-            response.close()
-            TimeUnit.SECONDS.sleep(retryAfter)
-            executeWithRetries(request, remainingTries - 1, maxRetryAfterWaitSeconds)
-        }
-
-        else -> {
-            val code = response.code
-            val body = response.body.string()
-            response.close()
-            throw IllegalStateException("Request failed with status $code: $body")
-        }
+    if (!response.isTooManyRequests) {
+        return response
     }
-}
 
-fun OkHttpClient.executeWithRetriesForString(
-    request: Request,
-    remainingTries: Int = 5,
-    maxRetryAfterWaitSeconds: Long = 600L,
-): String {
-    val response = executeWithRetries(request, remainingTries, maxRetryAfterWaitSeconds)
-    return response.use { it.body.string() }
+    if (remainingTries <= 0) {
+        response.close()
+        throw IllegalStateException("Failed to receive a non-throttled response after all retries")
+    }
+
+    if (request.body?.isOneShot() == true) {
+        response.close()
+        throw IllegalStateException("Cannot retry a request with a one-shot body")
+    }
+
+    val retryAfter =
+        response.getRetryAfterSeconds()
+            ?: run {
+                response.close()
+                throw IllegalStateException(
+                    "Failed to find a valid Retry-After header with throttle response"
+                )
+            }
+
+    if (retryAfter > maxRetryAfterWaitSeconds) {
+        response.close()
+        throw IllegalStateException(
+            "Aborting request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds"
+        )
+    }
+
+    if (retryAfter > retryWaitLoggingThresholdSeconds) {
+        logger.warn { "Waiting for a large Retry-After as requested: $retryAfter seconds" }
+    }
+
+    response.close()
+    TimeUnit.SECONDS.sleep(retryAfter)
+    return executeWithRetries(request, remainingTries - 1, maxRetryAfterWaitSeconds)
 }
 
 fun buildUrl(
@@ -141,7 +119,17 @@ fun buildUrl(
     endpoint: String,
     queryParams: Map<String, String> = emptyMap(),
 ): String {
-    val urlBuilder = rootUrl.resolve(endpoint).toString().toHttpUrl().newBuilder()
+    require(!endpoint.startsWith("/")) {
+        "Endpoint must be a relative path, not an absolute path: $endpoint"
+    }
+    val resolved = rootUrl.resolve(endpoint)
+    require(resolved.host == rootUrl.host) {
+        "Resolved URL host '${resolved.host}' does not match root URL host '${rootUrl.host}'"
+    }
+    require(resolved.path.startsWith(rootUrl.path)) {
+        "Resolved URL path '${resolved.path}' escapes root URL path '${rootUrl.path}'"
+    }
+    val urlBuilder = resolved.toString().toHttpUrl().newBuilder()
     queryParams.forEach { (key, value) -> urlBuilder.addQueryParameter(key, value) }
     return urlBuilder.build().toString()
 }
@@ -154,41 +142,85 @@ fun ConfiguredHttpClient.getJsonMapper(): JsonMapper {
     return this.jsonMapper ?: error("JsonMapper not configured for this OkHttpClient")
 }
 
-fun ConfiguredHttpClient.jsonBody(body: Any?): RequestBody =
-    getJsonMapper().writeValueAsString(body).toRequestBody("application/json".toMediaType())
+@PublishedApi
+internal fun ConfiguredHttpClient.resolveBody(body: RequestBody?, jsonBody: Any?): RequestBody {
+    require(body != null || jsonBody != null) { "Either body or jsonBody must be provided" }
+    require(body == null || jsonBody == null) { "Only one of body or jsonBody can be provided" }
+    return body
+        ?: getJsonMapper()
+            .writeValueAsString(jsonBody)
+            .toRequestBody("application/json".toMediaType())
+}
 
-inline fun <reified R> ConfiguredHttpClient.executeGetRequest(
+@PublishedApi
+internal inline fun <reified R> ConfiguredHttpClient.executeAndHandleResponse(
+    request: Request,
+    noinline responseHandler: ((Response) -> R)?,
+): R =
+    client.executeWithRetries(request).use { response ->
+        if (responseHandler != null) {
+            responseHandler(response)
+        } else {
+            if (!response.isSuccessful) {
+                error("Request failed with status ${response.code}: ${response.body.string()}")
+            }
+            when (R::class) {
+                Unit::class -> Unit as R
+                else -> getJsonMapper().readValue<R>(response.body.string())
+            }
+        }
+    }
+
+inline fun <reified R> ConfiguredHttpClient.get(
     endpoint: String,
     queryParams: Map<String, String> = emptyMap(),
+    headers: Map<String, String> = emptyMap(),
+    noinline responseHandler: ((Response) -> R)? = null,
 ): R {
     val url = buildUrl(getRootUrl(), endpoint, queryParams)
-    val request = Request.Builder().url(url).get().build()
-    val jsonBody = client.executeWithRetriesForString(request)
-    return getJsonMapper().readValue(jsonBody)
+    val request =
+        Request.Builder()
+            .url(url)
+            .get()
+            .apply { headers.forEach { (n, v) -> header(n, v) } }
+            .build()
+    return executeAndHandleResponse(request, responseHandler)
 }
 
-fun ConfiguredHttpClient.executePostRequest(
+inline fun <reified R> ConfiguredHttpClient.post(
     endpoint: String,
-    body: RequestBody,
+    body: RequestBody? = null,
+    jsonBody: Any? = null,
     queryParams: Map<String, String> = emptyMap(),
-) {
+    headers: Map<String, String> = emptyMap(),
+    noinline responseHandler: ((Response) -> R)? = null,
+): R {
     val url = buildUrl(getRootUrl(), endpoint, queryParams)
-    val request = Request.Builder().url(url).post(body).build()
-    client.executeWithRetries(request).close()
+    val requestBody = resolveBody(body, jsonBody)
+    val request =
+        Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .apply { headers.forEach { (n, v) -> header(n, v) } }
+            .build()
+    return executeAndHandleResponse(request, responseHandler)
 }
 
-fun ConfiguredHttpClient.executePostJsonRequest(
+inline fun <reified R> ConfiguredHttpClient.put(
     endpoint: String,
-    body: Any?,
+    body: RequestBody? = null,
+    jsonBody: Any? = null,
     queryParams: Map<String, String> = emptyMap(),
-) = executePostRequest(endpoint, jsonBody(body), queryParams)
-
-fun ConfiguredHttpClient.executePutRequest(
-    endpoint: String,
-    body: RequestBody,
-    queryParams: Map<String, String> = emptyMap(),
-) {
+    headers: Map<String, String> = emptyMap(),
+    noinline responseHandler: ((Response) -> R)? = null,
+): R {
     val url = buildUrl(getRootUrl(), endpoint, queryParams)
-    val request = Request.Builder().url(url).put(body).build()
-    client.executeWithRetries(request).close()
+    val requestBody = resolveBody(body, jsonBody)
+    val request =
+        Request.Builder()
+            .url(url)
+            .put(requestBody)
+            .apply { headers.forEach { (n, v) -> header(n, v) } }
+            .build()
+    return executeAndHandleResponse(request, responseHandler)
 }
