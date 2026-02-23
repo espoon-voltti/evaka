@@ -1,0 +1,34 @@
+<!--
+SPDX-FileCopyrightText: 2017-2026 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+# eVaka Developer Guide
+
+This guide helps developers to discover and understand the custom frameworks, utilities, and conventions built into eVaka.
+
+## Cross-Cutting Concerns
+
+- **[Design Philosophy](design-philosophy.md)** - Core principles guiding technical decisions
+- **[Date & Time Utilities](date-time-utilities.md)** - Date, time, and range types with cross-platform serialization
+- **[Range-Based Collections](range-based-collections.md)** - DateSet, DateMap, and other range-keyed data structures
+- **[Code Generation](codegen.md)** - Generating front-end types from back-end code.
+
+## Frontend
+
+- **[Component Library](frontend/lib-components.md)** - Reusable UI components
+- **[Form Framework](frontend/forms.md)** - Custom form handling utilities
+- **[Query Framework](frontend/queries.md)** - Data fetching and caching patterns
+- **[Result Type & Async State](frontend/api-result.md)** - Handling Loading/Failure/Success states
+- **[E2E Testing](frontend/e2e-testing.md)** - End-to-end testing conventions
+
+## Service (Backend)
+
+- **[Testing Conventions](service/testing.md)** - Unit and integration testing patterns
+- **[Database API](service/database.md)** - SQL queries and transactions
+- **[SQL Predicates](service/predicates.md)** - Building dynamic WHERE clauses
+- **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations
+- **[ACL API](service/acl.md)** - Access control framework
+- **[Logging](service/logging.md)** - Application logging and audit logging for compliance
+- **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution
