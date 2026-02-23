@@ -4,9 +4,6 @@
 
 package fi.espoo.evaka.pedagogicaldocument
 
-import com.github.kittinunf.fuel.core.FileDataPart
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -16,7 +13,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -32,7 +28,6 @@ import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import java.io.File
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -40,7 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import tools.jackson.module.kotlin.readValue
+import org.springframework.mock.web.MockMultipartFile
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var pedagogicalDocumentController: PedagogicalDocumentController
@@ -62,14 +57,6 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private val child1 = DevPerson()
     private val child2 = DevPerson()
     private val group = DevDaycareGroup(daycareId = daycare.id)
-
-    private fun deserializeGetResult(json: String) =
-        jsonMapper.readValue<List<PedagogicalDocument>>(json)
-
-    private fun deserializeGetResultCitizen(json: String) =
-        jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
-
-    private fun deserializePutResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
 
     @BeforeEach
     fun beforeEach() {
@@ -112,60 +99,9 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
-    private fun createDocumentAsUser(
-        childId: ChildId,
-        user: AuthenticatedUser.Employee = admin.user,
-    ) =
-        pedagogicalDocumentController.createPedagogicalDocument(
-            dbInstance(),
-            user,
-            clock,
-            PedagogicalDocumentPostBody(childId, ""),
-        )
-
-    private val guardianUser = adult.user(CitizenAuthLevel.STRONG)
-
-    private fun getAttachmentAsUser(
-        attachmentId: AttachmentId,
-        user: AuthenticatedUser.Citizen,
-        requestedFilename: String = "evaka-logo.png",
-    ) =
-        http
-            .get("/citizen/attachments/$attachmentId/download/$requestedFilename")
-            .asUser(user)
-            .responseString()
-            .second
-
-    private fun getAttachmentAsUser(
-        attachmentId: AttachmentId,
-        user: AuthenticatedUser.Employee,
-        requestedFilename: String = "evaka-logo.png",
-    ) =
-        http
-            .get("/employee/attachments/$attachmentId/download/$requestedFilename")
-            .asUser(user)
-            .responseString()
-            .second
-
-    private fun getPedagogicalDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
-        http.get("/employee/pedagogical-document/child/$childId").asUser(user).responseString()
-
-    private fun getPedagogicalDocumentsAsCitizen(
-        user: AuthenticatedUser.Citizen,
-        childId: ChildId,
-    ) = http.get("/citizen/children/$childId/pedagogical-documents").asUser(user).responseString()
-
-    private fun getUnreadCount(user: AuthenticatedUser.Citizen) =
-        http
-            .get("/citizen/pedagogical-documents/unread-count")
-            .asUser(user)
-            .responseObject<Map<ChildId, Int>>(jackson2JsonMapper)
-            .third
-            .get()
-
     @Test
     fun `creating new document`() {
-        val result = createDocumentAsUser(child1.id)
+        val result = createDocument(child1.id)
 
         assertNotNull(result.id)
         assertEquals(child1.id, result.childId)
@@ -173,35 +109,21 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `updating document`() {
-        val id = createDocumentAsUser(child1.id).id
+        val id = createDocument(child1.id).id
 
-        val (_, _, result) =
-            http
-                .put("/employee/pedagogical-document/$id")
-                .jsonBody(
-                    """{"id": "$id", "childId": "${child1.id}", "description": "foobar", "attachmentId": null}"""
-                )
-                .asUser(admin.user)
-                .responseString()
+        val result = updateDocument(id, child1.id, "foobar")
 
-        assertEquals("foobar", deserializePutResult(result.get()).description)
+        assertEquals("foobar", result.description)
     }
 
     @Test
     fun `find updated document`() {
-        val id = createDocumentAsUser(child1.id).id
+        val id = createDocument(child1.id).id
 
         val testDescription = "foobar"
-        http
-            .put("/employee/pedagogical-document/$id")
-            .jsonBody(
-                """{"id": "$id", "childId": "${child1.id}", "description": "$testDescription", "attachmentId": null}"""
-            )
-            .asUser(admin.user)
-            .responseString()
+        updateDocument(id, child1.id, testDescription)
 
-        val parsed =
-            deserializeGetResult(getPedagogicalDocumentAsUser(child1.id, admin.user).third.get())
+        val parsed = getDocuments(child1.id)
 
         assertEquals(1, parsed.size)
         assertEquals(testDescription, parsed.first().description)
@@ -209,12 +131,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `admin can read document with attachment`() {
-        val res = createDocumentAsUser(child1.id)
+        val res = createDocument(child1.id)
 
         val attachmentId = uploadAttachment(res.id)
 
-        val parsed =
-            deserializeGetResult(getPedagogicalDocumentAsUser(child1.id, admin.user).third.get())
+        val parsed = getDocuments(child1.id)
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments[0]
@@ -224,21 +145,18 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `supervisor can read pedagogical document and attachment by daycare`() {
-        val res = createDocumentAsUser(child1.id)
+        val res = createDocument(child1.id)
 
         val attachmentId = uploadAttachment(res.id)
 
-        val result = getPedagogicalDocumentAsUser(child1.id, supervisorEmployee.user).third
-
-        val parsed = deserializeGetResult(result.get())
+        val parsed = getDocuments(child1.id, supervisorEmployee.user)
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments[0]
         assertNotNull(attachment)
         assertEquals(attachmentId, attachment.id)
 
-        val res2 = getAttachmentAsUser(attachmentId, supervisorEmployee.user, attachment.name)
-        assertEquals(200, res2.statusCode)
+        getAttachment(attachmentId, supervisorEmployee.user, attachment.name)
     }
 
     @Test
@@ -249,28 +167,22 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        createDocumentAsUser(child2.id)
+        createDocument(child2.id)
 
-        val id = createDocumentAsUser(child2.id).id
+        val id = createDocument(child2.id).id
         val attachmentId = uploadAttachment(id)
 
-        assertEquals(
-            403,
-            getPedagogicalDocumentAsUser(child2.id, supervisorEmployee.user).second.statusCode,
-        )
-        assertEquals(403, getAttachmentAsUser(attachmentId, supervisorEmployee.user).statusCode)
+        assertThrows<Forbidden> { getDocuments(child2.id, supervisorEmployee.user) }
+        assertThrows<Forbidden> { getAttachment(attachmentId, supervisorEmployee.user) }
     }
 
     @Test
     fun `staff from daycare can read pedagogical document and attachment`() {
-        val res = createDocumentAsUser(child1.id)
+        val res = createDocument(child1.id)
 
         val attachmentId = uploadAttachment(res.id)
 
-        val parsed =
-            deserializeGetResult(
-                getPedagogicalDocumentAsUser(child1.id, staffEmployee.user).third.get()
-            )
+        val parsed = getDocuments(child1.id, staffEmployee.user)
 
         assertEquals(1, parsed.size)
 
@@ -278,32 +190,23 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertNotNull(attachment)
         assertEquals(attachmentId, attachment.id)
 
-        assertEquals(
-            200,
-            getAttachmentAsUser(attachment.id, staffEmployee.user, attachment.name).statusCode,
-        )
+        getAttachment(attachment.id, staffEmployee.user, attachment.name)
     }
 
     @Test
     fun `staff from group can read pedagogical document and attachment`() {
-        val res = createDocumentAsUser(child1.id)
+        val res = createDocument(child1.id)
 
         val attachmentId = uploadAttachment(res.id)
 
-        val parsed =
-            deserializeGetResult(
-                getPedagogicalDocumentAsUser(child1.id, groupStaffEmployee.user).third.get()
-            )
+        val parsed = getDocuments(child1.id, groupStaffEmployee.user)
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments[0]
         assertNotNull(attachment)
         assertEquals(attachmentId, attachment.id)
 
-        assertEquals(
-            200,
-            getAttachmentAsUser(attachment.id, groupStaffEmployee.user, attachment.name).statusCode,
-        )
+        getAttachment(attachment.id, groupStaffEmployee.user, attachment.name)
     }
 
     @Test
@@ -318,14 +221,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.insertEmployeeToDaycareGroupAcl(otherGroup.id, otherStaff.id)
         }
 
-        val id = createDocumentAsUser(child1.id).id
+        val id = createDocument(child1.id).id
         val attachmentId = uploadAttachment(id)
 
-        assertEquals(
-            403,
-            getPedagogicalDocumentAsUser(child1.id, otherStaff.user).second.statusCode,
-        )
-        assertEquals(403, getAttachmentAsUser(attachmentId, otherStaff.user).statusCode)
+        assertThrows<Forbidden> { getDocuments(child1.id, otherStaff.user) }
+        assertThrows<Forbidden> { getAttachment(attachmentId, otherStaff.user) }
     }
 
     @Test
@@ -339,86 +239,50 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.insertEmployeeToDaycareGroupAcl(otherGroup.id, otherStaff.id)
         }
 
-        val id = createDocumentAsUser(child1.id).id
+        val id = createDocument(child1.id).id
         val attachmentId = uploadAttachment(id)
 
-        assertEquals(
-            403,
-            getPedagogicalDocumentAsUser(child1.id, otherStaff.user).second.statusCode,
-        )
-        assertEquals(403, getAttachmentAsUser(attachmentId, otherStaff.user).statusCode)
+        assertThrows<Forbidden> { getDocuments(child1.id, otherStaff.user) }
+        assertThrows<Forbidden> { getAttachment(attachmentId, otherStaff.user) }
     }
 
     @Test
     fun `guardian can read pedagogical document and attachment`() {
-        val res = createDocumentAsUser(child1.id)
+        val res = createDocument(child1.id)
 
         val attachmentId = uploadAttachment(res.id)
 
-        val parsed =
-            deserializeGetResultCitizen(
-                getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-            )
+        val parsed = getDocumentsAsCitizen(child1.id)
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments[0]
         assertNotNull(attachment)
         assertEquals(attachmentId, attachment.id)
 
-        assertEquals(
-            200,
-            getAttachmentAsUser(attachment.id, guardianUser, attachment.name).statusCode,
-        )
+        getAttachment(attachment.id, guardianUser, attachment.name)
     }
 
     @Test
     fun `guardian finds new document only when it has attachment or description`() {
-        val id1 = createDocumentAsUser(child1.id).id
+        val id1 = createDocument(child1.id).id
 
-        assertEquals(
-            emptyList(),
-            deserializeGetResultCitizen(
-                getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-            ),
-        )
-        assertEquals(0, getUnreadCount(guardianUser).values.sum())
+        assertEquals(emptyList(), getDocumentsAsCitizen(child1.id))
+        assertEquals(0, getUnreadCount().values.sum())
 
         uploadAttachment(id1)
 
-        assertEquals(
-            1,
-            deserializeGetResultCitizen(
-                    getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-                )
-                .size,
-        )
-        assertEquals(1, getUnreadCount(guardianUser).values.sum())
+        assertEquals(1, getDocumentsAsCitizen(child1.id).size)
+        assertEquals(1, getUnreadCount().values.sum())
 
-        val id2 = createDocumentAsUser(child1.id).id
+        val id2 = createDocument(child1.id).id
 
-        assertEquals(
-            1,
-            deserializeGetResultCitizen(
-                    getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-                )
-                .size,
-        )
+        assertEquals(1, getDocumentsAsCitizen(child1.id).size)
 
-        http
-            .put("/employee/pedagogical-document/$id2")
-            .jsonBody("""{"id": "$id2", "childId": "${child1.id}", "description": "123123"}""")
-            .asUser(admin.user)
-            .responseString()
+        updateDocument(id2, child1.id, "123123")
 
-        assertEquals(
-            2,
-            deserializeGetResultCitizen(
-                    getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-                )
-                .size,
-        )
+        assertEquals(2, getDocumentsAsCitizen(child1.id).size)
         // only docs with attachments are counted in unread
-        assertEquals(1, getUnreadCount(guardianUser).values.sum())
+        assertEquals(1, getUnreadCount().values.sum())
     }
 
     @Test
@@ -444,7 +308,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        val pedDoc = createDocumentAsUser(otherChild.id)
+        val pedDoc = createDocument(otherChild.id)
         val attachmentId = uploadAttachment(pedDoc.id)
 
         assertThrows<Forbidden> {
@@ -469,70 +333,139 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `marking document read works`() {
-        val id1 = createDocumentAsUser(child1.id).id
+        val id1 = createDocument(child1.id).id
         val attachmentId = uploadAttachment(id1)
 
-        http
-            .put("/employee/pedagogical-document/$id1")
-            .jsonBody(
-                """{"id": "$id1", "childId": "${child1.id}", "description": "123123", "attachmentId": "$attachmentId"}"""
-            )
-            .asUser(admin.user)
-            .responseString()
+        updateDocument(id1, child1.id, "123123")
 
-        assertEquals(1, getUnreadCount(guardianUser).values.sum())
+        assertEquals(1, getUnreadCount().values.sum())
 
-        http
-            .post("/citizen/pedagogical-documents/$id1/mark-read")
-            .asUser(guardianUser)
-            .responseString()
+        markDocumentRead(id1)
 
-        assertEquals(0, getUnreadCount(guardianUser).values.sum())
+        assertEquals(0, getUnreadCount().values.sum())
     }
 
     @Test
     fun `admin can delete read document with attachment`() {
-        val id = createDocumentAsUser(child1.id).id
+        val id = createDocument(child1.id).id
         uploadAttachment(id)
 
-        http
-            .post("/employee/pedagogical-document/$id/mark-read")
-            .asUser(admin.user)
-            .responseString()
+        assertEquals(1, getDocuments(child1.id).size)
+        assertEquals(1, getUnreadCount().values.sum())
 
-        assertEquals(
-            1,
-            deserializeGetResult(getPedagogicalDocumentAsUser(child1.id, admin.user).third.get())
-                .size,
-        )
-        assertEquals(1, getUnreadCount(guardianUser).values.sum())
+        deleteDocument(id)
 
-        val (_, res, _) =
-            http.delete("/employee/pedagogical-document/$id").asUser(admin.user).responseString()
-
-        assertEquals(200, res.statusCode)
-        assertEquals(
-            0,
-            deserializeGetResult(getPedagogicalDocumentAsUser(child1.id, admin.user).third.get())
-                .size,
-        )
-        assertEquals(
-            0,
-            deserializeGetResultCitizen(
-                    getPedagogicalDocumentsAsCitizen(guardianUser, child1.id).third.get()
-                )
-                .size,
-        )
+        assertEquals(0, getDocuments(child1.id).size)
+        assertEquals(0, getDocumentsAsCitizen(child1.id).size)
     }
 
-    private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {
-        val (_, _, result) =
-            http
-                .upload("/employee/attachments/pedagogical-documents/$id")
-                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-                .asUser(admin.user)
-                .responseObject<AttachmentId>(jackson2JsonMapper)
+    private val guardianUser = adult.user(CitizenAuthLevel.STRONG)
 
-        return result.get()
-    }
+    private fun createDocument(childId: ChildId, user: AuthenticatedUser.Employee = admin.user) =
+        pedagogicalDocumentController.createPedagogicalDocument(
+            dbInstance(),
+            user,
+            clock,
+            PedagogicalDocumentPostBody(childId, ""),
+        )
+
+    private fun updateDocument(
+        documentId: PedagogicalDocumentId,
+        childId: ChildId,
+        description: String,
+        user: AuthenticatedUser.Employee = admin.user,
+    ) =
+        pedagogicalDocumentController.updatePedagogicalDocument(
+            dbInstance(),
+            user,
+            clock,
+            documentId,
+            PedagogicalDocumentPostBody(childId, description),
+        )
+
+    private fun getDocuments(childId: ChildId, user: AuthenticatedUser.Employee = admin.user) =
+        pedagogicalDocumentController.getChildPedagogicalDocuments(
+            dbInstance(),
+            user,
+            clock,
+            childId,
+        )
+
+    private fun getDocumentsAsCitizen(
+        childId: ChildId,
+        user: AuthenticatedUser.Citizen = guardianUser,
+    ) =
+        pedagogicalDocumentControllerCitizen.getPedagogicalDocumentsForChild(
+            dbInstance(),
+            user,
+            clock,
+            childId,
+        )
+
+    private fun getUnreadCount(user: AuthenticatedUser.Citizen = guardianUser) =
+        pedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount(
+            dbInstance(),
+            user,
+            clock,
+        )
+
+    private fun markDocumentRead(
+        documentId: PedagogicalDocumentId,
+        user: AuthenticatedUser.Citizen = guardianUser,
+    ) =
+        pedagogicalDocumentControllerCitizen.markPedagogicalDocumentRead(
+            dbInstance(),
+            user,
+            clock,
+            documentId,
+        )
+
+    private fun deleteDocument(
+        documentId: PedagogicalDocumentId,
+        user: AuthenticatedUser.Employee = admin.user,
+    ) =
+        pedagogicalDocumentController.deletePedagogicalDocument(
+            dbInstance(),
+            user,
+            clock,
+            documentId,
+        )
+
+    private fun uploadAttachment(
+        documentId: PedagogicalDocumentId,
+        user: AuthenticatedUser.Employee = admin.user,
+    ): AttachmentId =
+        attachmentsController.uploadPedagogicalDocumentAttachment(
+            dbInstance(),
+            user,
+            clock,
+            documentId,
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
+        )
+
+    private fun getAttachment(
+        attachmentId: AttachmentId,
+        user: AuthenticatedUser.Employee,
+        requestedFilename: String = "evaka-logo.png",
+    ) =
+        attachmentsController.getAttachment(
+            dbInstance(),
+            user,
+            clock,
+            attachmentId,
+            requestedFilename,
+        )
+
+    private fun getAttachment(
+        attachmentId: AttachmentId,
+        user: AuthenticatedUser.Citizen,
+        requestedFilename: String = "evaka-logo.png",
+    ) =
+        attachmentsController.getAttachment(
+            dbInstance(),
+            user,
+            clock,
+            attachmentId,
+            requestedFilename,
+        )
 }

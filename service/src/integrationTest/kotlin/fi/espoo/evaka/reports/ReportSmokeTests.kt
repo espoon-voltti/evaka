@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.core.Request
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -16,18 +16,65 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.withMockedTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.test.assertEquals
+import java.time.YearMonth
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
+    @Autowired private lateinit var applicationsReportController: ApplicationsReportController
+
+    @Autowired
+    private lateinit var assistanceNeedsAndActionsReportController:
+        AssistanceNeedsAndActionsReportController
+
+    @Autowired
+    private lateinit var childAgeLanguageReportController: ChildAgeLanguageReportController
+
+    @Autowired
+    private lateinit var childrenInDifferentAddressReportController:
+        ChildrenInDifferentAddressReportController
+
+    @Autowired private lateinit var decisionsReportController: DecisionsReportController
+    @Autowired private lateinit var duplicatePeopleReportController: DuplicatePeopleReportController
+    @Autowired private lateinit var endedPlacementsReportController: EndedPlacementsReportController
+    @Autowired private lateinit var familyConflictReportController: FamilyConflictReportController
+    @Autowired private lateinit var familyContactReportController: FamilyContactReportController
+    @Autowired private lateinit var invoiceReportController: InvoiceReportController
+
+    @Autowired
+    private lateinit var missingHeadOfFamilyReportController: MissingHeadOfFamilyReportController
+
+    @Autowired
+    private lateinit var missingServiceNeedReportController: MissingServiceNeedReportController
+
+    @Autowired private lateinit var occupancyReportController: OccupancyReportController
+
+    @Autowired
+    private lateinit var partnersInDifferentAddressReportController:
+        PartnersInDifferentAddressReportController
+
+    @Autowired private lateinit var rawReportController: RawReportController
+    @Autowired private lateinit var serviceNeedReportController: ServiceNeedReport
+
+    @Autowired
+    private lateinit var startingPlacementsReportController: StartingPlacementsReportController
+
+    @Autowired
+    private lateinit var placementSketchingReportController: PlacementSketchingReportController
+
+    @Autowired private lateinit var vardaErrorReportController: VardaErrorReport
+    @Autowired private lateinit var unitsReportController: UnitsReportController
+
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val child = DevPerson()
     private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+
+    private val clock = MockEvakaClock(2020, 8, 1, 12, 0)
 
     @BeforeAll
     override fun beforeAll() {
@@ -42,73 +89,84 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `applications report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/applications",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
-            )
+        applicationsReportController.getApplicationsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 8, 1),
         )
     }
 
     @Test
     fun `assistance needs and actions report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/assistance-needs-and-actions",
-                listOf("date" to "2020-08-01"),
-            )
+        assistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            date = LocalDate.of(2020, 8, 1),
         )
     }
 
     @Test
     fun `child-age-language report returns http 200`() {
-        assertOkResponse(
-            http.get("/employee/reports/child-age-language", listOf("date" to "2020-08-01"))
+        childAgeLanguageReportController.getChildAgeLanguageReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            date = LocalDate.of(2020, 8, 1),
         )
     }
 
     @Test
     fun `children-in-different-address report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/children-in-different-address",
-                listOf("date" to "2020-08-01"),
-            )
+        childrenInDifferentAddressReportController.getChildrenInDifferentAddressReport(
+            dbInstance(),
+            employee.user,
+            clock,
         )
     }
 
     @Test
     fun `decisions report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/decisions",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
-            )
+        decisionsReportController.getDecisionsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 8, 1),
+            applicationType = null,
         )
 
-        assertOkResponse(
-            http.get(
-                "/employee/reports/decisions",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01", "applicationType" to "DAYCARE"),
-            )
+        decisionsReportController.getDecisionsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 8, 1),
+            applicationType = ApplicationType.DAYCARE,
         )
     }
 
     @Test
     fun `duplicate-people report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/duplicate-people"))
+        duplicatePeopleReportController.getDuplicatePeopleReport(dbInstance(), employee.user, clock)
     }
 
     @Test
     fun `ended-placements report returns http 200`() {
-        assertOkResponse(
-            http.get("/employee/reports/ended-placements", listOf("year" to 2020, "month" to 1))
+        endedPlacementsReportController.getEndedPlacementsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            year = 2020,
+            month = 1,
         )
     }
 
     @Test
     fun `family-conflicts report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/family-conflicts"))
+        familyConflictReportController.getFamilyConflictsReport(dbInstance(), employee.user, clock)
     }
 
     @Test
@@ -123,132 +181,181 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                 )
             )
         }
-        val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 1), LocalTime.of(12, 0))
-        assertOkResponse(
-            http
-                .get(
-                    "/employee/reports/family-contacts?unitId=${daycare.id}&date=${now.toLocalDate()}"
-                )
-                .withMockedTime(now)
+        familyContactReportController.getFamilyContactsReport(
+            dbInstance(),
+            employee.user,
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 2, 1), LocalTime.of(12, 0))),
+            unitId = daycare.id,
+            date = LocalDate.of(2022, 2, 1),
         )
     }
 
     @Test
     fun `invoice report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/invoices", listOf("yearMonth" to "2020-08")))
+        invoiceReportController.getInvoiceReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            yearMonth = YearMonth.of(2020, 8),
+        )
     }
 
     @Test
     fun `missing-head-of-family report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/missing-head-of-family",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
-            )
+        missingHeadOfFamilyReportController.getMissingHeadOfFamilyReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 8, 1),
         )
     }
 
     @Test
     fun `missing-service-need report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/missing-service-need",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
-            )
+        missingServiceNeedReportController.getMissingServiceNeedReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 8, 1),
         )
     }
 
     @Test
     fun `occupancy-by-unit report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/occupancy-by-unit",
-                listOf("type" to "PLANNED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
-            )
+        occupancyReportController.getOccupancyUnitReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            type = OccupancyType.PLANNED,
+            careAreaId = area.id,
+            unitIds = null,
+            providerType = null,
+            unitTypes = null,
+            year = 2020,
+            month = 1,
         )
 
-        assertOkResponse(
-            http.get(
-                "/employee/reports/occupancy-by-unit",
-                listOf("type" to "CONFIRMED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
-            )
+        occupancyReportController.getOccupancyUnitReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            type = OccupancyType.CONFIRMED,
+            careAreaId = area.id,
+            unitIds = null,
+            providerType = null,
+            unitTypes = null,
+            year = 2020,
+            month = 1,
         )
 
-        assertOkResponse(
-            http.get(
-                "/employee/reports/occupancy-by-unit",
-                listOf("type" to "REALIZED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
-            )
+        occupancyReportController.getOccupancyUnitReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            type = OccupancyType.REALIZED,
+            careAreaId = area.id,
+            unitIds = null,
+            providerType = null,
+            unitTypes = null,
+            year = 2020,
+            month = 1,
         )
     }
 
     @Test
     fun `occupancy-by-group report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/occupancy-by-group",
-                listOf("type" to "CONFIRMED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
-            )
+        occupancyReportController.getOccupancyGroupReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            type = OccupancyType.CONFIRMED,
+            careAreaId = area.id,
+            unitIds = null,
+            providerType = null,
+            unitTypes = null,
+            year = 2020,
+            month = 1,
         )
 
-        assertOkResponse(
-            http.get(
-                "/employee/reports/occupancy-by-group",
-                listOf("type" to "REALIZED", "careAreaId" to area.id, "year" to 2020, "month" to 1),
-            )
+        occupancyReportController.getOccupancyGroupReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            type = OccupancyType.REALIZED,
+            careAreaId = area.id,
+            unitIds = null,
+            providerType = null,
+            unitTypes = null,
+            year = 2020,
+            month = 1,
         )
     }
 
     @Test
     fun `partners-in-different-address report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/partners-in-different-address"))
+        partnersInDifferentAddressReportController.getPartnersInDifferentAddressReport(
+            dbInstance(),
+            employee.user,
+            clock,
+        )
     }
 
     @Test
     fun `raw report returns http 200`() {
-        assertOkResponse(
-            http.get("/employee/reports/raw", listOf("from" to "2020-05-01", "to" to "2020-05-02"))
+        rawReportController.getRawReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            from = LocalDate.of(2020, 5, 1),
+            to = LocalDate.of(2020, 5, 2),
         )
     }
 
     @Test
     fun `service-need report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/service-need", listOf("date" to "2020-08-01")))
+        serviceNeedReportController.getServiceNeedReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            date = LocalDate.of(2020, 8, 1),
+            areaId = null,
+            providerType = null,
+            placementType = null,
+        )
     }
 
     @Test
     fun `starting-placements report returns http 200`() {
-        assertOkResponse(
-            http.get("/employee/reports/starting-placements", listOf("year" to 2020, "month" to 1))
+        startingPlacementsReportController.getStartingPlacementsReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            year = 2020,
+            month = 1,
         )
     }
 
     @Test
     fun `placement sketching report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/employee/reports/placement-sketching",
-                listOf(
-                    "placementStartDate" to "2021-01-01",
-                    "earliestPreferredStartDate" to "2021-08-13",
-                ),
-            )
+        placementSketchingReportController.getPlacementSketchingReport(
+            dbInstance(),
+            employee.user,
+            clock,
+            placementStartDate = LocalDate.of(2021, 1, 1),
+            earliestPreferredStartDate = LocalDate.of(2021, 8, 13),
         )
     }
 
     @Test
     fun `varda error reports return http 200`() {
-        assertOkResponse(http.get("/employee/reports/varda-child-errors"))
-        assertOkResponse(http.get("/employee/reports/varda-unit-errors"))
+        vardaErrorReportController.getVardaChildErrorsReport(dbInstance(), employee.user, clock)
+        vardaErrorReportController.getVardaUnitErrorsReport(dbInstance(), employee.user, clock)
     }
 
     @Test
     fun `units report returns http 200`() {
-        assertOkResponse(http.get("/employee/reports/units"))
-    }
-
-    private fun assertOkResponse(req: Request) {
-        val (_, response, _) = req.asUser(employee.user).response()
-        assertEquals(200, response.statusCode)
+        unitsReportController.getUnitsReport(dbInstance(), employee.user, clock)
     }
 }
