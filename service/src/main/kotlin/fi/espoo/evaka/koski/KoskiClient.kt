@@ -4,23 +4,24 @@
 
 package fi.espoo.evaka.koski
 
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.Method
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isClientError
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
+import fi.espoo.evaka.shared.utils.headerInterceptor
+import fi.espoo.evaka.shared.utils.post
+import fi.espoo.evaka.shared.utils.put
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
 import java.time.LocalDate
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.module.kotlin.readValue
 
@@ -39,12 +40,27 @@ class KoskiClient(
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build()
 
-    private val fuel = FuelManager()
+    private val httpClient =
+        buildHttpClient(
+            rootUrl = URI(env.url),
+            jsonMapper = jsonMapper,
+            interceptors =
+                listOf(
+                    basicAuthInterceptor(env.user, env.secret.value),
+                    headerInterceptor("Accept", "application/json"),
+                ),
+        )
 
     init {
         asyncJobRunner?.registerHandler { db, clock, msg: AsyncJob.UploadToKoski ->
             uploadToKoski(db, msg, clock.today())
         }
+    }
+
+    private class UploadException(val statusCode: Int, message: String) :
+        RuntimeException(message) {
+        val isClientError: Boolean
+            get() = statusCode in 400..499
     }
 
     data class Error(val key: String, val message: String) {
@@ -54,8 +70,8 @@ class KoskiClient(
     fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) =
         try {
             db.transaction { tx -> uploadToKoski(tx, msg, today) }
-        } catch (error: FuelError) {
-            if (error.response.isClientError) {
+        } catch (error: UploadException) {
+            if (error.isClientError) {
                 // No need to trigger alerts since this error will be visible in the Koski UI, and
                 // we'll automatically retry again tomorrow.
                 // The transaction has been rolled back, and since we don't propagate the exception,
@@ -90,52 +106,25 @@ class KoskiClient(
                 "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping"
             }
         } else {
-            val (request, _, result) =
-                fuel
-                    .request(
-                        method =
-                            if (data.operation == KoskiOperation.CREATE) Method.POST
-                            else Method.PUT,
-                        path = "${env.url}/oppija",
-                    )
-                    .authentication()
-                    .basic(env.user, env.secret.value)
-                    .header(Headers.ACCEPT, "application/json")
-                    .header("Caller-Id", "${data.organizationOid}.${env.municipalityCallerId}")
-                    .jsonBody(payload)
-                    .response()
+            val callerIdHeaders =
+                mapOf("Caller-Id" to "${data.organizationOid}.${env.municipalityCallerId}")
 
+            val body = payload.toRequestBody("application/json".toMediaType())
             val response: HenkilönOpiskeluoikeusVersiot? =
-                try {
-                    jsonMapper.readValue<HenkilönOpiskeluoikeusVersiot>(result.get())
-                } catch (error: FuelError) {
-                    val errors: List<Error>? =
-                        try {
-                            jsonMapper.readValue(error.errorData)
-                        } catch (err: Exception) {
-                            null
-                        }
-                    if (
-                        data.operation == KoskiOperation.VOID &&
-                            errors?.any { it.isNotFound() } == true
-                    ) {
-                        logger.warn {
-                            "Koski upload ${msg.key} ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done"
-                        }
-                        null
-                    } else {
-                        val meta =
-                            mapOf(
-                                "method" to request.method,
-                                "url" to request.url,
-                                "body" to request.body.asString("application/json"),
-                                "errorMessage" to error.errorData.decodeToString(),
-                            )
-                        logger.error(error, meta) {
-                            "Koski upload ${msg.key} ${data.operation}: failed, status ${error.response.statusCode}"
-                        }
-                        throw error
-                    }
+                if (data.operation == KoskiOperation.CREATE) {
+                    httpClient.post(
+                        "oppija",
+                        body = body,
+                        headers = callerIdHeaders,
+                        responseHandler = { handleUploadResponse(it, data, msg.key, payload) },
+                    )
+                } else {
+                    httpClient.put(
+                        "oppija",
+                        body = body,
+                        headers = callerIdHeaders,
+                        responseHandler = { handleUploadResponse(it, data, msg.key, payload) },
+                    )
                 }
             if (response != null) {
                 tx.finishKoskiUpload(
@@ -163,5 +152,46 @@ class KoskiClient(
             }
             logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
         }
+    }
+
+    private fun handleUploadResponse(
+        httpResponse: okhttp3.Response,
+        data: KoskiData,
+        key: KoskiStudyRightKey,
+        payload: String,
+    ): HenkilönOpiskeluoikeusVersiot? {
+        if (httpResponse.isSuccessful) {
+            return jsonMapper.readValue<HenkilönOpiskeluoikeusVersiot>(httpResponse.body.string())
+        }
+        val statusCode = httpResponse.code
+        val errorBody = httpResponse.body.string()
+        val errors: List<Error>? =
+            try {
+                jsonMapper.readValue(errorBody)
+            } catch (_: Exception) {
+                null
+            }
+        if (data.operation == KoskiOperation.VOID && errors?.any { it.isNotFound() } == true) {
+            logger.warn {
+                "Koski upload $key ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done"
+            }
+            return null
+        }
+        val meta =
+            mapOf(
+                "method" to httpResponse.request.method,
+                "url" to httpResponse.request.url.toString(),
+                "body" to payload,
+                "errorMessage" to errorBody,
+            )
+        val uploadException =
+            UploadException(
+                statusCode,
+                "Koski upload $key ${data.operation}: failed, status $statusCode",
+            )
+        logger.error(uploadException, meta) {
+            "Koski upload $key ${data.operation}: failed, status $statusCode"
+        }
+        throw uploadException
     }
 }
