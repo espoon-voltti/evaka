@@ -82,17 +82,19 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
     }
 }
 
-const val preschoolSelectionAge = 5
+fun Database.Read.getFuturePreschoolerRows(today: LocalDate): List<FuturePreschoolersReportRow> {
+    // Before June display children starting preschool in the current year,
+    // from June onwards display children starting preschool in the next year
+    val preschoolStartYear = if (today.monthValue >= 6) today.year + 1 else today.year
 
-fun Database.Read.getFuturePreschoolerRows(today: LocalDate): List<FuturePreschoolersReportRow> =
-    createQuery {
+    return createQuery {
             sql(
                 """
-SELECT p.id, 
+SELECT p.id,
     p.last_name AS child_last_name,
     p.first_name AS child_first_name,
     p.date_of_birth AS child_date_of_birth,
-    p.language AS child_language, 
+    p.language AS child_language,
     p.street_address AS child_address,
     p.postal_code AS child_postal_code,
     upper(p.post_office) AS child_post_office,
@@ -103,20 +105,20 @@ SELECT p.id,
         CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN 'TWO_YEAR_PRESCHOOL' END
     ], NULL) AS options
 FROM person p
-JOIN placement pl ON pl.child_id = p.id AND pl.start_date < :today AND pl.end_date >= :today
+JOIN placement pl ON pl.child_id = p.id AND pl.start_date < ${bind(today)} AND pl.end_date >= ${bind(today)}
 JOIN daycare d ON d.id = pl.unit_id
-LEFT JOIN service_need sn ON sn.placement_id = p.id and sn.start_date < :today AND sn.end_date >= :today
+LEFT JOIN service_need sn ON sn.placement_id = p.id and sn.start_date < ${bind(today)} AND sn.end_date >= ${bind(today)}
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 WHERE CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN
-    extract(year from :today) -  extract(year from p.date_of_birth) = $preschoolSelectionAge - 1
+    extract(year from p.date_of_birth) = ${bind(preschoolStartYear - 5)}
 ELSE
-    extract(year from :today) -  extract(year from p.date_of_birth) = $preschoolSelectionAge
+    extract(year from p.date_of_birth) = ${bind(preschoolStartYear - 6)}
 END
             """
             )
         }
-        .bind("today", today)
         .toList<FuturePreschoolersReportRow>()
+}
 
 fun Database.Read.getPreschoolUnitsRows(today: LocalDate): List<PreschoolUnitsReportRow> =
     createQuery {
@@ -134,7 +136,7 @@ SELECT d.id,
             SELECT id 
             FROM daycare_group 
             WHERE daycare_id = d.id
-        ) AND start_date < :today AND end_date >= :today
+        ) AND start_date < ${bind(today)} AND end_date >= ${bind(today)}
     ) * 7 AS unit_size,
     array_remove(ARRAY[
         CASE WHEN d.provider_type != 'MUNICIPAL' THEN 'PRIVATE' END,
@@ -143,11 +145,10 @@ SELECT d.id,
     ], NULL) AS options
 FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
-d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
+d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
             """
             )
         }
-        .bind("today", today)
         .toList<PreschoolUnitsReportRow>()
 
 fun Database.Read.getSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> =
@@ -160,11 +161,10 @@ SELECT d.id,
     d.postal_code AS postal_code,
     d.post_office as post_office
 FROM daycare d
-WHERE d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
+WHERE d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
             """
             )
         }
-        .bind("today", today)
         .toList<SourceUnitsReportRow>()
 
 data class FuturePreschoolersReportRow(
