@@ -218,6 +218,7 @@ describe('Placement desktop', () => {
     // place to daycare 3 through combobox
     await appCard2.addOtherUnitButton.click()
     await appCard2.draftPlacementCombobox.fillAndSelectFirst(daycare3.name)
+    await appCard2.addOtherUnitButton.waitUntilVisible()
     await placementDesktopView.daycareCards.assertCount(3)
     const daycareCard3 = placementDesktopView.daycareCard(2)
     await daycareCard3.draftPlacementRows.assertCount(1)
