@@ -91,6 +91,40 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `report switches to next preschool year cohort on June 1`() {
+        val child2017 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2017, 3, 15),
+                firstName = "Born",
+                lastName = "2017",
+            )
+        val child2018 =
+            DevPerson(
+                dateOfBirth = LocalDate.of(2018, 3, 15),
+                firstName = "Born",
+                lastName = "2018",
+            )
+
+        db.transaction { tx ->
+            listOf(child2017, child2018).forEach { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(childId = child.id, unitId = daycare.id, endDate = LocalDate.now())
+                )
+            }
+        }
+
+        // Before June 1: still shows children starting preschool next August (born 2017, turning 6
+        // in 2023)
+        val beforeCutover = db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 5, 31)) }
+        assertEquals(listOf(child2017.id), beforeCutover.map { it.id })
+
+        // On June 1: switches to the next cohort (born 2018, turning 6 in 2024)
+        val afterCutover = db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 6, 1)) }
+        assertEquals(listOf(child2018.id), afterCutover.map { it.id })
+    }
+
+    @Test
     fun `open preschool units are found in report`() {
         val report = getUnitReport()
         assertEquals(2, report.size)
@@ -103,7 +137,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun getChildrenReport(): List<FuturePreschoolersReportRow> {
-        return db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 1, 1)) }
+        return db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 6, 1)) }
     }
 
     private fun getUnitReport(): List<PreschoolUnitsReportRow> {
