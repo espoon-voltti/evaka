@@ -57,6 +57,7 @@ RUN apt-get update \
       tzdata \
       ca-certificates \
       curl \
+      gosu \
  && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && rm -rf /var/lib/apt/lists/*
@@ -77,11 +78,11 @@ ENV USERNAME=evaka
 ENV HOME_DIR=/home/${USERNAME}
 ENV USER_ID=1000
 
-RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password
+RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password \
+ && mkdir -p /config \
+ && ln -s /config ${HOME_DIR}/s3 # old config path for backwards compatibility
 
 COPY --from=builder /evaka/service/target/ .
-
-USER ${USERNAME}
 
 ARG build=none
 ARG commit=none

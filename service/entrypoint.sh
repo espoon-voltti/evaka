@@ -12,8 +12,10 @@ export HOST_IP=$(curl --silent --fail --show-error http://169.254.169.254/latest
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
-  s3download "$DEPLOYMENT_BUCKET" evaka-srv /home/evaka/s3
+  s3download "$DEPLOYMENT_BUCKET" evaka-srv /config
 fi
+
+chmod 1777 /tmp
 
 # Run as exec so the application can receive any Unix signals sent to the container, e.g.,
 # Ctrl + C.
@@ -32,7 +34,7 @@ if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
   fi
 
   # shellcheck disable=SC2086
-  exec java \
+  exec gosu evaka java \
     -Ddd.jmxfetch.config=/etc/jmxfetch/conf.yaml \
     -Ddd.profiling.enabled=true \
     -Ddd.logs.injection=true \
@@ -42,5 +44,5 @@ if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
     -cp . -server $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher "$@"
 else
   # shellcheck disable=SC2086
-  exec java -cp . -server $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher "$@"
+  exec gosu evaka java -cp . -server $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher "$@"
 fi

@@ -12,7 +12,7 @@ export HOST_IP
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
-  s3download "$DEPLOYMENT_BUCKET" "api-gw" /home/evaka/s3
+  s3download "$DEPLOYMENT_BUCKET" "api-gw" /config
 fi
 
 # This fixes the issue with Docker not shutting down correctly when using pipes and subshells
@@ -39,7 +39,7 @@ trap 'term_handler' SIGTERM
 # that the exit status for the Docker container will be 143 in this case although it should be the exit status of
 # pino-cli, e.g., 1. Storing the exit status of the pino-cli child process would require using bash named
 # pipes which would make the implementation a bit more complex. For simplicity, the current solution is good enough.
-"$@" > >(node ./src/pino-cli/cli/bin.ts || kill $$) &
+gosu evaka "$@" > >(gosu evaka node ./src/pino-cli/cli/bin.ts || kill $$) &
 pid="$!"
 
 # Keep the Docker container from exiting by waiting for a status change in the main Node.js child process

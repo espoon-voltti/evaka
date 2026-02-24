@@ -71,14 +71,15 @@ RUN apt-get update \
  && chmod +x /bin/s3download \
  && echo "${S3_DOWNLOADER_SHA256}  /bin/s3download" | sha256sum -c - \
  && apt-get remove --auto-remove -y curl \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && rm /etc/nginx/conf.d/default.conf /etc/nginx/nginx.conf # prevent accidental usage of default configs
 
 COPY ./proxy/files/bin/ /bin/
-COPY ./proxy/files/internal/ /internal/
+COPY ./proxy/files/web/ /web/
 COPY ./proxy/files/etc/ /etc/
 
 ENTRYPOINT ["/bin/proxy-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-c", "/nginx/config/nginx.conf", "-g", "daemon off;"]
 
 RUN mkdir /static
 COPY --from=builder /project/dist/bundle/favicon.ico /static
