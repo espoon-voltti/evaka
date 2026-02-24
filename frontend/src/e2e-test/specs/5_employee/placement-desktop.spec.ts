@@ -217,8 +217,32 @@ describe('Placement desktop', () => {
 
     // place to daycare 3 through combobox
     await appCard2.addOtherUnitButton.click()
+    // Listen for a GET response for daycare3 that includes placement drafts.
+    // The combobox selection adds daycare3 to shown daycares and starts a
+    // mutation concurrently. Depending on timing, the DaycareCard may mount
+    // and fetch before or after the mutation's query invalidation runs, so
+    // we wait for an actual API response containing draft data.
+    const daycareDataWithDraft = page.page.waitForResponse(async (response) => {
+      if (
+        !response.url().includes(`/placement-desktop/daycares/${daycare3.id}`)
+      )
+        return false
+      if (response.request().method() !== 'GET' || response.status() !== 200)
+        return false
+      try {
+        const body = (await response.json()) as {
+          placementDrafts?: unknown[]
+        }
+        return (
+          Array.isArray(body.placementDrafts) && body.placementDrafts.length > 0
+        )
+      } catch {
+        return false
+      }
+    })
     await appCard2.draftPlacementCombobox.fillAndSelectFirst(daycare3.name)
     await appCard2.addOtherUnitButton.waitUntilVisible()
+    await daycareDataWithDraft
     await placementDesktopView.daycareCards.assertCount(3)
     const daycareCard3 = placementDesktopView.daycareCard(2)
     await daycareCard3.draftPlacementRows.assertCount(1)
