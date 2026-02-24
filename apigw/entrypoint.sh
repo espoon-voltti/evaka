@@ -12,7 +12,11 @@ export HOST_IP
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
-  s3download "$DEPLOYMENT_BUCKET" "api-gw" /home/evaka/s3
+  echo "Debug: /config permissions before s3download:"
+  ls -alh /config
+  s3download "$DEPLOYMENT_BUCKET" "api-gw" /config
+  echo "Debug: /config contents after s3download:"
+  ls -alh /config
 fi
 
 # This fixes the issue with Docker not shutting down correctly when using pipes and subshells
