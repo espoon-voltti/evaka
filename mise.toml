@@ -8,6 +8,8 @@ java = "zulu-25"
 lefthook = "2.1.1"
 node = "24.13.1"
 "npm:pm2" = "6.0.14"
+uv = "0.10.4"
+"pipx:reuse" = "6.2.0"
 yarn = "4.12.0"
 
 [tasks.start]
