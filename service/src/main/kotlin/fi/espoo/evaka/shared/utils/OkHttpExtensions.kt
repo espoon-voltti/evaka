@@ -8,7 +8,11 @@ import fi.espoo.evaka.shared.ConfiguredHttpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.net.URI
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 import okhttp3.Credentials
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType
@@ -57,6 +61,23 @@ fun headerInterceptor(name: String, value: String): okhttp3.Interceptor {
         val request = chain.request().newBuilder().header(name, value).build()
         chain.proceed(request)
     }
+}
+
+fun trustAllCerts(builder: OkHttpClient.Builder) {
+    val trustAllCerts =
+        object : X509TrustManager {
+            override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+        }
+
+    val sslContext =
+        SSLContext.getInstance("TLS").apply { init(null, arrayOf(trustAllCerts), SecureRandom()) }
+
+    builder.sslSocketFactory(sslContext.socketFactory, trustAllCerts)
+    builder.hostnameVerifier { _, _ -> true }
 }
 
 fun tokenAuthInterceptor(token: String): okhttp3.Interceptor {

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.LocalDate
 
+data class DvvModificationsRequest(val viimeisinKirjausavain: Long, val hetulista: List<String>)
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DvvModificationsResponse(
     val viimeisinKirjausavain: String,
