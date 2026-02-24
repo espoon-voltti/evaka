@@ -209,59 +209,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `creation timestamp should be 'timestamp with time zone' and NOT NULL`() {
-        val permittedViolations =
-            setOf(
-                Column(
-                    ColumnRef("daycare_group_placement", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("decision", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("fridge_child", "created_at"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("guardian", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("invoice", "created_at"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("mobile_device_push_group", "created_at"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("placement_plan", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("staff_attendance", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("voucher_value_decision", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("voucher_value_report_snapshot", "created"),
-                    "timestamp with time zone",
-                    nullable = true, // none
-                ),
-            )
+        val permittedViolations = emptySet<Column>()
         val violations =
             columns
                 .filter { it.ref.columnName == "created" || it.ref.columnName == "created_at" }
@@ -272,39 +220,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `update timestamp should be 'timestamp with time zone' and NOT NULL`() {
-        val permittedViolations =
-            setOf(
-                Column(
-                    ColumnRef("daycare_group_placement", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("decision", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("fridge_child", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("fridge_partner", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("placement_plan", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-                Column(
-                    ColumnRef("staff_occupancy_coefficient", "updated"),
-                    dataType = "timestamp with time zone",
-                    nullable = true, // none
-                ),
-            )
+        val permittedViolations = emptySet<Column>()
         val violations =
             columns
                 .filter { it.ref.columnName == "updated" || it.ref.columnName == "updated_at" }
@@ -360,19 +276,19 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 Column(
                     ColumnRef("child_document", "created_by"),
                     "uuid",
-                    nullable = true // no new ones after 09/2024
+                    nullable = true, // no new ones after 09/2024
                 ),
                 Column(
                     ColumnRef("fridge_partner", "created_by"),
                     "uuid",
                     // allowed to be null when created_from_application is not null,
                     // no new ones where both are null after 04/2024
-                    nullable = true
+                    nullable = true,
                 ),
                 Column(
                     ColumnRef("placement", "created_by"),
                     "uuid",
-                    nullable = true // allowed to be null when created by non-user
+                    nullable = true, // allowed to be null when created by non-user
                 ),
             )
         val violations =
@@ -394,8 +310,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'modified_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(
-                    ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
+                Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
                 Column(ColumnRef("placement", "modified_by"), "uuid", nullable = true),
             )
         val violations =
