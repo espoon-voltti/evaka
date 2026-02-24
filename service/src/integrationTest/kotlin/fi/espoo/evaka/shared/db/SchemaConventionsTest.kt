@@ -214,52 +214,52 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 Column(
                     ColumnRef("daycare_group_placement", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("decision", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("fridge_child", "created_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("guardian", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("invoice", "created_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("mobile_device_push_group", "created_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("placement_plan", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("staff_attendance", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("voucher_value_decision", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("voucher_value_report_snapshot", "created"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
             )
         val violations =
@@ -277,32 +277,32 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 Column(
                     ColumnRef("daycare_group_placement", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("decision", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("fridge_child", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("fridge_partner", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("placement_plan", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
                 Column(
                     ColumnRef("staff_occupancy_coefficient", "updated"),
                     dataType = "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // none
                 ),
             )
         val violations =
@@ -320,17 +320,17 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 Column(
                     ColumnRef("fridge_partner", "modified_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // lots, no default, different semantics than other tables?
                 ),
                 Column(
                     ColumnRef("fridge_child", "modified_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // lots, no default, different semantics than other tables?
                 ),
                 Column(
                     ColumnRef("placement", "modified_at"),
                     "timestamp with time zone",
-                    nullable = true,
+                    nullable = true, // lots, no default, different semantics than other tables?
                 ),
             )
         val violations =
@@ -345,19 +345,35 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'created_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
+                // deprecated table, to be dropped
                 Column(
                     ColumnRef("assistance_need_decision", "created_by"),
                     "uuid",
                     nullable = true,
                 ),
+                // deprecated table, to be dropped
                 Column(
                     ColumnRef("assistance_need_preschool_decision", "created_by"),
                     "uuid",
                     nullable = true,
                 ),
-                Column(ColumnRef("child_document", "created_by"), "uuid", nullable = true),
-                Column(ColumnRef("fridge_partner", "created_by"), "uuid", nullable = true),
-                Column(ColumnRef("placement", "created_by"), "uuid", nullable = true),
+                Column(
+                    ColumnRef("child_document", "created_by"),
+                    "uuid",
+                    nullable = true // no new ones after 09/2024
+                ),
+                Column(
+                    ColumnRef("fridge_partner", "created_by"),
+                    "uuid",
+                    // allowed to be null when created_from_application is not null,
+                    // no new ones where both are null after 04/2024
+                    nullable = true
+                ),
+                Column(
+                    ColumnRef("placement", "created_by"),
+                    "uuid",
+                    nullable = true // allowed to be null when created by non-user
+                ),
             )
         val violations =
             columns
@@ -378,7 +394,8 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'modified_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                Column(ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
+                Column(
+                    ColumnRef("fridge_partner", "modified_by"), "uuid", nullable = true),
                 Column(ColumnRef("placement", "modified_by"), "uuid", nullable = true),
             )
         val violations =
@@ -391,6 +408,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `'created_by' column should have a foreign key to evaka_user`() {
+        // both tables deprecated and waiting to be dropped
         val permittedViolations =
             setOf(
                 ColumnsRef("assistance_need_decision", "created_by") to
@@ -471,6 +489,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `every daterange and datemultirange column should have a constraint that limits its bound(s)`() {
         val permittedViolations =
             setOf(
+                // deprecated table, to be dropped
                 ColumnRef("assistance_need_decision", "validity_period"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
