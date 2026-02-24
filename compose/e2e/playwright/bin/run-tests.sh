@@ -26,7 +26,9 @@ wait-for-url.sh "${DUMMY_IDP_URL}/health" "200"
 
 echo "Running tests ..."
 
-if test -f playwright-filenames.txt; then
+if [ -n "${SHARD:-}" ] && [ -n "${SHARD_TOTAL:-}" ]; then
+    yarn e2e-playwright --shard="$SHARD/$SHARD_TOTAL"
+elif test -f playwright-filenames.txt; then
     mapfile -t FILENAMES < playwright-filenames.txt
     yarn e2e-ci "${FILENAMES[@]}"
 else

@@ -24,6 +24,8 @@ services:
     environment:
       HEADLESS: ${HEADLESS:-true}
       DEBUG: ${DEBUG:-}
+      SHARD: ${SHARD:-}
+      SHARD_TOTAL: ${SHARD_TOTAL:-}
     depends_on:
       - evaka-proxy
       - api-gw
