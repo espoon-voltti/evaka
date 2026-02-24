@@ -115,7 +115,7 @@ class DvvModificationsServiceClient(
     }
 }
 
-private fun sslConfiguration(xroadEnv: VtjXroadEnv): (OkHttpClient.Builder) -> Unit = { builder ->
+internal fun sslConfiguration(xroadEnv: VtjXroadEnv): (OkHttpClient.Builder) -> Unit = { builder ->
     if (
         xroadEnv.httpClientCertificateCheck &&
             xroadEnv.keyStore != null &&
