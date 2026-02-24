@@ -4,19 +4,12 @@
 
 import React, { useMemo, useState } from 'react'
 
-import type { Result } from 'lib-common/api'
-import { Loading, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import {
-  constantQuery,
-  useMutationResult,
-  useQueryResult
-} from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -31,7 +24,7 @@ import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-import { nekkuOrderReportMutation } from './queries'
+import { nekkuOrderReportQuery } from './queries'
 
 type mealTimeOptions = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER' | 'SUPPER'
 
@@ -66,9 +59,15 @@ export default React.memo(function NekkuOrders() {
     unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
   )
 
-  const [report, setReport] = useState<Result<NekkuOrderRow[]>>(Success.of([]))
-  const { mutateAsync: fetchNekkuReport } = useMutationResult(
-    nekkuOrderReportMutation
+  const [searchParams, setSearchParams] = useState<{
+    unitId: DaycareId
+    start: LocalDate
+    end: LocalDate
+    groupIds: GroupId[]
+  } | null>(null)
+
+  const report = useQueryResult(
+    searchParams ? nekkuOrderReportQuery(searchParams) : constantQuery([])
   )
 
   const sortedUnits = useMemo(
@@ -169,20 +168,18 @@ export default React.memo(function NekkuOrders() {
           </div>
         </FilterRow>
         <FilterRow>
-          <AsyncButton
+          <Button
             primary
             disabled={unitId === null || tooLongRange}
             text={i18n.common.search}
             onClick={() => {
-              setReport(Loading.of())
-              return fetchNekkuReport({
+              setSearchParams({
                 unitId: unitId!,
                 start: filters.range.start,
                 end: filters.range.end,
                 groupIds: filters.groupIds
               })
             }}
-            onSuccess={(newReport) => setReport(Success.of(newReport))}
             data-qa="send-button"
           />
         </FilterRow>

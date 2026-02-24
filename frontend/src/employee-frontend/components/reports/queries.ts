@@ -258,4 +258,4 @@ export const childAgeLanguageReportQuery = q.query(getChildAgeLanguageReport)
 
 export const applicationsReportQuery = q.query(getApplicationsReport)
 
-export const nekkuOrderReportMutation = q.mutation(getNekkuOrderReportByUnit)
+export const nekkuOrderReportQuery = q.query(getNekkuOrderReportByUnit)
