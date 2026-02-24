@@ -58,9 +58,10 @@ export default React.memo(function IncomeStatementView() {
     useIdRouteParam<IncomeStatementId>('incomeStatementId')
   const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
-  return renderResult(result, (incomeStatement) => (
-    <IncomeStatementView2 incomeStatement={incomeStatement} />
-  ))
+  return renderResult(result, (incomeStatement, isReloading) => {
+    if (isReloading) return null
+    return <IncomeStatementView2 incomeStatement={incomeStatement} />
+  })
 })
 
 const IncomeStatementView2 = React.memo(function IncomeStatementView2({
