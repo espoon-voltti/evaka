@@ -8,8 +8,10 @@ import { Queries } from 'lib-common/query'
 import { futureAbsencesOfChild } from '../generated/api-clients/absence'
 import {
   cancelFullDayAbsence,
+  deleteAbsenceRange,
   getAttendanceStatuses,
   getExpectedAbsencesOnDepartures,
+  postAbsenceRange,
   postArrivals,
   postDepartures,
   postFullDayAbsence,
@@ -94,3 +96,11 @@ export const uploadChildImageMutation = q.parametricMutation<{
 export const deleteChildImageMutation = q.parametricMutation<{
   unitId: DaycareId
 }>()(deleteImage, [({ unitId }) => childrenQuery(unitId)])
+
+export const postAbsenceRangeMutation = q.mutation(postAbsenceRange, [
+  ({ childId }) => getFutureAbsencesByChildQuery({ childId })
+])
+
+export const deleteAbsenceRangeMutation = q.mutation(deleteAbsenceRange, [
+  ({ childId }) => getFutureAbsencesByChildQuery({ childId })
+])

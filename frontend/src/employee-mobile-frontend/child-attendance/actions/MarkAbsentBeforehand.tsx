@@ -6,15 +6,13 @@ import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { mockNow } from 'lib-common/utils/helpers'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -35,21 +33,17 @@ import { renderResult } from '../../async-rendering'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, CustomTitle } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
-import { futureAbsencesOfChild } from '../../generated/api-clients/absence'
-import {
-  deleteAbsenceRange,
-  postAbsenceRange
-} from '../../generated/api-clients/attendance'
 import { TallContentArea } from '../../pairing/components'
-import { childrenQuery } from '../queries'
+import {
+  childrenQuery,
+  deleteAbsenceRangeMutation,
+  getFutureAbsencesByChildQuery,
+  postAbsenceRangeMutation
+} from '../queries'
 import { useChild } from '../utils'
 
 import type { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 import AbsenceSelector from './AbsenceSelector'
-
-const postAbsenceRangeResult = wrapResult(postAbsenceRange)
-const deleteAbsenceRangeResult = wrapResult(deleteAbsenceRange)
-const futureAbsencesByChildResult = wrapResult(futureAbsencesOfChild)
 
 export default React.memo(function MarkAbsentBeforehand({
   unitId,
@@ -72,17 +66,21 @@ export default React.memo(function MarkAbsentBeforehand({
     undefined
   )
 
-  const [absences, loadFutureAbsences] = useApiState(
-    () => futureAbsencesByChildResult({ childId }),
-    [childId]
-  )
+  const absences = useQueryResult(getFutureAbsencesByChildQuery({ childId }))
 
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
 
+  const { mutateAsync: postAbsenceRange } = useMutationResult(
+    postAbsenceRangeMutation
+  )
+  const { mutateAsync: deleteAbsenceRange } = useMutationResult(
+    deleteAbsenceRangeMutation
+  )
+
   const postAbsence = useCallback(
     (absenceType: AbsenceType) =>
-      postAbsenceRangeResult({
+      postAbsenceRange({
         unitId,
         childId,
         body: {
@@ -93,7 +91,7 @@ export default React.memo(function MarkAbsentBeforehand({
           )
         }
       }),
-    [childId, endDate, startDate, unitId]
+    [childId, endDate, postAbsenceRange, startDate, unitId]
   )
 
   const canSave = useMemo(
@@ -115,7 +113,7 @@ export default React.memo(function MarkAbsentBeforehand({
 
   const deleteAbsences = useCallback(async () => {
     if (deleteRange) {
-      await deleteAbsenceRangeResult({
+      await deleteAbsenceRange({
         unitId,
         childId,
         from: deleteRange.start,
@@ -123,9 +121,8 @@ export default React.memo(function MarkAbsentBeforehand({
       })
     }
     setDeleteRange(undefined)
-    void loadFutureAbsences()
     setUiMode('default')
-  }, [childId, deleteRange, loadFutureAbsences, unitId])
+  }, [childId, deleteAbsenceRange, deleteRange, unitId])
 
   const cancelDelete = useCallback(() => {
     setDeleteRange(undefined)
