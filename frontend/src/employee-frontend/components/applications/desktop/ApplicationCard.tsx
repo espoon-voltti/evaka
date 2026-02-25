@@ -372,7 +372,6 @@ export default React.memo(function ApplicationCard({
                     selectedItem={null}
                     onChange={(unit) => {
                       if (unit) {
-                        onAddOrHighlightDaycare(unit)
                         upsertApplicationPlacementDraft({
                           applicationId: application.id,
                           previousUnitId:
@@ -386,6 +385,7 @@ export default React.memo(function ApplicationCard({
                               startDate
                             )
                             setAddingOtherUnit(false)
+                            onAddOrHighlightDaycare(unit)
                           })
                           .catch(onMutateApplicationPlacementFailure)
                       }
