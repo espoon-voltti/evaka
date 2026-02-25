@@ -51,9 +51,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "group_note",
                 "guardian_blocklist",
                 "guardian",
-                "holiday_period",
-                "holiday_period_questionnaire",
-                "holiday_questionnaire_answer",
                 "income_notification",
                 "koski_study_right",
                 "message_account",
@@ -77,7 +74,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "service_need_option",
                 "service_need_option_fee",
                 "service_need_option_voucher_value",
-                "setting",
                 "staff_attendance",
                 "staff_attendance_external",
                 "staff_attendance_plan",
@@ -120,9 +116,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "fridge_partner",
                 "group_note",
                 "guardian_blocklist",
-                "holiday_period",
-                "holiday_period_questionnaire",
-                "holiday_questionnaire_answer",
                 "income_notification",
                 "koski_study_right",
                 "message",
@@ -146,7 +139,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "service_need_option",
                 "service_need_option_fee",
                 "service_need_option_voucher_value",
-                "setting",
                 "staff_attendance",
                 "staff_attendance_external",
                 "staff_attendance_plan",
@@ -542,6 +534,7 @@ LEFT JOIN information_schema.tables t USING (table_name)
 WHERE t.table_schema = 'public'
 AND t.table_name != 'flyway_schema_history'
 AND t.table_type != 'VIEW'
+AND is_generated = 'NEVER'
 """
                         )
                     }
