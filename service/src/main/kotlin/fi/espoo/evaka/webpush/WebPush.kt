@@ -17,6 +17,9 @@ import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
+import kotlin.code
+import kotlin.collections.toTypedArray
+import kotlin.toString
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -165,7 +168,17 @@ class WebPush(env: WebPushEnv) {
         }
         requestBuilder.post(webPushRequest.body.toRequestBody())
         val request = requestBuilder.build()
-        val response = httpClient.newCall(request).execute()
+
+        val response =
+            try {
+                httpClient.newCall(request).execute()
+            } catch (e: java.net.UnknownHostException) {
+                if (notification.endpoint.uri.host?.endsWith(".invalid") == true) {
+                    throw SubscriptionExpired(HttpStatus.GONE, e)
+                }
+                throw e
+            }
+
         response.use {
             val statusCode = response.code
             // Push server should return 201 Created, but at least Mozilla returns 200 OK instead
