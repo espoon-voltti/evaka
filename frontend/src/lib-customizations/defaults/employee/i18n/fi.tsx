@@ -3536,7 +3536,7 @@ export const fi = {
       description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
       statusFilter: 'Näytettävät tilat',
       otherFilters: 'Muut valinnat',
-      includeEnded: 'Näytä päättyneet päätökset',
+      includeEnded: 'Näytä myös päättyneet päätökset',
       templateName: 'Päätös',
       childName: 'Lapsi',
       modifiedAt: 'Muokattu',
