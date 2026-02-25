@@ -2,17 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
-import type { Result } from 'lib-common/api'
-import { Failure, Loading, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type { NekkuOrderRow } from 'lib-common/generated/api-types/reports'
 import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -20,7 +17,6 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import { getNekkuOrderReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
@@ -28,8 +24,7 @@ import { daycaresQuery, unitGroupsQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getNekkuOrderReportByUnitResult = wrapResult(getNekkuOrderReportByUnit)
+import { nekkuOrderReportQuery } from './queries'
 
 type mealTimeOptions = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER' | 'SUPPER'
 
@@ -64,33 +59,16 @@ export default React.memo(function NekkuOrders() {
     unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
   )
 
-  const [report, setReport] = useState<Result<NekkuOrderRow[]>>(Success.of([]))
+  const [searchParams, setSearchParams] = useState<{
+    unitId: DaycareId
+    start: LocalDate
+    end: LocalDate
+    groupIds: GroupId[]
+  } | null>(null)
 
-  const fetchNekkuOrdersReport = useCallback(() => {
-    if (tooLongRange) {
-      return Promise.resolve(
-        Failure.of<NekkuOrderRow[]>({
-          message: 'Too long range'
-        })
-      )
-    } else if (unitId == null) {
-      return Promise.resolve(Loading.of<NekkuOrderRow[]>())
-    } else {
-      setReport(Loading.of())
-      return getNekkuOrderReportByUnitResult({
-        unitId,
-        start: filters.range.start,
-        end: filters.range.end,
-        groupIds: filters.groupIds
-      })
-    }
-  }, [
-    tooLongRange,
-    unitId,
-    filters.range.start,
-    filters.range.end,
-    filters.groupIds
-  ])
+  const report = useQueryResult(
+    searchParams ? nekkuOrderReportQuery(searchParams) : constantQuery([])
+  )
 
   const sortedUnits = useMemo(
     () =>
@@ -190,12 +168,18 @@ export default React.memo(function NekkuOrders() {
           </div>
         </FilterRow>
         <FilterRow>
-          <AsyncButton
+          <Button
             primary
-            disabled={unitId === null}
+            disabled={unitId === null || tooLongRange}
             text={i18n.common.search}
-            onClick={fetchNekkuOrdersReport}
-            onSuccess={(newReport) => setReport(Success.of(newReport))}
+            onClick={() => {
+              setSearchParams({
+                unitId: unitId!,
+                start: filters.range.start,
+                end: filters.range.end,
+                groupIds: filters.groupIds
+              })
+            }}
             data-qa="send-button"
           />
         </FilterRow>
