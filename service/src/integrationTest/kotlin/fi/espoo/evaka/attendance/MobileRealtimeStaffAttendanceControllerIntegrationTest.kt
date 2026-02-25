@@ -102,6 +102,40 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
+    fun `Unit supervisor appears in staff attendance list without group ACL`() {
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
+        }
+
+        val attendances = fetchRealtimeStaffAttendances(daycare.id, mobileUser)
+        assertThat(attendances.staff).anyMatch { it.employeeId == employee.id }
+    }
+
+    @Test
+    fun `Unit supervisor can be marked as arrived without group ACL`() {
+        val pinCode = "1212"
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
+        }
+
+        val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        markArrival(arrivalTime, employee.id, pinCode, group.id, arrivalTime.toLocalTime(), null)
+        val attendances = fetchRealtimeStaffAttendances(daycare.id, mobileUser)
+        attendances.staff
+            .first { it.employeeId == employee.id }
+            .let {
+                assertEquals(group.id, it.present)
+                assertEquals(1, it.attendances.size)
+                assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
+            }
+    }
+
+    @Test
     fun `Employee with no planned attendances can be marked as arrived without occupancy effect`() {
         val pinCode = "1212"
         val employee = DevEmployee()

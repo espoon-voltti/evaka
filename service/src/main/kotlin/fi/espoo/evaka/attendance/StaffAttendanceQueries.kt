@@ -89,7 +89,7 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) att ON TRUE
 WHERE dacl.daycare_id = ${bind(unitId)} 
-    AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+    AND (dacl.role IN ('UNIT_SUPERVISOR', 'STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
     ${if (employeeId != null) "AND e.id = ${bind(employeeId)}" else ""}
 ORDER BY e.last_name, first_name
 """
