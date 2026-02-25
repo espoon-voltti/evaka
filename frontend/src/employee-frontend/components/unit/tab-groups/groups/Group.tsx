@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
-import { Loading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { Action } from 'lib-common/generated/action'
@@ -31,11 +30,16 @@ import type {
   PersonId
 } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
-import { first, second, useSelectMutation } from 'lib-common/query'
+import {
+  first,
+  pendingQuery,
+  second,
+  useQueryResult,
+  useSelectMutation
+} from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import type { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -72,7 +76,6 @@ import {
 } from 'lib-icons'
 import { faUtensils } from 'lib-icons'
 
-import { getNotesByGroup } from '../../../../generated/api-clients/note'
 import type { Translations } from '../../../../state/i18n'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
@@ -98,11 +101,10 @@ import {
 } from '../../queries'
 import { CreateChildDocumentsModal } from '../child-documents/CreateChildDocumentsModal'
 import NotesModal from '../notes/NotesModal'
+import { notesByGroupQuery } from '../notes/queries'
 
 import GroupUpdateModal from './group/GroupUpdateModal'
 import NekkuOrderModal from './group/NekkuOrderModal'
-
-const getNotesByGroupResult = wrapResult(getNotesByGroup)
 
 interface Props {
   unit: Daycare
@@ -190,12 +192,10 @@ export default React.memo(function Group({
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const hasNotesPermission = permittedActions.includes('READ_NOTES')
-  const [notesResponse, loadNotes] = useApiState(
-    async (): Promise<Result<NotesByGroupResponse>> =>
-      hasNotesPermission
-        ? await getNotesByGroupResult({ groupId: group.id })
-        : Loading.of(),
-    [hasNotesPermission, group.id]
+  const notesResponse = useQueryResult(
+    hasNotesPermission
+      ? notesByGroupQuery({ groupId: group.id })
+      : pendingQuery<NotesByGroupResponse>()
   )
 
   const [notesModal, setNotesModal] = useState<{
@@ -274,7 +274,6 @@ export default React.memo(function Group({
         <NotesModal
           {...notesModal}
           notesByGroup={notesResponse}
-          reload={loadNotes}
           onClose={() => setNotesModal(undefined)}
         />
       )}
