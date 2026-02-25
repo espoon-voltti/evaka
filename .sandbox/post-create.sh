@@ -9,6 +9,7 @@ set -euo pipefail
 curl https://mise.run/bash | bash
 export PATH="$HOME/.local/bin:$PATH"
 mise trust
+mise install uv
 mise install
 eval "$(mise activate bash)"
 mise run install-prompt
