@@ -54,7 +54,7 @@ FROM (
         SELECT
             cd.id as document_id,
             dt.validity as template_validity,
-            row_number() OVER (PARTITION BY cd.template_id ORDER BY cd.created) as rn
+            row_number() OVER (PARTITION BY cd.template_id ORDER BY cd.created_at) as rn
         FROM
             child_document cd
         JOIN

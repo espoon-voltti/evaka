@@ -793,7 +793,7 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
                 WHERE upper(dt.validity) <= ${bind(eligibleDate)}
                   AND dt.archive_externally = true
                   AND cd.archived_at IS NULL
-                ORDER BY cd.created
+                ORDER BY cd.created_at
                 """
             )
         }

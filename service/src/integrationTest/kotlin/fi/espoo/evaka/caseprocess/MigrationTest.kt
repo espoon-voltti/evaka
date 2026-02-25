@@ -578,7 +578,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val document =
             DevChildDocument(
                 childId = child.id,
-                created = created,
+                createdAt = created,
                 createdBy = employee.evakaUserId,
                 templateId = template.id,
                 status = DocumentStatus.DRAFT,
@@ -636,7 +636,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val document =
             DevChildDocument(
                 childId = child.id,
-                created = created,
+                createdAt = created,
                 createdBy = employee.evakaUserId,
                 templateId = template.id,
                 status = DocumentStatus.COMPLETED,
