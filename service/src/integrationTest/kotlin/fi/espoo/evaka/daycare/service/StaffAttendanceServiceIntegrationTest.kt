@@ -175,7 +175,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                     }
                     .exactlyOne<HelsinkiDateTime>()
             },
-            unitResult.updated,
+            unitResult.updatedAt,
         )
 
         val groupResult = unitResult.groups.find { it.groupId == groupId }!!

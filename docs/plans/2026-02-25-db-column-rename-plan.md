@@ -79,13 +79,13 @@ Keep this list up-to-date as groups are completed.
 - [x] `mobile_device_push_subscription` (both)
 - [x] `vapid_jwt` (both)
 
-### Group 4: attendance (5 tables)
+### Group 4: attendance (5 tables) ✓
 
-- [ ] `staff_attendance` (both)
-- [ ] `staff_attendance_external` (both)
-- [ ] `staff_attendance_plan` (both)
-- [ ] `staff_attendance_realtime` (both)
-- [ ] `staff_occupancy_coefficient` (both)
+- [x] `staff_attendance` (both)
+- [x] `staff_attendance_external` (both)
+- [x] `staff_attendance_plan` (both)
+- [x] `staff_attendance_realtime` (both)
+- [x] `staff_occupancy_coefficient` (both)
 
 ### Group 5: messaging (8 tables)
 

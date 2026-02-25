@@ -382,7 +382,7 @@ export interface GroupStaffAttendance {
   count: number
   date: LocalDate
   groupId: GroupId
-  updated: HelsinkiDateTime
+  updatedAt: HelsinkiDateTime
 }
 
 /**
@@ -750,7 +750,7 @@ export function deserializeJsonGroupStaffAttendance(json: JsonOf<GroupStaffAtten
   return {
     ...json,
     date: LocalDate.parseIso(json.date),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    updatedAt: HelsinkiDateTime.parseIso(json.updatedAt)
   }
 }
 

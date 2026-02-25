@@ -63,11 +63,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "service_need_option",
                 "service_need_option_fee",
                 "service_need_option_voucher_value",
-                "staff_attendance",
-                "staff_attendance_external",
-                "staff_attendance_plan",
-                "staff_attendance_realtime",
-                "staff_occupancy_coefficient",
                 "voucher_value_decision",
                 "voucher_value_report_snapshot",
             )
@@ -116,11 +111,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "service_need_option",
                 "service_need_option_fee",
                 "service_need_option_voucher_value",
-                "staff_attendance",
-                "staff_attendance_external",
-                "staff_attendance_plan",
-                "staff_attendance_realtime",
-                "staff_occupancy_coefficient",
                 "voucher_value_decision",
             )
         val violations =
