@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type {
@@ -63,13 +63,37 @@ export function useRecipients(
   replierAccount: TypedMessageAccount,
   accountDetails: MessageAccountWithPresence[] | null
 ) {
-  const [recipients, setRecipients] = useState<SelectableAccount[]>([])
+  const resetKey =
+    threadMessages.length > 0
+      ? `${threadMessages[0].threadId}:${replierAccount.id}`
+      : null
+  const [prevResetKey, setPrevResetKey] = useState(resetKey)
+  const [recipients, setRecipients] = useState<SelectableAccount[]>(() =>
+    threadMessages.length > 0
+      ? getInitialRecipients(
+          threadMessages,
+          replierAccount,
+          accountDetails ?? []
+        )
+      : []
+  )
+  const [prevAccountDetails, setPrevAccountDetails] = useState(accountDetails)
 
-  useEffect(() => {
+  if (resetKey !== null && resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey)
+    setPrevAccountDetails(accountDetails)
     setRecipients(
       getInitialRecipients(threadMessages, replierAccount, accountDetails ?? [])
     )
-  }, [threadMessages, replierAccount, accountDetails])
+  } else if (prevAccountDetails !== accountDetails) {
+    setPrevAccountDetails(accountDetails)
+    setRecipients((prev) =>
+      prev.map((r) => ({
+        ...r,
+        outOfOffice: getOutOfOfficeForAccount(r.id, accountDetails ?? [])
+      }))
+    )
+  }
 
   const onToggleRecipient = useCallback(
     (id: MessageAccountId, selected: boolean) => {

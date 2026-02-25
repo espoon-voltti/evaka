@@ -976,6 +976,37 @@ describe('Sending and receiving messages', () => {
         await employeePage2.close()
       })
 
+      test('Citizen reply recipient toggles persist while typing', async () => {
+        await insertGuardians({
+          body: [{ childId, guardianId: testAdult2.id }]
+        })
+
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
+        await citizenMessagesPage.startReplyToFirstThread()
+
+        const otherGuardian = citizenMessagesPage.secondaryRecipient(
+          `${testAdult2.lastName} ${testAdult2.firstName}`
+        )
+        await otherGuardian.assertIsUnselected()
+
+        await otherGuardian.click()
+        await otherGuardian.assertIsSelected()
+        await citizenMessagesPage.messageReplyContent.fill('Test reply')
+        await otherGuardian.assertIsSelected()
+      })
+
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)
