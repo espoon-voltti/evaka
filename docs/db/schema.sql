@@ -1474,13 +1474,15 @@ END;
 
 CREATE TABLE public.other_assistance_measure (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT other_assistance_measure_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT other_assistance_measure_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     modified timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
     valid_during daterange NOT NULL,
     type public.other_assistance_measure_type NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$range_valid" CHECK ((NOT (lower_inf(valid_during) OR upper_inf(valid_during))))
 );
 
@@ -1488,13 +1490,15 @@ CREATE TABLE public.other_assistance_measure (
 
 CREATE TABLE public.preschool_assistance (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT preschool_assistance_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT preschool_assistance_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     modified timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
     valid_during daterange NOT NULL,
     level public.preschool_assistance_level NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$range_valid" CHECK ((NOT (lower_inf(valid_during) OR upper_inf(valid_during))))
 );
 
@@ -2437,16 +2441,18 @@ CREATE TABLE public.child_daily_note (
     reminder_note text NOT NULL,
     modified_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_daily_note_modified_at_not_null NOT NULL,
     sleeping_minutes integer,
-    created timestamp with time zone DEFAULT now() CONSTRAINT daycare_daily_note_created_not_null NOT NULL,
-    updated timestamp with time zone DEFAULT now() CONSTRAINT daycare_daily_note_updated_not_null NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_daily_note_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_daily_note_updated_not_null NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: child_document; Type: TABLE; Schema: public
 
 CREATE TABLE public.child_document (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT child_document_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT child_document_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     template_id uuid NOT NULL,
     content jsonb NOT NULL,
@@ -2467,6 +2473,8 @@ CREATE TABLE public.child_document (
     decision_id uuid,
     deprecated_published_by uuid,
     modified_by uuid DEFAULT '00000000-0000-0000-0000-000000000000'::uuid NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT answerable_document CHECK (((type = 'CITIZEN_BASIC'::public.document_template_type) OR ((answered_at IS NULL) AND (answered_by IS NULL)))),
     CONSTRAINT answered_consistency CHECK (((answered_at IS NULL) = (answered_by IS NULL))),
     CONSTRAINT archived_documents_must_be_completed CHECK (((archived_at IS NULL) OR (status = 'COMPLETED'::public.child_document_status))),
@@ -2598,12 +2606,14 @@ CREATE TABLE public.child_images (
 
 CREATE TABLE public.child_sticky_note (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT child_sticky_note_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT child_sticky_note_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     note text NOT NULL,
     modified_at timestamp with time zone DEFAULT now() NOT NULL,
-    expires date DEFAULT (now() + '7 days'::interval) NOT NULL
+    expires date DEFAULT (now() + '7 days'::interval) NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: citizen_user; Type: TABLE; Schema: public
@@ -2674,8 +2684,8 @@ CREATE TABLE public.daycare_acl_schedule (
 
 CREATE TABLE public.mobile_device (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT mobile_device_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT mobile_device_updated_not_null NOT NULL,
     unit_id uuid,
     name text NOT NULL,
     long_term_token uuid,
@@ -2683,6 +2693,8 @@ CREATE TABLE public.mobile_device (
     last_seen timestamp with time zone,
     user_agent text,
     push_notification_categories public.push_notification_category[] DEFAULT '{}'::public.push_notification_category[] NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT mobile_device_non_null_reference CHECK ((num_nonnulls(unit_id, employee_id) = 1))
 );
 
@@ -2717,13 +2729,15 @@ UNION ALL
 
 CREATE TABLE public.daycare_assistance (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_assistance_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_assistance_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     modified timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
     valid_during daterange NOT NULL,
     level public.daycare_assistance_level NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$range_valid" CHECK ((NOT (lower_inf(valid_during) OR upper_inf(valid_during))))
 );
 
@@ -2783,8 +2797,8 @@ ALTER SEQUENCE public.decision_number_seq OWNED BY public.decision.number;
 
 CREATE TABLE public.document_template (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT document_template_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT document_template_updated_not_null NOT NULL,
     name text NOT NULL,
     type public.document_template_type NOT NULL,
     language public.ui_language NOT NULL,
@@ -2800,6 +2814,8 @@ CREATE TABLE public.document_template (
     confidentiality_basis text,
     archive_externally boolean NOT NULL,
     end_decision_when_unit_changes boolean,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$archive_duration_months_positive" CHECK (((archive_duration_months IS NULL) OR (archive_duration_months > 0))),
     CONSTRAINT "check$archive_externally_requires_metadata" CHECK (((NOT archive_externally) OR ((process_definition_number IS NOT NULL) AND (archive_duration_months IS NOT NULL)))),
     CONSTRAINT "check$archive_fields_nullability" CHECK (((process_definition_number IS NOT NULL) = (archive_duration_months IS NOT NULL))),
@@ -3086,12 +3102,14 @@ CREATE VIEW public.fridge_partner_view AS
 
 CREATE TABLE public.group_note (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT group_note_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT group_note_updated_not_null NOT NULL,
     group_id uuid NOT NULL,
     note text NOT NULL,
     modified_at timestamp with time zone DEFAULT now() NOT NULL,
-    expires date DEFAULT (now() + '7 days'::interval) NOT NULL
+    expires date DEFAULT (now() + '7 days'::interval) NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: guardian; Type: TABLE; Schema: public
@@ -3115,19 +3133,21 @@ CREATE TABLE public.guardian_blocklist (
 
 CREATE TABLE public.holiday_period (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_period_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_period_updated_not_null NOT NULL,
     period daterange NOT NULL,
     reservation_deadline date NOT NULL,
-    reservations_open_on date NOT NULL
+    reservations_open_on date NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: holiday_period_questionnaire; Type: TABLE; Schema: public
 
 CREATE TABLE public.holiday_period_questionnaire (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_period_questionnaire_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_period_questionnaire_updated_not_null NOT NULL,
     type public.questionnaire_type NOT NULL,
     absence_type public.absence_type NOT NULL,
     requires_strong_auth boolean NOT NULL,
@@ -3140,6 +3160,8 @@ CREATE TABLE public.holiday_period_questionnaire (
     period_option_label jsonb,
     period daterange,
     absence_type_threshold integer,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT period_null_or_valid CHECK (((period IS NULL) OR (NOT (lower_inf(period) OR upper_inf(period)))))
 );
 
@@ -3147,13 +3169,15 @@ CREATE TABLE public.holiday_period_questionnaire (
 
 CREATE TABLE public.holiday_questionnaire_answer (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_questionnaire_answer_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT holiday_questionnaire_answer_updated_not_null NOT NULL,
     modified_by uuid NOT NULL,
     questionnaire_id uuid NOT NULL,
     child_id uuid NOT NULL,
     fixed_period daterange,
-    open_ranges daterange[] NOT NULL
+    open_ranges daterange[] NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: income; Type: TABLE; Schema: public
@@ -3488,12 +3512,14 @@ CREATE TABLE public.mobile_device_push_group (
 
 CREATE TABLE public.mobile_device_push_subscription (
     device uuid NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT mobile_device_push_subscription_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT mobile_device_push_subscription_updated_not_null NOT NULL,
     endpoint text NOT NULL,
     expires timestamp with time zone,
     auth_secret bytea NOT NULL,
-    ecdh_key bytea NOT NULL
+    ecdh_key bytea NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: nekku_customer; Type: TABLE; Schema: public
@@ -3585,8 +3611,8 @@ CREATE TABLE public.out_of_office (
 
 CREATE TABLE public.pairing (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT pairing_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT pairing_updated_not_null NOT NULL,
     unit_id uuid,
     expires timestamp with time zone NOT NULL,
     status public.pairing_status DEFAULT 'WAITING_CHALLENGE'::public.pairing_status NOT NULL,
@@ -3595,6 +3621,8 @@ CREATE TABLE public.pairing (
     attempts integer DEFAULT 0 NOT NULL,
     mobile_device_id uuid,
     employee_id uuid,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT pairing_non_null_reference CHECK ((num_nonnulls(unit_id, employee_id) = 1))
 );
 
@@ -3886,8 +3914,10 @@ CREATE TABLE public.service_need_option_voucher_value (
 CREATE TABLE public.setting (
     key public.setting_type NOT NULL,
     value text NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT setting_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT setting_updated_not_null NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: sfi_get_events_continuation_token; Type: TABLE; Schema: public
@@ -3936,22 +3966,26 @@ CREATE TABLE public.staff_attendance (
     group_id uuid NOT NULL,
     date date NOT NULL,
     count numeric NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_updated_not_null NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: staff_attendance_external; Type: TABLE; Schema: public
 
 CREATE TABLE public.staff_attendance_external (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_external_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_external_updated_not_null NOT NULL,
     name text NOT NULL,
     group_id uuid NOT NULL,
     arrived timestamp with time zone NOT NULL,
     departed timestamp with time zone,
     occupancy_coefficient numeric(4,2) NOT NULL,
     departed_automatically boolean DEFAULT false NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT staff_attendance_external_start_before_end CHECK ((arrived < departed))
 );
 
@@ -3959,13 +3993,15 @@ CREATE TABLE public.staff_attendance_external (
 
 CREATE TABLE public.staff_attendance_plan (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_plan_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_plan_updated_not_null NOT NULL,
     employee_id uuid NOT NULL,
     type public.staff_attendance_type DEFAULT 'PRESENT'::public.staff_attendance_type NOT NULL,
     start_time timestamp with time zone NOT NULL,
     end_time timestamp with time zone NOT NULL,
     description text,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT staff_attendance_plan_start_before_end CHECK ((start_time < end_time))
 );
 
@@ -3973,8 +4009,8 @@ CREATE TABLE public.staff_attendance_plan (
 
 CREATE TABLE public.staff_attendance_realtime (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_realtime_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT staff_attendance_realtime_updated_not_null NOT NULL,
     employee_id uuid NOT NULL,
     group_id uuid,
     arrived timestamp with time zone NOT NULL,
@@ -3990,6 +4026,8 @@ CREATE TABLE public.staff_attendance_realtime (
     departed_added_by uuid,
     departed_modified_at timestamp with time zone,
     departed_modified_by uuid,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT check_group_id_if_working_in_group CHECK (((group_id IS NOT NULL) OR (type = ANY ('{TRAINING,OTHER_WORK,SICKNESS,CHILD_SICKNESS}'::public.staff_attendance_type[])))),
     CONSTRAINT staff_attendance_start_before_end CHECK ((arrived < departed))
 );
@@ -3998,11 +4036,13 @@ CREATE TABLE public.staff_attendance_realtime (
 
 CREATE TABLE public.staff_occupancy_coefficient (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT staff_occupancy_coefficient_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT staff_occupancy_coefficient_updated_not_null NOT NULL,
     employee_id uuid NOT NULL,
     daycare_id uuid NOT NULL,
-    coefficient numeric(4,2) NOT NULL
+    coefficient numeric(4,2) NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: system_notification; Type: TABLE; Schema: public
@@ -4042,10 +4082,12 @@ CREATE TABLE public.titania_errors (
 CREATE TABLE public.vapid_jwt (
     origin text NOT NULL,
     public_key bytea NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT vapid_jwt_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT vapid_jwt_updated_not_null NOT NULL,
     jwt text NOT NULL,
-    expires_at timestamp with time zone NOT NULL
+    expires_at timestamp with time zone NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: varda_state; Type: TABLE; Schema: public
@@ -6510,11 +6552,11 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_attendance FOR EACH R
 
 -- Name: child_daily_note set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_daily_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_daily_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: child_document set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_document FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_document FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: child_document_decision set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6530,7 +6572,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_images FOR EACH ROW E
 
 -- Name: child_sticky_note set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_sticky_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_sticky_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: citizen_user set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6558,7 +6600,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_acl_schedule FOR EA
 
 -- Name: daycare_assistance set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_assistance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_assistance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare_caretaker set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6582,7 +6624,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision FOR EACH ROW EXECU
 
 -- Name: document_template set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.document_template FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.document_template FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: employee set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6626,7 +6668,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.fridge_partner FOR EACH ROW
 
 -- Name: group_note set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.group_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.group_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: guardian_blocklist set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6634,15 +6676,15 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.guardian_blocklist FOR EACH
 
 -- Name: holiday_period set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_period FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_period FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: holiday_period_questionnaire set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_period_questionnaire FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_period_questionnaire FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: holiday_questionnaire_answer set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_questionnaire_answer FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.holiday_questionnaire_answer FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: income set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6702,19 +6744,19 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_participant 
 
 -- Name: mobile_device set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: mobile_device_push_subscription set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device_push_subscription FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device_push_subscription FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: other_assistance_measure set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.other_assistance_measure FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.other_assistance_measure FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: pairing set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.pairing FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.pairing FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: payment set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6746,7 +6788,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.placement_plan FOR EACH ROW
 
 -- Name: preschool_assistance set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.preschool_assistance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.preschool_assistance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: preschool_term set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6774,7 +6816,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option_voucher
 
 -- Name: setting set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.setting FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.setting FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: sfi_message set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6786,27 +6828,27 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.sfi_message_event FOR EACH 
 
 -- Name: staff_attendance set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: staff_attendance_external set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_external FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_external FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: staff_attendance_plan set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_plan FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_plan FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: staff_attendance_realtime set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_realtime FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_attendance_realtime FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: staff_occupancy_coefficient set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_occupancy_coefficient FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.staff_occupancy_coefficient FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: vapid_jwt set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.vapid_jwt FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.vapid_jwt FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: varda_state set_timestamp; Type: TRIGGER; Schema: public
 
