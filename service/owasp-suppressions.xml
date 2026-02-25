@@ -21,4 +21,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </notes>
         <cve>CVE-2026-24734</cve>
     </suppress>
+    <suppress>
+        <notes>
+            False positive: CVE-2020-29582 affects Kotlin before 2.1.0. All submodules resolve
+            kotlin-stdlib and kotlin-reflect to 2.3.10 via kotlin-bom constraint. Transitive requests
+            for older versions are all upgraded by Gradle conflict resolution. The scanner flags a stale
+            kotlin-reflect-1.6.10.jar from the Gradle cache that is not on any classpath.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-(stdlib|reflect).*@.*$</packageUrl>
+        <cve>CVE-2020-29582</cve>
+    </suppress>
 </suppressions>
