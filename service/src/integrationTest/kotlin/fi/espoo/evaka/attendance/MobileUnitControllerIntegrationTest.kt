@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
@@ -13,7 +12,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -27,9 +25,9 @@ import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.withMockedTime
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -37,11 +35,15 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var controller: MobileUnitController
+
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val today = LocalDate.of(2022, 2, 3)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 5, 1))
+    private val clock = MockEvakaClock(now)
     private val placementStart = today.minusDays(30)
     private val placementEnd = today.plusDays(30)
 
@@ -280,30 +282,9 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(unitInfo.utilization, allUnitStats.first().utilization)
     }
 
-    private fun fetchUnitInfo(unitId: DaycareId): UnitInfo {
-        val (_, res, result) =
-            http
-                .get("/employee-mobile/units/$unitId")
-                .asUser(mobileUser)
-                .withMockedTime(now)
-                .responseObject<UnitInfo>(jackson2JsonMapper)
+    private fun fetchUnitInfo(unitId: DaycareId): UnitInfo =
+        controller.getUnitInfo(dbInstance(), mobileUser, clock, unitId)
 
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun fetchUnitStats(unitIds: List<DaycareId>): List<UnitStats> {
-        val (_, res, result) =
-            http
-                .get(
-                    "/employee-mobile/units/stats",
-                    listOf(Pair("unitIds", unitIds.joinToString { it.toString() })),
-                )
-                .asUser(mobileUser)
-                .withMockedTime(now)
-                .responseObject<List<UnitStats>>(jackson2JsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
+    private fun fetchUnitStats(unitIds: List<DaycareId>): List<UnitStats> =
+        controller.getUnitStats(dbInstance(), mobileUser, clock, unitIds)
 }

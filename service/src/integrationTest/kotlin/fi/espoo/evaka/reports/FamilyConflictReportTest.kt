@@ -4,33 +4,37 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
-import java.util.UUID
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
-    val today = LocalDate.now()
+    @Autowired private lateinit var familyConflictReportController: FamilyConflictReportController
+
+    private val today = LocalDate.now()
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val daycare2 = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val adult = DevPerson(ssn = "010180-1232")
     private val child = DevPerson()
 
@@ -40,6 +44,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(area)
             tx.insert(daycare)
             tx.insert(daycare2)
+            tx.insert(employee)
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
         }
@@ -59,7 +64,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
 
-        getAndAssert(today, today, listOf())
+        getAndAssert(listOf())
     }
 
     @Test
@@ -77,7 +82,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         insertPlacement(child.id, today, today)
 
-        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1)))
+        getAndAssert(listOf(toReportRow(adult, 0, 1)))
     }
 
     @Test
@@ -95,7 +100,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         insertPlacement(child.id, today, today)
 
-        getAndAssert(today, today, listOf())
+        getAndAssert(listOf())
     }
 
     @Test
@@ -113,7 +118,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         insertPlacement(child.id, today.plusDays(7), today.plusDays(14))
 
-        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1)))
+        getAndAssert(listOf(toReportRow(adult, 0, 1)))
     }
 
     @Test
@@ -132,25 +137,17 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement(child.id, today.plusDays(8), today.plusDays(14), daycare.id)
         insertPlacement(child.id, today.plusDays(1), today.plusDays(7), daycare2.id)
 
-        getAndAssert(today, today, listOf(toReportRow(adult, 0, 1, daycare2)))
+        getAndAssert(listOf(toReportRow(adult, 0, 1, daycare2)))
     }
 
-    private val testUser =
-        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-
-    private fun getAndAssert(
-        from: LocalDate,
-        to: LocalDate,
-        expected: List<FamilyConflictReportRow>,
-    ) {
-        val (_, response, result) =
-            http
-                .get("/employee/reports/family-conflicts", listOf("from" to from, "to" to to))
-                .asUser(testUser)
-                .responseObject<List<FamilyConflictReportRow>>(jackson2JsonMapper)
-
-        assertEquals(200, response.statusCode)
-        assertEquals(expected, result.get())
+    private fun getAndAssert(expected: List<FamilyConflictReportRow>) {
+        val result =
+            familyConflictReportController.getFamilyConflictsReport(
+                dbInstance(),
+                employee.user,
+                clock,
+            )
+        assertEquals(expected, result)
     }
 
     private fun insertPlacement(

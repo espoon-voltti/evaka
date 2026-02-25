@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.decision
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.AcceptDecisionRequest
+import fi.espoo.evaka.application.ApplicationControllerCitizen
+import fi.espoo.evaka.application.ApplicationControllerV2
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.RejectDecisionRequest
 import fi.espoo.evaka.application.persistence.daycare.Apply
@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -33,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowById
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -52,10 +52,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.beans.factory.annotation.Autowired
 
 data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
+    @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+
+    private val clock = MockEvakaClock(2019, 1, 1, 12, 0)
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
     private val employee = DevEmployee()
@@ -383,20 +388,26 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
     ) {
-        val path =
-            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/employee"}/applications/$applicationId/actions/accept-decision"
-
-        val (_, res, _) =
-            http
-                .post(path)
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        AcceptDecisionRequest(decisionId, requestedStartDate)
-                    )
+        val body = AcceptDecisionRequest(decisionId, requestedStartDate)
+        when (user) {
+            is AuthenticatedUser.Citizen ->
+                applicationControllerCitizen.acceptDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
                 )
-                .asUser(user)
-                .response()
-        assertTrue(res.isSuccessful)
+            is AuthenticatedUser.Employee ->
+                applicationControllerV2.acceptDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            else -> error("Unsupported user type")
+        }
 
         db.read { r ->
             r.getDecisionRowById(decisionId).also {
@@ -413,16 +424,26 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         applicationId: ApplicationId,
         decisionId: DecisionId,
     ) {
-        val path =
-            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/employee"}/applications/$applicationId/actions/reject-decision"
-
-        val (_, res, _) =
-            http
-                .post(path)
-                .jsonBody(jsonMapper.writeValueAsString(RejectDecisionRequest(decisionId)))
-                .asUser(user)
-                .response()
-        assertTrue(res.isSuccessful)
+        val body = RejectDecisionRequest(decisionId)
+        when (user) {
+            is AuthenticatedUser.Citizen ->
+                applicationControllerCitizen.rejectDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            is AuthenticatedUser.Employee ->
+                applicationControllerV2.rejectDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            else -> error("Unsupported user type")
+        }
 
         db.read { r ->
             r.getDecisionRowById(decisionId).also {

@@ -4,29 +4,17 @@
 
 package fi.espoo.evaka
 
-import com.github.kittinunf.fuel.core.FileDataPart
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.isSuccessful
-import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.getTestDataSource
-import fi.espoo.evaka.shared.config.jackson2JsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.trustAllCerts
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import io.opentelemetry.api.trace.Tracer
-import java.io.File
 import java.net.URL
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
@@ -54,17 +42,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build()
 
-    protected val jackson2JsonMapper: com.fasterxml.jackson.databind.json.JsonMapper =
-        jackson2JsonMapperBuilder()
-            .disable(
-                com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
-            )
-            .build()
-
     private lateinit var jdbi: Jdbi
-
-    /** HTTP client for testing the application */
-    protected lateinit var http: FuelManager
 
     @Autowired protected lateinit var env: Environment
 
@@ -84,9 +62,6 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @BeforeAll
     fun beforeAll() {
         assert(httpPort > 0)
-        http = FuelManager.trustAllCerts()
-        http.forceMethods = true // use actual PATCH requests
-        http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi, tracer).connectWithManualLifecycle()
         if (!resetDbBeforeEach) {
@@ -107,26 +82,4 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     fun afterAll() {
         db.close()
     }
-
-    fun uploadAttachment(
-        applicationId: ApplicationId,
-        user: AuthenticatedUser,
-        type: ApplicationAttachmentType = ApplicationAttachmentType.URGENCY,
-    ): Boolean {
-        val path =
-            if (user is AuthenticatedUser.Citizen)
-                "/citizen/attachments/applications/$applicationId"
-            else "/employee/attachments/applications/$applicationId"
-        val (_, res, _) =
-            http
-                .upload(path, parameters = listOf("type" to type))
-                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-                .asUser(user)
-                .response()
-
-        return res.isSuccessful
-    }
 }
-
-fun Request.withMockedTime(time: HelsinkiDateTime) =
-    this.header("EvakaMockedTime", time.toZonedDateTime())

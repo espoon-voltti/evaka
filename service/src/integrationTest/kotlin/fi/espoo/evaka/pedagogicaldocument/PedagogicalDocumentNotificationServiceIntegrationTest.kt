@@ -4,9 +4,8 @@
 
 package fi.espoo.evaka.pedagogicaldocument
 
-import com.github.kittinunf.fuel.core.FileDataPart
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -19,7 +18,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -33,7 +31,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import java.io.File
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -41,11 +38,13 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import tools.jackson.module.kotlin.readValue
+import org.springframework.mock.web.MockMultipartFile
 
 class PedagogicalDocumentNotificationServiceIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var pedagogicalDocumentController: PedagogicalDocumentController
+    @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
@@ -214,14 +213,11 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         user: AuthenticatedUser.Employee,
         body: PedagogicalDocumentPostBody,
     ) =
-        jsonMapper.readValue<PedagogicalDocument>(
-            http
-                .post("/employee/pedagogical-document")
-                .jsonBody(jsonMapper.writeValueAsString(body))
-                .asUser(user)
-                .responseString()
-                .third
-                .get()
+        pedagogicalDocumentController.createPedagogicalDocument(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            body,
         )
 
     private fun updateDocument(
@@ -229,23 +225,25 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         id: PedagogicalDocumentId,
         body: PedagogicalDocumentPostBody,
     ) =
-        jsonMapper.readValue<PedagogicalDocument>(
-            http
-                .put("/employee/pedagogical-document/$id")
-                .jsonBody(jsonMapper.writeValueAsString(body))
-                .asUser(user)
-                .responseString()
-                .third
-                .get()
+        pedagogicalDocumentController.updatePedagogicalDocument(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            body,
         )
 
-    private fun uploadDocumentAttachment(user: AuthenticatedUser, id: PedagogicalDocumentId) {
-        http
-            .upload("/employee/attachments/pedagogical-documents/$id")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .response()
-            .also { assertEquals(200, it.second.statusCode) }
+    private fun uploadDocumentAttachment(
+        user: AuthenticatedUser.Employee,
+        id: PedagogicalDocumentId,
+    ) {
+        attachmentsController.uploadPedagogicalDocumentAttachment(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
+        )
     }
 
     private fun getEmailFor(person: DevPerson): Email {

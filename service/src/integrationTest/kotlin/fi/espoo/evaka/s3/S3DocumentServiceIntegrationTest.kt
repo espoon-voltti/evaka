@@ -7,11 +7,14 @@ package fi.espoo.evaka.s3
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.utils.trustAllCerts
 import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +30,8 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @Autowired private lateinit var bucketEnv: BucketEnv
 
     private lateinit var documentClient: DocumentService
+
+    private val http = OkHttpClient.Builder().apply { trustAllCerts(this) }.build()
 
     val documentRef = DocumentKey.Attachment(AttachmentId(UUID.randomUUID()))
 
@@ -76,10 +81,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val response = documentClient.responseAttachment(location, null)
         val s3Url = responseEntityToS3URL(response)
-        val (_, s3response, s3data) = http.get(s3Url).response()
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
 
-        assertEquals("text/csv", s3response.headers["Content-Type"].first())
-        assertContentEquals(byteArrayOf(0x22, 0x11, 0x33), s3data.get())
+        assertEquals("text/csv", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x22, 0x11, 0x33), s3response.body.bytes())
         assertEquals(listOf("attachment"), response.headers["Content-Disposition"])
     }
 
@@ -90,10 +95,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val response = documentClient.responseAttachment(location, "overridden-filename.pdf")
         val s3Url = responseEntityToS3URL(response)
-        val (_, s3response, s3data) = http.get(s3Url).response()
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
 
-        assertEquals("application/pdf", s3response.headers["Content-Type"].first())
-        assertContentEquals(byteArrayOf(0x33, 0x11, 0x22), s3data.get())
+        assertEquals("application/pdf", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x33, 0x11, 0x22), s3response.body.bytes())
         assertEquals(
             listOf(
                 "attachment; filename=\"=?UTF-8?Q?overridden-filename.pdf?=\"; filename*=UTF-8''overridden-filename.pdf"
@@ -109,10 +114,10 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val response = documentClient.responseInline(location, "overridden-filename.txt")
         val s3Url = responseEntityToS3URL(response)
-        val (_, s3response, s3data) = http.get(s3Url).response()
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
 
-        assertEquals("text/plain", s3response.headers["Content-Type"].first())
-        assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3data.get())
+        assertEquals("text/plain", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3response.body.bytes())
         assertEquals(
             listOf(
                 "inline; filename=\"=?UTF-8?Q?overridden-filename.txt?=\"; filename*=UTF-8''overridden-filename.txt"

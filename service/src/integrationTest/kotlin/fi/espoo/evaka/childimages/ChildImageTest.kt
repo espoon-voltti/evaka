@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.utils.decodeHex
+import fi.espoo.evaka.shared.utils.trustAllCerts
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -162,7 +163,11 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 
     private fun downloadImage(imageId: ChildImageId): ByteArray {
         val response = childImageController.getImage(dbInstance(), mobileUser, clock, imageId)
-        val (_, _, data) = http.get(responseEntityToS3URL(response)).response()
-        return data.get()
+        val http = okhttp3.OkHttpClient.Builder().apply { trustAllCerts(this) }.build()
+        return http
+            .newCall(okhttp3.Request.Builder().url(responseEntityToS3URL(response)).build())
+            .execute()
+            .body
+            .bytes()
     }
 }

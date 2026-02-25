@@ -7,7 +7,6 @@ bouncycastle = "1.83"
 dd-java-agent = "1.59.0"
 flyingsaucer = "10.0.6"
 flyway = "12.0.1"
-fuel = "2.3.1"
 java = "25"
 kotlin = "2.3.10"
 ktfmt = "0.25.0"
@@ -26,8 +25,6 @@ flyingsaucer-core = { module = "org.xhtmlrenderer:flying-saucer-core", version.r
 flyingsaucer-pdf = { module = "org.xhtmlrenderer:flying-saucer-pdf", version.ref = "flyingsaucer" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
-fuel = { module = "com.github.kittinunf.fuel:fuel", version.ref = "fuel" }
-fuel-jackson = { module = "com.github.kittinunf.fuel:fuel-jackson", version.ref = "fuel" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 ktlint = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 ktlint-cli-ruleset-core = { module = "com.pinterest.ktlint:ktlint-cli-ruleset-core", version.ref = "ktlint" }

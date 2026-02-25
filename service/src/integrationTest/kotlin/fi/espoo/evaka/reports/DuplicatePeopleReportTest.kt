@@ -4,28 +4,32 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser =
-        AuthenticatedUser.Employee(
-            id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.ADMIN),
-        )
+    @Autowired private lateinit var controller: DuplicatePeopleReportController
+
+    private val clock = MockEvakaClock(2020, 1, 1, 12, 0)
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { it.insert(admin) }
+    }
 
     @Test
     fun `two people with identical names and dates of birth are matched`() {
@@ -46,14 +50,10 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             it.insert(personWithoutSsn, DevPersonType.RAW_ROW)
         }
 
-        val (_, _, result) =
-            http
-                .get("/employee/reports/duplicate-people")
-                .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
+        val result = controller.getDuplicatePeopleReport(dbInstance(), admin.user, clock)
 
-        assertEquals(2, result.get().size)
-        assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
+        assertEquals(2, result.size)
+        assertTrue(result.all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
     }
 
     @Test
@@ -81,14 +81,10 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             it.insert(personWithoutSsn, DevPersonType.RAW_ROW)
         }
 
-        val (_, _, result) =
-            http
-                .get("/employee/reports/duplicate-people")
-                .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
+        val result = controller.getDuplicatePeopleReport(dbInstance(), admin.user, clock)
 
-        assertEquals(2, result.get().size)
-        assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
+        assertEquals(2, result.size)
+        assertTrue(result.all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
     }
 
     @Test
@@ -115,13 +111,9 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             it.insert(personWithoutSsn, DevPersonType.RAW_ROW)
         }
 
-        val (_, _, result) =
-            http
-                .get("/employee/reports/duplicate-people")
-                .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
+        val result = controller.getDuplicatePeopleReport(dbInstance(), admin.user, clock)
 
-        assertEquals(0, result.get().size)
+        assertEquals(0, result.size)
     }
 
     @Test
@@ -144,12 +136,8 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             it.insert(personWithSsn2, DevPersonType.RAW_ROW)
         }
 
-        val (_, _, result) =
-            http
-                .get("/employee/reports/duplicate-people")
-                .asUser(adminUser)
-                .responseObject<List<DuplicatePeopleReportRow>>(jackson2JsonMapper)
+        val result = controller.getDuplicatePeopleReport(dbInstance(), admin.user, clock)
 
-        assertEquals(0, result.get().size)
+        assertEquals(0, result.size)
     }
 }

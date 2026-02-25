@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareAdditionalDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
+import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.uploadApplicationAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -37,7 +39,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var applicationController: ApplicationControllerV2
     @Autowired lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+    @Autowired lateinit var attachmentsController: AttachmentsController
     @Autowired lateinit var stateService: ApplicationStateService
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
@@ -324,7 +326,11 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     fun `application attachments when service workers adds attachments, end user does not see attachments uploaded by service worker`() {
         val applicationId = createPlacementProposalWithAttachments(daycare.id)
 
-        assertTrue(uploadAttachment(applicationId, serviceWorker))
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            serviceWorker,
+        )
 
         val serviceWorkerResult = getApplication(applicationId, serviceWorker)
         assertEquals(3, serviceWorkerResult.attachments.size)
@@ -441,8 +447,18 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     document = daycareForm,
                 )
             }
-        uploadAttachment(applicationId, citizen, ApplicationAttachmentType.URGENCY)
-        uploadAttachment(applicationId, citizen, ApplicationAttachmentType.EXTENDED_CARE)
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            citizen,
+            ApplicationAttachmentType.URGENCY,
+        )
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            citizen,
+            ApplicationAttachmentType.EXTENDED_CARE,
+        )
         val today = LocalDate.of(2021, 1, 1)
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->

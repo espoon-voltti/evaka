@@ -230,13 +230,11 @@ import fi.espoo.voltti.logging.loggers.error
 try {
   logger.debug(mapOf("url" to url)) { "Doing something" }
   something()
-} catch (error: FuelError) {
+} catch (e: Exception) {
   val meta = mapOf(
-      "method" to request.method,
-      "url" to request.url,
-      "body" to request.body.asString("application/json"),
-      "errorMessage" to error.errorData.decodeToString()
+      "url" to url,
+      "errorMessage" to e.message
   )
-  logger.error(error, meta) { "Request failed, status ${error.response.statusCode}" }
+  logger.error(e, meta) { "Request failed" }
 }
 ```

@@ -15,6 +15,8 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareAdditionalDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.uploadApplicationAttachment
 import fi.espoo.evaka.caseprocess.CaseProcessState
 import fi.espoo.evaka.caseprocess.ProcessMetadataController
 import fi.espoo.evaka.caseprocess.getCaseProcessByApplicationId
@@ -96,6 +98,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var attachmentsController: AttachmentsController
     @Autowired private lateinit var service: ApplicationStateService
     @Autowired private lateinit var metadataController: ProcessMetadataController
 
@@ -411,11 +414,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertDueDate(applicationId, null) // missing attachment
 
         // when
-        assertTrue(
-            uploadAttachment(
-                applicationId,
-                AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
-            )
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
         )
         db.transaction { tx ->
             tx.execute {
@@ -424,11 +426,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 )
             }
         }
-        assertTrue(
-            uploadAttachment(
-                applicationId,
-                AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
-            )
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
         )
         // then
         assertDueDate(
@@ -450,19 +451,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
         }
         // when
-        assertTrue(
-            uploadAttachment(
-                applicationId,
-                AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
-                ApplicationAttachmentType.EXTENDED_CARE,
-            )
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
+            ApplicationAttachmentType.EXTENDED_CARE,
         )
-        assertTrue(
-            uploadAttachment(
-                applicationId,
-                AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
-                ApplicationAttachmentType.URGENCY,
-            )
+        attachmentsController.uploadApplicationAttachment(
+            dbInstance(),
+            applicationId,
+            AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
+            ApplicationAttachmentType.URGENCY,
         )
 
         // then

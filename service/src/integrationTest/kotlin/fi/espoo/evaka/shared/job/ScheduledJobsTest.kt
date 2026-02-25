@@ -15,6 +15,8 @@ import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.uploadApplicationAttachment
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -70,6 +72,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var attachmentsController: AttachmentsController
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
 
     @Autowired private lateinit var applicationStateService: ApplicationStateService
@@ -137,10 +140,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             setApplicationCreatedDate(tx, idNotToBeDeleted, LocalDate.now().minusDays(60))
         }
 
-        db.transaction {
-            uploadAttachment(idToBeDeleted, user)
-            uploadAttachment(idNotToBeDeleted, user)
-        }
+        attachmentsController.uploadApplicationAttachment(dbInstance(), idToBeDeleted, user)
+        attachmentsController.uploadApplicationAttachment(dbInstance(), idNotToBeDeleted, user)
 
         db.read {
             assertEquals(1, it.getApplicationAttachments(idToBeDeleted).size)
