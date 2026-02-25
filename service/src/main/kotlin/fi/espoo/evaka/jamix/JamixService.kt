@@ -35,8 +35,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor
-import fi.espoo.evaka.shared.utils.executeGetRequest
-import fi.espoo.evaka.shared.utils.executePostJsonRequest
+import fi.espoo.evaka.shared.utils.get
+import fi.espoo.evaka.shared.utils.post
 import fi.espoo.evaka.specialdiet.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -403,15 +403,15 @@ class JamixClient(env: JamixEnv, private val jsonMapper: JsonMapper) {
                 ),
         )
 
-    fun getCustomers(): List<Customer> = httpClient.executeGetRequest("customers")
+    fun getCustomers(): List<Customer> = httpClient.get("customers")
 
     fun createMealOrder(order: MealOrder) {
-        httpClient.executePostJsonRequest("v2/mealorders", order)
+        httpClient.post<Unit>("v2/mealorders", jsonBody = order)
     }
 
-    fun getDiets(): List<JamixSpecialDiet> = httpClient.executeGetRequest("diets")
+    fun getDiets(): List<JamixSpecialDiet> = httpClient.get("diets")
 
-    fun getTextures(): List<JamixTexture> = httpClient.executeGetRequest("textures")
+    fun getTextures(): List<JamixTexture> = httpClient.get("textures")
 }
 
 private fun LocalDate.startOfNextWeek(): LocalDate {
