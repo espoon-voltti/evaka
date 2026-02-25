@@ -28,9 +28,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 "care_area",
-                "child_daily_note",
                 "child_images",
-                "child_sticky_note",
                 "club_term",
                 "daily_service_time",
                 "daycare_acl",
@@ -45,7 +43,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "fee_decision_child",
                 "fee_decision",
                 "fee_thresholds",
-                "group_note",
                 "guardian_blocklist",
                 "guardian",
                 "income_notification",
@@ -58,9 +55,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "message_thread",
                 "message_thread_folder",
                 "message_thread_participant",
-                "mobile_device",
-                "mobile_device_push_subscription",
-                "pairing",
                 "payment",
                 "person",
                 "placement_plan",
@@ -74,7 +68,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_plan",
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
-                "vapid_jwt",
                 "voucher_value_decision",
                 "voucher_value_report_snapshot",
             )
@@ -88,9 +81,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         val permittedViolations =
             setOf(
                 "care_area",
-                "child_daily_note",
                 "child_images",
-                "child_sticky_note",
                 "club_term",
                 "daily_service_time",
                 "daycare",
@@ -106,7 +97,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "fee_thresholds",
                 "fridge_child",
                 "fridge_partner",
-                "group_note",
                 "guardian_blocklist",
                 "income_notification",
                 "koski_study_right",
@@ -118,9 +108,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "message_thread_children",
                 "message_thread_folder",
                 "message_thread_participant",
-                "mobile_device",
-                "mobile_device_push_subscription",
-                "pairing",
                 "payment",
                 "person",
                 "placement_plan",
@@ -134,7 +121,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "staff_attendance_plan",
                 "staff_attendance_realtime",
                 "staff_occupancy_coefficient",
-                "vapid_jwt",
                 "voucher_value_decision",
             )
         val violations =

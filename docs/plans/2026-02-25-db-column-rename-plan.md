@@ -52,30 +52,32 @@ After all tables in the group are done:
 
 ## Task list
 
-### Group 1: setting/holidayperiod (4 tables)
+Keep this list up-to-date as groups are completed.
 
-- [ ] `setting` (both)
-- [ ] `holiday_period` (both)
-- [ ] `holiday_period_questionnaire` (both)
-- [ ] `holiday_questionnaire_answer` (both)
+### Group 1: setting/holidayperiod (4 tables) ✓
 
-### Group 2: assistance/document (5 tables)
+- [x] `setting` (both)
+- [x] `holiday_period` (both)
+- [x] `holiday_period_questionnaire` (both)
+- [x] `holiday_questionnaire_answer` (both)
 
-- [ ] `daycare_assistance` (both)
-- [ ] `other_assistance_measure` (both)
-- [ ] `preschool_assistance` (both)
-- [ ] `child_document` (both)
-- [ ] `document_template` (both)
+### Group 2: assistance/document (5 tables) ✓
 
-### Group 3: notes/pairing/webpush (7 tables)
+- [x] `daycare_assistance` (both)
+- [x] `other_assistance_measure` (both)
+- [x] `preschool_assistance` (both)
+- [x] `child_document` (both)
+- [x] `document_template` (both)
 
-- [ ] `child_daily_note` (both)
-- [ ] `child_sticky_note` (both)
-- [ ] `group_note` (both)
-- [ ] `pairing` (both)
-- [ ] `mobile_device` (both)
-- [ ] `mobile_device_push_subscription` (both)
-- [ ] `vapid_jwt` (both)
+### Group 3: notes/pairing/webpush (7 tables) ✓
+
+- [x] `child_daily_note` (both)
+- [x] `child_sticky_note` (both)
+- [x] `group_note` (both)
+- [x] `pairing` (both)
+- [x] `mobile_device` (both)
+- [x] `mobile_device_push_subscription` (both)
+- [x] `vapid_jwt` (both)
 
 ### Group 4: attendance (5 tables)
 
