@@ -1,0 +1,12 @@
+{
+  "name": "eVaka",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "appPort": ["3000:3000", "9090:9090", "9099:9099"],
+  "forwardPorts": [3000, 9090, 9099],
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
+}
