@@ -170,7 +170,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
             db.read {
                 it.createQuery {
                         sql(
-                            "SELECT MAX(updated) FROM staff_attendance WHERE date = ${bind(firstDay)}"
+                            "SELECT MAX(updated_at) FROM staff_attendance WHERE date = ${bind(firstDay)}"
                         )
                     }
                     .exactlyOne<HelsinkiDateTime>()

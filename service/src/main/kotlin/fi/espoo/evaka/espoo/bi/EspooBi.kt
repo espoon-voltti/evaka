@@ -229,7 +229,7 @@ FROM assistance_factor
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, level,
+    id, created_at AS created, updated_at AS updated, child_id AS child, level,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM daycare_assistance
 """
@@ -241,7 +241,7 @@ FROM daycare_assistance
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, level,
+    id, created_at AS created, updated_at AS updated, child_id AS child, level,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM preschool_assistance
 """
@@ -253,7 +253,7 @@ FROM preschool_assistance
             sql(
                 """
 SELECT
-    id, created, updated, child_id AS child, type,
+    id, created_at AS created, updated_at AS updated, child_id AS child, type,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM other_assistance_measure
 """
