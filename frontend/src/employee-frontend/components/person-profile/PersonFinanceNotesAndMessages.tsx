@@ -95,7 +95,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const { person, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
-  const { refreshMessages, financeAccount } = useContext(MessageContext)
+  const { financeAccount } = useContext(MessageContext)
   const financeNotes = useQueryResult(financeNotesQuery({ personId: id }))
   const [text, setText] = useState<string>('')
   const financeThreads = useQueryResult(
@@ -165,7 +165,6 @@ export default React.memo(function PersonFinanceNotesAndMessages({
               createFinanceThreadMutation,
               arg
             )
-            refreshMessages(accountId)
             clearUiMode()
           }, onSuccessTimeout)
         })
@@ -187,7 +186,6 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       id,
       onSuccessTimeout,
       queryClient,
-      refreshMessages,
       setErrorMessage
     ]
   )
@@ -228,9 +226,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
             onClose={() => clearUiMode()}
             onDiscard={(accountId, draftId) => {
               clearUiMode()
-              void deleteDraftResult({ accountId, draftId }).then(() => {
-                refreshMessages(accountId)
-              })
+              void deleteDraftResult({ accountId, draftId })
             }}
             onSend={onSend}
             saveMessageAttachment={messageAttachment}
@@ -340,7 +336,6 @@ export default React.memo(function PersonFinanceNotesAndMessages({
                     thread={item}
                     financeAccount={financeAccount!.account}
                     setThread={setThread}
-                    refreshMessages={refreshMessages}
                     uiMode={uiMode}
                     clearUiMode={clearUiMode}
                     toggleUiMode={toggleUiMode}
@@ -371,7 +366,6 @@ const SingleThread = React.memo(function SingleThread({
   thread,
   financeAccount,
   setThread,
-  refreshMessages,
   uiMode,
   clearUiMode,
   toggleUiMode
@@ -380,7 +374,6 @@ const SingleThread = React.memo(function SingleThread({
   thread: MessageThread
   financeAccount: TypedMessageAccount
   setThread: (thread: MessageThread) => void
-  refreshMessages: (id: MessageAccountId) => void
   uiMode: string
   clearUiMode: () => void
   toggleUiMode: (mode: string) => void
@@ -455,9 +448,7 @@ const SingleThread = React.memo(function SingleThread({
               accountId: financeAccount.id,
               threadId: thread.id
             })}
-            onSuccess={() => {
-              refreshMessages(financeAccount.id)
-            }}
+            onSuccess={() => undefined}
           />
         </FixedSpaceRow>
       </FlexRow>
@@ -483,7 +474,6 @@ const SingleThread = React.memo(function SingleThread({
               }
             })}
             onSuccess={() => {
-              refreshMessages(financeAccount.id)
               clearUiMode()
             }}
             onDiscard={() => {

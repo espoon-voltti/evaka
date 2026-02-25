@@ -6,30 +6,27 @@ import sortBy from 'lodash/sortBy'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { wrapResult } from 'lib-common/api'
 import { sortSelectableRecipients } from 'lib-common/api-types/messaging'
 import type { SelectableRecipientsResponse } from 'lib-common/generated/api-types/messaging'
+import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getSelectableRecipients } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
+import { selectableRecipientsQuery } from './queries'
 import {
   financeMessageBoxes,
   municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes
 } from './types-view'
-
-const getSeletableRecipientsResult = wrapResult(getSelectableRecipients)
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -117,19 +114,16 @@ function Accounts({ setRecipients }: AccountsProps) {
     [selectedAccount?.unitId, unitOptions]
   )
 
+  const selectableRecipients = useQueryResult(selectableRecipientsQuery())
   useEffect(() => {
-    void getSeletableRecipientsResult().then(
-      (result: Result<SelectableRecipientsResponse[]>) => {
-        if (result.isSuccess) {
-          const sortedRecipients = result.value.map((account) => ({
-            ...account,
-            receivers: sortSelectableRecipients(account.receivers)
-          }))
-          setRecipients(sortedRecipients)
-        }
-      }
-    )
-  }, [setRecipients])
+    if (selectableRecipients.isSuccess) {
+      const sortedRecipients = selectableRecipients.value.map((account) => ({
+        ...account,
+        receivers: sortSelectableRecipients(account.receivers)
+      }))
+      setRecipients(sortedRecipients)
+    }
+  }, [selectableRecipients, setRecipients])
 
   const visibleGroupAccounts = selectedUnit
     ? sortBy(

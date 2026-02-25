@@ -198,7 +198,7 @@ interface Props {
   getAttachmentUrl: (attachmentId: AttachmentId, fileName: string) => string
   accounts: AuthorizedMessageAccount[]
   folders: MessageThreadFolder[]
-  onClose: (didChanges: boolean) => void
+  onClose: () => void
   onDiscard: (accountId: MessageAccountId, draftId: MessageDraftId) => void
   onSend: (
     accountId: MessageAccountId,
@@ -468,7 +468,7 @@ export default React.memo(function MessageEditor({
     if (draftWasModified && draftState === 'dirty') {
       saveDraft()
     }
-    onClose(draftWasModified)
+    onClose()
   }, [draftState, draftWasModified, onClose, saveDraft])
 
   const senderOptions = useMemo(
