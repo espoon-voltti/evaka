@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
@@ -20,7 +19,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -28,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
@@ -42,6 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    @Autowired
+    private lateinit var serviceVoucherValueReportController: ServiceVoucherValueReportController
+
+    private val clock = MockEvakaClock(2020, 2, 1, 12, 0)
 
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
     private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
@@ -171,17 +175,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         year: Int,
         month: Int,
     ): List<ServiceVoucherValueUnitAggregate> {
-        val (_, response, data) =
-            http
-                .get(
-                    "/employee/reports/service-voucher-value/units",
-                    listOf("areaId" to areaId, "year" to year, "month" to month),
-                )
-                .asUser(adminUser)
-                .responseObject<ServiceVoucherReport>(jackson2JsonMapper)
-        assertEquals(200, response.statusCode)
-
-        return data.get().rows
+        return serviceVoucherValueReportController
+            .getServiceVoucherReportForAllUnits(dbInstance(), adminUser, clock, year, month, areaId)
+            .rows
     }
 
     private fun createTestSetOfDecisions(): Int {

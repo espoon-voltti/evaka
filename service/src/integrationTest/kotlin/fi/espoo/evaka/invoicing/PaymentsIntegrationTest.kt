@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.caseprocess.CaseProcessMetadataService
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -31,7 +29,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -577,14 +574,12 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun searchPayments(params: SearchPaymentsRequest): PagedPayments {
-        val (_, response, result) =
-            http
-                .post("/employee/payments/search")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(params))
-                .responseObject<PagedPayments>(jackson2JsonMapper)
-        assertEquals(200, response.statusCode)
-        return result.get()
+        return paymentController.searchPayments(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(janFirst, LocalTime.of(10, 0))),
+            params,
+        )
     }
 
     private fun createPaymentDrafts(today: LocalDate): List<PaymentId> {

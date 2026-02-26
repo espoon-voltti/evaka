@@ -10,13 +10,20 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import java.util.UUID
 import kotlin.test.assertEquals
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 
 class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
+    private val http = OkHttpClient()
+
     @Test
     fun `test server startup`() {
-        val (_, _, res) = http.get("/health").responseString()
+        val response =
+            http
+                .newCall(Request.Builder().url("http://localhost:$httpPort/health").build())
+                .execute()
         JSONAssert.assertEquals(
             // language=json
             """
@@ -24,22 +31,35 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     "status": "UP"
 }
         """,
-            res.get(),
+            response.body.string(),
             false,
         )
     }
 
     @Test
     fun `a valid JWT token and user header are required in API requests`() {
-        val (_, res, _) = http.get("/employee/daycares").responseString()
-        assertEquals(401, res.statusCode)
+        val response =
+            http
+                .newCall(
+                    Request.Builder().url("http://localhost:$httpPort/employee/daycares").build()
+                )
+                .execute()
+        assertEquals(401, response.code)
 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER),
             )
-        val (_, res2, _) = http.get("/employee/daycares").asUser(user).responseString()
-        assertEquals(200, res2.statusCode)
+        val response2 =
+            http
+                .newCall(
+                    Request.Builder()
+                        .url("http://localhost:$httpPort/employee/daycares")
+                        .asUser(user)
+                        .build()
+                )
+                .execute()
+        assertEquals(200, response2.code)
     }
 }

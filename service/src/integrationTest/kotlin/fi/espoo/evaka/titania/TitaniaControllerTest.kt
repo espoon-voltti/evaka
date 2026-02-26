@@ -4,13 +4,16 @@
 
 package fi.espoo.evaka.titania
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
 import java.nio.charset.StandardCharsets
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert.assertEquals
@@ -20,50 +23,66 @@ import org.springframework.util.StreamUtils
 
 internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
+    private val client = OkHttpClient()
+
+    private val jsonMediaType = "application/json".toMediaType()
+
+    private fun readResource(path: String): String =
+        ClassPathResource(path).inputStream.use {
+            StreamUtils.copyToString(it, StandardCharsets.UTF_8)
+        }
+
     @Test
     fun `put working time events with system user should respond 403`() {
-        val (_, res, _) =
-            http
-                .put("/integration/titania/working-time-events")
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .jsonBody(
-                    ClassPathResource("titania/titania-update-request-valid-example-data.json")
-                        .inputStream
-                        .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    readResource("titania/titania-update-request-valid-example-data.json")
+                        .toRequestBody(jsonMediaType)
                 )
-                .response()
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .build()
 
-        assertThat(res).returns(403) { it.statusCode }
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(403)
+        }
     }
 
     @Test
     fun `put working time events without employee id should respond 400`() {
-        val (_, res, _) =
-            http
-                .put("/integration/titania/working-time-events")
-                .asUser(AuthenticatedUser.Integration)
-                .jsonBody(
-                    ClassPathResource("titania/titania-update-request-without-employee-id.json")
-                        .inputStream
-                        .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    readResource("titania/titania-update-request-without-employee-id.json")
+                        .toRequestBody(jsonMediaType)
                 )
-                .response()
+                .asUser(AuthenticatedUser.Integration)
+                .build()
 
-        assertThat(res).returns(400) { it.statusCode }
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(400)
+        }
     }
 
     @Test
     fun `put working time events with titania exception should respond 400`() {
-        val (_, res, _) =
-            http
-                .put("/integration/titania/working-time-events")
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    jsonMapper
+                        .writeValueAsString(titaniaUpdateRequestInvalidExampleData)
+                        .toRequestBody(jsonMediaType)
+                )
                 .asUser(AuthenticatedUser.Integration)
-                .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestInvalidExampleData))
-                .response()
+                .build()
 
-        assertThat(res).returns(400) { it.statusCode }
-        assertEquals(
-            """{
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(400)
+            assertEquals(
+                """{
     "faultcode": "Server",
     "faultstring": "multiple",
     "faultactor": "/integration/titania/working-time-events",
@@ -74,68 +93,82 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
         }
     ]
 }""",
-            res.body().asString("application/json"),
-            JSONCompareMode.STRICT,
-        )
+                response.body.string(),
+                JSONCompareMode.STRICT,
+            )
+        }
     }
 
     @Test
     fun `get stamped working time events with system user should respond 403`() {
-        val (_, res, _) =
-            http
-                .post("/integration/titania/stamped-working-time-events")
-                .asUser(AuthenticatedUser.SystemInternalUser)
-                .jsonBody(
-                    ClassPathResource("titania/titania-get-request-valid-example-data.json")
-                        .inputStream
-                        .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/stamped-working-time-events")
+                .post(
+                    readResource("titania/titania-get-request-valid-example-data.json")
+                        .toRequestBody(jsonMediaType)
                 )
-                .response()
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .build()
 
-        assertThat(res).returns(403) { it.statusCode }
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(403)
+        }
     }
 
     @Test
     fun `get stamped working time events without employee id should respond 400`() {
-        val (_, res, _) =
-            http
-                .post("/integration/titania/stamped-working-time-events")
-                .asUser(AuthenticatedUser.Integration)
-                .jsonBody(
-                    ClassPathResource("titania/titania-get-request-without-employee-id.json")
-                        .inputStream
-                        .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/stamped-working-time-events")
+                .post(
+                    readResource("titania/titania-get-request-without-employee-id.json")
+                        .toRequestBody(jsonMediaType)
                 )
-                .response()
+                .asUser(AuthenticatedUser.Integration)
+                .build()
 
-        assertThat(res).returns(400) { it.statusCode }
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(400)
+        }
     }
 
     @Test
     fun `put working time events with unknown employee number should respond 200`() {
-        val (_, res, _) =
-            http
-                .put("/integration/titania/working-time-events")
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    jsonMapper
+                        .writeValueAsString(titaniaUpdateRequestValidExampleData)
+                        .toRequestBody(jsonMediaType)
+                )
                 .asUser(AuthenticatedUser.Integration)
-                .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestValidExampleData))
-                .response()
+                .build()
 
-        assertThat(res).returns(200) { it.statusCode }
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(200)
+        }
     }
 
     @Test
     fun `put working time events with conflicting shifts should respond 400`() {
         db.transaction { tx -> tx.insert(DevEmployee(employeeNumber = "176716")) }
-        val (_, res, _) =
-            http
-                .put("/integration/titania/working-time-events")
+        val request =
+            Request.Builder()
+                .url("http://localhost:$httpPort/integration/titania/working-time-events")
+                .put(
+                    jsonMapper
+                        .writeValueAsString(titaniaUpdateRequestConflictingExampleData)
+                        .toRequestBody(jsonMediaType)
+                )
                 .asUser(AuthenticatedUser.Integration)
-                .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestConflictingExampleData))
-                .response()
+                .build()
 
-        assertThat(res).returns(400) { it.statusCode }
-        assertEquals(
-            """{
+        client.newCall(request).execute().use { response ->
+            assertThat(response.code).isEqualTo(400)
+            assertEquals(
+                """{
     "faultcode": "Server",
     "faultstring": "multiple",
     "faultactor": "/integration/titania/working-time-events",
@@ -146,8 +179,9 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
         }
     ]
 }""",
-            res.body().asString("application/json"),
-            JSONCompareMode.STRICT,
-        )
+                response.body.string(),
+                JSONCompareMode.STRICT,
+            )
+        }
     }
 }

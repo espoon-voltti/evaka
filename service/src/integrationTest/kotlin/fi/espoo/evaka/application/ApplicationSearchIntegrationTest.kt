@@ -10,6 +10,8 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.uploadApplicationAttachment
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
@@ -41,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
+    @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val now =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
@@ -449,7 +452,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             }
 
         if (attachment) {
-            uploadAttachment(
+            attachmentsController.uploadApplicationAttachment(
+                dbInstance(),
                 applicationId,
                 AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
             )

@@ -11,8 +11,6 @@ dependencies {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.12")
         api("com.auth0:java-jwt:4.5.1")
         api("com.github.kagkarlsson:db-scheduler:16.7.1")
-        api(libs.fuel)
-        api(libs.fuel.jackson)
         api("com.github.mwiede:jsch:2.27.7")
         api("com.google.guava:guava:33.5.0-jre")
         api("com.networknt:json-schema-validator:3.0.0")
@@ -55,7 +53,6 @@ dependencies {
         api("ch.qos.logback:logback-core:1.5.32")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.21.0"))
     api(platform("tools.jackson:jackson-bom:3.0.4"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.3.2"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.59.0"))

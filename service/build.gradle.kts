@@ -93,10 +93,6 @@ dependencies {
     implementation("org.jdbi:jdbi3-kotlin")
     implementation("org.jdbi:jdbi3-postgres")
 
-    // Fuel
-    implementation("com.github.kittinunf.fuel:fuel")
-    implementation("com.github.kittinunf.fuel:fuel-jackson")
-
     // OkHttp
     implementation("com.squareup.okhttp3:okhttp")
 
@@ -110,12 +106,6 @@ dependencies {
     implementation("tools.jackson.core:jackson-core")
     implementation("tools.jackson.core:jackson-databind")
     implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("com.fasterxml.jackson.core:jackson-core")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
 
     // AWS SDK
     implementation("software.amazon.awssdk:s3")

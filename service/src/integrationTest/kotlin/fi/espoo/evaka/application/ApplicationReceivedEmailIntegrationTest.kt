@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -33,9 +32,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -49,6 +48,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired lateinit var applicationReceivedEmailService: ApplicationReceivedEmailService
+
+    @Autowired private lateinit var citizenApplicationController: ApplicationControllerCitizen
+
+    @Autowired private lateinit var employeeApplicationController: ApplicationControllerV2
 
     private val area = DevCareArea()
     private val daycare = DevDaycare(areaId = area.id)
@@ -95,6 +98,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     private val endUser = AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
 
     private val mockedTime = HelsinkiDateTime.of(LocalDate.of(2021, 1, 15), LocalTime.of(12, 0))
+    private val clock = MockEvakaClock(mockedTime)
 
     @BeforeEach
     fun beforeEach() {
@@ -123,14 +127,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -163,15 +160,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
-
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -204,14 +193,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document = validDaycareForm,
                 )
             }
-        val (_, res, _) =
-            http
-                .post("/employee/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(serviceWorker)
-                .response()
 
-        assertEquals(200, res.statusCode)
+        employeeApplicationController.sendApplication(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            applicationId,
+        )
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -265,14 +253,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -312,14 +293,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -349,14 +323,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document = validDaycareForm,
                 )
             }
-        val (_, res, _) =
-            http
-                .post("/employee/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(serviceWorker)
-                .response()
 
-        assertEquals(200, res.statusCode)
+        employeeApplicationController.sendApplication(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            applicationId,
+        )
         assertApplicationIsSent(applicationId)
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -378,14 +351,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -409,14 +375,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
 
-        val (_, res, _) =
-            http
-                .post("/citizen/applications/$applicationId/actions/send-application")
-                .withMockedTime(mockedTime)
-                .asUser(endUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
