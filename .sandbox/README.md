@@ -60,7 +60,7 @@ Copy `sandbox.example.json` to `sandbox.json` and customize:
 ## Post-create scripts
 
 Post-create scripts are run in the container after it's started the first
-time. Two scrips are available:
+time. Two scripts are available:
 
 - `post-create.sh` — Shared setup for all developers.
 - `post-create.local.sh` — Personal setup (gitignored), runs after the shared
