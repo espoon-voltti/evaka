@@ -5,24 +5,26 @@
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.result.Result
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.VtjXroadEnv
-import fi.espoo.evaka.shared.trustAllCerts
+import fi.espoo.evaka.shared.buildHttpClient
+import fi.espoo.evaka.shared.utils.get
+import fi.espoo.evaka.shared.utils.headerInterceptor
+import fi.espoo.evaka.shared.utils.post
+import fi.espoo.evaka.shared.utils.trustAllCerts
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
+import java.security.SecureRandom
 import java.time.LocalDate
-import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.kotlin.readValue
 
 private val logger = KotlinLogging.logger {}
 
@@ -37,83 +39,50 @@ class DvvModificationsServiceClient(
     xroadEnv: VtjXroadEnv,
     env: DvvModificationsEnv,
 ) {
-    private val serviceUrl: String = env.url
-    private val dvvUserId = env.userId
-    private val dvvPassword = env.password
-    private val dvvXroadClientId: String = env.xroadClientId
-
-    private val fuel =
-        if (
-            xroadEnv.httpClientCertificateCheck &&
-                xroadEnv.keyStore != null &&
-                xroadEnv.trustStore != null
-        ) {
-            certCheckFuelManager(keyStore = xroadEnv.keyStore, trustStore = xroadEnv.trustStore)
-        } else if (!xroadEnv.httpClientCertificateCheck) {
-            FuelManager.trustAllCerts()
-        } else {
-            FuelManager()
-        }
-
-    private fun certCheckFuelManager(keyStore: KeystoreEnv, trustStore: KeystoreEnv): FuelManager =
-        FuelManager().apply {
-            val keyManagerFactory =
-                KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            keystore = keyStore.load()
-            keyManagerFactory.init(keystore, keyStore.password?.value?.toCharArray())
-
-            val trustManagerFactory =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            val trustKeyStore = trustStore.load()
-            trustManagerFactory.init(trustKeyStore)
-
-            socketFactory =
-                SSLContext.getInstance("SSL")
-                    .apply {
-                        init(
-                            keyManagerFactory.keyManagers,
-                            trustManagerFactory.trustManagers,
-                            java.security.SecureRandom(),
+    private val serviceUrl = env.url
+    private val httpClient =
+        buildHttpClient(
+            rootUrl = URI(serviceUrl),
+            jsonMapper = jsonMapper,
+            interceptors =
+                buildList {
+                    add(headerInterceptor("Accept", "application/json"))
+                    add(headerInterceptor("MUTP-Tunnus", env.userId))
+                    add(headerInterceptor("MUTP-Salasana", env.password.value))
+                    add(headerInterceptor("X-Road-Client", env.xroadClientId))
+                    if (customizers.isNotEmpty()) {
+                        add(
+                            okhttp3.Interceptor { chain ->
+                                val builder = chain.request().newBuilder()
+                                customizers.forEach { it.customize(builder) }
+                                chain.proceed(builder.build())
+                            }
                         )
                     }
-                    .socketFactory
+                },
+            customize = sslConfiguration(xroadEnv),
+        )
 
-            hostnameVerifier = HostnameVerifier { _, _ -> true }
-        }
-
-    // Fetch the first modification token of the given date
     fun getFirstModificationToken(
         date: LocalDate
     ): DvvModificationServiceModificationTokenResponse? {
         logger.info {
             "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date"
         }
-        val (_, _, result) =
-            fuel
-                .get("$serviceUrl/kirjausavain/$date")
-                .header(Headers.ACCEPT, "application/json")
-                .header("MUTP-Tunnus", dvvUserId)
-                .header("MUTP-Salasana", dvvPassword.value)
-                .header("X-Road-Client", dvvXroadClientId)
-                .apply { customizers.forEach { it.customize(this) } }
-                .responseString()
-
-        return when (result) {
-            is Result.Success -> {
-                logger.info {
-                    "Fetching the first modification token of $date from DVV modification service succeeded"
-                }
-                jsonMapper.readValue<DvvModificationServiceModificationTokenResponse>(
-                    jsonMapper.readTree(result.get()).toString()
+        return try {
+            val response =
+                httpClient.get<DvvModificationServiceModificationTokenResponse>(
+                    "kirjausavain/$date"
                 )
+            logger.info {
+                "Fetching the first modification token of $date from DVV modification service succeeded"
             }
-
-            is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Fetching the first modification of $date from DVV modification service failed, message: ${String(result.error.errorData)}"
-                }
-                null
+            response
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Fetching the first modification of $date from DVV modification service failed"
             }
+            null
         }
     }
 
@@ -121,42 +90,64 @@ class DvvModificationsServiceClient(
         logger.info {
             "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/muutokset"
         }
-        val (_, _, result) =
-            fuel
-                .post("$serviceUrl/muutokset")
-                .header(Headers.ACCEPT, "application/json")
-                .header("MUTP-Tunnus", dvvUserId)
-                .header("MUTP-Salasana", dvvPassword.value)
-                .header("X-Road-Client", dvvXroadClientId)
-                .jsonBody(
-                    """{
-                    "viimeisinKirjausavain": $updateToken,
-                    "hetulista": [${ssns.joinToString { "\"$it\"" }}]
-                }
-                """
-                        .trimIndent()
+        return try {
+            val response =
+                httpClient.post<DvvModificationsResponse>(
+                    "muutokset",
+                    jsonBody =
+                        DvvModificationsRequest(
+                            viimeisinKirjausavain =
+                                updateToken.toLongOrNull()
+                                    ?: error("DVV update token is not a valid long: $updateToken"),
+                            hetulista = ssns,
+                        ),
                 )
-                .apply { customizers.forEach { it.customize(this) } }
-                .responseString()
-
-        return when (result) {
-            is Result.Success -> {
-                logger.info {
-                    "Fetching modifications with token $updateToken from DVV modifications service succeeded"
-                }
-                jsonMapper.readValue<DvvModificationsResponse>(
-                    jsonMapper.readTree(result.get()).toString()
-                )
+            logger.info {
+                "Fetching modifications with token $updateToken from DVV modifications service succeeded"
             }
-
-            is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(result.error.errorData)}"
-                }
-                throw result.getException()
+            response
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Fetching modifications with token $updateToken from DVV modifications service failed"
             }
+            throw e
         }
     }
+}
+
+internal fun sslConfiguration(xroadEnv: VtjXroadEnv): (OkHttpClient.Builder) -> Unit = { builder ->
+    if (
+        xroadEnv.httpClientCertificateCheck &&
+            xroadEnv.keyStore != null &&
+            xroadEnv.trustStore != null
+    ) {
+        configureCertificateCheck(builder, xroadEnv.keyStore, xroadEnv.trustStore)
+    } else if (!xroadEnv.httpClientCertificateCheck) {
+        trustAllCerts(builder)
+    }
+}
+
+private fun configureCertificateCheck(
+    builder: OkHttpClient.Builder,
+    keyStore: KeystoreEnv,
+    trustStore: KeystoreEnv,
+) {
+    val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+    keyManagerFactory.init(keyStore.load(), keyStore.password?.value?.toCharArray())
+
+    val trustManagerFactory =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+    trustManagerFactory.init(trustStore.load())
+
+    val sslContext =
+        SSLContext.getInstance("TLS").apply {
+            init(keyManagerFactory.keyManagers, trustManagerFactory.trustManagers, SecureRandom())
+        }
+
+    val trustManager =
+        trustManagerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
+    builder.sslSocketFactory(sslContext.socketFactory, trustManager)
+    builder.hostnameVerifier { _, _ -> true }
 }
 
 data class DvvModificationServiceModificationTokenResponse(
@@ -165,5 +156,5 @@ data class DvvModificationServiceModificationTokenResponse(
 
 /** Callback interface that can be implemented by beans wishing to customize the HTTP requests. */
 fun interface DvvModificationRequestCustomizer {
-    fun customize(request: Request)
+    fun customize(builder: Request.Builder)
 }

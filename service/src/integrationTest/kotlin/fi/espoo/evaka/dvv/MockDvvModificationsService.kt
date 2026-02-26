@@ -27,10 +27,10 @@ class MockDvvModificationsService {
     }
 
     @PostMapping("/v1/muutokset")
-    fun getModifications(@RequestBody body: ModificationsRequest): ByteArray {
+    fun getModifications(@RequestBody body: DvvModificationsRequest): ByteArray {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
 
-        val nextToken = body.viimeisinKirjausavain.toInt() + 1
+        val nextToken = body.viimeisinKirjausavain + 1
         return """
             {
               "viimeisinKirjausavain": $nextToken,
@@ -555,5 +555,3 @@ val modifications =
 }
     """,
     )
-
-data class ModificationsRequest(val viimeisinKirjausavain: String, val hetulista: List<String>)

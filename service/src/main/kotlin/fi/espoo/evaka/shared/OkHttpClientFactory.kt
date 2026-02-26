@@ -24,6 +24,7 @@ fun buildHttpClient(
     interceptors: List<okhttp3.Interceptor> = emptyList(),
     rootUrl: URI? = null,
     jsonMapper: JsonMapper? = null,
+    customize: (OkHttpClient.Builder) -> Unit = {},
 ): ConfiguredHttpClient {
     val builder =
         OkHttpClient.Builder()
@@ -34,6 +35,8 @@ fun buildHttpClient(
     timeouts.callTimeout?.let { builder.callTimeout(it) }
 
     interceptors.forEach { builder.addInterceptor(it) }
+
+    customize(builder)
 
     return ConfiguredHttpClient(
         client = builder.build(),
