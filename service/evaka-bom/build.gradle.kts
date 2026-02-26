@@ -53,7 +53,6 @@ dependencies {
         api("ch.qos.logback:logback-core:1.5.32")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.21.0"))
     api(platform("tools.jackson:jackson-bom:3.0.4"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.3.2"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.59.0"))

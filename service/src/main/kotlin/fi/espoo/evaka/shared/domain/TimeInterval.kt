@@ -16,12 +16,6 @@ import tools.jackson.databind.annotation.JsonSerialize
 
 @JsonSerialize(using = TimeIntervalJsonSerializer::class)
 @JsonDeserialize(using = TimeIntervalJsonDeserializer::class)
-@com.fasterxml.jackson.databind.annotation.JsonSerialize(
-    using = TimeIntervalJsonSerializerJackson2::class
-)
-@com.fasterxml.jackson.databind.annotation.JsonDeserialize(
-    using = TimeIntervalJsonDeserializerJackson2::class
-)
 data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEndpoint.End?) {
     constructor(
         start: TimeRangeEndpoint,
@@ -71,31 +65,6 @@ class TimeIntervalJsonSerializer : ValueSerializer<TimeInterval>() {
 
 class TimeIntervalJsonDeserializer : ValueDeserializer<TimeInterval>() {
     override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeInterval {
-        val value = parser.readValueAs(SerializableTimeInterval::class.java)
-        return TimeInterval(value.start, value.end)
-    }
-}
-
-class TimeIntervalJsonSerializerJackson2 :
-    com.fasterxml.jackson.databind.JsonSerializer<TimeInterval>() {
-    override fun serialize(
-        value: TimeInterval,
-        gen: com.fasterxml.jackson.core.JsonGenerator,
-        serializers: com.fasterxml.jackson.databind.SerializerProvider,
-    ) {
-        return serializers.defaultSerializeValue(
-            SerializableTimeInterval(value.start.inner, value.end?.inner),
-            gen,
-        )
-    }
-}
-
-class TimeIntervalJsonDeserializerJackson2 :
-    com.fasterxml.jackson.databind.JsonDeserializer<TimeInterval>() {
-    override fun deserialize(
-        parser: com.fasterxml.jackson.core.JsonParser,
-        ctx: com.fasterxml.jackson.databind.DeserializationContext,
-    ): TimeInterval {
         val value = parser.readValueAs(SerializableTimeInterval::class.java)
         return TimeInterval(value.start, value.end)
     }
