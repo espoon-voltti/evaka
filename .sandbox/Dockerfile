@@ -19,9 +19,10 @@ ARG USER_UID
 ARG USER_GID
 ARG USER_HOME
 
-RUN groupadd -f -g ${USER_GID} ${USER_NAME} \
-    && useradd -m -d ${USER_HOME} -u ${USER_UID} -g ${USER_GID} -s /bin/bash ${USER_NAME} \
-    && echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USER_NAME} \
-    && usermod -aG docker ${USER_NAME}
+RUN SANITIZED_USER=$(echo "${USER_NAME}" | sed 's/[^a-z0-9_-]/-/g') \
+    && groupadd -f -g ${USER_GID} ${SANITIZED_USER} \
+    && useradd -m -d ${USER_HOME} -u ${USER_UID} -g ${USER_GID} -s /bin/bash ${SANITIZED_USER} \
+    && echo "${SANITIZED_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${SANITIZED_USER} \
+    && usermod -aG docker ${SANITIZED_USER}
 
-USER ${USER_NAME}
+USER ${USER_UID}
