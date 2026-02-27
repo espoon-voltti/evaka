@@ -26,42 +26,45 @@ import {
 } from '../../generated/api-clients'
 import type { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-import '../../jest'
-
-let page: Page
-let unitPage: UnitPage
-
 const today = LocalDate.of(2023, 3, 1)
-let group: DevDaycareGroup
-let unitSupervisor: DevEmployee
 
-beforeEach(async () => {
-  await resetServiceState()
-
-  await createDefaultServiceNeedOptions()
-  const careArea = await testCareArea.save()
-  await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
-  await testChild2.saveChild()
-  group = await testDaycareGroup.save()
-
-  unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
-    .save()
-
-  page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
-    employeeCustomizations: {
-      featureFlags: { missingQuestionnaireAnswerMarkerEnabled: true }
+test.describe('Employee - Unit month calendar', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
+      employeeCustomizations: {
+        featureFlags: { missingQuestionnaireAnswerMarkerEnabled: true }
+      }
     }
   })
-  await employeeLogin(page, unitSupervisor)
-  unitPage = new UnitPage(page)
-})
 
-describe('Employee - Unit month calendar', () => {
+  let page: Page
+  let unitPage: UnitPage
+  let group: DevDaycareGroup
+  let unitSupervisor: DevEmployee
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+
+    await createDefaultServiceNeedOptions()
+    const careArea = await testCareArea.save()
+    await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
+    await testChild2.saveChild()
+    group = await testDaycareGroup.save()
+
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+
+    page = evaka
+    await employeeLogin(page, unitSupervisor)
+    unitPage = new UnitPage(page)
+  })
+
   test('Child is not shown in calendar for term break days', async () => {
     const term = new FiniteDateRange(today, today.addYears(1))
     const monday = LocalDate.of(2023, 3, 6)
@@ -273,12 +276,12 @@ describe('Employee - Unit month calendar', () => {
     await monthCalendarPage.assertStaffAttendance(0, '0')
   })
 
-  describe('Holiday period reservations', () => {
+  test.describe('Holiday period reservations', () => {
     const holidayStart = today.addMonths(1).addDays(16) // Monday
     const holidayEnd = holidayStart.addDays(4) // Friday
     const holidayRange = new FiniteDateRange(holidayStart, holidayEnd)
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       const kaarinaPlacement = await Fixture.placement({
         childId: testChild2.id,
         unitId: testDaycare.id,

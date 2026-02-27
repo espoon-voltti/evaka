@@ -23,7 +23,9 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import type { DecisionEditorPage } from '../../pages/employee/applications/application-list-view'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { NewEvakaPage } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 const mockedDate = LocalDate.of(2021, 8, 16)
@@ -74,26 +76,32 @@ const serviceWorker = Fixture.employee().serviceWorker()
 
 let page: Page
 
-beforeEach(async () => {
-  await resetServiceState()
-  await preschoolTerm.save()
-  await careArea.save()
-  await daycareA.save()
-  await daycareB.save()
-  await Fixture.family({
-    guardian: adult,
-    children: [child]
-  }).save()
-  await serviceWorker.save()
+test.describe('Additional daycare application decision drafts', () => {
+  test.use({ evakaOptions: { mockedTime } })
 
-  page = await Page.open({ mockedTime })
-})
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await preschoolTerm.save()
+    await careArea.save()
+    await daycareA.save()
+    await daycareB.save()
+    await Fixture.family({
+      guardian: adult,
+      children: [child]
+    }).save()
+    await serviceWorker.save()
 
-describe('Additional daycare application decision drafts', () => {
-  test('Same unit — only daycare decision is planned by default', async () => {
+    page = evaka
+  })
+
+  test('Same unit — only daycare decision is planned by default', async ({
+    newEvakaPage
+  }) => {
     await setupExistingPreschoolPlacement()
-    const applicationId =
-      await citizenCreatesPreschoolDaycareApplication(daycareA)
+    const applicationId = await citizenCreatesPreschoolDaycareApplication(
+      daycareA,
+      newEvakaPage
+    )
     const decisionEditorPage = await navigateToDecisionDrafts(applicationId)
 
     await decisionEditorPage
@@ -104,10 +112,14 @@ describe('Additional daycare application decision drafts', () => {
       .waitUntilChecked(true)
   })
 
-  test('Different unit — both decisions should be planned by default', async () => {
+  test('Different unit — both decisions should be planned by default', async ({
+    newEvakaPage
+  }) => {
     await setupExistingPreschoolPlacement()
-    const applicationId =
-      await citizenCreatesPreschoolDaycareApplication(daycareB)
+    const applicationId = await citizenCreatesPreschoolDaycareApplication(
+      daycareB,
+      newEvakaPage
+    )
     const decisionEditorPage = await navigateToDecisionDrafts(applicationId)
 
     await decisionEditorPage.plannedCheckbox('PRESCHOOL').waitUntilChecked(true)
@@ -150,11 +162,11 @@ async function setupExistingPreschoolPlacement() {
   await applicationReadView.waitUntilLoaded()
 }
 
-async function citizenCreatesPreschoolDaycareApplication(unit: {
-  id: DaycareId
-  name: string
-}): Promise<ApplicationId> {
-  const citizenPage = await Page.open({ mockedTime })
+async function citizenCreatesPreschoolDaycareApplication(
+  unit: { id: DaycareId; name: string },
+  newEvakaPage: NewEvakaPage
+): Promise<ApplicationId> {
+  const citizenPage = await newEvakaPage({ mockedTime })
   await enduserLogin(citizenPage, adult)
   const header = new CitizenHeader(citizenPage)
   await header.selectTab('applications')
@@ -182,7 +194,6 @@ async function citizenCreatesPreschoolDaycareApplication(unit: {
     }
   })
   await editorPage.verifyAndSend({ hasOtherGuardian: false })
-  await citizenPage.close()
 
   return applicationId
 }
