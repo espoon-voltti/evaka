@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.linkity
 
-import fi.espoo.evaka.LinkityEnv
+import fi.espoo.evaka.espoo.LinkityEnv
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.ensureTrailingSlash
 import io.github.oshai.kotlinlogging.KotlinLogging

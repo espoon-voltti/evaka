@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.reports.patu
 
-import fi.espoo.evaka.EspooPatuIntegrationEnv
+import fi.espoo.evaka.espoo.EspooPatuIntegrationEnv
 import fi.espoo.evaka.reports.RawReportRow
 import fi.espoo.evaka.shared.ConfiguredHttpClient
 import fi.espoo.evaka.shared.buildHttpClient
