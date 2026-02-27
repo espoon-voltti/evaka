@@ -64,6 +64,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
+import org.thymeleaf.templateresolver.ITemplateResolver
 import tools.jackson.databind.json.JsonMapper
 
 @Configuration
@@ -129,6 +131,16 @@ class EspooConfig {
     fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EvakaEmailMessageProvider(env)
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+
+    @Bean
+    fun espooTemplateResolver(): ITemplateResolver =
+        ClassLoaderTemplateResolver().apply {
+            prefix = "espoo/templates/"
+            suffix = ".html"
+            setTemplateMode("HTML")
+            checkExistence = true
+            order = 1
+        }
 
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =
