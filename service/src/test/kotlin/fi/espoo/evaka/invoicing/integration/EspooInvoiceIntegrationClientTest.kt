@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import fi.espoo.evaka.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.espoo.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
