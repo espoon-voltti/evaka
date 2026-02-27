@@ -54,6 +54,10 @@ Copy `sandbox.example.json` to `sandbox.json` and customize:
   Useful for files and directories that need isolation from the host.
 - **ports** — Ports to expose from the container to host. Format is
   `port` (same port on both sides), `host:container`.
+- **notify** — Shell command to run on the host when a notification is
+  received from the container. A TCP listener on port 39813 is started
+  automatically on `exec`. Trigger from the container with
+  `echo notify > /dev/tcp/host.docker.internal/39813`.
 
 `sandbox.json` is gitignored — each developer maintains their own.
 
