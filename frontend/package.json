@@ -16,8 +16,6 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
     "test:watch": "yarn test --watchAll",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e-test": "LC_ALL=fi_FI.UTF-8 jest --runInBand src/e2e-test/specs",
-    "e2e-ci": "LC_ALL=fi_FI.UTF-8 BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --retries=2",
     "e2e-playwright": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
   "dependencies": {
@@ -156,7 +154,6 @@
     "testRunner": "jest-circus/runner",
     "projects": [
       "./src/citizen-frontend",
-      "./src/e2e-test",
       "./src/employee-frontend",
       "./src/lib-common",
       "./src/lib-components",
