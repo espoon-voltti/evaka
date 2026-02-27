@@ -1781,8 +1781,8 @@ CREATE TABLE public.application_other_guardian (
 CREATE TABLE public.decision (
     id uuid DEFAULT ext.uuid_generate_v1mc() CONSTRAINT decision2_id_not_null NOT NULL,
     number integer CONSTRAINT decision2_number_not_null NOT NULL,
-    created timestamp with time zone DEFAULT now(),
-    updated timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     created_by uuid CONSTRAINT decision2_created_by_not_null NOT NULL,
     sent_date date,
     unit_id uuid CONSTRAINT decision2_unit_id_not_null NOT NULL,
@@ -1808,8 +1808,8 @@ CREATE TABLE public.decision (
 
 CREATE TABLE public.placement_plan (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now(),
-    updated timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     type public.placement_type NOT NULL,
     unit_id uuid NOT NULL,
     application_id uuid NOT NULL,
@@ -2330,8 +2330,8 @@ CREATE TABLE public.calendar_event_attendee (
 
 CREATE TABLE public.daycare_group_placement (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now(),
-    updated timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     daycare_placement_id uuid NOT NULL,
     daycare_group_id uuid NOT NULL,
     start_date date NOT NULL,
@@ -3025,8 +3025,8 @@ CREATE TABLE public.fridge_child (
     head_of_child uuid NOT NULL,
     start_date date NOT NULL,
     end_date date NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    updated timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     conflict boolean DEFAULT false NOT NULL,
     create_source public.create_source,
     created_by_user uuid,
@@ -3050,7 +3050,7 @@ CREATE TABLE public.fridge_partner (
     start_date date NOT NULL,
     end_date date,
     created_at timestamp with time zone NOT NULL,
-    updated timestamp with time zone DEFAULT now(),
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     conflict boolean DEFAULT false NOT NULL,
     other_indx smallint NOT NULL,
     create_source public.create_source,
@@ -3099,7 +3099,7 @@ CREATE TABLE public.group_note (
 CREATE TABLE public.guardian (
     guardian_id uuid NOT NULL,
     child_id uuid NOT NULL,
-    created timestamp with time zone DEFAULT now()
+    created timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- Name: guardian_blocklist; Type: TABLE; Schema: public
@@ -3246,7 +3246,7 @@ CREATE TABLE public.invoice (
     head_of_family uuid NOT NULL,
     sent_at timestamp with time zone,
     sent_by uuid,
-    created_at timestamp with time zone DEFAULT now(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
     codebtor uuid,
     area_id uuid NOT NULL,
     status public.invoice_status,
@@ -3481,7 +3481,7 @@ CREATE TABLE public.message_thread_participant (
 CREATE TABLE public.mobile_device_push_group (
     daycare_group uuid NOT NULL,
     device uuid NOT NULL,
-    created_at timestamp with time zone
+    created_at timestamp with time zone NOT NULL
 );
 
 -- Name: mobile_device_push_subscription; Type: TABLE; Schema: public
@@ -3936,7 +3936,7 @@ CREATE TABLE public.staff_attendance (
     group_id uuid NOT NULL,
     date date NOT NULL,
     count numeric NOT NULL,
-    created timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL
 );
 
@@ -3999,7 +3999,7 @@ CREATE TABLE public.staff_attendance_realtime (
 CREATE TABLE public.staff_occupancy_coefficient (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
     created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now(),
+    updated timestamp with time zone DEFAULT now() NOT NULL,
     employee_id uuid NOT NULL,
     daycare_id uuid NOT NULL,
     coefficient numeric(4,2) NOT NULL
@@ -4090,7 +4090,7 @@ CREATE TABLE public.voucher_value_decision (
     family_size integer NOT NULL,
     fee_thresholds jsonb CONSTRAINT voucher_value_decision_pricing_not_null NOT NULL,
     document_key text,
-    created timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
     approved_by uuid,
     approved_at timestamp with time zone,
     sent_at timestamp with time zone,
@@ -4155,7 +4155,7 @@ CREATE TABLE public.voucher_value_report_decision (
 
 CREATE TABLE public.voucher_value_report_snapshot (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now(),
+    created timestamp with time zone DEFAULT now() NOT NULL,
     month integer NOT NULL,
     year integer NOT NULL,
     taken_at timestamp with time zone NOT NULL
