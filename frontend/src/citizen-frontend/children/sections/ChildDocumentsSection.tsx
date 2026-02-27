@@ -44,7 +44,7 @@ const DocumentsTableContainer = styled.table`
   border-collapse: collapse;
 `
 
-const DocumentTr = styled.tr<{ unread?: boolean }>`
+const DocumentTr = styled.tr<{ $unread?: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   & td {
@@ -52,9 +52,10 @@ const DocumentTr = styled.tr<{ unread?: boolean }>`
     padding: ${defaultMargins.s};
   }
 
-  ${(p) => (p.unread ? `border-left: 4px solid ${colors.status.success};` : '')}
+  ${(p) =>
+    p.$unread ? `border-left: 4px solid ${colors.status.success};` : ''}
   * {
-    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
+    ${(p) => (p.$unread ? 'font-weight: bold;' : '')}
   }
 `
 
@@ -86,7 +87,7 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
           <DocumentTr
             key={document.id}
             data-qa={`child-document-${document.id}`}
-            unread={document.unread}
+            $unread={document.unread}
           >
             <DateTd data-qa={`published-at-${document.id}`}>
               {document.publishedAt?.toLocalDate().format() ?? ''}
@@ -115,12 +116,12 @@ const ChildDocumentsTable = React.memo(function ChildDocumentsTable({
   )
 })
 
-const MobileRowContainer = styled.div<{ unread: boolean }>`
+const MobileRowContainer = styled.div<{ $unread: boolean }>`
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   padding: ${defaultMargins.s};
 
   > * {
-    ${(p) => (p.unread ? 'font-weight: bold;' : '')}
+    ${(p) => (p.$unread ? 'font-weight: bold;' : '')}
   }
 `
 
@@ -155,7 +156,7 @@ export default React.memo(function ChildDocumentsSection({
       title={i18n.children.childDocuments.title}
       open={open}
       toggleOpen={() => setOpen(!open)}
-      opaque
+      $opaque
       countIndicator={unreadCount > 0 ? unreadCount : undefined}
       data-qa="collapsible-child-documents"
       contentPadding="zero"
@@ -210,23 +211,23 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
       {renderResult(documentsResult, (documents) =>
         documents.length === 0 ? (
           <PaddingBox>
-            <Gap size="s" />
+            <Gap $size="s" />
             <Dimmed>{i18n.children.childDocuments.noDocuments}</Dimmed>
           </PaddingBox>
         ) : (
           <>
             <MobileAndTablet>
               {documents.map((document) => (
-                <MobileRowContainer key={document.id} unread={document.unread}>
-                  <FixedSpaceRow justifyContent="space-between">
+                <MobileRowContainer key={document.id} $unread={document.unread}>
+                  <FixedSpaceRow $justifyContent="space-between">
                     <span data-qa={`published-at-${document.id}`}>
                       {document.publishedAt?.toLocalDate().format() ?? ''}
                     </span>
                     <Answered document={document} />
                     <DecisionValidity document={document} />
                   </FixedSpaceRow>
-                  <Gap size="xs" />
-                  <FixedSpaceRow justifyContent="space-between">
+                  <Gap $size="xs" />
+                  <FixedSpaceRow $justifyContent="space-between">
                     <Link
                       to={`/child-documents/${document.id}`}
                       data-qa="child-document-link"

@@ -210,9 +210,9 @@ const OptionContents = React.memo(function Option({
   selected: boolean
 }) {
   return (
-    <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow $alignItems="center">
       <StaticCheckBox checked={selected} />
-      <FixedSpaceColumn spacing="zero">
+      <FixedSpaceColumn $spacing="zero">
         <span>{label}</span>
         {!!secondaryText && <SecondaryText>{secondaryText}</SecondaryText>}
       </FixedSpaceColumn>

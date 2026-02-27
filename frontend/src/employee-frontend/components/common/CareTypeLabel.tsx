@@ -64,5 +64,5 @@ export function CareTypeChip({ type }: Props) {
   const careType = placementTypeToCareTypeLabel(type)
   const text = i18n.common.careTypeLabels[careType]
   const color = careTypeColors[careType]
-  return <StaticChip color={color}>{text}</StaticChip>
+  return <StaticChip $color={color}>{text}</StaticChip>
 }

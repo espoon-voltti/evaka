@@ -188,8 +188,8 @@ export default React.memo(function PlacementProposals({
       {placementPlans.length > 0 && (
         <>
           <Label>{i18n.unit.placementProposals.infoTitle}</Label>
-          <Gap size="xxs" />
-          <P noMargin width="960px">
+          <Gap $size="xxs" />
+          <P $noMargin $width="960px">
             {i18n.unit.placementProposals.infoText}
           </P>
         </>
@@ -231,8 +231,8 @@ export default React.memo(function PlacementProposals({
       </div>
 
       {placementPlans.length > 0 && (
-        <PlacementProposalsActionBar sticky={!acceptDisabled}>
-          <FixedSpaceRow alignItems="center" justifyContent="space-between">
+        <PlacementProposalsActionBar $sticky={!acceptDisabled}>
+          <FixedSpaceRow $alignItems="center" $justifyContent="space-between">
             {(summary.accepted > 0 || summary.rejected > 0) && (
               <>
                 <div>
@@ -268,12 +268,12 @@ export default React.memo(function PlacementProposals({
   )
 })
 
-const PlacementProposalsActionBar = styled.div<{ sticky: boolean }>`
+const PlacementProposalsActionBar = styled.div<{ $sticky: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: right;
-  position: ${(p) => (p.sticky ? 'sticky' : 'relative')};
+  position: ${(p) => (p.$sticky ? 'sticky' : 'relative')};
   bottom: 0;
   background: ${colors.grayscale.g0};
   padding: 16px 0;

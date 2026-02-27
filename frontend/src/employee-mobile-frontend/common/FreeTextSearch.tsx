@@ -22,11 +22,11 @@ const SearchInputContainer = styled.div`
   margin-bottom: ${defaultMargins.xs};
 `
 
-const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
+const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
   width: 100%;
   border: none;
   font-size: 1rem;
-  background: ${(p) => p.background ?? colors.grayscale.g4};
+  background: ${(p) => p.$background ?? colors.grayscale.g4};
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -35,7 +35,7 @@ const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
   font-size: 17px;
   outline: none;
   margin-left: -38px;
-  margin-right: ${(p) => (p.showClose ? '-25px' : '0')};
+  margin-right: ${(p) => (p.$showClose ? '-25px' : '0')};
   color: ${colors.grayscale.g100};
   height: 100%;
 
@@ -96,8 +96,8 @@ export default function FreeTextSearch({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
-        background={background}
-        showClose={searchResults.length > 1}
+        $background={background}
+        $showClose={searchResults.length > 1}
       />
       {searchResults.length > 1 && (
         <CustomIconButton

@@ -41,7 +41,7 @@ export default React.memo(function ReportInvoices() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.invoices.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.invoices.period}</FilterLabel>

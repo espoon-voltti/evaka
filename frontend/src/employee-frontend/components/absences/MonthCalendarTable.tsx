@@ -93,7 +93,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
   return (
     <AbsenceTr data-qa={`absence-child-row-${child.id}`}>
       <ChildNameTd>
-        <FixedSpaceRow spacing="xs" alignItems="center">
+        <FixedSpaceRow $spacing="xs" $alignItems="center">
           <AgeIndicatorChip
             age={selectedDate.differenceInYears(child.dateOfBirth)}
           />
@@ -115,7 +115,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
             }
             position="top"
           >
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               <Link
                 to={`/child-information/${child.id}`}
                 data-qa="absence-child-link"
@@ -127,8 +127,8 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
         </FixedSpaceRow>
       </ChildNameTd>
       <Td
-        align="center"
-        verticalAlign="middle"
+        $align="center"
+        $verticalAlign="middle"
         onClick={() => {
           if (fullySelected) {
             selectedCellsOfChild.forEach(toggleCellSelection)
@@ -187,7 +187,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           <td>
             <NumbersColumn $warning={hourInfo.showReservedHoursWarning}>
               <span data-qa="reserved-hours">{hourInfo.reservedHours} h</span>
-              <Gap size="xs" horizontal />
+              <Gap $size="xs" $horizontal />
               {hourInfo.showReservedHoursWarning ? (
                 <FontAwesomeIcon
                   icon={fasExclamationTriangle}
@@ -203,7 +203,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           <td>
             <NumbersColumn $warning={hourInfo.showUsedHoursWarning}>
               <span data-qa="used-hours">{hourInfo.usedHours} h</span>
-              <Gap size="xs" horizontal />
+              <Gap $size="xs" $horizontal />
               {hourInfo.showUsedHoursWarning ? (
                 <FontAwesomeIcon
                   icon={fasExclamationTriangle}
@@ -280,7 +280,7 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
 }: AbsenceHeadProps) {
   const { i18n, lang } = useTranslation()
   return (
-    <Thead sticky>
+    <Thead $sticky>
       <AbsenceTr>
         <th />
         <th>{i18n.absences.table.selectAll}</th>

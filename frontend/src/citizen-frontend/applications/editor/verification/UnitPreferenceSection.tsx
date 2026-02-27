@@ -61,15 +61,15 @@ export default React.memo(function UnitPreferenceSection({
 
   return (
     <div data-qa="unit-preference-section">
-      <H2 noMargin>{tLocal.title}</H2>
+      <H2 $noMargin>{tLocal.title}</H2>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <H3>{tLocal.siblingBasis.title}</H3>
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{tLocal.siblingBasis.siblingBasisLabel}</Label>
         {formData.siblingBasis ? (
@@ -90,13 +90,13 @@ export default React.memo(function UnitPreferenceSection({
         )}
       </ListGrid>
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <H3>{tLocal.units.title}</H3>
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{tLocal.units.label}</Label>
         <NumberedList>

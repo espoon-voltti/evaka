@@ -56,8 +56,8 @@ export default React.memo(function UnitDetailsPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
-        <Gap size="xs" />
+      <ContentArea $opaque>
+        <Gap $size="xs" />
         {renderResult(
           combine(areas, unit, financeDecisionHandlerOptions),
           ([areas, unit, financeDecisionHandlerOptions]) => (

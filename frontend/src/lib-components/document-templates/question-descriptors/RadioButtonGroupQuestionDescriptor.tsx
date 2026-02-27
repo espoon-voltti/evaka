@@ -108,12 +108,12 @@ const View = React.memo(function View({
       <div>{selected ?? i18n.documentTemplates.noSelection}</div>
     </FixedSpaceColumn>
   ) : (
-    <FixedSpaceColumn fullWidth>
+    <FixedSpaceColumn $fullWidth>
       <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
       <GroupIndentation>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           {optionElems.map((option) => (
             <Radio
               key={option.state.id}
@@ -200,7 +200,7 @@ const TemplateView = React.memo(function TemplateView({
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.options}</Label>
         {optionElems.map((opt) => (
-          <FixedSpaceRow key={opt.state.id} alignItems="center">
+          <FixedSpaceRow key={opt.state.id} $alignItems="center">
             <OptionView
               bind={opt}
               onDelete={() =>

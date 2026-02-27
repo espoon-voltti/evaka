@@ -56,7 +56,7 @@ export default React.memo(function FormModal({
           disabled={resolveDisabled}
           text={resolveLabel}
         />
-        <Gap horizontal size="s" />
+        <Gap $horizontal $size="s" />
         <LegacyButton
           onClick={rejectAction}
           data-qa="modal-cancelBtn"
@@ -101,7 +101,7 @@ function AsyncFormModal_<T>({
           onFailure={onFailure}
           data-qa="modal-okBtn"
         />
-        <Gap horizontal size="s" />
+        <Gap $horizontal $size="s" />
         <LegacyButton
           onClick={rejectAction}
           data-qa="modal-cancelBtn"
@@ -155,7 +155,7 @@ function MutateFormModal_<Arg, Data>({
           stopPropagation
           data-qa="modal-okBtn"
         />
-        <Gap horizontal size="s" />
+        <Gap $horizontal $size="s" />
         <LegacyButton
           onClick={(e) => {
             e.preventDefault()

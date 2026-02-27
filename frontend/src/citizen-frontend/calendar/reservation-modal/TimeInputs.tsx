@@ -118,8 +118,8 @@ const ReservationTimes = React.memo(function ReservationTimes({
     case 'absent':
       content = (
         <FixedSpaceRow
-          fullWidth
-          alignItems="center"
+          $fullWidth
+          $alignItems="center"
           role="group"
           aria-labelledby={dataQaPrefix}
         >
@@ -207,8 +207,8 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'noChildren':
       return (
         <FixedSpaceRow
-          fullWidth
-          alignItems="center"
+          $fullWidth
+          $alignItems="center"
           data-qa={dataQa('noChildren')}
           role="group"
           aria-labelledby={dataQaPrefix}
@@ -232,8 +232,8 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'termBreak':
       return (
         <FixedSpaceRow
-          fullWidth
-          alignItems="center"
+          $fullWidth
+          $alignItems="center"
           data-qa={dataQa('termBreak')}
           role="group"
           aria-labelledby={dataQaPrefix}
@@ -269,8 +269,8 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
     case 'holiday':
       return (
         <FixedSpaceRow
-          fullWidth
-          alignItems="center"
+          $fullWidth
+          $alignItems="center"
           data-qa={dataQa('holiday')}
           role="group"
           aria-labelledby={dataQaPrefix}
@@ -301,8 +301,8 @@ function WithInfo({
   return (
     <>
       <FixedSpaceRow
-        fullWidth
-        alignItems="center"
+        $fullWidth
+        $alignItems="center"
         data-qa={dataQa}
         role="group"
         aria-labelledby={dataQa}
@@ -317,7 +317,7 @@ function WithInfo({
         </RightCell>
       </FixedSpaceRow>
       {infoOpen && (
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow $fullWidth>
           <ExpandingInfoBox
             close={useInfoOpen.off}
             aria-label={shortText}
@@ -392,8 +392,8 @@ const TimeRanges = React.memo(function TimeRanges({
   return (
     <>
       <FixedSpaceRow
-        fullWidth
-        alignItems="center"
+        $fullWidth
+        $alignItems="center"
         role="group"
         aria-labelledby={dataQaPrefix}
       >
@@ -445,7 +445,7 @@ const TimeRanges = React.memo(function TimeRanges({
         </RightCell>
       </FixedSpaceRow>
       {secondTimeRange !== undefined ? (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow $fullWidth $alignItems="center">
           {label !== undefined ? <LeftCell /> : null}
           <MiddleCell>
             <LimitedLocalTimeRange
@@ -498,15 +498,15 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
 
   return (
     <FixedSpaceRow
-      fullWidth
-      alignItems="center"
+      $fullWidth
+      $alignItems="center"
       role="group"
       aria-labelledby={dataQaPrefix}
     >
       {label !== undefined ? (
         <LeftCell id={dataQaPrefix}>{label}</LeftCell>
       ) : null}
-      <MiddleCell narrow>
+      <MiddleCell $narrow>
         <Radio
           id={dataQaPrefix ? `${dataQaPrefix}-present-radio` : undefined}
           data-qa={dataQaPrefix ? `${dataQaPrefix}-present-radio` : undefined}
@@ -533,10 +533,10 @@ export const ReservationNoTimes = React.memo(function ReservationNoTimes({
 const LeftCell = styled.div`
   width: 80px;
 `
-const MiddleCell = styled.div<{ narrow?: boolean }>`
+const MiddleCell = styled.div<{ $narrow?: boolean }>`
   display: inline-flex;
   align-items: center;
-  flex: ${(p) => (p.narrow ? 1 : 3)};
+  flex: ${(p) => (p.$narrow ? 1 : 3)};
   min-height: 37px;
 `
 const RightCell = styled.div`

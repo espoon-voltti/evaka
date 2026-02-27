@@ -86,9 +86,9 @@ export default React.memo(function EmployeesPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title>{i18n.titles.employees}</Title>
-        <FixedSpaceRow justifyContent="space-between">
+        <FixedSpaceRow $justifyContent="space-between">
           <InputField
             data-qa="employee-name-filter"
             value={searchTerm}
@@ -108,7 +108,7 @@ export default React.memo(function EmployeesPage() {
             />
           </RequirePermittedGlobalAction>
         </FixedSpaceRow>
-        <FixedSpaceColumn spacing="m">
+        <FixedSpaceColumn $spacing="m">
           <Checkbox
             label={i18n.employees.hideDeactivated}
             checked={hideDeactivated}
@@ -118,13 +118,13 @@ export default React.memo(function EmployeesPage() {
             data-qa="hide-deactivated-checkbox"
           />
           <FixedSpaceRow
-            justifyContent="space-between"
-            alignItems="flex-start"
-            spacing="XL"
+            $justifyContent="space-between"
+            $alignItems="flex-start"
+            $spacing="XL"
           >
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.employees.editor.globalRoles}</Label>
-              <FixedSpaceFlexWrap horizontalSpacing="m">
+              <FixedSpaceFlexWrap $horizontalSpacing="m">
                 {globalRoles.map((role) => (
                   <Checkbox
                     key={role}
@@ -141,9 +141,9 @@ export default React.memo(function EmployeesPage() {
                 ))}
               </FixedSpaceFlexWrap>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.employees.editor.unitRoles.name}</Label>
-              <FixedSpaceFlexWrap horizontalSpacing="m">
+              <FixedSpaceFlexWrap $horizontalSpacing="m">
                 {unitRoles.map((role) => (
                   <Checkbox
                     key={role}
@@ -160,9 +160,9 @@ export default React.memo(function EmployeesPage() {
                 ))}
               </FixedSpaceFlexWrap>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.filters.providerType}</Label>
-              <FixedSpaceFlexWrap horizontalSpacing="m">
+              <FixedSpaceFlexWrap $horizontalSpacing="m">
                 {unitProviderTypes.map((type) => (
                   <Checkbox
                     key={type}
@@ -182,11 +182,11 @@ export default React.memo(function EmployeesPage() {
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <FixedSpaceRow
-            alignItems="flex-end"
-            justifyContent="flex-end"
-            spacing="xxs"
+            $alignItems="flex-end"
+            $justifyContent="flex-end"
+            $spacing="xxs"
           >
-            <FixedSpaceColumn spacing="xxs" alignItems="flex-end">
+            <FixedSpaceColumn $spacing="xxs" $alignItems="flex-end">
               <ResultCount>
                 {employees.isSuccess
                   ? i18n.common.resultCount(employees.value.length)
@@ -301,7 +301,7 @@ const CreateModal = React.memo(function CreateModal({
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
-      <FixedSpaceColumn spacing="s">
+      <FixedSpaceColumn $spacing="s">
         <div>
           <Label htmlFor="new-employee-ssn">
             {i18n.common.form.socialSecurityNumber}

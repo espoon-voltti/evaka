@@ -210,7 +210,7 @@ const OptionContents = React.memo(function Option({
   isUnit: boolean
 }) {
   return (
-    <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow $alignItems="center">
       {isUnit && (
         <FontAwesomeIcon
           icon={fasMapMarkerAlt}
@@ -218,7 +218,7 @@ const OptionContents = React.memo(function Option({
           style={{ fontSize: '24px' }}
         />
       )}
-      <FixedSpaceColumn spacing="zero">
+      <FixedSpaceColumn $spacing="zero">
         <span>{label}</span>
         {!!secondaryText && <SecondaryText>{secondaryText}</SecondaryText>}
       </FixedSpaceColumn>

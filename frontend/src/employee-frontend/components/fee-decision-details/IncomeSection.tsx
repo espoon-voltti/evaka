@@ -99,7 +99,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
           }
         ]}
       />
-      <Gap size="m" />
+      <Gap $size="m" />
       <H3>{i18n.feeDecision.form.summary.income.title}</H3>
       <LabelValueList
         spacing="small"
@@ -139,9 +139,9 @@ export default React.memo(function IncomeSection({ decision }: Props) {
       />
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <IncomeTotal data-qa="decision-summary-total-income">
-            <H4 noMargin>{i18n.feeDecision.form.summary.income.total}</H4>
+            <H4 $noMargin>{i18n.feeDecision.form.summary.income.total}</H4>
             <Money>{formatCents(decision.totalIncome)} €</Money>
           </IncomeTotal>
         </>

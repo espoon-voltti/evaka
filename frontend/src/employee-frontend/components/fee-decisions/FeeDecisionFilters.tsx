@@ -180,7 +180,7 @@ function FeeDecisionFilters() {
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <UnitFilter
             units={units.getOrElse([])}
             selected={units
@@ -188,7 +188,7 @@ function FeeDecisionFilters() {
               .getOrElse(undefined)}
             select={selectUnit}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <FinanceDecisionHandlerFilter
             financeDecisionHandlers={financeDecisionHandlers.getOrElse([])}
             selected={selectedFinanceDecisionHandler}
@@ -202,7 +202,7 @@ function FeeDecisionFilters() {
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleServiceNeed}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <FeeDecisionDifferenceFilter
             toggled={searchFilters.difference}
             toggle={toggleDifference}
@@ -215,7 +215,7 @@ function FeeDecisionFilters() {
             toggled={searchFilters.statuses}
             toggle={toggleStatus}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <FeeDecisionDateFilter
             startDate={searchFilters.startDate}
             setStartDate={setStartDate}

@@ -75,7 +75,7 @@ const Actions = React.memo(function Actions({
               <CheckedRowsInfo>
                 {i18n.payments.buttons.checked(checkedIds.length)}
               </CheckedRowsInfo>
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
             </>
           ) : null}
           {status === 'DRAFT' ? (
@@ -88,7 +88,7 @@ const Actions = React.memo(function Actions({
                 onSuccess={clearChecked}
                 data-qa="delete-payments"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
               <MutateButton
                 text={i18n.payments.buttons.confirmPayments(checkedIds.length)}
                 mutation={confirmDraftPaymentsMutation}
@@ -108,7 +108,7 @@ const Actions = React.memo(function Actions({
                 onSuccess={clearChecked}
                 data-qa="revert-payments"
               />
-              <Gap size="s" horizontal />
+              <Gap $size="s" $horizontal />
               <Button
                 primary
                 disabled={checkedIds.length === 0}
@@ -173,7 +173,7 @@ const SendPaymentsModal = React.memo(function Modal({
             locale="fi"
           />
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Label>{i18n.payments.sendModal.dueDate}</Label>
         <div>
           <DatePicker

@@ -130,7 +130,7 @@ export default React.memo(function PersonInvoiceCorrections({
   return renderResult(
     combine(children, groupedCorrections, products, unitIds, unitDetails),
     ([children, groupedCorrections, products, unitIds, unitDetails]) => (
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn $spacing="L">
         {children.length === 0 ? (
           <div>{i18n.invoiceCorrections.noChildren}</div>
         ) : (
@@ -206,10 +206,10 @@ const ChildSection = React.memo(function ChildSection({
   )
 
   return (
-    <FixedSpaceColumn spacing="s">
-      <FixedSpaceRow justifyContent="space-between" alignItems="center">
+    <FixedSpaceColumn $spacing="s">
+      <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
         <ChildNameLink to={`/child-information/${child.id}`}>
-          <H4 noMargin>
+          <H4 $noMargin>
             <PersonName person={child} format="Last First" />
           </H4>
         </ChildNameLink>
@@ -233,8 +233,8 @@ const ChildSection = React.memo(function ChildSection({
             <Th>{i18n.invoice.form.rows.description}</Th>
             <Th>{i18n.invoice.form.rows.unitId}</Th>
             <Th>{i18n.invoice.form.rows.amount}</Th>
-            <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
-            <Th align="right">{i18n.invoice.form.rows.price}</Th>
+            <Th $align="right">{i18n.invoice.form.rows.unitPrice}</Th>
+            <Th $align="right">{i18n.invoice.form.rows.price}</Th>
             <Th>{i18n.personProfile.invoiceCorrections.invoiceStatusHeader}</Th>
             <Th />
           </Tr>
@@ -313,13 +313,13 @@ const InvoiceCorrectionRowReadView = React.memo(
           <Td data-qa="product">{productName}</Td>
           <Td data-qa="description">{correction.description}</Td>
           <Td data-qa="unit">{units[correction.unitId]?.name ?? ''}</Td>
-          <Td data-qa="amount" align="right">
+          <Td data-qa="amount" $align="right">
             {correction.amount}
           </Td>
-          <Td data-qa="unit-price" align="right">
+          <Td data-qa="unit-price" $align="right">
             <OneLine>{formatCents(correction.unitPrice, true)} €</OneLine>
           </Td>
-          <Td data-qa="total-price" align="right">
+          <Td data-qa="total-price" $align="right">
             <OneLine>
               {formatCents(correction.amount * correction.unitPrice, true)} €
             </OneLine>
@@ -334,7 +334,7 @@ const InvoiceCorrectionRowReadView = React.memo(
             )}
           </Td>
           <Td>
-            <FixedSpaceRow justifyContent="flex-end">
+            <FixedSpaceRow $justifyContent="flex-end">
               {permittedActions.includes('DELETE') &&
                 (correction.invoice === null ||
                   correction.invoice.status === 'DRAFT') && (
@@ -493,14 +493,14 @@ const InvoiceCorrectionEditModal = React.memo(
         rejectAction={onEditorClose}
         rejectLabel={i18n.common.cancel}
       >
-        <FixedSpaceColumn spacing="m">
-          <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="m">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.invoiceCorrections.targetMonth} *</Label>
             <div>
               {month?.format() ?? i18n.invoiceCorrections.nextTargetMonth}
             </div>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.invoiceCorrections.range} *</Label>
             <DateRangePickerF
               bind={period}
@@ -509,7 +509,7 @@ const InvoiceCorrectionEditModal = React.memo(
               data-qa="date-range-input"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.invoice.form.rows.product} *</Label>
             <SelectF
               bind={product}
@@ -519,7 +519,7 @@ const InvoiceCorrectionEditModal = React.memo(
               data-qa="select-product"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.invoice.form.rows.description}</Label>
             <InputFieldF
               bind={description}
@@ -528,7 +528,7 @@ const InvoiceCorrectionEditModal = React.memo(
               data-qa="input-description"
             />
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.invoice.form.rows.unitId} *</Label>
             {/*TODO: ComboboxF?*/}
             <SelectF
@@ -540,7 +540,7 @@ const InvoiceCorrectionEditModal = React.memo(
             />
           </FixedSpaceColumn>
           <FixedSpaceRow>
-            <AmountColumn spacing="xs">
+            <AmountColumn $spacing="xs">
               <Label>{i18n.invoice.form.rows.amount} *</Label>
               <InputFieldF
                 bind={amount}
@@ -552,7 +552,7 @@ const InvoiceCorrectionEditModal = React.memo(
               />
             </AmountColumn>
             <OperatorColumn>x</OperatorColumn>
-            <UnitPriceColumn spacing="xs">
+            <UnitPriceColumn $spacing="xs">
               <Label>{i18n.invoice.form.rows.unitPrice} *</Label>
               <InputFieldF
                 bind={unitPrice}
@@ -563,7 +563,7 @@ const InvoiceCorrectionEditModal = React.memo(
               />
             </UnitPriceColumn>
             <OperatorColumn>=</OperatorColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.invoice.form.rows.price}</Label>
               <SumDiv data-qa="total-price">
                 {amount.isValid() && unitPrice.isValid()
@@ -572,7 +572,7 @@ const InvoiceCorrectionEditModal = React.memo(
               </SumDiv>
             </FixedSpaceColumn>
           </FixedSpaceRow>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>
               {i18n.personProfile.invoiceCorrections.noteModalTitle}
             </Label>
@@ -612,10 +612,10 @@ const NoteQuickEditor = React.memo(function NoteQuickEditor({
       rejectAction={closeNote}
       rejectLabel={i18n.common.cancel}
     >
-      <P noMargin centered>
+      <P $noMargin $centered>
         {i18n.personProfile.invoiceCorrections.noteModalInfo}
       </P>
-      <Gap size="s" />
+      <Gap $size="s" />
       <TextArea value={note} onChange={setNote} data-qa="note-textarea" />
     </MutateFormModal>
   )

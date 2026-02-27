@@ -184,7 +184,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           <IconWrapper>
             <FontAwesomeIcon icon={faPlus} />
           </IconWrapper>
-          <H1 noMargin>{i18n.unit.staffAttendance.addPerson}</H1>
+          <H1 $noMargin>{i18n.unit.staffAttendance.addPerson}</H1>
           {i18n.unit.staffAttendance.addPersonModal.description}
         </Centered>
 
@@ -247,8 +247,8 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
           />
         </div>
 
-        <Gap size="xs" />
-        <FixedSpaceRow justifyContent="space-between">
+        <Gap $size="xs" />
+        <FixedSpaceRow $justifyContent="space-between">
           <Button
             appearance="inline"
             text={i18n.common.cancel}

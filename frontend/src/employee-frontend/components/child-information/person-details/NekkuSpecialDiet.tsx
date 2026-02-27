@@ -105,7 +105,7 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                 .map((field) =>
                   props.editing ? (
                     <Fragment key={field.id}>
-                      <Gap size="s" />
+                      <Gap $size="s" />
                       {field.name}
                       <TextArea
                         data-qa={field.diet_id + '-' + field.id + '-textarea'}

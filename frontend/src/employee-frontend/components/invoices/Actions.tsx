@@ -62,7 +62,7 @@ const Actions = React.memo(function Actions({
       {error ? (
         <>
           <ErrorMessage>{error}</ErrorMessage>
-          <Gap size="s" horizontal />
+          <Gap $size="s" $horizontal />
         </>
       ) : null}
       {checkedInvoices.size > 0 ? (
@@ -70,7 +70,7 @@ const Actions = React.memo(function Actions({
           <CheckedRowsInfo>
             {i18n.invoices.buttons.checked(checkedInvoices.size)}
           </CheckedRowsInfo>
-          <Gap size="s" horizontal />
+          <Gap $size="s" $horizontal />
         </>
       ) : null}
       {canDelete && (
@@ -87,7 +87,7 @@ const Actions = React.memo(function Actions({
           data-qa="delete-invoices"
         />
       )}
-      <Gap size="s" horizontal />
+      <Gap $size="s" $horizontal />
       {canSend && (
         <LegacyButton
           primary
@@ -108,7 +108,7 @@ const Actions = React.memo(function Actions({
           <CheckedRowsInfo>
             {i18n.invoices.buttons.checked(checkedInvoices.size)}
           </CheckedRowsInfo>
-          <Gap size="s" horizontal />
+          <Gap $size="s" $horizontal />
         </>
       ) : null}
       {canResend && (

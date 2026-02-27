@@ -147,7 +147,7 @@ function ConfirmedMutation_<Arg, Data>(
         >
           {!!errorText && <ErrorBox wide noMargin message={errorText} />}
           {!!extraConfirmationCheckboxText && (
-            <FixedSpaceRow justifyContent="center">
+            <FixedSpaceRow $justifyContent="center">
               <Checkbox
                 label={extraConfirmationCheckboxText}
                 checked={extraConfirmation}

@@ -43,9 +43,9 @@ export const UserMenu = React.memo(function UserMenu(props: Props) {
     <UserMenuContainer>
       <Label>{i18n.pin.loggedIn}</Label>
 
-      <Gap size="xxs" />
+      <Gap $size="xxs" />
 
-      <FixedSpaceRow justifyContent="flex-start">
+      <FixedSpaceRow $justifyContent="flex-start">
         <FontAwesomeIcon icon={faUserUnlock} size="lg" color={colors.main.m1} />{' '}
         <span data-qa="full-name">{props.name}</span>
       </FixedSpaceRow>

@@ -69,15 +69,15 @@ const Button = styled.div`
   position: relative;
 `
 
-const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
+const CustomIcon = styled(FontAwesomeIcon)<{ $selected: boolean }>`
+  color: ${(p) => (p.$selected ? colors.main.m1 : colors.grayscale.g70)};
   height: 24px !important;
   width: 24px !important;
   margin: 0;
 `
 
-const IconText = styled.span<{ selected: boolean }>`
-  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
+const IconText = styled.span<{ $selected: boolean }>`
+  color: ${(p) => (p.$selected ? colors.main.m1 : colors.grayscale.g70)};
   font-size: 14px;
   font-weight: ${fontWeights.semibold};
 `
@@ -90,10 +90,10 @@ type BottomTextProps = {
 }
 
 const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
-  <FixedSpaceColumn spacing="3px" onClick={onClick}>
-    <FixedSpaceRow justifyContent="center">{children}</FixedSpaceRow>
-    <FixedSpaceRow justifyContent="space-evenly" alignItems="center">
-      <IconText selected={selected}>{text}</IconText>
+  <FixedSpaceColumn $spacing="3px" onClick={onClick}>
+    <FixedSpaceRow $justifyContent="center">{children}</FixedSpaceRow>
+    <FixedSpaceRow $justifyContent="space-evenly" $alignItems="center">
+      <IconText $selected={selected}>{text}</IconText>
     </FixedSpaceRow>
   </FixedSpaceColumn>
 )
@@ -139,7 +139,7 @@ export default function BottomNavbar({
             >
               <CustomIcon
                 icon={selected === 'child' ? fasChild : faChild}
-                selected={selected === 'child'}
+                $selected={selected === 'child'}
               />
             </BottomText>
           </Button>
@@ -157,7 +157,7 @@ export default function BottomNavbar({
               >
                 <CustomIcon
                   icon={selected === 'staff' ? fasUser : faUser}
-                  selected={selected === 'staff'}
+                  $selected={selected === 'staff'}
                 />
               </BottomText>
             </Button>
@@ -178,7 +178,7 @@ export default function BottomNavbar({
               >
                 <CustomIcon
                   icon={selected === 'messages' ? fasEnvelope : faEnvelope}
-                  selected={selected === 'messages'}
+                  $selected={selected === 'messages'}
                 />
                 {(user?.pinLoginActive && groupAccountIds.length > 0
                   ? unreadCounts.filter(({ accountId }) =>
@@ -204,7 +204,7 @@ export default function BottomNavbar({
               >
                 <CustomIcon
                   icon={selected === 'settings' ? fasGear : faGear}
-                  selected={selected === 'settings'}
+                  $selected={selected === 'settings'}
                 />
               </BottomText>
             </Button>

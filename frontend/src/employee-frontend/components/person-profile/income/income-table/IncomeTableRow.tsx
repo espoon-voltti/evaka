@@ -32,9 +32,9 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
   return (
     <Tr key={type.value}>
       <Td>
-        <TypeLabel indent={type.isSubType}>{type.nameFi}</TypeLabel>
+        <TypeLabel $indent={type.isSubType}>{type.nameFi}</TypeLabel>
       </Td>
-      <Td align="right">
+      <Td $align="right">
         {onChange !== undefined ? (
           <EuroInput
             value={state.amount}
@@ -75,15 +75,15 @@ export const IncomeTableRow = React.memo(function IncomeTableRow({
           )
         ) : undefined}
       </Td>
-      <Td align="right">
+      <Td $align="right">
         <Light>{`${formatCents(state.monthlyAmount)} €`}</Light>
       </Td>
     </Tr>
   )
 })
 
-const TypeLabel = styled.span<{ indent: boolean }>`
-  margin-left: ${(props) => (props.indent ? '2rem' : '0')};
+const TypeLabel = styled.span<{ $indent: boolean }>`
+  margin-left: ${(props) => (props.$indent ? '2rem' : '0')};
 `
 
 export default IncomeTableRow

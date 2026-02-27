@@ -224,7 +224,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           </Creator>
 
           {isRead(props) && (props.editable || props.deletable) && (
-            <FixedSpaceRow spacing="xs">
+            <FixedSpaceRow $spacing="xs">
               {props.editable && (
                 <IconOnlyButton
                   icon={faPen}
@@ -284,7 +284,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 text={i18n.common.cancel}
                 disabled={submitting}
               />
-              <Gap horizontal size="s" />
+              <Gap $horizontal $size="s" />
               <Button
                 appearance="inline"
                 onClick={save}

@@ -90,7 +90,7 @@ function UnitInformation({ unit, permittedActions }: Props) {
 
       {permittedActions.includes('UPDATE') && (
         <>
-          <Gap size="L" />
+          <Gap $size="L" />
           <DetailsLink
             to={`/units/${unit.id}/details`}
             data-qa="unit-details-link"

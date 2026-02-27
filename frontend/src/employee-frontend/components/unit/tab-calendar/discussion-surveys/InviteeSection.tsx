@@ -157,8 +157,8 @@ export default React.memo(function InviteeSection({
   )
 
   return (
-    <FixedSpaceRow spacing="XL" fullWidth justifyContent="space-between">
-      <FixedSpaceColumn fullWidth spacing="xs">
+    <FixedSpaceRow $spacing="XL" $fullWidth $justifyContent="space-between">
+      <FixedSpaceColumn $fullWidth $spacing="xs">
         <ReservationCount>{`${t.unreservedTitle} (${unreserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
         <ChildNameList
           childList={unreserved}
@@ -166,7 +166,7 @@ export default React.memo(function InviteeSection({
           data-qa="unreserved-attendees"
         />
       </FixedSpaceColumn>
-      <FixedSpaceColumn fullWidth spacing="xs">
+      <FixedSpaceColumn $fullWidth $spacing="xs">
         <ReservationCount>{`${t.reservedTitle} (${reserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
         <ChildNameList
           childList={reserved}

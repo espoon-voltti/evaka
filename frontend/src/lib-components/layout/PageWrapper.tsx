@@ -30,7 +30,7 @@ export default React.memo(function PageWrapper({
   return (
     <Container>
       {props.withReturn && <ReturnButton label={props.goBackLabel} />}
-      <ContentArea opaque>{children}</ContentArea>
+      <ContentArea $opaque>{children}</ContentArea>
     </Container>
   )
 })

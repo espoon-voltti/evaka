@@ -96,8 +96,8 @@ export default React.memo(function Units() {
 
   return (
     <Container data-qa="units-page">
-      <ContentArea opaque>
-        <Gap size="xs" />
+      <ContentArea $opaque>
+        <Gap $size="xs" />
         <TopBar>
           <div>
             <InputField
@@ -110,7 +110,7 @@ export default React.memo(function Units() {
               icon={faSearch}
               width="L"
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <MultiSelect
               value={filter.providerTypes}
               onChange={(value) =>
@@ -122,7 +122,7 @@ export default React.memo(function Units() {
               placeholder={i18n.units.selectProviderTypes}
               data-qa="provider-types-select"
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <MultiSelect
               value={filter.careTypes}
               onChange={(value) => setFilter({ ...filter, careTypes: value })}
@@ -132,7 +132,7 @@ export default React.memo(function Units() {
               placeholder={i18n.units.selectCareTypes}
               data-qa="care-types-select"
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <Checkbox
               label={i18n.units.includeClosed}
               checked={includeClosed}
@@ -153,7 +153,7 @@ export default React.memo(function Units() {
             </div>
           </RequireRole>
         </TopBar>
-        <Gap size="L" />
+        <Gap $size="L" />
         <div className="table-of-units">
           {renderResult(units, (units) => (
             <Table data-qa="table-of-units">
@@ -241,7 +241,7 @@ export default React.memo(function Units() {
             </Table>
           ))}
         </div>
-        <Gap size="XXL" />
+        <Gap $size="XXL" />
       </ContentArea>
     </Container>
   )

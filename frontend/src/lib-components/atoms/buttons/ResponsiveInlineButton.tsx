@@ -14,8 +14,8 @@ interface ResponsiveInlineButtonProps extends InlineButtonProps {
   breakpoint?: string
 }
 
-const ResponsiveText = styled.span<{ breakpoint: string }>`
-  @media (max-width: ${(p) => p.breakpoint}) {
+const ResponsiveText = styled.span<{ $breakpoint: string }>`
+  @media (max-width: ${(p) => p.$breakpoint}) {
     display: none;
   }
 `
@@ -27,7 +27,7 @@ export default React.memo(function ResponsiveInlineButton({
 }: ResponsiveInlineButtonProps) {
   return (
     <LegacyInlineButton
-      text={<ResponsiveText breakpoint={breakpoint}>{text}</ResponsiveText>}
+      text={<ResponsiveText $breakpoint={breakpoint}>{text}</ResponsiveText>}
       {...props}
     />
   )

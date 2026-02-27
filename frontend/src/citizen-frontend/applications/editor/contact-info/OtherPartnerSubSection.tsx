@@ -30,7 +30,7 @@ export default React.memo(function OtherPartnerSubSection({
   return (
     <>
       <H3>{t.applications.editor.contactInfo.otherPartnerTitle}</H3>
-      <Gap size="s" />
+      <Gap $size="s" />
       <Checkbox
         label={t.applications.editor.contactInfo.otherPartnerCheckboxLabel}
         checked={formData.otherPartnerExists}
@@ -43,10 +43,10 @@ export default React.memo(function OtherPartnerSubSection({
       />
       {formData.otherPartnerExists && (
         <>
-          <Gap size="m" />
-          <FixedSpaceRow spacing="XL">
-            <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing="xs">
+          <Gap $size="m" />
+          <FixedSpaceRow $spacing="XL">
+            <AdaptiveFlex $breakpoint="1060px">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="other-partner-first-name">
                   {t.applications.editor.contactInfo.personFirstName + ' *'}
                 </Label>
@@ -71,7 +71,7 @@ export default React.memo(function OtherPartnerSubSection({
                   required
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="other-partner-last-name">
                   {t.applications.editor.contactInfo.personLastName + ' *'}
                 </Label>
@@ -96,7 +96,7 @@ export default React.memo(function OtherPartnerSubSection({
                   required
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="other-partner-ssn">
                   {t.applications.editor.contactInfo.personSSN + ' *'}
                 </Label>

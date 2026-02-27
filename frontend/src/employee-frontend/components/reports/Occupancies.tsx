@@ -65,16 +65,16 @@ const StyledTfoot = styled(Tfoot)`
   background-color: ${(props) => props.theme.colors.grayscale.g4};
 `
 
-const StyledTd = styled(Td)<{ borderEdge?: 'left' | 'right' }>`
+const StyledTd = styled(Td)<{ $borderEdge?: 'left' | 'right' }>`
   white-space: nowrap;
 
   ${(props) =>
-    props.borderEdge === 'left' &&
+    props.$borderEdge === 'left' &&
     css`
       border-left: 1px solid ${(props) => props.theme.colors.grayscale.g15};
     `}
   ${(props) =>
-    props.borderEdge === 'right' &&
+    props.$borderEdge === 'right' &&
     css`
       border-right: 1px solid ${(props) => props.theme.colors.grayscale.g15};
     `}
@@ -416,7 +416,7 @@ export default React.memo(function Occupancies() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.occupancies.title}</Title>
         {renderResult(areas, (areas) => (
           <>
@@ -785,7 +785,7 @@ export default React.memo(function Occupancies() {
                                     (cell, colNum) => (
                                       <StyledTd
                                         key={colNum}
-                                        borderEdge={cell.borderEdge}
+                                        $borderEdge={cell.borderEdge}
                                       >
                                         {cell.tooltip ? (
                                           <Tooltip tooltip={cell.tooltip}>
@@ -823,7 +823,7 @@ export default React.memo(function Occupancies() {
                       </StyledTfoot>
                     )}
                   </TableScrollable>
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <Legend>
                     <i>
                       {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}

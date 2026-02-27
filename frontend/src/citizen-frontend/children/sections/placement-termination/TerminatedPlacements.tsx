@@ -20,7 +20,7 @@ export default React.memo(function TerminatedPlacements({ placements }: Props) {
   const t = useTranslation()
   return (
     <div>
-      <HorizontalLine slim />
+      <HorizontalLine $slim />
       <Label>{t.children.placementTermination.terminatedPlacements}</Label>
       <ul>
         {placements.map((placementGroup) => {

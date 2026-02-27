@@ -240,7 +240,7 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
         />
         {retroactive && (
           <>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <RetroactiveConfirmation
               confirmed={confirmedRetroactive}
               setConfirmed={setConfirmedRetroactive}

@@ -121,15 +121,15 @@ export default React.memo(function NewServiceApplicationPage() {
       <Main>
         <Container>
           <ReturnButton label={i18n.common.return} />
-          <ContentArea opaque>
-            <H1 noMargin>{i18n.children.serviceApplication.createTitle}</H1>
+          <ContentArea $opaque>
+            <H1 $noMargin>{i18n.children.serviceApplication.createTitle}</H1>
             <Gap />
-            <FixedSpaceColumn spacing="m">
+            <FixedSpaceColumn $spacing="m">
               <div>
                 <Label>{i18n.children.serviceApplication.startDate} *</Label>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <div>{i18n.children.serviceApplication.startDateInfo}</div>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <DatePickerF
                   bind={startDate}
                   locale={lang}
@@ -137,11 +137,11 @@ export default React.memo(function NewServiceApplicationPage() {
                   info={startDate.inputInfo()}
                   data-qa="start-date"
                 />
-                <Gap size="s" />
+                <Gap $size="s" />
                 <div aria-live="polite">
                   {startDateWarning && (
                     <>
-                      <Gap size="s" />
+                      <Gap $size="s" />
                       <AlertBox
                         message={
                           i18n.children.serviceApplication
@@ -159,7 +159,7 @@ export default React.memo(function NewServiceApplicationPage() {
                   {renderResult(optionsResult, (options) => (
                     <div>
                       {options.length > 0 ? (
-                        <FixedSpaceColumn spacing="s">
+                        <FixedSpaceColumn $spacing="s">
                           <ExpandingInfo
                             info={
                               i18n.children.serviceApplication.serviceNeedInfo
@@ -192,7 +192,7 @@ export default React.memo(function NewServiceApplicationPage() {
                   ))}
                 </div>
               )}
-              <FixedSpaceColumn spacing="s">
+              <FixedSpaceColumn $spacing="s">
                 <ExpandingInfo
                   info={i18n.children.serviceApplication.additionalInfoInfo}
                 >

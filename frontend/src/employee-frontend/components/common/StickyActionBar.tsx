@@ -20,7 +20,7 @@ export default React.memo(function StickyActionBar({
 }: Props & { children: React.ReactNode | readonly React.ReactNode[] }) {
   return (
     <Bar data-qa={dataQa}>
-      <Content align={align}>{children}</Content>
+      <Content $align={align}>{children}</Content>
     </Bar>
   )
 })
@@ -45,9 +45,9 @@ const Bar = styled.div`
   box-shadow: 0px -8px 8px -6px ${colors.grayscale.g4};
 `
 
-const Content = styled(Container)<Props>`
+const Content = styled(Container)<{ $align: Props['align'] }>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: ${({ align }) => alignValues[align]};
+  justify-content: ${({ $align }) => alignValues[$align]};
 `

@@ -73,7 +73,7 @@ export default React.memo(function GroupCaretakers() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(caretakers, (caretakers) => (
           <NarrowContainer>
             <Title size={2}>{i18n.titles.groupCaretakers}</Title>

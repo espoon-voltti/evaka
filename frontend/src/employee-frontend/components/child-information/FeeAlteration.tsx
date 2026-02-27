@@ -79,7 +79,7 @@ export default React.memo(function FeeAlteration({ childId }: Props) {
           disabled={uiMode === newFeeAlterationUiMode}
         />
       )}
-      <Gap size="m" />
+      <Gap $size="m" />
       {uiMode === newFeeAlterationUiMode ? (
         <FeeAlterationEditor
           personId={childId}

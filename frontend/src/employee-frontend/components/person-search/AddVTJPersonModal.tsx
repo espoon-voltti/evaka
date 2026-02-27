@@ -91,7 +91,7 @@ export default React.memo(function VTJModal({
             {person?.isLoading ? <InputSpinner /> : null}
           </InputWrapper>
         </Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         <SsnResultContainer>
           {person?.isSuccess ? (
             <>
@@ -116,7 +116,7 @@ export default React.memo(function VTJModal({
           ) : null}
           {saveError ? (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <div>{i18n.common.error.unknown}</div>
             </>
           ) : null}

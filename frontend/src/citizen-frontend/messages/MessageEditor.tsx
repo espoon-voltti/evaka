@@ -219,13 +219,13 @@ export default React.memo(function MessageEditor({
             {user && (
               <>
                 <Bold>{i18n.messages.sender}</Bold>
-                <Gap size="xs" />
-                <P noMargin>
+                <Gap $size="xs" />
+                <P $noMargin>
                   <PersonName person={user} format="First Last" />
                 </P>
               </>
             )}
-            <Gap size="s" />
+            <Gap $size="s" />
             {childIds && childIds.length > 1 && (
               <>
                 <div
@@ -238,7 +238,7 @@ export default React.memo(function MessageEditor({
                   </Bold>
                   <FixedSpaceColumn>
                     <ChipContainer
-                      horizontalSpacing="xs"
+                      $horizontalSpacing="xs"
                       ref={chipGroupContainerRef}
                     >
                       {children_
@@ -302,13 +302,13 @@ export default React.memo(function MessageEditor({
                     )}
                   </FixedSpaceColumn>
                 </div>
-                <Gap size="s" />
+                <Gap $size="s" />
               </>
             )}
 
             <label>
               <Bold>{required(i18n.messages.messageEditor.recipients)}</Bold>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               <MultiSelect
                 placeholder={i18n.messages.messageEditor.search}
                 value={recipients.primary}
@@ -340,7 +340,7 @@ export default React.memo(function MessageEditor({
 
             {showSecondaryRecipientSelection && (
               <>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <div
                   role="group"
                   aria-labelledby="message-editor-secondary-recipients"
@@ -350,7 +350,7 @@ export default React.memo(function MessageEditor({
                       {i18n.messages.messageEditor.secondaryRecipients}
                     </Bold>
                   </label>
-                  <Gap size="xs" horizontal={true} />
+                  <Gap $size="xs" $horizontal={true} />
                   <SecondaryRecipients id="secondary-recipients-list">
                     {validAccounts.secondary.map((recipient) => (
                       <ToggleableRecipient
@@ -387,7 +387,7 @@ export default React.memo(function MessageEditor({
               />
             )}
 
-            <Gap size="s" />
+            <Gap $size="s" />
 
             <label>
               <Bold>{required(i18n.messages.messageEditor.subject)}</Bold>
@@ -402,11 +402,11 @@ export default React.memo(function MessageEditor({
               />
             </label>
 
-            <Gap size="s" />
+            <Gap $size="s" />
 
             <TextAreaLabel htmlFor="message-editor-content">
               <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
-              <Gap size="s" />
+              <Gap $size="s" />
               <StyledTextArea
                 id="message-editor-content"
                 value={message.content}
@@ -423,7 +423,7 @@ export default React.memo(function MessageEditor({
 
             {messageAttachmentsAllowed && (
               <>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <FileUpload
                   slimSingleFile
                   files={attachments}
@@ -441,11 +441,11 @@ export default React.memo(function MessageEditor({
                     i18n.messages.messageEditor.addShiftCareAttachment
                   }
                 />
-                <Gap size="m" />
+                <Gap $size="m" />
               </>
             )}
 
-            <Gap size="s" />
+            <Gap $size="s" />
             {displaySendError && (
               <ErrorMessage>
                 {i18n.messages.messageEditor.messageSendError}

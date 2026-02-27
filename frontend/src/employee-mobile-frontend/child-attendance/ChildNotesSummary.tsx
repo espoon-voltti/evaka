@@ -64,24 +64,24 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
 
   return (
     <ContentArea
-      shadow
-      opaque={true}
-      paddingHorizontal="s"
-      paddingVertical="s"
-      blue
+      $shadow
+      $opaque={true}
+      $paddingHorizontal="s"
+      $paddingVertical="s"
+      $blue
     >
-      <FixedSpaceColumn spacing="m">
-        <FixedSpaceRow spacing="m" alignItems="center">
+      <FixedSpaceColumn $spacing="m">
+        <FixedSpaceRow $spacing="m" $alignItems="center">
           <ChildImage child={child} />
           <ChildName>
-            <H3 primary noMargin>
+            <H3 $primary $noMargin>
               <PersonName person={child} format="First Last (Preferred)" />
             </H3>
           </ChildName>
         </FixedSpaceRow>
 
         {hasStickyNotes && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <FixedSpaceRow>
               <span>
                 <RoundIcon
@@ -107,7 +107,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
         )}
 
         {child.dailyNote && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <FixedSpaceRow>
               <span>
                 <RoundIcon
@@ -122,7 +122,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
               <span data-qa="daily-note">{child.dailyNote.note}</span>
             )}
             {child.dailyNote.feedingNote && (
-              <FixedSpaceColumn spacing="xxs">
+              <FixedSpaceColumn $spacing="xxs">
                 <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
                 <span>
                   {
@@ -134,7 +134,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
               </FixedSpaceColumn>
             )}
             {child.dailyNote.sleepingNote && (
-              <FixedSpaceColumn spacing="xxs">
+              <FixedSpaceColumn $spacing="xxs">
                 <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
                 <span>
                   {
@@ -156,7 +156,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
             )}
             {(!!child.dailyNote.reminderNote ||
               child.dailyNote.reminders.length > 0) && (
-              <FixedSpaceColumn spacing="xxs">
+              <FixedSpaceColumn $spacing="xxs">
                 <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
                 <span>
                   {child.dailyNote.reminders.map((reminder) => (
@@ -172,7 +172,7 @@ const ChildNotesSummaryInner = React.memo(function ChildNotesSummaryInner({
         )}
 
         {hasGroupNotes && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <FixedSpaceRow>
               <span>
                 <RoundIcon content={farUsers} color={colors.main.m4} size="m" />

@@ -134,7 +134,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           />
         </CloseButtonWrapper>
       </GroupSelectorWrapper>
-      <Gap size="s" />
+      <Gap $size="s" />
     </GroupContainer>
   )
 })

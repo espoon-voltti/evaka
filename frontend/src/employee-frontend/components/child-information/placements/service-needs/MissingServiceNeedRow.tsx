@@ -56,7 +56,7 @@ function MissingServiceNeedRow({
           : '-'}
       </InfoTd>
       <Td>-</Td>
-      <Td align="right">
+      <Td $align="right">
         {createAllowed && (
           <Button
             appearance="inline"

@@ -82,7 +82,7 @@ export default React.memo(function AddTemporaryEmployeeModal({
       data-qa="add-temporary-employee-modal"
     >
       <FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.firstName} *`}
           </Label>
@@ -95,7 +95,7 @@ export default React.memo(function AddTemporaryEmployeeModal({
             data-qa="first-name"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.lastName} *`}
           </Label>
@@ -110,7 +110,7 @@ export default React.memo(function AddTemporaryEmployeeModal({
         </FixedSpaceColumn>
 
         {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.unit.accessControl.chooseGroup}</Label>
             <MultiSelect
               data-qa="group-select"
@@ -141,7 +141,7 @@ export default React.memo(function AddTemporaryEmployeeModal({
           />
         )}
 
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.pinCode} *`}
           </Label>

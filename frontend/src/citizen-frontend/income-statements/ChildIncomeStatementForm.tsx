@@ -98,12 +98,12 @@ const ChildIncome = React.memo(function ChildIncome({
       ) : (
         <>
           <Label>{t.income.childIncome.childAttachments}</Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           {formData.childIncome &&
             numAttachments(formData.attachments) === 0 && (
               <>
                 <LabelError text={t.components.fileUpload.input.title} />
-                <Gap size="L" />
+                <Gap $size="L" />
               </>
             )}
           <ChildIncomeStatementAttachments
@@ -114,7 +114,7 @@ const ChildIncome = React.memo(function ChildIncome({
         </>
       )}
 
-      <Gap size="L" />
+      <Gap $size="L" />
 
       <Label htmlFor="other-info">{t.income.childIncome.additionalInfo}</Label>
 
@@ -166,23 +166,23 @@ const ChildIncomeTimeRangeSelection = React.memo(
     const onEndDateChanged = useFieldDispatch(onChange, 'endDate')
 
     return (
-      <FixedSpaceColumn spacing="zero" ref={ref}>
-        <H2 noMargin>{t.income.incomeInfo}</H2>
-        <Gap size="s" />
+      <FixedSpaceColumn $spacing="zero" ref={ref}>
+        <H2 $noMargin>{t.income.incomeInfo}</H2>
+        <Gap $size="s" />
         <Label>{t.income.childIncomeInfo}</Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         {showFormErrors && (
           <>
             <AlertBox noMargin message={t.income.errors.invalidForm} />
-            <Gap size="s" />
+            <Gap $size="s" />
           </>
         )}
-        <FixedSpaceRow spacing="XL">
+        <FixedSpaceRow $spacing="XL">
           <div>
             <Label htmlFor="start-date">
               {t.income.incomeType.startDate} *
             </Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <DatePicker
               id="start-date"
               date={formData.startDate}
@@ -199,7 +199,7 @@ const ChildIncomeTimeRangeSelection = React.memo(
           </div>
           <div>
             <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <DatePicker
               id="end-date"
               date={formData.endDate}
@@ -284,20 +284,20 @@ export default React.memo(
     return (
       <>
         <Container>
-          <Gap size="s" />
-          <ContentArea opaque paddingVertical="L">
+          <Gap $size="s" />
+          <ContentArea $opaque $paddingVertical="L">
             <ResponsiveFixedSpaceRow>
-              <FixedSpaceColumn spacing="zero">
-                <H1 noMargin>{t.income.childFormTitle}</H1>
+              <FixedSpaceColumn $spacing="zero">
+                <H1 $noMargin>{t.income.childFormTitle}</H1>
                 {t.income.childFormDescription}
               </FixedSpaceColumn>
               <Confidential>{t.income.confidential}</Confidential>
             </ResponsiveFixedSpaceRow>
           </ContentArea>
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
-          <ContentArea opaque>
+          <ContentArea $opaque>
             <ChildIncomeTimeRangeSelection
               formData={incomeTypeSelectionFormData}
               isValidStartDate={isValidStartDate}
@@ -305,7 +305,7 @@ export default React.memo(
               onChange={onChange}
               ref={scrollTarget}
             />
-            <Gap size="L" />
+            <Gap $size="L" />
             <ChildIncome
               incomeStatementId={incomeStatementId}
               showFormErrors={showFormErrors}
@@ -314,7 +314,7 @@ export default React.memo(
             />
           </ContentArea>
           <Gap />
-          <ContentArea opaque paddingVertical="L">
+          <ContentArea $opaque $paddingVertical="L">
             <AssureCheckbox>
               <Checkbox
                 label={t.income.assure}

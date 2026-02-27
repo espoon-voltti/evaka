@@ -67,14 +67,14 @@ export default React.memo(function PaymentsPage() {
 
   return (
     <Container data-qa="payments-page">
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <PaymentFilters />
       </ContentArea>
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {searchFilters &&
         renderResult(payments, (payments) => (
           <>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <Payments
                 payments={payments.data}
                 total={payments.total}

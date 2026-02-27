@@ -47,12 +47,12 @@ export default React.memo(function OutOfOfficePage() {
 
   return (
     <Container>
-      <ContentArea opaque data-qa="out-of-office-page">
+      <ContentArea $opaque data-qa="out-of-office-page">
         <H1>{i18n.outOfOffice.title}</H1>
         <P>{i18n.outOfOffice.description}</P>
-        <Gap size="m" />
+        <Gap $size="m" />
         <Label>{i18n.outOfOffice.header}</Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         {!isEditing && periods.length > 0 ? (
           <PeriodListContainer>
             {periods.map((period) => (
@@ -88,7 +88,7 @@ export default React.memo(function OutOfOfficePage() {
         {periods.length === 0 && !isEditing ? (
           <Fragment>
             <div>{i18n.outOfOffice.noFutureOutOfOffice}</div>
-            <Gap size="m" />
+            <Gap $size="m" />
             <Button
               text={i18n.outOfOffice.addOutOfOffice}
               primary

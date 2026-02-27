@@ -56,7 +56,7 @@ export default React.memo(function ApplicationStatusSection({
           {application.modifiedBy?.name ?? ''}
         </span>
 
-        <Label inputRow={!!dueDateEditor}>{i18n.application.state.due}</Label>
+        <Label $inputRow={!!dueDateEditor}>{i18n.application.state.due}</Label>
         {dueDateEditor || (
           <span data-qa="application-due-date">
             {application.dueDate?.format()}

@@ -198,7 +198,7 @@ export default React.memo(function CalendarNotifications({
           children: (
             <>
               {i18n.calendar.discussionTimeReservation.surveyToastMessage}
-              <Gap size="xs" />
+              <Gap $size="xs" />
               <Button
                 appearance="link"
                 text={
@@ -245,15 +245,15 @@ export default React.memo(function CalendarNotifications({
           children: [
             i18n.ctaToast.unansweredChildDocumentCta(childDocument.child),
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <span style={{ color: colors.status.info }}>
                 {i18n.ctaToast.unansweredChildDocumentFillIn}
               </span>
               {userAuthLevel === 'WEAK' && (
                 <>
-                  <Gap size="xs" horizontal />
+                  <Gap $size="xs" $horizontal />
                   <FontAwesomeIcon icon={faLockAlt} />
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <div>{i18n.ctaToast.unansweredChildDocumentWeakAuthInfo}</div>
                 </>
               )}

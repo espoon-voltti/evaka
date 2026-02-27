@@ -184,7 +184,7 @@ const Modal = React.memo(function Modal({
       rejectAction={clear}
       rejectLabel={i18n.common.cancel}
     >
-      <FixedSpaceRow justifyContent="center">
+      <FixedSpaceRow $justifyContent="center">
         <StyledLabel>{i18n.common.form.startDate}</StyledLabel>
         <DatePicker
           locale={lang}

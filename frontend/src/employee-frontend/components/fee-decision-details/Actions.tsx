@@ -70,7 +70,7 @@ const Actions = React.memo(function Actions({
   const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'
 
   return (
-    <FixedSpaceRow justifyContent="flex-end">
+    <FixedSpaceRow $justifyContent="flex-end">
       {isDraft ? (
         <>
           <LegacyButton

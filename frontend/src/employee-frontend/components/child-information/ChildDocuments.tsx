@@ -112,7 +112,7 @@ const InternalChildDocuments = React.memo(function InternalChildDocuments({
                   data-qa="open-document"
                 >
                   <FontAwesomeIcon icon={faFile} />
-                  <Gap size="xs" horizontal />
+                  <Gap $size="xs" $horizontal />
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
@@ -228,7 +228,7 @@ const DecisionValidityCell = React.memo(function DecisionValidityCell({
   if (!document.decision?.validity) return null
 
   return (
-    <FixedSpaceRow justifyContent="space-between">
+    <FixedSpaceRow $justifyContent="space-between">
       <div data-qa="decision-validity">
         {document.decision.validity.format()}
       </div>
@@ -293,7 +293,7 @@ const DecisionChildDocuments = React.memo(function DecisionChildDocuments({
                   data-qa="open-document"
                 >
                   <FontAwesomeIcon icon={faFile} />
-                  <Gap size="xs" horizontal />
+                  <Gap $size="xs" $horizontal />
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
@@ -364,7 +364,7 @@ const ExternalChildDocuments = React.memo(function ExternalChildDocuments({
                   data-qa="open-document"
                 >
                   <FontAwesomeIcon icon={faFile} />
-                  <Gap size="xs" horizontal />
+                  <Gap $size="xs" $horizontal />
                   <span>{document.templateName}</span>
                 </DisableableLink>
               </WiderTd>
@@ -487,7 +487,7 @@ const ChildDocumentTables = ({
   ]
 
   return (
-    <FixedSpaceColumn spacing="L">
+    <FixedSpaceColumn $spacing="L">
       {creationModalState && (
         <CreationModal
           childId={childId}
@@ -501,8 +501,8 @@ const ChildDocumentTables = ({
       )}
 
       {enabledCategories.map((category) => (
-        <FixedSpaceColumn spacing="zero" key={category}>
-          <FixedSpaceRow justifyContent="space-between">
+        <FixedSpaceColumn $spacing="zero" key={category}>
+          <FixedSpaceRow $justifyContent="space-between">
             <H3 data-qa={`child-documents-title-${category}`}>
               {i18n.childInformation.childDocuments.title[category]}
             </H3>

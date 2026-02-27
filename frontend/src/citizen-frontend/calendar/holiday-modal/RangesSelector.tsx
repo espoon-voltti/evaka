@@ -126,8 +126,8 @@ export const RangeSelector = React.memo(function RangeSelector({
         <FixedSpaceRow
           key={`tb-${i}`}
           data-qa="range"
-          alignItems="center"
-          spacing="m"
+          $alignItems="center"
+          $spacing="m"
         >
           <div className="bold">{`${i + 1}.`}</div>
           <DateRangePickerF
@@ -157,7 +157,7 @@ export const RangeSelector = React.memo(function RangeSelector({
         </InputFieldUnderRow>
       ) : undefined}
 
-      <Gap size="L" />
+      <Gap $size="L" />
 
       <Button
         appearance="inline"

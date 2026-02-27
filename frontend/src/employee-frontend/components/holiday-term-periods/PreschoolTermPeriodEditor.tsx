@@ -40,7 +40,7 @@ export default React.memo(function PreschoolTermPeriodEditor() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(
           combine(preschoolTerms, term),
           ([preschoolTerms, term]) => (

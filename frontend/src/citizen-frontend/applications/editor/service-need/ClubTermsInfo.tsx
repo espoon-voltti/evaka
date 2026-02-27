@@ -31,13 +31,13 @@ export function ClubTermsInfo({ clubTerms }: Props) {
           ]
         }
       </Label>
-      <Gap size="s" />
+      <Gap $size="s" />
       <Ul data-qa="club-terms">
         {clubTerms.map((term, i) => (
           <li key={i}>{term.extendedTerm.format()}</li>
         ))}
       </Ul>
-      <Gap size="m" />
+      <Gap $size="m" />
     </>
   )
 }

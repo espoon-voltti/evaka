@@ -69,8 +69,8 @@ export const ChartTooltip = React.memo(function ChartTooltip({
   }
   return (
     <>
-      <Caret pos={caretPos} className={align} opacity={visible ? 1 : 0} />
-      <PositionedDiv pos={pos} opacity={visible ? 1 : 0} className={align}>
+      <Caret $pos={caretPos} className={align} $opacity={visible ? 1 : 0} />
+      <PositionedDiv $pos={pos} $opacity={visible ? 1 : 0} className={align}>
         <TooltipBody>{content}</TooltipBody>
       </PositionedDiv>
     </>
@@ -79,39 +79,39 @@ export const ChartTooltip = React.memo(function ChartTooltip({
 
 const tooltipWidth = 380
 const tooltipHeight = 170
-const PositionedDiv = styled.div<{ pos: Position; opacity: number }>`
+const PositionedDiv = styled.div<{ $pos: Position; $opacity: number }>`
   position: absolute;
   pointer-events: none;
-  opacity: ${(p) => p.opacity};
+  opacity: ${(p) => p.$opacity};
   z-index: 9999;
   width: ${tooltipWidth}px;
   height: ${tooltipHeight}px;
 
   &.top {
-    left: ${({ pos }) => pos.x}px;
-    bottom: ${({ pos }) => pos.y}px;
+    left: ${({ $pos }) => $pos.x}px;
+    bottom: ${({ $pos }) => $pos.y}px;
   }
   &.left {
-    top: ${({ pos }) => pos.y}px;
-    left: ${({ pos }) => pos.x}px;
+    top: ${({ $pos }) => $pos.y}px;
+    left: ${({ $pos }) => $pos.x}px;
   }
   &.bottom {
-    top: ${({ pos }) => pos.y}px;
-    left: ${({ pos }) => pos.x}px;
+    top: ${({ $pos }) => $pos.y}px;
+    left: ${({ $pos }) => $pos.x}px;
   }
   &.right {
-    top: ${({ pos }) => pos.y}px;
-    left: ${({ pos }) => pos.x}px;
+    top: ${({ $pos }) => $pos.y}px;
+    left: ${({ $pos }) => $pos.x}px;
   }
 `
 
 const caretSize = 12
-const Caret = styled.span<{ pos: Position; opacity: number }>`
+const Caret = styled.span<{ $pos: Position; $opacity: number }>`
   position: absolute;
   pointer-events: none;
-  opacity: ${(p) => p.opacity};
-  top: ${({ pos }) => pos.y}px;
-  left: ${({ pos }) => pos.x}px;
+  opacity: ${(p) => p.$opacity};
+  top: ${({ $pos }) => $pos.y}px;
+  left: ${({ $pos }) => $pos.x}px;
   width: 0;
   height: 0;
   display: inline-block;

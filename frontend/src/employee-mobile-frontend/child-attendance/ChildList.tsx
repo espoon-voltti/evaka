@@ -95,16 +95,16 @@ export default React.memo(function ChildList({
   return (
     <>
       <FixedSpaceColumn>
-        <OrderedList spacing="zero">
+        <OrderedList $spacing="zero">
           {items.length > 0 ? (
             <>
               {(type === 'COMING' || type === 'PRESENT') && (
                 <Li>
                   <MultiselectToggleBox>
                     <FixedSpaceRow
-                      fullWidth
-                      alignItems="baseline"
-                      justifyContent="space-between"
+                      $fullWidth
+                      $alignItems="baseline"
+                      $justifyContent="space-between"
                     >
                       {type === 'COMING' ||
                       featureFlags.multiSelectDeparture ? (
@@ -180,9 +180,9 @@ export default React.memo(function ChildList({
       {multiselectChildren && (
         <MultiselectActions>
           <FixedSpaceRow
-            spacing="s"
-            alignItems="center"
-            justifyContent="space-evenly"
+            $spacing="s"
+            $alignItems="center"
+            $justifyContent="space-evenly"
           >
             <Button
               appearance="inline"
@@ -230,17 +230,17 @@ export default React.memo(function ChildList({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-const OrderedList = styled.ol<{ spacing?: SpacingSize | string }>`
+const OrderedList = styled.ol<{ $spacing?: SpacingSize | string }>`
   list-style: none;
   padding: 0;
   margin-top: 0;
 
   li {
     margin-bottom: ${(p) =>
-      p.spacing
-        ? isSpacingSize(p.spacing)
-          ? defaultMargins[p.spacing]
-          : p.spacing
+      p.$spacing
+        ? isSpacingSize(p.$spacing)
+          ? defaultMargins[p.$spacing]
+          : p.$spacing
         : defaultMargins.s};
 
     &:last-child {

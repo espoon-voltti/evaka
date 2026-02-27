@@ -74,8 +74,8 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
 
   return renderResult(incomeTypeOptions, ({ incomeTypes }) => (
     <section>
-      <H3 noMargin>{i18n.valueDecision.summary.income.familyComposition}</H3>
-      <Gap size="s" />
+      <H3 $noMargin>{i18n.valueDecision.summary.income.familyComposition}</H3>
+      <Gap $size="s" />
       <LabelValueList
         spacing="small"
         contents={[
@@ -97,9 +97,9 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
           }
         ]}
       />
-      <Gap size="m" />
-      <H3 noMargin>{i18n.valueDecision.summary.income.title}</H3>
-      <Gap size="s" />
+      <Gap $size="m" />
+      <H3 $noMargin>{i18n.valueDecision.summary.income.title}</H3>
+      <Gap $size="s" />
       <LabelValueList
         spacing="small"
         contents={[
@@ -136,9 +136,9 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
       />
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <IncomeTotal>
-            <H4 noMargin>{i18n.valueDecision.summary.income.total}</H4>
+            <H4 $noMargin>{i18n.valueDecision.summary.income.total}</H4>
             <b>{formatCents(decision.totalIncome)} €</b>
           </IncomeTotal>
         </>

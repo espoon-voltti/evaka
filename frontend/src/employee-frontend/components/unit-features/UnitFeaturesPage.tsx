@@ -73,11 +73,11 @@ export default React.memo(function UnitFeaturesPage() {
 
   return (
     <div>
-      <StyledContentArea opaque>
+      <StyledContentArea $opaque>
         <H1>{i18n.unitFeatures.page.title}</H1>
 
         <LabelLike>{i18n.unitFeatures.page.providerType}</LabelLike>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <MultiSelect
           options={unitProviderTypes}
           getOptionId={(pt) => pt}
@@ -89,10 +89,10 @@ export default React.memo(function UnitFeaturesPage() {
           onChange={setFilteredProviderTypes}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <LabelLike>{i18n.unitFeatures.page.careType}</LabelLike>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <MultiSelect
           options={careTypes}
           getOptionId={(pt) => pt}
@@ -102,7 +102,7 @@ export default React.memo(function UnitFeaturesPage() {
           onChange={setFilteredCareTypes}
         />
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <MutateButton
           disabled={!undoAction}
@@ -117,11 +117,11 @@ export default React.memo(function UnitFeaturesPage() {
           onSuccess={() => setUndoAction(undefined)}
           text={i18n.unitFeatures.page.undo}
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <TableContainer>
           {renderResult(filteredUnits, (units) => (
             <Table>
-              <Thead sticky>
+              <Thead $sticky>
                 <Tr>
                   <Td>{i18n.unitFeatures.page.unit}</Td>
                   {pilotFeatures.map((f) => {
@@ -132,7 +132,7 @@ export default React.memo(function UnitFeaturesPage() {
                     return (
                       <Td key={f}>
                         <div>{i18n.unitFeatures.pilotFeatures[f]}</div>
-                        <Gap size="xs" />
+                        <Gap $size="xs" />
                         <div>
                           <MutateButton
                             appearance="link"

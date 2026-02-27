@@ -85,8 +85,8 @@ export default React.memo(function ResponsiveWholePageCollapsible({
         role="button"
         aria-expanded={open}
       >
-        <BreakingH2 noMargin>{title}</BreakingH2>
-        <FixedSpaceRow spacing="s">
+        <BreakingH2 $noMargin>{title}</BreakingH2>
+        <FixedSpaceRow $spacing="s">
           {showCountIndicator && (
             <RoundIcon
               size="m"
@@ -122,7 +122,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
           <ResponsiveCollapsibleContainer>
             <MobileOnly>
               <ResponsiveCollapsibleTitle>
-                <FixedSpaceRow spacing="s">
+                <FixedSpaceRow $spacing="s">
                   <NonShrinkingIconButton
                     icon={faArrowLeft}
                     data-qa="return-collapsible"
@@ -139,7 +139,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
                 </FixedSpaceRow>
               </ResponsiveCollapsibleTitle>
             </MobileOnly>
-            <CollapsibleContainer padding={contentPadding}>
+            <CollapsibleContainer $padding={contentPadding}>
               {children}
             </CollapsibleContainer>
           </ResponsiveCollapsibleContainer>
@@ -176,14 +176,14 @@ const ResponsiveCollapsibleTitle = styled.div`
   flex-shrink: 0;
 `
 
-const CollapsibleContainer = styled.div<{ padding: SpacingSize }>`
+const CollapsibleContainer = styled.div<{ $padding: SpacingSize }>`
   margin-top: ${defaultMargins.s};
 
   @media (max-width: ${tabletMin}) {
     margin-top: 0;
     overflow-y: auto;
     flex-grow: 1;
-    padding: 0 ${(p) => defaultMargins[p.padding]};
+    padding: 0 ${(p) => defaultMargins[p.$padding]};
   }
 `
 

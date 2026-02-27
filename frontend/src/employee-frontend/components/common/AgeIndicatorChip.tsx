@@ -20,7 +20,7 @@ export const AgeIndicatorChip = React.memo(function AgeIndicatorChip({
   age
 }: Props) {
   return (
-    <SmallChip color={age < 3 ? colors.accents.a6turquoise : colors.main.m1}>
+    <SmallChip $color={age < 3 ? colors.accents.a6turquoise : colors.main.m1}>
       {age}v
     </SmallChip>
   )

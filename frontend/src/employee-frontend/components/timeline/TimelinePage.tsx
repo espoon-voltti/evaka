@@ -101,7 +101,7 @@ const TimelineView = React.memo(function TimelineView({
       <H2>
         <PersonName person={timeline} format="First Last" />
       </H2>
-      <Gap size="s" />
+      <Gap $size="s" />
       <FixedSpaceRow>
         <IconOnlyButton
           icon={faMagnifyingGlassPlus}
@@ -114,7 +114,7 @@ const TimelineView = React.memo(function TimelineView({
           onClick={() => setZoom((prev) => Math.max(1, prev - 2))}
         />
       </FixedSpaceRow>
-      <Gap size="s" />
+      <Gap $size="s" />
 
       <TlContainer>
         {/*Months row*/}
@@ -125,7 +125,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
@@ -163,7 +163,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {/*Value decisions grouped by statuses*/}
         <TimelineGroup
@@ -195,7 +195,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {/*Incomes*/}
         <TimelineGroup
@@ -205,7 +205,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {/*PARTNERS*/}
         <TimelineGroup
@@ -215,7 +215,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {/*PARTNERS*/}
         <TimelineGroup
@@ -225,7 +225,7 @@ const TimelineView = React.memo(function TimelineView({
           zoom={zoom}
         />
 
-        <Gap size="X5L" />
+        <Gap $size="X5L" />
       </TlContainer>
     </div>
   )

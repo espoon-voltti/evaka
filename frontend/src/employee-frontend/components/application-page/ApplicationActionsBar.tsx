@@ -70,11 +70,11 @@ export default React.memo(function ApplicationActionsBar({
         !application.checkedByAdmin &&
         applicationStatus === 'WAITING_PLACEMENT',
       component: (
-        <FixedSpaceRow spacing="X3L">
+        <FixedSpaceRow $spacing="X3L">
           {application.confidential === null && (
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.application.selectConfidentialityLabel} *</Label>
-              <FixedSpaceRow spacing="XL">
+              <FixedSpaceRow $spacing="XL">
                 <Radio
                   checked={confidential === true}
                   label={i18n.common.yes}
@@ -181,7 +181,7 @@ export default React.memo(function ApplicationActionsBar({
       <ContentContainer>
         {actions.map(({ id, component }, index) => (
           <React.Fragment key={id}>
-            {index === 0 ? null : <Gap size="s" horizontal />}
+            {index === 0 ? null : <Gap $size="s" $horizontal />}
             {component}
           </React.Fragment>
         ))}

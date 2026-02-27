@@ -65,14 +65,14 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
                     document.publishedVersions.length === 0 ? (
                       i18n.metadata.notPublished
                     ) : (
-                      <UnorderedList spacing="xxs">
+                      <UnorderedList $spacing="xxs">
                         {orderBy(
                           document.publishedVersions,
                           (v) => v.versionNumber,
                           'asc'
                         ).map((version) => (
                           <li key={version.versionNumber}>
-                            <FixedSpaceRow spacing="m" alignItems="center">
+                            <FixedSpaceRow $spacing="m" $alignItems="center">
                               <span>v{version.versionNumber}</span>
                               <span>
                                 {version.createdAt.format(

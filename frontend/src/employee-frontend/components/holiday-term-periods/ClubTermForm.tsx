@@ -160,7 +160,7 @@ export default React.memo(function ClubTermForm({
   return (
     <>
       <H1>{i18n.titles.clubTerm}</H1>
-      <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+      <ListGrid $labelWidth="max-content" $rowGap="s" $columnGap="L">
         <div>
           <FixedSpaceRow>
             <Label>{i18n.terms.term} *</Label>
@@ -174,7 +174,7 @@ export default React.memo(function ClubTermForm({
           />
         </div>
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         <div>
           <FixedSpaceRow>
@@ -188,7 +188,7 @@ export default React.memo(function ClubTermForm({
           />
         </div>
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         <div>
           <ExpandingInfo info={i18n.terms.termBreaksInfo}>
@@ -199,8 +199,8 @@ export default React.memo(function ClubTermForm({
             <FixedSpaceRow
               key={`tb-${i}`}
               data-qa="term-break"
-              alignItems="center"
-              spacing="m"
+              $alignItems="center"
+              $spacing="m"
             >
               <div className="bold">{`${i + 1}.`}</div>
               <DateRangePickerF
@@ -229,7 +229,7 @@ export default React.memo(function ClubTermForm({
             </InputFieldUnderRow>
           ) : undefined}
 
-          <Gap size="L" />
+          <Gap $size="L" />
 
           <Button
             appearance="inline"

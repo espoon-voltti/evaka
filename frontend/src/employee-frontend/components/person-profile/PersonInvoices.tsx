@@ -40,7 +40,7 @@ export default React.memo(function PersonInvoices({ id }: Props) {
     <div>
       {user?.user?.accessibleFeatures.replacementInvoices &&
       permittedActions.has('CREATE_REPLACEMENT_DRAFT_INVOICES') ? (
-        <FixedSpaceColumn alignItems="flex-end">
+        <FixedSpaceColumn $alignItems="flex-end">
           <MutateButton
             icon={faRefresh}
             appearance="inline"

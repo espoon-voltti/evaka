@@ -143,14 +143,14 @@ export default React.memo(function InvoicesPage() {
 
   return (
     <Container data-qa="invoices-page">
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <InvoiceFilters clearPreviousResults={clearChecked} />
       </ContentArea>
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {searchFilters &&
         renderResult(invoices, (invoices, isReloading) => (
           <>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <Invoices
                 user={user}
                 pagedInvoices={invoices}
@@ -326,7 +326,7 @@ const SendModal = React.memo(function SendModal({
             data-qa="invoice-date-input"
           />
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Label>{i18n.invoices.sendModal.dueDate}</Label>
         <div>
           <DatePicker
@@ -343,7 +343,7 @@ const SendModal = React.memo(function SendModal({
         </div>
         {!fullAreaSelection && i18n.invoices.buttons.individualSendAlertText ? (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <AlertBox
               message={i18n.invoices.buttons.individualSendAlertText}
               thin

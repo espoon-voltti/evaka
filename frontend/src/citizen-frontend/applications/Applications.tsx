@@ -35,19 +35,19 @@ export default React.memo(function Applications() {
       data-qa="applications-list"
       data-isloading={isLoading(guardianApplications)}
     >
-      <Gap size="s" />
-      <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{t.applicationsList.title}</H1>
+      <Gap $size="s" />
+      <ContentArea $opaque $paddingVertical="L">
+        <H1 $noMargin>{t.applicationsList.title}</H1>
         {t.applicationsList.summary}
-        <P noMargin>{t.loginPage.applying.mapText}</P>
-        <Gap size="xs" />
+        <P $noMargin>{t.loginPage.applying.mapText}</P>
+        <Gap $size="xs" />
         <MapLink to="/map">
           <FontAwesomeIcon icon={farMap} />
-          <Gap size="xs" horizontal />
+          <Gap $size="xs" $horizontal />
           {t.loginPage.applying.mapLink}
         </MapLink>
       </ContentArea>
-      <Gap size="s" />
+      <Gap $size="s" />
 
       {renderResult(guardianApplications, (guardianApplications) => (
         <>
@@ -67,13 +67,13 @@ export default React.memo(function Applications() {
                       }, 100)
                     }}
                   />
-                  <Gap size="s" />
+                  <Gap $size="s" />
                 </Fragment>
               )
           )}
           {guardianApplications.length === 0 && (
-            <ContentArea opaque paddingVertical="L">
-              <H2 noMargin>{t.applicationsList.noCustodians}</H2>
+            <ContentArea $opaque $paddingVertical="L">
+              <H2 $noMargin>{t.applicationsList.noCustodians}</H2>
               <div>{t.applicationsList.noCustodiansInfo}</div>
             </ContentArea>
           )}

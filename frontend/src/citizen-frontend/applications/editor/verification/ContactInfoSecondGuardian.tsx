@@ -31,9 +31,9 @@ export default React.memo(function ContactInfoSecondGuardian({
         <>
           <span>{tLocal.secondGuardian.notAgreed}</span>
           <ListGrid
-            labelWidth={ApplicationDataGridLabelWidth}
-            rowGap="s"
-            columnGap="L"
+            $labelWidth={ApplicationDataGridLabelWidth}
+            $rowGap="s"
+            $columnGap="L"
           >
             <Label>{tLocal.secondGuardian.tel}</Label>
             <span>{formData.otherGuardianPhone}</span>

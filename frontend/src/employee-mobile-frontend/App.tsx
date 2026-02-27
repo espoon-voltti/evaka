@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext, useEffect, useMemo } from 'react'
-import { StyleSheetManager, ThemeProvider } from 'styled-components'
+import { ThemeProvider } from 'styled-components'
 import { Router, Route, Redirect, useLocation, Switch } from 'wouter'
 
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
@@ -77,57 +76,52 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nContextProvider>
-        <StyleSheetManager shouldForwardProp={shouldForwardProp}>
-          <ThemeProvider theme={theme}>
-            <ErrorBoundary
-              fallback={() => (
-                <ErrorPage
-                  basePath="/employee/mobile"
-                  labels={i18n.errorPage}
-                />
-              )}
-            >
-              <UserContextProvider>
-                <ServiceWorkerContextProvider>
-                  <NotificationsContextProvider>
-                    <NotificationsWrapper />
-                    <RememberContextProvider>
-                      <Router base="/employee/mobile">
-                        <Switch>
-                          <Route path="/landing">
-                            <MobileLander />
-                          </Route>
-                          <Route path="/pairing">
-                            <PairingWizard />
-                          </Route>
-                          <Route path="/units">
-                            <RequireAuth>
-                              <UnitList />
-                            </RequireAuth>
-                          </Route>
-                          <Route path="/units/:unitId" nest>
-                            <RequireAuth>
-                              <UnitRouter />
-                            </RequireAuth>
-                          </Route>
-                          <Route>
-                            <Redirect replace to="/landing" />
-                          </Route>
-                        </Switch>
-                        {!!featureFlags.environmentLabel && (
-                          <EnvironmentLabel>
-                            {featureFlags.environmentLabel}
-                          </EnvironmentLabel>
-                        )}
-                      </Router>
-                      <div id="datepicker-container" />
-                    </RememberContextProvider>
-                  </NotificationsContextProvider>
-                </ServiceWorkerContextProvider>
-              </UserContextProvider>
-            </ErrorBoundary>
-          </ThemeProvider>
-        </StyleSheetManager>
+        <ThemeProvider theme={theme}>
+          <ErrorBoundary
+            fallback={() => (
+              <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
+            )}
+          >
+            <UserContextProvider>
+              <ServiceWorkerContextProvider>
+                <NotificationsContextProvider>
+                  <NotificationsWrapper />
+                  <RememberContextProvider>
+                    <Router base="/employee/mobile">
+                      <Switch>
+                        <Route path="/landing">
+                          <MobileLander />
+                        </Route>
+                        <Route path="/pairing">
+                          <PairingWizard />
+                        </Route>
+                        <Route path="/units">
+                          <RequireAuth>
+                            <UnitList />
+                          </RequireAuth>
+                        </Route>
+                        <Route path="/units/:unitId" nest>
+                          <RequireAuth>
+                            <UnitRouter />
+                          </RequireAuth>
+                        </Route>
+                        <Route>
+                          <Redirect replace to="/landing" />
+                        </Route>
+                      </Switch>
+                      {!!featureFlags.environmentLabel && (
+                        <EnvironmentLabel>
+                          {featureFlags.environmentLabel}
+                        </EnvironmentLabel>
+                      )}
+                    </Router>
+                    <div id="datepicker-container" />
+                  </RememberContextProvider>
+                </NotificationsContextProvider>
+              </ServiceWorkerContextProvider>
+            </UserContextProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
       </I18nContextProvider>
     </QueryClientProvider>
   )
@@ -136,17 +130,6 @@ export default function App() {
 function NotificationsWrapper() {
   const { apiVersion } = useContext(UserContext)
   return <Notifications apiVersion={apiVersion} />
-}
-
-// This implements the default behavior from styled-components v5
-// TODO: Prefix all custom props with $, then remove this
-function shouldForwardProp(propName: string, target: unknown) {
-  if (typeof target === 'string') {
-    // For HTML elements, forward the prop if it is a valid HTML attribute
-    return isPropValid(propName)
-  }
-  // For other elements, forward all props
-  return true
 }
 
 function UnitRouter() {

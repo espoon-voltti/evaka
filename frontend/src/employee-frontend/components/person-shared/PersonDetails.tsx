@@ -305,7 +305,7 @@ export default React.memo(function PersonDetails({
             label: i18n.common.form.socialSecurityNumber,
             dataQa: 'person-ssn',
             value: person.socialSecurityNumber ?? (
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 {editing ||
                 !permittedActions.has('ADD_SSN') ||
                 (person.ssnAddingDisabled &&
@@ -324,7 +324,7 @@ export default React.memo(function PersonDetails({
                   permittedActions.has('ENABLE_SSN_ADDING')) ||
                 (!person.ssnAddingDisabled &&
                   permittedActions.has('DISABLE_SSN_ADDING')) ? (
-                  <FixedSpaceRow spacing="s" alignItems="center">
+                  <FixedSpaceRow $spacing="s" $alignItems="center">
                     <Checkbox
                       checked={person.ssnAddingDisabled}
                       label={i18n.personProfile.ssnAddingDisabledCheckbox}
@@ -344,7 +344,7 @@ export default React.memo(function PersonDetails({
                   </FixedSpaceRow>
                 ) : (
                   person.ssnAddingDisabled && (
-                    <FixedSpaceRow spacing="s" alignItems="center">
+                    <FixedSpaceRow $spacing="s" $alignItems="center">
                       <span>
                         {i18n.personProfile.ssnAddingDisabledCheckbox}
                       </span>

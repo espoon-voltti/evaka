@@ -43,7 +43,7 @@ export default React.memo(function ApplicationReadViewContents({
     <Container>
       <ReturnButton label={t.common.return} />
       <Main>
-        <ContentArea opaque>
+        <ContentArea $opaque>
           <H1>{t.applications.editor.heading.title[type]}</H1>
           <BasicsSection application={application} formData={formData} />
           <HorizontalLine />

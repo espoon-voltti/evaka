@@ -74,18 +74,18 @@ export const DocumentBasics = React.memo(function DocumentBasics({
   const { i18n } = useTranslation()
 
   return (
-    <FixedSpaceRow justifyContent="space-between" alignItems="center">
+    <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
       <FixedSpaceColumn>
-        <H1 noMargin>{document.template.name}</H1>
-        <H2 noMargin>
+        <H1 $noMargin>{document.template.name}</H1>
+        <H2 $noMargin>
           <PersonName person={document.child} format="First Last" />{' '}
           {document.child.dateOfBirth?.format()}
         </H2>
       </FixedSpaceColumn>
       <FixedSpaceColumn
-        spacing="xxs"
-        justifyContent="start"
-        alignItems="flex-end"
+        $spacing="xxs"
+        $justifyContent="start"
+        $alignItems="flex-end"
       >
         {document.decision && (
           <>
@@ -93,7 +93,7 @@ export const DocumentBasics = React.memo(function DocumentBasics({
               {i18n.childInformation.childDocuments.decisions.decisionNumber}{' '}
               {document.decision.decisionNumber}
             </div>
-            <Gap size="xs" />
+            <Gap $size="xs" />
           </>
         )}
         <ChildDocumentStateChip
@@ -256,17 +256,17 @@ const ChildDocumentEditViewInner = React.memo(
     return (
       <div>
         <Container>
-          <ContentArea opaque>
+          <ContentArea $opaque>
             <DocumentBasics document={document} />
-            <Gap size="XXL" />
+            <Gap $size="XXL" />
             <DocumentView bind={bind} readOnly={false} />
           </ContentArea>
         </Container>
 
         <ActionBar>
           <Container>
-            <FixedSpaceRow justifyContent="space-between" alignItems="center">
-              <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+              <FixedSpaceRow $alignItems="center">
                 <Button
                   text={i18n.common.goBack}
                   onClick={goBack}
@@ -278,13 +278,16 @@ const ChildDocumentEditViewInner = React.memo(
                   data-qa="return-button"
                 />
 
-                <FixedSpaceRow alignItems="center" spacing="xs">
+                <FixedSpaceRow $alignItems="center" $spacing="xs">
                   <span>
                     {i18n.common.saved}{' '}
                     {lastSaved.toLocalTime().format('HH:mm:ss')}
                   </span>
                   {!saved && (
-                    <Spinner size={defaultMargins.m} data-qa="saving-spinner" />
+                    <Spinner
+                      $size={defaultMargins.m}
+                      data-qa="saving-spinner"
+                    />
                   )}
                   {error === 'other' && (
                     <span>

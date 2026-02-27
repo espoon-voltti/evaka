@@ -124,7 +124,7 @@ export default React.memo(function ParingWizard() {
                 {i18n.mobile.wizard.title1}
               </PhaseTitle>
               <section>
-                <P centered>{i18n.mobile.wizard.text1}</P>
+                <P $centered>{i18n.mobile.wizard.text1}</P>
               </section>
               <Flex>
                 <InputField
@@ -150,7 +150,7 @@ export default React.memo(function ParingWizard() {
               <Img src={EvakaLogo} />
               <PhaseTitle>{i18n.mobile.wizard.title2}</PhaseTitle>
               <section>
-                <P centered>{i18n.mobile.wizard.text2}</P>
+                <P $centered>{i18n.mobile.wizard.text2}</P>
               </section>
               <ResponseKey data-qa="response-key">
                 {pairingResponse.value.responseKey}
@@ -163,15 +163,15 @@ export default React.memo(function ParingWizard() {
         )}
 
         {phase === 3 && pairingResponse.isSuccess && (
-          <FullHeightContainer spaced>
+          <FullHeightContainer $spaced>
             <CenteredColumn>
               <Img src={EvakaLogo} />
               <PhaseTitle data-qa="mobile-pairing-wizard-title-3">
                 {i18n.mobile.wizard.title3}
               </PhaseTitle>
               <section>
-                <P centered>{i18n.mobile.wizard.text3}</P>
-                <P centered>{i18n.mobile.wizard.text4}</P>
+                <P $centered>{i18n.mobile.wizard.text3}</P>
+                <P $centered>{i18n.mobile.wizard.text4}</P>
               </section>
             </CenteredColumn>
             <Bottom>

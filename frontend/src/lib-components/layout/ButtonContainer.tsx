@@ -14,7 +14,7 @@ type Props = {
 }
 
 const StyledContainer = styled.div<{
-  justify?: 'flex-start' | 'flex-end' | 'center' | 'space-between'
+  $justify?: 'flex-start' | 'flex-end' | 'center' | 'space-between'
 }>`
   display: flex;
   flex-wrap: nowrap;
@@ -29,7 +29,7 @@ const StyledContainer = styled.div<{
 
   @media (min-width: ${tabletMin}) {
     flex-direction: row;
-    justify-content: ${({ justify: align }) => align ?? 'flex-end'};
+    justify-content: ${({ $justify: align }) => align ?? 'flex-end'};
 
     > *:not(:last-child) {
       margin-right: ${defaultMargins.s};
@@ -62,5 +62,5 @@ export default function ButtonContainer({ justify, children }: Props) {
     [isWideScreen, children]
   )
 
-  return <StyledContainer justify={justify}>{orderedChildren}</StyledContainer>
+  return <StyledContainer $justify={justify}>{orderedChildren}</StyledContainer>
 }

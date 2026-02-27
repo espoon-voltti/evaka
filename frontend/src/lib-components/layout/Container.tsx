@@ -16,15 +16,15 @@ import type { SpacingSize } from '../white-space'
 import { defaultMargins, Gap, isSpacingSize } from '../white-space'
 
 export const Container = styled.div<{
-  verticalMargin?: string
-  wide?: boolean
+  $verticalMargin?: string
+  $wide?: boolean
 }>`
-  margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}
+  margin: ${({ $verticalMargin }) => ($verticalMargin ? $verticalMargin : '0')}
     auto;
   position: relative;
 
-  ${({ wide }) =>
-    wide
+  ${({ $wide }) =>
+    $wide
       ? css`
           /* When wide=true: use all available width with responsive margins, max 1600px, centered */
           /* 16px margins for screens up to 1200px */
@@ -78,37 +78,37 @@ const spacing = (
 type ContentAreaProps = {
   classname?: string
   'data-qa'?: string
-  opaque: boolean
-  fullHeight?: boolean
+  $opaque: boolean
+  $fullHeight?: boolean
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  paddingVertical?: SpacingSize | string
+  $paddingVertical?: SpacingSize | string
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  paddingHorizontal?: SpacingSize | string
-  blue?: boolean
-  shadow?: boolean
+  $paddingHorizontal?: SpacingSize | string
+  $blue?: boolean
+  $shadow?: boolean
 }
 
 export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
-    `${spacing(p.paddingVertical, defaultMargins.m)} ${spacing(
-      p.paddingHorizontal
+    `${spacing(p.$paddingVertical, defaultMargins.m)} ${spacing(
+      p.$paddingHorizontal
     )}`};
 
   // wider default horizontal paddings on desktop
   @media screen and (min-width: ${desktopMin}) {
     padding: ${(p) =>
-      `${spacing(p.paddingVertical, defaultMargins.L)} ${spacing(
-        p.paddingHorizontal,
+      `${spacing(p.$paddingVertical, defaultMargins.L)} ${spacing(
+        p.$paddingHorizontal,
         defaultMargins.L
       )}`};
   }
 
   background-color: ${(p) =>
-    p.opaque ? 'white' : p.blue ? p.theme.colors.main.m4 : 'transparent'};
+    p.$opaque ? 'white' : p.$blue ? p.theme.colors.main.m4 : 'transparent'};
   position: relative;
-  ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
+  ${(p) => (p.$fullHeight ? `min-height: 100vh` : '')}
   ${(p) =>
-    p.shadow
+    p.$shadow
       ? `box-shadow: 0px 4px 4px 0px ${p.theme.colors.grayscale.g15}`
       : ''}
 `
@@ -127,7 +127,7 @@ export type CollapsibleContentAreaProps = ContentAreaProps & {
       }
   countIndicatorColor?: string
   icon?: IconDefinition
-  slim?: boolean
+  $slim?: boolean
 }
 
 const IconContainer = styled.div`
@@ -144,7 +144,7 @@ export const CollapsibleContentArea = React.memo(
     countIndicator = 0,
     countIndicatorColor,
     icon,
-    slim,
+    $slim,
     ...props
   }: CollapsibleContentAreaProps) {
     const { colors } = useTheme()
@@ -182,18 +182,18 @@ export const CollapsibleContentArea = React.memo(
                   }
                   data-qa="count-indicator"
                 />
-                <Gap horizontal={true} size="s" />
+                <Gap $horizontal={true} $size="s" />
               </>
             )}
             <TitleIcon
               icon={open ? faChevronUp : faChevronDown}
               data-qa="collapsible-trigger"
-              $small={slim}
+              $small={$slim}
             />
           </IconContainer>
         </TitleContainer>
         {alwaysShownContent}
-        <Collapsible open={open} $slim={slim}>
+        <Collapsible $open={open} $slim={$slim}>
           {open && children}
         </Collapsible>
       </ContentArea>
@@ -239,8 +239,8 @@ export const TitleIcon = styled(FontAwesomeIcon)<{ $small?: boolean }>`
   font-size: ${(p) => (p.$small ? '16px' : '20px')};
 `
 
-const Collapsible = styled.div<{ open: boolean; $slim?: boolean }>`
-  display: ${(props) => (props.open ? 'block' : 'none')};
+const Collapsible = styled.div<{ $open: boolean; $slim?: boolean }>`
+  display: ${(props) => (props.$open ? 'block' : 'none')};
   margin-top: ${(p) => (p.$slim ? defaultMargins.xxs : defaultMargins.s)};
 `
 

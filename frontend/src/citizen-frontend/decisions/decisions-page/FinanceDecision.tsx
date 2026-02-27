@@ -70,12 +70,12 @@ export default React.memo(function FinanceDecision({
   return (
     <CollapsibleContentArea
       data-qa={`finance-decision-${decisionData.id}`}
-      opaque={false}
+      $opaque={false}
       open={open}
       toggleOpen={toggleOpen}
       title={
         <H3
-          noMargin
+          $noMargin
           data-qa="finance-decision-title"
           aria-label={`${
             t.decisions.financeDecisions.type[decisionData.type]
@@ -85,11 +85,11 @@ export default React.memo(function FinanceDecision({
           {` ${formatTitleDuration()}`}
         </H3>
       }
-      paddingHorizontal="0"
-      paddingVertical="0"
+      $paddingHorizontal="0"
+      $paddingVertical="0"
     >
-      <Gap size="xs" />
-      <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+      <Gap $size="xs" />
+      <ListGrid $labelWidth="max-content" $rowGap="s" $columnGap="L">
         <Label>{t.decisions.financeDecisions.validityPeriod}</Label>
         <span data-qa="finance-decision-validity-period">
           {decisionData.validFrom.format()}
@@ -117,7 +117,7 @@ export default React.memo(function FinanceDecision({
           </>
         )}
       </ListGrid>
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <Button
         appearance="inline"
@@ -133,7 +133,7 @@ export default React.memo(function FinanceDecision({
       />
       {featureFlags.showMetadataToCitizen && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <MetadataSection
             data-qa={decisionData.id}
             query={getMetadataQuery(decisionData.id, decisionData.type)}

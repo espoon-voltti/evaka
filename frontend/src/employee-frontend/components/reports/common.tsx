@@ -70,8 +70,8 @@ export function RowCountInfo({ rowCount }: { rowCount: number }) {
 
   return (
     <>
-      <Gap size="xxs" />
-      <FlexRow justifyContent="flex-end">
+      <Gap $size="xxs" />
+      <FlexRow $justifyContent="flex-end">
         <span>
           {i18n.reports.common.total}: {rowCount}
         </span>

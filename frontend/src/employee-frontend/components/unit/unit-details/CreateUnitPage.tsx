@@ -48,7 +48,7 @@ export default React.memo(function CreateUnitPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(
           combine(areas, financeDecisionHandlerOptions),
           ([areas, financeDecisionHandlerOptions]) => (

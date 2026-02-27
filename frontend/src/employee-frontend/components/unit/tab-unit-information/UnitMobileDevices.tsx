@@ -244,7 +244,7 @@ export default React.memo(function UnitMobileDevices({
           onConfirm={confirmRemoveDevice}
         />
       )}
-      <ContentArea opaque data-qa="daycare-mobile-devices">
+      <ContentArea $opaque data-qa="daycare-mobile-devices">
         <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
         {renderResult(mobileDevices, (mobileDevices) => (
           <>

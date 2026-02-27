@@ -126,7 +126,7 @@ export default React.memo(function ServiceNeedItem({
   return (
     <>
       <CollapsibleContentArea
-        opaque
+        $opaque
         title={
           <JoinedPlacement>
             <H4>{serviceNeedName}</H4>
@@ -140,8 +140,8 @@ export default React.memo(function ServiceNeedItem({
         }
         open={open}
         toggleOpen={useOpen.toggle}
-        paddingHorizontal="0"
-        paddingVertical="0"
+        $paddingHorizontal="0"
+        $paddingVertical="0"
         data-qa={dataQa}
       >
         <H4>{i18n.financeBasics.serviceNeeds.voucherValues}</H4>
@@ -256,7 +256,7 @@ export default React.memo(function ServiceNeedItem({
           </Tbody>
         </Table>
       </CollapsibleContentArea>
-      <HorizontalLine dashed={true} slim={true} />
+      <HorizontalLine $dashed={true} $slim={true} />
     </>
   )
 })

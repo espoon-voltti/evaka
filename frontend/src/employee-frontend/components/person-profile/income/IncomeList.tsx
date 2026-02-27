@@ -108,7 +108,7 @@ const IncomeList = React.memo(function IncomeList({
             startDeleting={() => undefined}
             permittedActions={['UPDATE', 'DELETE']}
           />
-          <Gap size="m" />
+          <Gap $size="m" />
           <IncomeItemEditor
             personId={personId}
             incomeTypeOptions={incomeTypeOptions}
@@ -118,7 +118,7 @@ const IncomeList = React.memo(function IncomeList({
             onSuccess={onSuccessfulUpdate}
             onFailure={onFailedUpdate}
           />
-          <Gap size="m" />
+          <Gap $size="m" />
         </div>
       )}
       {incomes.map(({ data: item, permittedActions }) => (
@@ -140,7 +140,7 @@ const IncomeList = React.memo(function IncomeList({
           />
           {isRowOpen(item.id) ? (
             <>
-              <Gap size="m" />
+              <Gap $size="m" />
               {editing === item.id ? (
                 <IncomeItemEditor
                   personId={personId}
@@ -160,7 +160,7 @@ const IncomeList = React.memo(function IncomeList({
               )}
             </>
           ) : null}
-          <Gap size="m" />
+          <Gap $size="m" />
         </div>
       ))}
     </>

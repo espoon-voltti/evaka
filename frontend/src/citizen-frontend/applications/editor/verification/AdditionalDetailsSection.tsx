@@ -27,12 +27,12 @@ export default React.memo(function AdditionalDetails({
   const tLocal = t.applications.editor.verification.additionalDetails
   return (
     <div>
-      <H2 noMargin>{tLocal.title}</H2>
-      <Gap size="s" />
+      <H2 $noMargin>{tLocal.title}</H2>
+      <Gap $size="s" />
       <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
+        $labelWidth={ApplicationDataGridLabelWidth}
+        $rowGap="s"
+        $columnGap="L"
       >
         <Label>{tLocal.otherInfoLabel}</Label>
         <div>

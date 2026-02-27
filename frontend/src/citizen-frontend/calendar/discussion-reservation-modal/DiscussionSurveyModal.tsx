@@ -183,7 +183,7 @@ export default React.memo(function DiscussionSurveyModal({
                 aria-label={i18n.common.closeModal}
                 icon={faTimes}
               />
-              <H1 noMargin>
+              <H1 $noMargin>
                 {i18n.calendar.discussionTimeReservation.surveyModalTitle}
               </H1>
             </DiscussionHeader>
@@ -206,7 +206,7 @@ export default React.memo(function DiscussionSurveyModal({
                 ))}
               </FixedSpaceColumn>
               <InfoContainer>
-                <FixedSpaceRow gap="m">
+                <FixedSpaceRow $gap="m">
                   <span>{`${i18n.calendar.discussionTimeReservation.reservationInfoButtonText}`}</span>
                   <InfoButton
                     aria-label={i18n.common.openExpandingInfo}
@@ -234,7 +234,7 @@ export default React.memo(function DiscussionSurveyModal({
                 )}
               </InfoContainer>
             </CalendarModalSection>
-            <Gap size="m" sizeOnMobile="s" />
+            <Gap $size="m" $sizeOnMobile="s" />
           </div>
         </CalendarModalBackground>
       </PlainModal>
@@ -258,7 +258,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 }: DiscussionChildElementProps) {
   return (
     <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
-      <StaticChip color={colors.main.m1}>
+      <StaticChip $color={colors.main.m1}>
         <PersonName
           person={{ firstName: childWithSurveys.firstName }}
           format="FirstFirst"
@@ -314,12 +314,12 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
           <P data-qa={`survey-title-${survey.id}`}>
             <Strong>{survey.title}</Strong>
           </P>
-          <SurveyReservationElement spacing="s">
+          <SurveyReservationElement $spacing="s">
             <span>
               {i18n.calendar.discussionTimeReservation.reservationLabelText}
             </span>
             {reservations.map((r) => (
-              <FixedSpaceColumn key={r.id} alignItems="flex-start">
+              <FixedSpaceColumn key={r.id} $alignItems="flex-start">
                 <ReservationRow data-qa={`reservation-${r.id}`}>
                   {r.date.isBefore(today) ? (
                     <Light>
@@ -329,9 +329,9 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                     </Light>
                   ) : (
                     <FixedSpaceRow
-                      fullWidth
-                      alignItems="center"
-                      justifyContent="space-between"
+                      $fullWidth
+                      $alignItems="center"
+                      $justifyContent="space-between"
                     >
                       <div data-qa={`reservation-content-${r.id}`}>
                         <Bold>
@@ -399,7 +399,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
           </SurveyReservationElement>
         </>
       ) : (
-        <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
+        <FixedSpaceRow $alignItems="baseline" $justifyContent="space-between">
           <SurveyTitleLabel>
             <p data-qa={`survey-title-${survey.id}`}>
               <Strong>{survey.title}</Strong>

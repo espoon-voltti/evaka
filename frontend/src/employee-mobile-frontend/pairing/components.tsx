@@ -14,13 +14,13 @@ import colors from 'lib-customizations/common'
 
 import { bottomNavBarHeight } from '../common/BottomNavbar'
 
-export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
+export const FullHeightContainer = styled(Container)<{ $spaced?: boolean }>`
   height: 100%;
   display: flex;
   flex-direction: column;
   background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.s};
-  ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
+  ${(p) => (p.$spaced ? 'justify-content: space-between;' : '')}
 `
 
 export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
@@ -58,10 +58,10 @@ export const FloatingPrimaryActionButton = styled(Button).attrs({
   box-shadow: 0 4px 4px 0 #0f0f0f40;
 `
 
-export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
+export const TallContentArea = styled(ContentArea)<{ $spaced?: boolean }>`
   min-height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
-  ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
+  ${(p) => (p.$spaced ? 'justify-content: space-between;' : '')}
 `

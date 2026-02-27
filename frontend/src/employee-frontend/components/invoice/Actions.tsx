@@ -22,7 +22,7 @@ export const MarkSent = React.memo(function MarkSent({
   const { invoice, permittedActions } = invoiceResponse
 
   return permittedActions.includes('MARK_SENT') ? (
-    <FixedSpaceRow justifyContent="flex-end">
+    <FixedSpaceRow $justifyContent="flex-end">
       <MutateButton
         primary
         text={i18n.invoice.form.buttons.markSent}

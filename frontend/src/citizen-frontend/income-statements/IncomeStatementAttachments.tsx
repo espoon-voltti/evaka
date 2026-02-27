@@ -83,9 +83,9 @@ export const AttachmentSection = React.memo(function AttachmentSection({
 
   return (
     <>
-      {!dense && <Gap size="s" />}
+      {!dense && <Gap $size="s" />}
       {labelAndInfo}
-      {!dense && <Gap size="xs" />}
+      {!dense && <Gap $size="xs" />}
       <FileUpload
         ref={(el) => attachmentHandler.setElement(attachmentType, el)}
         data-qa={attachmentSectionDataQa(attachmentType)}
@@ -109,7 +109,7 @@ export const IncomeStatementMissingAttachments = React.memo(
       (attachmentType) => !attachmentHandler.hasAttachment(attachmentType)
     )
     return (
-      <ContentArea opaque paddingVertical="L">
+      <ContentArea $opaque $paddingVertical="L">
         <H3>{t.income.attachments.missingAttachments}</H3>
         {missingAttachments.length > 0 ? (
           <UnorderedList data-qa="missing-attachments">

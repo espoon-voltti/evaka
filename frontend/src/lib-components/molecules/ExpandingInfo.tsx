@@ -66,13 +66,13 @@ const InfoContainer = styled.div`
   white-space: pre-wrap;
 `
 
-const RoundIconButton = styled.button<{ margin: SpacingSize }>`
+const RoundIconButton = styled.button<{ $margin: SpacingSize }>`
   display: inline-flex;
   justify-content: center;
   align-items: center;
   padding: 0;
   margin: 0;
-  margin-top: ${({ margin }) => defaultMargins[margin]};
+  margin-top: ${({ $margin }) => defaultMargins[$margin]};
   cursor: pointer;
   background-color: ${(p) => p.theme.colors.main.m2};
   color: ${(p) => p.theme.colors.grayscale.g0};
@@ -175,7 +175,7 @@ export default React.memo(function ExpandingInfo({
       />
     </div>
   ) : (
-    <FixedSpaceRow spacing="xs" alignItems="baseline">
+    <FixedSpaceRow $spacing="xs" $alignItems="baseline">
       <div>{children}</div>
       <InfoButton
         onClick={toggleExpanded}
@@ -265,7 +265,7 @@ export const InfoButton = React.memo(function InfoButton({
     <RoundIconButton
       className={className}
       data-qa={dataQa}
-      margin={margin ?? 'zero'}
+      $margin={margin ?? 'zero'}
       color={colors.status.info}
       onClick={onClick}
       type="button"
@@ -300,7 +300,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
 
   return (
     <InfoBoxContainer className={className} $width={width}>
-      <InfoBoxContentArea opaque={false}>
+      <InfoBoxContentArea $opaque={false}>
         <RoundIcon content={fasInfo} color={colors.status.info} size="s" />
 
         <InfoContainer data-qa={dataQa ? `${dataQa}-text` : undefined}>

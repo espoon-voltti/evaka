@@ -144,7 +144,7 @@ export default React.memo(function UnitAttendanceReservationsView({
       )}
 
       <FixedSpaceColumn
-        spacing="L"
+        $spacing="L"
         data-qa="staff-attendances-status"
         data-isloading={isLoading(combinedData)}
       >
@@ -184,8 +184,8 @@ export default React.memo(function UnitAttendanceReservationsView({
               selectedGroup={selectedGroup}
             />
             <div>
-              <Gap size="s" />
-              <FixedSpaceRow alignItems="center">
+              <Gap $size="s" />
+              <FixedSpaceRow $alignItems="center">
                 <Label id="legend-title-label">
                   {i18n.absences.legendTitle}
                 </Label>
@@ -196,14 +196,14 @@ export default React.memo(function UnitAttendanceReservationsView({
                 />
               </FixedSpaceRow>
               {legendVisible && (
-                <FixedSpaceColumn alignItems="flex-start" spacing="XL">
+                <FixedSpaceColumn $alignItems="flex-start" $spacing="XL">
                   <LabelValueList
                     spacing="small"
                     horizontalSpacing="small"
                     labelWidth="fit-content(40%)"
                     contents={legendTimeLabels}
                   />
-                  <FixedSpaceColumn spacing="xs">
+                  <FixedSpaceColumn $spacing="xs">
                     <AbsenceLegend icons showAdditionalLegendItems />
                   </FixedSpaceColumn>
                 </FixedSpaceColumn>

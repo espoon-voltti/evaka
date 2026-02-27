@@ -389,7 +389,7 @@ const Month = React.memo(function Month({
   const i18n = useTranslation()
 
   return (
-    <ContentArea opaque={false} key={`${month}${year}`}>
+    <ContentArea $opaque={false} key={`${month}${year}`}>
       {summaryInfoOpen && (
         <MonthSummaryInfoBox
           info={
@@ -403,7 +403,7 @@ const Month = React.memo(function Month({
           close={toggleSummaryInfo}
         />
       )}
-      <CalendarHeader includeWeekends={includeWeekends}>
+      <CalendarHeader $includeWeekends={includeWeekends}>
         <HeadingCell />
         {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map((d) => (
           <HeadingCell key={d}>
@@ -411,7 +411,7 @@ const Month = React.memo(function Month({
           </HeadingCell>
         ))}
       </CalendarHeader>
-      <Grid includeWeekends={includeWeekends}>
+      <Grid $includeWeekends={includeWeekends}>
         {weeks.map((w) => (
           <Week
             key={`${w.weekNumber}${month}${year}`}
@@ -553,8 +553,8 @@ const Day = React.memo(function Day({
     >
       <DayCellHeader>
         <DayCellDate
-          inactive={!dayIsReservable(day.date)}
-          holiday={day.holiday}
+          $inactive={!dayIsReservable(day.date)}
+          $holiday={day.holiday}
           aria-label={day.date.formatExotic('cccc do MMMM', lang)}
         >
           {day.date.format('d.M.')}
@@ -638,7 +638,7 @@ const MonthPicker = React.memo(function MonthPicker({
         )}
         {displayAlert && <InlineWarningIcon />}
       </MonthTitle>
-      <Gap size="s" horizontal />
+      <Gap $size="s" $horizontal />
       <IconOnlyButton
         icon={faChevronLeft}
         disabled={loading}
@@ -646,7 +646,7 @@ const MonthPicker = React.memo(function MonthPicker({
         aria-label={i18n.calendar.previousMonth}
         data-qa="previous-month-button"
       />
-      <Gap size="s" horizontal />
+      <Gap $size="s" $horizontal />
       <IconOnlyButton
         icon={faChevronRight}
         onClick={nextMonth}
@@ -654,7 +654,7 @@ const MonthPicker = React.memo(function MonthPicker({
         aria-label={i18n.calendar.nextMonth}
         data-qa="next-month-button"
       />
-      <Gap size="s" horizontal />
+      <Gap $size="s" $horizontal />
       <Button
         appearance="inline"
         icon={faCalendarAlt}
@@ -700,17 +700,17 @@ const ButtonContainer = styled.div`
   }
 `
 
-const gridPattern = (includeWeekends: boolean) => css`
+const gridPattern = ($includeWeekends: boolean) => css`
   display: grid;
-  grid-template-columns: 28px repeat(${includeWeekends ? 7 : 5}, 1fr);
+  grid-template-columns: 28px repeat(${$includeWeekends ? 7 : 5}, 1fr);
 `
 
-const CalendarHeader = styled.div<{ includeWeekends: boolean }>`
-  ${({ includeWeekends }) => gridPattern(includeWeekends)}
+const CalendarHeader = styled.div<{ $includeWeekends: boolean }>`
+  ${({ $includeWeekends }) => gridPattern($includeWeekends)}
 `
 
-const Grid = styled.div<{ includeWeekends: boolean }>`
-  ${({ includeWeekends }) => gridPattern(includeWeekends)}
+const Grid = styled.div<{ $includeWeekends: boolean }>`
+  ${({ $includeWeekends }) => gridPattern($includeWeekends)}
   > * {
     margin-top: 0;
     margin-left: 0;
@@ -731,7 +731,7 @@ const WeekNumber = styled(HeadingCell)`
   text-align: right;
 `
 
-const MonthTitle = styled(H1).attrs({ noMargin: true })`
+const MonthTitle = styled(H1).attrs({ $noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
   align-items: center;
   display: flex;
@@ -793,13 +793,13 @@ const DayCellHeader = styled.div`
   width: 100%;
 `
 
-const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
+const DayCellDate = styled.div<{ $inactive: boolean; $holiday: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   color: ${(p) =>
-    p.inactive
+    p.$inactive
       ? colors.grayscale.g70
-      : p.holiday
+      : p.$holiday
         ? colors.accents.a2orangeDark
         : colors.main.m1};
   font-weight: ${fontWeights.semibold};

@@ -22,13 +22,13 @@ export const TimesRow = styled.div`
   padding: ${defaultMargins.xs};
 `
 
-export const TimeCell = styled.div<{ warning?: boolean }>`
+export const TimeCell = styled.div<{ $warning?: boolean }>`
   flex: 1 0 54px;
   text-align: center;
   white-space: nowrap;
   text-wrap: balance;
   ${(p) =>
-    p.warning &&
+    p.$warning &&
     css`
       color: ${colors.accents.a2orangeDark};
     `};

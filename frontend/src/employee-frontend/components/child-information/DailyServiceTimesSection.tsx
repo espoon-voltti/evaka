@@ -72,7 +72,7 @@ export default React.memo(function DailyServiceTimesSection({
       </P>
 
       {permittedActions.has('CREATE_DAILY_SERVICE_TIME') && (
-        <FixedSpaceRow justifyContent="flex-end">
+        <FixedSpaceRow $justifyContent="flex-end">
           <AddButton
             flipped
             text={i18n.childInformation.dailyServiceTimes.create}
@@ -87,7 +87,7 @@ export default React.memo(function DailyServiceTimesSection({
 
       {creationFormOpen && (
         <>
-          <HorizontalLine slim dashed />
+          <HorizontalLine $slim $dashed />
           <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
           <DailyServiceTimesCreationForm
             onClose={() => {
@@ -98,7 +98,7 @@ export default React.memo(function DailyServiceTimesSection({
         </>
       )}
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       {renderResult(dailyServiceTimes, (dailyServiceTimesList) => (
         <Table>

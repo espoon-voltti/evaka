@@ -83,10 +83,10 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
       />
     ) : (
       <ContentArea
-        opaque
-        paddingVertical="zero"
-        paddingHorizontal="zero"
-        fullHeight={true}
+        $opaque
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
+        $fullHeight={true}
         data-qa="messages-editor-content-area"
       >
         <TopBar title={i18n.messages.newMessage} unitId={unitId} />

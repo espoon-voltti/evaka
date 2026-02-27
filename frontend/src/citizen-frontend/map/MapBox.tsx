@@ -234,7 +234,7 @@ const UnitMarker = React.memo(function UnitMarker({
           </UnitDetails>
           {providerType === 'PRIVATE_SERVICE_VOUCHER' && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <ExternalLink
                 text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
                 href={t.map.serviceVoucherLink}
@@ -244,7 +244,7 @@ const UnitMarker = React.memo(function UnitMarker({
           )}
           {!!url && (
             <>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               <ExternalLink text={t.map.homepage} href={url} newTab />
             </>
           )}

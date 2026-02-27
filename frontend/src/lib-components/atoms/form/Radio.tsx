@@ -48,25 +48,25 @@ const Wrapper = styled.div`
 `
 
 const LabelContainer = styled.div<SizeProps>`
-  margin-top: ${(p) => (p.small ? '3px' : '6px')};
+  margin-top: ${(p) => (p.$small ? '3px' : '6px')};
   margin-left: ${defaultMargins.s};
 `
 
 interface SizeProps {
-  small?: boolean
+  $small?: boolean
 }
 
 const Circle = styled.div<SizeProps>`
   position: relative;
-  width: ${(p) => (p.small ? '30px' : diameter)};
-  height: ${(p) => (p.small ? '30px' : diameter)};
+  width: ${(p) => (p.$small ? '30px' : diameter)};
+  height: ${(p) => (p.$small ? '30px' : diameter)};
 `
 
 const RadioInput = styled.input<SizeProps>`
   outline: none;
   appearance: none;
-  width: ${(p) => (p.small ? '30px' : diameter)};
-  height: ${(p) => (p.small ? '30px' : diameter)};
+  width: ${(p) => (p.$small ? '30px' : diameter)};
+  height: ${(p) => (p.$small ? '30px' : diameter)};
   border-radius: 100%;
   border-width: 1px;
   border-style: solid;
@@ -101,10 +101,10 @@ const IconWrapper = styled.div<SizeProps>`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${(p) => (p.small ? '30px' : diameter)};
-  height: ${(p) => (p.small ? '30px' : diameter)};
+  width: ${(p) => (p.$small ? '30px' : diameter)};
+  height: ${(p) => (p.$small ? '30px' : diameter)};
 
-  font-size: ${(p) => (p.small ? '20px' : '25px')};
+  font-size: ${(p) => (p.$small ? '20px' : '25px')};
   color: ${(p) => p.theme.colors.grayscale.g0};
 
   pointer-events: none; // let click event go through icon to the radio button
@@ -144,7 +144,7 @@ export default React.memo(function Radio({
       className={classNames(className, { disabled })}
       data-qa={dataQa}
     >
-      <Circle small={small}>
+      <Circle $small={small}>
         <RadioInput
           type="radio"
           checked={checked}
@@ -158,13 +158,13 @@ export default React.memo(function Radio({
           }}
           readOnly={!onChange}
           ref={inputRef}
-          small={small}
+          $small={small}
         />
-        <IconWrapper small={small}>
+        <IconWrapper $small={small}>
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>
-      <LabelContainer small={small}>
+      <LabelContainer $small={small}>
         <label htmlFor={id ?? ariaId} translate={translate}>
           {props.label}
         </label>

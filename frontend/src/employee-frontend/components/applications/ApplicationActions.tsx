@@ -237,7 +237,7 @@ const ConfirmCancelApplicationModal = React.memo(
             <Label>
               {i18n.applications.actions.cancelApplicationConfidentiality}
             </Label>
-            <FixedSpaceRow spacing="XL">
+            <FixedSpaceRow $spacing="XL">
               <Radio
                 checked={confidential === true}
                 label={i18n.common.yes}

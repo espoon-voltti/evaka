@@ -56,7 +56,7 @@ export default React.memo(function AttendanceChildComing({
           </WideLinkButton>
         )}
       </FixedSpaceColumn>
-      <Gap size="s" />
+      <Gap $size="s" />
     </Fragment>
   )
 })

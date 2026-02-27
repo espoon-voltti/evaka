@@ -782,7 +782,7 @@ export default {
                 </a>
                 .
               </P>
-              <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              <P $fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
             </>
           ),
           PRESCHOOL: (
@@ -804,7 +804,7 @@ export default {
                 </a>{' '}
                 -palveluun.
               </P>
-              <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              <P $fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
             </>
           ),
           CLUB: (
@@ -832,7 +832,7 @@ export default {
                 myönnetty varhaiskasvatuspaikka tai yksityisen hoidon tuki, ei
                 hänelle voida myöntää kerhopaikkaa.
               </P>
-              <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              <P $fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
             </>
           )
         },
@@ -1103,7 +1103,7 @@ export default {
           label: 'Hakemus on kiireellinen (ei koske siirtohakemuksia)',
           attachmentsMessage: {
             text: (
-              <P fitted={true}>
+              <P $fitted={true}>
                 Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä
                 työllistymisestä tai opiskelusta, tulee paikkaa hakea
                 viimeistään <strong>kaksi viikkoa ennen</strong> kuin tarve
@@ -1866,7 +1866,7 @@ export default {
             Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
             täyttää vaatimuksen kirjallisesta muodosta.
           </P>
-          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <P $noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
           <ul>
             <li>päätös, johon vaaditaan oikaisua,</li>
             <li>millaista oikaisua päätökseen vaaditaan,</li>
@@ -1888,7 +1888,7 @@ export default {
             joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös tämän
             nimi ja kotikunta.
           </P>
-          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <P $noMargin>Oikaisuvaatimukseen on liitettävä</P>
           <ul>
             <li>
               päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
@@ -2037,7 +2037,7 @@ export default {
               Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
               täyttää vaatimuksen kirjallisesta muodosta.
             </P>
-            <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+            <P $noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
             <ul>
               <li>
                 Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
@@ -2062,7 +2062,7 @@ export default {
               on joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös
               tämän nimi ja kotikunta.
             </P>
-            <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+            <P $noMargin>Oikaisuvaatimukseen on liitettävä</P>
             <ul>
               <li>
                 päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
@@ -2093,7 +2093,7 @@ export default {
   applicationsList: {
     title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
     summary: (
-      <P width="800px">
+      <P $width="800px">
         Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja
         kerhoon tai ilmoittaa lapsen esiopetukseen. Samalla hakemuksella voi
         hakea myös varhaiskasvatuksen palveluseteliä, hakemalla
@@ -2136,19 +2136,19 @@ export default {
     noCustodians: 'Ei huollettavia lapsia',
     noCustodiansInfo: (
       <>
-        <P width="100%">
+        <P $width="100%">
           Digi- ja väestötietoviraston (DVV) tiedoissa sinulla ei näy
           huollettavia lapsia.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Mikäli sinulla kuitenkin on huollettavia lapsia, voi tietojen
           puuttuminen johtua siitä, että DVV:n tiedot yhdistyvät viiveellä.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Varmista DVV:ltä, että olet tehnyt kaikki heidän tarvitsemansa
           huoltajuuteen liittyvät asiat.
         </P>
-        <P width="100%">
+        <P $width="100%">
           Voit käyttää eVakaa vasta, kun huoltajuus on päivittynyt DVV:n
           tietoihin. Sillä välin voit olla yhteydessä esimerkiksi haluamaasi
           päiväkotiin soittamalla, tai laittamalla sähköpostia päiväkodin
@@ -2366,7 +2366,7 @@ export default {
         <P>
           <strong>Huomioitavaa:</strong>
         </P>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <UnorderedList>
           <li>
             Maksu voidaan tarkistaa kesken toimintavuotta, mikäli perheen
@@ -2452,7 +2452,7 @@ export default {
       title: 'Bruttotulotietojen täyttäminen',
       description: (
         <>
-          <P noMargin>
+          <P $noMargin>
             Valitse alta haluatko toimittaa tulotietosi liitteinä, vai katsooko
             viranomainen tietosi suoraan tulorekisteristä sekä Kelasta
             tarvittaessa.

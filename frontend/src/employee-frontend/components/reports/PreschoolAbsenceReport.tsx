@@ -117,7 +117,7 @@ export default React.memo(function PreschoolAbsenceReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.preschoolAbsences.title}</Title>
         {renderResult(
           combine(areas, daycareOptions, termOptions, groupOptions),

@@ -243,7 +243,7 @@ export default React.memo(function ApplicationFilters() {
               })
             }
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <MultiSelectUnitFilter
             units={filteredUnits}
             selectedUnits={searchFilters.units}
@@ -251,7 +251,7 @@ export default React.memo(function ApplicationFilters() {
             data-qa="unit-selector"
             menuItems={unitFilterMenuItems}
           />
-          <Gap size="m" />
+          <Gap $size="m" />
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
             toggled={searchFilters.distinctions}
@@ -260,14 +260,14 @@ export default React.memo(function ApplicationFilters() {
               searchFilters.units.length === 0
             }
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <ApplicationTypeFilter
             toggled={searchFilters.type}
             toggledPreschool={searchFilters.preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <ApplicationBasisFilter
             toggled={searchFilters.basis}
             toggle={toggleBasis}
@@ -285,7 +285,7 @@ export default React.memo(function ApplicationFilters() {
               })
             }
           />
-          <Gap size="XL" />
+          <Gap $size="XL" />
           <VoucherApplicationsFilter
             selected={searchFilters.voucherApplications}
             setSelected={(voucherApplications) =>
@@ -305,7 +305,7 @@ export default React.memo(function ApplicationFilters() {
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}
           />
-          <Gap size="XL" />
+          <Gap $size="XL" />
           <ApplicationDateFilter
             startDate={searchFilters.startDate}
             setStartDate={(startDate) =>
@@ -345,7 +345,7 @@ const AreaMultiSelect = React.memo(function AreaMultiSelect({
   return (
     <>
       <Label>{i18n.filters.area}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <MultiSelect
         value={areas.filter((area) => selected.includes(area.id))}
         options={areas}
@@ -373,7 +373,7 @@ const VoucherApplicationsFilter = React.memo(
     return (
       <>
         <Label>{i18n.applications.list.voucherFilter.title}</Label>
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Radio
           data-qa="filter-voucher-first-choice"
           label={i18n.applications.list.voucherFilter.firstChoice}
@@ -381,7 +381,7 @@ const VoucherApplicationsFilter = React.memo(
           onChange={() => setSelected('VOUCHER_FIRST_CHOICE')}
           small
         />
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Radio
           data-qa="filter-voucher-all"
           label={i18n.applications.list.voucherFilter.allVoucher}
@@ -389,7 +389,7 @@ const VoucherApplicationsFilter = React.memo(
           onChange={() => setSelected('VOUCHER_ONLY')}
           small
         />
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Radio
           data-qa="filter-voucher-hide"
           label={i18n.applications.list.voucherFilter.hideVoucher}
@@ -397,7 +397,7 @@ const VoucherApplicationsFilter = React.memo(
           onChange={() => setSelected('NO_VOUCHER')}
           small
         />
-        <Gap size="xs" />
+        <Gap $size="xs" />
         <Radio
           data-qa="filter-voucher-no-filter"
           label={i18n.applications.list.voucherFilter.noFilter}
@@ -442,8 +442,8 @@ function ApplicationTypeFilter({
   return (
     <>
       <Label>{i18n.applications.list.type}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {types.map((id) =>
           id !== 'PRESCHOOL' ? (
             <Radio
@@ -475,7 +475,7 @@ function ApplicationTypeFilter({
                 small
               />
               {toggled === id && (
-                <CustomDiv spacing="xs">
+                <CustomDiv $spacing="xs">
                   {preschoolTypes.map((type) => (
                     <Checkbox
                       key={type}

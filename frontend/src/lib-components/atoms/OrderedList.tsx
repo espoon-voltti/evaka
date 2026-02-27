@@ -6,13 +6,13 @@ import styled from 'styled-components'
 
 import { defaultMargins, type SpacingSize } from '../white-space'
 
-export default styled.ol<{ spacing?: SpacingSize }>`
+export default styled.ol<{ $spacing?: SpacingSize }>`
   margin: 0;
   padding: 0 0 0 1.5em;
 
   li {
     margin-bottom: ${(p) =>
-      p.spacing ? defaultMargins[p.spacing] : defaultMargins.s};
+      p.$spacing ? defaultMargins[p.$spacing] : defaultMargins.s};
 
     &:last-child {
       margin-bottom: 0;

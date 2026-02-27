@@ -353,7 +353,7 @@ export default React.memo(function ApplicationReadView({
             onClick={() => window.open('/map', '_blank')}
           />
         </ListGrid>
-        <Gap size="s" />
+        <Gap $size="s" />
         <ListGrid>
           <Label>{i18n.application.preferences.siblingBasisLabel}</Label>
           <BooleanValue
@@ -425,7 +425,7 @@ export default React.memo(function ApplicationReadView({
         title={i18n.application.guardians.title}
         icon={faUserFriends}
       >
-        <FixedSpaceColumn spacing="L">
+        <FixedSpaceColumn $spacing="L">
           <div>
             <H4>{i18n.application.guardians.appliedGuardian}</H4>
             <ListGrid>
@@ -511,7 +511,7 @@ export default React.memo(function ApplicationReadView({
             title={i18n.application.otherPeople.title}
             icon={faUsers}
           >
-            <FixedSpaceColumn spacing="L">
+            <FixedSpaceColumn $spacing="L">
               {(!otherGuardian || !otherGuardianLivesInSameAddress) && (
                 <div>
                   <H4>{i18n.application.otherPeople.adult}</H4>

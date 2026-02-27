@@ -112,15 +112,15 @@ export default React.memo(function VoucherValueDecisionsPage() {
           checkedIds={checkedIds}
         />
       )}
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <VoucherValueDecisionFilters />
       </ContentArea>
-      <Gap size="XL" />
+      <Gap $size="XL" />
       {searchFilters &&
         searchParams &&
         renderResult(searchResult, (result) => (
           <>
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <VoucherValueDecisions
                 decisions={result.data}
                 total={result.total}

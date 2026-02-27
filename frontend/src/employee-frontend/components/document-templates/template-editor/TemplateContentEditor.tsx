@@ -101,17 +101,17 @@ export default React.memo(function TemplateContentEditor({
 
   return (
     <div>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <BasicsSection template={template} editingAllowed={!readOnly} />
       </ContentArea>
       <Gap />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{template.name}</H1>
         <H2>
           Essi Esimerkkiläinen (
           {LocalDate.todayInHelsinkiTz().subYears(5).format()})
         </H2>
-        <FixedSpaceColumn spacing="L">
+        <FixedSpaceColumn $spacing="L">
           {sectionElems.map((section, index) => (
             <TemplateSectionView
               key={section.state.id}
@@ -155,8 +155,8 @@ export default React.memo(function TemplateContentEditor({
       </ContentArea>
 
       <Gap />
-      <ContentArea opaque>
-        <FixedSpaceRow justifyContent="space-between" alignItems="center">
+      <ContentArea $opaque>
+        <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
           <LegacyButton
             text={i18n.common.goBack}
             onClick={() => navigate('/document-templates')}
@@ -183,7 +183,7 @@ export default React.memo(function TemplateContentEditor({
             )}
 
           {!readOnly && (
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               <Checkbox
                 label={i18n.documentTemplates.templateEditor.readyToPublish}
                 checked={readyToPublish}
@@ -228,7 +228,7 @@ const BasicsSection = React.memo(function BasicsSection({
     <BasicsEditor template={template} onClose={() => setEditing(false)} />
   ) : (
     <FixedSpaceColumn>
-      <FixedSpaceRow justifyContent="space-between">
+      <FixedSpaceRow $justifyContent="space-between">
         <H1>{template.name}</H1>
         {editingAllowed && (
           <Button
@@ -239,7 +239,7 @@ const BasicsSection = React.memo(function BasicsSection({
           />
         )}
       </FixedSpaceRow>
-      <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
+      <FixedSpaceRow $justifyContent="space-between" $alignItems="flex-start">
         <GrovingDiv>
           <LabelValueList
             spacing="small"
@@ -304,7 +304,7 @@ const BasicsSection = React.memo(function BasicsSection({
             <InfoBox message={i18n.documentTemplates.documentTypeInfos.OTHER} />
           )}
         </GrovingDiv>
-        <FixedSpaceColumn spacing="xxs">
+        <FixedSpaceColumn $spacing="xxs">
           <span>{template.legalBasis}</span>
           {template.confidentiality && (
             <span>{i18n.documentTemplates.templateEditor.confidential}</span>
@@ -518,7 +518,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
           data-qa="archive-externally-checkbox"
         />
       </div>
-      <FixedSpaceRow justifyContent="flex-end">
+      <FixedSpaceRow $justifyContent="flex-end">
         <LegacyButton onClick={onClose} text={i18n.common.cancel} />
         <MutateButton
           primary

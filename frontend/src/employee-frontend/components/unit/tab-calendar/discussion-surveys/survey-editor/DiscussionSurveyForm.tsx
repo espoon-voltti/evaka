@@ -44,8 +44,10 @@ import { getPeriodFromDatesOrToday } from '../utils'
 
 import { type surveyForm } from './form'
 
-const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
-const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
+const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ $spacing: 'S' })``
+const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({
+  $spacing: 'L'
+})`
   margin-bottom: 60px;
 `
 export const WidthLimiter = styled.div`
@@ -178,7 +180,7 @@ export default React.memo(function DiscussionSurveyForm({
         </SurveyFormFieldGroup>
       </SurveyFormSectionGroup>
 
-      <FixedSpaceRow justifyContent="flex-start" alignItems="center">
+      <FixedSpaceRow $justifyContent="flex-start" $alignItems="center">
         <LegacyButton
           text={t.discussionReservation.cancelButton}
           onClick={() => setCancelConfirmModalVisible(true)}

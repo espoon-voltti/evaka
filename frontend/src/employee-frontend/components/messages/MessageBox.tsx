@@ -18,7 +18,7 @@ import { MessageContext } from './MessageContext'
 import type { AccountView, View } from './types-view'
 import { isFolderView, isStandardView } from './types-view'
 
-export const MessageBoxRow = styled.div<{ active: boolean; $folder: boolean }>`
+export const MessageBoxRow = styled.div<{ $active: boolean; $folder: boolean }>`
   cursor: pointer;
   padding: 12px ${defaultMargins.m};
   ${(p) =>
@@ -27,8 +27,8 @@ export const MessageBoxRow = styled.div<{ active: boolean; $folder: boolean }>`
           padding-left: 44px;
         `
       : ''}
-  font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
-  background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
+  font-weight: ${(p) => (p.$active ? fontWeights.semibold : 'unset')};
+  background-color: ${(p) => (p.$active ? colors.main.m4 : 'unset')};
 `
 
 interface MessageBoxProps {
@@ -83,7 +83,7 @@ export default function MessageBox({
   return (
     <MessageBoxRow
       onClick={onClick}
-      active={active}
+      $active={active}
       $folder={isFolderView(view)}
       data-qa={`message-box-row-${isStandardView(view) ? view : view.name}`}
     >

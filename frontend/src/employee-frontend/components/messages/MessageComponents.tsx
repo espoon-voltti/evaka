@@ -11,7 +11,7 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-export const MessageRow = styled.div<{ unread?: boolean }>`
+export const MessageRow = styled.div<{ $unread?: boolean }>`
   display: flex;
   justify-content: space-between;
   padding: ${defaultMargins.s};
@@ -21,7 +21,7 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
   }
   border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
-    ${(p) => (p.unread ? colors.status.success : 'transparent')};
+    ${(p) => (p.$unread ? colors.status.success : 'transparent')};
 
   .delete-btn {
     opacity: 0;
@@ -33,8 +33,8 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
     }
   }
 `
-export const Participants = styled.div<{ unread?: boolean }>`
-  color: ${(p) => (p.unread ? colors.grayscale.g100 : colors.grayscale.g70)};
+export const Participants = styled.div<{ $unread?: boolean }>`
+  color: ${(p) => (p.$unread ? colors.grayscale.g100 : colors.grayscale.g70)};
   font-weight: ${fontWeights.semibold};
 `
 export const Truncated = styled.div`
@@ -42,11 +42,13 @@ export const Truncated = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 `
-export const Title = styled.span<{ unread?: boolean }>`
-  font-weight: ${(p) => (p.unread ? fontWeights.semibold : fontWeights.normal)};
+export const Title = styled.span<{ $unread?: boolean }>`
+  font-weight: ${(p) =>
+    p.$unread ? fontWeights.semibold : fontWeights.normal};
 `
-export const Hyphen = styled.span<{ unread?: boolean }>`
-  font-weight: ${(p) => (p.unread ? fontWeights.semibold : fontWeights.normal)};
+export const Hyphen = styled.span<{ $unread?: boolean }>`
+  font-weight: ${(p) =>
+    p.$unread ? fontWeights.semibold : fontWeights.normal};
   margin-left: 10px;
   margin-right: 10px;
 `

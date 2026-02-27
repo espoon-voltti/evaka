@@ -33,11 +33,11 @@ import {
 } from './queries'
 
 interface RowProps {
-  odd: boolean
+  $odd: boolean
 }
 
 const StyledRow = styled(Tr)<RowProps>`
-  ${(props) => (props.odd ? `background: ${colors.main.m4};` : '')}
+  ${(props) => (props.$odd ? `background: ${colors.main.m4};` : '')}
 `
 const NoWrapTd = styled(Td)`
   white-space: nowrap;
@@ -72,7 +72,7 @@ export default React.memo(function DuplicatePeople() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
         {renderResult(rows, (rows) => (
           <>
@@ -101,7 +101,7 @@ export default React.memo(function DuplicatePeople() {
               </Thead>
               <Tbody>
                 {rows.map((row: DuplicatePeopleReportRow) => (
-                  <StyledRow key={row.id} odd={row.groupIndex % 2 !== 0}>
+                  <StyledRow key={row.id} $odd={row.groupIndex % 2 !== 0}>
                     <NoWrapTd>
                       <Link
                         to={

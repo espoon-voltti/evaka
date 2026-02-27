@@ -154,7 +154,7 @@ export default React.memo(function VoucherValueDecisionHeading({
             : [])
         ]}
       />
-      <Gap size="L" />
+      <Gap $size="L" />
     </>
   )
 })

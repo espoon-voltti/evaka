@@ -48,7 +48,7 @@ export function StickyNoteEditor<IdType extends Id<string>>({
   )
 
   return (
-    <ContentArea opaque paddingHorizontal="s" data-qa="sticky-note">
+    <ContentArea $opaque $paddingHorizontal="s" data-qa="sticky-note">
       <TextArea
         autoFocus
         value={text}
@@ -56,8 +56,8 @@ export function StickyNoteEditor<IdType extends Id<string>>({
         placeholder={labels.placeholder}
         data-qa="sticky-note-input"
       />
-      <Gap size="xs" />
-      <FixedSpaceRow justifyContent="flex-end">
+      <Gap $size="xs" />
+      <FixedSpaceRow $justifyContent="flex-end">
         <Button
           appearance="inline"
           onClick={onCancelEdit}

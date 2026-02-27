@@ -62,7 +62,7 @@ export default React.memo(function ChildDocumentsReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.childDocuments.title}</Title>
         <P>{i18n.reports.childDocuments.description}</P>
         <P>
@@ -303,7 +303,7 @@ const GroupSection = React.memo(function GroupSection({
           </Tr>
         ))}
       <Tr>
-        <Td colSpan={6} align="center">
+        <Td colSpan={6} $align="center">
           <Button
             appearance="inline"
             text={expanded ? t.table.collapse : t.table.expand}

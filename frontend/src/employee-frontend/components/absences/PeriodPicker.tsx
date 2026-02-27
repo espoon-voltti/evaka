@@ -37,11 +37,11 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         color="gray"
         aria-label={i18n.common.datePicker.previousMonthLabel}
       />
-      <Gap horizontal size="L" />
-      <PeriodTitle primary centered data-qa="period-picker-month">
+      <Gap $horizontal $size="L" />
+      <PeriodTitle $primary $centered data-qa="period-picker-month">
         {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
       </PeriodTitle>
-      <Gap horizontal size="L" />
+      <Gap $horizontal $size="L" />
       <IconOnlyButton
         onClick={increase}
         data-qa="period-picker-next-month"

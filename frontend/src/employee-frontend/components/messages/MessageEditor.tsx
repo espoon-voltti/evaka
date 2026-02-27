@@ -541,7 +541,7 @@ export default React.memo(function MessageEditor({
   )
 
   const sensitiveCheckbox = (
-    <FixedSpaceRow spacing="xs" alignItems="center">
+    <FixedSpaceRow $spacing="xs" $alignItems="center">
       <Checkbox
         data-qa="checkbox-sensitive"
         label={i18n.messages.messageEditor.flags.sensitive.label}
@@ -587,7 +587,7 @@ export default React.memo(function MessageEditor({
     )
   const flagsInfo = (message.urgent || message.sensitive) && (
     <>
-      <Gap size="s" />
+      <Gap $size="s" />
       <InfoBox
         noMargin={true}
         message={
@@ -644,8 +644,8 @@ export default React.memo(function MessageEditor({
             </HeaderButtonContainer>
           </TopBar>
           <ScrollableFormArea>
-            <ExpandableLayout expandedView={expandedView}>
-              <Dropdowns expandedView={expandedView}>
+            <ExpandableLayout $expandedView={expandedView}>
+              <Dropdowns $expandedView={expandedView}>
                 <HorizontalField>
                   <Bold>{i18n.messages.messageEditor.sender}</Bold>
                   <Combobox
@@ -657,7 +657,7 @@ export default React.memo(function MessageEditor({
                     fullWidth
                   />
                 </HorizontalField>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <HorizontalField>
                   <Bold>{i18n.messages.messageEditor.recipients}</Bold>
                   <TreeDropdown
@@ -674,14 +674,14 @@ export default React.memo(function MessageEditor({
                     <Bold>{i18n.messages.messageEditor.type.label}</Bold>
                     {messageType}
                   </ExpandedHorizontalField>
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <ExpandedHorizontalField>
                     <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
                     {urgent}
                     {sensitiveCheckbox}
                   </ExpandedHorizontalField>
                   {sensitiveInfoOpen && (
-                    <FixedSpaceRow fullWidth>
+                    <FixedSpaceRow $fullWidth>
                       <ExpandingInfoBox
                         width="auto"
                         info={
@@ -699,7 +699,7 @@ export default React.memo(function MessageEditor({
             {(senderAccountType === 'PERSONAL' ||
               senderAccountType === 'MUNICIPAL') && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <RightAlignedRow>
                   <Button
                     appearance="inline"
@@ -716,9 +716,9 @@ export default React.memo(function MessageEditor({
                 </RightAlignedRow>
                 {filtersVisible && (
                   <>
-                    <Gap size="s" />
-                    <ExpandableLayout expandedView={expandedView}>
-                      <Dropdowns expandedView={expandedView}>
+                    <Gap $size="s" />
+                    <ExpandableLayout $expandedView={expandedView}>
+                      <Dropdowns $expandedView={expandedView}>
                         <HorizontalField>
                           <Bold>
                             {i18n.messages.messageEditor.filters.yearOfBirth}
@@ -732,7 +732,7 @@ export default React.memo(function MessageEditor({
                             data-qa="select-years-of-birth"
                           />
                         </HorizontalField>
-                        <Gap size="s" />
+                        <Gap $size="s" />
                         <HorizontalField>
                           <Bold>
                             {i18n.messages.messageEditor.filters.placementType}
@@ -761,7 +761,7 @@ export default React.memo(function MessageEditor({
                               ? intermittentShiftCareCheckBox
                               : null}
                           </ExpandedHorizontalField>
-                          <Gap size="s" />
+                          <Gap $size="s" />
                           <ExpandedHorizontalField>
                             <Bold>
                               {
@@ -775,7 +775,7 @@ export default React.memo(function MessageEditor({
                       )}
                       {!expandedView && !simpleMode && (
                         <>
-                          <Gap size="s" />
+                          <Gap $size="s" />
                           <HorizontalField>
                             <Bold>
                               {
@@ -788,7 +788,7 @@ export default React.memo(function MessageEditor({
                               ? intermittentShiftCareCheckBox
                               : null}
                           </HorizontalField>
-                          <Gap size="s" />
+                          <Gap $size="s" />
                           <HorizontalField>
                             <Bold>
                               {
@@ -801,12 +801,12 @@ export default React.memo(function MessageEditor({
                         </>
                       )}
                     </ExpandableLayout>
-                    <HorizontalLine slim />
+                    <HorizontalLine $slim />
                   </>
                 )}
               </>
             )}
-            <Gap size="s" />
+            <Gap $size="s" />
             <HorizontalField>
               <Bold>{i18n.messages.messageEditor.title}</Bold>
               <InputField
@@ -817,7 +817,7 @@ export default React.memo(function MessageEditor({
             </HorizontalField>
             {folders.length > 0 && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <HorizontalField>
                   <Bold>{i18n.messages.messageEditor.setFolder}</Bold>
                   <Select
@@ -834,7 +834,7 @@ export default React.memo(function MessageEditor({
             )}
             {!expandedView && !simpleMode && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <FixedSpaceRow>
                   <HalfWidthColumn>
                     <Bold>{i18n.messages.messageEditor.type.label}</Bold>
@@ -860,9 +860,9 @@ export default React.memo(function MessageEditor({
                 {flagsInfo}
               </>
             )}
-            <Gap size="m" />
+            <Gap $size="m" />
             <Bold>{i18n.messages.messageEditor.message}</Bold>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <StyledTextArea
               value={message.content}
               onChange={(e) => updateMessage({ content: e.target.value })}
@@ -890,7 +890,7 @@ export default React.memo(function MessageEditor({
                 onStateChange={setUploadStatus}
               />
             )}
-            <Gap size="L" />
+            <Gap $size="L" />
           </ScrollableFormArea>
           <BottomBar>
             {draftId ? (
@@ -902,9 +902,9 @@ export default React.memo(function MessageEditor({
                 data-qa="discard-draft-btn"
               />
             ) : (
-              <Gap horizontal />
+              <Gap $horizontal />
             )}
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               <div>
                 {i18n.messages.messageEditor.recipientCount}:{' '}
                 {preflightResult
@@ -1077,12 +1077,12 @@ const ExpandedHorizontalField = styled.div`
   }
 `
 
-const ExpandableLayout = styled.div<{ expandedView: boolean }>`
-  display: ${(props) => (props.expandedView ? 'flex' : 'block')};
+const ExpandableLayout = styled.div<{ $expandedView: boolean }>`
+  display: ${(props) => (props.$expandedView ? 'flex' : 'block')};
 `
 
-const Dropdowns = styled.div<{ expandedView: boolean }>`
-  ${(props) => (props.expandedView ? 'width: 66%;' : '')}
+const Dropdowns = styled.div<{ $expandedView: boolean }>`
+  ${(props) => (props.$expandedView ? 'width: 66%;' : '')}
   flex: 1 1 auto;
 `
 

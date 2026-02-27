@@ -94,7 +94,7 @@ export default React.memo(function Raw() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.raw.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>

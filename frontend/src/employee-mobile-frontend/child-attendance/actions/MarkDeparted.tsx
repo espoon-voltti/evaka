@@ -210,9 +210,9 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <div>
         {childList.length === 1 ? (
@@ -230,10 +230,10 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
       </div>
 
       <ContentArea
-        shadow
-        opaque={true}
-        paddingHorizontal="s"
-        paddingVertical="m"
+        $shadow
+        $opaque={true}
+        $paddingHorizontal="s"
+        $paddingVertical="m"
       >
         <TimeWrapper>
           <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
@@ -247,7 +247,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
           />
         </TimeWrapper>
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {renderResult(expectedAbsences, (expectedAbsences) => {
           if (
@@ -276,13 +276,13 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
                   return (
                     <FixedSpaceColumn key={childId}>
-                      <H4 noMargin>
+                      <H4 $noMargin>
                         <PersonName person={child} format="Preferred Last" />
                       </H4>
                       <FixedSpaceColumn>
                         {categories.includes('NONBILLABLE') && (
                           <FixedSpaceColumn
-                            spacing="xs"
+                            $spacing="xs"
                             data-qa="absence-NONBILLABLE"
                           >
                             <div>
@@ -319,7 +319,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                         )}
                         {categories.includes('BILLABLE') && (
                           <FixedSpaceColumn
-                            spacing="xs"
+                            $spacing="xs"
                             data-qa="absence-BILLABLE"
                           >
                             <div>
@@ -363,10 +363,10 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
           )
         })}
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <Actions>
-          <FixedSpaceRow fullWidth>
+          <FixedSpaceRow $fullWidth>
             <LegacyButton
               text={i18n.common.cancel}
               onClick={() => history.go(-1)}
@@ -414,7 +414,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
           </FixedSpaceRow>
         </Actions>
       </ContentArea>
-      <Gap size="s" />
+      <Gap $size="s" />
       <FixedSpaceColumn>
         {childList.map(({ child }) => (
           <ChildNotesSummary child={child} key={child.id} />

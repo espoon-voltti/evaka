@@ -33,7 +33,7 @@ const FridgeParents = React.memo(function FridgeParents() {
 
   return (
     <div className="fridge-parents-section">
-      <H3 noMargin>{i18n.childInformation.fridgeParents.title}</H3>
+      <H3 $noMargin>{i18n.childInformation.fridgeParents.title}</H3>
       {renderResult(parentships, (data) =>
         parentships !== null ? (
           <Table>

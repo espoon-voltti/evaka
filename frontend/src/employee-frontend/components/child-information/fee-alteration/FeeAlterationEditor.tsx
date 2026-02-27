@@ -179,8 +179,8 @@ export default React.memo(function FeeAlterationEditor({
             }))
           }}
         />
-        <Gap size="m" />
-        <FixedSpaceRow justifyContent="flex-end">
+        <Gap $size="m" />
+        <FixedSpaceRow $justifyContent="flex-end">
           <LegacyButton
             onClick={cancel}
             text={i18n.childInformation.feeAlteration.editor.cancel}

@@ -68,10 +68,10 @@ interface Props {
 export default React.memo(function ChildBasicInfo({ child }: Props) {
   const { i18n } = useTranslation()
   return (
-    <FixedSpaceColumn spacing="m">
-      <ContentArea shadow opaque>
-        <CollapsibleSection fitted title={i18n.childInfo.personalInfoHeader}>
-          <Gap size="s" />
+    <FixedSpaceColumn $spacing="m">
+      <ContentArea $shadow $opaque>
+        <CollapsibleSection $fitted title={i18n.childInfo.personalInfoHeader}>
+          <Gap $size="s" />
           <FixedSpaceColumn>
             <KeyValue>
               <Key>{i18n.childInfo.childName}</Key>
@@ -105,16 +105,16 @@ export default React.memo(function ChildBasicInfo({ child }: Props) {
         </CollapsibleSection>
       </ContentArea>
 
-      <ContentArea shadow opaque>
-        <CollapsibleSection fitted title={i18n.childInfo.contactInfoHeader}>
-          <Gap size="s" />
+      <ContentArea $shadow $opaque>
+        <CollapsibleSection $fitted title={i18n.childInfo.contactInfoHeader}>
+          <Gap $size="s" />
           <FixedSpaceColumn>
             {child.contacts.map((contact, index) => (
               <div key={contact.id}>
                 <Title size={4} noMargin>{`${i18n.childInfo.contact} ${
                   index + 1
                 }`}</Title>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <FixedSpaceColumn>
                   <KeyValue>
                     <Key>{i18n.childInfo.name}</Key>

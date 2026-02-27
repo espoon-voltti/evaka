@@ -56,7 +56,7 @@ export default React.memo(function FamilyContacts() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         {renderResult(unit, (unit) => (
           <Title size={1}>{unit.daycare.name}</Title>
         ))}

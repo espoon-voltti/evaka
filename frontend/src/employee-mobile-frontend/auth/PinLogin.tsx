@@ -104,7 +104,7 @@ const PinLoginForm = React.memo(function PinLoginForm({
 
   return (
     <>
-      <H1 centered noMargin>
+      <H1 $centered $noMargin>
         {i18n.pin.header}
       </H1>
       <Gap />
@@ -134,7 +134,7 @@ const PinLoginForm = React.memo(function PinLoginForm({
             info={error ? { text: error, status: 'warning' } : undefined}
           />
 
-          <Gap size="s" />
+          <Gap $size="s" />
 
           <LegacyButton
             primary
@@ -172,9 +172,9 @@ export const PinLogin = React.memo(function PinLogin({
     <>
       <TopBar title={title} onClose={onClose} unitId={unitId} />
       <ContentArea
-        opaque
-        paddingHorizontal={defaultMargins.s}
-        paddingVertical={defaultMargins.s}
+        $opaque
+        $paddingHorizontal={defaultMargins.s}
+        $paddingVertical={defaultMargins.s}
       >
         <PinLoginForm unitId={unitId} />
       </ContentArea>

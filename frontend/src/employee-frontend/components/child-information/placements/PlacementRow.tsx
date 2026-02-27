@@ -90,9 +90,9 @@ const DataLabel = styled.div`
   font-weight: ${fontWeights.semibold};
 `
 
-const DataValue = styled.div<{ marginBottom?: string }>`
+const DataValue = styled.div<{ $marginBottom?: string }>`
   display: flex;
-  ${(p) => (p.marginBottom ? `margin-bottom: ${p.marginBottom};` : '')}
+  ${(p) => (p.$marginBottom ? `margin-bottom: ${p.$marginBottom};` : '')}
 `
 
 const ActionRow = styled.div`
@@ -496,7 +496,7 @@ export default React.memo(function PlacementRow({
           </DataLabel>
           <DataValue
             data-qa="placement-details-unit"
-            marginBottom={defaultMargins.s}
+            $marginBottom={defaultMargins.s}
           >
             <UnorderedList>
               {orderBy(
@@ -526,7 +526,7 @@ export default React.memo(function PlacementRow({
             {i18n.common.providerType[placement.daycare.providerType]}
           </DataValue>
         </DataRow>
-        <Gap size="s" />
+        <Gap $size="s" />
         {editing && (
           <ActionRow>
             <FixedSpaceRow>
@@ -561,7 +561,7 @@ export default React.memo(function PlacementRow({
           </ActionRow>
         )}
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <ServiceNeeds
           placement={placement}

@@ -54,9 +54,9 @@ export default React.memo(function MealReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.meals.title}</Title>
-        <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
+        <FixedSpaceRow $justifyContent="space-between" $alignItems="flex-start">
           <div>
             <FilterRow>
               <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
@@ -163,7 +163,7 @@ const MealReportData = ({
           {i18n.common.datetime.weekdays[report.date.getIsoDayOfWeek() - 1]}{' '}
           {report.date.format()}
         </H2>
-        <FixedSpaceRow alignItems="center" justifyContent="right">
+        <FixedSpaceRow $alignItems="center" $justifyContent="right">
           {featureFlags.jamixIntegration === true &&
             permittedGlobalActions.includes('SEND_JAMIX_ORDERS') &&
             date.isEqualOrAfter(LocalDate.todayInHelsinkiTz().addDays(2)) &&

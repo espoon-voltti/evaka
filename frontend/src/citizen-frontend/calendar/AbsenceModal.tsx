@@ -200,10 +200,10 @@ export default React.memo(function AbsenceModal({
           <BottomFooterContainer>
             <div>
               <CalendarModalSection>
-                <Gap size="L" sizeOnMobile="zero" />
+                <Gap $size="L" $sizeOnMobile="zero" />
                 <ModalHeader
                   headingComponent={(props) => (
-                    <H1 noMargin data-qa="title" {...props}>
+                    <H1 $noMargin data-qa="title" {...props}>
                       {props.children}
                     </H1>
                   )}
@@ -211,10 +211,10 @@ export default React.memo(function AbsenceModal({
                   {i18n.calendar.absenceModal.title}
                 </ModalHeader>
               </CalendarModalSection>
-              <Gap size="s" />
+              <Gap $size="s" />
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <ChildSelector
                   bind={selectedChildren}
                   childItems={reservationsResponse.children.filter(
@@ -223,10 +223,10 @@ export default React.memo(function AbsenceModal({
                   rangeEnd={range.isValid() ? range.value().end : undefined}
                 />
               </CalendarModalSection>
-              <Gap size="zero" sizeOnMobile="s" />
+              <Gap $size="zero" $sizeOnMobile="s" />
               <LineContainer>
                 <TabletAndDesktop>
-                  <HorizontalLine dashed slim />
+                  <HorizontalLine $dashed $slim />
                 </TabletAndDesktop>
               </LineContainer>
               <CalendarModalSection>
@@ -243,8 +243,8 @@ export default React.memo(function AbsenceModal({
                   required
                   ariaId="absence-daterange-label"
                 />
-                <Gap size="s" />
-                <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
+                <Gap $size="s" />
+                <P $noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
                 {absencesWarning ? (
                   <AlertBox
                     title={
@@ -306,17 +306,17 @@ export default React.memo(function AbsenceModal({
                   </>
                 ))}
               </CalendarModalSection>
-              <Gap size="zero" sizeOnMobile="s" />
+              <Gap $size="zero" $sizeOnMobile="s" />
               <LineContainer>
                 <TabletAndDesktop>
-                  <HorizontalLine dashed slim />
+                  <HorizontalLine $dashed $slim />
                 </TabletAndDesktop>
               </LineContainer>
               <CalendarModalSection>
                 <H2 id="absence-type-heading">
                   {i18n.calendar.absenceModal.absenceType}
                 </H2>
-                <FixedSpaceFlexWrap verticalSpacing="xs">
+                <FixedSpaceFlexWrap $verticalSpacing="xs">
                   <SelectionChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
                     selected={absenceType.state === 'SICKLEAVE'}

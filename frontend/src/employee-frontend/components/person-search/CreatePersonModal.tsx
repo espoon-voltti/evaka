@@ -80,7 +80,7 @@ export default React.memo(function CreatePersonModal({
       rejectLabel={i18n.common.cancel}
     >
       <ModalContent>
-        <ListGrid labelWidth="min-content">
+        <ListGrid $labelWidth="min-content">
           <Label>{i18n.personSearch.createNewPerson.form.firstName}*</Label>
           <InputField
             value={form.firstName}
@@ -119,7 +119,7 @@ export default React.memo(function CreatePersonModal({
               width="full"
               data-qa="street-address-input"
             />
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <PostalCodeAndOfficeContainer>
               <PostalCodeContainer>
                 <InputField
@@ -166,7 +166,7 @@ export default React.memo(function CreatePersonModal({
         </ListGrid>
         {saveError ? (
           <>
-            <Gap size="m" />
+            <Gap $size="m" />
             <ErrorText>{i18n.common.error.unknown}</ErrorText>
           </>
         ) : null}

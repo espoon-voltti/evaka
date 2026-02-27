@@ -370,14 +370,14 @@ function StaffAttendanceDetailsModal<
       onEscapeKey={onClose}
     >
       <Content>
-        <FixedSpaceRow alignItems="center">
-          <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
+        <FixedSpaceRow $alignItems="center">
+          <H1 $noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
         </FixedSpaceRow>
         <H2>{name}</H2>
         {!isExternal ? (
           <>
             <H3>{i18n.unit.staffAttendance.summary}</H3>
-            <ListGrid rowGap="s" labelWidth="auto">
+            <ListGrid $rowGap="s" $labelWidth="auto">
               <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
               <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
                 {plannedAttendances.length > 0
@@ -423,7 +423,7 @@ function StaffAttendanceDetailsModal<
               </div>
             </ListGrid>
 
-            <HorizontalLine slim />
+            <HorizontalLine $slim />
           </>
         ) : null}
 
@@ -431,9 +431,9 @@ function StaffAttendanceDetailsModal<
         {!!arrivalWithoutDeparture && (
           <FullGridWidth>
             <FixedSpaceRow
-              justifyContent="left"
-              alignItems="center"
-              spacing="s"
+              $justifyContent="left"
+              $alignItems="center"
+              $spacing="s"
             >
               <FontAwesomeIcon
                 icon={faExclamationTriangle}
@@ -445,19 +445,19 @@ function StaffAttendanceDetailsModal<
                 )}
               </div>
             </FixedSpaceRow>
-            <Gap size="s" />
+            <Gap $size="s" />
           </FullGridWidth>
         )}
 
         {continuationAttendance && (
           <>
-            <ListGrid rowGap="xxs" labelWidth="auto">
+            <ListGrid $rowGap="xxs" $labelWidth="auto">
               <div>
                 {groups.find((g) => g.id === continuationAttendance.groupId)
                   ?.name ?? i18n.unit.staffAttendance.noGroup}
               </div>
               <TimesDiv>
-                <FixedSpaceRow justifyContent="space-between">
+                <FixedSpaceRow $justifyContent="space-between">
                   <DateInfoDiv>
                     {continuationAttendance.arrived
                       .toLocalDate()
@@ -477,7 +477,7 @@ function StaffAttendanceDetailsModal<
               <TimesDiv>
                 <FixedSpaceRow
                   data-qa="continuation-attendance"
-                  justifyContent="space-between"
+                  $justifyContent="space-between"
                 >
                   <TimeDiv>
                     {continuationAttendance.arrived.toLocalTime().format()}
@@ -489,7 +489,7 @@ function StaffAttendanceDetailsModal<
                 </FixedSpaceRow>
               </TimesDiv>
             </ListGrid>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <ContinuationInfo>
               {i18n.unit.staffAttendance.continuationAttendance}
             </ContinuationInfo>
@@ -502,9 +502,9 @@ function StaffAttendanceDetailsModal<
           openAttendance.date.isEqualOrBefore(date) && (
             <FullGridWidth>
               <FixedSpaceRow
-                justifyContent="left"
-                alignItems="center"
-                spacing="s"
+                $justifyContent="left"
+                $alignItems="center"
+                $spacing="s"
               >
                 <FontAwesomeIcon
                   icon={faExclamationTriangle}
@@ -525,10 +525,10 @@ function StaffAttendanceDetailsModal<
                   }
                 </div>
               </FixedSpaceRow>
-              <Gap size="s" />
+              <Gap $size="s" />
             </FullGridWidth>
           )}
-        <ListGrid rowGap="s" labelWidth="auto">
+        <ListGrid $rowGap="s" $labelWidth="auto">
           {editState.map(
             (
               { arrived, departed, type, groupId, hasStaffOccupancyEffect },
@@ -541,9 +541,9 @@ function StaffAttendanceDetailsModal<
                   {!!gap && (
                     <FullGridWidth>
                       <FixedSpaceRow
-                        justifyContent="center"
-                        alignItems="center"
-                        spacing="s"
+                        $justifyContent="center"
+                        $alignItems="center"
+                        $spacing="s"
                       >
                         <FontAwesomeIcon
                           icon={faExclamationTriangle}
@@ -635,9 +635,9 @@ function StaffAttendanceDetailsModal<
                       )}
                       data-qa="arrival-time-input"
                     />
-                    <Gap size="xs" horizontal />
+                    <Gap $size="xs" $horizontal />
                     <DatePickerSpacer />
-                    <Gap size="xs" horizontal />
+                    <Gap $size="xs" $horizontal />
                     <TimeInput
                       value={departed}
                       onChange={(value) =>
@@ -655,7 +655,7 @@ function StaffAttendanceDetailsModal<
                       )}
                       data-qa="departure-time-input"
                     />
-                    <Gap size="xs" horizontal />
+                    <Gap $size="xs" $horizontal />
                     <IconOnlyButton
                       icon={faTrash}
                       onClick={() => removeAttendance(index)}
@@ -680,7 +680,7 @@ function StaffAttendanceDetailsModal<
                       data-qa="has-staff-occupancy-effect"
                     />
                   </FullGridWidth>
-                  <Gap size="xs" />
+                  <Gap $size="xs" />
                 </Fragment>
               )
             }
@@ -696,7 +696,7 @@ function StaffAttendanceDetailsModal<
             />
           </NewAttendance>
         </ListGrid>
-        <Gap size="L" />
+        <Gap $size="L" />
         <ModalActions>
           <LegacyButton text={i18n.common.cancel} onClick={onClose} />
           <AsyncButton

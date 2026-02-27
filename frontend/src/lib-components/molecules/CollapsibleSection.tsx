@@ -19,7 +19,7 @@ const Wrapper = styled.div`
   width: 100%;
   margin-bottom: ${defaultMargins.XL};
 
-  &.fitted {
+  &.$fitted {
     margin-bottom: 0;
   }
 `
@@ -41,7 +41,7 @@ const Row = styled.div`
   justify-content: space-between;
   margin-bottom: ${defaultMargins.m};
 
-  &.fitted {
+  &.$fitted {
     margin-bottom: 0;
   }
 
@@ -72,7 +72,7 @@ type CollapsibleSectionProps = BaseProps & {
   icon?: IconDefinition
   children: React.ReactNode
   startCollapsed?: boolean
-  fitted?: boolean
+  $fitted?: boolean
   'data-qa'?: string
 }
 
@@ -84,7 +84,7 @@ export default React.memo(function CollapsibleSection({
   icon,
   children,
   startCollapsed = false,
-  fitted = false,
+  $fitted = false,
   className,
   'data-qa': dataQa
 }: CollapsibleSectionProps) {
@@ -96,13 +96,13 @@ export default React.memo(function CollapsibleSection({
 
   return (
     <Wrapper
-      className={classNames(className, { fitted })}
+      className={classNames(className, { $fitted })}
       data-qa={dataQa}
       data-status={collapsed ? 'closed' : 'open'}
     >
       <Row
         onClick={toggleCollapse}
-        className={classNames(className, { fitted })}
+        className={classNames(className, { $fitted })}
       >
         <div>
           {icon && (
@@ -110,8 +110,8 @@ export default React.memo(function CollapsibleSection({
               <FontAwesomeIcon icon={icon} />
             </IconWrapper>
           )}
-          {fitted && icon && <Gap horizontal size="xs" />}
-          <H3 fitted noMargin={fitted}>
+          {$fitted && icon && <Gap $horizontal $size="xs" />}
+          <H3 $fitted $noMargin={$fitted}>
             {title}
           </H3>
         </div>

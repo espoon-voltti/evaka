@@ -13,20 +13,22 @@ import { fontWeights } from '../typography'
 import { defaultMargins, Gap } from '../white-space'
 
 interface MessageBoxContainerProps {
-  color: string
-  width: string
-  thin?: boolean
-  noMargin?: boolean
+  $color: string
+  $width: string
+  $thin?: boolean
+  $noMargin?: boolean
 }
 
 const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
-  width: ${(props) => props.width};
-  margin: ${(props) => (props.thin || props.noMargin ? '0' : '24px 0')};
+  width: ${(props) => props.$width};
+  margin: ${(props) => (props.$thin || props.$noMargin ? '0' : '24px 0')};
   padding: ${(props) =>
-    props.thin ? `${defaultMargins.xs} ${defaultMargins.s}` : defaultMargins.s};
+    props.$thin
+      ? `${defaultMargins.xs} ${defaultMargins.s}`
+      : defaultMargins.s};
   border-style: solid;
   border-width: 1px;
-  border-color: ${(props) => props.color};
+  border-color: ${(props) => props.$color};
   border-radius: 4px;
 
   .message-container {
@@ -42,7 +44,7 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
     width: 24px;
     min-width: 24px;
     height: 24px;
-    background: ${(props) => props.color};
+    background: ${(props) => props.$color};
     border-radius: 100%;
   }
 
@@ -82,10 +84,10 @@ export const MessageBox = React.memo(function MessageBox({
 
   return (
     <MessageBoxContainer
-      color={color}
-      width={width ?? 'fit-content'}
-      thin={thin}
-      noMargin={noMargin}
+      $color={color}
+      $width={width ?? 'fit-content'}
+      $thin={thin}
+      $noMargin={noMargin}
       data-qa={props['data-qa']}
     >
       <div className="message-container">
@@ -94,7 +96,7 @@ export const MessageBox = React.memo(function MessageBox({
         </div>
         <div role={role}>
           {!!title && <span className="message-title">{title}</span>}
-          {!!title && !!message && <Gap size={thin ? 'xxs' : 's'} />}
+          {!!title && !!message && <Gap $size={thin ? 'xxs' : 's'} />}
           {!!message &&
             (typeof message === 'string' ? <span>{message}</span> : message)}
         </div>

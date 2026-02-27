@@ -44,12 +44,12 @@ export default React.memo(function MobileLander() {
     }
 
     return (
-      <FullHeightContainer spaced>
+      <FullHeightContainer $spaced>
         <Top>
           <Img src={EvakaLogo} />
           <section>
-            <P centered>{i18n.mobile.landerText1}</P>
-            <P centered>{i18n.mobile.landerText2}</P>
+            <P $centered>{i18n.mobile.landerText1}</P>
+            <P $centered>{i18n.mobile.landerText2}</P>
           </section>
         </Top>
 

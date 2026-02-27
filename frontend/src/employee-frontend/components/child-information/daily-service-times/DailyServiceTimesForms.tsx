@@ -287,20 +287,20 @@ export const DailyServiceTimesCreationForm = React.memo(
             data-qa="daily-service-times-validity-period-start"
           />
         </div>
-        <Gap size="m" />
+        <Gap $size="m" />
         <div>
           <Label>
             {i18n.childInformation.dailyServiceTimes.dailyServiceTime}
           </Label>
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <DailyServiceTimesPicker
           formData={formData}
           onChange={(data) => setFormData({ ...formData, ...data })}
           validationResult={validationResult}
         />
-        <FixedSpaceRow justifyContent="flex-end">
-          <FixedSpaceRow spacing="s">
+        <FixedSpaceRow $justifyContent="flex-end">
+          <FixedSpaceRow $spacing="s">
             <LegacyButton text={i18n.common.cancel} onClick={() => onClose()} />
             <AsyncButton
               text={i18n.common.confirm}
@@ -465,13 +465,13 @@ const DailyServiceTimesEditFullForm = React.memo(
             data-qa="daily-service-times-validity-period-end"
           />
         </div>
-        <Gap size="m" />
+        <Gap $size="m" />
         <div>
           <Label>
             {i18n.childInformation.dailyServiceTimes.dailyServiceTime}
           </Label>
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <DailyServiceTimesPicker
           formData={formData}
           onChange={(data) => setFormData({ ...formData, ...data })}
@@ -491,8 +491,8 @@ const DailyServiceTimesEditFullForm = React.memo(
             }
           />
         )}
-        <FixedSpaceRow justifyContent="flex-end">
-          <FixedSpaceRow spacing="s">
+        <FixedSpaceRow $justifyContent="flex-end">
+          <FixedSpaceRow $spacing="s">
             <LegacyButton
               text={i18n.common.cancel}
               onClick={() => onClose(false)}
@@ -547,13 +547,13 @@ const DailyServiceTimesEditEndForm = React.memo(
             data-qa="daily-service-times-validity-period-end"
           />
         </div>
-        <Gap size="m" />
+        <Gap $size="m" />
         <LabelLike>
           {i18n.childInformation.dailyServiceTimes.types[initialData.type]}
         </LabelLike>
         <DailyServiceTimesReadOnly times={initialData} />
-        <FixedSpaceRow justifyContent="flex-end">
-          <FixedSpaceRow spacing="s">
+        <FixedSpaceRow $justifyContent="flex-end">
+          <FixedSpaceRow $spacing="s">
             <LegacyButton
               text={i18n.common.cancel}
               onClick={() => onClose(false)}
@@ -664,8 +664,8 @@ const DailyServiceTimesPicker = React.memo(function DailyServiceTimesPicker({
         data-qa="radio-regular"
       />
       {formData.type === 'REGULAR' && (
-        <FixedSpaceRow alignItems="center">
-          <Gap horizontal size="L" />
+        <FixedSpaceRow $alignItems="center">
+          <Gap $horizontal $size="L" />
           <span>
             {i18n.childInformation.dailyServiceTimes.weekdays.monday}–
             {i18n.childInformation.dailyServiceTimes.weekdays.friday}
@@ -688,24 +688,24 @@ const DailyServiceTimesPicker = React.memo(function DailyServiceTimesPicker({
       />
       {formData.type === 'IRREGULAR' && (
         <FixedSpaceRow>
-          <Gap horizontal size="L" />
+          <Gap $horizontal $size="L" />
           <Table>
             <Tbody>
               {weekdays.map((wd) => (
                 <Tr key={wd} style={{ marginLeft: 0 /*defaultMargins.XXL*/ }}>
                   <Td
-                    minimalWidth
-                    borderStyle="none"
-                    horizontalPadding="zero"
-                    verticalAlign="middle"
-                    verticalPadding="zero"
+                    $minimalWidth
+                    $borderStyle="none"
+                    $horizontalPadding="zero"
+                    $verticalAlign="middle"
+                    $verticalPadding="zero"
                   >
                     {i18n.childInformation.dailyServiceTimes.weekdays[wd]}
                   </Td>
                   <Td
-                    borderStyle="none"
-                    verticalAlign="middle"
-                    verticalPadding="xxs"
+                    $borderStyle="none"
+                    $verticalAlign="middle"
+                    $verticalPadding="xxs"
                   >
                     <TimeRangeInput
                       value={formData[wd] ?? undefined}

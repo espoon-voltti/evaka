@@ -45,7 +45,7 @@ export const Tabs = React.memo(function Tabs({
       className={sticky ? 'sticky' : undefined}
       $topOffset={topOffset}
     >
-      <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
+      <TabsContainer data-qa={dataQa} $shadow={mobile} id={id}>
         {tabs.map(({ id, onClick, label, counter }) => (
           <Tab
             key={id}
@@ -93,7 +93,7 @@ export const TabLinks = React.memo(function TabLinks({
       className={sticky ? 'sticky' : undefined}
       $topOffset={topOffset}
     >
-      <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
+      <TabsContainer data-qa={dataQa} $shadow={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
           <TabLink
             key={id}
@@ -119,11 +119,11 @@ const StickyableContainer = styled(Container)<{ $topOffset?: number }>`
   }
 `
 
-const TabsContainer = styled.nav<{ shadow?: boolean }>`
+const TabsContainer = styled.nav<{ $shadow?: boolean }>`
   display: flex;
   flex-direction: row;
   ${(p) =>
-    p.shadow
+    p.$shadow
       ? `
       box-shadow: 0 2px 6px 0 ${p.theme.colors.grayscale.g15};
       margin-bottom: ${defaultMargins.xxs};

@@ -73,10 +73,10 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H1>{i18n.titles.holidayAndTermPeriods}</H1>
       </ContentArea>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <H2>{i18n.titles.holidayPeriods}</H2>
 
         <AddButtonRow
@@ -103,7 +103,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                     {holiday.reservationDeadline.format()}
                   </Td>
                   <Td>
-                    <FixedSpaceRow spacing="s">
+                    <FixedSpaceRow $spacing="s">
                       <IconOnlyButton
                         icon={faPen}
                         data-qa="btn-edit"
@@ -148,7 +148,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                   <Td>{row.active.format()}</Td>
                   <Td>{row.title.fi}</Td>
                   <Td>
-                    <FixedSpaceRow spacing="s">
+                    <FixedSpaceRow $spacing="s">
                       <IconOnlyButton
                         icon={faPen}
                         data-qa="btn-edit"
@@ -201,11 +201,11 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
           />
         )}
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         <ClubsTermsSection />
 
-        <Gap size="L" />
+        <Gap $size="L" />
 
         <PreschoolTermsSection />
       </ContentArea>

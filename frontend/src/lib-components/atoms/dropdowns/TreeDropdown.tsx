@@ -216,7 +216,7 @@ function TreeLevel_<N extends TreeNode>({
 
   return (
     <div>
-      <CheckboxRow alignItems="center">
+      <CheckboxRow $alignItems="center">
         <Box data-qa={`tree-checkbox-${node.key}`}>
           <CheckboxInput
             type="checkbox"

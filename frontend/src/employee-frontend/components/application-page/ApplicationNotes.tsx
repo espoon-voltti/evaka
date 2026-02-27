@@ -73,7 +73,7 @@ export default React.memo(function ApplicationNotes({
         )}
       </FixedSpaceColumn>
 
-      {notes.length > 0 && <Gap size="s" />}
+      {notes.length > 0 && <Gap $size="s" />}
 
       <Sticky>
         {creating ? (

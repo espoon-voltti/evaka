@@ -126,9 +126,9 @@ export default function MessagesPage({
       combine(unitInfoResponse, groupAccounts),
       ([unit, groupAccounts]) => (
         <ContentArea
-          opaque
-          paddingVertical="zero"
-          paddingHorizontal="zero"
+          $opaque
+          $paddingVertical="zero"
+          $paddingHorizontal="zero"
           data-qa="messages-page-content-area"
         >
           <TopBar title={unit.name} unitId={unitId} />
@@ -177,9 +177,9 @@ export default function MessagesPage({
                 includeSelectAll={false}
               >
                 <ContentArea
-                  opaque
-                  paddingVertical="zero"
-                  paddingHorizontal="zero"
+                  $opaque
+                  $paddingVertical="zero"
+                  $paddingHorizontal="zero"
                   data-qa="messages-page-content-area"
                 >
                   <Tabs
@@ -217,10 +217,10 @@ export default function MessagesPage({
           case 'sentMessage': {
             return (
               <ContentArea
-                opaque={false}
-                fullHeight
-                paddingHorizontal="zero"
-                paddingVertical="zero"
+                $opaque={false}
+                $fullHeight
+                $paddingHorizontal="zero"
+                $paddingVertical="zero"
                 data-qa="messages-page-content-area"
               >
                 <SentMessageView

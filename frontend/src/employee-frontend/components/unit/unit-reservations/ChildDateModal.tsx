@@ -475,7 +475,7 @@ const TimesForm = React.memo(function TimesForm({
   const { i18n } = useTranslation()
   const { startTime, endTime } = useFormFields(bind)
   return (
-    <FixedSpaceRow alignItems="center" data-qa={dataQa}>
+    <FixedSpaceRow $alignItems="center" data-qa={dataQa}>
       <TimeInputF bind={startTime} data-qa="start" />
       <span>-</span>
       <TimeInputF bind={endTime} data-qa="end" />
@@ -524,7 +524,7 @@ const AbsenceForm = React.memo(function AbsenceForm({
 
   return (
     <FixedSpaceRow
-      alignItems="center"
+      $alignItems="center"
       data-qa={`${category.toLowerCase()}-absence`}
     >
       <AbsenceLabel>

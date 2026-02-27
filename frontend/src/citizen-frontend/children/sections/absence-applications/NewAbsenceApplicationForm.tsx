@@ -114,8 +114,8 @@ export const NewAbsenceApplicationForm = ({
       <Main>
         <Container>
           <ReturnButton label={i18n.common.return} />
-          <ContentArea opaque>
-            <H1 noMargin>{i18n.children.absenceApplication.newPage.title}</H1>
+          <ContentArea $opaque>
+            <H1 $noMargin>{i18n.children.absenceApplication.newPage.title}</H1>
             <Gap />
             <FixedSpaceColumn>
               <div>
@@ -139,7 +139,7 @@ export const NewAbsenceApplicationForm = ({
                 label={i18n.children.absenceApplication.newPage.confirmation}
                 data-qa="confirmation"
               />
-              <FixedSpaceRow justifyContent="space-between">
+              <FixedSpaceRow $justifyContent="space-between">
                 <Button
                   text={i18n.common.cancel}
                   appearance="button"

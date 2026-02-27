@@ -28,7 +28,7 @@ export default React.memo(function ApplicationFormClub({
   const applicationType = 'CLUB'
 
   return (
-    <FixedSpaceColumn spacing="s">
+    <FixedSpaceColumn $spacing="s">
       <Heading
         type={applicationType}
         transferApplication={application.transferApplication}

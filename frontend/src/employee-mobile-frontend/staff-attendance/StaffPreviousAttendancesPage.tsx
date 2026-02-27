@@ -66,9 +66,9 @@ export default React.memo(function StaffPreviousAttendancesPage({
             staff={toStaff(staffMemberWithOperationalDays.staffMember)}
           />
           <Gap />
-          <FixedSpaceColumn alignItems="center">
+          <FixedSpaceColumn $alignItems="center">
             <H3>{i18n.attendances.staff.previousDays}</H3>
-            <FixedSpaceColumn spacing="m">
+            <FixedSpaceColumn $spacing="m">
               {staffMemberWithOperationalDays.operationalDays
                 .reverse()
                 .map((date) => {
@@ -93,7 +93,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
                   )
                 })}
             </FixedSpaceColumn>
-            <Gap size="s" />
+            <Gap $size="s" />
           </FixedSpaceColumn>
         </StaffMemberPageContainer>
       )
@@ -116,11 +116,11 @@ const DateAttendances = React.memo(function DateAttendances({
 
   return (
     <FixedSpaceColumn
-      spacing="xs"
-      alignItems="flex-start"
+      $spacing="xs"
+      $alignItems="flex-start"
       data-qa={`previous-attendances-${date.formatIso()}`}
     >
-      <H4 noMargin>{date.format('EEEEEE dd.MM.yyyy', lang)}</H4>
+      <H4 $noMargin>{date.format('EEEEEE dd.MM.yyyy', lang)}</H4>
       {attendances.map((a) => (
         <FixedSpaceRow key={a.id} data-qa="attendance">
           <div data-qa="group-or-type">

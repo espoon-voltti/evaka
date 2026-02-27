@@ -144,7 +144,7 @@ export default React.memo(function AttendanceReservationByChild() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>
           {i18n.reports.attendanceReservationByChild.title}
         </Title>
@@ -291,7 +291,7 @@ export default React.memo(function AttendanceReservationByChild() {
           if (activeParams === null || report === null) return null
           return (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <FilterRow>
                 <Checkbox
                   label={
@@ -494,10 +494,10 @@ const GroupData = React.memo(function GroupData({
   return (
     <TableScrollable>
       {groupName !== null && <caption>{groupName}</caption>}
-      <Thead sticky>
+      <Thead $sticky>
         <Tr>
           {headings.map((date) => (
-            <Th key={date.formatIso()} colSpan={3} align="center">
+            <Th key={date.formatIso()} colSpan={3} $align="center">
               {date.format(dateFormat, lang)}
             </Th>
           ))}
@@ -565,7 +565,7 @@ const Row = React.memo(function Row({
               isFuture={isFuture}
             >
               {item.backupCare && (
-                <StaticChip color={theme.colors.main.m1}>v</StaticChip>
+                <StaticChip $color={theme.colors.main.m1}>v</StaticChip>
               )}
               <Link
                 to={`/child-information/${item.childId}`}

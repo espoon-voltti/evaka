@@ -30,7 +30,7 @@ export default React.memo(function AssistanceNeedSubSection({
     <>
       <H3>{t.applications.editor.serviceNeed.assistanceNeed}</H3>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
       {type === 'PRESCHOOL' && featureFlags.preparatory && (
         <>
@@ -51,7 +51,7 @@ export default React.memo(function AssistanceNeedSubSection({
 
           {t.applications.editor.serviceNeed.preparatoryExtraInstructions}
 
-          <Gap size="m" />
+          <Gap $size="m" />
         </>
       )}
 
@@ -77,7 +77,7 @@ export default React.memo(function AssistanceNeedSubSection({
 
       {formData.assistanceNeeded && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <Label htmlFor="assistanceDescription-input">
             {t.applications.editor.serviceNeed.assistanceNeedLabel + ' *'}
           </Label>

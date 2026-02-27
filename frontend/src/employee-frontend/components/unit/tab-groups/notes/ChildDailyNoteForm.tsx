@@ -161,17 +161,17 @@ export default React.memo(function ChildDailyNoteForm({
 
   return (
     <>
-      <H1 primary noMargin>
+      <H1 $primary $noMargin>
         {i18n.unit.groups.daycareDailyNote.header}
       </H1>
-      <Gap size="xs" />
-      <H3 primary noMargin>
+      <Gap $size="xs" />
+      <H3 $primary $noMargin>
         {childName}
       </H3>
 
-      <Gap size="L" />
+      <Gap $size="L" />
 
-      <FixedSpaceColumn alignItems="left" fullWidth spacing="m">
+      <FixedSpaceColumn $alignItems="left" $fullWidth $spacing="m">
         <TextArea
           autoFocus
           value={form.note}
@@ -180,8 +180,8 @@ export default React.memo(function ChildDailyNoteForm({
           data-qa="note-input"
         />
 
-        <FixedSpaceRow fullWidth justifyContent="space-between" spacing="s">
-          <H2 noMargin>{i18n.unit.groups.daycareDailyNote.otherThings}</H2>
+        <FixedSpaceRow $fullWidth $justifyContent="space-between" $spacing="s">
+          <H2 $noMargin>{i18n.unit.groups.daycareDailyNote.otherThings}</H2>
           {note && (
             <ResponsiveInlineButton
               icon={faTrash}
@@ -193,9 +193,9 @@ export default React.memo(function ChildDailyNoteForm({
           )}
         </FixedSpaceRow>
 
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <Label>{i18n.unit.groups.daycareDailyNote.feedingHeader}</Label>
-          <ChipWrapper margin="zero">
+          <ChipWrapper $margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
                 <SelectionChip
@@ -209,15 +209,15 @@ export default React.memo(function ChildDailyNoteForm({
                   data-qa={`feeding-level-${level.toLowerCase()}`}
                   hideIcon
                 />
-                <Gap horizontal size="xxs" />
+                <Gap $horizontal $size="xxs" />
               </Fragment>
             ))}
           </ChipWrapper>
         </FixedSpaceColumn>
 
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <Label>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</Label>
-          <ChipWrapper margin="zero">
+          <ChipWrapper $margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
                 <SelectionChip
@@ -231,15 +231,15 @@ export default React.memo(function ChildDailyNoteForm({
                   data-qa={`sleeping-level-${level.toLowerCase()}`}
                   hideIcon
                 />
-                <Gap horizontal size="xxs" />
+                <Gap $horizontal $size="xxs" />
               </Fragment>
             ))}
           </ChipWrapper>
 
           <FixedSpaceRow
-            justifyContent="flex-start"
-            spacing="s"
-            alignItems="baseline"
+            $justifyContent="flex-start"
+            $spacing="s"
+            $alignItems="baseline"
           >
             <InputField
               type="number"
@@ -272,9 +272,9 @@ export default React.memo(function ChildDailyNoteForm({
           </FixedSpaceRow>
         </FixedSpaceColumn>
 
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <Label>{i18n.unit.groups.daycareDailyNote.reminderHeader}</Label>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             {childDailyNoteReminderValues.map((reminder) => (
               <Checkbox
                 key={reminder}
@@ -295,7 +295,7 @@ export default React.memo(function ChildDailyNoteForm({
             />
           </FixedSpaceColumn>
         </FixedSpaceColumn>
-        <FixedSpaceRow justifyContent="space-around">
+        <FixedSpaceRow $justifyContent="space-around">
           <LegacyButton
             onClick={onCancel}
             text={i18n.common.cancel}

@@ -60,7 +60,7 @@ export default React.memo(function TemplateQuestionView({
 
   return (
     <Wrapper $readOnly={readOnly}>
-      <FixedSpaceRow justifyContent="space-between" alignItems="start">
+      <FixedSpaceRow $justifyContent="space-between" $alignItems="start">
         <TemplateQuestionPreview bind={bind} />
 
         {!readOnly && (

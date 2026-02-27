@@ -161,7 +161,7 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
   )
 
   return (
-    <FixedSpaceColumn spacing="zero">
+    <FixedSpaceColumn $spacing="zero">
       {modalVisible && selectedCells.length > 0 && (
         <AbsenceModal
           showCategorySelection={showCategorySelection}
@@ -188,9 +188,9 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
         text={i18n.absences.addAbsencesButton(selectedCells.length)}
       />
       <div>
-        <HorizontalLine dashed slim />
+        <HorizontalLine $dashed $slim />
         <H3>{i18n.absences.legendTitle}</H3>
-        <FixedSpaceColumn spacing="xxs">
+        <FixedSpaceColumn $spacing="xxs">
           <AbsenceLegend showNoAbsence />
         </FixedSpaceColumn>
       </div>

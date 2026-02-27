@@ -45,7 +45,7 @@ function StatusLabel(props: Props) {
         })
 
   return (
-    <StaticChip color={colorsByStatus[status]}>
+    <StaticChip $color={colorsByStatus[status]}>
       {i18n.common.statuses[status]}
     </StaticChip>
   )

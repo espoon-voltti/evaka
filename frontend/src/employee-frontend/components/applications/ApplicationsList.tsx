@@ -74,8 +74,8 @@ const TitleRowContainer = styled.div`
 `
 
 interface PaginationWrapperProps {
-  paddingVertical?: string
-  paddingHorizontal?: string
+  $paddingVertical?: string
+  $paddingHorizontal?: string
 }
 
 const PaginationWrapper = styled.div<PaginationWrapperProps>`
@@ -84,13 +84,13 @@ const PaginationWrapper = styled.div<PaginationWrapperProps>`
   align-items: flex-end;
   justify-content: center;
   padding: ${(p) =>
-    p.paddingVertical && p.paddingHorizontal
-      ? `${p.paddingVertical} ${p.paddingHorizontal}`
+    p.$paddingVertical && p.$paddingHorizontal
+      ? `${p.$paddingVertical} ${p.$paddingHorizontal}`
       : '0px'};
 `
 
-const StatusColorTd = styled(Td)<{ color: string }>`
-  border-left: solid 7px ${(p) => p.color};
+const StatusColorTd = styled(Td)<{ $color: string }>`
+  border-left: solid 7px ${(p) => p.$color};
 `
 
 const SortableThWithBorder = styled(SortableTh)`
@@ -268,8 +268,8 @@ const ApplicationsList = React.memo(function Applications({
           )
         }
       >
-        <StatusColorTd color={getAccentColor(application)}>
-          <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+        <StatusColorTd $color={getAccentColor(application)}>
+          <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
             <CareTypeChip type={application.placementType} />
             {application.transferApplication && (
               <Light>{i18n.applications.list.transfer}</Light>
@@ -292,7 +292,7 @@ const ApplicationsList = React.memo(function Applications({
           />
         </Td>
         <Td>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Tooltip
               tooltip={
                 <div>
@@ -319,7 +319,7 @@ const ApplicationsList = React.memo(function Applications({
             '-'}
         </Td>
         <Td>
-          <FixedSpaceRow spacing="xs">
+          <FixedSpaceRow $spacing="xs">
             <BasisFragment application={application} />
           </FixedSpaceRow>
         </Td>
@@ -453,7 +453,7 @@ const ApplicationsList = React.memo(function Applications({
   return (
     <div data-qa="applications-list">
       <TitleRowContainer>
-        <H1 fitted noMargin>
+        <H1 $fitted $noMargin>
           {searchFilters.status === 'ALL'
             ? i18n.applications.list.title
             : i18n.application.statuses[searchFilters.status]}
@@ -475,7 +475,7 @@ const ApplicationsList = React.memo(function Applications({
 
       <ApplicationsTableContainer>
         <Table data-qa="table-of-applications">
-          <Thead sticky="90px">
+          <Thead $sticky="90px">
             <Tr>
               <SortableThWithBorder
                 sorted={isSorted('APPLICATION_TYPE')}
@@ -615,7 +615,7 @@ export const DateOfBirthInfo = React.memo(function DateOfBirthInfo({
   return (
     application.dateOfBirth &&
     startDateOrDueDate && (
-      <FixedSpaceRow spacing="xs" alignItems="center">
+      <FixedSpaceRow $spacing="xs" $alignItems="center">
         <AgeIndicatorChip
           age={startDateOrDueDate.differenceInYears(application.dateOfBirth)}
         />
@@ -664,11 +664,11 @@ export const BasisFragment = React.memo(function BasisFragment({
               <WhiteLabelLike>
                 {i18n.applications.list.siblingBasis}
               </WhiteLabelLike>
-              <Gap size="xs" />
+              <Gap $size="xs" />
               {application.siblingName === null ? (
                 <div>{i18n.applications.list.siblingNotFound}</div>
               ) : (
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <WhiteLabelLike>{application.siblingName}</WhiteLabelLike>
                   {application.siblingUnitName === null ? (
                     <div>{i18n.applications.list.noValidPlacement}</div>

@@ -293,9 +293,9 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
         </>
       )}
       <Gap />
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <Actions>
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow $fullWidth>
           <LegacyButton
             text={i18n.common.cancel}
             onClick={() => history.go(-1)}
@@ -385,9 +385,9 @@ export default React.memo(function StaffMarkArrivedPage({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <TopBar
         title={backButtonText}
@@ -396,10 +396,10 @@ export default React.memo(function StaffMarkArrivedPage({
         invertedColors
       />
       <ContentArea
-        shadow
-        opaque={true}
-        paddingHorizontal="s"
-        paddingVertical="m"
+        $shadow
+        $opaque={true}
+        $paddingHorizontal="s"
+        $paddingVertical="m"
       >
         {renderResult(
           combine(unitInfoResponse, staffMember),

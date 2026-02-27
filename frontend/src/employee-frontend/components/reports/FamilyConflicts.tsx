@@ -58,7 +58,7 @@ export default React.memo(function FamilyConflicts() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.familyConflicts.title}</Title>
 
         <FilterRow>

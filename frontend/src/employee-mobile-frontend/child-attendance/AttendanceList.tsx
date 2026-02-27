@@ -155,9 +155,9 @@ export default React.memo(function AttendanceList({
     <>
       <TabLinks tabs={tabs} mobile sticky />
       <ContentArea
-        opaque={false}
-        paddingVertical="zero"
-        paddingHorizontal="zero"
+        $opaque={false}
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
       >
         <ChildList
           unitOrGroup={unitOrGroup}

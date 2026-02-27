@@ -157,7 +157,7 @@ export default React.memo(function DecisionResponse({
 
   return (
     <div data-qa={`decision-${decision.id}`}>
-      <DecisionHeaderRow alignItems="center" spacing="s">
+      <DecisionHeaderRow $alignItems="center" $spacing="s">
         <FirstColumnLabel>
           <Label>
             {t.decisions.applicationDecisions.decision} {headerCounter}
@@ -170,37 +170,37 @@ export default React.memo(function DecisionResponse({
         />
       </DecisionHeaderRow>
       <ThinHorizontalLine />
-      <H4 data-qa="decision-child-name" translate="no" noMargin>
+      <H4 data-qa="decision-child-name" translate="no" $noMargin>
         {childName}
       </H4>
-      <Gap size="xxs" />
-      <H2 data-qa="title-decision-type" noMargin>
+      <Gap $size="xxs" />
+      <H2 data-qa="title-decision-type" $noMargin>
         {t.decisions.applicationDecisions.type[decision.type]}
       </H2>
       <ThinHorizontalLine />
       <DataTable>
-        <H3 noMargin>{t.decisions.applicationDecisions.data}</H3>
+        <H3 $noMargin>{t.decisions.applicationDecisions.data}</H3>
         {permittedActions.has('DOWNLOAD_PDF') && (
           <PdfLink decisionId={decision.id} />
         )}
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <div>
             <Label>{t.decisions.applicationDecisions.unit}</Label>
-            <Gap size="xxs" />
+            <Gap $size="xxs" />
             <div data-qa="decision-unit" translate="no">
               {getUnitName()}
             </div>
           </div>
           <div>
             <Label>{t.decisions.applicationDecisions.period}</Label>
-            <Gap size="xxs" />
+            <Gap $size="xxs" />
             <div data-qa="decision-period">
               {startDate.format()} - {endDate.format()}
             </div>
           </div>
           <div>
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-            <Gap size="xxs" />
+            <Gap $size="xxs" />
             <div data-qa="decision-sent-date">{sentDate?.format() ?? ''}</div>
           </div>
         </FixedSpaceColumn>
@@ -209,11 +209,11 @@ export default React.memo(function DecisionResponse({
         <Fragment>
           <ThinHorizontalLine />
           <DecisionListGrid
-            labelWidth="144px"
-            columnGap="s"
-            mobileMaxWidth={tabletMin}
+            $labelWidth="144px"
+            $columnGap="s"
+            $mobileMaxWidth={tabletMin}
           >
-            <H3 noMargin id={`decision-${decision.id}-confirmation`}>
+            <H3 $noMargin id={`decision-${decision.id}-confirmation`}>
               {t.decisions.applicationDecisions.confirmation}
             </H3>
             <FixedSpaceColumn>
@@ -231,14 +231,14 @@ export default React.memo(function DecisionResponse({
                 role="group"
                 aria-labelledby={`decision-${decision.id}-confirmation`}
               >
-                <FixedSpaceRow alignItems="center" spacing="xs">
+                <FixedSpaceRow $alignItems="center" $spacing="xs">
                   <Radio
                     id={`${decision.id}-accept`}
                     checked={acceptChecked}
                     onChange={() => setAcceptChecked(true)}
                     name={`${decision.id}-confirmation`}
                     label={
-                      <FixedSpaceFlexWrap horizontalSpacing="xs">
+                      <FixedSpaceFlexWrap $horizontalSpacing="xs">
                         <div>
                           {t.decisions.applicationDecisions.response.accept1}
                         </div>
@@ -282,7 +282,7 @@ export default React.memo(function DecisionResponse({
                     data-qa="radio-accept"
                   />
                 </FixedSpaceRow>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <Radio
                   id={`${decision.id}-reject`}
                   checked={!acceptChecked}

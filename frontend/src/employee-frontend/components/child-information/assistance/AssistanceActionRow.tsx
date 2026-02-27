@@ -163,7 +163,7 @@ export default React.memo(function AssistanceActionRow({
                   <FixedSpaceColumn>
                     {assistanceActionOptionCategories.map((category) =>
                       optionsByCategory[category].length > 0 ? (
-                        <FixedSpaceColumn spacing="zero" key={category}>
+                        <FixedSpaceColumn $spacing="zero" key={category}>
                           <LabelLike>
                             {
                               i18n.childInformation.assistanceAction.fields
@@ -181,7 +181,7 @@ export default React.memo(function AssistanceActionRow({
 
                     {featureFlags.assistanceActionOther &&
                       assistanceAction.otherAction !== '' && (
-                        <FixedSpaceColumn spacing="zero">
+                        <FixedSpaceColumn $spacing="zero">
                           <LabelLike>
                             {
                               i18n.childInformation.assistanceAction.fields

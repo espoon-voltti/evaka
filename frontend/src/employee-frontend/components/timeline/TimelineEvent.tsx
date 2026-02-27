@@ -35,12 +35,12 @@ export default function TlEvent<T extends WithRange>({
   const [open, setOpen] = useState(false)
   return (
     <TlEventContainer
-      left={left}
-      width={width}
-      color={renderer.color(event)}
+      $left={left}
+      $width={width}
+      $color={renderer.color(event)}
       data-qa={`timeline-event-${renderer.eventType}`}
     >
-      <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="xs">
         <Header>
           <StickyHeaderPositioner>
             <HeaderInner>
@@ -97,16 +97,16 @@ export default function TlEvent<T extends WithRange>({
 }
 
 const TlEventContainer = styled.div<{
-  left: number
-  width: number
-  color: string
+  $left: number
+  $width: number
+  $color: string
 }>`
   position: relative;
-  left: ${(p) => p.left}px;
-  width: ${(p) => p.width}px;
-  min-width: ${(p) => p.width}px;
-  max-width: ${(p) => p.width}px;
-  background-color: ${(p) => p.color};
+  left: ${(p) => p.$left}px;
+  width: ${(p) => p.$width}px;
+  min-width: ${(p) => p.$width}px;
+  max-width: ${(p) => p.$width}px;
+  background-color: ${(p) => p.$color};
   border: 1px solid black;
 `
 

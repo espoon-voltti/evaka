@@ -168,7 +168,7 @@ export default React.memo(function MobilePairingModal({
     >
       {phase === 1 && (
         <>
-          <P centered>
+          <P $centered>
             {i18n.mobilePairingModal.modalText1}
             <br />
             <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
@@ -185,7 +185,7 @@ export default React.memo(function MobilePairingModal({
 
       {phase === 2 && (
         <>
-          <P centered>{i18n.mobilePairingModal.modalText3}</P>
+          <P $centered>{i18n.mobilePairingModal.modalText3}</P>
           {pairingResponse && (
             <Flex>
               <InputField
@@ -202,7 +202,7 @@ export default React.memo(function MobilePairingModal({
 
       {phase === 3 && (
         <>
-          <P centered>{i18n.mobilePairingModal.modalText4}</P>
+          <P $centered>{i18n.mobilePairingModal.modalText4}</P>
           {pairingResponse && (
             <Flex>
               {pairingResponse.mobileDeviceId ? (

@@ -190,17 +190,17 @@ export default React.memo(function AttendanceReservation() {
               key={groupId}
               data-qa="report-attendance-reservation-table"
             >
-              <Thead sticky>
+              <Thead $sticky>
                 <Tr>
                   <Th>{groupName}</Th>
                   {dates.map((date) => (
-                    <Th key={date} colSpan={5} align="center">
+                    <Th key={date} colSpan={5} $align="center">
                       {date}
                     </Th>
                   ))}
                 </Tr>
                 <Tr>
-                  <Th stickyColumn>{i18n.reports.common.clock}</Th>
+                  <Th $stickyColumn>{i18n.reports.common.clock}</Th>
                   {dates.map((date) => (
                     <React.Fragment key={date}>
                       <Th>{i18n.reports.common.under3y}</Th>
@@ -226,7 +226,7 @@ export default React.memo(function AttendanceReservation() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.attendanceReservation.title}</Title>
 
         <FilterRow>
@@ -349,7 +349,7 @@ const getTableBody = (
   rowsByTime.forEach((rows, time) => {
     components.push(
       <Tr key={time} ref={time === '05:30' ? autoScrollRef : undefined}>
-        <Td sticky>{time}</Td>
+        <Td $sticky>{time}</Td>
         {rows.map((row) => {
           const isToday = row.dateTime.toLocalDate().isToday()
           const isFuture = row.dateTime.isAfter(HelsinkiDateTime.now())

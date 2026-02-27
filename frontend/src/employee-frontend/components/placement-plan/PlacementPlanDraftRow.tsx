@@ -31,14 +31,15 @@ const DateRow = styled.div`
 `
 
 const DateRowItem = styled.span<{
-  width?: string
-  strong?: boolean
+  $width?: string
+  $strong?: boolean
 }>`
   display: flex;
   margin-top: auto;
   margin-bottom: auto;
-  width: ${(p) => p.width};
-  font-weight: ${(p) => (p.strong ? fontWeights.semibold : fontWeights.normal)};
+  width: ${(p) => p.$width};
+  font-weight: ${(p) =>
+    p.$strong ? fontWeights.semibold : fontWeights.normal};
 `
 
 const OverlapError = styled.span`
@@ -110,16 +111,16 @@ export default React.memo(function PlacementDraftSection({
 
   return (
     <section>
-      <H2 noMargin>{i18n.placementDraft.datesTitle}</H2>
-      <Gap size="s" />
+      <H2 $noMargin>{i18n.placementDraft.datesTitle}</H2>
+      <Gap $size="s" />
       <DateRow>
-        <DateRowItem width="225px" strong={true}>
+        <DateRowItem $width="225px" $strong={true}>
           {i18n.placementDraft.type}
         </DateRowItem>
-        <DateRowItem strong={true}>{i18n.placementDraft.date}</DateRowItem>
+        <DateRowItem $strong={true}>{i18n.placementDraft.date}</DateRowItem>
       </DateRow>
       <DateRow>
-        <DateRowItem width="225px">
+        <DateRowItem $width="225px">
           {dateRowLabel(placementPlanDraft.type)}
         </DateRowItem>
         <DateRowItem>
@@ -151,7 +152,7 @@ export default React.memo(function PlacementDraftSection({
       </DateRow>
       {formState.hasPreschoolDaycarePeriod && (
         <DateRow>
-          <DateRowItem width="225px">
+          <DateRowItem $width="225px">
             {i18n.placementDraft.preschoolDaycare}
           </DateRowItem>
           <DateRowItem>

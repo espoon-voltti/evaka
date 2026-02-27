@@ -104,13 +104,13 @@ export default React.memo(function TopBar({
         <Title>
           <Label
             data-qa="top-bar-title"
-            primary={invertedColors}
-            white={!invertedColors}
+            $primary={invertedColors}
+            $white={!invertedColors}
           >
             {title}
           </Label>
         </Title>
-        <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow $alignItems="center">
           {!hideSystemNotification &&
             notificationResult.isSuccess &&
             notificationResult.value.notification && (

@@ -124,10 +124,10 @@ export default React.memo(function AttendanceChildPage({
   return (
     <>
       <TallContentAreaNoOverflow
-        opaque
-        paddingHorizontal="0px"
-        paddingVertical="0px"
-        shadow
+        $opaque
+        $paddingHorizontal="0px"
+        $paddingVertical="0px"
+        $shadow
       >
         <BackButtonMargin
           onClick={() => history.go(-1)}
@@ -149,10 +149,10 @@ export default React.memo(function AttendanceChildPage({
               <>
                 <Shadow>
                   <Zindex>
-                    <ChildBackground status={childAttendance.status}>
+                    <ChildBackground $status={childAttendance.status}>
                       <Center>
                         <IconBox
-                          type={childAttendance.status}
+                          $type={childAttendance.status}
                           onClick={() => setUiMode('img-modal')}
                         >
                           {child.imageUrl ? (
@@ -177,7 +177,7 @@ export default React.memo(function AttendanceChildPage({
                           </IconPlacementBox>
                         </IconBox>
 
-                        <Gap size="s" />
+                        <Gap $size="s" />
                         <CustomTitle data-qa="child-name">
                           <PersonName person={child} format="First Last" />
                         </CustomTitle>
@@ -194,7 +194,7 @@ export default React.memo(function AttendanceChildPage({
 
                         <ChildStatus>
                           <StaticChip
-                            color={attendanceColors[childAttendance.status]}
+                            $color={attendanceColors[childAttendance.status]}
                             data-qa="child-status"
                           >
                             {i18n.attendances.types[childAttendance.status]}
@@ -210,7 +210,7 @@ export default React.memo(function AttendanceChildPage({
                     />
                   </Zindex>
 
-                  <FlexColumn paddingHorizontal="s">
+                  <FlexColumn $paddingHorizontal="s">
                     {!child.hasGuardian && (
                       <NoGuardianInfoBoxContainer>
                         <InfoBox
@@ -232,7 +232,7 @@ export default React.memo(function AttendanceChildPage({
                           attendances={childAttendance.attendances}
                           returnToComing={returnToComingModal}
                         />
-                        <Gap size="m" />
+                        <Gap $size="m" />
                         <Absences
                           absences={childAttendance.absences}
                           placementType={child.placementType}
@@ -243,10 +243,10 @@ export default React.memo(function AttendanceChildPage({
                         <Center data-qa="term-break">
                           {i18n.attendances.termBreak}
                         </Center>
-                        <Gap size="XXL" />
+                        <Gap $size="XXL" />
                       </>
                     )}
-                    <Gap size="xs" />
+                    <Gap $size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
                         unitId={unitId}
@@ -440,9 +440,9 @@ const Zindex = styled.div`
   margin-right: -8%;
 `
 
-const ChildBackground = styled.div<{ status: AttendanceStatus }>`
+const ChildBackground = styled.div<{ $status: AttendanceStatus }>`
   background-color: ${(p) =>
-    attendanceColors[p.status]}48; // hex 48 is 0.3 alpha
+    attendanceColors[p.$status]}48; // hex 48 is 0.3 alpha
   display: flex;
   flex-direction: column;
   align-items: center;

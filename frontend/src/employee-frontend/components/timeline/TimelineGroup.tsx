@@ -41,7 +41,7 @@ export default function TimelineGroup<T extends WithRange>({
   })
 
   return (
-    <FixedSpaceColumn spacing="zero">
+    <FixedSpaceColumn $spacing="zero">
       {lanes.map((lane, i) => (
         <TlLane
           key={i}

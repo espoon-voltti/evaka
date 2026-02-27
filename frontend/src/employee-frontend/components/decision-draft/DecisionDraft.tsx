@@ -62,15 +62,15 @@ const Heading = styled(Title)`
   margin-top: 0.5rem;
 `
 
-const WarningContainer = styled.div<{ visible: boolean }>`
-  visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
+const WarningContainer = styled.div<{ $visible: boolean }>`
+  visibility: ${({ $visible }) => ($visible ? 'visible' : 'hidden')};
 `
 
-const WarningText = styled.span<{ smaller?: boolean }>`
+const WarningText = styled.span<{ $smaller?: boolean }>`
   color: ${colors.grayscale.g70};
   font-style: italic;
   margin-left: 12px;
-  font-size: ${(props) => (props.smaller === true ? '0.8em' : '1em')};
+  font-size: ${(props) => (props.$smaller === true ? '0.8em' : '1em')};
 `
 
 const WarningIcon = () => (
@@ -245,7 +245,7 @@ export default React.memo(function Decision() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.decisionDraft.title}</Title>
         <InfoContainer>
           <InfoParagraph>{i18n.decisionDraft.info1}</InfoParagraph>
@@ -392,13 +392,13 @@ export default React.memo(function Decision() {
                                   />
                                 )}
                                 <WarningContainer
-                                  visible={
+                                  $visible={
                                     decisionDraftGroup.unit.id !==
                                     decision.unitId
                                   }
                                 >
                                   <WarningIcon />
-                                  <WarningText smaller>
+                                  <WarningText $smaller>
                                     {i18n.decisionDraft.differentUnit}
                                   </WarningText>
                                 </WarningContainer>

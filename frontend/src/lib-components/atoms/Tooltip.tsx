@@ -28,9 +28,7 @@ const TooltipWrapper = styled.div`
   }
 `
 
-const TooltipPositioner = styled.div<{
-  position: Position
-}>`
+const TooltipPositioner = styled.div`
   position: fixed;
   z-index: 99999;
   display: flex;
@@ -110,7 +108,7 @@ const beakPositions = (position: Position) => {
   return { top, bottom, left, right }
 }
 
-const Beak = styled.div<{ position: Position }>`
+const Beak = styled.div<{ $position: Position }>`
   pointer-events: none;
   position: absolute;
   display: flex;
@@ -118,10 +116,10 @@ const Beak = styled.div<{ position: Position }>`
   align-items: center;
   color: ${(p) => p.theme.colors.grayscale.g70};
 
-  top: ${(p) => beakPositions(p.position).top};
-  bottom: ${(p) => beakPositions(p.position).bottom};
-  left: ${(p) => beakPositions(p.position).left};
-  right: ${(p) => beakPositions(p.position).right};
+  top: ${(p) => beakPositions(p.$position).top};
+  bottom: ${(p) => beakPositions(p.$position).bottom};
+  left: ${(p) => beakPositions(p.$position).left};
+  right: ${(p) => beakPositions(p.$position).right};
 `
 
 type Position = 'top' | 'bottom' | 'right' | 'left'
@@ -218,13 +216,9 @@ export const TooltipWithoutAnchor = React.memo(
     })()
 
     return (
-      <TooltipPositioner
-        className={classNames('tooltip', className)}
-        position={position}
-        ref={ref}
-      >
+      <TooltipPositioner className={classNames('tooltip', className)} ref={ref}>
         <TooltipDiv data-qa={dataQa}>
-          <Beak position={position}>
+          <Beak $position={position}>
             <FontAwesomeIcon
               icon={icon}
               size={['top', 'bottom'].includes(position) ? '3x' : '2x'}

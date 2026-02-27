@@ -67,7 +67,7 @@ const Actions = React.memo(function Actions({
     return (
       <>
         <StickyActionBar align="right">
-          <FixedSpaceRow alignItems="center">
+          <FixedSpaceRow $alignItems="center">
             {error ? <ErrorMessage>{error}</ErrorMessage> : null}
             {checkedIds.length > 0 ? (
               <CheckedRowsInfo>

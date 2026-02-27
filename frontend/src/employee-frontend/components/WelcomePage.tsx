@@ -15,7 +15,7 @@ export default React.memo(function WelcomePage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title>{i18n.titles.welcomePage}</Title>
         <P>{i18n.welcomePage.text}</P>
       </ContentArea>

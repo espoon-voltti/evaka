@@ -127,7 +127,7 @@ export default React.memo(function PlacementSketching() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.placementSketching.title}</Title>
 
         <FilterRow>

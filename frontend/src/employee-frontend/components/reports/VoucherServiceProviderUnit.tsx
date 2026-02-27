@@ -100,18 +100,18 @@ const BlankTd = styled(Td)`
   }
 `
 
-const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
+const TypeIndicator = styled.div<{ $type: VoucherReportRowType | 'NEW' }>`
   position: absolute;
   top: -2px;
   bottom: 1px;
   left: -1px;
   right: -1px;
   background-color: ${(p) =>
-    p.type === 'REFUND'
+    p.$type === 'REFUND'
       ? colors.status.warning
-      : p.type === 'CORRECTION'
+      : p.$type === 'CORRECTION'
         ? colors.accents.a5orangeLight
-        : p.type === 'NEW'
+        : p.$type === 'NEW'
           ? colors.main.m2
           : colors.grayscale.g0};
 `
@@ -194,16 +194,16 @@ export default React.memo(function VoucherServiceProviderUnit() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <TitleContainer>
-          <H2 fitted>{unitName}</H2>
+          <H2 $fitted>{unitName}</H2>
           <LinkInCaps to={`/units/${unitId}`}>
             <FontAwesomeIcon icon={faHome} />{' '}
             {i18n.reports.voucherServiceProviderUnit.unitPageLink}
           </LinkInCaps>
         </TitleContainer>
-        <H3 noMargin>{i18n.reports.voucherServiceProviderUnit.title}</H3>
-        <Gap size="L" />
+        <H3 $noMargin>{i18n.reports.voucherServiceProviderUnit.title}</H3>
+        <Gap $size="L" />
         <FilterRow>
           <FilterLabel>
             {i18n.reports.voucherServiceProviderUnit.month}
@@ -234,7 +234,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
         </FilterRow>
 
         {sortedReport.isSuccess && sortedReport.value.locked && (
-          <LockedDate spacing="xs" alignItems="center">
+          <LockedDate $spacing="xs" $alignItems="center">
             <FontAwesomeIcon icon={faLockAlt} />
             <span>
               {`${
@@ -244,7 +244,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
           </LockedDate>
         )}
 
-        <HorizontalLine slim />
+        <HorizontalLine $slim />
 
         {renderResult(sortedReport, (sortedReport) => (
           <>
@@ -461,7 +461,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       }:${row.realizedPeriod.start.formatIso()}`}
                     >
                       <BlankTd>
-                        <TypeIndicator type={rowType} />
+                        <TypeIndicator $type={rowType} />
                         {rowType !== 'ORIGINAL' ? (
                           <TooltipWithoutAnchor
                             tooltip={
@@ -474,7 +474,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         ) : null}
                       </BlankTd>
                       <Td>
-                        <FixedSpaceColumn spacing="xs">
+                        <FixedSpaceColumn $spacing="xs">
                           <Link
                             data-qa="child-name"
                             to={`/child-information/${row.childId}`}
@@ -487,7 +487,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                               format="Last First"
                             />
                           </Link>
-                          <FixedSpaceRow spacing="xs" alignItems="center">
+                          <FixedSpaceRow $spacing="xs" $alignItems="center">
                             <AgeIndicatorChip
                               age={row.realizedPeriod.start.differenceInYears(
                                 row.childDateOfBirth

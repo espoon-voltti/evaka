@@ -182,7 +182,7 @@ export default React.memo(function ChildDocumentDecisionsReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.childDocumentDecisions.title}</Title>
 
         <FilterRow>
@@ -207,7 +207,7 @@ export default React.memo(function ChildDocumentDecisionsReport() {
           </FixedSpaceRow>
         </FilterRow>
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <FilterRow>
           <FilterLabel>

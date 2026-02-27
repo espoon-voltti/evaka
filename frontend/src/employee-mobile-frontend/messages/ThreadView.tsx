@@ -81,10 +81,10 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
     ([selectedAccount, thread]) =>
       selectedAccount !== undefined && thread !== null ? (
         <ContentArea
-          opaque={false}
-          fullHeight
-          paddingHorizontal="zero"
-          paddingVertical="zero"
+          $opaque={false}
+          $fullHeight
+          $paddingHorizontal="zero"
+          $paddingVertical="zero"
           data-qa="messages-page-content-area"
         >
           <ReceivedThread
@@ -152,7 +152,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
   return (
     <MobileThreadContainer data-qa="thread-reader">
       <TopBar title={title} onBack={onBack} invertedColors unitId={unitId} />
-      <Gap size="s" />
+      <Gap $size="s" />
       <MessageList>
         {messages.map((message, i) => (
           <React.Fragment key={message.id}>
@@ -161,7 +161,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
               relatedChildren={children}
               ref={i === messages.length - 1 ? lastMessageRef : undefined}
             />
-            <Gap size="xs" />
+            <Gap $size="xs" />
           </React.Fragment>
         ))}
       </MessageList>
@@ -193,8 +193,8 @@ const ReceivedThread = React.memo(function ReceivedThread({
       ) : (
         messages.length > 0 && (
           <>
-            <Gap size="s" />
-            <ActionRow justifyContent="space-between">
+            <Gap $size="s" />
+            <ActionRow $justifyContent="space-between">
               {type === 'MESSAGE' ? (
                 <ReplyToThreadButton
                   appearance="inline"
@@ -207,7 +207,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
                 <div />
               )}
             </ActionRow>
-            <Gap size="m" />
+            <Gap $size="m" />
           </>
         )
       )}
@@ -247,8 +247,8 @@ const SingleMessage = React.memo(
         </MessageContent>
         {message.attachments.length > 0 && (
           <>
-            <HorizontalLine slim />
-            <FixedSpaceColumn spacing="xs">
+            <HorizontalLine $slim />
+            <FixedSpaceColumn $spacing="xs">
               {message.attachments.map((attachment) => (
                 <FileDownloadButton
                   key={attachment.id}
@@ -287,7 +287,7 @@ export const SentMessageView = React.memo(function SentMessageView({
         invertedColors
         unitId={unitId}
       />
-      <Gap size="s" />
+      <Gap $size="s" />
       <MessageList>
         <MessageContainer>
           <TitleRow>
@@ -304,8 +304,8 @@ export const SentMessageView = React.memo(function SentMessageView({
           </MessageContent>
           {message.attachments.length > 0 && (
             <>
-              <HorizontalLine slim />
-              <FixedSpaceColumn spacing="xs">
+              <HorizontalLine $slim />
+              <FixedSpaceColumn $spacing="xs">
                 {message.attachments.map((attachment) => (
                   <FileDownloadButton
                     key={attachment.id}

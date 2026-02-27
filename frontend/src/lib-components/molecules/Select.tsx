@@ -15,10 +15,10 @@ export interface SelectOption<T extends string> {
 }
 
 const Container = styled.div<{
-  fullWidth?: boolean
+  $fullWidth?: boolean
 }>`
   position: relative;
-  ${(p) => (p.fullWidth ? 'width: 100%;' : '')}
+  ${(p) => (p.$fullWidth ? 'width: 100%;' : '')}
   min-width: 150px;
 
   select {
@@ -35,7 +35,7 @@ function Select_<T extends string>({
   ...rest
 }: ComboboxProps<SelectOption<T>> & BaseProps) {
   return (
-    <Container fullWidth={fullWidth} data-qa={dataQa} className={className}>
+    <Container $fullWidth={fullWidth} data-qa={dataQa} className={className}>
       <Combobox getItemLabel={getItemLabel} fullWidth={fullWidth} {...rest} />
     </Container>
   )

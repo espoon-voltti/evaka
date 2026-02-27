@@ -58,7 +58,7 @@ export default React.memo(function ChildHeader({
         alt={t.children.childPicture}
       />
       <div>
-        <H1 noMargin data-qa="child-name" tabIndex={-1} ref={mainHeading}>
+        <H1 $noMargin data-qa="child-name" tabIndex={-1} ref={mainHeading}>
           <PersonName
             person={{ firstName, lastName }}
             format={childPageNameFormat}

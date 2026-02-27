@@ -59,25 +59,25 @@ const DetailsModal = React.memo(function DetailsModal({
       close={onClose}
       closeLabel={i18n.common.close}
     >
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn $spacing="L">
         <FixedSpaceColumn>
-          <H2 noMargin>{application.childName}</H2>
-          <FixedSpaceColumn spacing="xxs">
+          <H2 $noMargin>{application.childName}</H2>
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.serviceApplications.sentAt}</Label>
             <div>{application.sentAt.format()}</div>
             <div>{application.personName}</div>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>{i18n.childInformation.serviceApplications.startDate}</Label>
             <div>{application.startDate.format()}</div>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>
               {i18n.childInformation.serviceApplications.serviceNeed}
             </Label>
             <div>{application.serviceNeedOption.nameFi}</div>
           </FixedSpaceColumn>
-          <FixedSpaceColumn spacing="xxs">
+          <FixedSpaceColumn $spacing="xxs">
             <Label>
               {i18n.childInformation.serviceApplications.additionalInfo}
             </Label>
@@ -85,7 +85,7 @@ const DetailsModal = React.memo(function DetailsModal({
           </FixedSpaceColumn>
           {application.decision && (
             <>
-              <FixedSpaceColumn spacing="xxs">
+              <FixedSpaceColumn $spacing="xxs">
                 <Label>
                   {i18n.childInformation.serviceApplications.status}
                 </Label>
@@ -100,7 +100,7 @@ const DetailsModal = React.memo(function DetailsModal({
                 </div>
               </FixedSpaceColumn>
               {!!application.decision.rejectedReason && (
-                <FixedSpaceColumn spacing="xxs">
+                <FixedSpaceColumn $spacing="xxs">
                   <Label>
                     {
                       i18n.childInformation.serviceApplications.decision
@@ -184,7 +184,7 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
       rejectAction={onClose}
       onSuccess={onClose}
     >
-      <FixedSpaceColumn spacing="L">
+      <FixedSpaceColumn $spacing="L">
         <div>
           <InfoBox
             noMargin
@@ -195,12 +195,12 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
             )}
           />
         </div>
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <Label>
             {i18n.childInformation.serviceApplications.decision.shiftCareLabel}
           </Label>
           {featureFlags.intermittentShiftCare ? (
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {shiftCareType.map((type) => (
                 <Radio
                   key={type}
@@ -236,7 +236,7 @@ const AcceptanceModal = React.memo(function AcceptanceModal({
             />
           )}
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="s">
+        <FixedSpaceColumn $spacing="s">
           <Label>
             {i18n.childInformation.serviceApplications.decision.partWeekLabel}
           </Label>
@@ -297,7 +297,7 @@ const RejectionModal = React.memo(function RejectionModal({
       rejectAction={onClose}
       onSuccess={onClose}
     >
-      <FixedSpaceColumn spacing="s">
+      <FixedSpaceColumn $spacing="s">
         <Label>
           {i18n.childInformation.serviceApplications.decision.rejectedReason} *
         </Label>
@@ -346,21 +346,21 @@ const UndecidedServiceApplication = React.memo(
             onClose={closeAcceptanceModal}
           />
         )}
-        <FixedSpaceColumn spacing="L">
-          <FixedSpaceColumn spacing="xs">
-            <H3 noMargin>
+        <FixedSpaceColumn $spacing="L">
+          <FixedSpaceColumn $spacing="xs">
+            <H3 $noMargin>
               {i18n.childInformation.serviceApplications.applicationTitle},{' '}
             </H3>
-            <H3 noMargin>{application.sentAt.toLocalDate().format()}</H3>
+            <H3 $noMargin>{application.sentAt.toLocalDate().format()}</H3>
           </FixedSpaceColumn>
-          <FixedSpaceRow spacing="XL">
-            <FixedSpaceColumn spacing="xs">
+          <FixedSpaceRow $spacing="XL">
+            <FixedSpaceColumn $spacing="xs">
               <Label>
                 {i18n.childInformation.serviceApplications.startDate}
               </Label>
               <div data-qa="start-date">{application.startDate.format()}</div>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>
                 {i18n.childInformation.serviceApplications.serviceNeed}
               </Label>
@@ -368,12 +368,12 @@ const UndecidedServiceApplication = React.memo(
                 {application.serviceNeedOption.nameFi}
               </div>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{i18n.childInformation.serviceApplications.sentBy}</Label>
               <div>{application.personName}</div>
             </FixedSpaceColumn>
           </FixedSpaceRow>
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>
               {i18n.childInformation.serviceApplications.additionalInfo}
             </Label>
@@ -381,7 +381,7 @@ const UndecidedServiceApplication = React.memo(
               {application.additionalInfo.trim() || '-'}
             </div>
           </FixedSpaceColumn>
-          <FixedSpaceRow justifyContent="flex-end">
+          <FixedSpaceRow $justifyContent="flex-end">
             {permittedActions.includes('REJECT') && (
               <Button
                 text={i18n.childInformation.serviceApplications.decision.reject}
@@ -435,13 +435,13 @@ export default React.memo(function ServiceApplications({
         {undecidedApplication && (
           <>
             <UndecidedServiceApplication application={undecidedApplication} />
-            <Gap size="L" />
+            <Gap $size="L" />
           </>
         )}
-        <H3 noMargin>
+        <H3 $noMargin>
           {i18n.childInformation.serviceApplications.decidedApplications}
         </H3>
-        <Gap size="s" />
+        <Gap $size="s" />
         {decidedApplications.length === 0 ? (
           <div>{i18n.childInformation.serviceApplications.noApplications}</div>
         ) : (

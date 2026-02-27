@@ -185,7 +185,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <UnitFilter
             units={units.getOrElse([])}
             selected={units
@@ -193,7 +193,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
               .getOrElse(undefined)}
             select={selectUnit}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <FinanceDecisionHandlerFilter
             financeDecisionHandlers={financeDecisionHandlers.getOrElse([])}
             selected={selectedFinanceDecisionHandler}
@@ -207,7 +207,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleDistinctiveParams}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <VoucherValueDecisionDifferenceFilter
             toggled={searchFilters.difference}
             toggle={toggleDifference}
@@ -220,7 +220,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
             toggled={searchFilters.statuses}
             toggle={toggleStatus}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <ValueDecisionDateFilter
             startDate={searchFilters.startDate}
             setStartDate={setStartDate}

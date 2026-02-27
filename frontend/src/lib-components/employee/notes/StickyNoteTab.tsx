@@ -57,27 +57,27 @@ export function StickyNoteTab<IdType extends Id<string>>({
   const setNoteToEdit = useCallback((id: UUID) => () => setEditing(id), [])
 
   const headingProps = {
-    noMargin: true,
-    primary: true,
+    $noMargin: true,
+    $primary: true,
     children: labels.title
   }
   return (
     <>
-      <ContentArea opaque paddingHorizontal="s">
+      <ContentArea $opaque $paddingHorizontal="s">
         {smallerHeading ? <H2 {...headingProps} /> : <H1 {...headingProps} />}
 
         {!!subHeading && (
           <>
-            <Gap size="xs" />
-            <H3 primary noMargin>
+            <Gap $size="xs" />
+            <H3 $primary $noMargin>
               {subHeading}
             </H3>
           </>
         )}
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
-        <FixedSpaceRow justifyContent="flex-end">
+        <FixedSpaceRow $justifyContent="flex-end">
           <Button
             appearance="inline"
             data-qa="sticky-note-new"

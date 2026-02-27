@@ -43,7 +43,7 @@ export default React.memo(function Toast({
   return (
     <ToastRoot
       role="dialog"
-      showPointer={!!onClick}
+      $showPointer={!!onClick}
       onClick={onClick}
       data-qa={dataQa}
     >
@@ -66,7 +66,7 @@ export default React.memo(function Toast({
 })
 
 const ToastRoot = styled.div<{
-  showPointer: boolean
+  $showPointer: boolean
 }>`
   max-width: ${toastWidthPx};
   @media (max-width: ${toastBreakpoint}) {
@@ -77,7 +77,7 @@ const ToastRoot = styled.div<{
   border-radius: 16px;
   outline: 1px solid ${(p) => p.theme.colors.main.m1};
   z-index: ${modalZIndex - 5};
-  cursor: ${(p) => (p.showPointer ? 'pointer' : 'auto')};
+  cursor: ${(p) => (p.$showPointer ? 'pointer' : 'auto')};
   pointer-events: auto;
 `
 

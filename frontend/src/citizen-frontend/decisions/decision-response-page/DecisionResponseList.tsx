@@ -119,30 +119,30 @@ export default React.memo(function DecisionResponseList() {
   return (
     <>
       <Container>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Button
           appearance="inline"
           text={t.decisions.applicationDecisions.returnToPreviousPage}
           onClick={handleReturnToPreviousPage}
           icon={faChevronLeft}
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         <Main>
-          <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
-            <H1 noMargin>
+          <ContentArea $opaque $paddingVertical="s" $paddingHorizontal="s">
+            <H1 $noMargin>
               {t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)}
             </H1>
-            <Gap size="s" />
+            <Gap $size="s" />
             <div>
               {unconfirmedDecisionsCount === 0
                 ? t.decisions.applicationDecisions.allDecisionsConfirmed
                 : t.decisions.applicationDecisions.summary}
             </div>
           </ContentArea>
-          <Gap size="s" />
+          <Gap $size="s" />
           {displayedDecisions.map((decision, i) => (
             <Fragment key={decision.decision.id}>
-              <ContentArea opaque paddingVertical="s" paddingHorizontal="s">
+              <ContentArea $opaque $paddingVertical="s" $paddingHorizontal="s">
                 <DecisionResponse
                   decision={decision.decision}
                   permittedActions={new Set(decision.permittedActions)}
@@ -156,10 +156,10 @@ export default React.memo(function DecisionResponseList() {
                   onDecisionHandled={handleDecisionHandled}
                 />
               </ContentArea>
-              <Gap size="s" />
+              <Gap $size="s" />
             </Fragment>
           ))}
-          <Gap size="m" />
+          <Gap $size="m" />
           {displayDecisionWithNoResponseWarning && (
             <InfoModal
               title={

@@ -84,7 +84,7 @@ export default React.memo(function PreferredStartSubSection({
           </Label>
         </ExpandingInfo>
 
-        <Gap size="s" />
+        <Gap $size="s" />
 
         <DatePicker
           date={formData.preferredStartDate}
@@ -106,7 +106,7 @@ export default React.memo(function PreferredStartSubSection({
 
         {showDaycare4MonthWarning() ? (
           <>
-            <Gap size="xs" />
+            <Gap $size="xs" />
             <AlertBox
               message={t.applications.creation.daycare4monthWarning}
               data-qa="daycare-processing-time-warning"
@@ -116,7 +116,7 @@ export default React.memo(function PreferredStartSubSection({
 
         {type === 'DAYCARE' && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
 
             <Checkbox
               checked={formData.urgent}
@@ -128,12 +128,12 @@ export default React.memo(function PreferredStartSubSection({
                 })
               }
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
 
             {formData.urgent && featureFlags.urgencyAttachments && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
 
                 <AdaptiveFlex>
                   <strong>
@@ -155,7 +155,7 @@ export default React.memo(function PreferredStartSubSection({
                     )}
                 </AdaptiveFlex>
 
-                <Gap size="s" />
+                <Gap $size="s" />
 
                 <FileUpload
                   files={formData.urgencyAttachments}
@@ -195,7 +195,7 @@ export default React.memo(function PreferredStartSubSection({
 
         {type === 'CLUB' && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
 
             <ExpandingInfo
               info={
@@ -217,7 +217,7 @@ export default React.memo(function PreferredStartSubSection({
                 }
               />
             </ExpandingInfo>
-            <Gap size="m" />
+            <Gap $size="m" />
             <ExpandingInfo
               data-qa="wasOnClubCare-info"
               info={

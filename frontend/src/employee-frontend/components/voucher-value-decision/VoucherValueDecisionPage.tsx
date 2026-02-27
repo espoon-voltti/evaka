@@ -110,7 +110,7 @@ export default React.memo(function VoucherValueDecisionPage() {
                 checkedIds={[decision.id]}
               />
             )}
-            <ContentArea opaque>
+            <ContentArea $opaque>
               <VoucherValueDecisionHeading
                 decision={decision}
                 changeDecisionType={changeDecisionType}

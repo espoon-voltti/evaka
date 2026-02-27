@@ -186,7 +186,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{t.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
@@ -200,10 +200,10 @@ export default React.memo(function TampereRegionalSurveyReport() {
             />
           </FlexRow>
         </FilterRow>
-        <Gap size="m" />
-        <FixedSpaceColumn spacing="xs">
+        <Gap $size="m" />
+        <FixedSpaceColumn $spacing="xs">
           {!!selectedYear && <H2>{`${t.reportLabel} ${selectedYear}`}</H2>}
-          <ReportRow spacing="L" alignItems="center" fullWidth>
+          <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.monthlyReport}</ReportLabel>
             <Button
               primary
@@ -279,7 +279,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
               ) : null
             })}
           </ReportRow>
-          <ReportRow spacing="L" alignItems="center" fullWidth>
+          <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.ageStatisticsReport}</ReportLabel>
             <Button
               primary
@@ -374,7 +374,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
               ) : null
             })}
           </ReportRow>
-          <ReportRow spacing="L" alignItems="center" fullWidth>
+          <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.yearlyStatisticsReport}</ReportLabel>
             <Button
               primary
@@ -510,7 +510,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
               ) : null
             })}
           </ReportRow>
-          <ReportRow spacing="L" alignItems="center" fullWidth>
+          <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.municipalVoucherReport}</ReportLabel>
             <Button
               primary

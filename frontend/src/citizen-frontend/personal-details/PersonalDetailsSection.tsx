@@ -122,7 +122,7 @@ export default React.memo(function PersonalDetailsSection({
     editing ? (
       <form>
         {children}
-        <FixedSpaceRow justifyContent="flex-end">
+        <FixedSpaceRow $justifyContent="flex-end">
           <Button
             type="button"
             text={t.common.cancel}
@@ -151,7 +151,7 @@ export default React.memo(function PersonalDetailsSection({
     ) : (
       <>
         {children}
-        <Gap size="XL" />
+        <Gap $size="XL" />
       </>
     )
 
@@ -207,7 +207,7 @@ export default React.memo(function PersonalDetailsSection({
       {formWrapper(
         <>
           <Grid>
-            <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
+            <H2 $noMargin>{t.personalDetails.detailsSection.title}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.name}</Label>
             <div>
@@ -228,7 +228,7 @@ export default React.memo(function PersonalDetailsSection({
                 {preferredName}
               </div>
             )}
-            <H2 noMargin>{t.personalDetails.detailsSection.contactInfo}</H2>
+            <H2 $noMargin>{t.personalDetails.detailsSection.contactInfo}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.address}</Label>
             <div translate="no">
@@ -284,7 +284,7 @@ export default React.memo(function PersonalDetailsSection({
               {t.personalDetails.detailsSection.email}
             </Label>
             {editing ? (
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <div data-qa="email">
                   <InputFieldF
                     id="email-input"
@@ -297,7 +297,7 @@ export default React.memo(function PersonalDetailsSection({
                     placeholder={t.personalDetails.detailsSection.email}
                   />
                 </div>
-                <FixedSpaceRow alignItems="center">
+                <FixedSpaceRow $alignItems="center">
                   <CheckboxF
                     label={t.personalDetails.detailsSection.noEmail}
                     bind={noEmailState}
@@ -315,7 +315,7 @@ export default React.memo(function PersonalDetailsSection({
                   {email ? (
                     <>
                       <span translate="no">{email}</span>
-                      <Gap horizontal size="xs" />
+                      <Gap $horizontal $size="xs" />
                       <InfoButton
                         onClick={toggleEmailInfo}
                         aria-label={t.common.openExpandingInfo}
@@ -338,7 +338,7 @@ export default React.memo(function PersonalDetailsSection({
                 <div />
                 {!!email && (
                   <div>
-                    <Gap size="xs" />
+                    <Gap $size="xs" />
                     {emailVerificationStatus.latestVerification ? (
                       <EmailVerificationForm
                         reloadUser={reloadUser}
@@ -353,13 +353,13 @@ export default React.memo(function PersonalDetailsSection({
                           <UnverifiedEmailWarning>
                             {t.personalDetails.detailsSection.emailUnverified}
                           </UnverifiedEmailWarning>
-                          <Gap horizontal size="xs" />
+                          <Gap $horizontal $size="xs" />
                           <FontAwesomeIcon
                             icon={faExclamationTriangle}
                             color={colors.status.warning}
                           />
                         </div>
-                        <Gap size="s" />
+                        <Gap $size="s" />
                         {canEdit ? (
                           <MutateButton
                             data-qa="send-verification-code"
@@ -391,7 +391,7 @@ export default React.memo(function PersonalDetailsSection({
                             icon={faCheckCircle}
                             color={colors.status.success}
                           />
-                          <Gap horizontal size="xs" />
+                          <Gap $horizontal $size="xs" />
                           {t.personalDetails.detailsSection.emailVerified}
                         </div>
                       )
@@ -446,7 +446,7 @@ export default React.memo(function PersonalDetailsSection({
                 info={t.personalDetails.detailsSection.emailInfo}
                 close={setEmailEditInfo.off}
               />
-              <Gap size="s" />
+              <Gap $size="s" />
             </>
           )}
         </>
@@ -541,20 +541,20 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
       </LabelLike>
       <div>
         <FontAwesomeIcon icon={faCheckCircle} color={colors.status.success} />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         {usernameMismatch
           ? t.changeUsername.codeSent(verification)
           : t.verifyEmail.codeSent(verification)}
       </div>
       <LabelLike>{`${t.verificationForm}*`}</LabelLike>
-      <FixedSpaceRow alignItems="center">
+      <FixedSpaceRow $alignItems="center">
         <InputFieldF
           data-qa="verification-code-field"
           bind={verificationCode}
           width="L"
           hideErrorsBeforeTouched={true}
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         {t.codeNotReceived}
         <InlineInfoButton
           onClick={toggleInfo}
@@ -575,7 +575,7 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
           )}
         />
       )}
-      <Gap size="m" />
+      <Gap $size="m" />
       <MutateButton
         data-qa="verify-email"
         primary

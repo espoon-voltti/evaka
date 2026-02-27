@@ -22,15 +22,15 @@ interface ToggleableRecipientProps {
   labelAdd: string
 }
 
-const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
-  cursor: ${(p) => (p.toggleable ? 'pointer' : 'default')};;
-  padding: 0 ${(p) => (p.selected ? '12px' : defaultMargins.xs)};
+const Recipient = styled.button<{ $selected: boolean; $toggleable: boolean }>`
+  cursor: ${(p) => (p.$toggleable ? 'pointer' : 'default')};;
+  padding: 0 ${(p) => (p.$selected ? '12px' : defaultMargins.xs)};
   background-color: ${(p) =>
-    p.selected ? p.theme.colors.grayscale.g15 : 'unset'};
+    p.$selected ? p.theme.colors.grayscale.g15 : 'unset'};
   border-radius: 1000px;
   border-width: 0;
   font-weight: ${fontWeights.semibold};
-  color: ${(p) => (p.selected ? 'unset' : p.theme.colors.main.m2)};
+  color: ${(p) => (p.$selected ? 'unset' : p.theme.colors.main.m2)};
 
   & > :last-child {
     margin-left: ${defaultMargins.xs};
@@ -54,8 +54,8 @@ export function ToggleableRecipient({
   return (
     <Recipient
       onClick={onClick}
-      selected={selected}
-      toggleable={toggleable}
+      $selected={selected}
+      $toggleable={toggleable}
       aria-disabled={!toggleable}
       data-qa="secondary-recipient"
       aria-label={label}

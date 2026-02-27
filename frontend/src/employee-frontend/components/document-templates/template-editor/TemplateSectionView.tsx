@@ -87,7 +87,7 @@ export default React.memo(function TemplateSectionView({
 
   return (
     <Wrapper $readOnly={readOnly} data-qa="template-section">
-      <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
+      <FixedSpaceRow $alignItems="baseline" $justifyContent="space-between">
         <SectionTitleWrapper>
           <ExpandingInfo info={infoText.state}>
             <H2>{label.value()}</H2>
@@ -96,7 +96,7 @@ export default React.memo(function TemplateSectionView({
 
         {!readOnly && (
           <SectionActionsRow
-            justifyContent="flex-end"
+            $justifyContent="flex-end"
             className="section-actions"
           >
             <IconOnlyButton
@@ -131,7 +131,7 @@ export default React.memo(function TemplateSectionView({
           </SectionActionsRow>
         )}
       </FixedSpaceRow>
-      <QuestionList spacing="L">
+      <QuestionList $spacing="L">
         {questionElems.map((question, index) => (
           <TemplateQuestionView
             key={question.state.state.id}

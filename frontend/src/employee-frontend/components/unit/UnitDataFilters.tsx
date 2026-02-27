@@ -58,7 +58,7 @@ export default React.memo(function UnitDataFilters({
         <div>{endDate.format()}</div>
       </DatePickersContainer>
 
-      <FixedSpaceRow spacing="xs">
+      <FixedSpaceRow $spacing="xs">
         <SelectionChip
           text={i18n.unit.filters.periods.day}
           selected={period === '1 day'}

@@ -131,7 +131,7 @@ export default React.memo(function CitizenDocumentResponseReport() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>
           {i18n.reports.citizenDocumentResponseReport.title}
         </Title>
@@ -335,7 +335,7 @@ const CitizenDocumentResponseReportTable = React.memo(
 
     return (
       <>
-        <DisplayFilterBox justifyContent="space-between" fullWidth>
+        <DisplayFilterBox $justifyContent="space-between" $fullWidth>
           <FlexGrow>
             <Checkbox
               checked={showBackupChildren}

@@ -150,7 +150,7 @@ export default React.memo(function DiscussionTimesForm({
       {!eventData && (
         <>
           <BorderedBox>
-            <H3 noMargin>
+            <H3 $noMargin>
               {t.discussionReservation.surveyDiscussionTimesTitle}
             </H3>
           </BorderedBox>
@@ -166,18 +166,18 @@ export default React.memo(function DiscussionTimesForm({
 
             {calendarRange.end.isBefore(maxCalendarRange.end) && (
               <>
-                <Gap size="L" />
+                <Gap $size="L" />
                 <FixedSpaceRow
-                  fullWidth
-                  alignItems="center"
-                  justifyContent="center"
+                  $fullWidth
+                  $alignItems="center"
+                  $justifyContent="center"
                 >
                   <LegacyButton
                     onClick={extendHorizonAction}
                     text={i18n.common.showMore}
                   />
                 </FixedSpaceRow>
-                <Gap size="m" />
+                <Gap $size="m" />
               </>
             )}
           </TimesCalendarContainer>

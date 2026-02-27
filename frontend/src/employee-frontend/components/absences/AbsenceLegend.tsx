@@ -53,10 +53,10 @@ const AbsenceLegendRow = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const AbsenceLegendSquare = styled.div<{ color: string }>`
+const AbsenceLegendSquare = styled.div<{ $color: string }>`
   height: 20px;
   width: 20px;
-  background-color: ${(p) => p.color};
+  background-color: ${(p) => p.$color};
   border-radius: 2px;
 `
 
@@ -106,7 +106,7 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
                 content={allLegendIcons[t]}
               />
             ) : (
-              <AbsenceLegendSquare color={allLegendColors[t]} />
+              <AbsenceLegendSquare $color={allLegendColors[t]} />
             )}
 
             <LabelLike>{allLegendLabels[t]}</LabelLike>

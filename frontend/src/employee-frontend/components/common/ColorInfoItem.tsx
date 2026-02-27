@@ -11,7 +11,7 @@ import { absenceColors } from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 interface InfoBallProps {
-  type: AbsenceType
+  $type: AbsenceType
 }
 
 const InfoBall = styled.div<InfoBallProps>`
@@ -22,7 +22,7 @@ const InfoBall = styled.div<InfoBallProps>`
   margin-right: 12px;
   margin-top: 2px;
   flex-shrink: 0;
-  background: ${(p: InfoBallProps) => absenceColors[p.type]}};
+  background: ${(p: InfoBallProps) => absenceColors[p.$type]}};
 
   @media print {
     -webkit-print-color-adjust: exact;
@@ -34,17 +34,17 @@ const InfoBall = styled.div<InfoBallProps>`
 `
 
 interface ColorInfoContainerProps {
-  maxWidth?: number
-  noMargin?: boolean
+  $maxWidth?: number
+  $noMargin?: boolean
 }
 
 const ColorInfoContainer = styled.div<ColorInfoContainerProps>`
   display: flex;
   flex: auto;
   max-width: ${(props: ColorInfoContainerProps) =>
-    props.maxWidth ? `${props.maxWidth}px` : `130px`};
+    props.$maxWidth ? `${props.$maxWidth}px` : `130px`};
   margin: ${(props: ColorInfoContainerProps) =>
-    props.noMargin ? `` : `0 10px`};
+    props.$noMargin ? `` : `0 10px`};
 `
 
 interface Props {
@@ -56,8 +56,8 @@ interface Props {
 const ColorInfoItem = ({ type, maxWidth }: Props) => {
   const { i18n } = useTranslation()
   return (
-    <ColorInfoContainer maxWidth={maxWidth} noMargin>
-      <InfoBall type={type} />
+    <ColorInfoContainer $maxWidth={maxWidth} $noMargin>
+      <InfoBall $type={type} />
       <div>{i18n.absences.absenceTypes[type]}</div>
     </ColorInfoContainer>
   )

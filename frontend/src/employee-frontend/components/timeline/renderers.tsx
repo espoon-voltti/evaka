@@ -94,7 +94,7 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
   Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
-      <FixedSpaceColumn spacing="xxs">
+      <FixedSpaceColumn $spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>{i18n.feeDecision.status[elem.status]}</span>
         <span>{formatCents(elem.totalFee)} €</span>
@@ -129,7 +129,7 @@ export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
   Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
-      <FixedSpaceColumn spacing="xxs">
+      <FixedSpaceColumn $spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>{i18n.valueDecision.status[elem.status]}</span>
       </FixedSpaceColumn>
@@ -147,7 +147,7 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
   Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
-      <FixedSpaceColumn spacing="xxs">
+      <FixedSpaceColumn $spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>
           {i18n.personProfile.income.details.effectOptions[elem.effect]}
@@ -247,7 +247,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     return `${i18n.timeline.partner} ${formatPersonName(elem, 'First Last')}`
   },
   Tooltip: ({ elem: partnerDetails }) => (
-    <FixedSpaceColumn spacing="xxs">
+    <FixedSpaceColumn $spacing="xxs">
       <span>{partnerDetails.range.format()}</span>
       <PersonName person={partnerDetails} format="First Last" />
     </FixedSpaceColumn>
@@ -314,7 +314,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         {/*Value decisions grouped by statuses*/}
         <TimelineGroup
@@ -352,7 +352,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <TimelineGroup
           data={partnerDetails.incomes}
@@ -361,7 +361,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <TimelineGroup
           data={partnerDetails.children}
@@ -383,7 +383,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
     return `${i18n.timeline.child} ${formatPersonName(elem, 'First Last')}`
   },
   Tooltip: ({ elem }) => (
-    <FixedSpaceColumn spacing="xxs">
+    <FixedSpaceColumn $spacing="xxs">
       <span>{elem.range.format()}</span>
       <PersonName person={elem} format="First Last" />
       <span>s. {elem.dateOfBirth.format()}</span>
@@ -408,7 +408,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <TimelineGroup
           data={elem.serviceNeeds}
@@ -417,7 +417,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <TimelineGroup
           data={elem.incomes}
@@ -426,7 +426,7 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
           zoom={zoom}
         />
 
-        <Gap size="xs" />
+        <Gap $size="xs" />
 
         <TimelineGroup
           data={elem.feeAlterations}
@@ -449,7 +449,7 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
   Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
-      <FixedSpaceColumn spacing="xxs">
+      <FixedSpaceColumn $spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>{i18n.placement.type[elem.type]}</span>
         <span>{elem.unit.name}</span>
@@ -463,7 +463,7 @@ export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
   color: () => '#5fdaa3',
   Summary: ({ elem }) => elem.name,
   Tooltip: ({ elem }) => (
-    <FixedSpaceColumn spacing="xxs">
+    <FixedSpaceColumn $spacing="xxs">
       <span>{elem.range.format()}</span>
       <span>{elem.name}</span>
     </FixedSpaceColumn>
@@ -492,7 +492,7 @@ export const feeAlterationRenderer: EventRenderer<TimelineFeeAlteration> = {
   Tooltip: ({ elem }) => {
     const { i18n } = useTranslation()
     return (
-      <FixedSpaceColumn spacing="xxs">
+      <FixedSpaceColumn $spacing="xxs">
         <span>{elem.range.format()}</span>
         <span>
           {i18n.feeAlteration[elem.type]} {elem.amount}{' '}

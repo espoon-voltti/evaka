@@ -18,9 +18,9 @@ export default React.memo(function FinanceBasicsPage() {
 
   return (
     <Container data-qa="finance-basics-page">
-      <FixedSpaceColumn fullWidth>
-        <ContentArea opaque>
-          <H1 noMargin>{i18n.titles.financeBasics}</H1>
+      <FixedSpaceColumn $fullWidth>
+        <ContentArea $opaque>
+          <H1 $noMargin>{i18n.titles.financeBasics}</H1>
         </ContentArea>
         <FeesSection />
         <ServiceNeedsSection />

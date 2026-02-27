@@ -67,7 +67,7 @@ export default React.memo(function ReportSextet() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.sextet.title}</Title>
 
         <Combobox

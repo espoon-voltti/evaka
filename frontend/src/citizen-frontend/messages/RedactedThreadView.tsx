@@ -46,11 +46,11 @@ export default React.memo(function ThreadView({
             sensitive={true}
           />
         </FixedSpaceFlexWrap>
-        <H2 noMargin data-qa="redacted-thread-reader-title">
+        <H2 $noMargin data-qa="redacted-thread-reader-title">
           {i18n.messages.sensitive}
         </H2>
       </ThreadTitleRow>
-      <Gap size="s" />
+      <Gap $size="s" />
       <RedactedThreadInfo>
         <p>
           {i18n.messages.strongAuthRequiredThread}{' '}

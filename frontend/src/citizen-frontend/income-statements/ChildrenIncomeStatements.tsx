@@ -106,7 +106,7 @@ const ChildIncomeStatementsTable = React.memo(
                   : t.income.table.notSent}
               </Td>
               <Td>
-                <FixedSpaceRow justifyContent="flex-end">
+                <FixedSpaceRow $justifyContent="flex-end">
                   {item.status === 'HANDLED' ? (
                     <Dimmed>{t.income.table.handled}</Dimmed>
                   ) : (
@@ -159,8 +159,8 @@ const ChildIncomeStatementsList = React.memo(
           <Fragment key={item.id}>
             {i > 0 && <HorizontalLine />}
             <FixedSpaceColumn
-              spacing="s"
-              alignItems="flex-start"
+              $spacing="s"
+              $alignItems="flex-start"
               data-qa="child-income-statement-row"
             >
               <H3>
@@ -348,19 +348,19 @@ export default React.memo(function ChildrenIncomeStatements({
   return (
     <>
       <Container data-qa="children-income-statements">
-        <ContentArea opaque paddingVertical="L">
+        <ContentArea $opaque $paddingVertical="L">
           <>
-            <H2 noMargin>{t.income.children.title}</H2>
-            <Gap size="s" />
+            <H2 $noMargin>{t.income.children.title}</H2>
+            <Gap $size="s" />
             <span>{t.income.children.description}</span>
           </>
-          <Gap size="L" />
+          <Gap $size="L" />
           {childInfo.map((child) => (
             <ChildIncomeStatementsContainer
               key={child.id}
               data-qa="child-income-statements"
             >
-              <Gap size="s" />
+              <Gap $size="s" />
               <HeadingContainer>
                 <H3 data-qa="child-name" translate="no">
                   <PersonName person={child} format="First Last" />
@@ -372,7 +372,7 @@ export default React.memo(function ChildrenIncomeStatements({
                 />
               </HeadingContainer>
               <ChildIncomeStatements child={child} />
-              <Gap size="L" />
+              <Gap $size="L" />
             </ChildIncomeStatementsContainer>
           ))}
         </ContentArea>

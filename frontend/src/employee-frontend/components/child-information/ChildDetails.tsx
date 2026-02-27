@@ -31,12 +31,12 @@ export default React.memo(function ChildDetails({ id }: Props) {
   return (
     <div data-qa="person-details-section" data-isloading={isLoading(person)}>
       <CollapsibleContentArea
-        title={<H2 noMargin>{i18n.childInformation.personDetails.title}</H2>}
+        title={<H2 $noMargin>{i18n.childInformation.personDetails.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
-        opaque
+        $opaque
       >
-        <Gap size="s" />
+        <Gap $size="s" />
         {renderResult(person, (person) => (
           <PersonDetails
             person={person}

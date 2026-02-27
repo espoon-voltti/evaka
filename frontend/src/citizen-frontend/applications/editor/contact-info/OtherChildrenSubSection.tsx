@@ -46,7 +46,7 @@ export default React.memo(function OtherChildrenSubSection({
         </label>
         {formData.vtjSiblings.map((child, index) => (
           <React.Fragment key={`known-other-child-${index}`}>
-            <Gap size="s" />
+            <Gap $size="s" />
             <Checkbox
               label={`${formatPersonName(child, 'First Last')}, ${
                 child.socialSecurityNumber || ''
@@ -68,7 +68,7 @@ export default React.memo(function OtherChildrenSubSection({
             />
           </React.Fragment>
         ))}
-        <Gap size="s" />
+        <Gap $size="s" />
         <Checkbox
           checked={formData.otherChildrenExists}
           data-qa="otherChildrenExists-input"
@@ -97,11 +97,11 @@ export default React.memo(function OtherChildrenSubSection({
       </div>
       {formData.otherChildrenExists && (
         <>
-          <Gap size="m" />
-          <FixedSpaceColumn spacing="L">
+          <Gap $size="m" />
+          <FixedSpaceColumn $spacing="L">
             {formData.otherChildren.map((child, index) => (
-              <AdaptiveFlex breakpoint="1130px" key={`extra-child-${index}`}>
-                <FixedSpaceColumn spacing="xs">
+              <AdaptiveFlex $breakpoint="1130px" key={`extra-child-${index}`}>
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor={`extra-child-first-name-${index}`}>
                     {t.applications.editor.contactInfo.childFirstName + ' *'}
                   </Label>
@@ -128,7 +128,7 @@ export default React.memo(function OtherChildrenSubSection({
                     required
                   />
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xs">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor={`extra-child-last-name-${index}`}>
                     {t.applications.editor.contactInfo.childLastName + ' *'}
                   </Label>
@@ -155,7 +155,7 @@ export default React.memo(function OtherChildrenSubSection({
                     required
                   />
                 </FixedSpaceColumn>
-                <FixedSpaceColumn spacing="xs">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor={`extra-child-ssn-${index}`}>
                     {t.applications.editor.contactInfo.childSSN + ' *'}
                   </Label>
@@ -215,7 +215,7 @@ export default React.memo(function OtherChildrenSubSection({
             ))}
           </FixedSpaceColumn>
 
-          <Gap size="m" />
+          <Gap $size="m" />
           <AddButton
             text={t.applications.editor.contactInfo.addChild}
             data-qa="add-other-child"

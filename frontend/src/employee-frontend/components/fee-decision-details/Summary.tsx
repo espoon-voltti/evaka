@@ -32,11 +32,11 @@ export default React.memo(function Summary({ decision }: Props) {
       className="income-summary"
     >
       <IncomeSection decision={decision} />
-      <Gap size="m" />
+      <Gap $size="m" />
       <ChildrenSection decision={decision} />
-      <Gap size="m" />
+      <Gap $size="m" />
       <Total data-qa="decision-summary-total-price">
-        <TotalTitle noMargin>
+        <TotalTitle $noMargin>
           {i18n.feeDecision.form.summary.totalPrice}
         </TotalTitle>
         <b>{formatCents(decision.totalFee)} €</b>

@@ -64,9 +64,9 @@ const DailyServiceTimeTableDesktop = ({
     <Table data-qa="daily-service-time-table-desktop">
       <Thead>
         <Tr>
-          <Th minimalWidth>{t.children.dailyServiceTime.validity}</Th>
+          <Th $minimalWidth>{t.children.dailyServiceTime.validity}</Th>
           <Th>{t.children.dailyServiceTime.description}</Th>
-          <Th minimalWidth>{t.children.dailyServiceTime.status}</Th>
+          <Th $minimalWidth>{t.children.dailyServiceTime.status}</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -82,14 +82,14 @@ const DailyServiceTimeTableDesktop = ({
                 key={dailyServiceTime.id}
                 data-qa="daily-service-time-table-row-desktop"
               >
-                <Td minimalWidth data-qa="daily-service-time-date-range">
+                <Td $minimalWidth data-qa="daily-service-time-date-range">
                   {dailyServiceTime.times.validityPeriod.format()}
                 </Td>
                 <Td data-qa="daily-service-time-description">
                   <DailyServiceTimeValue value={dailyServiceTime.times} />
                 </Td>
-                <Td minimalWidth>
-                  <StaticChip color={colorsByTense[tense]}>
+                <Td $minimalWidth>
+                  <StaticChip $color={colorsByTense[tense]}>
                     {t.common.tense[tense]}
                   </StaticChip>
                 </Td>
@@ -120,11 +120,11 @@ const DailyServiceTimeTableMobile = ({
               key={dailyServiceTime.id}
               data-qa="daily-service-time-table-row-mobile"
             >
-              <FixedSpaceRow justifyContent="space-between">
+              <FixedSpaceRow $justifyContent="space-between">
                 <strong data-qa="daily-service-time-date-range">
                   {dailyServiceTime.times.validityPeriod.format()}
                 </strong>
-                <StaticChip color={colorsByTense[tense]}>
+                <StaticChip $color={colorsByTense[tense]}>
                   {t.common.tense[tense]}
                 </StaticChip>
               </FixedSpaceRow>

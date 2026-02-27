@@ -210,17 +210,17 @@ export default React.memo(function IncomeStatementForm({
   return (
     <>
       <Container>
-        <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
+        <Gap $size="s" />
+        <ContentArea $opaque $paddingVertical="L">
           <ResponsiveFixedSpaceRow>
-            <FixedSpaceColumn spacing="zero">
-              <H1 noMargin>{t.income.formTitle}</H1>
+            <FixedSpaceColumn $spacing="zero">
+              <H1 $noMargin>{t.income.formTitle}</H1>
               {t.income.formDescription}
             </FixedSpaceColumn>
             <Confidential>{t.income.confidential}</Confidential>
           </ResponsiveFixedSpaceRow>
         </ContentArea>
-        <Gap size="s" />
+        <Gap $size="s" />
         <IncomeTypeSelection
           formData={incomeTypeSelectionFormData}
           isValidStartDate={isValidStartDate}
@@ -231,7 +231,7 @@ export default React.memo(function IncomeStatementForm({
         />
         {formData.gross.selected && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
             <GrossIncomeSelection
               formData={formData.gross}
               showFormErrors={showFormErrors !== 'NONE'}
@@ -244,7 +244,7 @@ export default React.memo(function IncomeStatementForm({
         )}
         {formData.entrepreneur.selected && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
             <EntrepreneurIncomeSelection
               formData={formData.entrepreneur}
               showFormErrors={showFormErrors !== 'NONE'}
@@ -255,30 +255,30 @@ export default React.memo(function IncomeStatementForm({
         )}
         {showOtherInfo && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
             <OtherInfo
               formData={otherIncomeFormData}
               onChange={onChange}
               showFormErrors={showFormErrors !== 'NONE'}
               attachmentHandler={attachmentHandler}
             />
-            <Gap size="L" />
+            <Gap $size="L" />
             {attachmentHandler ? (
               <IncomeStatementMissingAttachments
                 requiredAttachments={requiredAttachments}
                 attachmentHandler={attachmentHandler}
               />
             ) : (
-              <ContentArea opaque paddingVertical="L">
-                <FixedSpaceColumn spacing="zero">
-                  <H3 noMargin>{t.income.attachments.title}</H3>
-                  <Gap size="s" />
-                  <P noMargin>{t.income.attachments.description}</P>
-                  <Gap size="L" />
+              <ContentArea $opaque $paddingVertical="L">
+                <FixedSpaceColumn $spacing="zero">
+                  <H3 $noMargin>{t.income.attachments.title}</H3>
+                  <Gap $size="s" />
+                  <P $noMargin>{t.income.attachments.description}</P>
+                  <Gap $size="L" />
                   {requiredAttachments.size > 0 && (
                     <>
-                      <H4 noMargin>{t.income.attachments.required.title}</H4>
-                      <Gap size="s" />
+                      <H4 $noMargin>{t.income.attachments.required.title}</H4>
+                      <Gap $size="s" />
                       <UnorderedList data-qa="required-attachments">
                         {[...requiredAttachments].map((attachmentType) => (
                           <li key={attachmentType}>
@@ -290,7 +290,7 @@ export default React.memo(function IncomeStatementForm({
                           </li>
                         ))}
                       </UnorderedList>
-                      <Gap size="L" />
+                      <Gap $size="L" />
                     </>
                   )}
                   <IncomeStatementUntypedAttachments
@@ -304,7 +304,7 @@ export default React.memo(function IncomeStatementForm({
           </>
         )}
         <Gap />
-        <ContentArea opaque paddingVertical="L">
+        <ContentArea $opaque $paddingVertical="L">
           <AssureCheckbox>
             <Checkbox
               label={t.income.assure}
@@ -432,7 +432,7 @@ const IncomeTypeSelection = React.memo(
       (isHighestFee: boolean) => {
         return (
           <Indent>
-            <FixedSpaceRow spacing="XL">
+            <FixedSpaceRow $spacing="XL">
               <div>
                 <Label htmlFor="start-date">
                   {isHighestFee
@@ -440,7 +440,7 @@ const IncomeTypeSelection = React.memo(
                     : t.income.incomeType.starts}{' '}
                   *
                 </Label>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <DatePicker
                   id="start-date"
                   data-qa="income-start-date"
@@ -459,7 +459,7 @@ const IncomeTypeSelection = React.memo(
               </div>
               <div>
                 <Label htmlFor="end-date">{`${isHighestFee ? t.income.incomeType.endDate : t.income.incomeType.ends}${isEndDateRequired ? ' *' : ''}`}</Label>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <DatePicker
                   id="end-date"
                   data-qa="income-end-date"
@@ -502,14 +502,14 @@ const IncomeTypeSelection = React.memo(
     )
 
     return (
-      <ContentArea opaque paddingVertical="L" ref={ref}>
-        <FixedSpaceColumn spacing="zero">
-          <H2 noMargin data-qa="title">
+      <ContentArea $opaque $paddingVertical="L" ref={ref}>
+        <FixedSpaceColumn $spacing="zero">
+          <H2 $noMargin data-qa="title">
             {t.income.incomeInfo}
           </H2>
-          <Gap size="s" />
-          <P noMargin>{t.income.incomeInstructions}</P>
-          <Gap size="s" />
+          <Gap $size="s" />
+          <P $noMargin>{t.income.incomeInstructions}</P>
+          <Gap $size="s" />
           {showFormErrors && (
             <>
               <AlertBox
@@ -517,7 +517,7 @@ const IncomeTypeSelection = React.memo(
                 message={t.income.errors.invalidForm}
                 data-qa="invalid-form"
               />
-              <Gap size="s" />
+              <Gap $size="s" />
             </>
           )}
           <div role="group" aria-labelledby="income-type-label">
@@ -531,7 +531,7 @@ const IncomeTypeSelection = React.memo(
               }
               errorText={t.income.errors.choose}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <Radio
               label={t.income.incomeType.agreeToHighestFee}
               data-qa="highest-fee-checkbox"
@@ -541,13 +541,13 @@ const IncomeTypeSelection = React.memo(
             />
             {formData.highestFeeSelected && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <FeeInfo>{t.income.incomeType.highestFeeInfo}</FeeInfo>
-                <Gap size="s" />
+                <Gap $size="s" />
                 {dateRange(true)}
               </>
             )}
-            <Gap size="s" />
+            <Gap $size="s" />
             <Radio
               label={t.income.incomeType.grossIncome}
               checked={formData.grossSelected}
@@ -557,11 +557,11 @@ const IncomeTypeSelection = React.memo(
             />
             {formData.grossSelected && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <FeeInfo>{t.income.incomeNotifyForPeriod}</FeeInfo>
-                <Gap size="s" />
+                <Gap $size="s" />
                 {dateRange(false)}
-                <Gap size="s" />
+                <Gap $size="s" />
                 <InfoBox
                   message={t.income.incomeNotifyForPeriodInfo}
                   noMargin
@@ -618,12 +618,12 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   )
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <FixedSpaceColumn spacing="zero">
-        <H2 noMargin>{t.income.grossIncome.title}</H2>
-        <Gap size="m" />
+    <ContentArea $opaque $paddingVertical="L">
+      <FixedSpaceColumn $spacing="zero">
+        <H2 $noMargin>{t.income.grossIncome.title}</H2>
+        <Gap $size="m" />
         {t.income.grossIncome.description}
-        <Gap size="m" />
+        <Gap $size="m" />
         <div role="group" aria-labelledby="income-source-label">
           <LabelWithError
             label={`${t.income.grossIncome.incomeSource} *`}
@@ -631,7 +631,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             showError={showFormErrors && formData.incomeSource === null}
             errorText={t.income.errors.choose}
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <Radio
             label={t.income.grossIncome.incomesRegisterConsent}
             data-qa="incomes-register-consent-checkbox"
@@ -639,14 +639,14 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             checked={formData.incomeSource === 'INCOMES_REGISTER'}
             onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <Radio
             label={t.income.grossIncome.provideAttachments}
             name="income-source"
             checked={formData.incomeSource === 'ATTACHMENTS'}
             onChange={() => onIncomeSourceChange('ATTACHMENTS')}
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <Radio
             label={t.income.grossIncome.noIncome}
             name="income-source"
@@ -654,18 +654,18 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             onChange={() => onIncomeSourceChange('NO_INCOME')}
           />
         </div>
-        <Gap size="s" />
+        <Gap $size="s" />
         <InfoBox
           message={t.income.grossIncome.attachmentsVerificationInfo}
           thin
         />
         {formData.incomeSource === 'NO_INCOME' && (
           <>
-            <Gap size="m" />
+            <Gap $size="m" />
             <Label htmlFor="no-income-description">
               {t.income.grossIncome.noIncomeDescription} *
             </Label>
-            <Gap size="s" />
+            <Gap $size="s" />
             <InputField
               id="no-income-description"
               data-qa="no-income-description"
@@ -681,7 +681,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         )}
         {formData.incomeSource === 'ATTACHMENTS' && (
           <>
-            <Gap size="s" />
+            <Gap $size="s" />
             <AttachmentSection
               attachmentType="PAYSLIP_GROSS"
               attachmentHandler={attachmentHandler}
@@ -692,9 +692,9 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         {(formData.incomeSource === 'INCOMES_REGISTER' ||
           formData.incomeSource === 'ATTACHMENTS') && (
           <>
-            <Gap size="L" />
+            <Gap $size="L" />
             <Label>{t.income.grossIncome.estimate}</Label>
-            <Gap size="m" />
+            <Gap $size="m" />
             <FixedSpaceRow>
               <FixedSpaceColumn>
                 <LightLabel htmlFor="estimated-monthly-income-gross">
@@ -718,13 +718,13 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
                 />
               </FixedSpaceColumn>
             </FixedSpaceRow>
-            <Gap size="L" />
+            <Gap $size="L" />
             <Label htmlFor="other-income-input">
               {t.income.grossIncome.otherIncome}
             </Label>
-            <Gap size="s" />
+            <Gap $size="s" />
             {t.income.grossIncome.otherIncomeDescription}
-            <Gap size="s" />
+            <Gap $size="s" />
             <OtherIncomeWrapper>
               <MultiSelect
                 inputId="other-income-input"
@@ -748,13 +748,13 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             ))}
             {formData.otherIncome.length > 0 && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
-                <Gap size="s" />
-                <P noMargin>
+                <Gap $size="s" />
+                <P $noMargin>
                   {t.income.grossIncome.otherIncomeInfoDescription}
                 </P>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <InputField
                   value={formData.otherIncomeInfo}
                   onChange={onOtherIncomeInfoChange}
@@ -763,7 +763,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             )}
           </>
         )}
-        <Gap size="L" />
+        <Gap $size="L" />
         <div role="group" aria-labelledby="entrepreneur-select-label">
           <LabelWithError
             label={`${t.income.entrepreneurIncome.entrepreneurSelectTitle} *`}
@@ -771,7 +771,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             showError={showFormErrors && entrepreneurSelected === null}
             errorText={t.income.errors.choose}
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <Radio
             label={t.income.entrepreneurIncome.entrepreneurYes}
             checked={entrepreneurSelected === true}
@@ -779,7 +779,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             onChange={entrepreneurYes}
             data-qa="entrepreneur-yes"
           />
-          <Gap size="s" />
+          <Gap $size="s" />
           <Radio
             label={t.income.entrepreneurIncome.entrepreneurNo}
             checked={entrepreneurSelected === false}
@@ -850,16 +850,16 @@ const EntrepreneurIncomeSelection = React.memo(
     const onAccountantChange = useFieldSetState(onChange, 'accountant')
 
     return (
-      <ContentArea opaque paddingVertical="L">
-        <FixedSpaceColumn spacing="zero">
-          <H2 noMargin>{t.income.entrepreneurIncome.title}</H2>
-          <Gap size="s" />
-          <P noMargin>{t.income.entrepreneurIncome.description}</P>
-          <Gap size="L" />
+      <ContentArea $opaque $paddingVertical="L">
+        <FixedSpaceColumn $spacing="zero">
+          <H2 $noMargin>{t.income.entrepreneurIncome.title}</H2>
+          <Gap $size="s" />
+          <P $noMargin>{t.income.entrepreneurIncome.description}</P>
+          <Gap $size="L" />
           <Label htmlFor="entrepreneur-start-date">
             {t.income.entrepreneurIncome.startOfEntrepreneurship} *
           </Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <DatePicker
             id="entrepreneur-start-date"
             data-qa="entrepreneur-start-date"
@@ -872,11 +872,11 @@ const EntrepreneurIncomeSelection = React.memo(
             )}
             hideErrorsBeforeTouched={!showFormErrors}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <Label htmlFor="entrepreneur-company-name">
             {t.income.entrepreneurIncome.companyName}
           </Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <FixedSpaceRow>
             <FixedSpaceColumn>
               <InputField
@@ -886,11 +886,11 @@ const EntrepreneurIncomeSelection = React.memo(
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
-          <Gap size="L" />
+          <Gap $size="L" />
           <Label htmlFor="entrepreneur-business-id">
             {t.income.entrepreneurIncome.businessId}
           </Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <FixedSpaceRow>
             <FixedSpaceColumn>
               <InputField
@@ -900,7 +900,7 @@ const EntrepreneurIncomeSelection = React.memo(
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
-          <Gap size="L" />
+          <Gap $size="L" />
           <div role="group" aria-labelledby="spouse-works-in-company-label">
             <LabelWithError
               label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}
@@ -910,7 +910,7 @@ const EntrepreneurIncomeSelection = React.memo(
               }
               errorText={t.income.errors.choose}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <Radio
               label={t.income.entrepreneurIncome.yes}
               data-qa="entrepreneur-spouse-yes"
@@ -918,7 +918,7 @@ const EntrepreneurIncomeSelection = React.memo(
               checked={formData.spouseWorksInCompany === true}
               onChange={() => onSpouseWorksInCompanyChange(true)}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <Radio
               label={t.income.entrepreneurIncome.no}
               data-qa="entrepreneur-spouse-no"
@@ -927,9 +927,9 @@ const EntrepreneurIncomeSelection = React.memo(
               onChange={() => onSpouseWorksInCompanyChange(false)}
             />
           </div>
-          <Gap size="L" />
+          <Gap $size="L" />
           <Label>{t.income.entrepreneurIncome.startupGrantLabel}</Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <Checkbox
             label={t.income.entrepreneurIncome.startupGrant}
             data-qa="entrepreneur-startup-grant"
@@ -943,18 +943,18 @@ const EntrepreneurIncomeSelection = React.memo(
               attachmentHandler={attachmentHandler}
             />
           )}
-          <Gap size="L" />
+          <Gap $size="L" />
           <Label>{t.income.entrepreneurIncome.checkupLabel}</Label>
-          <Gap size="s" />
+          <Gap $size="s" />
           <Checkbox
             label={t.income.entrepreneurIncome.checkupConsent}
             data-qa="entrepreneur-checkup-consent"
             checked={formData.checkupConsent}
             onChange={onCheckupConsentChange}
           />
-          <Gap size="XL" />
-          <H3 noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
-          <Gap size="L" />
+          <Gap $size="XL" />
+          <H3 $noMargin>{t.income.entrepreneurIncome.companyInfo}</H3>
+          <Gap $size="L" />
           <div role="group" aria-labelledby="company-form-label">
             <LabelWithError
               label={`${t.income.entrepreneurIncome.companyForm} *`}
@@ -968,7 +968,7 @@ const EntrepreneurIncomeSelection = React.memo(
               }
               errorText={t.income.errors.chooseAtLeastOne}
             />
-            <Gap size="s" />
+            <Gap $size="s" />
             <Checkbox
               label={t.income.entrepreneurIncome.selfEmployed}
               data-qa="entrepreneur-self-employed"
@@ -977,7 +977,7 @@ const EntrepreneurIncomeSelection = React.memo(
             />
             {formData.selfEmployed.selected && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <SelfEmployedIncomeSelection
                   formData={formData.selfEmployed}
                   showFormErrors={showFormErrors}
@@ -986,7 +986,7 @@ const EntrepreneurIncomeSelection = React.memo(
                 />
               </>
             )}
-            <Gap size="m" />
+            <Gap $size="m" />
             <Checkbox
               label={t.income.entrepreneurIncome.limitedCompany}
               data-qa="entrepreneur-llc"
@@ -995,7 +995,7 @@ const EntrepreneurIncomeSelection = React.memo(
             />
             {formData.limitedCompany.selected && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <LimitedCompanyIncomeSelection
                   formData={formData.limitedCompany}
                   showFormErrors={showFormErrors}
@@ -1004,7 +1004,7 @@ const EntrepreneurIncomeSelection = React.memo(
                 />
               </>
             )}
-            <Gap size="m" />
+            <Gap $size="m" />
             <Checkbox
               label={t.income.entrepreneurIncome.partnership}
               data-qa="entrepreneur-partnership"
@@ -1013,9 +1013,9 @@ const EntrepreneurIncomeSelection = React.memo(
             />
             {formData.partnership && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <Indent>
-                  <P noMargin>{t.income.entrepreneurIncome.partnershipInfo}</P>
+                  <P $noMargin>{t.income.entrepreneurIncome.partnershipInfo}</P>
                   <AttachmentSection
                     attachmentType="PROFIT_AND_LOSS_STATEMENT_PARTNERSHIP"
                     showFormErrors={showFormErrors}
@@ -1029,7 +1029,7 @@ const EntrepreneurIncomeSelection = React.memo(
                 </Indent>
               </>
             )}
-            <Gap size="m" />
+            <Gap $size="m" />
             <Checkbox
               label={t.income.entrepreneurIncome.lightEntrepreneur}
               data-qa="entrepreneur-light-entrepreneur"
@@ -1038,9 +1038,9 @@ const EntrepreneurIncomeSelection = React.memo(
             />
             {formData.lightEntrepreneur && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <Indent>
-                  <P noMargin>
+                  <P $noMargin>
                     {t.income.entrepreneurIncome.lightEntrepreneurInfo}
                   </P>
                   <AttachmentSection
@@ -1056,7 +1056,7 @@ const EntrepreneurIncomeSelection = React.memo(
             formData.selfEmployed.selected ||
             formData.partnership) && (
             <>
-              <Gap size="L" />
+              <Gap $size="L" />
               <Accounting
                 formData={formData.accountant}
                 showFormErrors={showFormErrors}
@@ -1100,7 +1100,7 @@ const SelfEmployedIncomeSelection = React.memo(
     return (
       <Indent>
         <FixedSpaceColumn>
-          <P noMargin>{t.income.selfEmployed.info}</P>
+          <P $noMargin>{t.income.selfEmployed.info}</P>
           {showFormErrors && !formData.attachments && !formData.estimation && (
             <LabelError text={t.income.errors.chooseAtLeastOne} />
           )}
@@ -1208,11 +1208,11 @@ const LimitedCompanyIncomeSelection = React.memo(
     return (
       <Indent>
         <FixedSpaceColumn>
-          <P noMargin>{t.income.limitedCompany.info}</P>
+          <P $noMargin>{t.income.limitedCompany.info}</P>
           {showFormErrors && formData.incomeSource === null && (
             <LabelError text={t.income.errors.choose} />
           )}
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <AttachmentSection
             attachmentType="ACCOUNTANT_REPORT_LLC"
             showFormErrors={showFormErrors}
@@ -1264,8 +1264,8 @@ const Accounting = React.memo(function Accounting({
 
   return (
     <>
-      <H3 noMargin>{t.title}</H3>
-      <Gap size="s" />
+      <H3 $noMargin>{t.title}</H3>
+      <Gap $size="s" />
       <ListGrid>
         <Label htmlFor="accountant-name">{t.accountant} *</Label>
         <InputField
@@ -1352,12 +1352,12 @@ const OtherInfo = React.memo(function OtherInfo({
   const onOtherInfoChange = useFieldDispatch(onChange, 'otherInfo')
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <FixedSpaceColumn spacing="zero">
-        <H2 noMargin>{t.income.moreInfo.title}</H2>
-        <Gap size="m" />
+    <ContentArea $opaque $paddingVertical="L">
+      <FixedSpaceColumn $spacing="zero">
+        <H2 $noMargin>{t.income.moreInfo.title}</H2>
+        <Gap $size="m" />
         <Label>{t.income.moreInfo.studentLabel}</Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Checkbox
           label={t.income.moreInfo.student}
           data-qa="student"
@@ -1371,11 +1371,11 @@ const OtherInfo = React.memo(function OtherInfo({
             attachmentHandler={attachmentHandler}
           />
         )}
-        <Gap size="s" />
-        <P noMargin>{t.income.moreInfo.studentInfo}</P>
-        <Gap size="L" />
+        <Gap $size="s" />
+        <P $noMargin>{t.income.moreInfo.studentInfo}</P>
+        <Gap $size="L" />
         <Label>{t.income.moreInfo.deductions}</Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         <Checkbox
           label={t.income.moreInfo.alimony}
           data-qa="alimony-payer"
@@ -1389,9 +1389,9 @@ const OtherInfo = React.memo(function OtherInfo({
             attachmentHandler={attachmentHandler}
           />
         )}
-        <Gap size="L" />
+        <Gap $size="L" />
         <Label htmlFor="more-info">{t.income.moreInfo.otherInfoLabel}</Label>
-        <Gap size="s" />
+        <Gap $size="s" />
         <TextArea
           id="more-info"
           value={formData.otherInfo}
@@ -1409,7 +1409,7 @@ const OtherInfo = React.memo(function OtherInfo({
   )
 })
 
-const FeeInfo = styled(P).attrs({ noMargin: true })`
+const FeeInfo = styled(P).attrs({ $noMargin: true })`
   margin-left: ${defaultMargins.XL};
 `
 

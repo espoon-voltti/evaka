@@ -115,7 +115,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
       resolveDisabled={!validationResult.valid}
     >
-      <FixedSpaceColumn spacing="m">
+      <FixedSpaceColumn $spacing="m">
         <div>
           <Label>{i18n.unit.groups.createModal.name}</Label>
           <InputField
@@ -178,7 +178,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
             {(form.aromiCustomerId === null ||
               form.aromiCustomerId.trim().length === 0) && (
               <>
-                <Gap size="s" />
+                <Gap $size="s" />
                 <MessageBox
                   color={theme.colors.status.warning}
                   icon={fasExclamation}

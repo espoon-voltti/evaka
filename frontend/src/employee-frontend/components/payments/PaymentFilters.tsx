@@ -128,7 +128,7 @@ export default React.memo(function PaymentFilters() {
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <UnitFilter
             units={units.getOrElse([])}
             selected={units
@@ -152,7 +152,7 @@ export default React.memo(function PaymentFilters() {
             toggled={searchFilters.status}
             toggle={toggleStatus}
           />
-          <Gap size="L" />
+          <Gap $size="L" />
           <PaymentDateFilter
             startDate={searchFilters.paymentDateStart}
             setStartDate={setPaymentDateStart}
@@ -181,8 +181,8 @@ export function PaymentStatusFilter({
   return (
     <>
       <Label>{i18n.filters.status}</Label>
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {statuses.map((id) => (
           <Radio
             key={id}
@@ -228,15 +228,15 @@ export function PaymentDateFilter({
           onChange={setStartDate}
           locale="fi"
         />
-        <Gap horizontal size="xs" />
+        <Gap $horizontal $size="xs" />
         <DatePickerLowLevel value={endDate} onChange={setEndDate} locale="fi" />
       </FlexRow>
       {showWarning ? (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <span>
             {i18n.common.checkDates}
-            <Gap size="xs" horizontal />
+            <Gap $size="xs" $horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
               color={colors.status.warning}
@@ -266,7 +266,7 @@ export function PaymentDistinctionsFilter({
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       {distinctiveDetails.map((id) => (
         <Checkbox
           key={id}

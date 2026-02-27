@@ -92,7 +92,7 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td>
           {!submitting && (
-            <FixedSpaceRow spacing="m">
+            <FixedSpaceRow $spacing="m">
               {!placementPlan.unitAcceptDisabled && (
                 <div>
                   <CheckIconButton

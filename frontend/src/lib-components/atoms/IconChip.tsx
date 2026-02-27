@@ -32,11 +32,11 @@ const IconChip = React.memo(function IconChip({
 }: IconChipProps) {
   return (
     <Container
-      backgroundColor={backgroundColor}
-      textColor={textColor}
+      $backgroundColor={backgroundColor}
+      $textColor={textColor}
       data-qa={dataQa}
     >
-      <IconContainer backgroundColor={iconBackgroundColor}>
+      <IconContainer $backgroundColor={iconBackgroundColor}>
         <Icon icon={icon} color={iconColor} aria-hidden="true" />
       </IconContainer>
       {label}
@@ -44,7 +44,7 @@ const IconChip = React.memo(function IconChip({
   )
 })
 
-const Container = styled.div<{ backgroundColor: string; textColor: string }>`
+const Container = styled.div<{ $backgroundColor: string; $textColor: string }>`
   display: inline-flex;
   flex-wrap: nowrap;
   gap: ${defaultMargins.xxs};
@@ -52,8 +52,8 @@ const Container = styled.div<{ backgroundColor: string; textColor: string }>`
   padding: ${defaultMargins.xxs} ${defaultMargins.xs} ${defaultMargins.xxs}
     ${defaultMargins.xxs};
   border-radius: ${defaultMargins.s};
-  background-color: ${(props) => props.backgroundColor};
-  color: ${(props) => props.textColor};
+  background-color: ${(props) => props.$backgroundColor};
+  color: ${(props) => props.$textColor};
   font-size: 16px;
   line-height: 22px;
   font-weight: 600;
@@ -66,14 +66,14 @@ const Icon = styled(FontAwesomeIcon)`
   height: ${defaultMargins.s};
 `
 
-const IconContainer = styled.div<{ backgroundColor: string }>`
+const IconContainer = styled.div<{ $backgroundColor: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: ${defaultMargins.m};
   min-width: ${defaultMargins.m};
   height: ${defaultMargins.m};
-  background: ${(props) => props.backgroundColor};
+  background: ${(props) => props.$backgroundColor};
   border-radius: 100%;
 `
 

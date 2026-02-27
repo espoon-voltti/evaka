@@ -48,7 +48,7 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
 
   return (
     <>
-      <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+      <ListGrid $labelWidth="fit-content(40%)" $rowGap="xs" $columnGap="L">
         <Label>{i18n.personProfile.income.details.dateRange}</Label>
         <span>
           {`${income.validFrom.format()} - ${

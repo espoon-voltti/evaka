@@ -53,8 +53,8 @@ export default React.memo(function Placements({ placements }: Props) {
   const hasOverlap = placements.some((p) => p.overlap)
   return (
     <section>
-      <H2 noMargin>{i18n.placementDraft.currentPlacements}</H2>
-      <Gap size="s" />
+      <H2 $noMargin>{i18n.placementDraft.currentPlacements}</H2>
+      <Gap $size="s" />
       {placements.length === 0 && (
         <InformationText>
           {i18n.placementDraft.noCurrentPlacements}
@@ -68,7 +68,7 @@ export default React.memo(function Placements({ placements }: Props) {
             {placement.startDate.format()}-{placement.endDate.format()}
             {placement.overlap && (
               <>
-                <Gap size="xxs" horizontal />
+                <Gap $size="xxs" $horizontal />
                 <FontAwesomeIcon
                   icon={fasExclamationTriangle}
                   color={colors.status.warning}

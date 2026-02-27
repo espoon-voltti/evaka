@@ -33,7 +33,7 @@ export default React.memo(function OptionalLabelledValue({
   return (
     <LabelContainer>
       <Label>{label}</Label>
-      <Gap size="xs" />
+      <Gap $size="xs" />
       <Value data-qa={`labelled-value-${dataQa ?? label}`}>{value}</Value>
     </LabelContainer>
   )

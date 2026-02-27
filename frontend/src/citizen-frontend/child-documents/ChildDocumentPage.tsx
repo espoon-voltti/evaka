@@ -97,8 +97,8 @@ export default React.memo(function ChildDocumentPage() {
   return (
     <>
       <Content>
-        <Gap size="s" />
-        <TopButtonRow justifyContent="space-between">
+        <Gap $size="s" />
+        <TopButtonRow $justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
           <FixedSpaceRow>
             <Button
@@ -123,13 +123,13 @@ export default React.memo(function ChildDocumentPage() {
             )}
           </FixedSpaceRow>
         </TopButtonRow>
-        <Gap size="s" />
+        <Gap $size="s" />
 
         {renderResult(childDocument, (document) => (
           <ChildDocumentView document={document} />
         ))}
 
-        <Gap size="s" />
+        <Gap $size="s" />
       </Content>
       <Footer />
     </>
@@ -186,25 +186,25 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
   return (
     <>
       <Container>
-        <ContentArea opaque>
-          <FixedSpaceRow justifyContent="space-between">
+        <ContentArea $opaque>
+          <FixedSpaceRow $justifyContent="space-between">
             <FixedSpaceColumn>
-              <H1 noMargin>{document.template.name}</H1>
-              <H2 noMargin>
+              <H1 $noMargin>{document.template.name}</H1>
+              <H2 $noMargin>
                 <PersonName person={document.child} format="First Last" />
                 {document.child.dateOfBirth
                   ? ` (${document.child.dateOfBirth.format()})`
                   : ''}
               </H2>
             </FixedSpaceColumn>
-            <FixedSpaceColumn spacing="xs" alignItems="flex-end">
+            <FixedSpaceColumn $spacing="xs" $alignItems="flex-end">
               {document.decision && (
                 <>
                   <div>
                     {i18n.children.childDocuments.decisionNumber}{' '}
                     {document.decision.decisionNumber}
                   </div>
-                  <Gap size="xs" />
+                  <Gap $size="xs" />
                 </>
               )}
               <ChildDocumentStateChip
@@ -228,12 +228,12 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
             )}
         </ContentArea>
       </Container>
-      <Gap size="m" />
+      <Gap $size="m" />
       <StickyContainer>
         <FixedSpaceRow
-          justifyContent="space-between"
-          alignItems="center"
-          gap={defaultMargins.m}
+          $justifyContent="space-between"
+          $alignItems="center"
+          $gap={defaultMargins.m}
         >
           <ReturnButton label={i18n.common.return} data-qa="return-button" />
           {document.status === 'CITIZEN_DRAFT' && (

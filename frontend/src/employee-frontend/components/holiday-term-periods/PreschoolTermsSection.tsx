@@ -72,7 +72,7 @@ export default React.memo(function PreschoolTermsSection() {
         data-qa="add-preschool-term-button"
       />
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       {renderResult(preschoolTerms, (preschoolTerms) => (
         <>
@@ -119,7 +119,7 @@ export default React.memo(function PreschoolTermsSection() {
                       </Ul>
                     </Td>
                     <Td>
-                      <FixedSpaceRow spacing="s">
+                      <FixedSpaceRow $spacing="s">
                         <IconOnlyButton
                           icon={faPen}
                           data-qa="btn-edit"

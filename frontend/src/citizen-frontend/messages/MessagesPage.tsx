@@ -131,9 +131,9 @@ export default React.memo(function MessagesPage() {
         <>
           <Main>
             <TabletAndDesktop>
-              <Gap size="L" />
+              <Gap $size="L" />
             </TabletAndDesktop>
-            <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+            <StyledFlex $breakpoint={tabletMin} $horizontalSpacing="L">
               <ThreadList
                 accountId={messageAccount.accountId}
                 selectThread={selectThread}

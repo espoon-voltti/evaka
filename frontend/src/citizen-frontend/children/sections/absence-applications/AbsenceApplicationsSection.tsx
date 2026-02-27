@@ -46,7 +46,7 @@ export const AbsenceApplicationsSection = (props: Props) => {
       title={i18n.children.absenceApplication.title}
       open={open}
       toggleOpen={toggleOpen}
-      opaque
+      $opaque
       data-qa="collapsible-absence-applications"
     >
       <H3>{i18n.children.absenceApplication.header}</H3>
@@ -93,7 +93,7 @@ const AbsenceApplicationList = (props: Props) => {
                     {application.data.startDate.format()} -{' '}
                     {application.data.endDate.format()}
                   </div>
-                  <StaticChip color={colors.main.m1}>
+                  <StaticChip $color={colors.main.m1}>
                     {
                       i18n.children.absenceApplication.status[
                         application.data.status
@@ -133,7 +133,7 @@ const AbsenceApplicationList = (props: Props) => {
                     />
                   )}
               </FixedSpaceColumn>
-              <HorizontalLine slim />
+              <HorizontalLine $slim />
             </React.Fragment>
           ))}
         </>

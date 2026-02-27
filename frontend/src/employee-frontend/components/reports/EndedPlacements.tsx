@@ -90,7 +90,7 @@ export default React.memo(function EndedPlacements() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.endedPlacements.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>

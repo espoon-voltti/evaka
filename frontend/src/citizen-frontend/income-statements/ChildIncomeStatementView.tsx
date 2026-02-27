@@ -53,8 +53,8 @@ export default React.memo(function ChildIncomeStatementView() {
     <Container>
       <ReturnButton label={t.common.return} />
       <Main>
-        <ContentArea opaque>
-          <FixedSpaceRow spacing="L">
+        <ContentArea $opaque>
+          <FixedSpaceRow $spacing="L">
             <H1>{t.income.view.title}</H1>
           </FixedSpaceRow>
           <Row
@@ -128,8 +128,8 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
       )}
       {editable && (
         <>
-          <Gap size="L" />
-          <FixedSpaceRow justifyContent="flex-end">
+          <Gap $size="L" />
+          <FixedSpaceRow $justifyContent="flex-end">
             <Button
               text={t.common.cancel}
               onClick={() => navigate('/income')}

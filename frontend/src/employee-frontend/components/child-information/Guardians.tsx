@@ -84,7 +84,7 @@ export default React.memo(function Guardians() {
           stopEditing={stopEditing}
         />
       )}
-      <H3 noMargin>{i18n.personProfile.guardians}</H3>
+      <H3 $noMargin>{i18n.personProfile.guardians}</H3>
       {renderResult(allGuardians, (guardians, isReloading) => (
         <Table data-qa="table-of-guardians" data-loading={isReloading}>
           <Thead>
@@ -118,7 +118,7 @@ export default React.memo(function Guardians() {
                   <Td>
                     <Toolbar>
                       <StaticChip
-                        color={
+                        $color={
                           guardian.evakaRightsDenied
                             ? colors.status.danger
                             : colors.accents.a3emerald
@@ -212,7 +212,7 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
       onSuccess={stopEditing}
       data-qa="evaka-rights-modal"
     >
-      <FixedSpaceColumn spacing="s">
+      <FixedSpaceColumn $spacing="s">
         <Label>{i18n.personProfile.evakaRights.modalUpdateSubtitle}</Label>
         <Checkbox
           label={i18n.personProfile.evakaRights.deniedLabel}

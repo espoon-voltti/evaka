@@ -354,11 +354,11 @@ export default React.memo(function Header() {
             {featureFlags.employeeLanguageSelection && (
               <>
                 <FixedSpaceRow
-                  spacing="s"
-                  alignItems="center"
-                  justifyContent="space-between"
+                  $spacing="s"
+                  $alignItems="center"
+                  $justifyContent="space-between"
                 >
-                  <FixedSpaceRow spacing="s" alignItems="center">
+                  <FixedSpaceRow $spacing="s" $alignItems="center">
                     <FontAwesomeIcon
                       icon={faGlobe}
                       color={colors.main.m2}
@@ -366,7 +366,7 @@ export default React.memo(function Header() {
                     />
                     <span>{i18n.language.title}</span>
                   </FixedSpaceRow>
-                  <ChipWrapper data-qa="language-selection" margin="zero">
+                  <ChipWrapper data-qa="language-selection" $margin="zero">
                     <SelectionChip
                       text="FI"
                       selected={lang === 'fi'}
@@ -383,10 +383,10 @@ export default React.memo(function Header() {
                     />
                   </ChipWrapper>
                 </FixedSpaceRow>
-                <HorizontalLine slim />
+                <HorizontalLine $slim />
               </>
             )}
-            <FixedSpaceColumn spacing="m">
+            <FixedSpaceColumn $spacing="m">
               {user?.accessibleFeatures.employees && (
                 <Link
                   to="/employees"

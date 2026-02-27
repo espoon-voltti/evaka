@@ -295,7 +295,7 @@ function ServiceNeedEditorRow({
 
   return (
     <>
-      <StyledTr hideBottomBorder={retroactive}>
+      <StyledTr $hideBottomBorder={retroactive}>
         <Td>
           <DateRangePickerF
             bind={range}
@@ -310,9 +310,9 @@ function ServiceNeedEditorRow({
             data-qa="service-need-option-select"
           />
         </Td>
-        <Td verticalAlign="top">
+        <Td $verticalAlign="top">
           {featureFlags.intermittentShiftCare ? (
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {shiftCareType.map((type) => (
                 <Radio
                   key={type}
@@ -356,7 +356,7 @@ function ServiceNeedEditorRow({
           )}
         </Td>
         <Td>
-          <FixedSpaceRow justifyContent="flex-end" spacing="m">
+          <FixedSpaceRow $justifyContent="flex-end" $spacing="m">
             <Button
               appearance="inline"
               onClick={onCancel}
@@ -376,7 +376,7 @@ function ServiceNeedEditorRow({
       </StyledTr>
 
       {partiallyInvalidOptionError ? (
-        <StyledTr hideTopBorder>
+        <StyledTr $hideTopBorder>
           <Td colSpan={2}>
             <AlertBox
               wide
@@ -391,7 +391,7 @@ function ServiceNeedEditorRow({
           <Td />
         </StyledTr>
       ) : retroactive ? (
-        <StyledTr hideTopBorder>
+        <StyledTr $hideTopBorder>
           <Td colSpan={2}>
             <RetroactiveConfirmation
               confirmed={confirmedRetroactive}
@@ -425,12 +425,12 @@ function ServiceNeedEditorRow({
 }
 
 const StyledTr = styled(Tr)<{
-  hideTopBorder?: boolean
-  hideBottomBorder?: boolean
+  $hideTopBorder?: boolean
+  $hideBottomBorder?: boolean
 }>`
   td {
-    ${(p) => (p.hideTopBorder ? 'border-top: none;' : '')}
-    ${(p) => (p.hideBottomBorder ? 'border-bottom: none;' : '')}
+    ${(p) => (p.$hideTopBorder ? 'border-top: none;' : '')}
+    ${(p) => (p.$hideBottomBorder ? 'border-bottom: none;' : '')}
   }
 `
 

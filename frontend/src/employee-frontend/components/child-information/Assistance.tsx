@@ -35,7 +35,7 @@ export default React.memo(function Assistance({ childId }: Props) {
       {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
         permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
           <>
-            <HorizontalLine dashed slim />
+            <HorizontalLine $dashed $slim />
             <AssistanceNeedVoucherCoefficientSection childId={childId} />
           </>
         )}
@@ -63,7 +63,7 @@ const AssistanceContent = ({
       )}
       {permittedActions.has('READ_DAYCARE_ASSISTANCES') && (
         <>
-          <HorizontalLine dashed slim />
+          <HorizontalLine $dashed $slim />
           <DaycareAssistanceSection
             childId={id}
             rows={assistanceResult.map(
@@ -74,7 +74,7 @@ const AssistanceContent = ({
       )}
       {permittedActions.has('READ_PRESCHOOL_ASSISTANCES') && (
         <>
-          <HorizontalLine dashed slim />
+          <HorizontalLine $dashed $slim />
           <PreschoolAssistanceSection
             childId={id}
             rows={assistanceResult.map(
@@ -85,7 +85,7 @@ const AssistanceContent = ({
       )}
       {permittedActions.has('READ_ASSISTANCE_ACTION') && (
         <>
-          <HorizontalLine dashed slim />
+          <HorizontalLine $dashed $slim />
           <AssistanceAction
             id={id}
             assistanceActions={assistanceResult.map(
@@ -96,7 +96,7 @@ const AssistanceContent = ({
       )}
       {permittedActions.has('READ_OTHER_ASSISTANCE_MEASURES') && (
         <>
-          <HorizontalLine dashed slim />
+          <HorizontalLine $dashed $slim />
           <OtherAssistanceMeasureSection
             childId={id}
             rows={assistanceResult.map(

@@ -36,11 +36,11 @@ export default React.memo(function PlacementTypeItem({
 
   return (
     <CollapsibleContentArea
-      opaque
+      $opaque
       title={<H3>{i18n.placement.type[placementType]}</H3>}
       open={open}
       toggleOpen={useOpen.toggle}
-      paddingHorizontal="0"
+      $paddingHorizontal="0"
       data-qa={dataQa}
     >
       {serviceNeedsList

@@ -155,9 +155,9 @@ export default React.memo(function StaffMarkDepartedPage({
 
   return (
     <TallContentArea
-      opaque={false}
-      paddingHorizontal="zero"
-      paddingVertical="zero"
+      $opaque={false}
+      $paddingHorizontal="zero"
+      $paddingVertical="zero"
     >
       <TopBar
         title={backButtonText}
@@ -166,10 +166,10 @@ export default React.memo(function StaffMarkDepartedPage({
         invertedColors
       />
       <ContentArea
-        shadow
-        opaque={true}
-        paddingHorizontal="s"
-        paddingVertical="m"
+        $shadow
+        $opaque={true}
+        $paddingHorizontal="s"
+        $paddingVertical="m"
       >
         {renderResult(
           combine(staffInfo, memberAttendance),
@@ -273,9 +273,9 @@ export default React.memo(function StaffMarkDepartedPage({
                       />
                     )}
                 </TimeWrapper>
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <Actions>
-                  <FixedSpaceRow fullWidth>
+                  <FixedSpaceRow $fullWidth>
                     <LegacyButton
                       text={i18n.common.cancel}
                       onClick={() => history.go(-1)}

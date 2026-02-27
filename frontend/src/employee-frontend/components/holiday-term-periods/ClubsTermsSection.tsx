@@ -71,7 +71,7 @@ export default React.memo(function ClubTermsSection() {
         data-qa="add-club-term-button"
       />
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       {renderResult(clubTerms, (clubTerms) => (
         <>
@@ -106,7 +106,7 @@ export default React.memo(function ClubTermsSection() {
                       </Ul>
                     </Td>
                     <Td>
-                      <FixedSpaceRow spacing="s">
+                      <FixedSpaceRow $spacing="s">
                         <IconOnlyButton
                           icon={faPen}
                           data-qa="btn-edit"

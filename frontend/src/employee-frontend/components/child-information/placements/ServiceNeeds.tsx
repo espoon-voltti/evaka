@@ -83,7 +83,7 @@ export default React.memo(function ServiceNeeds({
   return placementHasNonDefaultServiceNeedOptions ? (
     <div>
       <HeaderRow>
-        <H4 noMargin>{t.title}</H4>
+        <H4 $noMargin>{t.title}</H4>
         {createAllowed && (
           <Button
             appearance="inline"

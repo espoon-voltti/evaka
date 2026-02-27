@@ -134,7 +134,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
       {formData.connectedDaycare && (
         <>
-          <Gap size="m" />
+          <Gap $size="m" />
 
           {featureFlags.preschoolApplication
             .connectedDaycarePreferredStartDate ? (
@@ -143,7 +143,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 {t.applications.editor.serviceNeed.startDate.label.PRESCHOOL} *
               </Label>
 
-              <Gap size="s" />
+              <Gap $size="s" />
 
               <DatePicker
                 date={formData.connectedDaycarePreferredStartDate}
@@ -170,7 +170,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 id={labelId}
                 required={true}
               />
-              <Gap size="m" />
+              <Gap $size="m" />
             </>
           ) : null}
 
@@ -192,7 +192,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                       />
                       {formData.placementType === type && (
                         <SubRadios>
-                          <FixedSpaceColumn spacing="xs">
+                          <FixedSpaceColumn $spacing="xs">
                             {options
                               .filter((opt) =>
                                 new DateRange(
@@ -257,10 +257,10 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 </Label>
               </ExpandingInfo>
 
-              <Gap size="s" />
+              <Gap $size="s" />
 
-              <FixedSpaceRow spacing="m">
-                <FixedSpaceColumn spacing="xs">
+              <FixedSpaceRow $spacing="m">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor="daily-time-starts">
                     {t.applications.editor.serviceNeed.dailyTime.starts}
                   </Label>
@@ -279,7 +279,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
                 <Hyphenbox>–</Hyphenbox>
 
-                <FixedSpaceColumn spacing="xs">
+                <FixedSpaceColumn $spacing="xs">
                   <Label htmlFor="daily-time-ends">
                     {t.applications.editor.serviceNeed.dailyTime.ends}
                   </Label>
@@ -296,7 +296,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             </>
           )}
 
-          <Gap size="L" />
+          <Gap $size="L" />
 
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.shiftCare.instructions}
@@ -316,16 +316,16 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
           {formData.shiftCare && (
             <>
-              <Gap size="xxs" />
+              <Gap $size="xxs" />
 
-              <Gap size="s" />
+              <Gap $size="s" />
 
               {
                 t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
                   .PRESCHOOL
               }
 
-              <Gap size="s" />
+              <Gap $size="s" />
 
               <strong>
                 {
@@ -334,7 +334,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 }
               </strong>
 
-              <Gap size="s" />
+              <Gap $size="s" />
 
               <FileUpload
                 files={formData.shiftCareAttachments}

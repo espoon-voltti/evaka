@@ -66,13 +66,13 @@ export default React.memo(function DayListItem({
               {dayStats.date.format('EEEEEE d.M.', lang)}
             </span>
           </DateBox>
-          <CountBox spacing="xxs" alignItems="center">
+          <CountBox $spacing="xxs" $alignItems="center">
             <span data-qa="present-total">{filteredStats.presentCount}</span>
             <span data-qa="present-calc">{`(${filteredStats.calculatedPresent.toLocaleString(
               lang
             )})`}</span>
           </CountBox>
-          <CountBox spacing="xxs" alignItems="center">
+          <CountBox $spacing="xxs" $alignItems="center">
             <span data-qa="absent-total">{filteredStats.absent}</span>
           </CountBox>
           <ChevronBox

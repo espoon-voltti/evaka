@@ -58,7 +58,7 @@ export default React.memo(function EmployeePinCodePage() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title>{i18n.pinCode.title}</Title>
         <P>
           {i18n.pinCode.text1} <FontAwesomeIcon icon={faLockAlt} />{' '}
@@ -77,7 +77,7 @@ export default React.memo(function EmployeePinCodePage() {
           />
         )}
 
-        <FixedSpaceColumn spacing="xxs">
+        <FixedSpaceColumn $spacing="xxs">
           <Label>{i18n.pinCode.pinCode}</Label>
           <InputField
             value={pin}
@@ -88,7 +88,7 @@ export default React.memo(function EmployeePinCodePage() {
             info={getInputInfo()}
           />
         </FixedSpaceColumn>
-        <Gap size="L" />
+        <Gap $size="L" />
         <MutateButton
           primary
           text={i18n.pinCode.button}
@@ -105,7 +105,7 @@ export default React.memo(function EmployeePinCodePage() {
           }}
           data-qa="send-pin-button"
         />
-        <Gap size="L" />
+        <Gap $size="L" />
       </ContentArea>
     </Container>
   )

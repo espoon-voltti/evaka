@@ -57,7 +57,7 @@ function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
 
   return (
     <AttachmentContainer className="attachment" data-qa={dataQa}>
-      <FixedSpaceRow spacing="xs" alignItems="center">
+      <FixedSpaceRow $spacing="xs" $alignItems="center">
         <FontAwesomeIcon
           icon={contentTypeIcon(attachment.contentType)}
           className="attachment-icon"

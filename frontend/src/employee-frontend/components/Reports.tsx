@@ -128,7 +128,7 @@ export default React.memo(function Reports() {
 
   return (
     <Container>
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.title}</Title>
         {renderResult(permittedReportsSet, (reports) => {
           type NamedItem = {

@@ -230,7 +230,7 @@ export default React.memo(function ChildApplicationsBlock({
   const hasName = childName?.trim().length > 0
 
   return (
-    <ContentArea opaque paddingVertical="L" data-qa={`child-${childId}`}>
+    <ContentArea $opaque $paddingVertical="L" data-qa={`child-${childId}`}>
       <TitleContainer>
         <ChildHeading
           translate={hasName ? 'no' : undefined}
@@ -259,14 +259,14 @@ export default React.memo(function ChildApplicationsBlock({
             index
           ) => (
             <React.Fragment key={applicationId}>
-              <Gap size="L" />
-              <H3 noMargin data-qa={`title-application-type-${applicationId}`}>
+              <Gap $size="L" />
+              <H3 $noMargin data-qa={`title-application-type-${applicationId}`}>
                 {t.applicationsList.type[type]}
                 {transferApplication &&
                   ` (${t.applicationsList.transferApplication})`}
               </H3>
-              <Gap size="m" />
-              <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+              <Gap $size="m" />
+              <ListGrid $labelWidth="max-content" $rowGap="s" $columnGap="L">
                 {startDate !== null && (
                   <>
                     <Label>{t.applicationsList.period}</Label>
@@ -288,7 +288,7 @@ export default React.memo(function ChildApplicationsBlock({
                       status={applicationStatus}
                       decidable={decidableApplications.includes(applicationId)}
                     />
-                    <Gap size="xs" horizontal={true} />
+                    <Gap $size="xs" $horizontal={true} />
                     <Status data-qa={`application-status-${applicationId}`}>
                       {
                         t.applicationsList.status[
@@ -319,9 +319,9 @@ export default React.memo(function ChildApplicationsBlock({
                     )}
                 </StatusContainer>
 
-                <Gap size="xs" horizontal />
+                <Gap $size="xs" $horizontal />
               </ListGrid>
-              <Gap size="s" />
+              <Gap $size="s" />
               <FixedSpaceFlexWrap>
                 {applicationStatus === 'CREATED' ||
                 (applicationStatus === 'SENT' &&
@@ -360,7 +360,7 @@ export default React.memo(function ChildApplicationsBlock({
               </FixedSpaceFlexWrap>
               {featureFlags.showMetadataToCitizen && (
                 <>
-                  <Gap size="s" />
+                  <Gap $size="s" />
                   <MetadataSection
                     data-qa={applicationId}
                     query={applicationMetadataQuery({ applicationId })}

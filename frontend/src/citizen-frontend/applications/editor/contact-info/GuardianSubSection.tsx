@@ -55,39 +55,39 @@ export default React.memo(function GuardianSubSection({
     <>
       <H3>{t.applications.editor.contactInfo.guardianInfoTitle}</H3>
 
-      <AdaptiveFlex breakpoint="1060px" horizontalSpacing="XL">
-        <FixedSpaceColumn spacing="xs">
+      <AdaptiveFlex $breakpoint="1060px" $horizontalSpacing="XL">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
           <PersonName
             person={{ firstName: formData.guardianFirstName }}
             format="First"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
           <PersonName
             person={{ lastName: formData.guardianLastName }}
             format="Last"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn spacing="xs">
+        <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
           <span>{formData.guardianSSN}</span>
         </FixedSpaceColumn>
       </AdaptiveFlex>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
-      <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
         <span translate="no">{formData.guardianHomeAddress}</span>
       </FixedSpaceColumn>
 
-      <Gap size="s" />
+      <Gap $size="s" />
 
-      <FixedSpaceRow spacing="XL">
-        <AdaptiveFlex breakpoint="860px">
-          <FixedSpaceColumn spacing="xs">
+      <FixedSpaceRow $spacing="XL">
+        <AdaptiveFlex $breakpoint="860px">
+          <FixedSpaceColumn $spacing="xs">
             <Label htmlFor="guardian-phone">
               {t.applications.editor.contactInfo.phone + ' *'}
             </Label>
@@ -105,14 +105,14 @@ export default React.memo(function GuardianSubSection({
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
-      <Gap size="m" />
+      <Gap $size="m" />
 
-      <EmailRow breakpoint="860px" verticalSpacing="zero">
+      <EmailRow $breakpoint="860px" $verticalSpacing="zero">
         {renderResult(verifiedEmail, (verifiedEmail) =>
           verifiedEmail ? (
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               <Label>{t.applications.editor.contactInfo.email + ' *'}</Label>
-              <FixedSpaceFlexWrap horizontalSpacing="X3L" verticalSpacing="L">
+              <FixedSpaceFlexWrap $horizontalSpacing="X3L" $verticalSpacing="L">
                 <span translate="no" data-qa="verified-email">
                   {verifiedEmail}
                 </span>
@@ -126,7 +126,7 @@ export default React.memo(function GuardianSubSection({
             </FixedSpaceColumn>
           ) : (
             <>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="guardian-email">
                   {t.applications.editor.contactInfo.email}
                   {formData.noGuardianEmail ? '' : ' *'}
@@ -151,7 +151,7 @@ export default React.memo(function GuardianSubSection({
                   required={!formData.noGuardianEmail}
                   readonly={formData.noGuardianEmail}
                 />
-                <Gap size="xs" />
+                <Gap $size="xs" />
                 <Label htmlFor="verify-guardian-email">
                   {t.applications.editor.contactInfo.verifyEmail}
                   {formData.noGuardianEmail ? '' : ' *'}
@@ -178,7 +178,7 @@ export default React.memo(function GuardianSubSection({
                 />
               </FixedSpaceColumn>
               <div>
-                <Gap size="m" />
+                <Gap $size="m" />
                 <Checkbox
                   label={t.applications.editor.contactInfo.noEmail}
                   checked={formData.noGuardianEmail}
@@ -196,10 +196,10 @@ export default React.memo(function GuardianSubSection({
           )
         )}
       </EmailRow>
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <P>{t.applications.editor.contactInfo.emailInfoText}</P>
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <ExpandingInfo
         data-qa="guardian-future-address-info"
@@ -218,7 +218,7 @@ export default React.memo(function GuardianSubSection({
       </ExpandingInfo>
       {formData.guardianFutureAddressExists && (
         <>
-          <Gap size="m" />
+          <Gap $size="m" />
           {formData.childFutureAddressExists && (
             <>
               <Checkbox
@@ -242,10 +242,10 @@ export default React.memo(function GuardianSubSection({
                   }
                 }}
               />
-              <Gap size="m" />
+              <Gap $size="m" />
             </>
           )}
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label htmlFor="guardian-move-date">
               {t.applications.editor.contactInfo.moveDate + ' *'}
             </Label>
@@ -263,10 +263,10 @@ export default React.memo(function GuardianSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
             />
           </FixedSpaceColumn>
-          <Gap size="s" />
-          <FixedSpaceRow spacing="XL">
-            <AdaptiveFlex breakpoint="1060px">
-              <FixedSpaceColumn spacing="xs">
+          <Gap $size="s" />
+          <FixedSpaceRow $spacing="XL">
+            <AdaptiveFlex $breakpoint="1060px">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="guardian-future-street">
                   {t.applications.editor.contactInfo.street + ' *'}
                 </Label>
@@ -292,7 +292,7 @@ export default React.memo(function GuardianSubSection({
                   required
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="guardian-future-postal-code">
                   {t.applications.editor.contactInfo.postalCode + ' *'}
                 </Label>
@@ -318,7 +318,7 @@ export default React.memo(function GuardianSubSection({
                   required
                 />
               </FixedSpaceColumn>
-              <FixedSpaceColumn spacing="xs">
+              <FixedSpaceColumn $spacing="xs">
                 <Label htmlFor="guardian-future-post-office">
                   {t.applications.editor.contactInfo.postOffice + ' *'}
                 </Label>

@@ -31,10 +31,10 @@ export default React.memo(function VardaUnitErrors() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.vardaUnitErrors.title}</Title>
 
-        <Gap size="xxs" />
+        <Gap $size="xxs" />
         {renderResult(vardaErrorsResult, (rows) => (
           <>
             <TableScrollable data-qa="varda-errors-table">

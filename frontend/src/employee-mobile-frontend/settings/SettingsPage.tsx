@@ -54,7 +54,7 @@ export const SettingsPage = React.memo(function SettingsPage({
 
   return (
     <MessageContextProvider unitOrGroup={unitOrGroup}>
-      <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
+      <ContentArea $opaque $paddingVertical="zero" $paddingHorizontal="zero">
         {renderResult(
           combine(userResponse, unitInfoResponse),
           ([user, unit]) => (
@@ -69,18 +69,18 @@ export const SettingsPage = React.memo(function SettingsPage({
                 }
               />
               <ContentArea
-                opaque={false}
-                paddingVertical="zero"
-                paddingHorizontal="s"
+                $opaque={false}
+                $paddingVertical="zero"
+                $paddingHorizontal="s"
               >
                 <H1>{i18n.common.settings}</H1>
                 {featureFlags.employeeLanguageSelection && (
                   <>
-                    <FixedSpaceRow spacing="s" alignItems="center">
+                    <FixedSpaceRow $spacing="s" $alignItems="center">
                       <SectionIcon icon={faGlobe} />
-                      <H2 noMargin>{i18n.settings.language.title}</H2>
+                      <H2 $noMargin>{i18n.settings.language.title}</H2>
                     </FixedSpaceRow>
-                    <Gap size="s" />
+                    <Gap $size="s" />
                     <ChipWrapper data-qa="language-selection">
                       <SelectionChip
                         text={i18n.settings.language.fi}
@@ -97,16 +97,16 @@ export const SettingsPage = React.memo(function SettingsPage({
                         translate="no"
                       />
                     </ChipWrapper>
-                    <Gap size="L" />
+                    <Gap $size="L" />
                   </>
                 )}
                 {unit.features.includes('PUSH_NOTIFICATIONS') && (
                   <>
-                    <FixedSpaceRow spacing="s" alignItems="center">
+                    <FixedSpaceRow $spacing="s" $alignItems="center">
                       <SectionIcon icon={faBell} />
-                      <H2 noMargin>{i18n.settings.notifications.title}</H2>
+                      <H2 $noMargin>{i18n.settings.notifications.title}</H2>
                     </FixedSpaceRow>
-                    <Gap size="s" />
+                    <Gap $size="s" />
                     <NotificationSettings unitId={unitId} />
                   </>
                 )}

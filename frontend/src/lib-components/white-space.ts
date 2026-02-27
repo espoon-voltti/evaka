@@ -53,19 +53,19 @@ export const defaultMargins: Record<SpacingSize, string> = {
 }
 
 type GapProps = {
-  horizontal?: boolean
-  size?: SpacingSize
-  sizeOnMobile?: SpacingSize
+  $horizontal?: boolean
+  $size?: SpacingSize
+  $sizeOnMobile?: SpacingSize
 }
 
 export const Gap = styled.div<GapProps>`
-  display: ${(p) => (p.horizontal ? 'inline-block' : 'block')};
-  ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
-    defaultMargins[p.size || 'm']};
+  display: ${(p) => (p.$horizontal ? 'inline-block' : 'block')};
+  ${(p) => (p.$horizontal ? 'width' : 'height')}: ${(p) =>
+    defaultMargins[p.$size || 'm']};
   flex-shrink: 0;
 
   @media (max-width: ${tabletMin}) {
-    ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
-      defaultMargins[p.sizeOnMobile || p.size || 'm']};
+    ${(p) => (p.$horizontal ? 'width' : 'height')}: ${(p) =>
+      defaultMargins[p.$sizeOnMobile || p.$size || 'm']};
   }
 `

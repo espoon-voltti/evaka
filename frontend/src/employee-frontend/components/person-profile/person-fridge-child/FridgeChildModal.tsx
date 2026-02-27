@@ -235,7 +235,7 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
       </section>
       {retroactive && (
         <>
-          <Gap size="xs" />
+          <Gap $size="xs" />
           <RetroactiveConfirmation
             confirmed={confirmedRetroactive}
             setConfirmed={setConfirmedRetroactive}

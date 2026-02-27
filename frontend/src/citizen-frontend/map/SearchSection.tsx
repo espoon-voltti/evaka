@@ -69,7 +69,7 @@ export default React.memo(function SearchSection({
   const [showMoreFilters, setShowMoreFilters] = useState<boolean>(false)
 
   return (
-    <Wrapper opaque>
+    <Wrapper $opaque>
       {!!navigateBack && (
         <InlineInternalLinkButton
           to={navigateBack}
@@ -77,14 +77,14 @@ export default React.memo(function SearchSection({
           icon={faArrowLeft}
         />
       )}
-      <Gap size="s" />
-      <H1 noMargin>{t.map.title}</H1>
+      <Gap $size="s" />
+      <H1 $noMargin>{t.map.title}</H1>
       <P data-qa="map-main-info">
         {t.map.mainInfo}
         <PrivateUnitInfo>{t.map.privateUnitInfo}</PrivateUnitInfo>
       </P>
 
-      <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="xs">
         <Label id="map-search-label" htmlFor="map-search-input">
           {t.map.searchLabel}
         </Label>
@@ -99,10 +99,10 @@ export default React.memo(function SearchSection({
         />
       </FixedSpaceColumn>
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <FixedSpaceColumn
-        spacing="xs"
+        $spacing="xs"
         role="group"
         aria-labelledby="map-care-type-label"
       >
@@ -120,10 +120,10 @@ export default React.memo(function SearchSection({
         </FixedSpaceFlexWrap>
       </FixedSpaceColumn>
 
-      <Gap size="xs" />
+      <Gap $size="xs" />
 
       <FixedSpaceColumn
-        spacing="xs"
+        $spacing="xs"
         role="group"
         aria-labelledby="map-language-label"
       >
@@ -154,10 +154,10 @@ export default React.memo(function SearchSection({
 
       {showMoreFilters && (
         <>
-          <Gap size="m" />
+          <Gap $size="m" />
 
           <FixedSpaceColumn
-            spacing="xs"
+            $spacing="xs"
             role="group"
             aria-labelledby="map-provider-type-label"
           >
@@ -180,9 +180,9 @@ export default React.memo(function SearchSection({
             </FixedSpaceRow>
           </FixedSpaceColumn>
 
-          <Gap size="m" />
+          <Gap $size="m" />
 
-          <FixedSpaceColumn spacing="xs">
+          <FixedSpaceColumn $spacing="xs">
             <Label>{t.map.shiftCareTitle}</Label>
             <Checkbox
               label={t.map.shiftCareLabel}
@@ -193,7 +193,7 @@ export default React.memo(function SearchSection({
         </>
       )}
 
-      <Gap size="m" />
+      <Gap $size="m" />
 
       <Button
         appearance="inline"

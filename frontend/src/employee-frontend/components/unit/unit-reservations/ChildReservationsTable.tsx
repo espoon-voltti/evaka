@@ -254,9 +254,9 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
           data-qa={`reservation-row-child-${childId}`}
         >
           {index === 0 && (
-            <NameTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
+            <NameTd $partialRow={false} $rowIndex={0} rowSpan={rowsCount}>
               <NameWrapper>
-                <ChipWrapper spacing="xs">
+                <ChipWrapper $spacing="xs">
                   <AgeIndicatorChip
                     age={selectedDate.differenceInYears(
                       childBasics.dateOfBirth
@@ -289,9 +289,9 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                 key={date.formatIso()}
                 data-qa={`td-${date.formatIso()}`}
                 className={classNames({ 'is-today': date.isToday() })}
-                partialRow={reservationRowCount > 1}
-                rowIndex={index}
-                maxRows={reservationRowCount}
+                $partialRow={reservationRowCount > 1}
+                $rowIndex={index}
+                $maxRows={reservationRowCount}
               >
                 {child && childVisibleFilter(child, selectedGroup) && (
                   <ChildDayReservation
@@ -323,10 +323,10 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
           })}
           {index === 0 && (
             <StyledTd
-              width={50}
+              $width={50}
               data-qa="child-reservation-row-menu"
-              partialRow={false}
-              rowIndex={0}
+              $partialRow={false}
+              $rowIndex={0}
               rowSpan={rowsCount}
             >
               <RowMenu
@@ -350,9 +350,9 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
               key={date.formatIso()}
               data-qa={`td-${date.formatIso()}`}
               className={classNames({ 'is-today': date.isToday() })}
-              partialRow={attendanceRowCount > 1}
-              rowIndex={index}
-              maxRows={attendanceRowCount}
+              $partialRow={attendanceRowCount > 1}
+              $rowIndex={index}
+              $maxRows={attendanceRowCount}
             >
               {child && childVisibleFilter(child, selectedGroup) && (
                 <ChildDayAttendance

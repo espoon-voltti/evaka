@@ -24,7 +24,7 @@ export default React.memo(function ChildIncome({ childId }: Props) {
     <>
       <H4>{i18n.personProfile.incomeStatement.title}</H4>
       <IncomeStatements personId={childId} />
-      <Gap size="L" />
+      <Gap $size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={childId} permittedActions={permittedActions} />
     </>

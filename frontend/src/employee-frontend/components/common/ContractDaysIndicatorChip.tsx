@@ -42,7 +42,7 @@ export const ContractDaysIndicatorChip = React.memo(
           </TooltipDiv>
         ))}
       >
-        <OneLetterChip color={colors.accents.a1greenDark}>S</OneLetterChip>
+        <OneLetterChip $color={colors.accents.a1greenDark}>S</OneLetterChip>
       </Tooltip>
     )
   }

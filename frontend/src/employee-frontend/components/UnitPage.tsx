@@ -172,19 +172,19 @@ export default React.memo(function UnitPage() {
   return renderResult(unitInformation, (unitInformation) => (
     <>
       <Container>
-        <ContentArea opaque>
-          <H1 noMargin>{unitInformation.daycare.name}</H1>
+        <ContentArea $opaque>
+          <H1 $noMargin>{unitInformation.daycare.name}</H1>
         </ContentArea>
       </Container>
       {unitInformation.permittedActions.includes(
         'READ_SERVICE_WORKER_NOTE'
       ) && (
         <>
-          <Gap size="s" />
+          <Gap $size="s" />
           <Container>
-            <ContentArea opaque>
-              <H3 noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
-              <Gap size="s" />
+            <ContentArea $opaque>
+              <H3 $noMargin>{i18n.unit.serviceWorkerNote.title}</H3>
+              <Gap $size="s" />
               <UnitServiceWorkerNote
                 unitId={id}
                 canEdit={unitInformation.permittedActions.includes(
@@ -195,9 +195,9 @@ export default React.memo(function UnitPage() {
           </Container>
         </>
       )}
-      <Gap size="s" />
+      <Gap $size="s" />
       <TabLinks tabs={tabs} />
-      <Gap size="s" />
+      <Gap $size="s" />
       <Container>
         <Switch>
           <Route path="/units/:id/unit-info">

@@ -60,7 +60,7 @@ export default React.memo(function Attachments({
   if (attachments.typed) return null
 
   return (
-    <FixedSpaceColumn spacing="zero">
+    <FixedSpaceColumn $spacing="zero">
       <FileUpload
         files={attachments.untypedAttachments}
         uploadHandler={incomeStatementAttachment(

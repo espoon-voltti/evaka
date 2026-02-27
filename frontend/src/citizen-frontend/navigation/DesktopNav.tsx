@@ -136,7 +136,7 @@ export default React.memo(function DesktopNav({
             <MenuBarItem role="none">
               <Login to="/login" data-qa="login-btn">
                 <Icon icon={faSignIn} />
-                <Gap size="xs" horizontal />
+                <Gap $size="xs" $horizontal />
                 {t.header.login}
               </Login>
             </MenuBarItem>

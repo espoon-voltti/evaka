@@ -106,7 +106,7 @@ export default React.memo(function OccupanciesForDateRange({
           </span>
         </div>
       </DataList>
-      <Gap size="s" />
+      <Gap $size="s" />
       <WrapBox>
         <CardsWrapper>
           <FixedSpaceColumn>

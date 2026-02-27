@@ -22,7 +22,7 @@ export default React.memo(function PasswordInputF({
   const i18n = useTranslations()
 
   return (
-    <PasswordInputContainer spacing="xs" alignItems="start" fullWidth>
+    <PasswordInputContainer $spacing="xs" $alignItems="start" $fullWidth>
       <InputFieldF {...props} type={showPassword ? 'text' : 'password'} />
       <Button
         className="pw-toggle-button"

@@ -14,7 +14,7 @@ import { defaultMargins } from '../../white-space'
 
 import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 
-const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
+const StyledButton = styled.button<{ $color?: string; $iconRight?: boolean }>`
   width: fit-content;
   display: inline-block;
 
@@ -50,13 +50,13 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   }
 
   svg {
-    ${({ iconRight }) =>
-      iconRight ? 'margin-left' : 'margin-right'}: ${defaultMargins.xs};
+    ${({ $iconRight }) =>
+      $iconRight ? 'margin-left' : 'margin-right'}: ${defaultMargins.xs};
     font-size: 1.25em;
   }
 
   ${defaultButtonTextStyle};
-  color: ${(p) => p.color ?? p.theme.colors.main.m2};
+  color: ${(p) => p.$color ?? p.theme.colors.main.m2};
 `
 
 export interface InlineButtonProps extends BaseProps {
@@ -95,9 +95,9 @@ const LegacyInlineButton = React.forwardRef(function InlineButton(
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}
-      color={color}
+      $color={color}
       type="button"
-      iconRight={iconRight}
+      $iconRight={iconRight}
       ref={ref}
     >
       {icon && !iconRight && <FontAwesomeIcon icon={icon} />}

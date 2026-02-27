@@ -74,8 +74,8 @@ export default React.memo(function CalendarEventTimeReservation({
   const { i18n } = useTranslation()
   return (
     <ReservationRow
-      spacing="xs"
-      alignItems="flex-start"
+      $spacing="xs"
+      $alignItems="flex-start"
       className={reservationChild ? 'reserved' : 'unreserved'}
       data-qa="reservation-row"
     >
@@ -203,10 +203,10 @@ export const DiscussionReservationModal = React.memo(
           data-qa="reservation-modal"
         >
           <H2
-            noMargin
+            $noMargin
           >{`${i18n.common.datetime.weekdaysShort[eventTime.date.getIsoDayOfWeek() - 1]} ${eventTime.date.format()}`}</H2>
           <H2
-            noMargin
+            $noMargin
           >{`${eventTime.startTime.format()} - ${eventTime.endTime.format()}`}</H2>
           <H3>{`${t.reservationModal.reservationStatus}: ${reservationChild.state.childId ? t.reservationModal.reserved : t.reservationModal.unreserved}`}</H3>
 
@@ -223,7 +223,7 @@ export const DiscussionReservationModal = React.memo(
           )}
 
           {viewMode === 'select' && (
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               <Label>{t.reservationModal.inviteeLabel}</Label>
               <Select
                 selectedItem={
@@ -255,7 +255,7 @@ export const DiscussionReservationModal = React.memo(
           )}
 
           {viewMode === 'reserved' && (
-            <FixedSpaceRow alignItems="center">
+            <FixedSpaceRow $alignItems="center">
               <span>
                 {savedChild && (
                   <PersonName person={savedChild} format="First Last" />
@@ -273,8 +273,8 @@ export const DiscussionReservationModal = React.memo(
             </FixedSpaceRow>
           )}
 
-          <Gap size="X5L" />
-          <FixedSpaceRow justifyContent="space-between">
+          <Gap $size="X5L" />
+          <FixedSpaceRow $justifyContent="space-between">
             <Button
               appearance="inline"
               text={t.reservationModal.removeDiscussionTime}
@@ -300,7 +300,7 @@ export const DiscussionReservationModal = React.memo(
               icon={faTrash}
             />
 
-            <FixedSpaceRow justifyContent="flex-end" spacing="s">
+            <FixedSpaceRow $justifyContent="flex-end" $spacing="s">
               <Button
                 onClick={cancelChanges}
                 data-qa="cancel"
@@ -323,7 +323,7 @@ export const DiscussionReservationModal = React.memo(
               />
             </FixedSpaceRow>
           </FixedSpaceRow>
-          <Gap size="L" />
+          <Gap $size="L" />
         </BaseModal>
 
         {cancelConfirmModalVisible && (

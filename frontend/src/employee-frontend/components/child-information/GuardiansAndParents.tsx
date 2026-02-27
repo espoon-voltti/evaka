@@ -18,11 +18,11 @@ interface Props {
 export default React.memo(function GuardiansAndParents({ childId }: Props) {
   return (
     <div>
-      <Gap size="m" />
+      <Gap $size="m" />
       <Guardians />
-      <Gap size="XL" />
+      <Gap $size="XL" />
       <FridgeParents />
-      <Gap size="XL" />
+      <Gap $size="XL" />
       <FosterParents childId={childId} />
     </div>
   )

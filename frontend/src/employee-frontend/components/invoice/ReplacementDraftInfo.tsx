@@ -106,10 +106,10 @@ export function ReplacementDraftForm({
           />
         </FixedSpaceColumn>
       </FixedSpaceRow>
-      <FixedSpaceRow justifyContent="flex-end">
+      <FixedSpaceRow $justifyContent="flex-end">
         <InfoBox message={i18n.invoice.form.replacement.sendInfo} />
       </FixedSpaceRow>
-      <FixedSpaceRow justifyContent="flex-end">
+      <FixedSpaceRow $justifyContent="flex-end">
         <MutateButton
           primary
           mutation={markReplacementDraftSentMutation}
@@ -139,7 +139,7 @@ export function ReplacementInfo({
   return (
     <FixedSpaceColumn data-qa="replacement-info">
       <H3>{i18n.invoice.form.replacement.title}</H3>
-      <FixedSpaceRow spacing="L">
+      <FixedSpaceRow $spacing="L">
         <FixedSpaceColumn>
           <Label>{i18n.invoice.form.replacement.reason}</Label>
           <div data-qa="replacement-reason">
@@ -161,7 +161,7 @@ export function ReplacementInfo({
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <FixedSpaceRow>
-            <FixedSpaceColumn spacing="xs">
+            <FixedSpaceColumn $spacing="xs">
               {invoice.attachments.map((attachment) => (
                 <FileDownloadButton
                   key={attachment.id}

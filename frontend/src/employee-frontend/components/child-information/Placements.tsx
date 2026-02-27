@@ -38,9 +38,9 @@ export default React.memo(function Placements({ childId }: Props) {
 
   return (
     <div>
-      <Gap size="m" />
-      <FlexRow justifyContent="space-between">
-        <H3 noMargin>{i18n.childInformation.placements.placements}</H3>
+      <Gap $size="m" />
+      <FlexRow $justifyContent="space-between">
+        <H3 $noMargin>{i18n.childInformation.placements.placements}</H3>
         {user?.accessibleFeatures.createPlacements ? (
           <AddButtonRow
             text={i18n.childInformation.placements.createPlacement.btn}

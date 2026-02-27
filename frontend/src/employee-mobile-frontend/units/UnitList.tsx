@@ -46,11 +46,11 @@ export default React.memo(function UnitList() {
   return (
     <>
       <TopBar title={i18n.units.title} unitId={undefined} />
-      <Gap size="xs" />
-      <FixedSpaceColumn spacing="xs">
+      <Gap $size="xs" />
+      <FixedSpaceColumn $spacing="xs">
         {renderResult(orderedUnits, (units) => (
-          <ContentArea paddingVertical="s" opaque>
-            <FixedSpaceColumn spacing="m">
+          <ContentArea $paddingVertical="s" $opaque>
+            <FixedSpaceColumn $spacing="m">
               {units.map(
                 ({
                   id,
@@ -66,9 +66,9 @@ export default React.memo(function UnitList() {
                     to={routes.childAttendances(toUnitOrGroup(id)).value}
                     data-qa={`unit-${id}`}
                   >
-                    <FixedSpaceColumn spacing="s" fullWidth>
-                      <H2 noMargin>{name}</H2>
-                      <UnitRow spacing="m">
+                    <FixedSpaceColumn $spacing="s" $fullWidth>
+                      <H2 $noMargin>{name}</H2>
+                      <UnitRow $spacing="m">
                         <div>
                           <Stat data-qa="child-count">
                             {presentChildren}/{totalChildren}

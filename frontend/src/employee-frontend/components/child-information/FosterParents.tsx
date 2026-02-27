@@ -36,7 +36,7 @@ export default React.memo(function FosterParents({ childId }: Props) {
 
   return (
     <>
-      <H3 noMargin>{i18n.personProfile.fosterParents}</H3>
+      <H3 $noMargin>{i18n.personProfile.fosterParents}</H3>
       {renderResult(fosterParents, (fosterParents) =>
         fosterParents !== null ? (
           <Table>

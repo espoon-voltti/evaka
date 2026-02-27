@@ -452,7 +452,7 @@ const DayModal = React.memo(function DayModal({
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
-              <DayHeader highlight={date.isEqual(today)}>
+              <DayHeader $highlight={date.isEqual(today)}>
                 <ModalCloseButton
                   close={onClose}
                   closeLabel={i18n.common.closeModal}
@@ -483,7 +483,7 @@ const DayModal = React.memo(function DayModal({
                 </CalendarModalSection>
               </DayHeader>
 
-              <Gap size="m" sizeOnMobile="s" />
+              <Gap $size="m" $sizeOnMobile="s" />
               {rows.length === 0 ? (
                 <CalendarModalSection data-qa="no-active-placements-msg">
                   {i18n.calendar.noActivePlacements}
@@ -492,12 +492,12 @@ const DayModal = React.memo(function DayModal({
                 rows.map((row, childIndex) => (
                   <React.Fragment key={row.childId}>
                     {childIndex !== 0 ? (
-                      <Gap size="zero" sizeOnMobile="s" />
+                      <Gap $size="zero" $sizeOnMobile="s" />
                     ) : null}
                     <CalendarModalSection data-qa={`child-${row.childId}`}>
                       {childIndex !== 0 ? (
                         <TabletAndDesktop>
-                          <HorizontalLine dashed slim />
+                          <HorizontalLine $dashed $slim />
                         </TabletAndDesktop>
                       ) : null}
                       <FixedSpaceRow>
@@ -510,21 +510,21 @@ const DayModal = React.memo(function DayModal({
                           />
                         </FixedSpaceColumn>
                         <FixedSpaceColumn
-                          spacing="zero"
-                          justifyContent="center"
+                          $spacing="zero"
+                          $justifyContent="center"
                         >
-                          <H2 noMargin data-qa="child-name">
+                          <H2 $noMargin data-qa="child-name">
                             <PersonName person={row} format="FirstFirst Last" />
                           </H2>
                           {row.duplicateInfo !== undefined && (
-                            <H3 noMargin> {row.duplicateInfo} </H3>
+                            <H3 $noMargin> {row.duplicateInfo} </H3>
                           )}
                         </FixedSpaceColumn>
                       </FixedSpaceRow>
 
-                      <Gap size="s" />
+                      <Gap $size="s" />
 
-                      <ColoredH3 noMargin>
+                      <ColoredH3 $noMargin>
                         {i18n.calendar.reservationsAndRealized}
                       </ColoredH3>
 
@@ -537,7 +537,7 @@ const DayModal = React.memo(function DayModal({
                           <Label>{i18n.calendar.shiftCareInfoLabel}</Label>
                         </ExpandingInfo>
                       )}
-                      <Gap size="s" />
+                      <Gap $size="s" />
 
                       <ReservationAttendanceInfo>
                         <ReservationAttendanceHeading>
@@ -567,24 +567,26 @@ const DayModal = React.memo(function DayModal({
                       {row.events.length > 0 && (
                         <>
                           <MobileOnly>
-                            <HorizontalLine dashed slim />
+                            <HorizontalLine $dashed $slim />
                           </MobileOnly>
-                          <Gap size="m" sizeOnMobile="zero" />
-                          <ColoredH3 noMargin>{i18n.calendar.events}</ColoredH3>
-                          <Gap size="s" />
-                          <FixedSpaceColumn spacing="s">
+                          <Gap $size="m" $sizeOnMobile="zero" />
+                          <ColoredH3 $noMargin>
+                            {i18n.calendar.events}
+                          </ColoredH3>
+                          <Gap $size="s" />
+                          <FixedSpaceColumn $spacing="s">
                             {row.events.map((event) => {
                               if (event.eventType === 'DAYCARE_EVENT') {
                                 return (
                                   <FixedSpaceColumn
-                                    spacing="xxs"
+                                    $spacing="xxs"
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
                                     <FixedSpaceRow
-                                      fullWidth
-                                      justifyContent="space-between"
-                                      alignItems="center"
+                                      $fullWidth
+                                      $justifyContent="space-between"
+                                      $alignItems="center"
                                     >
                                       <div>
                                         <LabelLike data-qa="event-title">
@@ -617,7 +619,7 @@ const DayModal = React.memo(function DayModal({
                                         />
                                       )}
                                     </FixedSpaceRow>
-                                    <P noMargin data-qa="event-description">
+                                    <P $noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
                                   </FixedSpaceColumn>
@@ -633,7 +635,7 @@ const DayModal = React.memo(function DayModal({
                                   >
                                     <EventBox>
                                       <WordBreakContainer>
-                                        <P noMargin data-qa="title-text">
+                                        <P $noMargin data-qa="title-text">
                                           {event.title}
                                         </P>
                                       </WordBreakContainer>
@@ -642,13 +644,13 @@ const DayModal = React.memo(function DayModal({
                                           key={`reservation-${i}`}
                                         >
                                           <FixedSpaceRow
-                                            fullWidth
-                                            justifyContent="space-between"
-                                            alignItems="center"
+                                            $fullWidth
+                                            $justifyContent="space-between"
+                                            $alignItems="center"
                                           >
                                             <div>
                                               <P
-                                                noMargin
+                                                $noMargin
                                                 data-qa={`reservation-time-${rt.id}`}
                                               >
                                                 {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
@@ -678,7 +680,7 @@ const DayModal = React.memo(function DayModal({
                                           </FixedSpaceRow>
                                           {rt.date.isEqualOrAfter(today) && (
                                             <>
-                                              <FixedSpaceRow gap="m">
+                                              <FixedSpaceRow $gap="m">
                                                 <Button
                                                   appearance="inline"
                                                   data-qa={`reservation-cancel-button-${rt.id}`}
@@ -718,7 +720,7 @@ const DayModal = React.memo(function DayModal({
                                         </DiscussionReservationContainer>
                                       ))}
                                     </EventBox>
-                                    <P noMargin data-qa="event-description">
+                                    <P $noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
                                   </SurveyContainer>
@@ -733,7 +735,7 @@ const DayModal = React.memo(function DayModal({
                 ))
               )}
 
-              <Gap size="L" sizeOnMobile="s" />
+              <Gap $size="L" $sizeOnMobile="s" />
             </div>
 
             {rows.length > 0 && (leftButton || rightButton) ? (
@@ -1050,7 +1052,7 @@ const Reservations = React.memo(function Reservations({
   )
 })
 
-const DayHeader = styled.div<{ highlight: boolean }>`
+const DayHeader = styled.div<{ $highlight: boolean }>`
   position: sticky;
   z-index: 100;
   border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g15};
@@ -1067,7 +1069,7 @@ const DayHeader = styled.div<{ highlight: boolean }>`
   &::after {
     content: '';
     background-color: ${(p) =>
-      p.highlight ? p.theme.colors.status.success : 'transparent'};
+      p.$highlight ? p.theme.colors.status.success : 'transparent'};
     width: 4px;
     left: 0;
     top: 0;

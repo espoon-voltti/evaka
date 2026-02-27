@@ -30,7 +30,7 @@ export function PreschoolTermsInfoSection({ preschoolTerms }: Props) {
           ]
         }
       </Label>
-      <Gap size="s" />
+      <Gap $size="s" />
       <Ul data-qa="preschool-terms">
         {preschoolTerms?.map((term, i) => (
           <li key={i}>
@@ -39,7 +39,7 @@ export function PreschoolTermsInfoSection({ preschoolTerms }: Props) {
           </li>
         ))}
       </Ul>
-      <Gap size="m" />
+      <Gap $size="m" />
     </>
   )
 }

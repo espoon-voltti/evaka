@@ -141,7 +141,7 @@ export default React.memo(function ApplicationCard({
         />
       )}
       <HeaderContainer>
-        <HeaderRow justifyContent="space-between" alignItems="center">
+        <HeaderRow $justifyContent="space-between" $alignItems="center">
           <HeaderLeftContent>
             <ExpandToggle
               onClick={() => toggleApplicationExpanded(application.id)}
@@ -151,7 +151,7 @@ export default React.memo(function ApplicationCard({
                 aria-label={expanded ? i18n.common.close : i18n.common.open}
               />
               <ChildNameHeading
-                noMargin
+                $noMargin
                 $limitedWidth={!expanded && !!draftPlacementUnit}
                 data-qa="child-name"
               >
@@ -261,7 +261,7 @@ export default React.memo(function ApplicationCard({
           <DatesAndBasisArea>
             <DatesGrid>
               <GridItem>
-                <FixedSpaceRow spacing="xs" alignItems="center">
+                <FixedSpaceRow $spacing="xs" $alignItems="center">
                   <PlacementCircle
                     type={
                       isPartDayPlacement(application.placementType)
@@ -297,7 +297,7 @@ export default React.memo(function ApplicationCard({
                   tooltip={i18n.applications.placementDesktop.dueDate}
                   delayed
                 >
-                  <FixedSpaceRow spacing="xs" alignItems="center">
+                  <FixedSpaceRow $spacing="xs" $alignItems="center">
                     <RoundIcon
                       content={faSection}
                       color={colors.grayscale.g15}
@@ -323,7 +323,7 @@ export default React.memo(function ApplicationCard({
                   }
                   delayed
                 >
-                  <FixedSpaceRow spacing="xs" alignItems="center">
+                  <FixedSpaceRow $spacing="xs" $alignItems="center">
                     <RoundIcon
                       content={faHeart}
                       color={colors.grayscale.g15}
@@ -343,7 +343,10 @@ export default React.memo(function ApplicationCard({
               </BasisWrapper>
             )}
           </DatesAndBasisArea>
-          <FixedSpaceColumn spacing="zero" style={{ flexGrow: 1, minWidth: 0 }}>
+          <FixedSpaceColumn
+            $spacing="zero"
+            style={{ flexGrow: 1, minWidth: 0 }}
+          >
             {unitRows.map((unit, index) => (
               <UnitRow
                 key={unit.id}
@@ -365,7 +368,7 @@ export default React.memo(function ApplicationCard({
             ))}
             <div style={{ padding: defaultMargins.xs }}>
               {addingOtherUnit ? (
-                <FixedSpaceRow spacing="XL" justifyContent="space-between">
+                <FixedSpaceRow $spacing="XL" $justifyContent="space-between">
                   <Combobox
                     data-qa="draft-placement-combobox"
                     items={allUnits}
@@ -462,8 +465,8 @@ const UnitRow = React.memo(function UnitRow({
     <UnitRowContainer
       $placedHere={placedHere}
       $last={lastRow}
-      justifyContent="space-between"
-      alignItems="center"
+      $justifyContent="space-between"
+      $alignItems="center"
       data-qa="unit-preference"
     >
       <UnitRowLink
@@ -500,10 +503,10 @@ const UnitRow = React.memo(function UnitRow({
               />
             ) : (
               <PlacementDraftControls
-                spacing="m"
-                justifyContent="space-between"
+                $spacing="m"
+                $justifyContent="space-between"
               >
-                <FixedSpaceRow spacing="s">
+                <FixedSpaceRow $spacing="s">
                   <PlacementDateSpan data-qa="placement-date">
                     {application.placementDraft.startDate.format()} –
                   </PlacementDateSpan>
@@ -617,7 +620,7 @@ const DateEditor = React.memo(function DateEditor({
   const [date, setDate] = useState(placementDraft.startDate)
 
   return (
-    <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow $alignItems="center">
       <DatePicker
         data-qa="placement-date-picker"
         date={date}
@@ -626,7 +629,7 @@ const DateEditor = React.memo(function DateEditor({
         }}
         locale={lang}
       />
-      <FixedSpaceRow spacing="xs" alignItems="center">
+      <FixedSpaceRow $spacing="xs" $alignItems="center">
         <span>
           <MutateIconOnlyButton
             data-qa="save-placement-date-button"
@@ -698,7 +701,7 @@ const HeaderRow = styled(FixedSpaceRow)`
 `
 
 const HeaderLeftContent = styled(FixedSpaceRow).attrs({
-  alignItems: 'center'
+  $alignItems: 'center'
 })`
   flex: 1;
   min-width: 0;
@@ -706,7 +709,7 @@ const HeaderLeftContent = styled(FixedSpaceRow).attrs({
 `
 
 const HeaderRightContent = styled(FixedSpaceRow).attrs({
-  alignItems: 'center'
+  $alignItems: 'center'
 })``
 
 const CollapsedPlacementInline = styled.div`

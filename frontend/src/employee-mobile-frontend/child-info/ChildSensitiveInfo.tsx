@@ -90,9 +90,9 @@ export default React.memo(function ChildSensitiveInfo({
     <>
       {renderPinRequiringResult(childSensitiveResult, unitId, (child) => (
         <>
-          <ContentArea shadow opaque>
-            <CollapsibleSection fitted title={i18n.childInfo.otherInfoHeader}>
-              <Gap size="s" />
+          <ContentArea $shadow $opaque>
+            <CollapsibleSection $fitted title={i18n.childInfo.otherInfoHeader}>
+              <Gap $size="s" />
               <FixedSpaceColumn>
                 {renderKeyValue(
                   i18n.childInfo.address,

@@ -197,8 +197,8 @@ const SingleMessage = React.memo(
         </MessageContent>
         {message.attachments.length > 0 && (
           <>
-            <HorizontalLine slim />
-            <FixedSpaceColumn spacing="xs">
+            <HorizontalLine $slim />
+            <FixedSpaceColumn $spacing="xs">
               {message.attachments.map((attachment) => (
                 <FileDownloadButton
                   key={attachment.id}
@@ -337,7 +337,7 @@ export default React.memo(
                   <StaticChip
                     data-qa="thread-child"
                     key={child.childId}
-                    color={theme.colors.main.m2}
+                    $color={theme.colors.main.m2}
                   >
                     <PersonName person={child} format="FirstFirst" />
                   </StaticChip>
@@ -345,7 +345,7 @@ export default React.memo(
               </>
             ) : null}
           </FixedSpaceFlexWrap>
-          <H2 noMargin data-qa="thread-reader-title">
+          <H2 $noMargin data-qa="thread-reader-title">
             <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
             {title}
             {sensitive && ` (${i18n.messages.sensitive})`}
@@ -356,7 +356,7 @@ export default React.memo(
             text={i18n.messages.thread.jumpToLastMessage}
           />
         </ThreadTitleRow>
-        <Gap size="s" />
+        <Gap $size="s" />
         <MessageList>
           {messages.map((message, i) => (
             <SingleMessage
@@ -398,9 +398,9 @@ export default React.memo(
         ) : (
           messages.length > 0 && (
             <>
-              <Gap size="s" />
+              <Gap $size="s" />
               <MobileAndTablet data-qa="message-thread-actions-mobile">
-                <FixedSpaceColumn alignItems="center">
+                <FixedSpaceColumn $alignItems="center">
                   {messageType === 'MESSAGE' && allowReply ? (
                     <Button
                       appearance="button"
@@ -442,7 +442,7 @@ export default React.memo(
                 </FixedSpaceColumn>
               </MobileAndTablet>
               <Desktop data-qa="message-thread-actions-desktop">
-                <ActionRow justifyContent="space-between">
+                <ActionRow $justifyContent="space-between">
                   {messageType === 'MESSAGE' && allowReply ? (
                     <Button
                       appearance="inline"
@@ -485,7 +485,7 @@ export default React.memo(
                   </FixedSpaceRow>
                 </ActionRow>
               </Desktop>
-              <Gap size="m" />
+              <Gap $size="m" />
             </>
           )
         )}

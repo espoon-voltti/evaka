@@ -46,9 +46,9 @@ export default React.memo(function VardaChildErrors() {
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
+      <ContentArea $opaque>
         <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
-        <Gap size="xxs" />
+        <Gap $size="xxs" />
         <Select
           items={['exclude', 'include', 'only'] as const}
           getItemLabel={(item) => i18n.reports.vardaChildErrors.ma003[item]}
@@ -57,7 +57,7 @@ export default React.memo(function VardaChildErrors() {
             if (value !== null) setMa003(value)
           }}
         />
-        <Gap size="s" />
+        <Gap $size="s" />
         {renderResult(filteredRows, (rows) => (
           <>
             <Table data-qa="varda-errors-table">

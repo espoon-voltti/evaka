@@ -17,7 +17,7 @@ import { useTranslation } from '../../../state/i18n'
 import { stickyTopBarHeight } from '../TabCalendar'
 
 interface CustomThProps {
-  shrink?: boolean
+  $shrink?: boolean
 }
 
 const CustomTh = styled(Th)<CustomThProps>`
@@ -27,45 +27,45 @@ const CustomTh = styled(Th)<CustomThProps>`
   text-transform: unset;
 
   ${(p) =>
-    p.shrink &&
+    p.$shrink &&
     css`
       width: 0; // causes the column to take as little space as possible
     `}
 `
 
 // Use min- and max-width to ensure that columns in two tables in the same layout are aligned
-const DateTh = styled(CustomTh)<CustomThProps & { faded: boolean }>`
+const DateTh = styled(CustomTh)<CustomThProps & { $faded: boolean }>`
   max-width: 150px;
-  ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
+  ${(p) => p.$faded && `color: ${colors.grayscale.g35};`}
 `
 
-const Date = styled(LabelLike)<{ highlight: boolean }>`
+const Date = styled(LabelLike)<{ $highlight: boolean }>`
   text-align: center;
   text-transform: capitalize;
 
   ${(p) =>
-    p.highlight &&
+    p.$highlight &&
     css`
       color: ${colors.main.m1};
     `}
 `
 
 interface StyledTdProps {
-  partialRow: boolean
-  rowIndex: number
-  maxRows?: number
-  width?: number
+  $partialRow: boolean
+  $rowIndex: number
+  $maxRows?: number
+  $width?: number
 }
 
 export const StyledTd = styled(Td)<StyledTdProps>`
   border-right: 1px solid ${colors.grayscale.g15};
   vertical-align: middle;
   ${(p) =>
-    p.partialRow &&
-    p.rowIndex < (p.maxRows ?? 1) &&
+    p.$partialRow &&
+    p.$rowIndex < (p.$maxRows ?? 1) &&
     `border-bottom-style: dashed;`}
-  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
-  ${(p) => p.width && `width: ${p.width}px;`}
+  ${(p) => p.$partialRow && p.$rowIndex > 0 && `border-top-style: dashed;`}
+  ${(p) => p.$width && `width: ${p.$width}px;`}
 `
 
 export const DayTd = styled(StyledTd)`
@@ -94,10 +94,10 @@ export const DayTr = styled(Tr)<TrProps>`
 
 export const NameTd = styled(StyledTd)<StyledTdProps>`
   ${(p) =>
-    p.partialRow &&
-    p.rowIndex < (p.maxRows ?? 1) &&
+    p.$partialRow &&
+    p.$rowIndex < (p.$maxRows ?? 1) &&
     `border-bottom-style: none;`}
-  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: none;`}
+  ${(p) => p.$partialRow && p.$rowIndex > 0 && `border-top-style: none;`}
 `
 
 export const NameWrapper = styled.div`
@@ -112,10 +112,10 @@ export const NameWrapper = styled.div`
   }
 `
 
-export const ChipWrapper = styled.div<{ spacing?: SpacingSize }>`
+export const ChipWrapper = styled.div<{ $spacing?: SpacingSize }>`
   > * {
     margin-right: ${(p) =>
-      p.spacing ? defaultMargins[p.spacing] : defaultMargins.s};
+      p.$spacing ? defaultMargins[p.$spacing] : defaultMargins.s};
     &:last-child {
       margin-right: 0;
     }
@@ -138,14 +138,14 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
 }: AttendanceTableHeaderProps) {
   const { lang } = useTranslation()
   return (
-    <Thead sticky={`${stickyTopBarHeight}px`}>
+    <Thead $sticky={`${stickyTopBarHeight}px`}>
       <Tr>
         <CustomTh>
           <LabelLike>{nameColumnLabel}</LabelLike>
         </CustomTh>
         {operationalDays.map(({ date, dateInfo }) => (
-          <DateTh shrink key={date.formatIso()} faded={dateInfo.isHoliday}>
-            <Date highlight={date.isToday()}>
+          <DateTh $shrink key={date.formatIso()} $faded={dateInfo.isHoliday}>
+            <Date $highlight={date.isToday()}>
               {date.format('EEEEEE d.M.', lang)}
             </Date>
           </DateTh>

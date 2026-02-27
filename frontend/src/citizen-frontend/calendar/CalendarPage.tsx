@@ -184,9 +184,9 @@ const CalendarPage = React.memo(function CalendarPage() {
               />
               <RenderOnlyOn mobile tablet>
                 <ContentArea
-                  opaque
-                  paddingVertical="zero"
-                  paddingHorizontal="zero"
+                  $opaque
+                  $paddingVertical="zero"
+                  $paddingHorizontal="zero"
                 >
                   <CalendarListView
                     childData={response.children}
@@ -366,7 +366,7 @@ export default React.memo(function CalendarPageWrapper() {
       </Main>
       <Footer />
       <DesktopOnly>
-        <Gap size="X4L" />
+        <Gap $size="X4L" />
       </DesktopOnly>
     </>
   )
