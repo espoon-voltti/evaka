@@ -36,6 +36,22 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
 
   return (
     <div>
+      {document.downloadPath?.startsWith('/citizen') && (
+        <Button
+          appearance="inline"
+          icon={faArrowDownToLine}
+          text={i18n.metadata.downloadPdf}
+          onClick={() => {
+            window.open(
+              `/api${document.downloadPath}`,
+              '_blank',
+              'noopener,noreferrer'
+            )
+          }}
+        />
+      )}
+      <Gap $size="m" />
+
       <LabelValueList
         spacing="small"
         contents={[
