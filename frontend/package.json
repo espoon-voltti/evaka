@@ -16,7 +16,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
     "test:watch": "yarn test --watchAll",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e-playwright": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
+    "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.7.2",

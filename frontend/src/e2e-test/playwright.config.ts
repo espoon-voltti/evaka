@@ -16,7 +16,7 @@ const isHeaded = process.env.HEADED === 'true' || process.env.HEADED === '1'
 
 export default defineConfig({
   testDir: './specs',
-  testMatch: '**/*.pw.spec.ts',
+  testMatch: '**/*.spec.ts',
   fullyParallel: true,
   timeout: isHeaded ? 1_000_000_000 : 60_000,
   workers: 1,
