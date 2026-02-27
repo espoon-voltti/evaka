@@ -12,6 +12,11 @@ evaka:
     municipality_code: "049"
     organizer_oid: "1.2.246.562.10.90008375488"
     organizer_id: "299"
+  database:
+    flyway:
+      locations:
+        - db/migration
+        - espoo/db/migration
   integration:
     sfi:
       contact_organization:
