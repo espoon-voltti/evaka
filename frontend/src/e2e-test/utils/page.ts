@@ -4,7 +4,6 @@
 
 import { expect } from '@playwright/test'
 import type {
-  BrowserContextOptions,
   ElementHandle,
   Keyboard,
   Locator,
@@ -14,8 +13,6 @@ import type {
 
 import type LocalDate from 'lib-common/local-date'
 
-import type { EvakaBrowserContextOptions } from '../browser'
-
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
 export type EnvType = 'desktop' | 'mobile'
@@ -24,16 +21,6 @@ export const envs = ['desktop', 'mobile'] as const
 
 export class Page {
   readonly keyboard: Keyboard
-
-  /** Only use with jest! */
-  static async open(
-    options?: BrowserContextOptions & EvakaBrowserContextOptions
-  ) {
-    const { newBrowserContext } = await import('../jest')
-    const ctx = await newBrowserContext(options)
-    const page = await ctx.newPage()
-    return new Page(page)
-  }
 
   static async openNewTab(page: Page) {
     const newPage = await page.context.newPage()

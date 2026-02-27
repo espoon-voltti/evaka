@@ -30,7 +30,7 @@ if [ -n "${SHARD:-}" ] && [ -n "${SHARD_TOTAL:-}" ]; then
     yarn e2e-playwright --shard="$SHARD/$SHARD_TOTAL"
 elif test -f playwright-filenames.txt; then
     mapfile -t FILENAMES < playwright-filenames.txt
-    yarn e2e-ci "${FILENAMES[@]}"
+    yarn e2e-playwright "${FILENAMES[@]}"
 else
-    yarn e2e-ci "src/e2e-test/specs/"
+    yarn e2e-playwright
 fi
