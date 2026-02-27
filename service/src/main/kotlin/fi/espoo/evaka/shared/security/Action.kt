@@ -1631,9 +1631,9 @@ sealed interface Action {
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER, UNIT_SUPERVISOR)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
+            HasUnitRole(STAFF).inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
