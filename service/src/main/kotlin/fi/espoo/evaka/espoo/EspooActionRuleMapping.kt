@@ -110,6 +110,15 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 )
             }
 
+            Action.Group.CREATE_CARETAKERS,
+            Action.Group.UPDATE_CARETAKERS,
+            Action.Group.DELETE_CARETAKERS -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf<ScopedActionRule<in T>>(
+                    HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>
+                )
+            }
+
             Action.Person.CREATE_PARTNERSHIP -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(
