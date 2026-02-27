@@ -301,7 +301,11 @@ function exec(cmd) {
       envArgs.push("-e", `${name}=${process.env[name]}`);
     }
   }
-  docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
+  try {
+    docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
+  } catch (e) {
+    process.exit(e.status ?? 1);
+  }
 }
 
 function recreate(options) {
