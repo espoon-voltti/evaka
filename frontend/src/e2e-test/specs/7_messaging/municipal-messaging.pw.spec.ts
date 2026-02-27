@@ -1,0 +1,215 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import type { GroupId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
+
+import config from '../../config'
+import { runPendingAsyncJobs } from '../../dev-api'
+import {
+  testCareArea2,
+  testDaycare2,
+  testDaycareGroup,
+  Fixture,
+  testAdult,
+  testChild,
+  testChild2,
+  testCareArea,
+  testDaycare
+} from '../../dev-api/fixtures'
+import {
+  createMessageAccounts,
+  insertGuardians,
+  resetServiceState
+} from '../../generated/api-clients'
+import type { DevEmployee, DevPerson } from '../../generated/api-types'
+import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import MessagesPage from '../../pages/employee/messages/messages-page'
+import type { NewEvakaPage } from '../../playwright'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
+import { employeeLogin, enduserLogin } from '../../utils/user'
+
+const mockedDate = LocalDate.of(2022, 11, 8)
+const messageSendTime = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 49, 10)
+)
+const messageReadTime = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 49, 32)
+)
+
+test.describe('Municipal messaging -', () => {
+  let messagingPage: Page
+  let messenger: DevEmployee
+  let staffPage: Page
+  let staff: DevEmployee
+  let citizenPage: Page
+  let childInAreaA: DevPerson
+  let childInAreaB: DevPerson
+  let newPage: NewEvakaPage
+
+  const defaultMessage = {
+    title: 'Tiedote',
+    content: 'Viestin sisältö'
+  }
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    childInAreaA = testChild
+    childInAreaB = testChild2
+    await testCareArea2.save()
+    await testDaycare2.save()
+    await testDaycareGroup.save()
+    const daycareGroup2Fixture = await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      id: randomId<GroupId>(),
+      daycareId: testDaycare2.id
+    }).save()
+    await Fixture.placement({
+      childId: childInAreaA.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    })
+      .save()
+      .then((placement) =>
+        Fixture.groupPlacement({
+          daycarePlacementId: placement.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
+      )
+    await Fixture.placement({
+      childId: childInAreaB.id,
+      unitId: testDaycare2.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    })
+      .save()
+      .then((placement) =>
+        Fixture.groupPlacement({
+          daycarePlacementId: placement.id,
+          daycareGroupId: daycareGroup2Fixture.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
+      )
+    const guardian2 = await Fixture.person({ ssn: null }).saveAdult()
+    const guardian3 = await Fixture.person({ ssn: null }).saveAdult()
+    await insertGuardians({
+      body: [
+        {
+          childId: childInAreaA.id,
+          guardianId: testAdult.id
+        },
+        {
+          childId: childInAreaB.id,
+          guardianId: guardian2.id
+        },
+        {
+          childId: childInAreaB.id,
+          guardianId: guardian3.id
+        }
+      ]
+    })
+    await createMessageAccounts()
+    messenger = await Fixture.employee().messenger().save()
+    staff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
+      .save()
+    newPage = newEvakaPage
+  })
+
+  async function openMessagingPage(mockedTime: HelsinkiDateTime) {
+    messagingPage = await newPage({ mockedTime })
+    await employeeLogin(messagingPage, messenger)
+  }
+
+  async function openStaffPage(mockedTime: HelsinkiDateTime) {
+    staffPage = await newPage({ mockedTime })
+    await employeeLogin(staffPage, staff)
+  }
+
+  async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLogin(citizenPage, testAdult)
+  }
+
+  test('Messaging role can send messages to multiple areas', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      recipientKeys: [`${testCareArea.id}+false`, `${testCareArea2.id}+false`],
+      confirmManyRecipients: true
+    })
+    await runPendingAsyncJobs(messageSendTime.addMinutes(1))
+
+    await openCitizenPage(messageReadTime)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
+    await citizenMessagesPage.assertThreadContent(defaultMessage)
+  })
+
+  test('Sent municipal message has area name as recipients', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      recipientKeys: [`${testCareArea.id}+false`]
+    })
+
+    const sentMessagesPage = await messagesPage.openSentMessages()
+    await sentMessagesPage.assertMessageParticipants(0, testCareArea.name)
+
+    const messagePage = await sentMessagesPage.openMessage(0)
+    await messagePage.assertMessageRecipients(testCareArea.name)
+  })
+
+  test('Messages sent by messaging role creates a copy for the staff', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      recipientKeys: [`${testCareArea.id}+false`]
+    })
+    await runPendingAsyncJobs(messageSendTime.addMinutes(1))
+
+    await openStaffPage(messageReadTime)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    await new MessagesPage(staffPage).assertCopyContent(
+      defaultMessage.title,
+      defaultMessage.content
+    )
+  })
+
+  test('Additional filters are visible to messaging role', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.filtersButton.waitUntilVisible()
+    await messageEditor.filtersButton.click()
+    await messageEditor.assertFiltersVisible()
+  })
+})

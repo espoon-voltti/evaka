@@ -83,7 +83,7 @@ export const test = base.extend<EvakaFixtures>({
       contexts.push(context)
       const pwPage = await context.newPage()
       pwPage.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
-      await pwPage.addInitScript({ content: initScript(mergedEvakaOptions) })
+      await context.addInitScript({ content: initScript(mergedEvakaOptions) })
       return new Page(pwPage)
     }
 
