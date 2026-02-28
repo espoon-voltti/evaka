@@ -32,7 +32,7 @@ dependencies {
         api(libs.flyway.core)
         api(libs.flyway.database.postgresql)
         api("org.glassfish.jaxb:jaxb-runtime:4.0.6")
-        api("org.jetbrains:annotations:26.0.2-1")
+        api("org.jetbrains:annotations:26.1.0")
         api("org.jsoup:jsoup:1.22.1")
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
