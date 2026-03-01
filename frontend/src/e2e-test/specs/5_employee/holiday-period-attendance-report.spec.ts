@@ -22,148 +22,152 @@ import type {
 } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2024, 9, 9)
-let period: HolidayPeriod
-let child: DevPerson
-let child2: DevPerson
-let unit: DevDaycare
-let group: DevDaycareGroup
 const dailyTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 
-beforeEach(async () => {
-  await resetServiceState()
-  await createDefaultServiceNeedOptions()
-  period = await Fixture.holidayPeriod({
-    period: new FiniteDateRange(mockedToday, mockedToday.addDays(6)),
-    reservationsOpenOn: mockedToday.subWeeks(4),
-    reservationDeadline: mockedToday.addDays(1)
-  }).save()
+test.describe('Holiday period attendance report', () => {
+  let period: HolidayPeriod
+  let child: DevPerson
+  let child2: DevPerson
+  let unit: DevDaycare
+  let group: DevDaycareGroup
 
-  const area = await Fixture.careArea().save()
-  unit = await Fixture.daycare({
-    areaId: area.id,
-    name: 'Testiyksikkö',
-    type: ['CENTRE'],
-    language: 'fi',
-    operationTimes: [
-      dailyTime,
-      dailyTime,
-      dailyTime,
-      dailyTime,
-      dailyTime,
-      null,
-      null
-    ],
-    enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
-  }).save()
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
+    }
+  })
 
-  group = await Fixture.daycareGroup({
-    daycareId: unit.id,
-    name: 'Testgroup'
-  }).save()
+  test.beforeEach(async () => {
+    await resetServiceState()
+    await createDefaultServiceNeedOptions()
+    period = await Fixture.holidayPeriod({
+      period: new FiniteDateRange(mockedToday, mockedToday.addDays(6)),
+      reservationsOpenOn: mockedToday.subWeeks(4),
+      reservationDeadline: mockedToday.addDays(1)
+    }).save()
 
-  child = await Fixture.person({
-    firstName: 'Lasse',
-    lastName: 'Lomailija',
-    dateOfBirth: mockedToday.subDays(2).subYears(2)
-  }).saveChild()
+    const area = await Fixture.careArea().save()
+    unit = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Testiyksikkö',
+      type: ['CENTRE'],
+      language: 'fi',
+      operationTimes: [
+        dailyTime,
+        dailyTime,
+        dailyTime,
+        dailyTime,
+        dailyTime,
+        null,
+        null
+      ],
+      enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
+    }).save()
 
-  child2 = await Fixture.person({
-    firstName: 'Riku',
-    lastName: 'Ryhmätön',
-    ssn: null,
-    dateOfBirth: mockedToday.subDays(2).subYears(4)
-  }).saveChild()
+    group = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      name: 'Testgroup'
+    }).save()
 
-  const placement = await Fixture.placement({
-    type: 'DAYCARE',
-    childId: child.id,
-    unitId: unit.id,
-    startDate: period.reservationsOpenOn,
-    endDate: period.period.end
-  }).save()
+    child = await Fixture.person({
+      firstName: 'Lasse',
+      lastName: 'Lomailija',
+      dateOfBirth: mockedToday.subDays(2).subYears(2)
+    }).saveChild()
 
-  await Fixture.placement({
-    type: 'DAYCARE',
-    childId: child2.id,
-    unitId: unit.id,
-    startDate: period.reservationsOpenOn,
-    endDate: period.period.end
-  }).save()
+    child2 = await Fixture.person({
+      firstName: 'Riku',
+      lastName: 'Ryhmätön',
+      ssn: null,
+      dateOfBirth: mockedToday.subDays(2).subYears(4)
+    }).saveChild()
 
-  await Fixture.groupPlacement({
-    daycarePlacementId: placement.id,
-    startDate: placement.startDate,
-    endDate: placement.endDate,
-    daycareGroupId: group.id
-  }).save()
+    const placement = await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: period.reservationsOpenOn,
+      endDate: period.period.end
+    }).save()
 
-  await Fixture.assistanceFactor({
-    childId: child.id,
-    capacityFactor: 2.5,
-    validDuring: period.period
-  }).save()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child2.id,
+      unitId: unit.id,
+      startDate: period.reservationsOpenOn,
+      endDate: period.period.end
+    }).save()
 
-  await Fixture.daycareAssistance({
-    childId: child.id,
-    validDuring: period.period
-  }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      daycareGroupId: group.id
+    }).save()
 
-  //Lasse
-  await Fixture.absence({
-    absenceType: 'OTHER_ABSENCE',
-    absenceCategory: 'BILLABLE',
-    date: mockedToday,
-    childId: child.id
-  }).save()
-  await Fixture.absence({
-    absenceType: 'OTHER_ABSENCE',
-    absenceCategory: 'BILLABLE',
-    date: mockedToday.addDays(4),
-    childId: child.id
-  }).save()
-  await Fixture.attendanceReservationRaw({
-    childId: child.id,
-    date: mockedToday.addDays(1),
-    range: null
-  }).save()
-  await Fixture.attendanceReservationRaw({
-    childId: child.id,
-    date: mockedToday.addDays(3),
-    range: null
-  }).save()
+    await Fixture.assistanceFactor({
+      childId: child.id,
+      capacityFactor: 2.5,
+      validDuring: period.period
+    }).save()
 
-  //Riku
-  await Fixture.attendanceReservationRaw({
-    childId: child2.id,
-    date: mockedToday.addDays(1),
-    range: null
-  }).save()
-  await Fixture.attendanceReservationRaw({
-    childId: child2.id,
-    date: mockedToday.addDays(2),
-    range: null
-  }).save()
-  await Fixture.absence({
-    absenceType: 'OTHER_ABSENCE',
-    absenceCategory: 'BILLABLE',
-    date: mockedToday,
-    childId: child2.id
-  }).save()
-})
+    await Fixture.daycareAssistance({
+      childId: child.id,
+      validDuring: period.period
+    }).save()
 
-describe('Holiday period attendance report', () => {
-  test('correct report data is shown for full unit', async () => {
+    //Lasse
+    await Fixture.absence({
+      absenceType: 'OTHER_ABSENCE',
+      absenceCategory: 'BILLABLE',
+      date: mockedToday,
+      childId: child.id
+    }).save()
+    await Fixture.absence({
+      absenceType: 'OTHER_ABSENCE',
+      absenceCategory: 'BILLABLE',
+      date: mockedToday.addDays(4),
+      childId: child.id
+    }).save()
+    await Fixture.attendanceReservationRaw({
+      childId: child.id,
+      date: mockedToday.addDays(1),
+      range: null
+    }).save()
+    await Fixture.attendanceReservationRaw({
+      childId: child.id,
+      date: mockedToday.addDays(3),
+      range: null
+    }).save()
+
+    //Riku
+    await Fixture.attendanceReservationRaw({
+      childId: child2.id,
+      date: mockedToday.addDays(1),
+      range: null
+    }).save()
+    await Fixture.attendanceReservationRaw({
+      childId: child2.id,
+      date: mockedToday.addDays(2),
+      range: null
+    }).save()
+    await Fixture.absence({
+      absenceType: 'OTHER_ABSENCE',
+      absenceCategory: 'BILLABLE',
+      date: mockedToday,
+      childId: child2.id
+    }).save()
+  })
+
+  test('correct report data is shown for full unit', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.selectUnit(unit.name)
     await report.selectPeriod(period.period.format())
     await report.sendButton.click()
@@ -221,14 +225,10 @@ describe('Holiday period attendance report', () => {
     await report.assertRows(initialExpectation)
   })
 
-  test('correct report data is shown for selected group', async () => {
+  test('correct report data is shown for selected group', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.selectUnit(unit.name)
     await report.selectPeriod(period.period.format())
     await report.groupSelector.fillAndSelectFirst(group.name)

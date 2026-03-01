@@ -11,10 +11,10 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import type { AclRole, UnitInfoPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
 let daycareId: DaycareId
 const groupId = randomId<GroupId>()
 
@@ -38,7 +38,7 @@ const yrjo = Fixture.employee({
 })
 let admin: DevEmployee
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
 
   await testCareArea.save()
@@ -86,9 +86,11 @@ const yrjoRow = (
   occupancyCoefficient
 })
 
-describe('Employee - unit ACL', () => {
-  beforeEach(async () => {
-    page = await Page.open()
+test.describe('Employee - unit ACL', () => {
+  let page: Page
+
+  test.beforeEach(({ evaka }) => {
+    page = evaka
   })
 
   test('Unit supervisors can be added/deleted', async () => {
@@ -230,9 +232,11 @@ describe('Employee - unit ACL', () => {
   })
 })
 
-describe('Employee - unit ACL - temporary employee', () => {
-  beforeEach(async () => {
-    page = await Page.open()
+test.describe('Employee - unit ACL - temporary employee', () => {
+  let page: Page
+
+  test.beforeEach(({ evaka }) => {
+    page = evaka
   })
 
   async function openEditModalByIndex(

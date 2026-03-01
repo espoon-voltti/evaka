@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
 import type {
-  BrowserContextOptions,
   ElementHandle,
   Keyboard,
   Locator,
@@ -12,9 +12,6 @@ import type {
 } from 'playwright'
 
 import type LocalDate from 'lib-common/local-date'
-
-import type { EvakaBrowserContextOptions } from '../browser'
-import { newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 
@@ -25,20 +22,12 @@ export const envs = ['desktop', 'mobile'] as const
 export class Page {
   readonly keyboard: Keyboard
 
-  static async open(
-    options?: BrowserContextOptions & EvakaBrowserContextOptions
-  ) {
-    const ctx = await newBrowserContext(options)
-    const page = await ctx.newPage()
-    return new Page(page)
-  }
-
   static async openNewTab(page: Page) {
     const newPage = await page.context.newPage()
     return new Page(newPage)
   }
 
-  private constructor(readonly page: PlaywrightPage) {
+  constructor(readonly page: PlaywrightPage) {
     this.keyboard = page.keyboard
   }
 

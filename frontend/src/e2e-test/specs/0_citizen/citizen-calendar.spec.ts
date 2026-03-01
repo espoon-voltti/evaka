@@ -30,22 +30,20 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { envs, Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let page: Page
-let header: CitizenHeader
-let calendarPage: CitizenCalendarPage
-let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 12)
 
 const groupEventId = randomId<CalendarEventId>()
 const unitEventId = randomId<CalendarEventId>()
 const individualEventId = randomId<CalendarEventId>()
 
+let children: DevPerson[]
 let jariId: UUID
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -124,77 +122,87 @@ beforeEach(async () => {
   }).save()
 })
 
-describe.each(envs)('Citizen calendar (%s)', (env) => {
-  beforeEach(async () => {
-    const viewport =
-      env === 'mobile'
-        ? { width: 375, height: 812 }
-        : { width: 1920, height: 1080 }
+async function setupPageObjects(page: Page, env: EnvType) {
+  await enduserLogin(page, testAdult)
+  const header = new CitizenHeader(page, env)
+  const calendarPage = new CitizenCalendarPage(page, env)
+  await header.selectTab('calendar')
+  return { header, calendarPage }
+}
 
-    page = await Page.open({
-      viewport,
-      screen: viewport,
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-    await enduserLogin(page, testAdult)
-    header = new CitizenHeader(page, env)
-    calendarPage = new CitizenCalendarPage(page, env)
-    await header.selectTab('calendar')
-  })
+for (const env of ['desktop', 'mobile'] as const) {
+  const viewport =
+    env === 'mobile'
+      ? { width: 375, height: 812 }
+      : { width: 1920, height: 1080 }
 
-  test('Citizen sees correct amount of event counts', async () => {
-    await calendarPage.assertEventCount(today, 4) // group event (3 attendees) + individual event for Jari
-    await calendarPage.assertEventCount(today.addDays(1), 3) // unit event (3 attendees)
-    await calendarPage.assertEventCount(today.addDays(2), 3) // unit event (3 attendees)
-  })
-
-  test('Day modals have correct events', async () => {
-    let dayView = await calendarPage.openDayView(today)
-
-    for (const child of children) {
-      await dayView.assertEvent(child.id, groupEventId, {
-        title: 'Group-wide event / Group 1',
-        description: 'Whole group'
-      })
-    }
-
-    await dayView.assertEvent(jariId, individualEventId, {
-      title:
-        'Individual event / Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
-      description: 'Just Jari'
+  test.describe(`Citizen calendar (${env})`, () => {
+    test.use({
+      evakaOptions: {
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      },
+      viewport
     })
 
-    await dayView.close()
+    test('Citizen sees correct amount of event counts', async ({ evaka }) => {
+      const { calendarPage } = await setupPageObjects(evaka, env)
+      await calendarPage.assertEventCount(today, 4) // group event (3 attendees) + individual event for Jari
+      await calendarPage.assertEventCount(today.addDays(1), 3) // unit event (3 attendees)
+      await calendarPage.assertEventCount(today.addDays(2), 3) // unit event (3 attendees)
+    })
 
-    dayView = await calendarPage.openDayView(today.addDays(1))
+    test('Day modals have correct events', async ({ evaka }) => {
+      const { calendarPage } = await setupPageObjects(evaka, env)
+      let dayView = await calendarPage.openDayView(today)
 
-    for (const child of children) {
-      await dayView.assertEvent(child.id, unitEventId, {
-        title: 'Unit event / Alkuräjähdyksen päiväkoti',
-        description: 'For everyone in the unit'
+      for (const child of children) {
+        await dayView.assertEvent(child.id, groupEventId, {
+          title: 'Group-wide event / Group 1',
+          description: 'Whole group'
+        })
+      }
+
+      await dayView.assertEvent(jariId, individualEventId, {
+        title:
+          'Individual event / Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
+        description: 'Just Jari'
       })
-    }
 
-    await dayView.close()
+      await dayView.close()
 
-    dayView = await calendarPage.openDayView(today.addDays(2))
+      dayView = await calendarPage.openDayView(today.addDays(1))
 
-    for (const child of children) {
-      await dayView.assertEvent(child.id, unitEventId, {
-        title: 'Unit event / Alkuräjähdyksen päiväkoti',
-        description: 'For everyone in the unit'
-      })
-    }
+      for (const child of children) {
+        await dayView.assertEvent(child.id, unitEventId, {
+          title: 'Unit event / Alkuräjähdyksen päiväkoti',
+          description: 'For everyone in the unit'
+        })
+      }
 
-    await dayView.close()
+      await dayView.close()
+
+      dayView = await calendarPage.openDayView(today.addDays(2))
+
+      for (const child of children) {
+        await dayView.assertEvent(child.id, unitEventId, {
+          title: 'Unit event / Alkuräjähdyksen päiväkoti',
+          description: 'For everyone in the unit'
+        })
+      }
+
+      await dayView.close()
+    })
+
+    test('After close, focus is set to the correct day and style', async ({
+      evaka
+    }) => {
+      const { calendarPage } = await setupPageObjects(evaka, env)
+      const todayId = `calendar-day-${today.formatIso()}`
+      const dayView = await calendarPage.openDayView(today)
+
+      await dayView.close()
+
+      await calendarPage.assertDayIsFocusedAndStyled(todayId)
+    })
   })
-
-  test('After close, focus is set to the correct day and style', async () => {
-    const todayId = `calendar-day-${today.formatIso()}`
-    const dayView = await calendarPage.openDayView(today)
-
-    await dayView.close()
-
-    await calendarPage.assertDayIsFocusedAndStyled(todayId)
-  })
-})
+}

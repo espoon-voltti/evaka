@@ -13,28 +13,31 @@ import type {
   DevEmployee
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
   LocalTime.of(12, 0)
 )
 
-let area: DevCareArea
-let daycare: DevDaycare
-let serviceWorker: DevEmployee
-let page: Page
+test.use({ evakaOptions: { mockedTime } })
 
-beforeEach(async () => {
-  await resetServiceState()
-  area = await Fixture.careArea().save()
-  daycare = await Fixture.daycare({ areaId: area.id }).save()
-  serviceWorker = await Fixture.employee().serviceWorker().save()
+test.describe('Employee - Unit - Service worker note', () => {
+  let area: DevCareArea
+  let daycare: DevDaycare
+  let serviceWorker: DevEmployee
+  let page: Page
 
-  page = await Page.open({ mockedTime })
-})
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    area = await Fixture.careArea().save()
+    daycare = await Fixture.daycare({ areaId: area.id }).save()
+    serviceWorker = await Fixture.employee().serviceWorker().save()
 
-describe('Employee - Unit - Service worker note', () => {
+    page = evaka
+  })
+
   test('happy path', async () => {
     await employeeLogin(page, serviceWorker)
     const unitPage = new UnitPage(page)

@@ -36,16 +36,11 @@ import {
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
+import type { NewEvakaPage } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
-
-let staffPage: Page
-let unitSupervisorPage: Page
-let citizenPage: Page
-let childId: PersonId
-let staff: DevEmployee
-let unitSupervisor: DevEmployee
 
 const mockedDate = LocalDate.of(2020, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -64,111 +59,6 @@ const credentials = {
   username: 'test@example.com',
   password: 'TestPassword456!'
 }
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testPreschool.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
-
-  await upsertWeakCredentials({
-    id: testAdult.id,
-    body: credentials
-  })
-
-  staff = await Fixture.employee()
-    .staff(testDaycare.id)
-    .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
-    .save()
-
-  unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
-    .unitSupervisor(testPreschool.id)
-    .save()
-
-  const unitId = testDaycare.id
-  childId = testChild.id // born 7.7.2014
-
-  const daycarePlacementFixture1 = await Fixture.placement({
-    childId,
-    unitId,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-  await Fixture.groupPlacement({
-    daycarePlacementId: daycarePlacementFixture1.id,
-    daycareGroupId: testDaycareGroup.id,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-
-  const daycarePlacementFixture2 = await Fixture.placement({
-    childId: testChild2.id,
-    unitId,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-  await Fixture.groupPlacement({
-    daycarePlacementId: daycarePlacementFixture2.id,
-    daycareGroupId: testDaycareGroup.id,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-
-  await insertGuardians({
-    body: [
-      {
-        childId: childId,
-        guardianId: testAdult.id
-      }
-    ]
-  })
-
-  await insertGuardians({
-    body: [
-      {
-        childId: testChild2.id,
-        guardianId: testAdult.id
-      }
-    ]
-  })
-
-  await createMessageAccounts()
-})
-
-async function initStaffPage(mockedTime: HelsinkiDateTime) {
-  staffPage = await Page.open({ mockedTime })
-  await employeeLogin(staffPage, staff)
-}
-
-async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
-  unitSupervisorPage = await Page.open({
-    mockedTime: mockedTime
-  })
-  await employeeLogin(unitSupervisorPage, unitSupervisor)
-}
-
-async function initCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, testAdult)
-}
-
-async function initOtherCitizenPage(
-  mockedTime: HelsinkiDateTime,
-  citizen: DevPerson
-) {
-  citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, citizen)
-}
-
-async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime })
-  await enduserLoginWeak(citizenPage, credentials)
-}
 
 const defaultReply = 'Testivastaus testiviestiin'
 
@@ -177,15 +67,117 @@ const defaultMessage = {
   content: 'Testiviestin sisältö'
 }
 
-describe('Sending and receiving messages', () => {
-  const initConfigurations = [
-    ['direct login', initCitizenPage] as const,
-    ['weak login', initCitizenPageWeak] as const
-  ]
+test.describe('Sending and receiving messages', () => {
+  let staffPage: Page
+  let unitSupervisorPage: Page
+  let citizenPage: Page
+  let childId: PersonId
+  let staff: DevEmployee
+  let unitSupervisor: DevEmployee
+  let newPage: NewEvakaPage
 
-  describe.each(initConfigurations)(
-    `Interactions with %s`,
-    (_name, initCitizen) => {
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    staff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .unitSupervisor(testPreschool.id)
+      .save()
+
+    const unitId = testDaycare.id
+    childId = testChild.id
+
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await insertGuardians({
+      body: [
+        {
+          childId: testChild2.id,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await createMessageAccounts()
+    newPage = newEvakaPage
+  })
+
+  async function initStaffPage(mockedTime: HelsinkiDateTime) {
+    staffPage = await newPage({ mockedTime })
+    await employeeLogin(staffPage, staff)
+  }
+
+  async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
+    unitSupervisorPage = await newPage({ mockedTime })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+  }
+
+  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLogin(citizenPage, testAdult)
+  }
+
+  async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLoginWeak(citizenPage, credentials)
+  }
+
+  for (const [name, initCitizen] of [
+    ['direct login', initCitizenPage],
+    ['weak login', initCitizenPageWeak]
+  ] as const) {
+    test.describe(`Interactions with ${name}`, () => {
       test('Staff sends message and citizen replies', async () => {
         await initStaffPage(mockedDateAt10)
         await staffPage.goto(`${config.employeeUrl}/messages`)
@@ -240,8 +232,8 @@ describe('Sending and receiving messages', () => {
         await messagesPage.deleteFirstThread()
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
-    }
-  )
+    })
+  }
 
   test('Unit supervisor can send a message to a starter', async () => {
     const daycarePlacementFixture1 = await Fixture.placement({
@@ -339,7 +331,7 @@ describe('Sending and receiving messages', () => {
     await createMessageAccounts()
 
     // Verify that available recipients contain the starters
-    staffPage = await Page.open({ mockedTime: mockedDateAt10 })
+    staffPage = await newPage({ mockedTime: mockedDateAt10 })
     await employeeLogin(staffPage, futureStaff)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(staffPage)
@@ -386,7 +378,7 @@ describe('Sending and receiving messages', () => {
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
     // Verify that the message is received by the staff
-    staffPage = await Page.open({ mockedTime: mockedDateAt12 })
+    staffPage = await newPage({ mockedTime: mockedDateAt12 })
     await employeeLogin(staffPage, futureStaff)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const staffMessagesPage = new MessagesPage(staffPage)
@@ -396,13 +388,103 @@ describe('Sending and receiving messages', () => {
   })
 })
 
-describe('Sending and receiving sensitive messages', () => {
+test.describe('Sending and receiving sensitive messages', () => {
+  let staffPage: Page
+  let citizenPage: Page
+  let staff: DevEmployee
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    staff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+
+    await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .unitSupervisor(testPreschool.id)
+      .save()
+
+    const unitId = testDaycare.id
+
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId: testChild.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await insertGuardians({
+      body: [
+        {
+          childId: testChild.id,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await insertGuardians({
+      body: [
+        {
+          childId: testChild2.id,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await createMessageAccounts()
+    newPage = newEvakaPage
+  })
+
+  async function initStaffPage(mockedTime: HelsinkiDateTime) {
+    staffPage = await newPage({ mockedTime })
+    await employeeLogin(staffPage, staff)
+  }
+
+  async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLoginWeak(citizenPage, credentials)
+  }
+
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
     staff = await Fixture.employee()
       .specialEducationTeacher(testDaycare.id)
       .groupAcl(testDaycareGroup.id)
       .save()
-    // create messaging account for newly created VEO account
     await createMessageAccounts()
 
     const sensitiveMessage = {
@@ -434,7 +516,101 @@ describe('Sending and receiving sensitive messages', () => {
   })
 })
 
-describe('Staff copies', () => {
+test.describe('Staff copies', () => {
+  let staffPage: Page
+  let unitSupervisorPage: Page
+  let childId: PersonId
+  let staff: DevEmployee
+  let unitSupervisor: DevEmployee
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    staff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .unitSupervisor(testPreschool.id)
+      .save()
+
+    const unitId = testDaycare.id
+    childId = testChild.id
+
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await insertGuardians({
+      body: [
+        {
+          childId: testChild2.id,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await createMessageAccounts()
+    newPage = newEvakaPage
+  })
+
+  async function initStaffPage(mockedTime: HelsinkiDateTime) {
+    staffPage = await newPage({ mockedTime })
+    await employeeLogin(staffPage, staff)
+  }
+
+  async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
+    unitSupervisorPage = await newPage({ mockedTime })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+  }
+
   test('Bulletin sent by supervisor to the whole unit creates a copy for the staff', async () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -511,8 +687,6 @@ describe('Staff copies', () => {
     // 3. The bulletin is sent to only ONE group per unit (not all groups)
     // 4. Staff from each unit only sees the recipient name that is the "root recipient" causing the message copy to exist in the group mailbox
 
-    // Helper function to create a family where each child is placed in a different group
-    // Creates one child per group ID provided and returns the children
     async function createFamilyWithChildrenInGroups(
       guardianSsnSeed: number,
       daycareId: DaycareId,
@@ -627,7 +801,7 @@ describe('Staff copies', () => {
     await createMessageAccounts()
 
     // Multi-unit supervisor sends bulletin to ONE cherry-picked group from EACH unit
-    const multiUnitSupervisorPage = await Page.open({
+    const multiUnitSupervisorPage = await newPage({
       mockedTime: mockedDateAt10
     })
     await employeeLogin(multiUnitSupervisorPage, multiUnitSupervisor)
@@ -665,7 +839,7 @@ describe('Staff copies', () => {
     await copyPage1.assertMessageRecipients(expectedGroupName1)
 
     // Verify: Staff from second unit sees unit names only
-    const staff2Page = await Page.open({ mockedTime: mockedDateAt11 })
+    const staff2Page = await newPage({ mockedTime: mockedDateAt11 })
     await employeeLogin(staff2Page, staff2)
     await staff2Page.goto(`${config.employeeUrl}/messages`)
     const messagesPage2 = new MessagesPage(staff2Page)
@@ -678,7 +852,103 @@ describe('Staff copies', () => {
   })
 })
 
-describe('Additional filters', () => {
+test.describe('Additional filters', () => {
+  let unitSupervisorPage: Page
+  let citizenPage: Page
+  let childId: PersonId
+  let unitSupervisor: DevEmployee
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
+      .save()
+
+    unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .unitSupervisor(testPreschool.id)
+      .save()
+
+    const unitId = testDaycare.id
+    childId = testChild.id
+
+    const daycarePlacementFixture1 = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture1.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    const daycarePlacementFixture2 = await Fixture.placement({
+      childId: testChild2.id,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture2.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await insertGuardians({
+      body: [
+        {
+          childId: testChild2.id,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    await createMessageAccounts()
+    newPage = newEvakaPage
+  })
+
+  async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
+    unitSupervisorPage = await newPage({ mockedTime })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+  }
+
+  async function initOtherCitizenPage(
+    mockedTime: HelsinkiDateTime,
+    citizen: DevPerson
+  ) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLogin(citizenPage, citizen)
+  }
+
   test('Additional filters are visible to unit supervisor on personal account', async () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)

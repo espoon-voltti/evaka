@@ -23,40 +23,41 @@ import {
   FinancePage,
   IncomeStatementsPage
 } from '../../pages/employee/finance/finance-page'
+import { test } from '../../playwright'
 import { waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let nav: EmployeeNav
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0, 0)
 const today = now.toLocalDate()
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+test.use({ evakaOptions: { mockedTime: now } })
 
-  page = await Page.open({
-    acceptDownloads: true,
-    mockedTime: now
+test.describe('Income statements', () => {
+  let page: Page
+  let nav: EmployeeNav
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+
+    page = evaka
+
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    await employeeLogin(page, financeAdmin)
+
+    await page.goto(config.employeeUrl)
+    nav = new EmployeeNav(page)
   })
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
-  await employeeLogin(page, financeAdmin)
+  async function navigateToIncomeStatements() {
+    await nav.openTab('finance')
+    await new FinancePage(page).selectIncomeStatementsTab()
+    return new IncomeStatementsPage(page)
+  }
 
-  await page.goto(config.employeeUrl)
-  nav = new EmployeeNav(page)
-})
-
-async function navigateToIncomeStatements() {
-  await nav.openTab('finance')
-  await new FinancePage(page).selectIncomeStatementsTab()
-  return new IncomeStatementsPage(page)
-}
-
-describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
     await Fixture.incomeStatement({
       personId: testAdult.id,

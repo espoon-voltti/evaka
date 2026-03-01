@@ -8,14 +8,17 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import { test } from '../../playwright'
 import { Page } from '../../utils/page'
 import { employeeSfiLogin, enduserLogin } from '../../utils/user'
 
-beforeEach(async () => resetServiceState())
-
-describe('SFI authentication', () => {
+test.describe('SFI authentication', () => {
   let ssnEmployee: DevEmployee
-  beforeEach(async () => {
+  let citizenTab: Page
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    citizenTab = evaka
     await testAdult.saveAdult({
       updateMockVtjWithDependants: []
     })
@@ -26,12 +29,8 @@ describe('SFI authentication', () => {
       .ssnEmployee(testAdult.ssn!)
       .save()
   })
-  afterAll(async () => {
-    await resetServiceState()
-  })
-  test('SFI logout invalidates all SFI sessions for the user', async () => {
-    const citizenTab = await Page.open()
 
+  test('SFI logout invalidates all SFI sessions for the user', async () => {
     // Login to both SFIs and logout from citizen SFI
     await enduserLogin(citizenTab, testAdult)
     const employeeTab = await Page.openNewTab(citizenTab)

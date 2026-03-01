@@ -13,42 +13,45 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import UnitListPage from '../../pages/mobile/unit-list-page'
+import { test } from '../../playwright'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let page: Page
-let unitListPage: UnitListPage
-let unit: DevDaycare
-let group: DevDaycareGroup
+import type { Page } from '../../utils/page'
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testPreschool.save()
+test.describe('Employee mobile unit list', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
 
-  unit = await Fixture.daycare({
-    areaId: testCareArea.id,
-    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
-  }).save()
-  group = await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    daycareId: unit.id
-  }).save()
+  let page: Page
+  let unitListPage: UnitListPage
+  let unit: DevDaycare
+  let group: DevDaycareGroup
 
-  page = await Page.open({ mockedTime: mockedNow })
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testPreschool.save()
 
-  const unitSupervisor = await Fixture.employee()
-    .unitSupervisor(unit.id)
-    .unitSupervisor(testPreschool.id)
-    .save()
-  const mobileSignupUrl = await pairPersonalMobileDevice(unitSupervisor.id)
-  await page.goto(mobileSignupUrl)
-  unitListPage = new UnitListPage(page)
-})
+    unit = await Fixture.daycare({
+      areaId: testCareArea.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+    }).save()
+    group = await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      daycareId: unit.id
+    }).save()
 
-describe('Employee mobile unit list', () => {
+    page = evaka
+
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unit.id)
+      .unitSupervisor(testPreschool.id)
+      .save()
+    const mobileSignupUrl = await pairPersonalMobileDevice(unitSupervisor.id)
+    await page.goto(mobileSignupUrl)
+    unitListPage = new UnitListPage(page)
+  })
+
   test('Staff count is as expected', async () => {
     const staff1Fixture = await Fixture.employee()
       .staff(unit.id)

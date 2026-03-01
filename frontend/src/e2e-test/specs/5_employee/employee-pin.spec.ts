@@ -8,27 +8,25 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: DevEmployee
-let page: Page
-let nav: EmployeeNav
-let pinPage: EmployeePinPage
+test.describe('Employees PIN', () => {
+  let admin: DevEmployee
+  let page: Page
+  let nav: EmployeeNav
+  let pinPage: EmployeePinPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  admin = await Fixture.employee().admin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    admin = await Fixture.employee().admin().save()
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl)
-  nav = new EmployeeNav(page)
-  pinPage = new EmployeePinPage(page)
-})
-
-describe('Employees PIN', () => {
-  beforeEach(async () => {
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    nav = new EmployeeNav(page)
+    pinPage = new EmployeePinPage(page)
     await nav.openAndClickDropdownMenuItem('pin-code')
   })
 

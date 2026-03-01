@@ -13,15 +13,24 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AdditionalInformationSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
 let childInformationPage: ChildInformationPage
 let childId: PersonId
 let admin: DevEmployee
 
-beforeEach(async () => {
+test.use({
+  evakaOptions: {
+    employeeCustomizations: {
+      featureFlags: {
+        nekkuIntegration: true
+      }
+    }
+  }
+})
+
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
 
   await familyWithTwoGuardians.save()
@@ -66,22 +75,15 @@ beforeEach(async () => {
     }
   ]).save()
 
-  page = await Page.open({
-    employeeCustomizations: {
-      featureFlags: {
-        nekkuIntegration: true
-      }
-    }
-  })
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl + '/child-information/' + childId)
-  childInformationPage = new ChildInformationPage(page)
+  await employeeLogin(evaka, admin)
+  await evaka.goto(config.employeeUrl + '/child-information/' + childId)
+  childInformationPage = new ChildInformationPage(evaka)
   await childInformationPage.waitUntilLoaded()
 })
 
-describe('Nekku fields are editable', () => {
+test.describe('Nekku fields are editable', () => {
   let section: AdditionalInformationSection
-  beforeEach(() => {
+  test.beforeEach(() => {
     section = childInformationPage.additionalInformationSection()
   })
 

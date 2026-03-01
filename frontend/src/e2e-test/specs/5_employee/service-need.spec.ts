@@ -19,67 +19,70 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { test } from '../../playwright'
 import { waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
-let admin: DevEmployee
-let childId: PersonId
-let employee: DevEmployee
-let placement: DevPlacement
-let activeServiceNeedOption: ServiceNeedOption
-let inactiveServiceNeedOption: ServiceNeedOption
-let partiallyInactiveServiceNeedOption: ServiceNeedOption
-let serviceNeedOptionPartWeekNull: ServiceNeedOption
 
 const mockToday = LocalDate.of(2024, 3, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await familyWithTwoGuardians.save()
-  const unitId = testDaycare.id
-  childId = familyWithTwoGuardians.children[0].id
-  employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
-  placement = await Fixture.placement({
-    childId,
-    unitId,
-    startDate: mockToday,
-    endDate: mockToday.addDays(10)
-  }).save()
-  activeServiceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type
-  }).save()
-  inactiveServiceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type,
-    validTo: mockToday.subDays(1)
-  }).save()
-  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type,
-    validTo: mockToday.addDays(5)
-  }).save()
-  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type,
-    partWeek: null
-  }).save()
+test.describe('Service need', () => {
+  let page: Page
+  let admin: DevEmployee
+  let childId: PersonId
+  let employee: DevEmployee
+  let placement: DevPlacement
+  let activeServiceNeedOption: ServiceNeedOption
+  let inactiveServiceNeedOption: ServiceNeedOption
+  let partiallyInactiveServiceNeedOption: ServiceNeedOption
+  let serviceNeedOptionPartWeekNull: ServiceNeedOption
 
-  admin = await Fixture.employee().admin().save()
+  test.use({ evakaOptions: { mockedTime } })
 
-  page = await Page.open({ mockedTime })
-  await employeeLogin(page, admin)
-})
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithTwoGuardians.save()
+    const unitId = testDaycare.id
+    childId = familyWithTwoGuardians.children[0].id
+    employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
+    placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockToday,
+      endDate: mockToday.addDays(10)
+    }).save()
+    activeServiceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type
+    }).save()
+    inactiveServiceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type,
+      validTo: mockToday.subDays(1)
+    }).save()
+    partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type,
+      validTo: mockToday.addDays(5)
+    }).save()
+    serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type,
+      partWeek: null
+    }).save()
 
-const openCollapsible = async () => {
-  await page.goto(config.employeeUrl + '/child-information/' + childId)
-  const childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.waitUntilLoaded()
-  return await childInformationPage.openCollapsible('placements')
-}
+    admin = await Fixture.employee().admin().save()
 
-describe('Service need', () => {
+    page = evaka
+    await employeeLogin(page, admin)
+  })
+
+  const openCollapsible = async () => {
+    await page.goto(config.employeeUrl + '/child-information/' + childId)
+    const childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.waitUntilLoaded()
+    return await childInformationPage.openCollapsible('placements')
+  }
+
   test('add service need to a placement', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(

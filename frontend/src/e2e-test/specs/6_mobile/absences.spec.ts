@@ -10,61 +10,63 @@ import { resetServiceState } from '../../generated/api-clients'
 import MobileAbsencesPage from '../../pages/mobile/absences-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let childId: PersonId
-
-let page: Page
-let listPage: MobileListPage
-let childPage: MobileChildPage
-let absencesPage: MobileAbsencesPage
+import type { Page } from '../../utils/page'
 
 const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
 const today = mockedNow.toLocalDate()
 
-beforeEach(async () => {
-  await resetServiceState()
-  const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare({
-    areaId: area.id,
+test.describe('Future absences', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
 
-    // MOBILE must be on
-    // RESERVATIONS must be off
-    enabledPilotFeatures: ['MOBILE']
-  }).save()
-  const group = await Fixture.daycareGroup({
-    daycareId: unit.id
-  }).save()
+  let childId: PersonId
+  let page: Page
+  let listPage: MobileListPage
+  let childPage: MobileChildPage
+  let absencesPage: MobileAbsencesPage
 
-  const person = await Fixture.person().saveChild()
-  childId = person.id
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
 
-  const daycarePlacementFixture = await Fixture.placement({
-    childId,
-    unitId: unit.id,
-    startDate: today,
-    endDate: today.addYears(1)
-  }).save()
+      // MOBILE must be on
+      // RESERVATIONS must be off
+      enabledPilotFeatures: ['MOBILE']
+    }).save()
+    const group = await Fixture.daycareGroup({
+      daycareId: unit.id
+    }).save()
 
-  await Fixture.groupPlacement({
-    daycarePlacementId: daycarePlacementFixture.id,
-    daycareGroupId: group.id,
-    startDate: daycarePlacementFixture.startDate,
-    endDate: daycarePlacementFixture.endDate
-  }).save()
+    const person = await Fixture.person().saveChild()
+    childId = person.id
 
-  page = await Page.open({ mockedTime: mockedNow })
-  listPage = new MobileListPage(page)
-  childPage = new MobileChildPage(page)
-  absencesPage = new MobileAbsencesPage(page)
+    const daycarePlacementFixture = await Fixture.placement({
+      childId,
+      unitId: unit.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
 
-  const mobileSignupUrl = await pairMobileDevice(unit.id)
-  await page.goto(mobileSignupUrl)
-})
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: group.id,
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
+    }).save()
 
-describe('Future absences', () => {
+    page = evaka
+    listPage = new MobileListPage(page)
+    childPage = new MobileChildPage(page)
+    absencesPage = new MobileAbsencesPage(page)
+
+    const mobileSignupUrl = await pairMobileDevice(unit.id)
+    await page.goto(mobileSignupUrl)
+  })
+
   test('User can set and delete future absence periods', async () => {
     await listPage.selectChild(childId)
     await childPage.markAbsentBeforehandLink.click()

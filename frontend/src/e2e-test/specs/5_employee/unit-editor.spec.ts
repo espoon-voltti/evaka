@@ -18,25 +18,28 @@ import {
   UnitPage
 } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const today = LocalDate.of(2024, 3, 1)
 const now = today.toHelsinkiDateTime(LocalTime.of(12, 0))
 
-describe('Employee - unit details', () => {
+test.describe('Employee - unit details', () => {
   let page: Page
   let unitsPage: UnitsPage
   let daycare1: DevDaycare
 
-  beforeEach(async () => {
+  test.use({ evakaOptions: { mockedTime: now } })
+
+  test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
     daycare1 = testDaycare
     const admin = await Fixture.employee().admin().save()
 
-    page = await Page.open({ mockedTime: now })
+    page = evaka
     await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     await new EmployeeNav(page).openTab('units')
@@ -141,17 +144,16 @@ describe('Employee - unit details', () => {
   })
 })
 
-describe('Employee - unit editor validations and warnings', () => {
-  beforeEach(async () => {
+test.describe('Employee - unit editor validations and warnings', () => {
+  test.beforeEach(async () => {
     await resetServiceState()
 
     await testCareArea.save()
     await testDaycare.save()
   })
 
-  const openUnitEditorPage = async () => {
+  const openUnitEditorPage = async (page: Page) => {
     const admin = await Fixture.employee().admin().save()
-    const page = await Page.open()
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, testDaycare.id)
     const unitInfoPage = await unitPage.openUnitInformation()
@@ -159,7 +161,9 @@ describe('Employee - unit editor validations and warnings', () => {
     return await unitDetailsPage.edit()
   }
 
-  test('Unit closing date error is shown if there are active placements', async () => {
+  test('Unit closing date error is shown if there are active placements', async ({
+    evaka
+  }) => {
     const placementStart = today.addMonths(1)
     const placementEnd = today.addYears(1)
 
@@ -171,7 +175,7 @@ describe('Employee - unit editor validations and warnings', () => {
       endDate: placementEnd
     }).save()
 
-    const unitEditorPage = await openUnitEditorPage()
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.assertWarningIsNotVisible('unit-closing-placement')
     await unitEditorPage.selectClosingDate(placementEnd.subDays(1))
     await unitEditorPage.assertWarningIsVisible('unit-closing-placement')
@@ -179,8 +183,10 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitEditorPage.assertWarningIsNotVisible('closing-date-warning')
   })
 
-  test('Invalid unit operation times produce a form error', async () => {
-    const unitEditorPage = await openUnitEditorPage()
+  test('Invalid unit operation times produce a form error', async ({
+    evaka
+  }) => {
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
     await unitEditorPage.fillDayTimeRange(2, '10:00', '10:66')
     await unitEditorPage.assertWarningIsVisible('unit-operationtimes')
@@ -193,8 +199,10 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
   })
 
-  test('Invalid unit shift care operation times produce a form error', async () => {
-    const unitEditorPage = await openUnitEditorPage()
+  test('Invalid unit shift care operation times produce a form error', async ({
+    evaka
+  }) => {
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.assertWarningIsNotVisible(
       'shift-care-unit-operationtimes'
     )
@@ -229,16 +237,18 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitDetailsPage.assertShiftCareOperationTime(7, '16:00 - 22:00')
   })
 
-  test('Varda unit warning is shown for non varda units', async () => {
-    const unitEditorPage = await openUnitEditorPage()
+  test('Varda unit warning is shown for non varda units', async ({ evaka }) => {
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.selectProviderType('MUNICIPAL')
     await unitEditorPage.assertWarningIsNotVisible('send-to-varda-warning')
     await unitEditorPage.selectProviderType('PRIVATE')
     await unitEditorPage.assertWarningIsVisible('send-to-varda-warning')
   })
 
-  test('Municipal, service voucher and purchased units shows warning if handler address is missing', async () => {
-    const unitEditorPage = await openUnitEditorPage()
+  test('Municipal, service voucher and purchased units shows warning if handler address is missing', async ({
+    evaka
+  }) => {
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.assertUnitHandlerAddressVisibility(
       'MUNICIPAL',
       '',
@@ -295,7 +305,9 @@ describe('Employee - unit editor validations and warnings', () => {
     )
   })
 
-  test('Setting a reserved oph unit oid shows a validation warning', async () => {
+  test('Setting a reserved oph unit oid shows a validation warning', async ({
+    evaka
+  }) => {
     const reservedOphUnitOID = 'reserved-oph-unit-oid'
     await Fixture.daycare({
       ...testDaycare,
@@ -303,7 +315,7 @@ describe('Employee - unit editor validations and warnings', () => {
       ophUnitOid: reservedOphUnitOID
     }).save()
 
-    const unitEditorPage = await openUnitEditorPage()
+    const unitEditorPage = await openUnitEditorPage(evaka)
     await unitEditorPage.fillManagerData(
       'Päiväkodin Johtaja',
       '01234567',

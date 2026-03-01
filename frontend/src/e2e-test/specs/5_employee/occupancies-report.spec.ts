@@ -11,19 +11,19 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: DevEmployee
+test.describe('Occupancies report', () => {
+  let admin: DevEmployee
 
-beforeEach(async () => {
-  await resetServiceState()
+  test.beforeEach(async () => {
+    await resetServiceState()
+    admin = await Fixture.employee().admin().save()
+  })
 
-  admin = await Fixture.employee().admin().save()
-})
-
-describe('Occupancies report', () => {
-  test('unit filter', async () => {
+  test('unit filter', async ({ newEvakaPage }) => {
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare({
       areaId: area.id,
@@ -42,7 +42,7 @@ describe('Occupancies report', () => {
     await Fixture.daycareGroup({ daycareId: unit3.id }).save()
 
     const mockedToday = LocalDate.of(2025, 10, 2)
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
     })
     const report = await navigateToReport(page, admin)
@@ -58,14 +58,15 @@ describe('Occupancies report', () => {
     await report.assertReportUnitNameRows(['Yksikkö 1', 'Yksikkö 2'])
   })
 
-  test('confirmed type shows date columns for whole month', async () => {
+  test('confirmed type shows date columns for whole month', async ({
+    newEvakaPage
+  }) => {
     const mockedToday = LocalDate.of(2025, 10, 2)
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
     })
     const report = await navigateToReport(page, admin)
     await report.areaCombobox.fillAndSelectFirst('Kaikki')
-    // 'Vahvistettu täyttöaste yksikössä' selected by default
     await report.assertReportDateColumns(
       LocalDate.range(
         LocalDate.of(2025, 10, 1),
@@ -74,9 +75,11 @@ describe('Occupancies report', () => {
     )
   })
 
-  test('planned type shows date columns for whole month', async () => {
+  test('planned type shows date columns for whole month', async ({
+    newEvakaPage
+  }) => {
     const mockedToday = LocalDate.of(2025, 10, 2)
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
     })
     const report = await navigateToReport(page, admin)
@@ -90,9 +93,11 @@ describe('Occupancies report', () => {
     )
   })
 
-  test('realized type shows date columns only from past', async () => {
+  test('realized type shows date columns only from past', async ({
+    newEvakaPage
+  }) => {
     const mockedToday = LocalDate.of(2025, 10, 3)
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
     })
     const report = await navigateToReport(page, admin)
@@ -104,9 +109,11 @@ describe('Occupancies report', () => {
     ])
   })
 
-  test('realized type shows no date columns on first day of month', async () => {
+  test('realized type shows no date columns on first day of month', async ({
+    newEvakaPage
+  }) => {
     const mockedToday = LocalDate.of(2025, 10, 1)
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(6, 11))
     })
     const report = await navigateToReport(page, admin)

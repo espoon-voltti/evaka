@@ -8,29 +8,31 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: DevEmployee
-let page: Page
-let nav: EmployeeNav
-let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
 const firstName = 'Matti-Teppo Seppo'
 const lastName = 'Sorsa'
 
-beforeEach(async () => {
-  await resetServiceState()
-  admin = await Fixture.employee({ firstName, lastName }).admin().save()
+test.describe('Employee preferred first name', () => {
+  let admin: DevEmployee
+  let page: Page
+  let nav: EmployeeNav
+  let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl)
-  nav = new EmployeeNav(page)
-  employeePreferredFirstNamePage = new EmployeePreferredFirstNamePage(page)
-  await nav.openAndClickDropdownMenuItem('preferred-first-name')
-})
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    admin = await Fixture.employee({ firstName, lastName }).admin().save()
 
-describe('Employee preferred first name', () => {
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    nav = new EmployeeNav(page)
+    employeePreferredFirstNamePage = new EmployeePreferredFirstNamePage(page)
+    await nav.openAndClickDropdownMenuItem('preferred-first-name')
+  })
+
   test('preferred first name can be set', async () => {
     await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
       'Matti-Teppo'

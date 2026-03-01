@@ -42,43 +42,49 @@ import type {
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test, expect } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedDate = LocalDate.of(2021, 8, 16)
-let page: Page
-let applicationListView: ApplicationListView
-let applicationReadView: ApplicationReadView
 
-let serviceWorker: DevEmployee
-let applicationId: ApplicationId
-
-beforeEach(async () => {
-  await resetServiceState()
-  await cleanUpMessages()
-  await preschoolTerm2021.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testPreschool.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2, testChildRestricted]
-  }).save()
-  await familyWithTwoGuardians.save()
-  await familyWithSeparatedGuardians.save()
-  await familyWithRestrictedDetailsGuardian.save()
-  serviceWorker = await Fixture.employee().serviceWorker().save()
-  await createDefaultServiceNeedOptions()
-  await Fixture.feeThresholds().save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
-  applicationListView = new ApplicationListView(page)
-  applicationReadView = new ApplicationReadView(page)
+  }
 })
 
-describe('Application transitions', () => {
+test.describe('Application transitions', () => {
+  let page: Page
+  let applicationListView: ApplicationListView
+  let applicationReadView: ApplicationReadView
+
+  let serviceWorker: DevEmployee
+  let applicationId: ApplicationId
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await cleanUpMessages()
+    await preschoolTerm2021.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
+    await familyWithTwoGuardians.save()
+    await familyWithSeparatedGuardians.save()
+    await familyWithRestrictedDetailsGuardian.save()
+    serviceWorker = await Fixture.employee().serviceWorker().save()
+    await createDefaultServiceNeedOptions()
+    await Fixture.feeThresholds().save()
+
+    page = evaka
+    applicationListView = new ApplicationListView(page)
+    applicationReadView = new ApplicationReadView(page)
+  })
+
   test('Service worker accepts decision on behalf of the enduser', async () => {
     const fixture = {
       ...applicationFixture(testChild, testAdult),
@@ -737,7 +743,7 @@ describe('Application transitions', () => {
     ])
   })
 
-  test('Placement proposal flow', async () => {
+  test('Placement proposal flow', async ({ newEvakaPage }) => {
     const fixture1 = {
       ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
@@ -773,9 +779,7 @@ describe('Application transitions', () => {
       mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    const page2 = await Page.open({
-      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
+    const page2 = await newEvakaPage()
     const unitPage = new UnitPage(page2)
 
     const unitSupervisor = await Fixture.employee()
@@ -815,7 +819,9 @@ describe('Application transitions', () => {
     await applicationProcessPage.waitingConfirmation.assertRowCount(1)
   })
 
-  test('Placement proposal rejection returns status to WAITING_PLACEMENT and reason is shown in note', async () => {
+  test('Placement proposal rejection returns status to WAITING_PLACEMENT and reason is shown in note', async ({
+    newEvakaPage
+  }) => {
     const fixture1 = {
       ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
@@ -835,9 +841,7 @@ describe('Application transitions', () => {
       now
     )
 
-    const page2 = await Page.open({
-      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
+    const page2 = await newEvakaPage()
     const unitPage = new UnitPage(page2)
 
     await employeeLogin(
@@ -926,7 +930,9 @@ describe('Application transitions', () => {
     await applicationReadView.assertDecisionAvailableForDownload(decision.type)
   })
 
-  test('Application rejected by citizen is shown for 2 weeks', async () => {
+  test('Application rejected by citizen is shown for 2 weeks', async ({
+    newEvakaPage
+  }) => {
     const application1: DevApplicationWithForm = {
       ...applicationFixture(testChild, testAdult),
       id: randomId<ApplicationId>(),
@@ -980,7 +986,7 @@ describe('Application transitions', () => {
       addDays: number,
       expectRejectedApplicationToBeVisible: boolean
     ) {
-      const page = await Page.open({
+      const page = await newEvakaPage({
         mockedTime: mockedDate
           .addDays(addDays)
           .toHelsinkiDateTime(LocalTime.of(12, 0))

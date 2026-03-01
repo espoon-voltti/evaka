@@ -29,45 +29,47 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page, testFileName } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
+import { testFileName } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let applicationListView: ApplicationListView
+test.describe('Employee application attachments', () => {
+  let page: Page
+  let applicationListView: ApplicationListView
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
 
-  const fixture = applicationFixture(testChild, testAdult)
-  await createApplications({ body: [fixture] })
-  const serviceWorker = await Fixture.employee().serviceWorker().save()
+    const fixture = applicationFixture(testChild, testAdult)
+    await createApplications({ body: [fixture] })
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  page = await Page.open()
-  applicationListView = new ApplicationListView(page)
+    page = evaka
+    applicationListView = new ApplicationListView(page)
 
-  await employeeLogin(page, serviceWorker)
-  await page.goto(config.employeeUrl)
-  await new EmployeeNav(page).applicationsTab.click()
-})
+    await employeeLogin(page, serviceWorker)
+    await page.goto(config.employeeUrl)
+    await new EmployeeNav(page).applicationsTab.click()
+  })
 
-async function addAttachmentToApplication(applicationId: string) {
-  await applicationListView.searchButton.click()
-  const applicationView = await applicationListView
-    .applicationRow(applicationId)
-    .openApplication()
-  const applicationEditView = await applicationView.startEditing()
-  await applicationEditView.setShiftCareNeeded()
-  await applicationEditView.shiftCareAttachmentFileUpload.uploadTestFile()
-  await applicationEditView.saveApplication()
-}
+  async function addAttachmentToApplication(applicationId: string) {
+    await applicationListView.searchButton.click()
+    const applicationView = await applicationListView
+      .applicationRow(applicationId)
+      .openApplication()
+    const applicationEditView = await applicationView.startEditing()
+    await applicationEditView.setShiftCareNeeded()
+    await applicationEditView.shiftCareAttachmentFileUpload.uploadTestFile()
+    await applicationEditView.saveApplication()
+  }
 
-describe('Employee application attachments', () => {
   test('Employee can add and remove attachments', async () => {
     await applicationListView.searchButton.click()
     const applicationView = await applicationListView
@@ -93,7 +95,9 @@ describe('Employee application attachments', () => {
     )
   })
 
-  test('Extended care attachment is visible to appropriate unit supervisor', async () => {
+  test('Extended care attachment is visible to appropriate unit supervisor', async ({
+    newEvakaPage
+  }) => {
     await addAttachmentToApplication(applicationFixtureId)
 
     await execSimpleApplicationActions(
@@ -110,7 +114,7 @@ describe('Employee application attachments', () => {
       .unitSupervisor(testDaycare.id)
       .save()
 
-    const page2 = await Page.open()
+    const page2 = await newEvakaPage()
     const unitPage = new UnitPage(page2)
     await employeeLogin(page2, unitSupervisor)
     await unitPage.navigateToUnit(testDaycare.id)
@@ -121,7 +125,9 @@ describe('Employee application attachments', () => {
     await view.assertExtendedCareAttachmentExists(testFileName)
   })
 
-  test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async () => {
+  test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async ({
+    newEvakaPage
+  }) => {
     const daycareId = randomId<DaycareId>()
     await Fixture.daycare({
       ...testDaycare,
@@ -161,7 +167,7 @@ describe('Employee application attachments', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    const page2 = await Page.open()
+    const page2 = await newEvakaPage()
     await employeeLogin(
       page2,
       await Fixture.employee().unitSupervisor(daycareId).save()

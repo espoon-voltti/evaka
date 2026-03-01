@@ -12,19 +12,19 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import TopNav from '../../pages/mobile/top-nav'
+import { test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let admin: DevEmployee
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   admin = await Fixture.employee().admin().save()
 })
 
-describe('System notifications', () => {
-  test('notification for citizens', async () => {
+test.describe('System notifications', () => {
+  test('notification for citizens', async ({ newEvakaPage }) => {
     const notificationText =
       'Lakkojen takia eVakassa on nyt poikkeuksellisen paljon käyttäjiä. Jos mahdollista, kokeile palvelua myöhemmin uudelleen.'
     const notificationTextSv = 'Samma på svenska'
@@ -32,7 +32,7 @@ describe('System notifications', () => {
     const now = HelsinkiDateTime.of(2024, 6, 3, 11, 0)
     const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
 
-    const adminPage = await Page.open({ mockedTime: now })
+    const adminPage = await newEvakaPage({ mockedTime: now })
     await employeeLogin(adminPage, admin)
     await adminPage.goto(config.employeeUrl)
     const nav = new EmployeeNav(adminPage)
@@ -49,7 +49,7 @@ describe('System notifications', () => {
     await systemNotificationsPage.saveButton.waitUntilHidden()
     await adminPage.close()
 
-    const citizensPage = await Page.open({ mockedTime: now })
+    const citizensPage = await newEvakaPage({ mockedTime: now })
     await citizensPage.goto(config.enduserLoginUrl)
     await citizensPage
       .findByDataQa('system-notification')
@@ -65,17 +65,19 @@ describe('System notifications', () => {
       .assertText((t) => t.includes(notificationTextEn))
     await citizensPage.close()
 
-    const citizensPage2 = await Page.open({ mockedTime: validTo.addHours(1) })
+    const citizensPage2 = await newEvakaPage({
+      mockedTime: validTo.addHours(1)
+    })
     await citizensPage2.goto(config.enduserLoginUrl)
     await citizensPage2.findByDataQa('system-notification').waitUntilHidden()
   })
 
-  test('notification for employees', async () => {
+  test('notification for employees', async ({ newEvakaPage }) => {
     const notificationText = 'eVakassa on huoltokatko perjantaina klo 18 - 24.'
     const now = HelsinkiDateTime.of(2024, 6, 3, 11, 0)
     const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
 
-    const adminPage = await Page.open({ mockedTime: now })
+    const adminPage = await newEvakaPage({ mockedTime: now })
     await employeeLogin(adminPage, admin)
     await adminPage.goto(config.employeeUrl)
     const nav = new EmployeeNav(adminPage)
@@ -91,7 +93,7 @@ describe('System notifications', () => {
     await adminPage.close()
 
     // notification should be visible in employee login page
-    const employeePage = await Page.open({ mockedTime: now })
+    const employeePage = await newEvakaPage({ mockedTime: now })
     await employeePage.goto(config.employeeUrl)
     await employeePage
       .findByDataQa('system-notification')
@@ -101,7 +103,7 @@ describe('System notifications', () => {
     // notification should be visible in employee mobile
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const mobilePage = await Page.open({ mockedTime: now })
+    const mobilePage = await newEvakaPage({ mockedTime: now })
     await mobilePage.goto(await pairMobileDevice(unit.id))
     const topBar = new TopNav(mobilePage)
     await topBar.systemNotificationBtn.click()

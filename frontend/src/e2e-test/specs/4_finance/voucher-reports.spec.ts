@@ -31,7 +31,8 @@ import type { VoucherServiceProvidersReport } from '../../pages/employee/reports
 import ReportsPage, {
   ServiceVoucherUnitReport
 } from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -42,7 +43,7 @@ let child: DevPerson
 let otherChild: DevPerson
 let guardian: DevPerson
 
-beforeEach(async () => {
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -87,7 +88,7 @@ beforeEach(async () => {
   })
   const admin = await Fixture.employee().admin().save()
 
-  page = await Page.open({ acceptDownloads: true })
+  page = evaka
   await employeeLogin(page, admin)
 
   await page.goto(config.employeeUrl)
@@ -96,7 +97,7 @@ beforeEach(async () => {
   report = await new ReportsPage(page).openVoucherServiceProvidersReport()
 })
 
-describe('Reporting - voucher reports', () => {
+test.describe('Reporting - voucher reports', () => {
   test('voucher service providers are reported correctly, respecting the area filter', async () => {
     await report.selectMonth('Tammikuu')
     await report.selectYear(LocalDate.todayInHelsinkiTz().year - 3)

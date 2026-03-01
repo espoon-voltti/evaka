@@ -35,8 +35,9 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -52,15 +53,24 @@ const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
 const backupCareEndDate = backupCareStartDate.addDays(8)
 const groupId = randomId<GroupId>()
 
-beforeEach(async () => {
+test.use({
+  evakaOptions: {
+    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+  }
+})
+
+test.beforeEach(async () => {
   await resetServiceState()
 })
 
-const insertTestDataAndLogin = async ({
-  childShiftCare = 'NONE'
-}: {
-  childShiftCare?: ShiftCareType
-} = {}) => {
+const insertTestDataAndLogin = async (
+  evaka: Page,
+  {
+    childShiftCare = 'NONE'
+  }: {
+    childShiftCare?: ShiftCareType
+  } = {}
+) => {
   await testCareArea.save()
   await testDaycare.save()
   await familyWithTwoGuardians.save()
@@ -120,9 +130,7 @@ const insertTestDataAndLogin = async ({
     endDate: placementEndDate
   }).save()
 
-  page = await Page.open({
-    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
+  page = evaka
   await employeeLogin(page, unitSupervisor)
 }
 
@@ -132,9 +140,9 @@ async function openWeekCalendar(): Promise<UnitWeekCalendarPage> {
   return await unitPage.openWeekCalendar(groupId)
 }
 
-describe('Unit group calendar', () => {
-  test('Employee sees row for child', async () => {
-    await insertTestDataAndLogin()
+test.describe('Unit group calendar', () => {
+  test('Employee sees row for child', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
     const childReservations = (await openWeekCalendar()).childReservations
     await waitUntilEqual(
       () => childReservations.childReservationRows(child1Fixture.id).count(),
@@ -142,8 +150,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Select shiftcare virtual group - child has shiftcare', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+  test('Select shiftcare virtual group - child has shiftcare', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
     await calendarPage.selectGroup('shift-care')
@@ -153,8 +163,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Select shiftcare virtual group - child does not have shiftcare', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'NONE' })
+  test('Select shiftcare virtual group - child does not have shiftcare', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'NONE' })
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
     await calendarPage.selectGroup('shift-care')
@@ -164,8 +176,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Child in backup care in other group for part of the week is shown', async () => {
-    await insertTestDataAndLogin()
+  test('Child in backup care in other group for part of the week is shown', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka)
     const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
@@ -194,8 +208,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Reservations are shown in the backup group calendar when backup is within the same unit', async () => {
-    await insertTestDataAndLogin()
+  test('Reservations are shown in the backup group calendar when backup is within the same unit', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka)
     const groupId3 = randomId<GroupId>()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
@@ -240,8 +256,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Child in backup care for the entire week is shown', async () => {
-    await insertTestDataAndLogin()
+  test('Child in backup care for the entire week is shown', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka)
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(backupCareStartDate)
@@ -251,8 +269,8 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Child in backup care during the week is shown', async () => {
-    await insertTestDataAndLogin()
+  test('Child in backup care during the week is shown', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(backupCareEndDate)
@@ -262,8 +280,8 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Missing holiday reservations are shown', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+  test('Missing holiday reservations are shown', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod({
@@ -307,8 +325,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Missing holiday reservations are shown if reservation deadline has passed', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+  test('Missing holiday reservations are shown if reservation deadline has passed', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod({
@@ -327,8 +347,8 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Tooltip for attendance reservation is shown', async () => {
-    await insertTestDataAndLogin()
+  test('Tooltip for attendance reservation is shown', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
     const holidayPeriodStart = LocalDate.of(2023, 3, 14) // Tuesday
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod({
@@ -421,8 +441,8 @@ describe('Unit group calendar', () => {
       .waitUntilHidden()
   })
 
-  test('Employee can add reservation', async () => {
-    await insertTestDataAndLogin()
+  test('Employee can add reservation', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
     const childReservations = (await openWeekCalendar()).childReservations
     const reservationModal = await childReservations.openReservationModal(
       child1Fixture.id
@@ -430,8 +450,8 @@ describe('Unit group calendar', () => {
     await reservationModal.addReservation(mockedToday)
   })
 
-  test('Employee can change between calendar modes', async () => {
-    await insertTestDataAndLogin()
+  test('Employee can change between calendar modes', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
 
     const weekCalendar = await openWeekCalendar()
     await weekCalendar.waitForWeekLoaded()
@@ -440,8 +460,10 @@ describe('Unit group calendar', () => {
     await monthCalendar.waitUntilLoaded()
   })
 
-  test('Employee can see the correct date range based on mode', async () => {
-    await insertTestDataAndLogin()
+  test('Employee can see the correct date range based on mode', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka)
     const weekCalendar = await openWeekCalendar()
     await weekCalendar.assertDateRange(
       new FiniteDateRange(
@@ -459,8 +481,10 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Employee sees all attendances for a child during a day', async () => {
-    await insertTestDataAndLogin()
+  test('Employee sees all attendances for a child during a day', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka)
     const attendances = [
       [LocalTime.of(8, 15), LocalTime.of(9, 30)],
       [LocalTime.of(10, 30), LocalTime.of(11, 45)],
@@ -487,8 +511,8 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Employee can add absence records', async () => {
-    await insertTestDataAndLogin()
+  test('Employee can add absence records', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka)
     const childReservations = (await openWeekCalendar()).childReservations
     const reservationModal = await childReservations.openReservationModal(
       child1Fixture.id
@@ -500,7 +524,9 @@ describe('Unit group calendar', () => {
     )
   })
 
-  test('Totals row multiplies occupancy coefficients and capacity factors', async () => {
+  test('Totals row multiplies occupancy coefficients and capacity factors', async ({
+    newEvakaPage
+  }) => {
     const serviceNeedOption1 = await Fixture.serviceNeedOption({
       realizedOccupancyCoefficient: 1,
       realizedOccupancyCoefficientUnder3y: 1.75
@@ -563,7 +589,7 @@ describe('Unit group calendar', () => {
       capacityFactor: 2
     }).save()
 
-    page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(page, employee)
@@ -580,7 +606,7 @@ describe('Unit group calendar', () => {
     ])
   })
 
-  test('Totals row sums child rows', async () => {
+  test('Totals row sums child rows', async ({ newEvakaPage }) => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
       realizedOccupancyCoefficient: 1,
       realizedOccupancyCoefficientUnder3y: 1.75
@@ -626,7 +652,7 @@ describe('Unit group calendar', () => {
       }).save()
     }
 
-    page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(page, employee)
@@ -643,7 +669,9 @@ describe('Unit group calendar', () => {
     ])
   })
 
-  test('Totals row uses family unit placement coefficients', async () => {
+  test('Totals row uses family unit placement coefficients', async ({
+    newEvakaPage
+  }) => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
       realizedOccupancyCoefficient: 2.0,
       realizedOccupancyCoefficientUnder3y: 3.0
@@ -684,7 +712,7 @@ describe('Unit group calendar', () => {
       confirmedBy: evakaUserId(employee.id)
     }).save()
 
-    page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(page, employee)
@@ -701,7 +729,9 @@ describe('Unit group calendar', () => {
     ])
   })
 
-  test('Totals row uses default service need option occupancy coefficients', async () => {
+  test('Totals row uses default service need option occupancy coefficients', async ({
+    newEvakaPage
+  }) => {
     await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',
       defaultOption: true,
@@ -737,7 +767,7 @@ describe('Unit group calendar', () => {
       endDate: placementRange.end
     }).save()
 
-    page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: placementRange.end.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(page, employee)
@@ -755,9 +785,11 @@ describe('Unit group calendar', () => {
   })
 })
 
-describe('Unit group calendar for shift care unit', () => {
-  test('Employee can add two reservations for day and sees two rows', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+test.describe('Unit group calendar for shift care unit', () => {
+  test('Employee can add two reservations for day and sees two rows', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
 
     const reservationModal = await childReservations.openReservationModal(
@@ -783,8 +815,10 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 
-  test('Irregular reservation over weekend without shift care', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'NONE' })
+  test('Irregular reservation over weekend without shift care', async ({
+    evaka
+  }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'NONE' })
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
 
@@ -814,8 +848,8 @@ describe('Unit group calendar for shift care unit', () => {
       .assertTextEquals('08:00\n16:00*')
   })
 
-  test('Employee sees attendances along reservations', async () => {
-    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
+  test('Employee sees attendances along reservations', async ({ evaka }) => {
+    await insertTestDataAndLogin(evaka, { childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
 
     const reservationModal = await childReservations.openReservationModal(
@@ -894,7 +928,9 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 
-  test('Child with unknown presence on a holiday is counted into total if they have shift care', async () => {
+  test('Child with unknown presence on a holiday is counted into total if they have shift care', async ({
+    newEvakaPage
+  }) => {
     const serviceNeedOption = await Fixture.serviceNeedOption({
       realizedOccupancyCoefficient: 1,
       realizedOccupancyCoefficientUnder3y: 1.75
@@ -914,7 +950,9 @@ describe('Unit group calendar for shift care unit', () => {
       ],
       shiftCareOpenOnHolidays: true
     }).save()
-    const group1 = await Fixture.daycareGroup({ daycareId: daycare1.id }).save()
+    const group1 = await Fixture.daycareGroup({
+      daycareId: daycare1.id
+    }).save()
     const employee = await Fixture.employee().unitSupervisor(daycare1.id).save()
 
     // mon-sun, fri is holiday
@@ -949,7 +987,7 @@ describe('Unit group calendar for shift care unit', () => {
       }).save()
     }
 
-    page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime: range.start.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(page, employee)
@@ -970,7 +1008,9 @@ describe('Unit group calendar for shift care unit', () => {
       ])
   })
 
-  test('Can make reservations on weekend days when child has shift care', async () => {
+  test('Can make reservations on weekend days when child has shift care', async ({
+    evaka
+  }) => {
     await testCareArea.save()
     await testDaycare.save()
     const careArea = await testCareArea2.save()
@@ -1012,9 +1052,7 @@ describe('Unit group calendar for shift care unit', () => {
       shiftCare: 'FULL'
     }).save()
 
-    page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
+    page = evaka
     await employeeLogin(page, unitSupervisor)
 
     const weekCalendar = await openWeekCalendar()

@@ -28,85 +28,82 @@ import {
   getMessages,
   resetServiceState
 } from '../../generated/api-clients'
-import type {
-  DevApplicationWithForm,
-  DevEmployee
-} from '../../generated/api-types'
+import type { DevApplicationWithForm } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { Page } from '../../utils/page'
+import { test, expect } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let applicationListView: ApplicationListView
-let applicationReadView: ApplicationReadView
+test.describe('Application details', () => {
+  let page: Page
+  let applicationListView: ApplicationListView
+  let applicationReadView: ApplicationReadView
 
-let admin: DevEmployee
+  let singleParentApplication: DevApplicationWithForm
+  let familyWithTwoGuardiansApplication: DevApplicationWithForm
+  let separatedFamilyApplication: DevApplicationWithForm
+  let restrictedDetailsGuardianApplication: DevApplicationWithForm
 
-let singleParentApplication: DevApplicationWithForm
-let familyWithTwoGuardiansApplication: DevApplicationWithForm
-let separatedFamilyApplication: DevApplicationWithForm
-let restrictedDetailsGuardianApplication: DevApplicationWithForm
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+    await familyWithTwoGuardians.save()
+    await familyWithSeparatedGuardians.save()
+    await familyWithRestrictedDetailsGuardian.save()
+    singleParentApplication = applicationFixture(testChild2, testAdult)
+    familyWithTwoGuardiansApplication = {
+      ...applicationFixture(
+        familyWithTwoGuardians.children[0],
+        familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.otherGuardian
+      ),
+      id: fromUuid<ApplicationId>('8634e2b9-200b-4a68-b956-66c5126f86a0')
+    }
+    separatedFamilyApplication = {
+      ...applicationFixture(
+        familyWithSeparatedGuardians.children[0],
+        familyWithSeparatedGuardians.guardian,
+        familyWithSeparatedGuardians.otherGuardian,
+        'DAYCARE',
+        'NOT_AGREED'
+      ),
+      id: fromUuid<ApplicationId>('0c8b9ad3-d283-460d-a5d4-77bdcbc69374')
+    }
+    restrictedDetailsGuardianApplication = {
+      ...applicationFixture(
+        familyWithRestrictedDetailsGuardian.children[0],
+        familyWithRestrictedDetailsGuardian.guardian,
+        familyWithRestrictedDetailsGuardian.otherGuardian,
+        'DAYCARE',
+        'AGREED'
+      ),
+      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
+    }
+    await cleanUpMessages()
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testPreschool.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-  await familyWithTwoGuardians.save()
-  await familyWithSeparatedGuardians.save()
-  await familyWithRestrictedDetailsGuardian.save()
-  singleParentApplication = applicationFixture(testChild2, testAdult)
-  familyWithTwoGuardiansApplication = {
-    ...applicationFixture(
-      familyWithTwoGuardians.children[0],
-      familyWithTwoGuardians.guardian,
-      familyWithTwoGuardians.otherGuardian
-    ),
-    id: fromUuid<ApplicationId>('8634e2b9-200b-4a68-b956-66c5126f86a0')
-  }
-  separatedFamilyApplication = {
-    ...applicationFixture(
-      familyWithSeparatedGuardians.children[0],
-      familyWithSeparatedGuardians.guardian,
-      familyWithSeparatedGuardians.otherGuardian,
-      'DAYCARE',
-      'NOT_AGREED'
-    ),
-    id: fromUuid<ApplicationId>('0c8b9ad3-d283-460d-a5d4-77bdcbc69374')
-  }
-  restrictedDetailsGuardianApplication = {
-    ...applicationFixture(
-      familyWithRestrictedDetailsGuardian.children[0],
-      familyWithRestrictedDetailsGuardian.guardian,
-      familyWithRestrictedDetailsGuardian.otherGuardian,
-      'DAYCARE',
-      'AGREED'
-    ),
-    id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
-  }
-  await cleanUpMessages()
+    await createApplications({
+      body: [
+        singleParentApplication,
+        familyWithTwoGuardiansApplication,
+        separatedFamilyApplication,
+        restrictedDetailsGuardianApplication
+      ]
+    })
 
-  await createApplications({
-    body: [
-      singleParentApplication,
-      familyWithTwoGuardiansApplication,
-      separatedFamilyApplication,
-      restrictedDetailsGuardianApplication
-    ]
+    const admin = await Fixture.employee().admin().save()
+
+    page = evaka
+    applicationListView = new ApplicationListView(page)
+    applicationReadView = new ApplicationReadView(page)
+
+    await employeeLogin(page, admin)
   })
 
-  admin = await Fixture.employee().admin().save()
-
-  page = await Page.open()
-  applicationListView = new ApplicationListView(page)
-  applicationReadView = new ApplicationReadView(page)
-})
-
-describe('Application details', () => {
   test('Admin can view application details', async () => {
-    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     await applicationListView.searchButton.click()
@@ -119,7 +116,6 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian is shown as empty if there is no other guardian', async () => {
-    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     await applicationListView.searchButton.click()
@@ -130,7 +126,6 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian in same address is shown', async () => {
-    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     await applicationListView.searchButton.click()
@@ -144,7 +139,6 @@ describe('Application details', () => {
   })
 
   test('Other VTJ guardian in different address is shown', async () => {
-    await employeeLogin(page, admin)
     await page.goto(config.adminUrl)
 
     await applicationListView.searchButton.click()

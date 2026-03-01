@@ -8,42 +8,43 @@ import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { PaymentsPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let financePage: FinancePage
-let paymentsPage: PaymentsPage
+test.describe('Payments', () => {
+  let page: Page
+  let financePage: FinancePage
+  let paymentsPage: PaymentsPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare({
-    areaId: area.id,
-    businessId: 'businessId',
-    providerId: 'providerId',
-    iban: 'iban'
-  }).save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare({
+      areaId: area.id,
+      businessId: 'businessId',
+      providerId: 'providerId',
+      iban: 'iban'
+    }).save()
 
-  await Fixture.payment({
-    unitId: unit.id,
-    unitName: unit.name,
-    amount: 10000
-  }).save()
+    await Fixture.payment({
+      unitId: unit.id,
+      unitName: unit.name,
+      amount: 10000
+    }).save()
 
-  page = await Page.open({})
+    page = evaka
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
-  await employeeLogin(page, financeAdmin)
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    await employeeLogin(page, financeAdmin)
 
-  await page.goto(config.employeeUrl)
-  const nav = new EmployeeNav(page)
-  await nav.openTab('finance')
-  financePage = new FinancePage(page)
-  paymentsPage = await financePage.selectPaymentsTab()
-})
+    await page.goto(config.employeeUrl)
+    const nav = new EmployeeNav(page)
+    await nav.openTab('finance')
+    financePage = new FinancePage(page)
+    paymentsPage = await financePage.selectPaymentsTab()
+  })
 
-describe('Payments', () => {
   test('are toggled and sent', async () => {
     await paymentsPage.searchButton.click()
 

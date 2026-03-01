@@ -5,23 +5,26 @@
 import { testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test, expect } from '../../playwright'
 import { enduserLogin } from '../../utils/user'
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testAdult.saveAdult({ updateMockVtjWithDependants: [] })
-})
-
-describe('Citizen header customization', () => {
-  test('English language can be disabled', async () => {
-    const page = await Page.open({
+test.describe('Citizen header customization', () => {
+  test.use({
+    evakaOptions: {
       citizenCustomizations: {
         langs: ['fi', 'sv']
       }
-    })
-    await enduserLogin(page, testAdult)
-    const header = new CitizenHeader(page)
+    }
+  })
+
+  test.beforeEach(async () => {
+    await resetServiceState()
+    await testAdult.saveAdult({ updateMockVtjWithDependants: [] })
+  })
+
+  test('English language can be disabled', async ({ evaka }) => {
+    await enduserLogin(evaka, testAdult)
+    const header = new CitizenHeader(evaka)
     expect(await header.listLanguages()).toStrictEqual({
       fi: true,
       sv: true,

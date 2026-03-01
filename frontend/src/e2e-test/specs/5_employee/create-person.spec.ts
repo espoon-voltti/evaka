@@ -11,23 +11,24 @@ import {
   upsertVtjDataset
 } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let personSearchPage: PersonSearchPage
+test.describe('Create person', () => {
+  let page: Page
+  let personSearchPage: PersonSearchPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  const admin = await Fixture.employee().admin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    const admin = await Fixture.employee().admin().save()
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
-  await page.goto(`${config.employeeUrl}/search`)
-  personSearchPage = new PersonSearchPage(page)
-})
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/search`)
+    personSearchPage = new PersonSearchPage(page)
+  })
 
-describe('Create person', () => {
   test('Create person without a SSN', async () => {
     const person = {
       firstName: 'Etunimi',

@@ -16,8 +16,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
     "test:watch": "yarn test --watchAll",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --runInBand src/e2e-test/specs",
-    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --retries=2"
+    "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.7.2",
@@ -106,6 +105,7 @@
     "terser": "5.46.0",
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.56.1",
     "vite": "7.3.1"
@@ -156,7 +156,6 @@
     "testRunner": "jest-circus/runner",
     "projects": [
       "./src/citizen-frontend",
-      "./src/e2e-test",
       "./src/employee-frontend",
       "./src/lib-common",
       "./src/lib-components",

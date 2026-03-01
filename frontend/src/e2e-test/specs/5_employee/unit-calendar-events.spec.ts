@@ -32,8 +32,9 @@ import type {
 import type { UnitCalendarPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
+import { test } from '../../playwright'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -57,7 +58,16 @@ const eventTimeId2 = randomId<CalendarEventTimeId>()
 const child1DaycarePlacementId = randomId<PlacementId>()
 const child1DaycarePlacementId2 = randomId<PlacementId>()
 
-beforeEach(async () => {
+test.use({
+  evakaOptions: {
+    employeeCustomizations: {
+      featureFlags: { discussionReservations: true }
+    },
+    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+  }
+})
+
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
 
   await familyWithTwoGuardians.save()
@@ -163,19 +173,14 @@ beforeEach(async () => {
     end: LocalTime.of(17, 0)
   }).save()
 
-  page = await Page.open({
-    employeeCustomizations: {
-      featureFlags: { discussionReservations: true }
-    },
-    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
+  page = evaka
   await employeeLogin(page, unitSupervisor)
   unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
   calendarPage = await unitPage.openCalendarPage()
 })
 
-describe('Calendar events', () => {
+test.describe('Calendar events', () => {
   test('Employee can add event for group', async () => {
     await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
@@ -255,7 +260,7 @@ describe('Calendar events', () => {
   })
 })
 
-describe('Discussion surveys', () => {
+test.describe('Discussion surveys', () => {
   test('Employee can see existing discussion survey in week calendar and summary modal', async () => {
     await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()

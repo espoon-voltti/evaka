@@ -10,7 +10,8 @@ import type {
   CitizenPersonalDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let header: CitizenHeader
@@ -26,18 +27,16 @@ const citizenFixture = Fixture.person({
   email: null
 })
 
-beforeEach(async () => {
-  await resetServiceState()
-  await citizenFixture.saveAdult({
-    updateMockVtjWithDependants: []
-  })
-  page = await Page.open()
-})
-
-describe('Citizen personal details', () => {
+test.describe('Citizen personal details', () => {
   let section: CitizenPersonalDetailsSection
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await citizenFixture.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    page = evaka
+
     await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 
@@ -94,10 +93,16 @@ describe('Citizen personal details', () => {
   })
 })
 
-describe('Citizen notification settings', () => {
+test.describe('Citizen notification settings', () => {
   let section: CitizenNotificationSettingsSection
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await citizenFixture.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    page = evaka
+
     await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 

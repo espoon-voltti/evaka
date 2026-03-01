@@ -9,32 +9,33 @@ import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import type { FeeAlterationsSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let personId: UUID
-let feeAlterationSection: FeeAlterationsSection
+test.describe('Child fee alteration', () => {
+  let page: Page
+  let personId: UUID
+  let feeAlterationSection: FeeAlterationsSection
 
-beforeEach(async () => {
-  await resetServiceState()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
 
-  await testChild.saveChild()
-  personId = testChild.id
+    await testChild.saveChild()
+    personId = testChild.id
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
-  page = await Page.open()
-  await employeeLogin(page, financeAdmin)
-  await page.goto(config.employeeUrl + '/child-information/' + personId)
+    page = evaka
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl + '/child-information/' + personId)
 
-  const childInformationPage = new ChildInformationPage(page)
-  feeAlterationSection =
-    await childInformationPage.openCollapsible('feeAlterations')
-})
+    const childInformationPage = new ChildInformationPage(page)
+    feeAlterationSection =
+      await childInformationPage.openCollapsible('feeAlterations')
+  })
 
-describe('Child fee alteration', () => {
-  it('Create a new fee alteration with attachment', async () => {
+  test('Create a new fee alteration with attachment', async () => {
     const testFileName1 = 'test_file.png'
     const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
 

@@ -11,15 +11,22 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+const mockedToday = LocalDate.of(2023, 9, 14)
 
-describe('Placement guarantee report', () => {
-  test('child with placement guarantee is in the report', async () => {
-    const mockedToday = LocalDate.of(2023, 9, 14)
+test.describe('Placement guarantee report', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
+    }
+  })
 
+  test.beforeEach(async (): Promise<void> => resetServiceState())
+
+  test('child with placement guarantee is in the report', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -39,11 +46,7 @@ describe('Placement guarantee report', () => {
       placeGuarantee: true
     }).save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.assertRows([
       {
         areaName: area.name,
@@ -54,9 +57,9 @@ describe('Placement guarantee report', () => {
     ])
   })
 
-  test('child without placement guarantee is not in the report', async () => {
-    const mockedToday = LocalDate.of(2023, 9, 14)
-
+  test('child without placement guarantee is not in the report', async ({
+    evaka
+  }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -76,17 +79,11 @@ describe('Placement guarantee report', () => {
       placeGuarantee: false
     }).save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.assertRows([])
   })
 
-  test('date picker works', async () => {
-    const mockedToday = LocalDate.of(2023, 9, 14)
-
+  test('date picker works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -121,11 +118,7 @@ describe('Placement guarantee report', () => {
       placeGuarantee: true
     }).save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.selectDate('12.09.2023')
     await report.assertRows([
       {
@@ -146,9 +139,7 @@ describe('Placement guarantee report', () => {
     ])
   })
 
-  test('unit selector works', async () => {
-    const mockedToday = LocalDate.of(2023, 9, 14)
-
+  test('unit selector works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare({ areaId: area.id }).save()
@@ -184,11 +175,7 @@ describe('Placement guarantee report', () => {
       placeGuarantee: true
     }).save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.selectUnit(unit1.name)
     await report.assertRows([
       {

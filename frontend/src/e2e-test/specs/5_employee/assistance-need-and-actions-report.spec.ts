@@ -27,49 +27,54 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
-let childId: PersonId
-let unitId: DaycareId
-let admin: DevEmployee
 
 const mockedTime = LocalDate.of(2024, 2, 19)
 
-beforeEach(async () => {
-  await resetServiceState()
-
-  await testCareArea.save()
-  await testDaycare.save()
-  await familyWithTwoGuardians.save()
-  await createDefaultServiceNeedOptions()
-  await createDaycareGroups({ body: [testDaycareGroup] })
-
-  unitId = testDaycare.id
-  childId = familyWithTwoGuardians.children[0].id
-  const placement = await Fixture.placement({
-    childId,
-    unitId: unitId,
-    startDate: mockedTime,
-    endDate: mockedTime
-  }).save()
-
-  await Fixture.groupPlacement({
-    daycareGroupId: testDaycareGroup.id,
-    daycarePlacementId: placement.id,
-    startDate: mockedTime,
-    endDate: mockedTime
-  }).save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
-  admin = await Fixture.employee().admin().save()
-  await employeeLogin(page, admin)
+  }
 })
 
-describe('Assistance need and actions report', () => {
+test.describe('Assistance need and actions report', () => {
+  let page: Page
+  let childId: PersonId
+  let unitId: DaycareId
+  let admin: DevEmployee
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithTwoGuardians.save()
+    await createDefaultServiceNeedOptions()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    unitId = testDaycare.id
+    childId = familyWithTwoGuardians.children[0].id
+    const placement = await Fixture.placement({
+      childId,
+      unitId: unitId,
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: testDaycareGroup.id,
+      daycarePlacementId: placement.id,
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    page = evaka
+    admin = await Fixture.employee().admin().save()
+    await employeeLogin(page, admin)
+  })
+
   test('Shows assistance needs', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
 

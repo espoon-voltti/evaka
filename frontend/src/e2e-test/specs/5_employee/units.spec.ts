@@ -26,56 +26,61 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let unitFixture: DevDaycare
-let groupFixture: DevDaycareGroup
-let childFixture: DevPerson
-let placementFixture: DevPlacement
-let page: Page
+test.describe('Employee - Units', () => {
+  let unitFixture: DevDaycare
+  let groupFixture: DevDaycareGroup
+  let childFixture: DevPerson
+  let placementFixture: DevPlacement
+  let page: Page
 
-const placementDates = () => ({
-  start: placementFixture.startDate.format(),
-  end: placementFixture.endDate.format()
-})
-
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testDaycarePrivateVoucher.save()
-  await testPreschool.save()
-  await testClub.save()
-  await familyWithTwoGuardians.save()
-  await createDefaultServiceNeedOptions()
-  unitFixture = testDaycare
-  childFixture = familyWithTwoGuardians.children[0]
-  groupFixture = await Fixture.daycareGroup({
-    daycareId: unitFixture.id,
-    name: 'Kosmiset vakiot',
-    startDate: LocalDate.of(2020, 2, 1)
-  }).save()
-
-  const today = LocalDate.of(2022, 12, 1)
-  placementFixture = await Fixture.placement({
-    childId: childFixture.id,
-    unitId: unitFixture.id,
-    startDate: today,
-    endDate: today.addYears(1)
-  }).save()
-
-  const admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({
-    mockedTime: LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
-      LocalTime.of(12, 0)
-    )
+  const placementDates = () => ({
+    start: placementFixture.startDate.format(),
+    end: placementFixture.endDate.format()
   })
-  await employeeLogin(page, admin)
-})
 
-describe('Employee - Units', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
+        LocalTime.of(12, 0)
+      )
+    }
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testDaycarePrivateVoucher.save()
+    await testPreschool.save()
+    await testClub.save()
+    await familyWithTwoGuardians.save()
+    await createDefaultServiceNeedOptions()
+    unitFixture = testDaycare
+    childFixture = familyWithTwoGuardians.children[0]
+    groupFixture = await Fixture.daycareGroup({
+      daycareId: unitFixture.id,
+      name: 'Kosmiset vakiot',
+      startDate: LocalDate.of(2020, 2, 1)
+    }).save()
+
+    const today = LocalDate.of(2022, 12, 1)
+    placementFixture = await Fixture.placement({
+      childId: childFixture.id,
+      unitId: unitFixture.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+
+    const admin = await Fixture.employee().admin().save()
+
+    page = evaka
+    await employeeLogin(page, admin)
+  })
+
   test('filtering units, navigating to one, contact details', async () => {
     const unitsPage = await UnitsPage.open(page)
 

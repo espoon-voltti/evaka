@@ -21,8 +21,9 @@ import type {
   Feature as DigitransitFeature
 } from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
+import { test, expect } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
 const swedishDaycare: DevDaycare = {
   ...testDaycare2,
@@ -58,27 +59,29 @@ const privateDaycareWithoutPeriods: DevDaycare = {
   providerType: 'PRIVATE'
 }
 
-let page: Page
-let mapPage: CitizenMapPage
-beforeAll(async () => {
-  await resetServiceState()
-  const careArea = await testCareArea.save()
-  await Fixture.daycare({ ...testClub, areaId: careArea.id }).save()
-  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
-  await Fixture.daycare({ ...testPreschool, areaId: careArea.id }).save()
-  await Fixture.daycare({ ...swedishDaycare, areaId: careArea.id }).save()
-  await Fixture.daycare({
-    ...privateDaycareWithoutPeriods,
-    areaId: careArea.id
-  }).save()
-})
-beforeEach(async () => {
-  page = await Page.open()
-  await page.goto(`${config.enduserUrl}/map`)
-  mapPage = new CitizenMapPage(page)
-})
+test.describe('Citizen map page', () => {
+  let page: Page
+  let mapPage: CitizenMapPage
 
-describe('Citizen map page', () => {
+  test.beforeAll(async () => {
+    await resetServiceState()
+    const careArea = await testCareArea.save()
+    await Fixture.daycare({ ...testClub, areaId: careArea.id }).save()
+    await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
+    await Fixture.daycare({ ...testPreschool, areaId: careArea.id }).save()
+    await Fixture.daycare({ ...swedishDaycare, areaId: careArea.id }).save()
+    await Fixture.daycare({
+      ...privateDaycareWithoutPeriods,
+      areaId: careArea.id
+    }).save()
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
+    await page.goto(`${config.enduserUrl}/map`)
+    mapPage = new CitizenMapPage(page)
+  })
+
   test('Unit type filter affects the unit list', async () => {
     await mapPage.daycareFilter.waitUntilVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
@@ -96,6 +99,7 @@ describe('Citizen map page', () => {
     await mapPage.listItemFor(testPreschool).waitUntilVisible()
     await mapPage.listItemFor(testDaycare2).waitUntilHidden()
   })
+
   test('Unit language filter affects the unit list', async () => {
     await mapPage.daycareFilter.waitUntilVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
@@ -111,6 +115,7 @@ describe('Citizen map page', () => {
     await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
     await mapPage.listItemFor(testDaycare2).waitUntilHidden()
   })
+
   test('Unit details can be viewed by clicking a list item', async () => {
     await mapPage.listItemFor(testDaycare2).click()
     await mapPage.unitDetailsPanel.waitUntilVisible()
@@ -125,6 +130,7 @@ describe('Citizen map page', () => {
       swedishDaycare.name
     )
   })
+
   test('Units can be searched', async () => {
     await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
@@ -134,6 +140,7 @@ describe('Citizen map page', () => {
       swedishDaycare.name
     )
   })
+
   test('Streets can be searched', async () => {
     await putDigitransitAutocomplete({
       body: {
@@ -144,11 +151,13 @@ describe('Citizen map page', () => {
     await mapPage.searchInput.clickAddressResult(testStreet.properties.name)
     await mapPage.map.addressMarker.waitUntilVisible()
   })
+
   test('Unit markers can be clicked to open a popup', async () => {
     await mapPage.testMapPopup(testDaycare2)
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.testMapPopup(swedishDaycare)
   })
+
   test('Private unit without any periods will show up on the map', async () => {
     await mapPage.testMapPopup(privateDaycareWithoutPeriods)
     await waitUntilEqual(

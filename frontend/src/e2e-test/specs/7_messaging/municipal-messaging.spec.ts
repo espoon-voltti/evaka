@@ -29,16 +29,10 @@ import {
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { Page } from '../../utils/page'
+import type { NewEvakaPage } from '../../playwright'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
-
-let messagingPage: Page
-let messenger: DevEmployee
-let staffPage: Page
-let staff: DevEmployee
-let citizenPage: Page
-let childInAreaA: DevPerson
-let childInAreaB: DevPerson
 
 const mockedDate = LocalDate.of(2022, 11, 8)
 const messageSendTime = HelsinkiDateTime.fromLocal(
@@ -50,101 +44,111 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
   LocalTime.of(10, 49, 32)
 )
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  childInAreaA = testChild
-  childInAreaB = testChild2
-  await testCareArea2.save()
-  await testDaycare2.save()
-  await testDaycareGroup.save()
-  const daycareGroup2Fixture = await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    id: randomId<GroupId>(),
-    daycareId: testDaycare2.id
-  }).save()
-  await Fixture.placement({
-    childId: childInAreaA.id,
-    unitId: testDaycare.id,
-    startDate: mockedDate,
-    endDate: mockedDate
+test.describe('Municipal messaging -', () => {
+  let messagingPage: Page
+  let messenger: DevEmployee
+  let staffPage: Page
+  let staff: DevEmployee
+  let citizenPage: Page
+  let childInAreaA: DevPerson
+  let childInAreaB: DevPerson
+  let newPage: NewEvakaPage
+
+  const defaultMessage = {
+    title: 'Tiedote',
+    content: 'Viestin sisältö'
+  }
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    childInAreaA = testChild
+    childInAreaB = testChild2
+    await testCareArea2.save()
+    await testDaycare2.save()
+    await testDaycareGroup.save()
+    const daycareGroup2Fixture = await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      id: randomId<GroupId>(),
+      daycareId: testDaycare2.id
+    }).save()
+    await Fixture.placement({
+      childId: childInAreaA.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    })
+      .save()
+      .then((placement) =>
+        Fixture.groupPlacement({
+          daycarePlacementId: placement.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
+      )
+    await Fixture.placement({
+      childId: childInAreaB.id,
+      unitId: testDaycare2.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    })
+      .save()
+      .then((placement) =>
+        Fixture.groupPlacement({
+          daycarePlacementId: placement.id,
+          daycareGroupId: daycareGroup2Fixture.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
+      )
+    const guardian2 = await Fixture.person({ ssn: null }).saveAdult()
+    const guardian3 = await Fixture.person({ ssn: null }).saveAdult()
+    await insertGuardians({
+      body: [
+        {
+          childId: childInAreaA.id,
+          guardianId: testAdult.id
+        },
+        {
+          childId: childInAreaB.id,
+          guardianId: guardian2.id
+        },
+        {
+          childId: childInAreaB.id,
+          guardianId: guardian3.id
+        }
+      ]
+    })
+    await createMessageAccounts()
+    messenger = await Fixture.employee().messenger().save()
+    staff = await Fixture.employee()
+      .staff(testDaycare.id)
+      .groupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
+      .save()
+    newPage = newEvakaPage
   })
-    .save()
-    .then((placement) =>
-      Fixture.groupPlacement({
-        daycarePlacementId: placement.id,
-        daycareGroupId: testDaycareGroup.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate
-      }).save()
-    )
-  await Fixture.placement({
-    childId: childInAreaB.id,
-    unitId: testDaycare2.id,
-    startDate: mockedDate,
-    endDate: mockedDate
-  })
-    .save()
-    .then((placement) =>
-      Fixture.groupPlacement({
-        daycarePlacementId: placement.id,
-        daycareGroupId: daycareGroup2Fixture.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate
-      }).save()
-    )
-  const guardian2 = await Fixture.person({ ssn: null }).saveAdult()
-  const guardian3 = await Fixture.person({ ssn: null }).saveAdult()
-  await insertGuardians({
-    body: [
-      {
-        childId: childInAreaA.id,
-        guardianId: testAdult.id
-      },
-      {
-        childId: childInAreaB.id,
-        guardianId: guardian2.id
-      },
-      {
-        childId: childInAreaB.id,
-        guardianId: guardian3.id
-      }
-    ]
-  })
-  await createMessageAccounts()
-  messenger = await Fixture.employee().messenger().save()
-  staff = await Fixture.employee()
-    .staff(testDaycare.id)
-    .groupAcl(testDaycareGroup.id, messageSendTime, messageSendTime)
-    .save()
-})
 
-async function openMessagingPage(mockedTime: HelsinkiDateTime) {
-  messagingPage = await Page.open({ mockedTime })
-  await employeeLogin(messagingPage, messenger)
-}
+  async function openMessagingPage(mockedTime: HelsinkiDateTime) {
+    messagingPage = await newPage({ mockedTime })
+    await employeeLogin(messagingPage, messenger)
+  }
 
-async function openStaffPage(mockedTime: HelsinkiDateTime) {
-  staffPage = await Page.open({ mockedTime })
-  await employeeLogin(staffPage, staff)
-}
+  async function openStaffPage(mockedTime: HelsinkiDateTime) {
+    staffPage = await newPage({ mockedTime })
+    await employeeLogin(staffPage, staff)
+  }
 
-async function openCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, testAdult)
-}
+  async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLogin(citizenPage, testAdult)
+  }
 
-const defaultMessage = {
-  title: 'Tiedote',
-  content: 'Viestin sisältö'
-}
-
-describe('Municipal messaging -', () => {
   test('Messaging role can send messages to multiple areas', async () => {
     await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)

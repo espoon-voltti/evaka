@@ -24,33 +24,35 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let admin: DevEmployee
 let page: Page
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  admin = await Fixture.employee().admin().save()
-})
-
 async function openPage(
+  evaka: Page,
   employee: DevEmployee = admin
 ): Promise<PersonSearchPage> {
-  page = await Page.open()
-  await employeeLogin(page, employee)
-  await page.goto(`${config.employeeUrl}/search`)
-  return new PersonSearchPage(page)
+  await employeeLogin(evaka, employee)
+  await evaka.goto(`${config.employeeUrl}/search`)
+  return new PersonSearchPage(evaka)
 }
 
-describe('Search person', () => {
+test.describe('Search person', () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    admin = await Fixture.employee().admin().save()
+    page = evaka
+  })
+
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
@@ -122,7 +124,7 @@ describe('Search person', () => {
       }
     })
 
-    const searchPage = await openPage(specialEducationTeacher)
+    const searchPage = await openPage(page, specialEducationTeacher)
 
     await searchPage.searchInput.fill(childWithAssistanceNeed.firstName)
     await searchPage.searchResults.assertCount(1)

@@ -26,25 +26,28 @@ import {
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
+import { test, expect } from '../../playwright'
 import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
 import { getVerificationCodeFromEmail } from '../../utils/email'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-let page: Page
-let header: CitizenHeader
-let applicationsPage: CitizenApplicationsPage
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
 const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
-describe('Citizen daycare applications', () => {
-  beforeEach(async () => {
+test.describe('Citizen daycare applications', () => {
+  let page: Page
+  let header: CitizenHeader
+  let applicationsPage: CitizenApplicationsPage
+
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
+
+  test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -56,7 +59,7 @@ describe('Citizen daycare applications', () => {
       updateMockVtjWithDependants: [testChild]
     })
 
-    page = await Page.open({ mockedTime: mockedNow })
+    page = evaka
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
@@ -296,7 +299,9 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertUrgencyFileDownload()
   })
 
-  test('Other guardian can see an application after it has been sent, and cannot see person details or attachments', async () => {
+  test('Other guardian can see an application after it has been sent, and cannot see person details or attachments', async ({
+    newEvakaPage
+  }) => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
@@ -313,9 +318,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.writeAssistanceNeedDescription('Child has assistance need')
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
-    const otherGuardianPage = await Page.open({
-      mockedTime: mockedNow
-    })
+    const otherGuardianPage = await newEvakaPage({ mockedTime: mockedNow })
     await enduserLogin(otherGuardianPage, testAdult2)
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)

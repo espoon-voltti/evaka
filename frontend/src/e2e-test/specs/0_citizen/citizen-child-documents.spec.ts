@@ -37,10 +37,10 @@ import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { MockStrongAuthPage } from '../../pages/citizen/citizen-strong-auth'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
-import { Page } from '../../utils/page'
+import { expect, test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
-let page: Page
 let child: DevPerson
 let decisionMaker: DevEmployee
 let templateIdVasu: DocumentTemplateId
@@ -51,11 +51,10 @@ let templateIdPed: DocumentTemplateId
 let documentIdPed: UUID
 let templateIdDecision: DocumentTemplateId
 let documentIdDecision: UUID
-let header: CitizenHeader
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
 
   await testCareArea.save()
@@ -213,56 +212,62 @@ beforeEach(async () => {
       })
       .save()
   ).id
-
-  page = await Page.open({ mockedTime: mockedNow })
-  header = new CitizenHeader(page, 'desktop')
 })
 
-describe('Citizen child documents listing page', () => {
-  beforeEach(async () => {
-    await enduserLogin(page, testAdult)
-  })
-  test('Published vasu is in the list', async () => {
-    await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
-    await childPage.openCollapsible('child-documents')
-    await childPage.childDocumentLink(documentIdVasu).click()
-    expect(page.url.endsWith(`/child-documents/${documentIdVasu}`)).toBeTruthy()
-    await page.find('h1').assertTextEquals('VASU 2023-2024')
+test.describe('Citizen child documents listing page', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
+
+  test.beforeEach(async ({ evaka }) => {
+    await enduserLogin(evaka, testAdult)
   })
 
-  test('Published hojks is in the list', async () => {
+  test('Published vasu is in the list', async ({ evaka }) => {
+    const header = new CitizenHeader(evaka, 'desktop')
     await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
+    const childPage = new CitizenChildPage(evaka)
+    await childPage.openCollapsible('child-documents')
+    await childPage.childDocumentLink(documentIdVasu).click()
+    expect(
+      evaka.url.endsWith(`/child-documents/${documentIdVasu}`)
+    ).toBeTruthy()
+    await evaka.find('h1').assertTextEquals('VASU 2023-2024')
+  })
+
+  test('Published hojks is in the list', async ({ evaka }) => {
+    const header = new CitizenHeader(evaka, 'desktop')
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdHojks).click()
     expect(
-      page.url.endsWith(`/child-documents/${documentIdHojks}`)
+      evaka.url.endsWith(`/child-documents/${documentIdHojks}`)
     ).toBeTruthy()
-    await page.find('h1').assertTextEquals('HOJKS 2023-2024')
+    await evaka.find('h1').assertTextEquals('HOJKS 2023-2024')
   })
 
-  test('Published pedagogical report is in the list', async () => {
+  test('Published pedagogical report is in the list', async ({ evaka }) => {
+    const header = new CitizenHeader(evaka, 'desktop')
     await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
+    const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdPed).click()
-    expect(page.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
-    await page.find('h1').assertTextEquals('Pedagoginen selvitys')
+    expect(evaka.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
+    await evaka.find('h1').assertTextEquals('Pedagoginen selvitys')
   })
 
-  test('Published decision is in the list', async () => {
+  test('Published decision is in the list', async ({ evaka }) => {
+    const header = new CitizenHeader(evaka, 'desktop')
     await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
+    const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdDecision).click()
     expect(
-      page.url.endsWith(`/child-documents/${documentIdDecision}`)
+      evaka.url.endsWith(`/child-documents/${documentIdDecision}`)
     ).toBeTruthy()
-    await page.find('h1').assertTextEquals('Tuenpäätös')
+    await evaka.find('h1').assertTextEquals('Tuenpäätös')
   })
 
-  test('Answered by employee does not show name', async () => {
+  test('Answered by employee does not show name', async ({ evaka }) => {
     const templateContent: DocumentTemplateContent = {
       sections: [
         {
@@ -316,8 +321,9 @@ describe('Citizen child documents listing page', () => {
       })
       .save()
 
+    const header = new CitizenHeader(evaka, 'desktop')
     await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
+    const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     const row = childPage.childDocumentRow(document.id)
     await row.assertTextEquals(
@@ -326,7 +332,9 @@ describe('Citizen child documents listing page', () => {
   })
 })
 
-describe('Citizen child documents editor page', () => {
+test.describe('Citizen child documents editor page', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
+
   const templateContent: DocumentTemplateContent = {
     sections: [
       {
@@ -358,7 +366,8 @@ describe('Citizen child documents editor page', () => {
     content: templateContent,
     published: true
   }
-  test('guardian can fill document and send', async () => {
+
+  test('guardian can fill document and send', async ({ evaka }) => {
     const template = await Fixture.documentTemplate(documentTemplate).save()
     const documentContent: DocumentContent = {
       answers: []
@@ -377,10 +386,11 @@ describe('Citizen child documents editor page', () => {
       })
       .save()
 
-    await enduserLogin(page, testAdult)
+    await enduserLogin(evaka, testAdult)
+    const header = new CitizenHeader(evaka, 'desktop')
     await header.assertUnreadChildrenCount(5)
     await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(page)
+    const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     const row = childPage.childDocumentRow(document.id)
     await row.assertTextEquals(
@@ -388,7 +398,7 @@ describe('Citizen child documents editor page', () => {
     )
     await childPage.childDocumentLink(document.id).click()
     await header.assertUnreadChildrenCount(4)
-    const childDocumentPage = new ChildDocumentPage(page)
+    const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.editButton.click()
     await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
@@ -410,7 +420,7 @@ describe('Citizen child documents editor page', () => {
     )
   })
 
-  test('strong auth guardian can navigate via toast', async () => {
+  test('strong auth guardian can navigate via toast', async ({ evaka }) => {
     const template = await Fixture.documentTemplate(documentTemplate).save()
     const documentContent: DocumentContent = {
       answers: []
@@ -429,13 +439,13 @@ describe('Citizen child documents editor page', () => {
       })
       .save()
 
-    await enduserLogin(page, testAdult)
-    const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
+    await enduserLogin(evaka, testAdult)
+    const toast1 = evaka.findByDataQa(`toast-child-document-${document.id}`)
     await toast1.assertTextEquals(
       'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja'
     )
     await toast1.click()
-    const childDocumentPage = new ChildDocumentPage(page)
+    const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
@@ -449,12 +459,15 @@ describe('Citizen child documents editor page', () => {
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
     await toast1.waitUntilHidden()
-    const toast2 = page.findByDataQa(
+    const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
     await toast2.assertTextEquals('Lomake lähetetty')
   })
-  test('weak auth guardian can navigate via toast, document is in edit mode', async () => {
+
+  test('weak auth guardian can navigate via toast, document is in edit mode', async ({
+    evaka
+  }) => {
     const credentials = {
       username: 'test@example.com',
       password: 'TestPassword456!'
@@ -481,19 +494,19 @@ describe('Citizen child documents editor page', () => {
       })
       .save()
 
-    await enduserLoginWeak(page, credentials)
-    const toast1 = page.findByDataQa(`toast-child-document-${document.id}`)
+    await enduserLoginWeak(evaka, credentials)
+    const toast1 = evaka.findByDataQa(`toast-child-document-${document.id}`)
     await toast1.assertTextEquals(
       'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja\nAsiakirjan täyttäminen vaatii vahvan tunnistautumisen.'
     )
     await toast1.click()
-    const strongAuthPage = new MockStrongAuthPage(page)
+    const strongAuthPage = new MockStrongAuthPage(evaka)
     const childDocumentPage = await strongAuthPage.login(
       testAdult.ssn!,
-      (page) => new ChildDocumentPage(page)
+      (page: Page) => new ChildDocumentPage(page)
     )
     expect(
-      page.url.endsWith(
+      evaka.url.endsWith(
         `/child-documents/${document.id}?returnTo=calendar&readOnly=false`
       )
     ).toBeTruthy()
@@ -510,7 +523,7 @@ describe('Citizen child documents editor page', () => {
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
     await toast1.waitUntilHidden()
-    const toast2 = page.findByDataQa(
+    const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
     await toast2.assertTextEquals('Lomake lähetetty')

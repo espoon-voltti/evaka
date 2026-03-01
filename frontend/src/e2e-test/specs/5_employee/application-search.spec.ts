@@ -26,12 +26,13 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let admin: DevEmployee
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -42,15 +43,18 @@ beforeEach(async () => {
   admin = await Fixture.employee().admin().save()
 })
 
-async function openPage(employee: DevEmployee = admin) {
-  const page = await Page.open()
+async function openPage(
+  newEvakaPage: () => Promise<Page>,
+  employee: DevEmployee = admin
+) {
+  const page = await newEvakaPage()
   await employeeLogin(page, employee)
   await page.goto(config.adminUrl)
   return new ApplicationListView(page)
 }
 
-describe('Employee searches applications', () => {
-  test('Duplicate applications are found', async () => {
+test.describe('Employee searches applications', () => {
+  test('Duplicate applications are found', async ({ newEvakaPage }) => {
     const fixture = applicationFixture(testChild, testAdult)
 
     const duplicateFixture = {
@@ -66,7 +70,7 @@ describe('Employee searches applications', () => {
     await createApplications({
       body: [fixture, duplicateFixture, nonDuplicateFixture]
     })
-    const applicationListView = await openPage()
+    const applicationListView = await openPage(newEvakaPage)
 
     await applicationListView.specialFilterItems.duplicate.click()
     await applicationListView.searchButton.click()
@@ -75,7 +79,7 @@ describe('Employee searches applications', () => {
     await applicationListView.assertApplicationCount(2)
   })
 
-  test('Care area filters work', async () => {
+  test('Care area filters work', async ({ newEvakaPage }) => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const careArea2 = await Fixture.careArea().save()
@@ -95,7 +99,7 @@ describe('Employee searches applications', () => {
     const app3 = createApplicationForUnit(daycare3.id)
 
     await createApplications({ body: [app1, app2, app3] })
-    const applicationListView = await openPage()
+    const applicationListView = await openPage(newEvakaPage)
 
     await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(3)
@@ -112,7 +116,7 @@ describe('Employee searches applications', () => {
     await applicationListView.assertApplicationIsVisible(app2.id)
   })
 
-  test('Unit filter works', async () => {
+  test('Unit filter works', async ({ newEvakaPage }) => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
@@ -128,7 +132,7 @@ describe('Employee searches applications', () => {
     const app2 = createApplicationForUnit(daycare2.id)
 
     await createApplications({ body: [app1, app2] })
-    const applicationListView = await openPage()
+    const applicationListView = await openPage(newEvakaPage)
 
     await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(2)
@@ -139,7 +143,9 @@ describe('Employee searches applications', () => {
     await applicationListView.assertApplicationCount(1)
   })
 
-  test('Special education teacher (VEO) sees only allowed applications', async () => {
+  test('Special education teacher (VEO) sees only allowed applications', async ({
+    newEvakaPage
+  }) => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
@@ -185,12 +191,15 @@ describe('Employee searches applications', () => {
         appWithAssistanceNeededWrongUnit
       ]
     })
-    const applicationListView = await openPage(specialEducationTeacher)
+    const applicationListView = await openPage(
+      newEvakaPage,
+      specialEducationTeacher
+    )
     await applicationListView.searchButton.click()
     await applicationListView.assertApplicationCount(1)
   })
 
-  test('Voucher application filter works', async () => {
+  test('Voucher application filter works', async ({ newEvakaPage }) => {
     const careArea1 = await Fixture.careArea().save()
     const voucherUnit = await Fixture.daycare({
       areaId: careArea1.id,
@@ -228,7 +237,7 @@ describe('Employee searches applications', () => {
         applicationWithNoVoucherUnit
       ]
     })
-    const applicationListView = await openPage()
+    const applicationListView = await openPage(newEvakaPage)
 
     await applicationListView.voucherUnitFilter.noFilter.click()
     await applicationListView.searchButton.click()
@@ -258,7 +267,7 @@ describe('Employee searches applications', () => {
     )
     await applicationListView.assertApplicationCount(1)
   })
-  test('Application type filters work', async () => {
+  test('Application type filters work', async ({ newEvakaPage }) => {
     const careArea = await Fixture.careArea().save()
     const club = await Fixture.daycare({
       areaId: careArea.id,
@@ -298,7 +307,7 @@ describe('Employee searches applications', () => {
     await createApplications({
       body: [clubApplication, daycareApplication, preschoolApplication]
     })
-    const applicationListView = await openPage()
+    const applicationListView = await openPage(newEvakaPage)
 
     await applicationListView.filterByApplicationType('ALL')
     await applicationListView.searchButton.click()

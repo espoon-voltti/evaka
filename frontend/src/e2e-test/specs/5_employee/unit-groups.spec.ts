@@ -32,25 +32,25 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let unitPage: UnitPage
 const groupId = randomId<GroupId>()
+const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
+const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
+
+let unitPage: UnitPage
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
 let child3Fixture: DevPerson
 let child1DaycarePlacementId: PlacementId
 let child2DaycarePlacementId: PlacementId
-
 let daycare: DevDaycare
 let daycare2: DevDaycare
 let unitSupervisor: DevEmployee
-const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
-const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
 
   await testCareArea.save()
@@ -93,7 +93,7 @@ beforeEach(async () => {
   daycare2 = testDaycarePrivateVoucher
 })
 
-const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
+const loadUnitGroupsPage = async (page: Page): Promise<UnitGroupsPage> => {
   unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
   const groupsPage = await unitPage.openGroupsPage()
@@ -101,14 +101,16 @@ const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
   return groupsPage
 }
 
-describe('Unit groups - unit supervisor', () => {
-  beforeEach(async () => {
-    page = await Page.open()
+test.describe('Unit groups - unit supervisor', () => {
+  let page: Page
+
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
     await employeeLogin(page, unitSupervisor)
   })
 
   test('Children with a missing group placement is shown in missing placement list and disappears when placed to a group', async () => {
-    const groupsSection = await loadUnitGroupsPage()
+    const groupsSection = await loadUnitGroupsPage(page)
     await groupsSection.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement({
@@ -131,7 +133,7 @@ describe('Unit groups - unit supervisor', () => {
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
 
@@ -154,7 +156,7 @@ describe('Unit groups - unit supervisor', () => {
       }
     })
 
-    let groupsPage = await loadUnitGroupsPage()
+    let groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.terminatedPlacementsSection.assertRowCount(2)
 
     await terminatePlacement({
@@ -165,19 +167,19 @@ describe('Unit groups - unit supervisor', () => {
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
-    groupsPage = await loadUnitGroupsPage()
+    groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
 
   test('Open groups stay open when reloading page', async () => {
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.openGroupCollapsible(groupId)
     await page.reload()
     await groupsPage.assertGroupCollapsibleIsOpen(groupId)
   })
 
   test('Open groups stay open when visiting other unit page tab', async () => {
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.openGroupCollapsible(groupId)
     await unitPage.openUnitInformation()
     await unitPage.openGroupsPage()
@@ -185,7 +187,7 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Supervisor sees child occupancy factor 1 as —', async () => {
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement({
@@ -209,7 +211,7 @@ describe('Unit groups - unit supervisor', () => {
       modifiedBy: systemInternalUser
     }).save()
 
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement({
@@ -246,7 +248,7 @@ describe('Unit groups - unit supervisor', () => {
       capacityFactor: 1.5
     }).save()
 
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
     await groupsPage.openGroupCollapsible(groupId)
@@ -255,7 +257,7 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Supervisor sees uncommon age factor when set', async () => {
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
     await Fixture.groupPlacement({
@@ -282,11 +284,13 @@ describe('Unit groups - unit supervisor', () => {
   })
 })
 
-describe('Unit groups - staff', () => {
-  beforeEach(async () => {
+test.describe('Unit groups - staff', () => {
+  let page: Page
+
+  test.beforeEach(async ({ evaka }) => {
     const staff = await Fixture.employee().staff(daycare.id).save()
 
-    page = await Page.open()
+    page = evaka
     await employeeLogin(page, staff)
   })
 
@@ -299,12 +303,12 @@ describe('Unit groups - staff', () => {
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.terminatedPlacementsSection.assertRowCount(0)
   })
 
   test('Staff will not see children with a missing group placement', async () => {
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.missingPlacementsSection.assertRowCount(0)
   })
 
@@ -316,7 +320,7 @@ describe('Unit groups - staff', () => {
       endDate: placementEndDate
     }).save()
 
-    const groupsPage = await loadUnitGroupsPage()
+    const groupsPage = await loadUnitGroupsPage(page)
     await groupsPage.childCapacityFactorColumnHeading.waitUntilHidden()
     await groupsPage.assertChildOccupancyFactorColumnNotVisible()
   })

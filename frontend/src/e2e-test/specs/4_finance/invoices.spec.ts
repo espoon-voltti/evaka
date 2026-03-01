@@ -32,10 +32,9 @@ import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { InvoicesPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
 
 const now = HelsinkiDateTime.of(2024, 11, 1, 12, 0)
 const today = now.toLocalDate()
@@ -46,9 +45,11 @@ const codebtor = Fixture.person({
   ssn: '010177-1234'
 })
 
+test.use({ evakaOptions: { mockedTime: now } })
+
 let financeAdmin: DevEmployee
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -81,9 +82,7 @@ beforeEach(async () => {
   await Fixture.feeThresholds().save()
 })
 
-async function openInvoicesPage(): Promise<InvoicesPage> {
-  page = await Page.open({ acceptDownloads: true, mockedTime: now })
-
+async function openInvoicesPage(page: Page): Promise<InvoicesPage> {
   financeAdmin = await Fixture.employee().financeAdmin().save()
   await employeeLogin(page, financeAdmin)
 
@@ -96,8 +95,8 @@ async function openInvoicesPage(): Promise<InvoicesPage> {
   return invoicesPage
 }
 
-describe('Invoices', () => {
-  describe('Create drafts', () => {
+test.describe('Invoices', () => {
+  test.describe('Create drafts', () => {
     const feeDecision = feeDecisionsFixture(
       'SENT',
       testAdult,
@@ -111,7 +110,7 @@ describe('Invoices', () => {
       123123123
     )
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       await createFeeDecisions({ body: [feeDecision] })
       await Fixture.placement({
         childId: testChild2.id,
@@ -121,16 +120,18 @@ describe('Invoices', () => {
       }).save()
     })
 
-    test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async () => {
-      const invoicesPage = await openInvoicesPage()
+    test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async ({
+      evaka
+    }) => {
+      const invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(0)
       await invoicesPage.createInvoiceDrafts()
       await invoicesPage.assertInvoiceCount(1)
     })
 
-    test('Invoice page has correct content', async () => {
-      const invoicesPage = await openInvoicesPage()
+    test('Invoice page has correct content', async ({ evaka }) => {
+      const invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.searchInvoices()
       await invoicesPage.createInvoiceDrafts()
       const invoicePage = await invoicesPage.openFirstInvoice()
@@ -190,8 +191,8 @@ describe('Invoices', () => {
     })
   })
 
-  describe('Send invoices', () => {
-    test('Invoices are toggled and sent', async () => {
+  test.describe('Send invoices', () => {
+    test('Invoices are toggled and sent', async ({ evaka }) => {
       await Fixture.invoice({
         headOfFamilyId: testAdult.id,
         areaId: testCareArea.id
@@ -210,7 +211,7 @@ describe('Invoices', () => {
           unitId: testDaycare.id
         })
         .save()
-      const invoicesPage = await openInvoicesPage()
+      const invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.searchInvoices()
       await invoicesPage.toggleAllInvoices(true)
       await invoicesPage.assertInvoiceCount(2)
@@ -221,7 +222,9 @@ describe('Invoices', () => {
       await invoicesPage.assertInvoiceCount(2)
     })
 
-    test('Filtering invoices result selection resets after change', async () => {
+    test('Filtering invoices result selection resets after change', async ({
+      evaka
+    }) => {
       await Fixture.invoice({
         headOfFamilyId: testAdult.id,
         areaId: testCareArea.id
@@ -241,7 +244,7 @@ describe('Invoices', () => {
         })
         .save()
 
-      const invoicesPage = await openInvoicesPage()
+      const invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(2)
       await invoicesPage.selectFirstInvoice()
@@ -257,7 +260,9 @@ describe('Invoices', () => {
       await invoicesPage.assertButtonsDisabled()
     })
 
-    test('Sending an invoice with a recipient without a SSN', async () => {
+    test('Sending an invoice with a recipient without a SSN', async ({
+      evaka
+    }) => {
       const adultWithoutSSN = await Fixture.person({
         id: fromUuid<PersonId>('a6cf0ec0-4573-4816-be30-6b87fd943817'),
         firstName: 'Aikuinen',
@@ -276,7 +281,7 @@ describe('Invoices', () => {
         .addRow({ childId: testChild.id, unitId: testDaycare.id })
         .save()
 
-      const invoicesPage = await openInvoicesPage()
+      const invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
       await invoicesPage.searchInvoices()
       await invoicesPage.assertInvoiceCount(1)
@@ -295,7 +300,7 @@ describe('Invoices', () => {
     })
   })
 
-  describe('Replacement invoices', () => {
+  test.describe('Replacement invoices', () => {
     const feeDecision = feeDecisionsFixture(
       'SENT',
       testAdult,
@@ -311,7 +316,7 @@ describe('Invoices', () => {
     let placement: DevPlacement
     let invoicesPage: InvoicesPage
 
-    beforeEach(async () => {
+    test.beforeEach(async ({ evaka }) => {
       await createFeeDecisions({ body: [feeDecision] })
       placement = await Fixture.placement({
         childId: testChild2.id,
@@ -320,7 +325,7 @@ describe('Invoices', () => {
         endDate: feeDecision.validDuring.end
       }).save()
 
-      invoicesPage = await openInvoicesPage()
+      invoicesPage = await openInvoicesPage(evaka)
       await invoicesPage.searchInvoices()
 
       await invoicesPage.createInvoiceDrafts()

@@ -15,21 +15,28 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let guardianPage: GuardianInformationPage
 let financeAdmin: DevEmployee
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testAdult.saveAdult()
-  financeAdmin = await Fixture.employee().financeAdmin().save()
-  await createMessageAccounts()
-})
+test.describe('person finance notes', () => {
+  let page: Page
+  let guardianPage: GuardianInformationPage
 
-describe('person finance notes', () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testAdult.saveAdult()
+    financeAdmin = await Fixture.employee().financeAdmin().save()
+    await createMessageAccounts()
+
+    page = evaka
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+  })
+
   test('Notes are sorted by created date', async () => {
     const createdAtFirst = HelsinkiDateTime.now().subHours(3 * 24)
     const createdAtSecond = createdAtFirst.addHours(24)
@@ -46,12 +53,6 @@ describe('person finance notes', () => {
       )
     }
 
-    page = await Page.open({})
-    await employeeLogin(page, financeAdmin)
-
-    await page.goto(config.employeeUrl)
-    guardianPage = new GuardianInformationPage(page)
-
     await createFinanceNoteFixture(createdAtFirst)
     await createFinanceNoteFixture(createdAtSecond)
     await createFinanceNoteFixture(createdAtThird)
@@ -67,13 +68,22 @@ describe('person finance notes', () => {
   })
 })
 
-describe('person finance messages', () => {
-  test('Message threads are sorted by latest message sent date', async () => {
+test.describe('person finance messages', () => {
+  test.beforeEach(async () => {
+    await resetServiceState()
+    await testAdult.saveAdult()
+    financeAdmin = await Fixture.employee().financeAdmin().save()
+    await createMessageAccounts()
+  })
+
+  test('Message threads are sorted by latest message sent date', async ({
+    newEvakaPage
+  }) => {
     const mockedTime1 = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
-    page = await Page.open({ mockedTime: mockedTime1 })
+    let page = await newEvakaPage({ mockedTime: mockedTime1 })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
-    guardianPage = new GuardianInformationPage(page)
+    let guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)
     let notesAndMessages = await guardianPage.openCollapsible(
       'financeNotesAndMessages'
@@ -87,7 +97,7 @@ describe('person finance messages', () => {
     await runPendingAsyncJobs(mockedTime1.addMinutes(1))
 
     const mockedTime2 = HelsinkiDateTime.of(2025, 3, 1, 11, 0, 0, 0)
-    page = await Page.open({ mockedTime: mockedTime2 })
+    page = await newEvakaPage({ mockedTime: mockedTime2 })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
@@ -104,7 +114,7 @@ describe('person finance messages', () => {
     await runPendingAsyncJobs(mockedTime2.addMinutes(1))
 
     const mockedTime3 = HelsinkiDateTime.of(2025, 3, 1, 12, 0, 0, 0)
-    page = await Page.open({ mockedTime: mockedTime3 })
+    page = await newEvakaPage({ mockedTime: mockedTime3 })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
@@ -122,12 +132,12 @@ describe('person finance messages', () => {
     await notesAndMessages.checkThreadLastMessageSentAt(1, mockedTime2)
   })
 
-  test('message thread can be archived', async () => {
+  test('message thread can be archived', async ({ newEvakaPage }) => {
     const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
-    page = await Page.open({ mockedTime })
+    let page = await newEvakaPage({ mockedTime })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
-    guardianPage = new GuardianInformationPage(page)
+    let guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)
 
     let notesAndMessages = await guardianPage.openCollapsible(
@@ -141,7 +151,7 @@ describe('person finance messages', () => {
     await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
     const mockedTime2 = HelsinkiDateTime.of(2025, 3, 1, 11, 0, 0, 0)
-    page = await Page.open({ mockedTime: mockedTime2 })
+    page = await newEvakaPage({ mockedTime: mockedTime2 })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
@@ -153,15 +163,17 @@ describe('person finance messages', () => {
     await notesAndMessages.deleteThread()
   })
 
-  test('message can not be sent to a person without social security number', async () => {
+  test('message can not be sent to a person without social security number', async ({
+    newEvakaPage
+  }) => {
     const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
     const person = await Fixture.person({ ssn: null }).saveAdult()
     await createMessageAccounts()
 
-    page = await Page.open({ mockedTime })
+    const page = await newEvakaPage({ mockedTime })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
-    guardianPage = new GuardianInformationPage(page)
+    const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(person.id)
     const financeSection = await guardianPage.openCollapsible(
       'financeNotesAndMessages'
@@ -170,12 +182,12 @@ describe('person finance messages', () => {
     await financeSection.newMessageButton.assertDisabled(true)
   })
 
-  test('message can be assigned to a folder', async () => {
+  test('message can be assigned to a folder', async ({ newEvakaPage }) => {
     const mockedTime = HelsinkiDateTime.of(2025, 3, 1, 10, 0, 0, 0)
-    page = await Page.open({ mockedTime })
+    const page = await newEvakaPage({ mockedTime })
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
-    guardianPage = new GuardianInformationPage(page)
+    const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)
 
     const notesAndMessages = await guardianPage.openCollapsible(

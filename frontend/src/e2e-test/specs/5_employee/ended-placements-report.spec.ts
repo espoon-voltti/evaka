@@ -11,15 +11,22 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+const mockedToday = LocalDate.of(2023, 6, 19)
 
-describe('Ended placements report', () => {
-  test('works', async () => {
-    const mockedToday = LocalDate.of(2023, 6, 19)
+test.use({
+  evakaOptions: {
+    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
+  }
+})
 
+test.beforeEach(async () => resetServiceState())
+
+test.describe('Ended placements report', () => {
+  test('works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea({ name: 'Alue 1A' }).save()
 
@@ -32,10 +39,6 @@ describe('Ended placements report', () => {
       firstName: 'Testi',
       lastName: 'Henkilö'
     }).saveChild()
-
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
 
     const endedPlacement = await Fixture.placement({
       childId: child.id,
@@ -51,7 +54,7 @@ describe('Ended placements report', () => {
       endDate: mockedToday.addMonths(2)
     }).save()
 
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,

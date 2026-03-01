@@ -8,32 +8,33 @@ import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let adminPage: Page
-let adminPersonSearchPage: PersonSearchPage
-let serviceWorkerPage: Page
-let serviceWorkerPersonSearchPage: PersonSearchPage
+test.describe('SSN disabling', () => {
+  let adminPage: Page
+  let adminPersonSearchPage: PersonSearchPage
+  let serviceWorkerPage: Page
+  let serviceWorkerPersonSearchPage: PersonSearchPage
 
-beforeEach(async () => {
-  await resetServiceState()
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
 
-  const admin = await Fixture.employee().admin().save()
-  const serviceWorker = await Fixture.employee().serviceWorker().save()
+    const admin = await Fixture.employee().admin().save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  adminPage = await Page.open()
-  await employeeLogin(adminPage, admin)
-  await adminPage.goto(`${config.employeeUrl}/search`)
-  adminPersonSearchPage = new PersonSearchPage(adminPage)
+    adminPage = await newEvakaPage()
+    await employeeLogin(adminPage, admin)
+    await adminPage.goto(`${config.employeeUrl}/search`)
+    adminPersonSearchPage = new PersonSearchPage(adminPage)
 
-  serviceWorkerPage = await Page.open()
-  await employeeLogin(serviceWorkerPage, serviceWorker)
-  await serviceWorkerPage.goto(`${config.employeeUrl}/search`)
-  serviceWorkerPersonSearchPage = new PersonSearchPage(serviceWorkerPage)
-})
+    serviceWorkerPage = await newEvakaPage()
+    await employeeLogin(serviceWorkerPage, serviceWorker)
+    await serviceWorkerPage.goto(`${config.employeeUrl}/search`)
+    serviceWorkerPersonSearchPage = new PersonSearchPage(serviceWorkerPage)
+  })
 
-describe('SSN disabling', () => {
   test('SSN adding can be disabled for a newly created person', async () => {
     const person = {
       firstName: 'Etunimi',

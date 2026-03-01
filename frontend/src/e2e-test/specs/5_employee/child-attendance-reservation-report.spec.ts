@@ -24,88 +24,93 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import { ChildAttendanceReservationByChildReport } from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
-let child: DevPerson
-let unitId: DaycareId
-let admin: DevEmployee
 
 const mockedTime = LocalDate.of(2024, 2, 19)
 
-beforeEach(async () => {
-  await resetServiceState()
-  admin = await Fixture.employee().admin().save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.daycare({
-    ...testDaycare2,
-    areaId: testCareArea.id,
-    closingDate: LocalDate.of(2024, 1, 1)
-  }).save()
-  await familyWithTwoGuardians.save()
-  await createDefaultServiceNeedOptions()
-  const fullTimeServiceNeedOption1 = await Fixture.serviceNeedOption({
-    nameFi: 'Kokopäiväinen 1',
-    validPlacementType: 'DAYCARE',
-    validFrom: LocalDate.of(2020, 1, 1),
-    validTo: null
-  }).save()
-  await createDaycareGroups({
-    body: [
-      testDaycareGroup,
-      Fixture.daycareGroup({
-        daycareId: testDaycare.id,
-        name: 'Suljettu ryhmä',
-        endDate: LocalDate.of(2024, 1, 1)
-      })
-    ]
-  })
-
-  unitId = testDaycare.id
-  child = familyWithTwoGuardians.children[0]
-
-  const placement = await Fixture.placement({
-    childId: child.id,
-    unitId: unitId,
-    startDate: mockedTime,
-    endDate: mockedTime.addDays(1)
-  }).save()
-
-  await Fixture.serviceNeed({
-    placementId: placement.id,
-    optionId: fullTimeServiceNeedOption1.id,
-    confirmedBy: evakaUserId(admin.id),
-    shiftCare: 'NONE',
-    startDate: mockedTime,
-    endDate: mockedTime
-  }).save()
-
-  await Fixture.serviceNeed({
-    placementId: placement.id,
-    optionId: fullTimeServiceNeedOption1.id,
-    confirmedBy: evakaUserId(admin.id),
-    shiftCare: 'FULL',
-    startDate: mockedTime.addDays(1),
-    endDate: mockedTime.addDays(1)
-  }).save()
-
-  await Fixture.groupPlacement({
-    daycareGroupId: testDaycareGroup.id,
-    daycarePlacementId: placement.id,
-    startDate: mockedTime,
-    endDate: mockedTime.addDays(1)
-  }).save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
-
-  await employeeLogin(page, admin)
+  }
 })
 
-describe('Child attendance reservation report', () => {
+test.describe('Child attendance reservation report', () => {
+  let page: Page
+  let child: DevPerson
+  let unitId: DaycareId
+  let admin: DevEmployee
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    admin = await Fixture.employee().admin().save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: testCareArea.id,
+      closingDate: LocalDate.of(2024, 1, 1)
+    }).save()
+    await familyWithTwoGuardians.save()
+    await createDefaultServiceNeedOptions()
+    const fullTimeServiceNeedOption1 = await Fixture.serviceNeedOption({
+      nameFi: 'Kokopäiväinen 1',
+      validPlacementType: 'DAYCARE',
+      validFrom: LocalDate.of(2020, 1, 1),
+      validTo: null
+    }).save()
+    await createDaycareGroups({
+      body: [
+        testDaycareGroup,
+        Fixture.daycareGroup({
+          daycareId: testDaycare.id,
+          name: 'Suljettu ryhmä',
+          endDate: LocalDate.of(2024, 1, 1)
+        })
+      ]
+    })
+
+    unitId = testDaycare.id
+    child = familyWithTwoGuardians.children[0]
+
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: unitId,
+      startDate: mockedTime,
+      endDate: mockedTime.addDays(1)
+    }).save()
+
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      optionId: fullTimeServiceNeedOption1.id,
+      confirmedBy: evakaUserId(admin.id),
+      shiftCare: 'NONE',
+      startDate: mockedTime,
+      endDate: mockedTime
+    }).save()
+
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      optionId: fullTimeServiceNeedOption1.id,
+      confirmedBy: evakaUserId(admin.id),
+      shiftCare: 'FULL',
+      startDate: mockedTime.addDays(1),
+      endDate: mockedTime.addDays(1)
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycareGroupId: testDaycareGroup.id,
+      daycarePlacementId: placement.id,
+      startDate: mockedTime,
+      endDate: mockedTime.addDays(1)
+    }).save()
+
+    page = evaka
+
+    await employeeLogin(page, admin)
+  })
+
   test('Shows child attendance reservations', async () => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',

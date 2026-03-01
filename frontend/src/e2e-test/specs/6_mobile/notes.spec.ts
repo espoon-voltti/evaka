@@ -23,22 +23,24 @@ import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
+import { test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let page: Page
-let listPage: MobileListPage
-let childPage: MobileChildPage
-let notePage: MobileNotePage
-let attendancePage: ChildAttendancePage
+import type { Page } from '../../utils/page'
 
 const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
 const today = mockedNow.toLocalDate()
 
-describe('Child and group notes', () => {
-  let child: DevPerson
+test.describe('Child and group notes', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
 
-  beforeEach(async () => {
+  let child: DevPerson
+  let page: Page
+  let listPage: MobileListPage
+  let childPage: MobileChildPage
+  let notePage: MobileNotePage
+  let attendancePage: ChildAttendancePage
+
+  test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -62,7 +64,7 @@ describe('Child and group notes', () => {
       endDate: placementFixture.endDate
     }).save()
 
-    page = await Page.open({ mockedTime: mockedNow })
+    page = evaka
 
     const mobileSignupUrl = await pairMobileDevice(unit.id)
     await page.goto(mobileSignupUrl)
@@ -147,12 +149,18 @@ describe('Child and group notes', () => {
   })
 })
 
-describe('Child and group notes (backup care)', () => {
+test.describe('Child and group notes (backup care)', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
+
   let child: DevPerson
   let backupCareDaycareGroup: DevDaycareGroup
   let backupCareDaycare: DevDaycare
+  let page: Page
+  let listPage: MobileListPage
+  let childPage: MobileChildPage
+  let notePage: MobileNotePage
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -188,7 +196,7 @@ describe('Child and group notes (backup care)', () => {
       period: new FiniteDateRange(today, today)
     }).save()
 
-    page = await Page.open({ mockedTime: mockedNow })
+    page = evaka
 
     const mobileSignupUrl = await pairMobileDevice(backupCareDaycare.id)
     await page.goto(mobileSignupUrl)

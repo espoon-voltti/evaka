@@ -21,38 +21,11 @@ import {
 } from '../../generated/api-clients'
 import type CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let childInformationPage: ChildInformationPage
-
-let page: Page
-let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
-
-beforeEach(async () => {
-  await resetServiceState()
-  await preschoolTerm2022.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    otherGuardian: testAdult2,
-    children: [testChild]
-  }).save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
-  const admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({ mockedTime: now })
-  await employeeLogin(page, admin)
-
-  childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(testChild.id)
-
-  const applications =
-    await childInformationPage.openCollapsible('applications')
-  createApplicationModal = await applications.openCreateApplicationModal()
-})
 
 const formatPersonName = (person: { firstName: string; lastName: string }) =>
   `${person.lastName} ${person.firstName}`
@@ -67,7 +40,37 @@ const formatPersonAddress = ({
   postOffice?: string
 }) => `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
-describe('Employee - paper application', () => {
+test.describe('Employee - paper application', () => {
+  let page: Page
+  let childInformationPage: ChildInformationPage
+  let createApplicationModal: CreateApplicationModal
+
+  test.use({ evakaOptions: { mockedTime: now } })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await preschoolTerm2022.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      otherGuardian: testAdult2,
+      children: [testChild]
+    }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+    const admin = await Fixture.employee().admin().save()
+
+    page = evaka
+    await employeeLogin(page, admin)
+
+    childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild.id)
+
+    const applications =
+      await childInformationPage.openCollapsible('applications')
+    createApplicationModal = await applications.openCreateApplicationModal()
+  })
+
   test('Paper application can be created for guardian and child with ssn', async () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.assertGuardian(

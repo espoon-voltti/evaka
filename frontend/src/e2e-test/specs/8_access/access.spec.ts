@@ -12,8 +12,15 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
+
+test.use({
+  evakaOptions: {
+    employeeCustomizations: { featureFlags: { absenceApplications: true } }
+  }
+})
 
 let page: Page
 let nav: EmployeeNav
@@ -23,22 +30,19 @@ const unit = testDaycare
 const child = testChild
 const placement = Fixture.placement({ childId: child.id, unitId: unit.id })
 
-beforeAll(async () => {
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
   await area.save()
   await unit.save()
   await child.saveChild()
   await placement.save()
-})
-beforeEach(async () => {
-  page = await Page.open({
-    employeeCustomizations: { featureFlags: { absenceApplications: true } }
-  })
+
+  page = evaka
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
 })
 
-describe('Child information page', () => {
+test.describe('Child information page', () => {
   test('Admin sees every tab', async () => {
     const admin = await Fixture.employee().admin().save()
     await employeeLogin(page, admin)
@@ -140,7 +144,7 @@ describe('Child information page', () => {
   })
 })
 
-describe('Child information page sections', () => {
+test.describe('Child information page sections', () => {
   test('Admin sees every collapsible section', async () => {
     const admin = await Fixture.employee().admin().save()
     await employeeLogin(page, admin)

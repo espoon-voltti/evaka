@@ -19,103 +19,110 @@ import type {
 } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2023, 12, 13)
-let term: DevPreschoolTerm
-let child: DevPerson
-let placement: DevPlacement
-let unit: DevDaycare
-let closedUnit: DevDaycare
-let group: DevDaycareGroup
-let closedGroup: DevDaycareGroup
-let admin: DevEmployee
 
-beforeEach(async () => {
-  await resetServiceState()
-  term = await preschoolTerm2023.save()
-  const area = await Fixture.careArea().save()
-  unit = await Fixture.daycare({
-    areaId: area.id,
-    name: 'TestiEO',
-    type: ['PRESCHOOL'],
-    language: 'fi',
-    dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
-  }).save()
-  closedUnit = await Fixture.daycare({
-    areaId: area.id,
-    name: 'SuljettuEO',
-    type: ['PRESCHOOL'],
-    language: 'fi',
-    dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-    closingDate: LocalDate.of(2023, 1, 1)
-  }).save()
-  group = await Fixture.daycareGroup({
-    daycareId: unit.id,
-    name: 'Avoin ryhmä'
-  }).save()
-  closedGroup = await Fixture.daycareGroup({
-    daycareId: unit.id,
-    name: 'Suljettu ryhmä',
-    endDate: LocalDate.of(2021, 1, 1)
-  }).save()
-  child = await Fixture.person({
-    firstName: 'Esko',
-    lastName: 'Beck'
-  }).saveChild()
-
-  placement = await Fixture.placement({
-    type: 'PRESCHOOL',
-    childId: child.id,
-    unitId: unit.id,
-    startDate: mockedToday.subDays(4),
-    endDate: mockedToday.addDays(4)
-  }).save()
-  await Fixture.groupPlacement({
-    daycarePlacementId: placement.id,
-    daycareGroupId: group.id,
-    startDate: mockedToday.subDays(4),
-    endDate: mockedToday.addDays(4)
-  }).save()
-
-  await Fixture.absence({
-    absenceType: 'SICKLEAVE',
-    absenceCategory: 'NONBILLABLE',
-    date: mockedToday,
-    childId: child.id
-  }).save()
-  await Fixture.absence({
-    absenceType: 'SICKLEAVE',
-    absenceCategory: 'NONBILLABLE',
-    date: mockedToday.addDays(1), // future absence is not included
-    childId: child.id
-  }).save()
-  await Fixture.childAttendance({
-    childId: child.id,
-    date: mockedToday.subDays(1),
-    arrived: LocalTime.of(8, 0),
-    departed: LocalTime.of(12, 30),
-    unitId: unit.id
-  }).save()
-  await Fixture.childAttendance({
-    childId: child.id,
-    date: mockedToday.addDays(1), // future attendance is not included
-    arrived: LocalTime.of(8, 0),
-    departed: LocalTime.of(12, 30),
-    unitId: unit.id
-  }).save()
-
-  admin = await Fixture.employee().admin().save()
-})
-
-describe('Preschool absence report', () => {
-  test('report data is shown', async () => {
-    const page = await Page.open({
+test.describe('Preschool absence report', () => {
+  test.use({
+    evakaOptions: {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
+    }
+  })
 
-    const report = await navigateToReport(page, admin)
+  let term: DevPreschoolTerm
+  let child: DevPerson
+  let placement: DevPlacement
+  let unit: DevDaycare
+  let closedUnit: DevDaycare
+  let group: DevDaycareGroup
+  let closedGroup: DevDaycareGroup
+  let admin: DevEmployee
+
+  test.beforeEach(async () => {
+    await resetServiceState()
+    term = await preschoolTerm2023.save()
+    const area = await Fixture.careArea().save()
+    unit = await Fixture.daycare({
+      areaId: area.id,
+      name: 'TestiEO',
+      type: ['PRESCHOOL'],
+      language: 'fi',
+      dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
+    }).save()
+    closedUnit = await Fixture.daycare({
+      areaId: area.id,
+      name: 'SuljettuEO',
+      type: ['PRESCHOOL'],
+      language: 'fi',
+      dailyPreschoolTime: new TimeRange(
+        LocalTime.of(9, 0),
+        LocalTime.of(14, 0)
+      ),
+      closingDate: LocalDate.of(2023, 1, 1)
+    }).save()
+    group = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      name: 'Avoin ryhmä'
+    }).save()
+    closedGroup = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      name: 'Suljettu ryhmä',
+      endDate: LocalDate.of(2021, 1, 1)
+    }).save()
+    child = await Fixture.person({
+      firstName: 'Esko',
+      lastName: 'Beck'
+    }).saveChild()
+
+    placement = await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday.subDays(4),
+      endDate: mockedToday.addDays(4)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      daycareGroupId: group.id,
+      startDate: mockedToday.subDays(4),
+      endDate: mockedToday.addDays(4)
+    }).save()
+
+    await Fixture.absence({
+      absenceType: 'SICKLEAVE',
+      absenceCategory: 'NONBILLABLE',
+      date: mockedToday,
+      childId: child.id
+    }).save()
+    await Fixture.absence({
+      absenceType: 'SICKLEAVE',
+      absenceCategory: 'NONBILLABLE',
+      date: mockedToday.addDays(1), // future absence is not included
+      childId: child.id
+    }).save()
+    await Fixture.childAttendance({
+      childId: child.id,
+      date: mockedToday.subDays(1),
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(12, 30),
+      unitId: unit.id
+    }).save()
+    await Fixture.childAttendance({
+      childId: child.id,
+      date: mockedToday.addDays(1), // future attendance is not included
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(12, 30),
+      unitId: unit.id
+    }).save()
+
+    admin = await Fixture.employee().admin().save()
+  })
+
+  test('report data is shown', async ({ evaka }) => {
+    const report = await navigateToReport(evaka, admin)
     await report.selectUnit(unit.name)
     await report.selectTerm(term.finnishPreschool.format())
     const initialExpectation = [
@@ -134,12 +141,8 @@ describe('Preschool absence report', () => {
     await report.assertRows(initialExpectation)
   })
 
-  test('closed filtering works', async () => {
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-
-    const report = await navigateToReport(page, admin)
+  test('closed filtering works', async ({ evaka }) => {
+    const report = await navigateToReport(evaka, admin)
     await report.selectUnit(unit.name)
     await report.selectTerm(term.finnishPreschool.format())
 

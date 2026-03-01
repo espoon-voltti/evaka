@@ -22,54 +22,56 @@ import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import type { IncomeSection } from '../../pages/employee/guardian-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
+import { test } from '../../playwright'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let personId: PersonId
-let incomesSection: IncomeSection
-let placementStart: LocalDate
-let placementEnd: LocalDate
-let financeAdminId: EmployeeId
-beforeEach(async () => {
-  await resetServiceState()
+test.describe('Income', () => {
+  let page: Page
+  let personId: PersonId
+  let incomesSection: IncomeSection
+  let placementStart: LocalDate
+  let placementEnd: LocalDate
+  let financeAdminId: EmployeeId
 
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-  personId = testAdult.id
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
-  financeAdminId = financeAdmin.id
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+    personId = testAdult.id
 
-  await Fixture.fridgeChild({
-    headOfChild: testAdult.id,
-    childId: testChild.id,
-    startDate: LocalDate.of(2020, 1, 1),
-    endDate: LocalDate.of(2020, 12, 31)
-  }).save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    financeAdminId = financeAdmin.id
 
-  placementStart = LocalDate.of(2020, 1, 1)
-  placementEnd = LocalDate.of(2020, 3, 31)
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    }).save()
 
-  await Fixture.placement({
-    childId: testChild.id,
-    unitId: testDaycare.id,
-    startDate: placementStart,
-    endDate: placementEnd
-  }).save()
+    placementStart = LocalDate.of(2020, 1, 1)
+    placementEnd = LocalDate.of(2020, 3, 31)
 
-  page = await Page.open()
-  await employeeLogin(page, financeAdmin)
-  await page.goto(config.employeeUrl + '/profile/' + personId)
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate: placementStart,
+      endDate: placementEnd
+    }).save()
 
-  const guardianInformationPage = new GuardianInformationPage(page)
-  incomesSection = await guardianInformationPage.openCollapsible('incomes')
-})
+    page = evaka
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl + '/profile/' + personId)
 
-describe('Income', () => {
-  it('Create a new max fee accepted income', async () => {
+    const guardianInformationPage = new GuardianInformationPage(page)
+    incomesSection = await guardianInformationPage.openCollapsible('incomes')
+  })
+
+  test('Create a new max fee accepted income', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -81,7 +83,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
   })
 
-  it('Create a new income with multiple values', async () => {
+  test('Create a new income with multiple values', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -99,14 +101,12 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
   })
 
-  it('Create a new income without end date', async () => {
+  test('Create a new income without end date', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.chooseIncomeEffect('INCOME')
-    // end date is set to +1 year
     await incomesSection.incomeEndDateInput.assertValueEquals('31.12.2020')
-    // end date can be removed
     await incomesSection.fillIncomeEndDate('')
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
@@ -121,17 +121,14 @@ describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await waitUntilFalse(() => incomesSection.saveIsDisabled())
 
-    // not a number
     await incomesSection.fillIncome('MAIN_INCOME', 'asd')
     await waitUntilTrue(() => incomesSection.saveIsDisabled())
 
-    // too many decimals
     await incomesSection.fillIncome('MAIN_INCOME', '123,123')
     await waitUntilTrue(() => incomesSection.saveIsDisabled())
   })
 
-  it('Existing income item can have its values updated', async () => {
-    // create new income item
+  test('Existing income item can have its values updated', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -144,7 +141,6 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getIncomeSum(), '5000 €')
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '0 €')
 
-    // edit existing item
     await incomesSection.edit()
 
     await incomesSection.fillIncome('SECONDARY_INCOME', '200')
@@ -157,7 +153,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '300 €')
   })
 
-  it('Income coefficients are saved and affect the sum', async () => {
+  test('Income coefficients are saved and affect the sum', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -174,11 +170,11 @@ describe('Income', () => {
 
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '8380 €') // (100000 / 12) + 50
+    await waitUntilEqual(() => incomesSection.getIncomeSum(), '8380 €')
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
   })
 
-  it('Non-contiguous incomes warning', async () => {
+  test('Non-contiguous incomes warning', async () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.1.2020')
@@ -197,7 +193,7 @@ describe('Income', () => {
     await errorModal.ensureTitle('Tulotiedot puuttuvat joiltain päiviltä')
   })
 
-  it('Overlapping incomes error', async () => {
+  test('Overlapping incomes error', async () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.2.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')
@@ -218,7 +214,7 @@ describe('Income', () => {
     )
   })
 
-  it('Overlapping income may be automatically ended', async () => {
+  test('Overlapping income may be automatically ended', async () => {
     await incomesSection.openNewIncomeForm()
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.fillIncomeEndDate('31.3.2020')
@@ -246,7 +242,7 @@ describe('Income', () => {
       )
   })
 
-  it('Attachments can be added', async () => {
+  test('Attachments can be added', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -263,7 +259,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
   })
 
-  it('Income with attachment can be deleted', async () => {
+  test('Income with attachment can be deleted', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -278,7 +274,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.incomeListItemCount(), 0)
   })
 
-  it('Attachment can be deleted while editing income', async () => {
+  test('Attachment can be deleted while editing income', async () => {
     await incomesSection.openNewIncomeForm()
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
@@ -295,7 +291,7 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
   })
 
-  it('Income notifications are shown', async () => {
+  test('Income notifications are shown', async () => {
     const incomeEndDate = placementEnd.subMonths(1)
     await Fixture.income({
       personId: personId,

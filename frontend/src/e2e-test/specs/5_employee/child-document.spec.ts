@@ -11,21 +11,22 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 
-beforeEach(async (): Promise<void> => resetServiceState())
+test.describe('child document with person duplicate', () => {
+  test.use({ evakaOptions: { mockedTime } })
 
-describe('child document with person duplicate', () => {
   let admin: DevEmployee
   let daycareSupervisor: DevEmployee
   let child: DevPerson
   let duplicate: DevPerson
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
+    await resetServiceState()
     admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
@@ -64,7 +65,9 @@ describe('child document with person duplicate', () => {
     }).save()
   })
 
-  it('unit supervisor sees hojks document from duplicate', async () => {
+  test('unit supervisor sees hojks document from duplicate', async ({
+    evaka
+  }) => {
     const template = await Fixture.documentTemplate({
       type: 'HOJKS',
       validity: new DateRange(mockedDate, mockedDate)
@@ -74,14 +77,15 @@ describe('child document with person duplicate', () => {
       templateId: template.id
     }).save()
 
-    const page = await Page.open({ mockedTime })
-    await employeeLogin(page, daycareSupervisor)
-    await page.goto(`${config.employeeUrl}/child-documents/${document.id}`)
-    const childDocumentPage = new ChildDocumentPage(page)
+    await employeeLogin(evaka, daycareSupervisor)
+    await evaka.goto(`${config.employeeUrl}/child-documents/${document.id}`)
+    const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.status.waitUntilVisible()
   })
 
-  it('unit supervisor sees hojks documents from duplicate', async () => {
+  test('unit supervisor sees hojks documents from duplicate', async ({
+    evaka
+  }) => {
     const pedagogicalAssessmentTemplate = await Fixture.documentTemplate({
       type: 'PEDAGOGICAL_ASSESSMENT',
       validity: new DateRange(mockedDate, mockedDate)
@@ -107,10 +111,9 @@ describe('child document with person duplicate', () => {
       templateId: hojksTemplate.id
     }).save()
 
-    const page = await Page.open({ mockedTime })
-    await employeeLogin(page, daycareSupervisor)
-    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
-    const childInformationPage = new ChildInformationPage(page)
+    await employeeLogin(evaka, daycareSupervisor)
+    await evaka.goto(`${config.employeeUrl}/child-information/${child.id}`)
+    const childInformationPage = new ChildInformationPage(evaka)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertInternalChildDocuments([
@@ -118,7 +121,9 @@ describe('child document with person duplicate', () => {
     ])
   })
 
-  it('admin can see all documents from duplicate and edit', async () => {
+  test('admin can see all documents from duplicate and edit', async ({
+    evaka
+  }) => {
     const pedagogicalAssessmentTemplate = await Fixture.documentTemplate({
       type: 'PEDAGOGICAL_ASSESSMENT',
       name: 'Pedagoginen arvio',
@@ -147,10 +152,9 @@ describe('child document with person duplicate', () => {
       templateId: hojksTemplate.id
     }).save()
 
-    const page = await Page.open({ mockedTime })
-    await employeeLogin(page, admin)
-    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
-    const childInformationPage = new ChildInformationPage(page)
+    await employeeLogin(evaka, admin)
+    await evaka.goto(`${config.employeeUrl}/child-information/${child.id}`)
+    const childInformationPage = new ChildInformationPage(evaka)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertInternalChildDocuments([
