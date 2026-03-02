@@ -70,13 +70,13 @@ data class GroupStaffAttendance(
     val groupId: GroupId,
     val date: LocalDate,
     val count: Double,
-    val updated: HelsinkiDateTime,
+    val updatedAt: HelsinkiDateTime,
 )
 
 data class UnitStaffAttendance(
     val date: LocalDate,
     val count: Double,
-    val updated: HelsinkiDateTime?,
+    val updatedAt: HelsinkiDateTime?,
     val groups: List<GroupStaffAttendance>,
 )
 
@@ -144,7 +144,7 @@ fun Database.Read.getStaffAttendanceByRange(
     createQuery {
             sql(
                 """
-SELECT group_id, date, count, updated
+SELECT group_id, date, count, updated_at
 FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND between_start_and_end(${bind(range)}, date)
@@ -161,7 +161,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
         createQuery {
                 sql(
                     """
-SELECT group_id, date, count, updated
+SELECT sa.group_id, sa.date, sa.count, sa.updated_at
 FROM staff_attendance sa
 JOIN daycare_group dg on sa.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)}
@@ -172,13 +172,13 @@ WHERE dg.daycare_id = ${bind(unitId)}
             .toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }
-    val updated = groupAttendances.maxOfOrNull { it.updated }
+    val updatedAt = groupAttendances.maxOfOrNull { it.updatedAt }
 
     return UnitStaffAttendance(
         date = date,
         count = count,
         groups = groupAttendances,
-        updated = updated,
+        updatedAt = updatedAt,
     )
 }
 

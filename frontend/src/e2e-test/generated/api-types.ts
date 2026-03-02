@@ -380,7 +380,7 @@ export interface DevChildDocument {
   content: DocumentContent
   contentLockedAt: HelsinkiDateTime
   contentLockedBy: EmployeeId | null
-  created: HelsinkiDateTime | null
+  createdAt: HelsinkiDateTime | null
   createdBy: EvakaUserId
   decision: DevChildDocumentDecision | null
   decisionMaker: EmployeeId | null
@@ -1366,7 +1366,7 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
     answeredAt: (json.answeredAt != null) ? HelsinkiDateTime.parseIso(json.answeredAt) : null,
     content: deserializeJsonDocumentContent(json.content),
     contentLockedAt: HelsinkiDateTime.parseIso(json.contentLockedAt),
-    created: (json.created != null) ? HelsinkiDateTime.parseIso(json.created) : null,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     decision: (json.decision != null) ? deserializeJsonDevChildDocumentDecision(json.decision) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedVersions: json.publishedVersions.map(e => deserializeJsonDevChildDocumentPublishedVersion(e))

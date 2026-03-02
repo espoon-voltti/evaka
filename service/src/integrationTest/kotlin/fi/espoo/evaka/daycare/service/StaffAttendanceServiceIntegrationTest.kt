@@ -170,12 +170,12 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
             db.read {
                 it.createQuery {
                         sql(
-                            "SELECT MAX(updated) FROM staff_attendance WHERE date = ${bind(firstDay)}"
+                            "SELECT MAX(updated_at) FROM staff_attendance WHERE date = ${bind(firstDay)}"
                         )
                     }
                     .exactlyOne<HelsinkiDateTime>()
             },
-            unitResult.updated,
+            unitResult.updatedAt,
         )
 
         val groupResult = unitResult.groups.find { it.groupId == groupId }!!

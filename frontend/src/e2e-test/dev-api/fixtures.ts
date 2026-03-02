@@ -1529,7 +1529,7 @@ export class Fixture {
   ) {
     const value: DevChildDocument = {
       id: randomId(),
-      created: null,
+      createdAt: null,
       createdBy: systemInternalUser.id,
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),

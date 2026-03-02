@@ -53,7 +53,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
         SELECT 
             dt.id,
             dt.name,
-            cd.created,
+            cd.created_at,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
@@ -89,7 +89,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
             )
         }
         .map {
-            val createdAt = column<HelsinkiDateTime>("created")
+            val createdAt = column<HelsinkiDateTime>("created_at")
             DocumentMetadata(
                 documentId = column("id"),
                 name = column("name"),

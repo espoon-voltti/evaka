@@ -2448,7 +2448,7 @@ data class DevDocumentTemplate(
 
 data class DevChildDocument(
     val id: ChildDocumentId = ChildDocumentId(UUID.randomUUID()),
-    val created: HelsinkiDateTime? = null,
+    val createdAt: HelsinkiDateTime? = null,
     val createdBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val status: DocumentStatus,
     val childId: ChildId,

@@ -22,5 +22,5 @@ JOIN document_template dt ON cd.template_id = dt.id
 WHERE upper(dt.validity) <= current_date
   AND dt.archive_externally = true
   AND cd.archived_at IS NULL
-ORDER BY cd.created
+ORDER BY cd.created_at
 LIMIT :job_limit;
