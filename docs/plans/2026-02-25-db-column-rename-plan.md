@@ -87,16 +87,16 @@ Keep this list up-to-date as groups are completed.
 - [x] `staff_attendance_realtime` (both)
 - [x] `staff_occupancy_coefficient` (both)
 
-### Group 5: messaging (8 tables)
+### Group 5: messaging (8 tables) ✓
 
-- [ ] `message` (both)
-- [ ] `message_account` (both)
-- [ ] `message_content` (both)
-- [ ] `message_recipients` (both)
-- [ ] `message_thread` (both)
-- [ ] `message_thread_children` (both)
-- [ ] `message_thread_folder` (both)
-- [ ] `message_thread_participant` (both)
+- [x] `message` (both)
+- [x] `message_account` (both)
+- [x] `message_content` (both)
+- [x] `message_recipients` (both)
+- [x] `message_thread` (both)
+- [x] `message_thread_children` (both)
+- [x] `message_thread_folder` (both)
+- [x] `message_thread_participant` (both)
 
 ### Group 6: daycare (8 tables)
 
