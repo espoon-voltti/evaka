@@ -13,7 +13,7 @@ val AUDIT_MARKER: Marker = KMarkerFactory.getMarker("AUDIT_EVENT")
 
 fun KLogger.audit(m: () -> Any?) = audit(emptyMap(), m)
 
-fun KLogger.audit(t: Throwable, m: () -> Any?) = warn(t, AUDIT_MARKER, m)
+fun KLogger.audit(t: Throwable, m: () -> Any?) = warn(AUDIT_MARKER, t, m)
 
 fun KLogger.audit(args: Map<String, Any?>, m: () -> Any?) =
     atWarn(AUDIT_MARKER) {
