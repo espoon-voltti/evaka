@@ -2,13 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { describe, expect, it, jest } from '@jest/globals'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  jest
+} from '@jest/globals'
 import type express from 'express'
 
+import { configFromEnv } from '../config.ts'
 import {
   matchPath,
   createEndpointDisablingMiddleware
 } from '../middleware/endpoint-disabling.ts'
+import { GatewayTester } from '../test/gateway-tester.ts'
 import { MockRedisClient } from '../test/mock-redis-client.ts'
 
 describe('matchPath', () => {
@@ -188,5 +198,43 @@ describe('endpointDisablingMiddleware', () => {
     expect(statusFn).toHaveBeenCalledWith(503)
     expect(next).not.toHaveBeenCalled()
     cleanup()
+  })
+})
+
+describe('endpoint disabling integration via GatewayTester', () => {
+  let tester: GatewayTester
+
+  beforeAll(async () => {
+    // Pre-seed the mock Redis with a disabled endpoint entry BEFORE starting
+    // the gateway. The middleware fires `void refreshCache()` on creation,
+    // and since MockRedisClient resolves synchronously, the cache is populated
+    // before the HTTP server listen callback fires.
+    const redis = new MockRedisClient()
+    await redis.sAdd('disabled-endpoints', 'GET /citizen/public/blocked')
+    tester = await GatewayTester.start(configFromEnv(), 'citizen', redis)
+    // Allow the initial async refreshCache() microtask to settle
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  afterEach(async () => tester.afterEach())
+  afterAll(async () => tester?.stop())
+
+  it('returns 503 for a request matching a disabled endpoint', async () => {
+    const res = await tester.client.get('/api/citizen/public/blocked', {
+      validateStatus: () => true
+    })
+    expect(res.status).toBe(503)
+    expect(res.data).toEqual(
+      expect.objectContaining({ errorCode: 'ENDPOINT_DISABLED' })
+    )
+  })
+
+  it('proxies a request that does not match any disabled endpoint', async () => {
+    tester.nockScope.get('/citizen/public/allowed').reply(200, { ok: true })
+    const res = await tester.client.get('/api/citizen/public/allowed', {
+      validateStatus: () => true
+    })
+    tester.nockScope.done()
+    expect(res.status).toBe(200)
+    expect(res.data).toEqual({ ok: true })
   })
 })
