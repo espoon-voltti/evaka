@@ -80,8 +80,8 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
         WITH limits AS (
             SELECT
                 daycare_group_id,
-                (created - interval '1 week')::date AS access_limit
-            FROM daycare_group_acl 
+                (created_at - interval '1 week')::date AS access_limit
+            FROM daycare_group_acl
             WHERE employee_id = ${bind(employeeId)}
         ),
         accounts AS (
@@ -678,7 +678,7 @@ fun Database.Read.getAccountAccessLimit(
             sql(
                 """
 SELECT
-    (dga.created - interval '1 week')::date
+    (dga.created_at - interval '1 week')::date
 FROM daycare_group_acl dga
 JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
 JOIN daycare_group dg ON dga.daycare_group_id = dg.id

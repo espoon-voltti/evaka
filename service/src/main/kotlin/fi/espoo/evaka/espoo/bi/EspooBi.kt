@@ -13,7 +13,7 @@ object EspooBi {
         csvQuery<BiArea> {
             sql(
                 """
-SELECT id, created, updated, name
+SELECT id, created_at AS created, updated_at AS updated, name
 FROM care_area
 """
             )
@@ -24,7 +24,7 @@ FROM care_area
             sql(
                 """
 SELECT
-    daycare.id, created, updated, care_area_id AS area, daycare.name, provider_type, cost_center,
+    daycare.id, created_at AS created, updated_at AS updated, care_area_id AS area, daycare.name, provider_type, cost_center,
     'CLUB' = ANY(type) AS club, 'PRESCHOOL' = ANY(type) AS preschool, 'PREPARATORY_EDUCATION' = ANY(type) AS preparatory_education,
     (CASE WHEN 'GROUP_FAMILY' = ANY(type) THEN 'GROUP_FAMILY'
           WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
@@ -78,7 +78,7 @@ FROM backup_care
         csvQuery<BiGroupPlacement> {
             sql(
                 """
-SELECT id, created, updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
+SELECT id, created_at AS created, updated_at AS updated, daycare_placement_id AS placement, daycare_group_id AS "group", start_date, end_date
 FROM daycare_group_placement
 
 UNION ALL
@@ -104,7 +104,7 @@ FROM absence
         csvQuery<BiGroupCaretakerAllocation> {
             sql(
                 """
-SELECT id, created, updated, group_id AS "group", amount, start_date, end_date
+SELECT id, created_at AS created, updated_at AS updated, group_id AS "group", amount, start_date, end_date
 FROM daycare_caretaker
 """
             )
@@ -134,7 +134,7 @@ WHERE status != 'CREATED'
         csvQuery<BiDecision> {
             sql(
                 """
-SELECT id, created, updated, application_id AS application, unit_id AS unit, sent_date, status, type, start_date, end_date
+SELECT id, created_at AS created, updated_at AS updated, application_id AS application, unit_id AS unit, sent_date, status, type, start_date, end_date
 FROM decision
 """
             )
@@ -144,7 +144,7 @@ FROM decision
         csvQuery<BiServiceNeedOption> {
             sql(
                 """
-SELECT id, created, updated, name_fi AS name, valid_placement_type, default_option, occupancy_coefficient, occupancy_coefficient_under_3y
+SELECT id, created_at AS created, updated_at AS updated, name_fi AS name, valid_placement_type, default_option, occupancy_coefficient, occupancy_coefficient_under_3y
 FROM service_need_option
 """
             )
@@ -154,7 +154,7 @@ FROM service_need_option
         csvQuery<BiServiceNeed> {
             sql(
                 """
-SELECT id, created, updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care = 'FULL' as shift_care
+SELECT id, created_at AS created, updated_at AS updated, option_id AS option, placement_id AS placement, start_date, end_date, shift_care = 'FULL' as shift_care
 FROM service_need
 """
             )

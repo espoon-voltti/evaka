@@ -98,26 +98,26 @@ Keep this list up-to-date as groups are completed.
 - [x] `message_thread_folder` (both)
 - [x] `message_thread_participant` (both)
 
-### Group 6: daycare (8 tables)
+### Group 6: daycare (8 tables) ✓
 
-- [ ] `care_area` (both)
-- [ ] `daycare` (both)
-- [ ] `daycare_acl` (both)
-- [ ] `daycare_caretaker` (both)
-- [ ] `daycare_group_acl` (both)
-- [ ] `daycare_group_placement` (both)
-- [ ] `club_term` (both)
-- [ ] `preschool_term` (both)
+- [x] `care_area` (both)
+- [x] `daycare` (both)
+- [x] `daycare_acl` (both)
+- [x] `daycare_caretaker` (both)
+- [x] `daycare_group_acl` (both)
+- [x] `daycare_group_placement` (both)
+- [x] `club_term` (both)
+- [x] `preschool_term` (both)
 
-### Group 7: placement/serviceneed (7 tables)
+### Group 7: placement/serviceneed (7 tables) ✓
 
-- [ ] `placement_plan` (both)
-- [ ] `service_need` (both)
-- [ ] `service_need_option` (both)
-- [ ] `service_need_option_fee` (both)
-- [ ] `service_need_option_voucher_value` (both)
-- [ ] `decision` (both)
-- [ ] `daily_service_time` (both) — also update `R__child_absences_functions.sql` (`dst.updated` in 3 places)
+- [x] `placement_plan` (both)
+- [x] `service_need` (both)
+- [x] `service_need_option` (both)
+- [x] `service_need_option_fee` (both)
+- [x] `service_need_option_voucher_value` (both)
+- [x] `decision` (both)
+- [x] `daily_service_time` (both) — also update `R__child_absences_functions.sql` (`dst.updated` in 3 places)
 
 ### Group 8: pis (8 tables)
 

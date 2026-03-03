@@ -2,7 +2,7 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, short_name)
+INSERT INTO care_area (id, name, created_at, updated_at, area_code, sub_cost_center, short_name)
 VALUES ('a01b0e03-b86e-4cbc-a744-6a35473b9628', 'Alue A', '2019-04-16 05:26:06.303078+00',
         '2020-04-02 11:40:46.780692+00', 249, '01', 'alue-a'),
        ('801a6cc7-e8a5-4279-b192-4e8192d82c18', 'Alue B', '2019-04-16 05:26:06.303078+00',
@@ -20,8 +20,8 @@ FROM message_account ma
          FULL JOIN care_area ca ON true
 WHERE ma.type = 'FINANCE';
 
-INSERT INTO daycare (id, name, type, daily_preschool_time, daily_preparatory_time, care_area_id, phone, url, created,
-                     updated, backup_location, opening_date, closing_date, email, schedule, additional_info,
+INSERT INTO daycare (id, name, type, daily_preschool_time, daily_preparatory_time, care_area_id, phone, url, created_at,
+                     updated_at, backup_location, opening_date, closing_date, email, schedule, additional_info,
                      unit_manager_name, unit_manager_phone, unit_manager_email, cost_center, upload_to_varda, capacity,
                      decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
                      street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address,

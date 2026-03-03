@@ -27,16 +27,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `creation timestamp should be called 'created_at' instead of 'created'`() {
         val permittedViolations =
             setOf(
-                "care_area",
                 "child_images",
-                "club_term",
-                "daily_service_time",
-                "daycare_acl",
-                "daycare_caretaker",
-                "daycare",
-                "daycare_group_acl",
-                "daycare_group_placement",
-                "decision",
                 "dvv_modification_token",
                 "employee",
                 "employee_pin",
@@ -49,12 +40,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "koski_study_right",
                 "payment",
                 "person",
-                "placement_plan",
-                "preschool_term",
-                "service_need",
-                "service_need_option",
-                "service_need_option_fee",
-                "service_need_option_voucher_value",
                 "voucher_value_decision",
                 "voucher_value_report_snapshot",
             )
@@ -67,16 +52,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `update timestamp should be called 'updated_at' instead of 'updated'`() {
         val permittedViolations =
             setOf(
-                "care_area",
                 "child_images",
-                "club_term",
-                "daily_service_time",
-                "daycare",
-                "daycare_acl",
-                "daycare_caretaker",
-                "daycare_group_acl",
-                "daycare_group_placement",
-                "decision",
                 "employee",
                 "employee_pin",
                 "fee_decision",
@@ -89,12 +65,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 "koski_study_right",
                 "payment",
                 "person",
-                "placement_plan",
-                "preschool_term",
-                "service_need",
-                "service_need_option",
-                "service_need_option_fee",
-                "service_need_option_voucher_value",
                 "voucher_value_decision",
             )
         val violations =

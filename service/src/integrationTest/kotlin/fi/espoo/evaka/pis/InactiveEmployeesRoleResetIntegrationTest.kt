@@ -312,7 +312,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
             sql(
                 """
 ALTER TABLE daycare_acl DISABLE TRIGGER USER;
-UPDATE daycare_acl SET updated = ${bind(timestamp)}
+UPDATE daycare_acl SET updated_at = ${bind(timestamp)}
 WHERE daycare_id = ${bind(unitId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_acl ENABLE TRIGGER USER;
 """
@@ -329,7 +329,7 @@ ALTER TABLE daycare_acl ENABLE TRIGGER USER;
             sql(
                 """
 ALTER TABLE daycare_group_acl DISABLE TRIGGER USER;
-UPDATE daycare_group_acl SET updated = ${bind(timestamp)}
+UPDATE daycare_group_acl SET updated_at = ${bind(timestamp)}
 WHERE daycare_group_id = ${bind(groupId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_group_acl ENABLE TRIGGER USER;
 """

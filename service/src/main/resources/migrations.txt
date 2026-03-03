@@ -579,3 +579,5 @@ V580__rename_created_updated_assistance_document.sql
 V581__rename_created_updated_notes_pairing_webpush.sql
 V582__rename_created_updated_attendance.sql
 V583__messaging_timestamps.sql
+V584__daycare_timestamps.sql
+V585__placement_serviceneed_timestamps.sql
