@@ -2,6 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type express from 'express'
+
+import { logWarn } from '../logging.ts'
+import type { RedisClient } from '../redis-client.ts'
+
 export function matchPath(pattern: string, path: string): boolean {
   const patternSegments = pattern.split('/')
   const pathSegments = path.split('/')
@@ -41,32 +46,87 @@ function matchSegments(
   return pathIndex === pathSegments.length
 }
 
-export interface DisabledEndpoint {
+interface ParsedEntry {
+  original: string
   method: string
-  pathPattern: string
+  patternSegments: string[]
 }
 
-export function parseDisabledEndpoint(
-  entry: string
-): DisabledEndpoint | null {
-  const spaceIndex = entry.indexOf(' ')
-  if (spaceIndex <= 0) return null
-  const method = entry.substring(0, spaceIndex)
-  const pathPattern = entry.substring(spaceIndex + 1)
-  if (!pathPattern) return null
-  return { method, pathPattern }
+function parseEntries(rawEntries: string[]): ParsedEntry[] {
+  const result: ParsedEntry[] = []
+  for (const entry of rawEntries) {
+    const spaceIndex = entry.indexOf(' ')
+    if (spaceIndex <= 0) {
+      logWarn(`Ignoring invalid disabled-endpoints entry: ${entry}`)
+      continue
+    }
+    const method = entry.substring(0, spaceIndex).toUpperCase()
+    const pathPattern = entry.substring(spaceIndex + 1)
+    if (!pathPattern) {
+      logWarn(`Ignoring invalid disabled-endpoints entry: ${entry}`)
+      continue
+    }
+    result.push({
+      original: entry,
+      method,
+      patternSegments: pathPattern.split('/')
+    })
+  }
+  return result
 }
 
-export function isEndpointDisabled(
-  entries: string[],
+const DISABLED_ENDPOINTS_KEY = 'disabled-endpoints'
+const REFRESH_INTERVAL_MS = 10_000
+
+export function createEndpointDisablingMiddleware(redisClient: RedisClient) {
+  let parsedEntries: ParsedEntry[] = []
+
+  async function refreshCache() {
+    try {
+      const raw = await redisClient.sMembers(DISABLED_ENDPOINTS_KEY)
+      parsedEntries = parseEntries(raw)
+    } catch (error) {
+      logWarn(
+        `Failed to refresh disabled endpoints cache: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
+  }
+
+  const interval = setInterval(() => void refreshCache(), REFRESH_INTERVAL_MS)
+  interval.unref()
+
+  // Load initial cache (non-blocking)
+  void refreshCache()
+
+  const middleware: express.RequestHandler = (req, res, next) => {
+    const match = findMatch(parsedEntries, req.method, req.path)
+    if (match) {
+      res.status(503).json({
+        errorCode: 'ENDPOINT_DISABLED',
+        matchedPattern: match
+      })
+      return
+    }
+    next()
+  }
+
+  return {
+    middleware,
+    refreshCache,
+    cleanup: () => clearInterval(interval)
+  }
+}
+
+function findMatch(
+  entries: ParsedEntry[],
   method: string,
   path: string
-): boolean {
+): string | null {
+  const pathSegments = path.split('/')
   for (const entry of entries) {
-    const parsed = parseDisabledEndpoint(entry)
-    if (!parsed) continue
-    if (parsed.method !== '*' && parsed.method !== method) continue
-    if (matchPath(parsed.pathPattern, path)) return true
+    if (entry.method !== '*' && entry.method !== method) continue
+    if (matchSegments(entry.patternSegments, pathSegments, 0, 0))
+      return entry.original
   }
-  return false
+  return null
 }

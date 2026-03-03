@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it, jest } from '@jest/globals'
+import type express from 'express'
 
 import {
   matchPath,
-  parseDisabledEndpoint,
-  isEndpointDisabled
+  createEndpointDisablingMiddleware
 } from '../middleware/endpoint-disabling.ts'
+import { MockRedisClient } from '../test/mock-redis-client.ts'
 
 describe('matchPath', () => {
   describe('exact matches', () => {
@@ -48,9 +49,9 @@ describe('matchPath', () => {
       ).toBe(false)
     })
     it('works in the middle of a pattern', () => {
-      expect(
-        matchPath('/citizen/*/decisions', '/citizen/abc/decisions')
-      ).toBe(true)
+      expect(matchPath('/citizen/*/decisions', '/citizen/abc/decisions')).toBe(
+        true
+      )
     })
     it('does not match empty segment in the middle', () => {
       expect(matchPath('/citizen/*/decisions', '/citizen//decisions')).toBe(
@@ -110,53 +111,82 @@ describe('matchPath', () => {
   })
 })
 
-describe('parseDisabledEndpoint', () => {
-  it('parses method and path', () => {
-    expect(parseDisabledEndpoint('POST /citizen/absences/*')).toEqual({
-      method: 'POST',
-      pathPattern: '/citizen/absences/*'
-    })
-  })
-  it('handles wildcard method', () => {
-    expect(parseDisabledEndpoint('* /employee/**')).toEqual({
-      method: '*',
-      pathPattern: '/employee/**'
-    })
-  })
-  it('returns null for invalid format (no space)', () => {
-    expect(parseDisabledEndpoint('/citizen/absences')).toBeNull()
-  })
-  it('returns null for empty string', () => {
-    expect(parseDisabledEndpoint('')).toBeNull()
-  })
-})
+describe('endpointDisablingMiddleware', () => {
+  it('returns 503 when endpoint is disabled', async () => {
+    const redis = new MockRedisClient()
+    await redis.sAdd('disabled-endpoints', 'GET /citizen/test')
+    const { middleware, refreshCache, cleanup } =
+      createEndpointDisablingMiddleware(redis)
+    await refreshCache()
 
-describe('isEndpointDisabled', () => {
-  it('matches when method and path match', () => {
-    const entries = ['POST /citizen/absences/*']
-    expect(isEndpointDisabled(entries, 'POST', '/citizen/absences/123')).toBe(
-      true
+    const req = { method: 'GET', path: '/citizen/test' } as express.Request
+    const statusFn = jest.fn().mockReturnThis()
+    const jsonFn = jest.fn().mockReturnThis()
+    const res = {
+      status: statusFn,
+      json: jsonFn
+    } as unknown as express.Response
+    const next = jest.fn()
+
+    middleware(req, res, next)
+    expect(statusFn).toHaveBeenCalledWith(503)
+    expect(jsonFn).toHaveBeenCalledWith(
+      expect.objectContaining({ errorCode: 'ENDPOINT_DISABLED' })
     )
+    expect(next).not.toHaveBeenCalled()
+    cleanup()
   })
-  it('does not match when method differs', () => {
-    const entries = ['POST /citizen/absences/*']
-    expect(isEndpointDisabled(entries, 'GET', '/citizen/absences/123')).toBe(
-      false
-    )
+
+  it('calls next when endpoint is not disabled', async () => {
+    const redis = new MockRedisClient()
+    const { middleware, refreshCache, cleanup } =
+      createEndpointDisablingMiddleware(redis)
+    await refreshCache()
+
+    const req = { method: 'GET', path: '/citizen/test' } as express.Request
+    const res = {} as express.Response
+    const next = jest.fn()
+
+    middleware(req, res, next)
+    expect(next).toHaveBeenCalled()
+    cleanup()
   })
-  it('matches wildcard method', () => {
-    const entries = ['* /citizen/absences/*']
-    expect(isEndpointDisabled(entries, 'GET', '/citizen/absences/123')).toBe(
-      true
-    )
+
+  it('calls next when method does not match', async () => {
+    const redis = new MockRedisClient()
+    await redis.sAdd('disabled-endpoints', 'POST /citizen/test')
+    const { middleware, refreshCache, cleanup } =
+      createEndpointDisablingMiddleware(redis)
+    await refreshCache()
+
+    const req = { method: 'GET', path: '/citizen/test' } as express.Request
+    const res = {} as express.Response
+    const next = jest.fn()
+
+    middleware(req, res, next)
+    expect(next).toHaveBeenCalled()
+    cleanup()
   })
-  it('returns false for empty list', () => {
-    expect(isEndpointDisabled([], 'GET', '/citizen/absences/123')).toBe(false)
-  })
-  it('skips invalid entries', () => {
-    const entries = ['invalid', 'POST /citizen/absences/*']
-    expect(isEndpointDisabled(entries, 'POST', '/citizen/absences/123')).toBe(
-      true
-    )
+
+  it('returns 503 when wildcard method matches', async () => {
+    const redis = new MockRedisClient()
+    await redis.sAdd('disabled-endpoints', '* /citizen/test')
+    const { middleware, refreshCache, cleanup } =
+      createEndpointDisablingMiddleware(redis)
+    await refreshCache()
+
+    const req = { method: 'GET', path: '/citizen/test' } as express.Request
+    const statusFn = jest.fn().mockReturnThis()
+    const jsonFn = jest.fn().mockReturnThis()
+    const res = {
+      status: statusFn,
+      json: jsonFn
+    } as unknown as express.Response
+    const next = jest.fn()
+
+    middleware(req, res, next)
+    expect(statusFn).toHaveBeenCalledWith(503)
+    expect(next).not.toHaveBeenCalled()
+    cleanup()
   })
 })
