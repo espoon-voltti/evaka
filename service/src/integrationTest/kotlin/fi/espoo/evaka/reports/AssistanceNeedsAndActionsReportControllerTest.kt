@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
@@ -56,15 +55,11 @@ class AssistanceNeedsAndActionsReportControllerTest :
 
     @Autowired private lateinit var controller: AssistanceNeedsAndActionsReportController
 
-    private lateinit var admin: AuthenticatedUser.Employee
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     @BeforeEach
     fun setup() {
-        admin =
-            db.transaction { tx ->
-                val employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN)))
-                AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
-            }
+        db.transaction { tx -> tx.insert(admin) }
         db.transaction { tx -> tx.insertAssistanceActionOptions() }
     }
 
@@ -92,7 +87,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val groupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -156,7 +151,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val emptyGroupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 emptyList(),
@@ -220,7 +215,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val childReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -293,7 +288,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val emptyChildReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 emptyList(),
@@ -394,7 +389,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val daycareReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -404,7 +399,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val preschoolDaycareReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -473,7 +468,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val daycareChildReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -482,7 +477,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val preschoolDaycareChildReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 clock,
                 date,
                 DaycareAssistanceLevel.entries,
@@ -764,7 +759,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val groupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -783,7 +778,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val childReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -838,7 +833,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val groupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -890,7 +885,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val groupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -932,7 +927,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val reportWithDecisions =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -953,7 +948,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val reportWithoutDecisions =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -1007,7 +1002,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val groupReport =
             controller.getAssistanceNeedsAndActionsReport(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),
@@ -1028,7 +1023,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
         val childReport =
             controller.getAssistanceNeedsAndActionsReportByChild(
                 dbInstance(),
-                admin,
+                admin.user,
                 setup.clock,
                 setup.date,
                 emptyList(),

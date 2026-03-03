@@ -7,8 +7,6 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,16 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var systemController: SystemController
-    private lateinit var areaId: AreaId
-    private lateinit var unitId: DaycareId
 
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
     private val user = AuthenticatedUser.SystemInternalUser
     private val clock = MockEvakaClock(2024, 10, 15, 10, 0)
 
     @BeforeEach
     fun beforeEach() {
-        areaId = db.transaction { it.insert(DevCareArea()) }
-        unitId = db.transaction { it.insert(DevDaycare(areaId = areaId)) }
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+        }
     }
 
     @Test
@@ -305,7 +305,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null): MobileDeviceId {
         val id = MobileDeviceId(UUID.randomUUID())
-        insert(DevMobileDevice(id = id, unitId = unitId, longTermToken = longTermToken))
+        insert(DevMobileDevice(id = id, unitId = daycare.id, longTermToken = longTermToken))
         return id
     }
 }

@@ -10,8 +10,6 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertServiceNeedOptions
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -26,41 +24,41 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
-    private lateinit var daycareId: DaycareId
-    private lateinit var applicationId: ApplicationId
-    private lateinit var form: DaycareFormV0
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
+    private val guardian = DevPerson()
+    private val form =
+        DaycareFormV0(
+            type = ApplicationType.DAYCARE,
+            child = Child(dateOfBirth = LocalDate.of(2020, 1, 1)),
+            guardian = Adult(),
+            apply = Apply(preferredUnits = listOf(daycare.id)),
+            preferredStartDate = LocalDate.of(2022, 1, 1),
+            serviceNeedOption =
+                ServiceNeedOption(
+                    id = snDefaultDaycare.id,
+                    nameFi = snDefaultDaycare.nameFi,
+                    nameEn = snDefaultDaycare.nameEn,
+                    nameSv = snDefaultDaycare.nameSv,
+                    validPlacementType = null,
+                ),
+        )
 
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
         db.transaction { tx ->
-            val areaId = tx.insert(DevCareArea())
-            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
-            form =
-                DaycareFormV0(
-                    type = ApplicationType.DAYCARE,
-                    child = Child(dateOfBirth = LocalDate.of(2020, 1, 1)),
-                    guardian = Adult(),
-                    apply = Apply(preferredUnits = listOf(daycareId)),
-                    preferredStartDate = LocalDate.of(2022, 1, 1),
-                    serviceNeedOption =
-                        ServiceNeedOption(
-                            id = snDefaultDaycare.id,
-                            nameFi = snDefaultDaycare.nameFi,
-                            nameEn = snDefaultDaycare.nameEn,
-                            nameSv = snDefaultDaycare.nameSv,
-                            validPlacementType = null,
-                        ),
-                )
-            applicationId =
-                tx.insertTestApplication(
-                    childId = childId,
-                    guardianId = guardianId,
-                    type = ApplicationType.DAYCARE,
-                    document = form,
-                )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.RAW_ROW)
+            tx.insert(guardian, DevPersonType.RAW_ROW)
+            tx.insertTestApplication(
+                childId = child.id,
+                guardianId = guardian.id,
+                type = ApplicationType.DAYCARE,
+                document = form,
+            )
             tx.insertServiceNeedOptions()
         }
     }
@@ -101,7 +99,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `getApplicationUnitSummaries returns service need information from applications correctly`() {
-        val applications = db.read { it.getApplicationUnitSummaries(daycareId) }
+        val applications = db.read { it.getApplicationUnitSummaries(daycare.id) }
         val application = applications.single()
         assertEquals(form.serviceNeedOption, application.serviceNeed)
     }

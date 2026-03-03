@@ -66,7 +66,12 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(2024, 12, 16, 13, 32, 25)
-    private lateinit var serviceWorker: AuthenticatedUser.Employee
+    private val employee =
+        DevEmployee(
+            firstName = "Decision",
+            lastName = "Maker",
+            roles = setOf(UserRole.SERVICE_WORKER),
+        )
     private lateinit var testDaycare: Daycare
     private val testArea2 = DevCareArea(name = "Test Care Area 2", shortName = "test_area_2")
     private val testDaycare2 = DevDaycare(areaId = testArea2.id, name = "Test Daycare 2")
@@ -81,11 +86,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun beforeEach() {
-        serviceWorker =
-            db.transaction { tx ->
-                val employeeId = tx.insert(DevEmployee(firstName = "Decision", lastName = "Maker"))
-                AuthenticatedUser.Employee(employeeId, setOf(UserRole.SERVICE_WORKER))
-            }
+        db.transaction { tx -> tx.insert(employee) }
         testDaycare =
             db.transaction { tx ->
                 val areaId = tx.insert(DevCareArea())
@@ -424,7 +425,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             assertThrows<Forbidden> {
                 applicationController.getDecisionDrafts(
                     dbInstance(),
-                    AuthenticatedUser.Employee(serviceWorker.id, roles),
+                    AuthenticatedUser.Employee(employee.id, roles),
                     clock,
                     applicationId,
                 )
@@ -1016,7 +1017,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     private fun getDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> =
         applicationController
-            .getDecisionDrafts(dbInstance(), serviceWorker, clock, applicationId)
+            .getDecisionDrafts(dbInstance(), employee.user, clock, applicationId)
             .decisions
 
     private fun acceptDecisions(
@@ -1046,7 +1047,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val result =
             applicationController.getDecisionDrafts(
                 dbInstance(),
-                serviceWorker,
+                employee.user,
                 clock,
                 applicationId,
             )
@@ -1100,7 +1101,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private fun createDecisions(applicationId: ApplicationId): List<DecisionTableRow> {
         applicationController.simpleApplicationAction(
             dbInstance(),
-            serviceWorker,
+            employee.user,
             clock,
             applicationId,
             SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL,
@@ -1109,7 +1110,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).toList() }
         rows.forEach { row ->
-            assertEquals(serviceWorker.evakaUserId, row.createdBy)
+            assertEquals(employee.evakaUserId, row.createdBy)
             assertEquals(DecisionStatus.PENDING, row.status)
             assertNull(row.requestedStartDate)
             assertNull(row.resolved)
@@ -1163,10 +1164,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                 )
 
-            applicationStateService.setVerified(tx, serviceWorker, clock, applicationId, false)
+            applicationStateService.setVerified(tx, employee.user, clock, applicationId, false)
             applicationStateService.createPlacementPlan(
                 tx,
-                serviceWorker,
+                employee.user,
                 clock,
                 applicationId,
                 DaycarePlacementPlan(

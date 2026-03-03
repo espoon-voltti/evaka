@@ -36,18 +36,15 @@ import org.springframework.beans.factory.annotation.Autowired
 class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var applicationController: ApplicationControllerV2
 
-    private lateinit var admin: AuthenticatedUser.Employee
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val area = DevCareArea()
     private val placementUnit1 = DevDaycare(areaId = area.id)
     private val applicationUnit1 = DevDaycare(areaId = area.id)
 
     @BeforeEach
     fun setup() {
-        admin =
-            db.transaction { tx ->
-                DevEmployee(roles = setOf(UserRole.ADMIN)).also { tx.insert(it) }.user
-            }
         db.transaction { tx ->
+            tx.insert(admin)
             tx.insert(area)
             tx.insert(placementUnit1)
             tx.insert(applicationUnit1)
@@ -178,7 +175,7 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     private fun getUnitApplications(
-        user: AuthenticatedUser.Employee = admin,
+        user: AuthenticatedUser.Employee = admin.user,
         clock: EvakaClock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 8, 10), LocalTime.of(8, 0))),
         unitId: DaycareId = placementUnit1.id,

@@ -35,17 +35,17 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
 
-    private lateinit var user: AuthenticatedUser.Employee
-    private lateinit var testUnit: DaycareId
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            val area = tx.insert(DevCareArea())
-            testUnit = tx.insert(DevDaycare(areaId = area))
-            val employee = tx.insert(DevEmployee())
-            user = AuthenticatedUser.Employee(employee, emptySet())
-            tx.updateDaycareAclWithEmployee(testUnit, user.id, UserRole.UNIT_SUPERVISOR)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+            tx.updateDaycareAclWithEmployee(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -56,10 +56,10 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(0, listRes1.size)
 
         // web: init pairing
-        val res1 = postPairing(testUnit)
+        val res1 = postPairing(daycare.id)
         val id = res1.id
         val challengeKey = res1.challengeKey
-        assertEquals(testUnit, res1.unitId)
+        assertEquals(daycare.id, res1.unitId)
         assertEquals(keyLength, challengeKey.length)
         assertNull(res1.responseKey)
         assertNull(res1.mobileDeviceId)
@@ -72,7 +72,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val res2 = postPairingChallenge(challengeKey)
         val responseKey = res2.responseKey
         assertEquals(id, res2.id)
-        assertEquals(testUnit, res2.unitId)
+        assertEquals(daycare.id, res2.unitId)
         assertEquals(challengeKey, res2.challengeKey)
         assertEquals(keyLength, responseKey!!.length)
         assertNull(res1.mobileDeviceId)
@@ -84,7 +84,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // web: response to challenge
         val res3 = postPairingResponse(id, challengeKey, responseKey)
         assertEquals(id, res3.id)
-        assertEquals(testUnit, res3.unitId)
+        assertEquals(daycare.id, res3.unitId)
         assertEquals(challengeKey, res3.challengeKey)
         assertEquals(responseKey, res3.responseKey)
         val deviceId = res3.mobileDeviceId!!
@@ -131,7 +131,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
@@ -151,7 +151,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
@@ -166,7 +166,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -181,7 +181,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -196,7 +196,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -217,7 +217,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -232,7 +232,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -247,7 +247,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -264,7 +264,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -281,7 +281,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -298,7 +298,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -314,7 +314,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -336,7 +336,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -352,7 +352,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -368,7 +368,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.PAIRED,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -386,7 +386,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -404,7 +404,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val pairing =
             Pairing(
                 id = PairingId(UUID.randomUUID()),
-                unitId = testUnit,
+                unitId = daycare.id,
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
@@ -458,7 +458,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun postPairing(unitId: DaycareId): Pairing =
         pairingsController.postPairing(
             dbInstance(),
-            user,
+            employee.user,
             clock,
             PairingsController.PostPairingReq.Unit(unitId = unitId),
         )
@@ -477,7 +477,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     ): Pairing =
         pairingsController.postPairingResponse(
             dbInstance(),
-            user,
+            employee.user,
             clock,
             id,
             PairingsController.PostPairingResponseReq(
@@ -506,19 +506,19 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         pairingsController.getPairingStatus(dbInstance(), clock, id).status
 
     private fun getMobileDevices(): List<MobileDevice> =
-        mobileDevicesController.getMobileDevices(dbInstance(), user, clock, testUnit)
+        mobileDevicesController.getMobileDevices(dbInstance(), employee.user, clock, daycare.id)
 
     private fun putMobileDeviceName(id: MobileDeviceId, name: String) =
         mobileDevicesController.putMobileDeviceName(
             dbInstance(),
-            user,
+            employee.user,
             clock,
             id,
             MobileDevicesController.RenameRequest(name),
         )
 
     private fun deleteMobileDevice(id: MobileDeviceId) =
-        mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
+        mobileDevicesController.deleteMobileDevice(dbInstance(), employee.user, clock, id)
 
     private fun authenticateMobileDevice(id: MobileDeviceId): MobileDeviceDetails =
         systemController.authenticateMobileDevice(

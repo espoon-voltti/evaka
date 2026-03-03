@@ -9,10 +9,6 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -57,29 +53,23 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             restrictedDetailsEnabled = false,
         )
 
-    private val guardianEmail = "guardian@example.com"
-    private lateinit var guardianId: PersonId
-    private lateinit var childId: ChildId
-    private lateinit var employeeId: EmployeeId
-    private lateinit var employeeEvakaUserId: EvakaUserId
-    private lateinit var guardianAuthenticatedUser: AuthenticatedUser.Citizen
+    private val guardian = DevPerson(email = "guardian@example.com")
+    private val employee = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
-            guardianAuthenticatedUser =
-                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.STRONG)
+            tx.insert(guardian, DevPersonType.ADULT)
             val areaId = tx.insert(DevCareArea())
             val daycareId = tx.insert(DevDaycare(areaId = areaId))
-            childId = tx.insert(testChild, DevPersonType.CHILD)
-            tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
+            tx.insert(testChild, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = testChild.id))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = childId,
+                        childId = testChild.id,
                         unitId = daycareId,
                         startDate = placementStart,
                         endDate = placementEnd,
@@ -96,9 +86,8 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 confirmedBy = null,
                 confirmedAt = null,
             )
-            employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
-            tx.upsertEmployeeUser(employeeId)
-            employeeEvakaUserId = EvakaUserId(employeeId.raw)
+            tx.insert(employee)
+            tx.upsertEmployeeUser(employee.id)
         }
     }
 
@@ -108,16 +97,16 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
         db.transaction {
             it.insert(
                 DevIncome(
-                    personId = guardianId,
-                    modifiedBy = employeeEvakaUserId,
+                    personId = guardian.id,
+                    modifiedBy = employee.evakaUserId,
                     validFrom = clock.today().minusMonths(6),
                     validTo = expirationDate,
                 )
             )
             it.insert(
                 DevFridgeChild(
-                    headOfChild = guardianId,
-                    childId = childId,
+                    headOfChild = guardian.id,
+                    childId = testChild.id,
                     startDate = clock.today().minusMonths(6),
                     endDate = expirationDate.plusMonths(6),
                 )
@@ -127,7 +116,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
         val expirationDates =
             incomeControllerCitizen.getExpiringIncome(
                 dbInstance(),
-                guardianAuthenticatedUser,
+                guardian.user(CitizenAuthLevel.STRONG),
                 clock,
             )
 

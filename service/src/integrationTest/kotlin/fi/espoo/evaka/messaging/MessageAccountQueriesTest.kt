@@ -42,11 +42,11 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var supervisorAccountId: MessageAccountId
     private val employee2Id = EmployeeId(UUID.randomUUID())
     private val accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
-    private lateinit var clock: EvakaClock
+    private val clock: EvakaClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 36)))
 
     @BeforeEach
     fun setUp() {
-        clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 36)))
         db.transaction {
             it.insert(
                 DevPerson(id = personId, firstName = "Firstname", lastName = "Person"),

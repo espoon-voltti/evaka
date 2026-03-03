@@ -150,48 +150,48 @@ Each item is a test file to refactor. Status: `todo` / `in progress` / `complete
 
 | # | Status | File | Lateinit count | Notes |
 |---|--------|------|----------------|-------|
-| 1 | todo | `aromi/AromiControllerTest.kt` | 12 | Dev* objects and IDs |
-| 2 | todo | `reports/ReportSmokeTests.kt` | 4 | Uses @BeforeAll |
-| 3 | todo | `absence/AbsenceControllerIntegrationTest.kt` | 4 | Dev* objects |
-| 4 | todo | `reservations/MissingHolidayReservationsRemindersTest.kt` | 4 | ID vars |
-| 5 | todo | `attachments/AttachmentQueriesTest.kt` | 4 | Auth/parent vars |
-| 6 | todo | `shared/security/UnitAccessControlTest.kt` | 3 | ID vars |
-| 7 | todo | `reservations/MissingReservationsRemindersTest.kt` | 3 | ID vars |
-| 8 | todo | `invoicing/service/NewCustomerIncomeNotificationIntegrationTest.kt` | 2 | Clock and date |
-| 9 | todo | `daycare/dao/PlacementQueriesIntegrationTest.kt` | 3 | ID vars |
-| 10 | todo | `application/ApplicationQueriesSmokeTest.kt` | 3 | Uses @BeforeAll |
-| 11 | todo | `absence/AbsencePushNotificationsTest.kt` | 3 | Clock and IDs |
-| 12 | todo | `reports/PreschoolApplicationReportTest.kt` | 2 | DaycareId vars |
-| 13 | todo | `pis/controller/FamilyControllerTest.kt` | 2 | User and childId |
-| 14 | todo | `pis/SystemControllerTest.kt` | 2 | AreaId and DaycareId |
-| 15 | todo | `pairing/PairingIntegrationTest.kt` | 2 | User and unitId |
-| 16 | todo | `invoicing/controller/FinanceDecisionCitizenIntegrationTest.kt` | 2 | List vars |
-| 17 | todo | `assistanceaction/AssistanceActionIntegrationTest.kt` | 2 | DaycareId and ChildId |
-| 18 | todo | `application/UnitTransferApplicationsIntegrationTest.kt` | 1 | Admin user |
-| 19 | todo | `absence/AbsenceApplicationControllersTest.kt` | 1-2 | Nested class vars |
-| 20 | todo | `webpush/WebPushTest.kt` | 1 | MockEvakaClock |
-| 21 | todo | `shared/security/ChildAccessControlTest.kt` | 1 | ChildId |
-| 22 | todo | `reports/AssistanceNeedsAndActionsReportControllerTest.kt` | 1 | Admin user |
-| 23 | todo | `messaging/MessageNotificationEmailServiceIntegrationTest.kt` | 1 | MockEvakaClock |
+| 1 | completed | `aromi/AromiControllerTest.kt` | 12 | Dev* objects and IDs |
+| 2 | completed | `reports/ReportSmokeTests.kt` | 0 | Already follows pattern |
+| 3 | completed | `absence/AbsenceControllerIntegrationTest.kt` | 4 | Dev* objects |
+| 4 | completed | `reservations/MissingHolidayReservationsRemindersTest.kt` | 4 | ID vars |
+| 5 | completed | `attachments/AttachmentQueriesTest.kt` | 4 | Auth/parent vars |
+| 6 | completed | `shared/security/UnitAccessControlTest.kt` | 3 | ID vars |
+| 7 | completed | `reservations/MissingReservationsRemindersTest.kt` | 3 | ID vars |
+| 8 | completed | `invoicing/service/NewCustomerIncomeNotificationIntegrationTest.kt` | 0 | Clock/dates kept as `lateinit` — `FullApplicationTest` uses `@TestInstance(PER_CLASS)` and `clock.tick()` mutates shared state |
+| 9 | completed | `daycare/dao/PlacementQueriesIntegrationTest.kt` | 3 | ID vars |
+| 10 | completed | `application/ApplicationQueriesSmokeTest.kt` | 3 | Promoted area/daycare/child/guardian to Dev* vals, dropped unused applicationId |
+| 11 | completed | `absence/AbsencePushNotificationsTest.kt` | 3 | Clock to val, daycare/group/device to Dev* vals, removed @BeforeAll |
+| 12 | completed | `reports/PreschoolApplicationReportTest.kt` | 2 | Promoted area/daycare1/daycare2 to Dev* vals |
+| 13 | completed | `pis/controller/FamilyControllerTest.kt` | 2 | Employee with `.user`/`.evakaUserId`, child with `.id` |
+| 14 | completed | `pis/SystemControllerTest.kt` | 2 | Area/daycare to Dev* vals |
+| 15 | completed | `pairing/PairingIntegrationTest.kt` | 2 | Employee with `.user`, daycare with `.id` |
+| 16 | completed | `invoicing/controller/FinanceDecisionCitizenIntegrationTest.kt` | 2 | Extracted computed lists and dependencies to class-level vals |
+| 17 | completed | `assistanceaction/AssistanceActionIntegrationTest.kt` | 2 | Area/daycare/child to Dev* vals with `.id` |
+| 18 | completed | `application/UnitTransferApplicationsIntegrationTest.kt` | 1 | Admin to DevEmployee val with `.user` |
+| 19 | completed | `absence/AbsenceApplicationControllersTest.kt` | 0 | All `lateinit` vars are `@Autowired` Spring beans — nothing to convert |
+| 20 | completed | `webpush/WebPushTest.kt` | 0 | `PureJdbiTest` uses `PER_CLASS` and `clock.tick()` mutates state — must stay `lateinit` |
+| 21 | completed | `shared/security/ChildAccessControlTest.kt` | 1 | Promoted child to `DevPerson` val, use `.id` |
+| 22 | completed | `reports/AssistanceNeedsAndActionsReportControllerTest.kt` | 1 | Admin to `DevEmployee` val with `.user` |
+| 23 | completed | `messaging/MessageNotificationEmailServiceIntegrationTest.kt` | 1 | Clock to val (no `tick()` calls) |
 
 ### Complex conversions (need case-by-case handling)
 
 | # | Status | File | Lateinit count | Notes |
 |---|--------|------|----------------|-------|
-| 24 | todo | `messaging/MessageIntegrationTest.kt` | 14 | MessageAccountIds from DB queries |
-| 25 | todo | `messaging/MessagePushNotificationsTest.kt` | 6 | Accounts from DB |
-| 26 | todo | `invoicing/controller/IncomeControllerCitizenIntegrationTest.kt` | 5 | Dependent ID chain |
-| 27 | todo | `shared/security/ApplicationAccessControlTest.kt` | 4 | Custom insertions |
-| 28 | todo | `invoicing/service/OutdatedIncomeNotificationsIntegrationTest.kt` | 3 | Fridge parent setup |
-| 29 | todo | `messaging/MessageQueriesTest.kt` | 2 | TestAccounts from DB |
-| 30 | todo | `messaging/MessageAccountQueriesTest.kt` | 2 | DB-derived account ID |
-| 31 | todo | `koski/KoskiIntegrationTest.kt` | 2 | Spy/mock variant data |
-| 32 | todo | `decision/DecisionCreationIntegrationTest.kt` | 2 | Daycare from DB query |
-| 33 | todo | `placement/PlacementControllerIntegrationTest.kt` | 1 | DaycarePlacementDetails from DB |
-| 34 | todo | `calendarevent/CalendarEventServiceIntegrationTest.kt` | TBD | Verify actual lateinit usage |
+| 24 | completed | `messaging/MessageIntegrationTest.kt` | 0 | All 14 `lateinit` are DB-generated `MessageAccountId` — no Dev* constructor exists, must stay `lateinit` |
+| 25 | completed | `messaging/MessagePushNotificationsTest.kt` | 3 | Promoted daycare/group/device/citizen/child to Dev* vals; clock + 3 `MessageAccountId` stay `lateinit` |
+| 26 | completed | `invoicing/controller/IncomeControllerCitizenIntegrationTest.kt` | 5 | Guardian/employee to Dev* vals with `.id`/`.evakaUserId`/`.user()`, testChild `.id` directly |
+| 27 | completed | `shared/security/ApplicationAccessControlTest.kt` | 2 | Child/daycare to Dev* vals; `creatorCitizen`/`applicationId` stay `lateinit` (parent helper + DB-dependent) |
+| 28 | completed | `invoicing/service/OutdatedIncomeNotificationsIntegrationTest.kt` | 3 | Guardian/daycare to Dev* vals, `testChild.id` directly |
+| 29 | completed | `messaging/MessageQueriesTest.kt` | 1 | Clock to val; `accounts` stays `lateinit` (DB-generated `TestAccounts`) |
+| 30 | completed | `messaging/MessageAccountQueriesTest.kt` | 1 | Clock to val; `supervisorAccountId` stays `lateinit` (DB-generated). **Note:** test has pre-existing failure (`daycare_group_acl.created` generated column) unrelated to this refactoring |
+| 31 | completed | `koski/KoskiIntegrationTest.kt` | 0 | Both `lateinit` are constructed services/mocks — nothing to convert |
+| 32 | completed | `decision/DecisionCreationIntegrationTest.kt` | 1 | `serviceWorker` to `DevEmployee` val with `.user`; `testDaycare` stays `lateinit` (DB-read `Daycare` object) |
+| 33 | completed | `placement/PlacementControllerIntegrationTest.kt` | 0 | `testPlacement: DaycarePlacementDetails` is a DB-read domain object — must stay `lateinit` |
+| 34 | completed | `calendarevent/CalendarEventServiceIntegrationTest.kt` | 2 | Promoted placement/groupPlacement to Dev* vals with `.id`. **Note:** 1 test has pre-existing `daycare_group_acl.created` failure |
 
 ### Documentation
 
 | # | Status | File | Notes |
 |---|--------|------|-------|
-| 35 | todo | `docs/developer-guide/service/testing.md` | Add anti-pattern section and variant data guidance |
+| 35 | completed | `docs/developer-guide/service/testing.md` | Added "Test Data Patterns" section: val vs lateinit, Dev* convenience methods, variant data |

@@ -31,9 +31,7 @@ import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HtmlSafe
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -133,11 +131,23 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private val group2 = DevDaycareGroup(daycareId = daycare.id, name = "TestGroup2")
     private val unit2Group = DevDaycareGroup(daycareId = daycare2.id)
 
-    private lateinit var placementId: PlacementId
-    private lateinit var groupPlacementId: GroupPlacementId
-
     private val placementStart = today.minusDays(100)
     private val placementEnd = today.plusDays(100)
+
+    private val placement =
+        DevPlacement(
+            childId = child1.id,
+            unitId = daycare.id,
+            startDate = placementStart,
+            endDate = placementEnd,
+        )
+    private val groupPlacement =
+        DevDaycareGroupPlacement(
+            daycarePlacementId = placement.id,
+            daycareGroupId = group1.id,
+            startDate = placementStart,
+            endDate = placementEnd,
+        )
 
     @BeforeEach
     fun beforeEach() {
@@ -153,24 +163,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(group2)
             tx.insert(unit2Group)
 
-            placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = child1.id,
-                        unitId = daycare.id,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
-                )
-            groupPlacementId =
-                tx.insert(
-                    DevDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        daycareGroupId = group1.id,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
-                )
+            tx.insert(placement)
+            tx.insert(groupPlacement)
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId =
@@ -1121,7 +1115,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.placementController.deletePlacement(dbInstance(), admin, clock, placementId)
+        this.placementController.deletePlacement(dbInstance(), admin, clock, placement.id)
         assert(
             this.calendarEventController
                 .getUnitCalendarEvents(
@@ -1153,7 +1147,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            placementId,
+            placement.id,
             PlacementUpdateRequestBody(startDate = today.plusDays(10), endDate = placementEnd),
         )
         assert(
@@ -1187,7 +1181,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            placementId,
+            placement.id,
             PlacementUpdateRequestBody(startDate = placementStart, endDate = today.minusDays(1)),
         )
         assert(
@@ -1217,7 +1211,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.placementController.deleteGroupPlacement(dbInstance(), admin, clock, groupPlacementId)
+        this.placementController.deleteGroupPlacement(dbInstance(), admin, clock, groupPlacement.id)
         assert(
             this.calendarEventController
                 .getUnitCalendarEvents(
@@ -1249,7 +1243,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            groupPlacementId,
+            groupPlacement.id,
             GroupTransferRequestBody(groupId = group2.id, startDate = today),
         )
         assert(
@@ -1283,7 +1277,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            groupPlacementId,
+            groupPlacement.id,
             GroupTransferRequestBody(groupId = group2.id, startDate = today.plusDays(5)),
         )
         assert(

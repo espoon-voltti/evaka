@@ -46,7 +46,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val employee1 = DevEmployee(firstName = "Firstname", lastName = "Employee")
     private val employee2 = DevEmployee(firstName = "Firstname", lastName = "Employee Two")
 
-    private lateinit var clock: EvakaClock
+    private val clock: EvakaClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
     private val sendTime = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
 
     private data class TestAccounts(
@@ -60,7 +61,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun setUp() {
-        clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
         db.transaction { tx ->
             tx.insert(person1, DevPersonType.ADULT)
             tx.insert(person2, DevPersonType.ADULT)

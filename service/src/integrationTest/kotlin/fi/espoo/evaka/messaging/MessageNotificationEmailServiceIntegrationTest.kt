@@ -72,11 +72,10 @@ class MessageNotificationEmailServiceIntegrationTest :
     private val employee =
         AuthenticatedUser.Employee(id = staffEmployee.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
-    private lateinit var clock: MockEvakaClock
+    private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
 
     @BeforeEach
     fun beforeEach() {
-        clock = MockEvakaClock(2023, 1, 1, 12, 0)
         val placementStart = clock.today().minusDays(30)
         val placementEnd = clock.today().plusDays(30)
 
