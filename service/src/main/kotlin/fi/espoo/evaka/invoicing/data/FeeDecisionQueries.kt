@@ -501,7 +501,7 @@ fun Database.Read.searchFeeDecisions(
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, part.child_id) AND
                         daterange(income_statement.start_date, income_statement.end_date, '[]') && daterange((lower(decision.valid_during) - interval '14 months')::date, lower(decision.valid_during), '[]') AND
-                        income_statement.status = 'SENT'
+                        income_statement.status = ANY('{SENT,HANDLING}'::income_statement_status[])
                     )
                             """
                     )
