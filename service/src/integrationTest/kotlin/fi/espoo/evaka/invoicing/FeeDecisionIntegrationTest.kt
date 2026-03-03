@@ -790,7 +790,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
 
-            // child4 statement not handled
+            // child4 statement being handled
             tx.insert(
                 DevIncomeStatement(
                     personId = child4.id,
@@ -799,7 +799,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             clock.today().minusMonths(2),
                             clock.today().minusMonths(1),
                         ),
-                    status = IncomeStatementStatus.SENT,
+                    status = IncomeStatementStatus.HANDLING,
                     handledAt = null,
                     handlerId = null,
                 )

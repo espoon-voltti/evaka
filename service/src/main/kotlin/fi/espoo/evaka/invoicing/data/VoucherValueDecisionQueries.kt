@@ -404,7 +404,7 @@ NOT EXISTS (
                     SELECT FROM income_statement
                     WHERE person_id IN (decision.head_of_family_id, decision.partner_id, decision.child_id) AND
                         daterange(income_statement.start_date, income_statement.end_date, '[]') && daterange((decision.valid_from - interval '14 months')::date, decision.valid_from, '[]') AND
-                        income_statement.status = 'SENT'
+                        income_statement.status = ANY('{SENT,HANDLING}'::income_statement_status[])
                     )
                 """
                     )
