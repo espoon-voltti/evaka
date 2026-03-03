@@ -4,7 +4,11 @@
 
 import { describe, expect, it } from '@jest/globals'
 
-import { matchPath } from '../middleware/endpoint-disabling.ts'
+import {
+  matchPath,
+  parseDisabledEndpoint,
+  isEndpointDisabled
+} from '../middleware/endpoint-disabling.ts'
 
 describe('matchPath', () => {
   describe('exact matches', () => {
@@ -103,5 +107,56 @@ describe('matchPath', () => {
     it('** alone matches empty path', () => {
       expect(matchPath('**', '')).toBe(true)
     })
+  })
+})
+
+describe('parseDisabledEndpoint', () => {
+  it('parses method and path', () => {
+    expect(parseDisabledEndpoint('POST /citizen/absences/*')).toEqual({
+      method: 'POST',
+      pathPattern: '/citizen/absences/*'
+    })
+  })
+  it('handles wildcard method', () => {
+    expect(parseDisabledEndpoint('* /employee/**')).toEqual({
+      method: '*',
+      pathPattern: '/employee/**'
+    })
+  })
+  it('returns null for invalid format (no space)', () => {
+    expect(parseDisabledEndpoint('/citizen/absences')).toBeNull()
+  })
+  it('returns null for empty string', () => {
+    expect(parseDisabledEndpoint('')).toBeNull()
+  })
+})
+
+describe('isEndpointDisabled', () => {
+  it('matches when method and path match', () => {
+    const entries = ['POST /citizen/absences/*']
+    expect(isEndpointDisabled(entries, 'POST', '/citizen/absences/123')).toBe(
+      true
+    )
+  })
+  it('does not match when method differs', () => {
+    const entries = ['POST /citizen/absences/*']
+    expect(isEndpointDisabled(entries, 'GET', '/citizen/absences/123')).toBe(
+      false
+    )
+  })
+  it('matches wildcard method', () => {
+    const entries = ['* /citizen/absences/*']
+    expect(isEndpointDisabled(entries, 'GET', '/citizen/absences/123')).toBe(
+      true
+    )
+  })
+  it('returns false for empty list', () => {
+    expect(isEndpointDisabled([], 'GET', '/citizen/absences/123')).toBe(false)
+  })
+  it('skips invalid entries', () => {
+    const entries = ['invalid', 'POST /citizen/absences/*']
+    expect(isEndpointDisabled(entries, 'POST', '/citizen/absences/123')).toBe(
+      true
+    )
   })
 })

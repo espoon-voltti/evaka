@@ -40,3 +40,33 @@ function matchSegments(
   }
   return pathIndex === pathSegments.length
 }
+
+export interface DisabledEndpoint {
+  method: string
+  pathPattern: string
+}
+
+export function parseDisabledEndpoint(
+  entry: string
+): DisabledEndpoint | null {
+  const spaceIndex = entry.indexOf(' ')
+  if (spaceIndex <= 0) return null
+  const method = entry.substring(0, spaceIndex)
+  const pathPattern = entry.substring(spaceIndex + 1)
+  if (!pathPattern) return null
+  return { method, pathPattern }
+}
+
+export function isEndpointDisabled(
+  entries: string[],
+  method: string,
+  path: string
+): boolean {
+  for (const entry of entries) {
+    const parsed = parseDisabledEndpoint(entry)
+    if (!parsed) continue
+    if (parsed.method !== '*' && parsed.method !== method) continue
+    if (matchPath(parsed.pathPattern, path)) return true
+  }
+  return false
+}
