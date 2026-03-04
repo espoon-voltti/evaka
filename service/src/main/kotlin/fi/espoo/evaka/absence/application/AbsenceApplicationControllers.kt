@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.AbsenceService
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -167,7 +168,8 @@ class AbsenceApplicationControllerEmployee(
                 }
             }
             .also {
-                Audit.AbsenceApplicationAccept.log(
+                ChildAudit.AbsenceApplicationAccept.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
                 )
@@ -201,7 +203,8 @@ class AbsenceApplicationControllerEmployee(
                 }
             }
             .also {
-                Audit.AbsenceApplicationReject.log(
+                ChildAudit.AbsenceApplicationReject.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
                 )
@@ -262,7 +265,8 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                 }
             }
             .also {
-                Audit.AbsenceApplicationCreate.log(
+                ChildAudit.AbsenceApplicationCreate.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
                 )
@@ -302,7 +306,9 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     }
                 }
             }
-            .also { Audit.AbsenceApplicationRead.log(meta = mapOf("childId" to AuditId(childId))) }
+            .also {
+                ChildAudit.AbsenceApplicationRead.log(childId = AuditId(childId))
+            }
     }
 
     @DeleteMapping("/{id}")
@@ -332,7 +338,8 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                 }
             }
             .also {
-                Audit.AbsenceApplicationDelete.log(
+                ChildAudit.AbsenceApplicationDelete.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(it.id),
                     objectId = AuditId(it.childId),
                 )
@@ -371,9 +378,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                 }
             }
             .also {
-                Audit.AbsenceApplicationPossibleRead.log(
-                    meta = mapOf("childId" to AuditId(childId))
-                )
+                ChildAudit.AbsenceApplicationPossibleRead.log(childId = AuditId(childId))
             }
     }
 }
