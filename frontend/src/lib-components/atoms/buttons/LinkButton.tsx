@@ -6,8 +6,7 @@ import styled, { css } from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 
-import { tabletMin } from '../../breakpoints'
-import { zoomedMobileMax } from '../../breakpoints'
+import { tabletMin, zoomedMobileMax } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'
 
 import { buttonBorderRadius } from './button-commons'

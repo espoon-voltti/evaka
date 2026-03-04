@@ -62,7 +62,6 @@ const TopButtonRow = styled(FixedSpaceRow)`
   }
 
   @media (max-width: ${zoomedMobileMax}) {
-    overflow-x: auto;
     width: max-content;
     gap: ${defaultMargins.m};
   }
