@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.varda
 
-import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -48,6 +48,11 @@ class VardaController(
                     )
                 }
             }
-            .also { Audit.VardaReportOperations.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.VardaReportOperations.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 }

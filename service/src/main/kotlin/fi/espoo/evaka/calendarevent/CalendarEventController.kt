@@ -6,6 +6,7 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
@@ -600,7 +601,8 @@ class CalendarEventController(
                     eventTimesToRemove.map { it.id }
                 }
             }
-        Audit.CalendarEventChildTimesCancellation.log(
+        ChildAudit.CalendarEventChildTimesCancellation.log(
+            childId = AuditId(body.childId),
             targetId = AuditId(body.calendarEventId),
             objectId = AuditId(body.childId),
             meta = mapOf("eventTimes" to removedIds),
@@ -810,7 +812,8 @@ class CalendarEventController(
                 }
             }
             .also {
-                Audit.CalendarEventTimeReservationCreate.log(
+                ChildAudit.CalendarEventTimeReservationCreate.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.calendarEventTimeId),
                     objectId = AuditId(body.childId),
                 )
@@ -872,7 +875,8 @@ class CalendarEventController(
                 }
             }
             .also {
-                Audit.CalendarEventTimeReservationDelete.log(
+                ChildAudit.CalendarEventTimeReservationDelete.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.calendarEventTimeId),
                     objectId = AuditId(body.childId),
                 )

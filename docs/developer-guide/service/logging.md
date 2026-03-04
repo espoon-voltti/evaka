@@ -67,11 +67,24 @@ Multiple IDs can be passed as `Audit.OccupancySpeculatedRead.log(targetId = Audi
 
 All available audit events are defined in the `Audit` enum in [`Audit.kt`](../../../service/src/main/kotlin/fi/espoo/evaka/Audit.kt).
 
-For operations involving children where child IDs must be explicitly logged, use `ChildAudit`:
+### Logging Person IDs
+
+To enable discovering all audit log messages related to a specific person, always log person IDs when an operation involves them.
+
+If the operation relates to a **child**, prefer `ChildAudit` over `Audit`. `ChildAudit` requires a `childId` parameter, ensuring child IDs are always logged consistently:
 
 ```kotlin
 ChildAudit.ApplicationRead.log(
     targetId = AuditId(userId),
     childId = AuditId(childId)  // Always required
+)
+```
+
+If the operation relates to another person (e.g., a guardian or head of family) whose ID is not already present in `targetId` or `objectId`, log it via the `meta` map using the key `personId`:
+
+```kotlin
+Audit.FeeDecisionGenerate.log(
+    targetId = AuditId(feeDecisionId),
+    meta = mapOf("personId" to headOfFamilyId)
 )
 ```

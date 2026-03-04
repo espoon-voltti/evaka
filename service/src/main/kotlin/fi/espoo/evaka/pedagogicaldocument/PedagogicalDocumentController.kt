@@ -6,6 +6,7 @@ package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.attachment.Attachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -57,7 +58,8 @@ class PedagogicalDocumentController(
                 }
             }
             .also {
-                Audit.PedagogicalDocumentCreate.log(
+                ChildAudit.PedagogicalDocumentCreate.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.childId),
                     objectId = AuditId(it.id),
                 )
@@ -112,7 +114,8 @@ class PedagogicalDocumentController(
                 }
             }
             .also {
-                Audit.PedagogicalDocumentRead.log(
+                ChildAudit.PedagogicalDocumentRead.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size),
                 )

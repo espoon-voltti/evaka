@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.assistanceaction.AssistanceAction
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
@@ -203,7 +204,8 @@ class AssistanceController(
                 )
             }
             .also { assistanceAction ->
-                Audit.ChildAssistanceActionCreate.log(
+                ChildAudit.ChildAssistanceActionCreate.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     objectId = AuditId(assistanceAction.id),
                 )
@@ -313,7 +315,11 @@ class AssistanceController(
                 }
             }
             .also { id ->
-                Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
+                ChildAudit.AssistanceFactorCreate.log(
+                    childId = AuditId(child),
+                    targetId = AuditId(child),
+                    objectId = AuditId(id),
+                )
             }
 
     @PostMapping("/employee/assistance-factors/{id}")
@@ -411,7 +417,11 @@ class AssistanceController(
                 }
             }
             .also { id ->
-                Audit.DaycareAssistanceCreate.log(targetId = AuditId(child), objectId = AuditId(id))
+                ChildAudit.DaycareAssistanceCreate.log(
+                    childId = AuditId(child),
+                    targetId = AuditId(child),
+                    objectId = AuditId(id),
+                )
             }
 
     @PostMapping("/employee/daycare-assistances/{id}")
@@ -483,7 +493,8 @@ class AssistanceController(
                 }
             }
             .also { id ->
-                Audit.PreschoolAssistanceCreate.log(
+                ChildAudit.PreschoolAssistanceCreate.log(
+                    childId = AuditId(child),
                     targetId = AuditId(child),
                     objectId = AuditId(id),
                 )
@@ -558,7 +569,8 @@ class AssistanceController(
                 }
             }
             .also { id ->
-                Audit.OtherAssistanceMeasureCreate.log(
+                ChildAudit.OtherAssistanceMeasureCreate.log(
+                    childId = AuditId(child),
                     targetId = AuditId(child),
                     objectId = AuditId(id),
                 )

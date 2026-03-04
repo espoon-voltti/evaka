@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneed.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementSource
 import fi.espoo.evaka.placement.createPlacement
@@ -82,7 +83,12 @@ class ServiceApplicationController(
                     }
                 }
             }
-            .also { Audit.ChildServiceApplicationsRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildServiceApplicationsRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     @GetMapping("/undecided")
@@ -238,10 +244,11 @@ class ServiceApplicationController(
                 }
             }
             .also { (childId, serviceNeedId, placementId) ->
-                Audit.ChildServiceApplicationAccept.log(
+                ChildAudit.ChildServiceApplicationAccept.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(id),
                     objectId = AuditId(serviceNeedId),
-                    meta = mapOf("childId" to childId, "placementId" to placementId),
+                    meta = mapOf("placementId" to placementId),
                 )
             }
     }
@@ -282,7 +289,8 @@ class ServiceApplicationController(
                 }
             }
             .also { childId ->
-                Audit.ChildServiceApplicationReject.log(
+                ChildAudit.ChildServiceApplicationReject.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(id),
                     objectId = AuditId(childId),
                 )

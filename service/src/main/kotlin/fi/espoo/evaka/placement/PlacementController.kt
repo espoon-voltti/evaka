@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
@@ -115,7 +116,8 @@ class PlacementController(
                 }
             }
             .also {
-                Audit.PlacementSearch.log(
+                ChildAudit.PlacementSearch.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.placements.size),
                 )
@@ -183,7 +185,8 @@ class PlacementController(
                         }
                 }
             }
-        Audit.PlacementCreate.log(
+        ChildAudit.PlacementCreate.log(
+            childId = AuditId(body.childId),
             targetId = AuditId(listOf(body.childId, body.unitId)),
             objectId = AuditId(placements.map { it.id }),
         )
@@ -254,7 +257,8 @@ class PlacementController(
                 }
             }
             .also {
-                Audit.PlacementUpdate.log(
+                ChildAudit.PlacementUpdate.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(placementId),
                     objectId = AuditId(listOf(it.childId, it.unitId)),
                     meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
@@ -300,7 +304,8 @@ class PlacementController(
                 }
             }
             .also {
-                Audit.PlacementCancel.log(
+                ChildAudit.PlacementCancel.log(
+                    childId = AuditId(it.childId),
                     targetId = AuditId(placementId),
                     objectId = AuditId(listOf(it.childId, it.unitId)),
                 )

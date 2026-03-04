@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.application.cancelAllActiveTransferApplications
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.shared.ChildId
@@ -63,7 +64,8 @@ class PlacementControllerCitizen(
                 }
             }
             .also {
-                Audit.PlacementSearch.log(
+                ChildAudit.PlacementSearch.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.placements.size),
                 )

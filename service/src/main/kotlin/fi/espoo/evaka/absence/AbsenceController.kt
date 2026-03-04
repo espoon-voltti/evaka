@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
 import fi.espoo.evaka.reservations.getReservableRange
@@ -120,7 +121,8 @@ class AbsenceController(
                 }
             }
             .also { absenceIdList ->
-                Audit.AbsenceUpsert.log(
+                ChildAudit.AbsenceUpsert.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
                     objectId = AuditId(absenceIdList) + AuditId(children),
                 )
@@ -162,7 +164,8 @@ class AbsenceController(
                 }
             }
             .also { (deleted, reservations) ->
-                Audit.AbsenceDelete.log(
+                ChildAudit.AbsenceDelete.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
                     objectId = AuditId(deleted) + AuditId(children),
                     meta = mapOf("createdHolidayReservations" to reservations),
@@ -199,7 +202,8 @@ class AbsenceController(
                 }
             }
             .also { (deletedReservations, deletedAbsences) ->
-                Audit.AttendanceReservationDelete.log(
+                ChildAudit.AttendanceReservationDelete.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
                     objectId = AuditId(children),
                     meta =

@@ -6,6 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -61,7 +62,8 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.ChildDailyServiceTimesRead.log(
+                ChildAudit.ChildDailyServiceTimesRead.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size),
                 )

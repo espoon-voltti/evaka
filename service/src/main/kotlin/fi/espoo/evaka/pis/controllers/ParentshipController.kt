@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
@@ -64,7 +65,8 @@ class ParentshipController(
                     )
                 }
             }
-        Audit.ParentShipsCreate.log(
+        ChildAudit.ParentShipsCreate.log(
+            childId = AuditId(body.childId),
             targetId = AuditId(listOf(body.headOfChildId, body.childId)),
             objectId = AuditId(parentship.id),
         )

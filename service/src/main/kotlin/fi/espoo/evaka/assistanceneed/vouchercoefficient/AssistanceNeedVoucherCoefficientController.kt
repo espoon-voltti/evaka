@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceneed.vouchercoefficient
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -73,7 +74,8 @@ class AssistanceNeedVoucherCoefficientController(
                 }
             }
             .also { coefficient ->
-                Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
+                ChildAudit.ChildAssistanceNeedVoucherCoefficientCreate.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     objectId = AuditId(coefficient.id),
                 )
@@ -106,7 +108,8 @@ class AssistanceNeedVoucherCoefficientController(
                 }
             }
             .also {
-                Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
+                ChildAudit.ChildAssistanceNeedVoucherCoefficientRead.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size),
                 )

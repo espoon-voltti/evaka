@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -206,6 +207,11 @@ class ServiceNeedController(
                     tx.getChildServiceNeedInfos(childId, from)
                 }
             }
-            .also { Audit.ChildServiceNeedsRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildServiceNeedsRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 }

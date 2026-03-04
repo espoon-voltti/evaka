@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -298,7 +299,12 @@ class AttendanceReservationController(
                     OngoingAttendanceResponse(attendance)
                 }
             }
-            .also { Audit.ChildAttendanceOngoingRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildAttendanceOngoingRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     @PostMapping("/employee/attendance-reservations")
@@ -330,7 +336,8 @@ class AttendanceReservationController(
                 }
             }
             ?.also {
-                Audit.AttendanceReservationEmployeeCreate.log(
+                ChildAudit.AttendanceReservationEmployeeCreate.log(
+                    childId = AuditId(children),
                     targetId = AuditId(children),
                     meta =
                         mapOf(
@@ -364,7 +371,8 @@ class AttendanceReservationController(
                 }
             }
             .also { result ->
-                Audit.ChildDatePresenceUpsert.log(
+                ChildAudit.ChildDatePresenceUpsert.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.childId),
                     meta =
                         mapOf(
@@ -419,7 +427,8 @@ class AttendanceReservationController(
                 }
             }
             .also {
-                Audit.ChildDatePresenceExpectedAbsencesCheck.log(
+                ChildAudit.ChildDatePresenceExpectedAbsencesCheck.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.childId),
                     meta = mapOf("date" to body.date),
                 )
@@ -450,7 +459,12 @@ class AttendanceReservationController(
                     )
                 }
             }
-            .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildConfirmedRangeReservationsRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     @PutMapping("/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range")
@@ -522,7 +536,12 @@ class AttendanceReservationController(
                     )
                 }
             }
-            .also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildConfirmedRangeReservationsUpdate.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     data class ReservationChildInfo(

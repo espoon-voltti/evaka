@@ -6,6 +6,7 @@ package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
 import fi.espoo.evaka.daycare.isDaycareOpenForPeriod
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
@@ -64,7 +65,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                     }
                 }
                 .also {
-                    Audit.ChildBackupCareRead.log(
+                    ChildAudit.ChildBackupCareRead.log(
+                        childId = AuditId(childId),
                         targetId = AuditId(childId),
                         meta = mapOf("count" to it.size),
                     )
@@ -119,7 +121,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                         tx.createBackupCare(user.evakaUserId, clock.now(), childId, body)
                     }
                 }
-            Audit.ChildBackupCareCreate.log(
+            ChildAudit.ChildBackupCareCreate.log(
+                childId = AuditId(childId),
                 targetId = AuditId(childId),
                 objectId = AuditId(body.unitId),
             )

@@ -6,6 +6,7 @@ package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.s3.DocumentKey
 import fi.espoo.evaka.s3.DocumentService
@@ -69,7 +70,8 @@ class ChildImageController(
 
                 replaceImage(dbc, documentClient, childId, file, contentType)
             }
-        Audit.ChildImageUpload.log(
+        ChildAudit.ChildImageUpload.log(
+            childId = AuditId(childId),
             targetId = AuditId(childId),
             objectId = AuditId(imageId),
             meta = mapOf("size" to file.size, "contentType" to contentType),
@@ -96,7 +98,8 @@ class ChildImageController(
                 }
                 dbc.transaction { tx -> removeImage(tx, documentClient, childId) }
             }
-        Audit.ChildImageDelete.log(
+        ChildAudit.ChildImageDelete.log(
+            childId = AuditId(childId),
             targetId = AuditId(childId),
             objectId = imageId?.let(AuditId::invoke),
         )

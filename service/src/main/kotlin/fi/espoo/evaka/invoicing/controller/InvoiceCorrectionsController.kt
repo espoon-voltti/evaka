@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.invoicing.service.InvoiceCorrection
 import fi.espoo.evaka.invoicing.service.InvoiceCorrectionInsert
 import fi.espoo.evaka.invoicing.service.getInvoiceCorrectionsForHeadOfFamily
@@ -100,7 +101,8 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                 }
             }
             .also { invoiceCorrectionId ->
-                Audit.InvoiceCorrectionsCreate.log(
+                ChildAudit.InvoiceCorrectionsCreate.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(listOf(body.headOfFamilyId, body.childId)),
                     objectId = AuditId(invoiceCorrectionId),
                 )

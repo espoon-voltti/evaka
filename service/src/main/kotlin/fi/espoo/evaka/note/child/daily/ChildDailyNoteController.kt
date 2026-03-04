@@ -6,6 +6,7 @@ package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -66,7 +67,8 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                     }
                 }
                 .also { noteId ->
-                    Audit.ChildDailyNoteCreate.log(
+                    ChildAudit.ChildDailyNoteCreate.log(
+                        childId = AuditId(childId),
                         targetId = AuditId(childId),
                         objectId = AuditId(noteId),
                     )

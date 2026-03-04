@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.deleteFosterParentRelationship
@@ -75,7 +76,12 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.getFosterParents(childId)
                 }
             }
-            .also { Audit.FosterParentReadParents.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.FosterParentReadParents.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     @PostMapping
@@ -98,10 +104,11 @@ class FosterParentController(private val accessControl: AccessControl) {
                 }
             }
             .also { id ->
-                Audit.FosterParentCreateRelationship.log(
+                ChildAudit.FosterParentCreateRelationship.log(
+                    childId = AuditId(body.childId),
                     targetId = AuditId(body.parentId),
                     objectId = AuditId(body.childId),
-                    meta = mapOf("fosterParentId" to id),
+                    meta = mapOf("fosterParentId" to id, "personId" to body.parentId),
                 )
             }
     }

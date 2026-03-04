@@ -6,6 +6,7 @@ package fi.espoo.evaka.note.child.sticky
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -67,7 +68,8 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                 }
             }
             .also { noteId ->
-                Audit.ChildStickyNoteCreate.log(
+                ChildAudit.ChildStickyNoteCreate.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     objectId = AuditId(noteId),
                 )

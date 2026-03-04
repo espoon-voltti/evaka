@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.sensitive
 
-import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -34,7 +34,12 @@ class ChildInfoController(private val ac: AccessControl) {
                     it.getChildBasicInfo(clock, childId) ?: throw NotFound("Child not found")
                 }
             }
-            .also { Audit.ChildBasicInfoRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildBasicInfoRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 
     @GetMapping("/employee-mobile/children/{childId}/sensitive-info")
@@ -57,6 +62,11 @@ class ChildInfoController(private val ac: AccessControl) {
                     it.getChildSensitiveInfo(childId) ?: throw NotFound("Child not found")
                 }
             }
-            .also { Audit.ChildSensitiveInfoRead.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ChildSensitiveInfoRead.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(childId),
+                )
+            }
     }
 }
