@@ -10,49 +10,52 @@ export const sv: typeof fi = {
   common: {
     yesIDo: 'Ja',
     noIDoNot: 'Nej',
-    loadingFailed: 'Hämtning av information misslyckades',
-    noAccess: 'Behörighet saknas',
+    loadingFailed: 'Det gick inte att hämta data',
+    noAccess: 'Rättigheter saknas',
     add: 'Lägg till',
-    cancel: 'Avbryt',
+    cancel: 'Ångra',
     confirm: 'Bekräfta',
-    sort: 'Sortera',
+    sort: 'Ordna',
     all: 'Alla',
     statuses: {
       active: 'Aktiv',
-      coming: 'Kommande',
+      coming: 'På väg',
       completed: 'Avslutad',
       conflict: 'Konflikt'
     },
     types: {
-      CLUB: 'Klubbverksamhet',
+      CLUB: 'Klubb',
       FAMILY: 'Familjedagvård',
       GROUP_FAMILY: 'Gruppfamiljedagvård',
       CENTRE: 'Daghem',
-      PRESCHOOL: 'Förskola',
+      PRESCHOOL: 'Förskoleundervisning',
       DAYCARE: 'Småbarnspedagogik',
-      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
-      PREPARATORY_EDUCATION: 'Förberedande förskola',
-      PREPARATORY_DAYCARE: 'Kompletterande småbarnspedagogik',
+      PRESCHOOL_DAYCARE:
+        'Småbarnspedagogik i anslutning till förskoleundervisning',
+      PREPARATORY_EDUCATION: 'Förberedande förskoleundervisning',
+      PREPARATORY_DAYCARE:
+        'Småbarnspedagogik i anslutning till förskoleundervisning',
       DAYCARE_5YO_FREE: 'Avgiftsfri småbarnspedagogik för 5-åringar',
       DAYCARE_5YO_PAID: 'Småbarnspedagogik (avgiftsbelagd)'
     },
     placement: {
-      CLUB: 'Klubbverksamhet',
+      CLUB: 'Klubb',
       DAYCARE: 'Småbarnspedagogik',
-      DAYCARE_PART_TIME: 'Halvdags småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Småbarnspedagogik på deltid',
       DAYCARE_FIVE_YEAR_OLDS: 'Småbarnspedagogik för 5-åringar',
       DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
-        'Halvdags småbarnspedagogik för 5-åringar',
-      PRESCHOOL: 'Förskola',
-      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
-      PRESCHOOL_DAYCARE_ONLY: 'Enbart kompletterande',
-      PRESCHOOL_CLUB: 'Förskoleklubb',
+        'Småbarnspedagogik på deltid för 5-åringar',
+      PRESCHOOL: 'Förskoleundervisning',
+      PRESCHOOL_DAYCARE:
+        'Småbarnspedagogik i anslutning till förskoleundervisning',
+      PRESCHOOL_DAYCARE_ONLY: 'Enbart anslutande',
+      PRESCHOOL_CLUB: 'Klubb i anslutning till förskoleundervisning',
       PREPARATORY: 'Förberedande',
       PREPARATORY_DAYCARE: 'Förberedande',
-      PREPARATORY_DAYCARE_ONLY: 'Enbart kompletterande',
+      PREPARATORY_DAYCARE_ONLY: 'Endast anslutande',
       TEMPORARY_DAYCARE: 'Tillfällig',
       TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig deltid',
-      SCHOOL_SHIFT_CARE: 'Skiftesomvårdnad för skolbarn'
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolelever'
     },
     code: 'Kod',
     children: 'Barn',
@@ -65,26 +68,26 @@ export const sv: typeof fi = {
     close: 'Stäng',
     open: 'Öppna',
     hours: 'Timmar',
-    remove: 'Ta bort',
-    doNotRemove: 'Ta inte bort',
-    clear: 'Rensa',
+    remove: 'Radera',
+    doNotRemove: 'Radera inte',
+    clear: 'Töm',
     edit: 'Redigera',
     save: 'Spara',
     saveChanges: 'Spara ändringar',
-    saving: 'Sparar',
-    saved: 'Sparat',
+    saving: 'Sparas',
+    saved: 'Sparad',
     search: 'Sök',
     noResults: 'Inga sökresultat',
     doNotSave: 'Spara inte',
     starts: 'Börjar',
     ends: 'Slutar',
-    information: 'Information',
+    information: 'Uppgifter',
     dailyNotes: 'Anteckningar',
-    saveBeforeClosing: 'Vill du spara innan du stänger',
-    hourShort: 'h',
-    minuteShort: 'min',
+    saveBeforeClosing: 'Vill du spara före stängning?',
+    hourShort: 'timmar',
+    minuteShort: 'minuter',
     week: 'Vecka',
-    yearsShort: 'år',
+    yearsShort: 'veckor',
     errors: {
       minutes: 'Högst 59 minuter'
     },
@@ -96,54 +99,54 @@ export const sv: typeof fi = {
       dateBetween: (start: string, end: string) =>
         `Måste vara mellan ${start}-${end}`
     },
-    nb: 'Obs',
+    nb: 'Obs!',
     validity: 'Giltighet',
-    lastModified: (dateTime: string) => `Senast ändrad: ${dateTime}`,
-    validTo: (date: string) => `Giltig till ${date}`,
+    lastModified: (dateTime: string) => `Senast redigerad: ${dateTime}`,
+    validTo: (date: string) => `Gäller till ${date}`,
     lastName: 'Efternamn',
     firstName: 'Förnamn',
-    openExpandingInfo: 'Öppna detaljer'
+    openExpandingInfo: 'Öppna fält för mer information'
   },
   systemNotification: {
-    title: 'Meddelande'
+    title: 'Avisering'
   },
   errorPage: {
-    reload: 'Ladda om sidan',
-    text: 'Vi stötte på ett oväntat problem. Felinformationen har vidarebefordrats.',
-    title: 'Något gick fel'
+    reload: 'Ladda ner sidan igen',
+    text: 'Det uppstod ett oväntat problem. Felinformationen har vidarebefordrats.',
+    title: 'Något gick snett'
   },
   absences: {
-    title: 'Frånvaromarkering',
+    title: 'Frånvaroanteckning',
     absenceTypes: {
       OTHER_ABSENCE: 'Frånvaro',
-      SICKLEAVE: 'Sjukdom',
+      SICKLEAVE: 'Sjukfrånvaro',
       UNKNOWN_ABSENCE: 'Oanmäld frånvaro',
-      PLANNED_ABSENCE: 'Skiftesarbetsfrånvaro',
-      TEMPORARY_RELOCATION: 'Barnet ersättningsplacerat på annat ställe',
+      PLANNED_ABSENCE: 'Frånvaro från skiftarbete',
+      TEMPORARY_RELOCATION: 'Barnet placerat tillfälligt / reservård',
       PARENTLEAVE: 'Föräldraledighet',
       FORCE_MAJEURE: 'Avgiftsfri dag',
       FREE_ABSENCE: 'Avgiftsfri frånvaro',
-      UNAUTHORIZED_ABSENCE: 'Oanmäld jourfrånvaro',
+      UNAUTHORIZED_ABSENCE: 'Oanmälda frånvaro från jourvård',
       NO_ABSENCE: 'Ingen frånvaro'
     },
     careTypes: {
-      SCHOOL_SHIFT_CARE: 'Skiftesomvårdnad för skolbarn',
-      PRESCHOOL: 'Förskola',
-      PRESCHOOL_DAYCARE: 'Kompletterande småbarnspedagogik',
-      PRESCHOOL_CLUB: 'Förskoleklubb',
+      SCHOOL_SHIFT_CARE: 'Skiftvård för skolelever',
+      PRESCHOOL: 'Förskoleundervisning',
+      PRESCHOOL_DAYCARE: 'Ansluten småbarnspedagogik',
+      PRESCHOOL_CLUB: 'Klubb i anslutning till förskoleundervisning',
       DAYCARE_5YO_FREE: 'Småbarnspedagogik för 5-åringar',
       DAYCARE: 'Småbarnspedagogik',
-      CLUB: 'Klubbverksamhet'
+      CLUB: 'Klubb'
     },
     chooseStartDate: 'Välj ett kommande datum',
-    startBeforeEnd: 'Startdatum måste vara före slutdatum.',
+    startBeforeEnd: 'Början måste infalla före slutdatumet.',
     reason: 'Orsak till frånvaro',
-    fullDayHint: 'Frånvaromarkeringen gäller hela dagen',
-    confirmDelete: 'Vill du ta bort denna frånvaro?',
-    futureAbsence: 'Kommande frånvaron',
+    fullDayHint: 'Frånvaron ska antecknas för hela dagen',
+    confirmDelete: 'Vill du radera den här frånvaron?',
+    futureAbsence: 'Kommande frånvaro',
     laterAbsence: {
-      closed: 'Visa senare frånvaron',
-      open: 'Dölj senare frånvaron'
+      closed: 'Visa kommande  frånvaro',
+      open: 'Dölj kommande frånvaro'
     }
   },
   attendances: {
@@ -152,119 +155,126 @@ export const sv: typeof fi = {
       NEXT_DAYS: 'Följande dagar'
     },
     types: {
-      COMING: 'Kommande',
-      PRESENT: 'Närvarande',
+      COMING: 'På väg',
+      PRESENT: 'På plats',
       DEPARTED: 'Gått',
-      ABSENT: 'Frånvarande'
+      ABSENT: 'Borta'
     },
     status: {
-      COMING: 'Kommande',
+      COMING: 'På väg',
       PRESENT: 'Anlänt',
       DEPARTED: 'Gått',
-      ABSENT: 'Frånvarande'
+      ABSENT: 'Borta'
     },
     staffTypes: {
       PRESENT: 'På plats',
-      OTHER_WORK: 'Arbetsärende',
+      OTHER_WORK: 'Arbetsrelaterat ärende',
       TRAINING: 'Utbildning',
-      OVERTIME: 'Övertid',
+      OVERTIME: 'Övertidsarbete',
       JUSTIFIED_CHANGE: 'Motiverad ändring',
       SICKNESS: 'Annan orsak (egen)',
       CHILD_SICKNESS: 'Annan orsak (barn)'
     },
-    groupSelectError: 'Den valda gruppens namn hittades inte',
+    groupSelectError: 'Namnet på gruppen hittades inte',
     actions: {
       multiselect: {
-        toggle: 'Registrera flera barn',
+        toggle: 'Logga in flera barn',
         confirmArrival: (count: number) =>
-          `Markera som anlänt${
-            count > 1 ? `: ${count} barn` : count === 1 ? ': 1 barn' : ''
-          }`,
+          count > 1
+            ? `Anteckna ${count} barn som anlända`
+            : count === 1
+              ? 'Anteckna 1 barn som anlänt'
+              : 'Anteckna som anlänt',
         confirmDeparture: (count: number) =>
-          `Markera som gått${
-            count > 1 ? `: ${count} barn` : count === 1 ? ': 1 barn' : ''
-          }`,
+          count > 1
+            ? `Anteckna ${count} barn som gått`
+            : count === 1
+              ? 'Anteckna 1 barn som gått'
+              : 'Anteckna som gått',
         select: 'Välj',
         selected: 'Vald'
       },
       sortType: {
         CHILD_FIRST_NAME: 'Alfabetisk ordning',
         RESERVATION_START_TIME: 'Ankomstordning',
-        RESERVATION_END_TIME: 'Avreseordning'
+        RESERVATION_END_TIME: 'Ut, ordning'
       },
       markAbsent: 'Markera som frånvarande',
       cancelAbsence: 'Ångra frånvaro',
       markPresent: (count: number) =>
-        count > 1 ? `Markera ${count} barn som anlända` : 'Markera som anlänt',
-      markDeparted: 'Markera som gått',
-      returnToComing: 'Flytta tillbaka till kommande',
-      returnToPresent: 'Flytta tillbaka till närvarande',
+        count > 1
+          ? `Anteckna ${count} barn som anlända`
+          : 'Anteckna som anlänt',
+      markDeparted: 'Anteckna som gått',
+      returnToComing: 'Återställ till kommande',
+      returnToPresent: 'Återställ till närvarande',
       or: 'eller',
       returnToPresentNoTimeNeeded:
-        'Flytta tillbaka till närvarande utan ny ankomsttid',
-      markAbsentBeforehand: 'Kommande frånvaron',
-      markReservations: 'Kommande reservationer och frånvaron',
+        'Återställ till närvarande utan ny ankomsttid',
+      markAbsentBeforehand: 'Kommande frånvaro',
+      markReservations: 'Kommande reserveringar och frånvaro',
       confirmedRangeReservations: {
-        markReservations: 'Redigera reservationer',
-        markAbsentBeforehand: 'Markera frånvaro'
+        markReservations: 'Redigera reserveringar',
+        markAbsentBeforehand: 'Anteckna frånvaro'
       }
     },
     validationErrors: {
       required: 'Obligatorisk',
       timeFormat: 'Kontrollera',
-      overlap: 'Överlappande markeringar'
+      overlap: 'Överlappande anteckningar'
     },
-    timeLabel: 'Markering',
-    termBreak: 'Ingen verksamhet idag',
-    departureTime: 'Avgångstid',
-    arrivalTime: 'Ankomsttid',
+    timeLabel: 'Anteckning',
+    termBreak: 'Ingen aktivitet idag',
+    departureTime: 'Utstämplingsstid',
+    arrivalTime: 'Instämplingstid',
     chooseGroup: 'Välj grupp',
-    chooseGroupInfo: 'Barn: Närvarande nu/Totalt i gruppen',
-    searchPlaceholder: 'Sök med barnets namn',
-    noAbsences: 'Inga frånvaron',
+    chooseGroupInfo: 'Barn: Närvarande nu/I gruppen totalt',
+    searchPlaceholder: 'Sök på barnets namn',
+    noAbsences: 'Ingen frånvaro',
     removeAbsence: 'Ångra frånvaro',
     timeError: 'Felaktig tid',
-    arrived: 'Anlände',
-    departed: 'Gick',
+    arrived: 'Ankomsttid',
+    departed: 'Avgångstid',
     noGroup: 'Ingen grupp',
     serviceTime: {
-      reservation: 'Reservation',
-      reservations: 'Reservationer',
+      reservation: 'Reservering',
+      reservations: 'Reserveringar',
       serviceToday: (start: string, end: string) =>
-        `Småbarnspedagogiktid idag ${start}-${end}`,
+        `Tid i småbarnspedagogik i dag ${start}–${end}`,
       serviceTodayShort: (start: string, end: string) =>
-        `Avtalstid ${start}-${end}`,
-      noServiceToday: 'Ingen reserverad småbarnspedagogiktid idag',
-      noServiceTodayShort: 'Ingen avtalstid idag',
+        `Avtalad tid ${start}–${end}`,
+      noServiceToday: 'Ingen reserverad barntid i dag',
+      noServiceTodayShort: 'Ingen lämplig tid idag',
       notSet: 'Närvaroanmälan saknas',
       notSetShort: 'Anmälan saknas',
-      variableTimes: 'Varierande småbarnspedagogiktid',
-      variableTimesShort: 'Avtalstiden varierar',
-      present: 'Närvarande',
+      variableTimes: 'Varierande tid i småbarnspedagogik',
+      variableTimesShort: 'Lämplig tid varierar',
+      present: 'På plats',
       yesterday: 'igår',
-      tomorrow: 'imorgon'
+      tomorrow: 'i morgon'
     },
     confirmedDays: {
       noChildren: 'Inga barn',
-      tomorrow: 'Imorgon',
-      inOtherUnit: 'I en annan enhet',
+      tomorrow: 'I morgon',
+      inOtherUnit: 'I annan enhet',
       status: {
-        ABSENT: 'Frånvarande',
-        ON_TERM_BREAK: 'Ingen verksamhet'
+        ABSENT: 'Borta',
+        ON_TERM_BREAK: 'Ingen aktivitet'
       },
-      noHolidayReservation: 'Semesterreservation saknas'
+      noHolidayReservation:
+        'Reservering för behov av vård under lovperioden saknas'
     },
     notes: {
       day: 'Dag',
       dailyNotes: 'Anteckningar',
       addNew: 'Lägg till ny',
       labels: {
-        stickyNote: 'Att observera de närmaste dagarna',
-        note: 'Dagens upplevelser och lärdomar',
-        feedingNote: 'Barnet åt idag',
-        sleepingNote: 'Barnet sov idag',
-        reminderNote: 'Saker att komma ihåg',
-        groupNotesHeader: 'Anteckningar för hela gruppen'
+        stickyNote: 'Att beaktas de närmaste dagarna',
+        note: 'Idag upplevt och lärt',
+        feedingNote: 'Barnet åt i dag',
+        sleepingNote: 'Barnet sov i dag',
+        reminderNote: 'Att komma ihåg',
+        groupNotesHeader: 'Gruppens anteckningar'
       },
       sleepingValues: {
         GOOD: 'Bra',
@@ -277,108 +287,107 @@ export const sv: typeof fi = {
         NONE: 'Inte alls/smakade'
       },
       reminders: {
-        DIAPERS: 'Fler blöjor',
-        CLOTHES: 'Fler ombyteskläder',
-        LAUNDRY: 'Tvätt i ryggsäcken'
+        DIAPERS: 'Mera blöjor',
+        CLOTHES: 'Mera reservkläder',
+        LAUNDRY: 'Smutsiga kläder i ryggsäcken'
       },
       placeholders: {
-        note: 'Lekar, framgångar, glädje och lärdomar idag (inte hälsouppgifter eller sekretessbelagda uppgifter).',
+        note: 'Lekar, framgång, glädjeämnen och lärdomar i dag (inga hälsouppgifter eller andra sekretessbelagda uppgifter).',
         childStickyNote:
-          'Anteckning för personalen (inte hälsouppgifter eller sekretessbelagda uppgifter).',
-        groupNote: 'Anteckning som gäller hela gruppen',
+          'Anteckning för personalen (inga hälsouppgifter eller andra sekretessbelagda uppgifter).',
+        groupNote: 'Anteckning om hela gruppen',
         reminderNote: 'Annat att komma ihåg (t.ex. solkräm)',
         hours: 'timmar',
         minutes: 'minuter'
       },
-      noNotes: 'Inga anteckningar för denna dag',
-      clearTitle: 'Vill du rensa anteckningarna för denna dag?',
+      noNotes: 'Inga anteckningar för idag',
+      clearTitle: 'Vill du rensa anteckningarna för idag?',
       confirmTitle: 'Vill du spara anteckningarna innan du stänger?',
       closeWithoutSaving: 'Stäng utan att spara',
-      groupNote: 'Gruppanteckningar',
-      note: 'Dagens upplevelser och lärdomar',
-      otherThings: 'Övrigt',
-      childStickyNotes: 'Att observera de närmaste dagarna'
+      groupNote: 'Gruppens anteckningar',
+      note: 'Idag upplevt och lärt',
+      otherThings: 'Övriga ärenden',
+      childStickyNotes: 'Att beaktas de närmaste dagarna'
     },
-    absenceTitle: 'Frånvaromarkeringar',
+    absenceTitle: 'Frånvaroanteckningar',
     staff: {
       errors: {
         employeeNotFound: 'Arbetstagaren hittades inte',
-        wrongPin: 'Fel PIN-kod'
+        wrongPin: 'Felaktig PIN-kod'
       },
-      previousDays: 'Tidigare registreringar',
-      nextDays: 'Kommande arbetsskift och frånvaron',
-      continuationAttendance: '* registrering som påbörjats föregående dag',
+      previousDays: 'Tidigare anteckningar',
+      nextDays: 'Kommande arbetsskift och frånvaro',
+      continuationAttendance: '*registrering som började föregående dag',
       editContinuationAttendance: 'Gå till redigering',
-      absent: 'Frånvarande',
+      absent: 'Frånvaro',
       externalPerson: 'Annan person',
       markExternalPerson: 'Registrera annan person',
-      markExternalPersonTitle: 'Registrera annan arbetstagare som närvarande',
-      markArrived: 'Registrera dig som närvarande',
-      markDeparted: 'Registrera dig som frånvarande',
+      markExternalPersonTitle: 'Registrera annan arbetstagare in',
+      markArrived: 'Anteckna dig som närvarande',
+      markDeparted: 'Anteckna dig som frånvarande',
       loginWithPin: 'Logga in med PIN-kod',
-      pinNotSet: 'Ange en PIN-kod för dig själv',
-      pinLocked: 'Byt låst PIN-kod',
-      plannedAttendance: 'Arbetsskift idag',
-      differenceReason: 'Ange orsak vid behov',
+      pinNotSet: 'Ge dig själv en PIN-kod',
+      pinLocked: 'Byt en PIN-kod som låst sig',
+      plannedAttendance: 'Arbetsskift i dag',
+      differenceReason: 'Anteckna orsak vid behov',
       differenceInfo: 'Tiden avviker från ditt arbetsskift',
       hasFutureAttendance:
-        'Du har en framtida närvaroregistrering, så du kan inte registrera dig som närvarande.',
+        'Du har redan en kommande närvaro, så du kan inte anteckna dig som närvarande.',
       summary: 'Sammandrag',
       plan: 'Arbetsskift',
-      realization: 'Utfall',
-      rows: 'Dagens registreringar',
-      noRows: 'Inga registreringar',
+      realization: 'Förverkligande',
+      rows: 'Dagens anteckningar',
+      noRows: 'Inga anteckningar',
       open: 'Öppen',
       validationErrors: {
         required: 'Obligatorisk',
         timeFormat: 'Kontrollera',
-        future: 'I framtiden',
+        future: 'Kommande',
         overlap: 'Överlappande markeringar',
         dateTooEarly: 'Kontrollera',
         dateTooLate: 'Kontrollera'
       },
-      add: '+ Lägg till ny registrering',
-      openAttendanceInAnotherUnitWarning: 'Öppen registrering ',
+      add: '+ Lägg till ny anteckning',
+      openAttendanceInAnotherUnitWarning: 'Öppen anteckning',
       openAttendanceInAnotherUnitWarningCont:
-        '. Registreringen måste avslutas innan en ny kan läggas till.',
-      noPlan: 'Inget planerat arbetsskift',
+        '. Avsluta anteckning innan du lägger till en ny.',
+      noPlan: 'Ingen planerad arbetstur',
       planWarnings: {
-        maybeInOtherUnit: 'Arbetsskiftet kan vara i en annan enhet',
-        maybeInOtherGroup: 'Arbetsskiftet kan vara i en annan grupp'
+        maybeInOtherUnit: 'Arbetsturen kan vara i en annan enhet',
+        maybeInOtherGroup: 'Arbetsturen kan vara i en annan grupp'
       },
       plansInfo:
-        'Enbart frånvaron registrerade i skiftplaneringssystemet visas i listan.',
+        'Endast frånvaro som antecknats i arbetsturssystemet syns på listan.',
       staffMemberPlanInfo:
-        'Innehåller enbart frånvaron planerade i skiftplaneringssystemet.',
+        'Innehåller endast frånvaro som planerats i arbetstursystemet.',
       staffMemberMultipleUnits:
-        'Arbetsskiften som visas för denna person kan vara i en annan enhet'
+        'Arbetsturer som syns för den här personen kan vara i en annan enhet'
     },
     timeDiffTooBigNotification:
-      'Du kan göra en registrering +/- 30 min från nuvarande tid. Registreringar kan vid behov redigeras via skrivbordsversionen.',
-    departureCannotBeDoneInFuture:
-      'Utcheckning från arbetsskiftet kan inte registreras i förväg.',
+      'Du kan logga in +/- 30 minuter från nu. Vid behov kan anteckningar ändras via webbläsaren.',
+    departureCannotBeDoneInFuture: 'Utloggning kan inte göras på förhand.',
     arrivalIsBeforeDeparture: (departure: string) =>
-      `Angiven tid är före föregående avgångstid ${departure}`,
+      `Den angivna tiden infaller före föregående avfärdstid ${departure}`,
     departureIsBeforeArrival: (arrival: string) =>
-      `Angiven tid är före senaste ankomsttid ${arrival}`,
+      `Den angivna tiden infaller före den senaste ankomsttiden ${arrival}`,
     confirmAttendanceChangeCancel:
-      'Vill du verkligen ångra den senaste avgångs- eller ankomstmarkeringen?',
+      'Är du säker att du vill ångra den senaste ut- eller inloggningen?',
     notOperationalDate:
-      'Du kan inte registrera dig som närvarande i enheten, eftersom enheten är stängd.'
+      'Du kan inte logga in på enheten, eftersom den är stängd.'
   },
   childInfo: {
-    header: 'Barnets uppgifter',
-    personalInfoHeader: 'Barnets personuppgifter',
+    header: 'Uppgifter om barnet',
+    personalInfoHeader: 'Personuppgifter om barnet',
     childName: 'Barnets namn',
     preferredName: 'Tilltalsnamn',
     dateOfBirth: 'Födelsedatum',
     address: 'Barnets hemadress',
-    type: 'Placeringstyp',
+    type: 'Typ av placering',
     otherInfoHeader: 'Övriga uppgifter',
     allergies: 'Allergier',
     diet: 'Kost',
     medication: 'Medicinering',
-    additionalInfo: 'Tilläggsinformation',
+    additionalInfo: 'Mer information',
     contactInfoHeader: 'Kontaktuppgifter',
     contact: 'Kontaktperson',
     name: 'Namn',
@@ -391,41 +400,41 @@ export const sv: typeof fi = {
       modalMenu: {
         title: 'Barnets profilbild',
         takeImageButton: 'Välj bild',
-        deleteImageButton: 'Ta bort bild',
+        deleteImageButton: 'Radera bild',
         deleteConfirm: {
-          title: 'Vill du verkligen ta bort barnets bild?',
+          title: 'Är du säker att du vill radera bilden av barnet?',
           resolve: 'Ta bort bild',
-          reject: 'Ta inte bort'
+          reject: 'Radera inte'
         },
         disclaimer:
-          'Det finns en kort fördröjning vid sparande av bilden, under vilken bilden inte visas. Bilden börjar visas senast ungefär en minut efter sparandet.'
+          'Den nerladdade bilden visas med liten fördröjning. Bilden visas senast cirka en minut efter att den sparats.'
       }
     },
-    showSensitiveInfo: 'Visa känsliga uppgifter',
-    noGuardians: 'Vårdnadshavare kan inte nås via eVaka'
+    showSensitiveInfo: 'Visa känslig information',
+    noGuardians: 'Vårdnadshavarna kan inte nås via eVaka'
   },
   staff: {
-    title: 'Personalantal idag',
-    daycareResponsible: 'Fostringsansvariga',
-    staffOccupancyEffect: 'Jag är fostringsansvarig',
-    other: 'Övriga (t.ex. assistenter, studerande, seo)',
-    cancel: 'Ångra redigering',
-    realizedGroupOccupancy: 'Gruppens beläggningsgrad idag',
-    realizedUnitOccupancy: 'Enhetens beläggningsgrad idag',
+    title: 'Personalstyrka i dag',
+    daycareResponsible: 'Vårdansvarig personal',
+    staffOccupancyEffect: 'Jag har vårdansvar',
+    other: 'Andra (t.ex. assistenter, studerande, speciallärare)',
+    cancel: 'Återta redigering',
+    realizedGroupOccupancy: 'Gruppens belastningsgrad idag',
+    realizedUnitOccupancy: 'Enhetens belastningsgrad i dag',
     notUpdated: 'Uppgifterna har inte uppdaterats',
-    updatedToday: 'Uppgifterna uppdaterade idag',
-    updated: 'Uppgifterna uppdaterade'
+    updatedToday: 'Uppgifterna har uppdaterats i dag',
+    updated: 'Uppgifterna har uppdaterats'
   },
   pin: {
-    header: 'Lås upp',
-    info: 'Ange PIN-kod för att öppna barnets uppgifter',
+    header: 'Upplåsning',
+    info: 'Skriv PIN-kod för att öppna uppgifterna om barnet',
     selectStaff: 'Välj användare',
     staff: 'Användare',
     noOptions: 'Inga alternativ',
     pinCode: 'PIN-kod',
     status: {
       SUCCESS: 'Rätt PIN-kod',
-      WRONG_PIN: 'Fel PIN-kod',
+      WRONG_PIN: 'Felaktig PIN-kod',
       PIN_LOCKED: 'PIN-koden är låst',
       NOT_FOUND: 'Okänd användare'
     },
@@ -436,7 +445,7 @@ export const sv: typeof fi = {
   },
   messages: {
     tabs: {
-      received: 'Mottagna',
+      received: 'Inkomna',
       sent: 'Skickade',
       drafts: 'Utkast'
     },
@@ -455,81 +464,81 @@ export const sv: typeof fi = {
         noOptions: 'Inga grupper'
       },
       type: {
-        label: 'Meddelandetyp',
+        label: 'Typ av meddelande',
         message: 'Meddelande',
-        bulletin: 'Bulletin (mottagaren kan inte svara)'
+        bulletin: 'Nyhetsbrev (mottagaren kan inte svara)'
       },
       urgent: {
         heading: 'Markera som brådskande',
-        info: 'Skicka meddelandet som brådskande enbart om du vill att vårdnadshavaren läser det under arbetsdagen.',
+        info: 'Skicka som brådskande bara om vårdnadshavaren ska läsa det under arbetsdagen.',
         label: 'Brådskande'
       },
       sender: 'Avsändare',
       receivers: 'Mottagare',
       recipientsPlaceholder: 'Välj...',
-      starters: 'börjande barn',
+      starters: 'barn som börjar',
       subject: {
         heading: 'Rubrik',
         placeholder: 'Skriv...'
       },
       message: {
         heading: 'Meddelande',
-        placeholder: 'Meddelandeinnehåll...'
+        placeholder: 'Meddelandets innehåll...'
       },
-      deleteDraft: 'Radera utkast',
+      deleteDraft: 'Förkasta utkast',
       send: 'Skicka',
-      sending: 'Skickar',
+      sending: 'Skickas',
       recipientCount: 'Mottagare',
       manyRecipientsWarning: {
         title: (count: number) => `Meddelandet har ${count} mottagare.`,
         text: (count: number) =>
-          `Detta meddelande skickas till ${count} mottagare. Är du säker på att du vill skicka meddelandet?`
+          `Det här meddelandet är på väg att skickas till ${count} mottagare. Är du säker att du vill sända meddelandet?`
       }
     },
-    emptyInbox: 'Din inkorg är tom',
+    emptyInbox: 'Din postlåda är tom',
     noSentMessages: 'Inga skickade meddelanden',
     noDrafts: 'Inga utkast',
     unreadMessages: 'Nya meddelanden',
     openPinLock: 'Lås upp',
     pinLockInfo:
-      'För att läsa meddelanden måste du låsa upp med PIN-kod. Du kan enbart läsa din egen grupps meddelanden.',
+      'För att läsa meddelanden måste du öppna låset med PIN-kod. Du kan bara läsa meddelanden inom din egen grupp.',
     noAccountAccess:
-      'Meddelanden kan inte visas eftersom du inte har behörighet till gruppen. Be din chef om behörighet.',
-    noRecipients: 'Det går inte att skicka meddelande till mottagaren'
+      'Det går inte att visa meddelanden eftersom du inte har tillstånd till den här gruppen. Be din chef om tillstånd.',
+    noRecipients: 'Det går inte att skicka ett meddelande till mottagaren'
   },
   mobile: {
     landerText1:
-      'Välkommen att använda Esbo småbarnspedagogiks mobilapplikation!',
+      'Välkommen att använda Esbo stads mobilapp för småbarnspedagogik!',
     landerText2:
-      'För att ta applikationen i bruk välj \u2019Lägg till enhet\u2019 nedan och registrera mobilenheten i eVaka på din enhets sida.',
+      'För att aktivera appen, välj ”Lägg till apparat” nedan och registrera mobiltelefonen i eVaka på din enhets sida.',
     actions: {
-      ADD_DEVICE: 'Lägg till enhet',
-      START: 'Vi börjar'
+      ADD_DEVICE: 'Lägg till apparat',
+      START: 'Då börjar vi'
     },
     wizard: {
-      text1: 'Ange den 6-siffriga koden från eVaka i fältet nedan.',
-      text2: 'Ange bekräftelsekoden nedan i eVaka.',
+      text1: 'Skriv en 6-siffrig kod som du får från eVaka i fältet nedan.',
+      text2: 'Skriv verifieringskoden nedan i eVaka.',
       title1: 'Ibruktagande av eVaka-mobilen, steg 1/3',
       title2: 'Ibruktagande av eVaka-mobilen, steg 2/3',
       title3: 'Välkommen att använda eVaka-mobilen!',
-      text3: 'eVaka-mobilen är nu i bruk på denna enhet.',
+      text3: 'eVaka-mobilen är nu i bruk på den här apparaten.',
       text4:
-        'För att skydda barnens uppgifter, kom ihåg att ställa in en åtkomstkod på enheten om du inte redan har gjort det.'
+        'För att skydda barnens uppgifter ska du ange en åtkomstkod i din apparat, om du inte redan har gjort det.'
     },
     emptyList: (status: 'COMING' | 'ABSENT' | 'PRESENT' | 'DEPARTED') => {
       const statusText = (() => {
         switch (status) {
           case 'COMING':
-            return 'kommande'
+            return 'på kommande'
           case 'ABSENT':
             return 'frånvarande'
           case 'PRESENT':
             return 'närvarande'
           case 'DEPARTED':
-            return 'avresta'
+            return 'som gått'
         }
       })()
-      return `Inga ${statusText} barn`
+      return `Inga barn ${statusText}`
     }
   },
   settings: {
@@ -539,33 +548,33 @@ export const sv: typeof fi = {
       sv: 'Svenska'
     },
     notifications: {
-      title: 'Notifikationsinställningar',
+      title: 'Inställningar för meddelanden',
       permission: {
-        label: 'Notifikationer',
+        label: 'Aviseringar',
         enable: 'Aktivera',
         state: {
-          unsupported: 'Telefonen eller webbläsaren stöder inte notifikationer',
-          granted: 'Aktiverad',
-          prompt: 'Inte aktiverad',
+          unsupported: 'Aviseringar stöds inte av telefonen eller webbläsare',
+          granted: 'I bruk',
+          prompt: 'Ur bruk',
           denied: 'Blockerad'
         },
         info: {
           unsupported:
-            'Notifikationer fungerar inte på denna telefon eller med den aktuella webbläsarversionen. Problemet kan åtgärdas genom att uppdatera webbläsaren.',
+            'Aviseringar fungerar inte med den här telefonen eller webbläsarversionen. Uppgradera webbläsaren så löses kanske problemet.',
           denied:
-            'Notifikationer har blockerats i telefonens inställningar. Problemet kan åtgärdas genom att ändra telefonens eller webbläsarens notifikationsinställningar.'
+            'Aviseringar har blockerats i telefonens inställningar. Ändra aviseringsinställningar för telefonen eller webbläsaren, så löses kanske problemet.'
         }
       },
       categories: {
-        label: 'Ämnen för vilka notifikationer skickas till denna telefon',
+        label: 'Ämnen som ska aviseras till den här telefonen',
         values: {
-          RECEIVED_MESSAGE: 'Mottagna meddelanden',
-          NEW_ABSENCE: 'Frånvaromarkeringar för barnens aktuella dag',
+          RECEIVED_MESSAGE: 'Inkomna meddelanden',
+          NEW_ABSENCE: 'Frånvaroanteckningar för barn i dag',
           CALENDAR_EVENT_RESERVATION: 'Bokade och avbokade samtalstider'
         }
       },
       groups: {
-        label: 'Grupper om vilka notifikationer skickas'
+        label: 'Grupper, vars ärenden aviseras'
       }
     }
   },
@@ -578,16 +587,16 @@ export const sv: typeof fi = {
       loaded: 'Laddad',
       error: {
         EXTENSION_MISSING: 'Filändelse saknas',
-        EXTENSION_INVALID: 'Felaktig filändelse',
-        INVALID_CONTENT_TYPE: 'Felaktigt filformat',
+        EXTENSION_INVALID: 'Ogiltig filändelse',
+        INVALID_CONTENT_TYPE: 'Ogiltigt filformat',
         FILE_TOO_LARGE: 'För stor fil (max. 25 MB)',
-        SERVER_ERROR: 'Uppladdning misslyckades'
+        SERVER_ERROR: 'Det gick inte att ladda ner'
       },
       input: {
-        title: 'Lägg till bilaga',
+        title: 'Lägg till en bilaga',
         text: [
-          'Klicka här eller dra bilagan till rutan en åt gången.',
-          'Maximal filstorlek: 25 MB.',
+          'Tryck här eller dra en bilaga åt gången till lådan.',
+          'Filens maximala storlek: 25 MB.',
           'Tillåtna filformat:',
           'PDF, JPEG/JPG, PNG och DOC/DOCX'
         ]
@@ -595,8 +604,9 @@ export const sv: typeof fi = {
       deleteFile: 'Ta bort fil'
     },
     download: {
-      modalHeader: 'Filen bearbetas',
-      modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+      modalHeader: 'Behandlingen av filen pågår fortfarande',
+      modalMessage:
+        'Filen är inte tillgänglig just nu. Försök på nytt om en stund.',
       modalClose: 'Stäng'
     }
   },
@@ -604,9 +614,9 @@ export const sv: typeof fi = {
     title: 'Enheter',
     children: 'Barn',
     staff: 'Personal',
-    utilization: 'Beläggningsgrad',
+    utilization: 'Närvarograd',
     description:
-      'Antal personal och barn samt beläggningsgrad för dina enheter just nu.'
+      'Personalstyrka och antal barn i enheterna samt närvarograden för närvarande.'
   },
   components
 }
