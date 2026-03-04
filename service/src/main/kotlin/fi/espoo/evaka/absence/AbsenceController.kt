@@ -237,7 +237,8 @@ class AbsenceController(
                 }
             }
             .also {
-                Audit.AbsenceRead.log(
+                ChildAudit.AbsenceRead.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(childId),
                     meta = mapOf("year" to year, "month" to month),
                 )

@@ -661,6 +661,7 @@ enum class ChildAudit(
     AbsenceApplicationAccept,
     AbsenceApplicationCreate,
     AbsenceCitizenCreate,
+    AbsenceRead,
     AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
