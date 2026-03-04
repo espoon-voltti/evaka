@@ -89,7 +89,9 @@ export default {
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut',
-      http403Error: 'Oikeudet puuttuvat'
+      http403Error: 'Oikeudet puuttuvat',
+      endpointDisabled:
+        'eVakassa on käynnissä osittainen huoltokatko. Osa toiminnoista ei ole tällä hetkellä käytettävissä. Yritä hetken kuluttua uudelleen.'
     },
     today: 'Tänään',
     datetime: {

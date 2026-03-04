@@ -14,7 +14,8 @@ function useFailureMessage() {
   const { i18n } = useTranslation()
   return {
     generic: i18n.common.loadingFailed,
-    http403: i18n.common.noAccess
+    http403: i18n.common.noAccess,
+    endpointDisabled: i18n.common.endpointDisabled
   }
 }
 

@@ -91,7 +91,9 @@ const en: Translations = {
     openExpandingInfo: 'Open the details',
     errors: {
       genericGetError: 'Error in fetching the requested information',
-      http403Error: 'No access to the requested information'
+      http403Error: 'No access to the requested information',
+      endpointDisabled:
+        'eVaka is currently undergoing partial maintenance. Some features are temporarily unavailable. Please try again shortly.'
     },
     today: 'Today',
     datetime: {

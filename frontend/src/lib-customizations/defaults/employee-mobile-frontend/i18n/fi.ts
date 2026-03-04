@@ -10,6 +10,8 @@ export const fi = {
     noIDoNot: 'En',
     loadingFailed: 'Tietojen haku epäonnistui',
     noAccess: 'Oikeudet puuttuvat',
+    endpointDisabled:
+      'eVakassa on käynnissä osittainen huoltokatko. Osa toiminnoista ei ole tällä hetkellä käytettävissä. Yritä hetken kuluttua uudelleen.',
     add: 'Lisää',
     cancel: 'Peruuta',
     confirm: 'Vahvista',

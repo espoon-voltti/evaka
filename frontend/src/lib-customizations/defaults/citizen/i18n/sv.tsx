@@ -89,7 +89,9 @@ const sv: Translations = {
     openExpandingInfo: 'Öppna detaljer',
     errors: {
       genericGetError: 'Hämtning av information misslyckades',
-      http403Error: 'Ingen tillgång till informationen'
+      http403Error: 'Ingen tillgång till informationen',
+      endpointDisabled:
+        'eVaka genomgår för närvarande ett partiellt underhållsavbrott. Vissa funktioner är inte tillgängliga just nu. Försök igen om en stund.'
     },
     today: 'Idag',
     datetime: {

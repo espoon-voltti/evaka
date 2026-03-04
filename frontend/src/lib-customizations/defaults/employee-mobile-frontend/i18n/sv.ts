@@ -12,6 +12,8 @@ export const sv: typeof fi = {
     noIDoNot: 'Nej',
     loadingFailed: 'Det gick inte att hämta data',
     noAccess: 'Rättigheter saknas',
+    endpointDisabled:
+      'eVaka genomgår för närvarande ett partiellt underhållsavbrott. Vissa funktioner är inte tillgängliga just nu. Försök igen om en stund.',
     add: 'Lägg till',
     cancel: 'Ångra',
     confirm: 'Bekräfta',
