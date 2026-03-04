@@ -22,7 +22,7 @@ private data class ExistingActiveDecision(val unitId: DaycareId, val type: Decis
 
 private fun Database.Read.getLatestAcceptedPreschoolDecision(
     childId: ChildId,
-    startDate: LocalDate,
+    date: LocalDate,
 ): ExistingActiveDecision? =
     createQuery {
             sql(
@@ -33,7 +33,7 @@ JOIN application a ON d.application_id = a.id
 WHERE a.child_id = ${bind(childId)}
   AND d.type = ANY(${bind(listOf(DecisionType.PRESCHOOL, DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB, DecisionType.PREPARATORY_EDUCATION))})
   AND d.status = ${bind(DecisionStatus.ACCEPTED)}
-  AND daterange(d.start_date, d.end_date, '[]') @> ${bind(startDate)}
+  AND daterange(d.start_date, d.end_date, '[]') @> ${bind(date)}
 ORDER BY d.resolved DESC
 LIMIT 1
 """
