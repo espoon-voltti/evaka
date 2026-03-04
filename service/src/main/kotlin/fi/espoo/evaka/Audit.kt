@@ -51,7 +51,6 @@ enum class Audit(
     private val securityLevel: String = "low",
 ) {
     AbsenceApplicationRead,
-    AbsenceCitizenCreate,
     AbsenceRead,
     AddressPageDownloadPdf,
     ApplicationAdminDetailsUpdate,
@@ -661,6 +660,7 @@ enum class ChildAudit(
     ChildSensitiveInfoRead,
     AbsenceApplicationAccept,
     AbsenceApplicationCreate,
+    AbsenceCitizenCreate,
     AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
