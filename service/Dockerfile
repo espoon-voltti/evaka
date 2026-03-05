@@ -84,6 +84,9 @@ RUN addgroup --gid ${GROUP_ID} ${USERNAME} \
  && chown ${USERNAME}:${USERNAME} /config \
  && ln -s /config ${HOME_DIR}/s3 # old config path for backwards compatibility
 
+VOLUME /config
+VOLUME /tmp
+
 COPY --from=builder /evaka/service/target/ .
 
 USER ${USERNAME}

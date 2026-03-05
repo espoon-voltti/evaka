@@ -52,6 +52,8 @@ RUN addgroup --gid 1001 evaka \
  && chown evaka:evaka /config \
  && ln -s /config /home/evaka/s3 # old config path for backwards compatibility
 
+VOLUME /config
+
 COPY --from=builder /project .
 
 RUN yarn workspaces focus --production \
@@ -67,6 +69,8 @@ ENV APP_COMMIT="$commit"
 
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
+
+USER evaka
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "src/index.ts"]
