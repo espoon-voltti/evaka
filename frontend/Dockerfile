@@ -78,6 +78,11 @@ COPY ./proxy/files/bin/ /bin/
 COPY ./proxy/files/web/ /web/
 COPY ./proxy/files/etc/ /etc/
 
+RUN mkdir -p /nginx /internal && chown nginx:nginx /nginx /internal
+
+VOLUME /nginx
+VOLUME /internal
+
 ENTRYPOINT ["/bin/proxy-entrypoint.sh"]
 CMD ["nginx", "-c", "/nginx/config/nginx.conf", "-g", "daemon off;"]
 
@@ -99,3 +104,5 @@ ENV APP_BUILD="$build" \
     APP_COMMIT="$commit"
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
+
+USER nginx
