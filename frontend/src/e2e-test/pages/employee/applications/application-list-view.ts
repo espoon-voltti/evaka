@@ -201,6 +201,12 @@ export class DecisionEditorPage {
     await this.page.findByDataQa('save-decisions-button').click()
   }
 
+  plannedCheckbox(decisionType: DecisionType): Checkbox {
+    return new Checkbox(
+      this.page.findByDataQa(`toggle-service-need-part-day-${decisionType}`)
+    )
+  }
+
   async cancel() {
     await this.page.findByDataQa('cancel-decisions-button').click()
   }

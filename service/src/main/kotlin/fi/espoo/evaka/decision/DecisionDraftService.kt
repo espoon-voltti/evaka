@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,6 +17,29 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 import java.util.UUID
+
+private data class ExistingActiveDecision(val unitId: DaycareId, val type: DecisionType)
+
+private fun Database.Read.getLatestAcceptedPreschoolDecision(
+    childId: ChildId,
+    date: LocalDate,
+): ExistingActiveDecision? =
+    createQuery {
+            sql(
+                """
+SELECT d.unit_id, d.type
+FROM decision d
+JOIN application a ON d.application_id = a.id
+WHERE a.child_id = ${bind(childId)}
+  AND d.type = ANY(${bind(listOf(DecisionType.PRESCHOOL, DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB, DecisionType.PREPARATORY_EDUCATION))})
+  AND d.status = ${bind(DecisionStatus.ACCEPTED)}
+  AND daterange(d.start_date, d.end_date, '[]') @> ${bind(date)}
+ORDER BY d.resolved DESC
+LIMIT 1
+"""
+            )
+        }
+        .exactlyOneOrNull()
 
 fun createDecisionDrafts(
     tx: Database.Transaction,
@@ -44,7 +68,12 @@ fun createDecisionDrafts(
             PlacementType.PRESCHOOL_CLUB,
             PlacementType.PREPARATORY,
             PlacementType.PREPARATORY_DAYCARE -> {
-                planPreschoolDecisionDrafts(placementPlan, application)
+                val existingDecision =
+                    tx.getLatestAcceptedPreschoolDecision(
+                        application.childId,
+                        placementPlan.period.start,
+                    )
+                planPreschoolDecisionDrafts(placementPlan, existingDecision)
             }
 
             PlacementType.SCHOOL_SHIFT_CARE -> {
@@ -182,12 +211,23 @@ private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> 
 
 private fun planPreschoolDecisionDrafts(
     plan: PlacementPlan,
-    application: ApplicationDetails,
+    existingDecision: ExistingActiveDecision?,
 ): List<DecisionDraft> {
     val primaryType =
         if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
             DecisionType.PREPARATORY_EDUCATION
         else DecisionType.PRESCHOOL
+
+    val primaryPlanned =
+        if (existingDecision == null) {
+            true
+        } else {
+            val existingPrimaryType =
+                if (existingDecision.type == DecisionType.PREPARATORY_EDUCATION)
+                    DecisionType.PREPARATORY_EDUCATION
+                else DecisionType.PRESCHOOL
+            existingDecision.unitId != plan.unitId || existingPrimaryType != primaryType
+        }
 
     val primary =
         DecisionDraft(
@@ -196,7 +236,7 @@ private fun planPreschoolDecisionDrafts(
             type = primaryType,
             startDate = plan.period.start,
             endDate = plan.period.end,
-            planned = !application.additionalDaycareApplication,
+            planned = primaryPlanned,
         )
 
     val connected =
