@@ -18,7 +18,6 @@ RUN apt-get update \
       ca-certificates \
       curl \
       unzip \
-      gosu \
  && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.4.1/s3downloader-linux-amd64 \
        -o /bin/s3download \
  && chmod +x /bin/s3download \
@@ -49,7 +48,10 @@ ENV NODE_ENV=production
 
 RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password \
  && mkdir -p /config \
+ && chown evaka:evaka /config \
  && ln -s /config /home/evaka/s3 # old config path for backwards compatibility
+
+VOLUME /config
 
 COPY --from=builder /project .
 
@@ -64,6 +66,8 @@ ENV APP_COMMIT="$commit"
 
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
+
+USER evaka
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "src/index.ts"]

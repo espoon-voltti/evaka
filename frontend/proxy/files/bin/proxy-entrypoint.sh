@@ -43,12 +43,12 @@ else
   export DD_AGENT_HOST="localhost"
 fi
 
-if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
-  s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
-fi
-
 mkdir -p /nginx/config
 cp -r /etc/nginx/* /nginx/config/
+
+if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
+  s3download "$DEPLOYMENT_BUCKET" "proxy" /nginx/config/
+fi
 
 mkdir -p /internal/
 cp -r /web/* /internal/
