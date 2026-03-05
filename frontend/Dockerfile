@@ -55,9 +55,6 @@ ENV NGINX_ENV=local \
 # https://github.com/hairyhenderson/gomplate
 ARG GOMPLATE_VERSION=v4.0.1
 ARG GOMPLATE_SHA256="5aeae23cbc51e243967162a62edba0098218668a09cdaa6d6de1b228c070990f"
-# https://github.com/espoon-voltti/s3-downloader/
-ARG S3_DOWNLOADER_VERSION=v1.4.1
-ARG S3_DOWNLOADER_SHA256="520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f"
 
 RUN apt-get update \
  && apt-get -y dist-upgrade \
@@ -66,10 +63,6 @@ RUN apt-get update \
        -o /bin/gomplate \
  && chmod +x /bin/gomplate \
  && echo "${GOMPLATE_SHA256}  /bin/gomplate" | sha256sum -c - \
- && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/${S3_DOWNLOADER_VERSION}/s3downloader-linux-amd64 \
-       -o /bin/s3download \
- && chmod +x /bin/s3download \
- && echo "${S3_DOWNLOADER_SHA256}  /bin/s3download" | sha256sum -c - \
  && apt-get remove --auto-remove -y curl \
  && rm -rf /var/lib/apt/lists/* \
  && rm /etc/nginx/conf.d/default.conf /etc/nginx/nginx.conf # prevent accidental usage of default configs

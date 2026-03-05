@@ -70,7 +70,5 @@ ENV APP_COMMIT="$commit"
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
 
-USER evaka
-
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "src/index.ts"]

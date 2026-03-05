@@ -47,7 +47,7 @@ services:
         - ghcr.io/espoon-voltti/evaka/api-gateway:cache-master
     read_only: true
     tmpfs: # In ECS these are disk-backed via Dockerfile VOLUME (ext4 on ephemeral NVMe)
-      - /config:uid=1000,gid=1000,size=64m
+      - /config:uid=1001,gid=1001,size=64m
     ports:
       - "3000"
     hostname: api-gw

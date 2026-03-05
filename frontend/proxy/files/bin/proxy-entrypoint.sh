@@ -46,10 +46,6 @@ fi
 mkdir -p /nginx/config
 cp -r /etc/nginx/* /nginx/config/
 
-if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
-  s3download "$DEPLOYMENT_BUCKET" "proxy" /nginx/config/
-fi
-
 mkdir -p /internal/
 cp -r /web/* /internal/
 
