@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Button } from 'lib-components/atoms/buttons/Button'
 
+import { zoomedMobileMax } from '../../breakpoints'
 import { useTranslations } from '../../i18n'
 import { defaultMargins } from '../../white-space'
 
@@ -52,4 +53,18 @@ const ButtonFooter = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0 0 ${defaultMargins.L} 0;
+  flex-wrap: wrap;
+  gap: ${defaultMargins.s};
+  button {
+    flex: 1 1 auto;
+    min-width: max-content;
+    white-space: normal;
+  }
+  @media (max-width: ${zoomedMobileMax}) {
+    flex-direction: column;
+    gap: ${defaultMargins.s};
+    button {
+      min-width: 100%;
+    }
+  }
 `

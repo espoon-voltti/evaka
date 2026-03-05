@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
@@ -12,8 +11,9 @@ import type {
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
+import { zoomedMobileMax } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
@@ -111,17 +111,18 @@ export default React.memo(function CalendarListView({
         primary
         type="button"
         data-qa="open-calendar-actions-modal"
-      >
-        <Icon icon={faPlus} />
-        {showDiscussionAction
-          ? i18n.calendar.newReservationOrAbsenceOrDiscussion
-          : i18n.calendar.newReservationOrAbsence}
-      </HoverButton>
+        icon={faPlus}
+        text={
+          showDiscussionAction
+            ? i18n.calendar.newReservationOrAbsenceOrDiscussion
+            : i18n.calendar.newReservationOrAbsence
+        }
+      />
     </>
   )
 })
 
-const HoverButton = styled(LegacyButton)`
+const HoverButton = styled(Button)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
@@ -130,8 +131,8 @@ const HoverButton = styled(LegacyButton)`
 
   ${buttonBounceAnimation};
   animation-delay: 1.5s;
-`
-
-const Icon = styled(FontAwesomeIcon)`
-  margin-right: ${defaultMargins.xs};
+  @media (max-width: ${zoomedMobileMax}) {
+    max-width: calc(100% - 10px);
+    right: ${defaultMargins.xs};
+  }
 `

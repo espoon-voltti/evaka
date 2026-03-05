@@ -6,7 +6,8 @@ import styled, { css } from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 
-import { tabletMin } from '../../breakpoints'
+import { tabletMin, zoomedMobileMax } from '../../breakpoints'
+import { defaultMargins } from '../../white-space'
 
 import { buttonBorderRadius } from './button-commons'
 
@@ -35,6 +36,12 @@ const baseStyles = css`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @media (max-width: ${zoomedMobileMax}) {
+    white-space: normal;
+    line-height: 1.25rem;
+    padding: 0 ${defaultMargins.s};
+  }
 
   &:focus {
     box-shadow:

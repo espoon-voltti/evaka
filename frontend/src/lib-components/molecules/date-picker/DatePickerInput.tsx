@@ -84,7 +84,7 @@ const DateInputText = React.memo(function DateInputText({
       data-qa={dataQa}
       id={id}
       required={required}
-      width="s"
+      width="chs"
     />
   )
 })
@@ -133,7 +133,7 @@ const DateInputNative = React.memo(function DateInputNative({
       data-qa={dataQa}
       id={id}
       required={required}
-      width="s"
+      width="chs"
       type="date"
       min={minDate?.formatIso()}
       max={maxDate?.formatIso()}

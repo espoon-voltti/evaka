@@ -16,6 +16,7 @@ import type {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -24,12 +25,15 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { Label } from 'lib-components/typography'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { IconOnlyButton } from '../../atoms/buttons/IconOnlyButton'
 import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
+import { MobileOnly, TabletAndDesktop } from '../../layout/responsive-layout'
+import { defaultMargins } from '../../white-space'
 
 import type {
   DocumentQuestionDescriptor,
@@ -95,6 +99,23 @@ const Indentation = styled.div`
   margin-left: 24px;
 `
 
+const ResponsiveGrid = styled.div<{ $fieldCount: number }>`
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(${(p) => (p.$fieldCount > 3 ? 200 : 270)}px, 1fr)
+  );
+  gap: ${defaultMargins.s};
+  max-width: 100%;
+`
+
+const GridColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.xs};
+  min-width: 0;
+`
+
 const View = React.memo(function View({
   bind,
   readOnly
@@ -113,28 +134,42 @@ const View = React.memo(function View({
       <Indentation>
         <FixedSpaceColumn>
           {answer.state.map((row, i) => (
-            <FixedSpaceColumn key={i}>
-              <FixedSpaceRow>
-                {fieldLabels.state.map((label) => (
-                  <FixedWidthDiv
-                    key={label}
-                    $questionCount={fieldLabels.state.length}
-                  >
-                    <Label>{label}</Label>
-                  </FixedWidthDiv>
-                ))}
-              </FixedSpaceRow>
-              <FixedSpaceRow>
-                {row.map((value, j) => (
-                  <FixedWidthDiv
-                    key={j}
-                    $questionCount={fieldLabels.state.length}
-                  >
-                    {value || '-'}
-                  </FixedWidthDiv>
-                ))}
-              </FixedSpaceRow>
-            </FixedSpaceColumn>
+            <React.Fragment key={i}>
+              <TabletAndDesktop>
+                <FixedSpaceColumn>
+                  <FixedSpaceRow>
+                    {fieldLabels.state.map((label) => (
+                      <FixedWidthDiv
+                        key={label}
+                        $questionCount={fieldLabels.state.length}
+                      >
+                        <Label>{label}</Label>
+                      </FixedWidthDiv>
+                    ))}
+                  </FixedSpaceRow>
+                  <FixedSpaceRow>
+                    {row.map((value, j) => (
+                      <FixedWidthDiv
+                        key={j}
+                        $questionCount={fieldLabels.state.length}
+                      >
+                        {value || '-'}
+                      </FixedWidthDiv>
+                    ))}
+                  </FixedSpaceRow>
+                </FixedSpaceColumn>
+              </TabletAndDesktop>
+              <MobileOnly>
+                <LabelValueList
+                  spacing="small"
+                  labelWidth="fit-content(40%)"
+                  contents={fieldLabels.state.map((label, j) => ({
+                    label,
+                    value: row[j] || '-'
+                  }))}
+                />
+              </MobileOnly>
+            </React.Fragment>
           ))}
         </FixedSpaceColumn>
       </Indentation>
@@ -147,33 +182,18 @@ const View = React.memo(function View({
       <Indentation>
         <FixedSpaceColumn>
           {answerRows.map((row, i) => (
-            <FixedSpaceColumn key={i}>
-              <FixedSpaceRow>
-                {fieldLabels.state.map((label) => (
-                  <FixedWidthDiv
-                    key={label}
-                    $questionCount={fieldLabels.state.length}
-                  >
-                    <Label>{label}</Label>
-                  </FixedWidthDiv>
-                ))}
-              </FixedSpaceRow>
-              <FixedSpaceRow>
-                <QuestionRow bind={row} />
-                {answerRows.length > 1 && (
-                  <IconOnlyButton
-                    icon={faTrash}
-                    aria-label={i18n.common.remove}
-                    onClick={() =>
-                      answer.update((prev) => [
-                        ...prev.slice(0, i),
-                        ...prev.slice(i + 1)
-                      ])
-                    }
-                  />
-                )}
-              </FixedSpaceRow>
-            </FixedSpaceColumn>
+            <EditableQuestionRow
+              key={i}
+              bind={row}
+              fieldLabels={fieldLabels.state}
+              showDelete={answerRows.length > 1}
+              onDelete={() =>
+                answer.update((prev) => [
+                  ...prev.slice(0, i),
+                  ...prev.slice(i + 1)
+                ])
+              }
+            />
           ))}
           {template.state.allowMultipleRows && (
             <Button
@@ -194,20 +214,59 @@ const View = React.memo(function View({
   )
 })
 
-const QuestionRow = React.memo(function Foo({
-  bind
+const EditableQuestionRow = React.memo(function EditableQuestionRow({
+  bind,
+  fieldLabels,
+  onDelete,
+  showDelete
 }: {
   bind: BoundForm<typeof rowForm>
+  fieldLabels: string[]
+  onDelete: () => void
+  showDelete: boolean
 }) {
+  const i18n = useTranslations()
   const fields = useFormElems(bind)
+  const uniqueId = useUniqueId('input')
   return (
-    <FixedSpaceRow>
-      {fields.map((field, i) => (
-        <FixedWidthDiv key={i} $questionCount={fields.length}>
-          <InputFieldF bind={field} />
-        </FixedWidthDiv>
-      ))}
-    </FixedSpaceRow>
+    <FixedSpaceColumn>
+      <TabletAndDesktop>
+        <FixedSpaceRow>
+          <ResponsiveGrid $fieldCount={fieldLabels.length}>
+            {fieldLabels.map((label, j) => (
+              <GridColumn key={j}>
+                <Label htmlFor={`${uniqueId}-${j}`}>{label}</Label>
+                <InputFieldF bind={fields[j]} id={`${uniqueId}-${j}`} />
+              </GridColumn>
+            ))}
+          </ResponsiveGrid>
+          {showDelete && (
+            <IconOnlyButton
+              icon={faTrash}
+              aria-label={i18n.common.remove}
+              onClick={onDelete}
+            />
+          )}
+        </FixedSpaceRow>
+      </TabletAndDesktop>
+      <MobileOnly>
+        <FixedSpaceColumn>
+          {fieldLabels.map((label, j) => (
+            <FixedSpaceColumn key={j}>
+              <Label htmlFor={`m-${uniqueId}-${j}`}>{label}</Label>
+              <InputFieldF bind={fields[j]} id={`m-${uniqueId}-${j}`} />
+            </FixedSpaceColumn>
+          ))}
+          {showDelete && (
+            <IconOnlyButton
+              icon={faTrash}
+              aria-label={i18n.common.remove}
+              onClick={onDelete}
+            />
+          )}
+        </FixedSpaceColumn>
+      </MobileOnly>
+    </FixedSpaceColumn>
   )
 })
 
