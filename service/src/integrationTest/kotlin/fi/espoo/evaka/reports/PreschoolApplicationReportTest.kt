@@ -11,7 +11,6 @@ import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -40,8 +39,9 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
 
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 16), LocalTime.of(8, 0)))
-    private lateinit var unitId1: DaycareId
-    private lateinit var unitId2: DaycareId
+    private val area = DevCareArea()
+    private val daycare1 = DevDaycare(areaId = area.id, name = "Koulu A")
+    private val daycare2 = DevDaycare(areaId = area.id, name = "Koulu B")
 
     @BeforeEach
     fun setup() {
@@ -70,9 +70,9 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                     )
                 )
             }
-            val areaId = tx.insert(DevCareArea())
-            unitId1 = tx.insert(DevDaycare(areaId = areaId, name = "Koulu A"))
-            unitId2 = tx.insert(DevDaycare(areaId = areaId, name = "Koulu B"))
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
 
             val guardian = DevPerson(lastName = "Testiläinen", firstName = "Matti")
             val guardianId = tx.insert(guardian, DevPersonType.ADULT)
@@ -97,7 +97,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         type = ApplicationType.PRESCHOOL,
                         child = Child(dateOfBirth = child1.dateOfBirth),
                         guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(unitId1)),
+                        apply = Apply(preferredUnits = listOf(daycare1.id)),
                         preferredStartDate = nextTermStart,
                     ),
             )
@@ -122,7 +122,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         type = ApplicationType.PRESCHOOL,
                         child = Child(dateOfBirth = child2.dateOfBirth),
                         guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(unitId2)),
+                        apply = Apply(preferredUnits = listOf(daycare2.id)),
                         preferredStartDate = nextTermStart,
                     ),
             )
@@ -147,7 +147,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
                         type = ApplicationType.PRESCHOOL,
                         child = Child(dateOfBirth = child3.dateOfBirth),
                         guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(unitId2)),
+                        apply = Apply(preferredUnits = listOf(daycare2.id)),
                         preferredStartDate = currentTermStart,
                     ),
             )
@@ -185,7 +185,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
         val user =
             db.transaction { tx ->
                 val employee = DevEmployee()
-                tx.insert(employee, unitRoles = mapOf(unitId1 to UserRole.UNIT_SUPERVISOR))
+                tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.UNIT_SUPERVISOR))
                 employee.user
             }
 
@@ -208,7 +208,7 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
         val user =
             db.transaction { tx ->
                 val employee = DevEmployee()
-                tx.insert(employee, unitRoles = mapOf(unitId1 to UserRole.STAFF))
+                tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.STAFF))
                 employee.user
             }
 

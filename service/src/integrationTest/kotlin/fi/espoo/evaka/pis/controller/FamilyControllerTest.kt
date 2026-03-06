@@ -7,9 +7,7 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pis.FamilyContactRole
 import fi.espoo.evaka.pis.controllers.FamilyController
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
@@ -32,23 +30,19 @@ import org.springframework.beans.factory.annotation.Autowired
 class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: FamilyController
 
-    private lateinit var user: AuthenticatedUser.Employee
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 1), LocalTime.of(15, 0)))
     private val currentlyValid =
         FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
 
-    private lateinit var child: ChildId
+    private val child = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            user =
-                AuthenticatedUser.Employee(
-                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
-                    roles = setOf(UserRole.ADMIN),
-                )
-            child = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -62,14 +56,14 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             guardian =
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
-                    tx.insert(DevGuardian(it, child))
+                    tx.insert(DevGuardian(it, child.id))
                 }
             guardianAndHouseholdHead =
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
-                    tx.insert(DevGuardian(it, child))
+                    tx.insert(DevGuardian(it, child.id))
                     tx.insert(
                         DevFridgeChild(
-                            childId = child,
+                            childId = child.id,
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
@@ -80,11 +74,11 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFosterParent(
-                            childId = child,
+                            childId = child.id,
                             parentId = it,
                             validDuring = currentlyValid.asDateRange(),
                             modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId,
+                            modifiedBy = employee.evakaUserId,
                         )
                     )
                 }
@@ -133,16 +127,16 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFosterParent(
-                            childId = child,
+                            childId = child.id,
                             parentId = it,
                             validDuring = currentlyValid.asDateRange(),
                             modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId,
+                            modifiedBy = employee.evakaUserId,
                         )
                     )
                     tx.insert(
                         DevFridgeChild(
-                            childId = child,
+                            childId = child.id,
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
@@ -165,7 +159,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFridgeChild(
-                            childId = child,
+                            childId = child.id,
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
@@ -188,7 +182,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFridgeChild(
-                            childId = child,
+                            childId = child.id,
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
@@ -250,5 +244,5 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getFamilyContactSummary() =
-        controller.getFamilyContactSummary(dbInstance(), user, clock, child)
+        controller.getFamilyContactSummary(dbInstance(), employee.user, clock, child.id)
 }

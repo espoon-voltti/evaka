@@ -139,3 +139,76 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 }
 ```
+
+## Test Data Patterns
+
+### Prefer `val` over `lateinit var` for test data
+
+Dev\* objects generate their own IDs at construction time, so they don't need to be created inside `@BeforeEach`. Declare test data as `private val` at class level and only insert in `@BeforeEach`:
+
+```kotlin
+// GOOD: val at class level, insert in @BeforeEach
+private val area = DevCareArea()
+private val daycare = DevDaycare(areaId = area.id)
+
+@BeforeEach
+fun beforeEach() {
+    db.transaction { tx ->
+        tx.insert(area)
+        tx.insert(daycare)
+    }
+}
+
+// BAD: unnecessary lateinit var
+private lateinit var daycareId: DaycareId
+
+@BeforeEach
+fun beforeEach() {
+    db.transaction { tx ->
+        val areaId = tx.insert(DevCareArea())
+        daycareId = tx.insert(DevDaycare(areaId = areaId))
+    }
+}
+```
+
+`lateinit var` should only be used for:
+- `@Autowired` Spring-injected beans (controllers, services)
+- Values that genuinely require a DB query to obtain (e.g., `MessageAccountId` from `tx.getCitizenMessageAccount()`)
+- DB-read domain objects (e.g., `Daycare` from `tx.getDaycare()`)
+- Mutable clocks where `clock.tick()` is called and the class uses `@TestInstance(PER_CLASS)`
+
+### Dev\* convenience methods
+
+Use `.user` properties instead of manually constructing `AuthenticatedUser`:
+
+```kotlin
+// DevEmployee.user returns AuthenticatedUser.Employee(id, roles)
+private val employee = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+// Use: employee.user
+
+// DevPerson.user(authLevel) returns AuthenticatedUser.Citizen(id, authLevel)
+private val guardian = DevPerson()
+// Use: guardian.user(CitizenAuthLevel.STRONG)
+
+// DevMobileDevice.user returns AuthenticatedUser.MobileDevice(id)
+private val device = DevMobileDevice(unitId = daycare.id)
+// Use: device.user
+```
+
+Other useful properties: `DevEmployee.evakaUserId`, `DevPerson.evakaUserId()`.
+
+### Tests needing variant data
+
+When a specific test needs different data from the shared setup, create additional Dev\* objects inline in that test method:
+
+```kotlin
+private val area = DevCareArea()
+private val daycare = DevDaycare(areaId = area.id)
+
+@Test
+fun `test with a different daycare`() {
+    val specialDaycare = DevDaycare(areaId = area.id, name = "Special")
+    db.transaction { tx -> tx.insert(specialDaycare) }
+    // test with specialDaycare
+}
+```

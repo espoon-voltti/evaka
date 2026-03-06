@@ -10,8 +10,6 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -35,30 +33,31 @@ import org.junit.jupiter.api.Test
 
 class ApplicationAccessControlTest : AccessControlTest() {
     private lateinit var creatorCitizen: AuthenticatedUser.Citizen
-    private lateinit var childId: ChildId
     private lateinit var applicationId: ApplicationId
-    private lateinit var daycareId: DaycareId
 
+    private val child = DevPerson()
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
     fun beforeEach() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
-            childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val areaId = tx.insert(DevCareArea())
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
+            tx.insert(child, DevPersonType.RAW_ROW)
+            tx.insert(area)
+            tx.insert(daycare)
             applicationId =
                 tx.insertTestApplication(
                     guardianId = creatorCitizen.id,
-                    childId = childId,
+                    childId = child.id,
                     type = ApplicationType.DAYCARE,
                     document =
                         DaycareFormV0(
                             type = ApplicationType.DAYCARE,
                             child = Child(dateOfBirth = LocalDate.of(2019, 1, 1)),
                             Adult(),
-                            apply = Apply(preferredUnits = listOf(daycareId)),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
                         ),
                 )
         }
@@ -87,12 +86,12 @@ class ApplicationAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR),
+                unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF),
+                unitRoles = mapOf(daycare.id to UserRole.STAFF),
             )
         db.read { tx ->
             assertTrue(
@@ -115,8 +114,8 @@ class ApplicationAccessControlTest : AccessControlTest() {
                         "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
                     )
                 }
-                tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycareId))
-                daycareId
+                tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
+                daycare.id
             }
         val unitSupervisor =
             createTestEmployee(

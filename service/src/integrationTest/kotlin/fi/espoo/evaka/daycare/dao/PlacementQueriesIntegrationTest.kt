@@ -7,9 +7,6 @@ package fi.espoo.evaka.daycare.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -22,41 +19,40 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private lateinit var daycareId: DaycareId
-    private lateinit var placementId: PlacementId
-    private lateinit var childId: ChildId
-
     private val placementStart = LocalDate.now().plusDays(300)
     private val placementEnd = placementStart.plusDays(200)
+
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
+    private val placement =
+        DevPlacement(
+            childId = child.id,
+            unitId = daycare.id,
+            type = PlacementType.DAYCARE,
+            startDate = placementStart,
+            endDate = placementEnd,
+        )
 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            val areaId = tx.insert(DevCareArea())
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
-            childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-            placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        type = PlacementType.DAYCARE,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
-                )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
     }
 
     @Test
     fun `get daycare placements returns correct data`() {
         db.read { h ->
-            val placements = h.getDaycarePlacements(daycareId, null, null, null)
+            val placements = h.getDaycarePlacements(daycare.id, null, null, null)
             assertThat(placements).hasSize(1)
             val placement = placements.first()
             assertThat(placement.id).isNotNull
-            assertThat(placement.child.id).isEqualTo(childId)
-            assertThat(placement.daycare.id).isEqualTo(daycareId)
+            assertThat(placement.child.id).isEqualTo(child.id)
+            assertThat(placement.daycare.id).isEqualTo(daycare.id)
             assertThat(placement.startDate).isEqualTo(placementStart)
             assertThat(placement.endDate).isEqualTo(placementEnd)
         }
@@ -72,7 +68,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = null
             val toDate = null
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -87,7 +83,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = null
             val toDate = placementStart.minusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
     }
@@ -102,7 +98,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = null
             val toDate = placementStart.plusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -117,7 +113,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = null
             val toDate = placementEnd.plusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -132,7 +128,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = null
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -147,7 +143,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.plusDays(100)
             val toDate = null
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -162,7 +158,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementEnd.plusDays(100)
             val toDate = null
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
     }
@@ -177,7 +173,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart.minusDays(1)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
     }
@@ -192,7 +188,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart.plusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -207,7 +203,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementStart
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -222,7 +218,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.plusDays(100)
             val toDate = placementEnd.plusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -237,7 +233,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementEnd
             val toDate = placementEnd.plusDays(150)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }
@@ -252,7 +248,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementEnd.plusDays(1)
             val toDate = placementEnd.plusDays(150)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isEmpty()
         }
     }
@@ -267,7 +263,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { h ->
             val fromDate = placementStart.minusDays(100)
             val toDate = placementEnd.plusDays(100)
-            val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
+            val placements = h.getDaycarePlacements(daycare.id, null, fromDate, toDate)
             assertThat(placements).isNotEmpty
         }
     }

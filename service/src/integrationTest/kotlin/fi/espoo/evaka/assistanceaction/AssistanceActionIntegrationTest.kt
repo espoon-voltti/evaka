@@ -10,7 +10,6 @@ import fi.espoo.evaka.insertAssistanceActionOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -39,8 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired
 class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: AssistanceController
 
-    private lateinit var daycare: DaycareId
-    private lateinit var child: ChildId
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
     private val admin: DevEmployee = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
@@ -48,9 +48,9 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            val area = tx.insert(DevCareArea())
-            daycare = tx.insert(DevDaycare(areaId = area))
-            child = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
             tx.insert(admin)
             tx.insertAssistanceActionOptions()
         }
@@ -61,14 +61,14 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val assistanceAction =
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(startDate = testDate(10), endDate = testDate(20)),
             )
 
         assertEquals(
             AssistanceAction(
                 id = assistanceAction.id,
-                childId = child,
+                childId = child.id,
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = emptySet(),
@@ -94,7 +94,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val assistanceAction =
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(
                     startDate = testDate(10),
                     endDate = testDate(20),
@@ -106,7 +106,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(
             AssistanceAction(
                 id = assistanceAction.id,
-                childId = child,
+                childId = child.id,
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = allValidActionTypes,
@@ -123,11 +123,11 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(testDate(1), testDate(15))
         createAssistanceAction(
             admin.user,
-            child,
+            child.id,
             AssistanceActionRequest(startDate = testDate(16), endDate = testDate(30)),
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
@@ -143,7 +143,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<Conflict> {
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(startDate = testDate(1), endDate = testDate(30)),
             )
         }
@@ -155,7 +155,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<Conflict> {
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(startDate = testDate(10), endDate = testDate(25)),
             )
         }
@@ -167,7 +167,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<Conflict> {
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(startDate = testDate(1), endDate = testDate(10)),
             )
         }
@@ -178,11 +178,11 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(testDate(10), testDate(20))
         createAssistanceAction(
             admin.user,
-            child,
+            child.id,
             AssistanceActionRequest(startDate = testDate(20), endDate = testDate(30)),
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(19) }
@@ -197,11 +197,11 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(testDate(10), testDate(20))
         createAssistanceAction(
             admin.user,
-            child,
+            child.id,
             AssistanceActionRequest(startDate = testDate(11), endDate = testDate(15)),
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(10) }
@@ -216,7 +216,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<BadRequest> {
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(
                     startDate = LocalDate.of(2025, 1, 1),
                     endDate = LocalDate.of(2025, 8, 15),
@@ -228,7 +228,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         createAssistanceAction(
             admin.user,
-            child,
+            child.id,
             AssistanceActionRequest(
                 startDate = LocalDate.of(2025, 1, 1),
                 endDate = LocalDate.of(2025, 7, 15),
@@ -243,7 +243,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertThrows<BadRequest> {
             createAssistanceAction(
                 admin.user,
-                child,
+                child.id,
                 AssistanceActionRequest(
                     startDate = LocalDate.of(2025, 5, 1),
                     endDate = LocalDate.of(2025, 10, 15),
@@ -255,7 +255,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         createAssistanceAction(
             admin.user,
-            child,
+            child.id,
             AssistanceActionRequest(
                 startDate = LocalDate.of(2025, 8, 5),
                 endDate = LocalDate.of(2025, 10, 15),
@@ -271,7 +271,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction {
             it.insert(
                 veoInPlacementUnit,
-                unitRoles = mapOf(daycare to UserRole.SPECIAL_EDUCATION_TEACHER),
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
         }
         val child2 = db.transaction { it.insert(DevPerson(), DevPersonType.CHILD) }
@@ -279,11 +279,11 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val placementEndDate = placementStartDate.plusYears(1)
         givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
 
-        givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5), child)
+        givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5), child.id)
         givenAssistanceAction(
             placementStartDate.plusDays(25),
             placementStartDate.plusDays(30),
-            child,
+            child.id,
         )
         givenAssistanceAction(
             placementStartDate.plusDays(25),
@@ -291,15 +291,15 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             child2,
         )
 
-        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child)
+        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child.id)
         assertEquals(2, assistanceActions.size)
         with(assistanceActions[0]) {
-            assertEquals(child, childId)
+            assertEquals(child.id, childId)
             assertEquals(placementStartDate.plusDays(25), startDate)
             assertEquals(placementStartDate.plusDays(30), endDate)
         }
         with(assistanceActions[1]) {
-            assertEquals(child, childId)
+            assertEquals(child.id, childId)
             assertEquals(placementStartDate, startDate)
             assertEquals(placementStartDate.plusDays(5), endDate)
         }
@@ -311,7 +311,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction {
             it.insert(
                 veoInPlacementUnit,
-                unitRoles = mapOf(daycare to UserRole.SPECIAL_EDUCATION_TEACHER),
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
         }
         val placementStartDate = clock.today()
@@ -335,7 +335,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(placementStartDate.plusDays(9), updated.startDate)
         assertEquals(placementStartDate.plusDays(22), updated.endDate)
 
-        val fetched = getAssistanceActions(veoInPlacementUnit.user, child)
+        val fetched = getAssistanceActions(veoInPlacementUnit.user, child.id)
         assertEquals(2, fetched.size)
         assertTrue(
             fetched.any {
@@ -384,7 +384,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction {
             it.insert(
                 veoInPlacementUnit,
-                unitRoles = mapOf(daycare to UserRole.SPECIAL_EDUCATION_TEACHER),
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
         }
         val placementStartDate = clock.today()
@@ -395,7 +395,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         deleteAssistanceAction(veoInPlacementUnit.user, id2)
 
-        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child)
+        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child.id)
         assertEquals(1, assistanceActions.size)
         assertEquals(id1, assistanceActions.first().id)
     }
@@ -411,7 +411,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `if child is in preschool, show VEO all assistance info`() {
         val veo = DevEmployee()
         db.transaction {
-            it.insert(veo, unitRoles = mapOf(daycare to UserRole.SPECIAL_EDUCATION_TEACHER))
+            it.insert(veo, unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER))
         }
 
         val today = clock.today()
@@ -433,21 +433,21 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         // Completely before any preschool placement
         val assistanceBeforePreschool =
-            givenAssistanceAction(daycarePlacementStart, daycarePlacementEnd.minusDays(1), child)
+            givenAssistanceAction(daycarePlacementStart, daycarePlacementEnd.minusDays(1), child.id)
 
         // Overlaps first preschool placement
         val assistanceOverlappingPreschool =
-            givenAssistanceAction(daycarePlacementEnd, preschoolPeriodFirstDate, child)
+            givenAssistanceAction(daycarePlacementEnd, preschoolPeriodFirstDate, child.id)
 
         // Completely after any daycare placement
         val assistanceDuringPreschool =
             givenAssistanceAction(
                 preschoolPeriodFirstDate.plusDays(1),
                 preschoolPeriodFirstDate.plusYears(1),
-                child,
+                child.id,
             )
 
-        val assistanceActions = getAssistanceActions(veo.user, child)
+        val assistanceActions = getAssistanceActions(veo.user, child.id)
         assertEquals(3, assistanceActions.size)
 
         assertEquals(
@@ -460,7 +460,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
         // Admin sees all
-        assertEquals(3, getAssistanceActions(admin.user, child).size)
+        assertEquals(3, getAssistanceActions(admin.user, child.id).size)
     }
 
     @Test
@@ -471,18 +471,18 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             val area2 = tx.insert(DevCareArea(name = "Test Area 2", shortName = "test_area2"))
             val daycare2 = tx.insert(DevDaycare(areaId = area2))
 
-            tx.insert(sameUnitEmployee, unitRoles = mapOf(daycare to UserRole.STAFF))
+            tx.insert(sameUnitEmployee, unitRoles = mapOf(daycare.id to UserRole.STAFF))
             tx.insert(differentUnitEmployee, unitRoles = mapOf(daycare2 to UserRole.STAFF))
         }
 
         val today = clock.today()
-        givenAssistanceAction(today, today, child)
+        givenAssistanceAction(today, today, child.id)
 
         givenPlacement(today, today, PlacementType.DAYCARE)
-        val sameUnitAssistanceActions = getAssistanceActions(sameUnitEmployee.user, child)
+        val sameUnitAssistanceActions = getAssistanceActions(sameUnitEmployee.user, child.id)
         assertEquals(1, sameUnitAssistanceActions.size)
 
-        assertThrows<Forbidden> { getAssistanceActions(differentUnitEmployee.user, child) }
+        assertThrows<Forbidden> { getAssistanceActions(differentUnitEmployee.user, child.id) }
     }
 
     @Test
@@ -491,16 +491,16 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction {
             it.insert(
                 veoInPlacementUnit,
-                unitRoles = mapOf(daycare to UserRole.SPECIAL_EDUCATION_TEACHER),
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
         }
         val today = clock.today()
         givenPlacement(today, today, PlacementType.DAYCARE)
 
-        givenAssistanceAction(today, today, child)
+        givenAssistanceAction(today, today, child.id)
 
         givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
-        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child)
+        val assistanceActions = getAssistanceActions(veoInPlacementUnit.user, child.id)
         assertEquals(1, assistanceActions.size)
     }
 
@@ -509,7 +509,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private fun givenAssistanceAction(
         startDate: LocalDate,
         endDate: LocalDate,
-        childId: ChildId = child,
+        childId: ChildId = child.id,
     ): AssistanceActionId {
         return db.transaction {
             it.insert(
@@ -527,7 +527,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         startDate: LocalDate,
         endDate: LocalDate,
         type: PlacementType,
-        childId: ChildId = child,
+        childId: ChildId = child.id,
     ): PlacementId {
         return db.transaction {
             it.insert(
@@ -536,7 +536,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = startDate,
                     endDate = endDate,
                     type = type,
-                    unitId = daycare,
+                    unitId = daycare.id,
                 )
             )
         }

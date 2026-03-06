@@ -11,10 +11,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -55,27 +51,22 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
     private val holidayPeriod: FiniteDateRange =
         FiniteDateRange(clockToday.today().plusDays(2), clockToday.today().plusDays(3))
     private val guardianEmail = "guardian@example.com"
-    private lateinit var guardian: PersonId
-    private lateinit var child: ChildId
-    private lateinit var daycareId: DaycareId
-    private lateinit var areaId: AreaId
+    private val guardian = DevPerson(email = guardianEmail)
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+    private val child = DevPerson()
     private val employee = DevEmployee()
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
-            areaId = tx.insert(DevCareArea())
-            daycareId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
-                )
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insertServiceNeedOption(snDefaultDaycare)
-            child = tx.insert(DevPerson(), DevPersonType.CHILD)
-            tx.insert(DevGuardian(guardianId = guardian, childId = child))
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
             tx.insert(
                 DevHolidayPeriod(
                     period = holidayPeriod,
@@ -91,8 +82,8 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
         db.transaction {
             it.insert(
                 DevPlacement(
-                    childId = child,
-                    unitId = daycareId,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
                     type = PlacementType.DAYCARE,
@@ -105,7 +96,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
         db.transaction {
             it.insert(
                 DevReservation(
-                    childId = child,
+                    childId = child.id,
                     date = holidayPeriod.start,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
@@ -120,7 +111,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
         db.transaction {
             it.insert(
                 DevAbsence(
-                    childId = child,
+                    childId = child.id,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     date = holidayPeriod.end,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -138,7 +129,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
             val voucherDaycare =
                 it.insert(
                     DevDaycare(
-                        areaId = areaId,
+                        areaId = area.id,
                         // enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         providerType = ProviderType.MUNICIPAL,
                     )
@@ -146,7 +137,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
 
             it.insert(
                 DevPlacement(
-                    childId = child,
+                    childId = child.id,
                     unitId = voucherDaycare,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
@@ -164,7 +155,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
             val voucherDaycare =
                 it.insert(
                     DevDaycare(
-                        areaId = areaId,
+                        areaId = area.id,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                         providerType = ProviderType.MUNICIPAL,
                     )
@@ -172,7 +163,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
 
             it.insert(
                 DevPlacement(
-                    childId = child,
+                    childId = child.id,
                     unitId = voucherDaycare,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
@@ -186,14 +177,14 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 it.insert(DevPerson(email = "fosterparent@test.com"), DevPersonType.ADULT)
             it.insert(
                 DevFosterParent(
-                    childId = child,
+                    childId = child.id,
                     parentId = fosterParentId,
                     validDuring = DateRange(clockToday.today(), clockToday.today()),
                     modifiedAt = clockToday.now(),
                     modifiedBy = employee.evakaUserId,
                 )
             )
-            it.blockGuardian(childId = child, guardianId = guardian)
+            it.blockGuardian(childId = child.id, guardianId = guardian.id)
         }
         assertEquals(listOf("fosterparent@test.com"), getHolidayReminderRecipients())
     }

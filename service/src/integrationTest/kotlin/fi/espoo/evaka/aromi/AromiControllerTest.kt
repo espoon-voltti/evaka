@@ -10,7 +10,6 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -52,71 +51,48 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var aromiController: AromiController
 
-    private lateinit var admin: AuthenticatedUser.Employee
-    private lateinit var today: LocalDate
-    private lateinit var clock: EvakaClock
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val today = LocalDate.of(2024, 11, 30)
+    private val clock: EvakaClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 18)))
 
-    private lateinit var area: DevCareArea
-    private lateinit var unitId: DaycareId
-    private lateinit var unitId2: DaycareId
-    private lateinit var group1: DevDaycareGroup
-    private lateinit var group2: DevDaycareGroup
-    private lateinit var group3: DevDaycareGroup
-    private lateinit var groupEO: DevDaycareGroup
-    private lateinit var groupEO2: DevDaycareGroup
-    private lateinit var groupEO3: DevDaycareGroup
+    private val area = DevCareArea()
+    private val daycare1 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Päiväkoti A",
+            shiftCareOpenOnHolidays = true,
+            shiftCareOperationTimes =
+                List(7) { TimeRange(LocalTime.of(7, 0), LocalTime.of(23, 0)) },
+            operationTimes =
+                List(5) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) } + listOf(null, null),
+        )
+    private val daycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "EO-lafka A",
+            type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
+            dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+        )
+    private val group1 =
+        DevDaycareGroup(daycareId = daycare1.id, name = "Ryhmä A1", aromiCustomerId = "PvkA_PK")
+    private val group2 =
+        DevDaycareGroup(daycareId = daycare1.id, name = "Ryhmä A2", aromiCustomerId = "PvkA_EO")
+    private val group3 =
+        DevDaycareGroup(daycareId = daycare1.id, name = "Väistöryhmä", aromiCustomerId = null)
+    private val groupEO =
+        DevDaycareGroup(daycareId = daycare2.id, name = "Ryhmä E1", aromiCustomerId = "EolA_EO")
+    private val groupEO2 =
+        DevDaycareGroup(daycareId = daycare2.id, name = "Ryhmä E2", aromiCustomerId = "EolA_EO")
+    private val groupEO3 =
+        DevDaycareGroup(daycareId = daycare2.id, name = "Ryhmä E3", aromiCustomerId = "EolA_PK")
 
     @BeforeEach
     fun setup() {
-        admin =
-            db.transaction { tx ->
-                val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
-                tx.insert(employee)
-                employee.user
-            }
-        today = LocalDate.of(2024, 11, 30)
-        clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 18)))
-
-        area = DevCareArea()
-        db.transaction { tx -> tx.insert(area) }
-        unitId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycare(
-                        areaId = area.id,
-                        name = "Päiväkoti A",
-                        shiftCareOpenOnHolidays = true,
-                        shiftCareOperationTimes =
-                            List(7) { TimeRange(LocalTime.of(7, 0), LocalTime.of(23, 0)) },
-                        operationTimes =
-                            List(5) { TimeRange(LocalTime.of(7, 0), LocalTime.of(17, 0)) } +
-                                listOf(null, null),
-                    )
-                )
-            }
-        unitId2 =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycare(
-                        areaId = area.id,
-                        name = "EO-lafka A",
-                        type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
-                        dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
-                    )
-                )
-            }
-        group1 = DevDaycareGroup(daycareId = unitId, name = "Ryhmä A1", aromiCustomerId = "PvkA_PK")
-        group2 = DevDaycareGroup(daycareId = unitId, name = "Ryhmä A2", aromiCustomerId = "PvkA_EO")
-        group3 = DevDaycareGroup(daycareId = unitId, name = "Väistöryhmä", aromiCustomerId = null)
-
-        groupEO =
-            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E1", aromiCustomerId = "EolA_EO")
-        groupEO2 =
-            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E2", aromiCustomerId = "EolA_EO")
-        groupEO3 =
-            DevDaycareGroup(daycareId = unitId2, name = "Ryhmä E3", aromiCustomerId = "EolA_PK")
-
         db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
             tx.insertServiceNeedOption(snDefaultDaycare)
             listOf(groupEO, groupEO2, groupEO3, group1, group2, group3).forEach { tx.insert(it) }
         }
@@ -150,7 +126,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevPlacement(
                             childId = childId,
-                            unitId = unitId,
+                            unitId = daycare1.id,
                             startDate = sannaTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
@@ -199,7 +175,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevPlacement(
                             childId = childId,
-                            unitId = unitId,
+                            unitId = daycare1.id,
                             startDate = teemuTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
@@ -279,7 +255,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevPlacement(
                             childId = childId,
-                            unitId = unitId,
+                            unitId = daycare1.id,
                             startDate = valtoTestPerson.dateOfBirth,
                             endDate = placementEnd,
                             type = PlacementType.DAYCARE,
@@ -325,7 +301,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(
                     DevBackupCare(
                         childId = childId,
-                        unitId = unitId2,
+                        unitId = daycare2.id,
                         groupId = groupEO.id,
                         period =
                             FiniteDateRange(LocalDate.of(2024, 12, 2), LocalDate.of(2024, 12, 3)),
@@ -335,7 +311,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(
                     DevBackupCare(
                         childId = childId,
-                        unitId = unitId,
+                        unitId = daycare1.id,
                         groupId = group3.id,
                         period =
                             FiniteDateRange(LocalDate.of(2024, 12, 5), LocalDate.of(2024, 12, 5)),
@@ -371,7 +347,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         tx.insert(
                             DevPlacement(
                                 childId = childId,
-                                unitId = unitId,
+                                unitId = daycare1.id,
                                 startDate = dateOfBirthHarri,
                                 endDate = placementEnd,
                             )
@@ -452,7 +428,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         tx.insert(
                             DevPlacement(
                                 childId = childId,
-                                unitId = unitId2,
+                                unitId = daycare2.id,
                                 startDate = dateOfBirthElina,
                                 endDate = placementEnd,
                             )
@@ -551,7 +527,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val placement =
                     DevPlacement(
                         childId = childId,
-                        unitId = unitId2,
+                        unitId = daycare2.id,
                         startDate = LocalDate.of(2024, 8, 5),
                         endDate = LocalDate.of(2025, 5, 5),
                         type = PlacementType.PRESCHOOL,
@@ -580,7 +556,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val placement =
                     DevPlacement(
                         childId = childId,
-                        unitId = unitId2,
+                        unitId = daycare2.id,
                         startDate = LocalDate.of(2024, 8, 5),
                         endDate = LocalDate.of(2025, 5, 5),
                         type = PlacementType.PRESCHOOL_DAYCARE,
@@ -761,7 +737,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         tx.insert(
                             DevPlacement(
                                 childId = childId,
-                                unitId = unitId,
+                                unitId = daycare1.id,
                                 startDate = dateOfBirthHarri,
                                 endDate = placementEnd,
                             )
@@ -899,8 +875,8 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val employee = DevEmployee()
                 tx.insert(
                     employee,
-                    unitRoles = mapOf(unitId to UserRole.STAFF),
-                    groupAcl = mapOf(unitId to listOf(group1.id, group2.id)),
+                    unitRoles = mapOf(daycare1.id to UserRole.STAFF),
+                    groupAcl = mapOf(daycare1.id to listOf(group1.id, group2.id)),
                 )
                 employee.user
             }
@@ -913,7 +889,7 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertThrows<IllegalStateException> { getMealOrders(FiniteDateRange.ofYear(2024)) }
     }
 
-    private fun getMealOrders(range: FiniteDateRange): String = getMealOrders(admin, range)
+    private fun getMealOrders(range: FiniteDateRange): String = getMealOrders(admin.user, range)
 
     private fun getMealOrders(user: AuthenticatedUser.Employee, range: FiniteDateRange): String =
         aromiController

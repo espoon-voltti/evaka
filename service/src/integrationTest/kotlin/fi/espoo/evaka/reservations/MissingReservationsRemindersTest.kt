@@ -9,9 +9,6 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -59,9 +56,15 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             null,
             null,
         )
-    private lateinit var guardian: PersonId
-    private lateinit var child: ChildId
-    private lateinit var daycareId: DaycareId
+    private val guardian = DevPerson(email = guardianEmail)
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            operationTimes = operationTimes,
+            enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+        )
+    private val child = DevPerson()
 
     private val checkedRange =
         FiniteDateRange(LocalDate.of(2022, 10, 31), LocalDate.of(2022, 11, 6))
@@ -77,23 +80,16 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
-            val areaId = tx.insert(DevCareArea())
-            daycareId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        operationTimes = operationTimes,
-                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                    )
-                )
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insertServiceNeedOption(snDefaultDaycare)
-            child = tx.insert(DevPerson(), DevPersonType.CHILD)
-            tx.insert(DevGuardian(guardianId = guardian, childId = child))
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardian.id, childId = child.id))
             tx.insert(
                 DevPlacement(
-                    childId = child,
-                    unitId = daycareId,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = checkedRange.start,
                     endDate = checkedRange.end,
                     type = PlacementType.DAYCARE,
@@ -135,7 +131,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             checkedRange.dates().forEach {
                 tx.insert(
                     DevAbsence(
-                        childId = child,
+                        childId = child.id,
                         date = it,
                         absenceType = AbsenceType.SICKLEAVE,
                         absenceCategory = AbsenceCategory.NONBILLABLE,
@@ -179,7 +175,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             tx.insert(
                 DevPlacement(
                     childId = childId2,
-                    unitId = daycareId,
+                    unitId = daycare.id,
                     startDate = placementStart,
                     endDate = placementStart.plusMonths(12),
                     type = placementType,
@@ -197,7 +193,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     ) =
         insert(
             DevReservation(
-                childId = child,
+                childId = child.id,
                 date = date,
                 startTime = startTime,
                 endTime = endTime,

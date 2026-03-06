@@ -36,20 +36,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private val now = HelsinkiDateTime.of(LocalDate.of(2023, 6, 1), LocalTime.of(8, 0))
     private val today = now.toLocalDate()
 
-    private lateinit var daycare: DevDaycare
-    private lateinit var group: DevDaycareGroup
-    private lateinit var employee: DevEmployee
-    private lateinit var child1: DevPerson
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val group = DevDaycareGroup(daycareId = daycare.id)
+    private val employee = DevEmployee()
+    private val child1 = DevPerson()
 
     @BeforeEach
     fun beforeEach() {
-        val area = DevCareArea()
-        daycare = DevDaycare(areaId = area.id)
-        group = DevDaycareGroup(daycareId = daycare.id)
-        employee = DevEmployee()
-
-        child1 = DevPerson()
-
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)

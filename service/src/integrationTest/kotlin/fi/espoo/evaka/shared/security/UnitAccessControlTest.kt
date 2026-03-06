@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,9 +31,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class UnitAccessControlTest : AccessControlTest() {
-    private lateinit var areaId: AreaId
-    private lateinit var daycareId: DaycareId
-    private lateinit var featureDaycareId: DaycareId
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val featureDaycare = DevDaycare(areaId = area.id)
 
     private val unitFeature = PilotFeature.MESSAGING
     private val clock =
@@ -43,10 +42,10 @@ class UnitAccessControlTest : AccessControlTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            areaId = tx.insert(DevCareArea())
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
-            featureDaycareId = tx.insert(DevDaycare(areaId = areaId))
-            tx.addUnitFeatures(listOf(featureDaycareId), listOf(unitFeature))
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(featureDaycare)
+            tx.addUnitFeatures(listOf(featureDaycare.id), listOf(unitFeature))
         }
     }
 
@@ -61,13 +60,19 @@ class UnitAccessControlTest : AccessControlTest() {
             createTestEmployee(
                 globalRoles = emptySet(),
                 unitRoles =
-                    mapOf(daycareId to UserRole.UNIT_SUPERVISOR, featureDaycareId to UserRole.STAFF),
+                    mapOf(
+                        daycare.id to UserRole.UNIT_SUPERVISOR,
+                        featureDaycare.id to UserRole.STAFF,
+                    ),
             )
         val permittedSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
                 unitRoles =
-                    mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.UNIT_SUPERVISOR),
+                    mapOf(
+                        daycare.id to UserRole.STAFF,
+                        featureDaycare.id to UserRole.UNIT_SUPERVISOR,
+                    ),
             )
         db.read { tx ->
             assertFalse(accessControl.hasPermissionFor(tx, deniedSupervisor, clock, action))
@@ -82,16 +87,20 @@ class UnitAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR),
+                unitRoles = mapOf(daycare.id to UserRole.UNIT_SUPERVISOR),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF),
+                unitRoles = mapOf(daycare.id to UserRole.STAFF),
             )
         db.read { tx ->
-            assertTrue(accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycareId))
-            assertFalse(accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycareId))
+            assertTrue(
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id)
+            )
         }
     }
 
@@ -107,25 +116,27 @@ class UnitAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles =
                     mapOf(
-                        daycareId to UserRole.UNIT_SUPERVISOR,
-                        featureDaycareId to UserRole.UNIT_SUPERVISOR,
+                        daycare.id to UserRole.UNIT_SUPERVISOR,
+                        featureDaycare.id to UserRole.UNIT_SUPERVISOR,
                     ),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF),
+                unitRoles = mapOf(daycare.id to UserRole.STAFF, featureDaycare.id to UserRole.STAFF),
             )
         db.read { tx ->
             assertFalse(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycareId)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycare.id)
             )
             assertTrue(
-                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, featureDaycareId)
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, featureDaycare.id)
             )
-            assertFalse(accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycareId))
             assertFalse(
-                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, featureDaycareId)
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycare.id)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, featureDaycare.id)
             )
         }
     }
@@ -134,12 +145,12 @@ class UnitAccessControlTest : AccessControlTest() {
     fun `IsMobile inUnit`() {
         val action = Action.Unit.READ
         rules.add(action, IsMobile(requirePinLogin = false).inUnit())
-        val unitMobile = createTestMobile(daycareId)
-        val otherDaycareId = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
+        val unitMobile = createTestMobile(daycare.id)
+        val otherDaycareId = db.transaction { tx -> tx.insert(DevDaycare(areaId = area.id)) }
         val otherMobile = createTestMobile(otherDaycareId)
         db.read { tx ->
-            assertTrue(accessControl.hasPermissionFor(tx, unitMobile, clock, action, daycareId))
-            assertFalse(accessControl.hasPermissionFor(tx, otherMobile, clock, action, daycareId))
+            assertTrue(accessControl.hasPermissionFor(tx, unitMobile, clock, action, daycare.id))
+            assertFalse(accessControl.hasPermissionFor(tx, otherMobile, clock, action, daycare.id))
         }
     }
 
@@ -169,21 +180,21 @@ class UnitAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles =
                     mapOf(
-                        daycareId to UserRole.UNIT_SUPERVISOR,
-                        featureDaycareId to UserRole.UNIT_SUPERVISOR,
+                        daycare.id to UserRole.UNIT_SUPERVISOR,
+                        featureDaycare.id to UserRole.UNIT_SUPERVISOR,
                     ),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF),
+                unitRoles = mapOf(daycare.id to UserRole.STAFF, featureDaycare.id to UserRole.STAFF),
             )
         val serviceWorker = createTestEmployee(globalRoles = setOf(UserRole.SERVICE_WORKER))
 
         getFilter(unitSupervisor)
 
         assertEquals(
-            setOf(daycareId, featureDaycareId),
+            setOf(daycare.id, featureDaycare.id),
             execute(getFilter(unitSupervisor) as AccessControlFilter.Some),
         )
         assertEquals(emptySet(), execute(getFilter(otherEmployee) as AccessControlFilter.Some))
