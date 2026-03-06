@@ -14,7 +14,8 @@ function useFailureMessage() {
   const t = useTranslation().common.errors
   return {
     generic: t.genericGetError,
-    http403: t.http403Error
+    http403: t.http403Error,
+    endpointDisabled: t.endpointDisabled
   }
 }
 

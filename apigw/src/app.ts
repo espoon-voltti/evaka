@@ -33,6 +33,7 @@ import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
 import { toRequestHandler } from './shared/express.ts'
 import { cacheControl } from './shared/middleware/cache-control.ts'
 import { csrf } from './shared/middleware/csrf.ts'
+import { createEndpointDisablingMiddleware } from './shared/middleware/endpoint-disabling.ts'
 import { errorHandler } from './shared/middleware/error-handler.ts'
 import { createProxy } from './shared/proxy-utils.ts'
 import type { RedisClient } from './shared/redis-client.ts'
@@ -42,6 +43,8 @@ import { validateRelayStateUrl } from './shared/saml/index.ts'
 import { sessionCookie, sessionSupport } from './shared/session.ts'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
+  const { middleware: endpointDisabling } =
+    createEndpointDisablingMiddleware(redisClient)
   const router = express.Router()
   router.use((req, _, next) => {
     if (req.url.startsWith('/internal/integration/titania/')) {
@@ -253,6 +256,9 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       res.redirect('/employee')
     })
   )
+
+  // Reject requests matching disabled endpoint patterns stored in Valkey
+  router.use(endpointDisabling)
 
   // CSRF checks apply to all the API endpoints that frontend uses
   router.use(csrf)

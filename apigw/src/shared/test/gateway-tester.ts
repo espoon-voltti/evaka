@@ -33,10 +33,16 @@ export class GatewayTester {
 
   private readonly server: http.Server
   public readonly sessionType: SessionType
+  public readonly redisClient: MockRedisClient
 
-  private constructor(server: http.Server, sessionType: SessionType) {
+  private constructor(
+    server: http.Server,
+    sessionType: SessionType,
+    redisClient: MockRedisClient
+  ) {
     this.server = server
     this.sessionType = sessionType
+    this.redisClient = redisClient
 
     const address = server.address()
     if (!address || typeof address === 'string')
@@ -142,14 +148,15 @@ export class GatewayTester {
 
   public static async start(
     config: Config,
-    sessionType: SessionType
+    sessionType: SessionType,
+    redisClient?: MockRedisClient
   ): Promise<GatewayTester> {
     const app = express()
-    const redisClient = new MockRedisClient()
-    app.use('/api', apiRouter(config, redisClient))
+    const redis = redisClient ?? new MockRedisClient()
+    app.use('/api', apiRouter(config, redis))
     return new Promise((resolve) => {
       const server = app.listen(() => {
-        resolve(new GatewayTester(server, sessionType))
+        resolve(new GatewayTester(server, sessionType, redis))
       })
     })
   }

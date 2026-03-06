@@ -72,6 +72,8 @@ export const sv: typeof fi = {
     and: 'Ja',
     loadingFailed: 'Hämtning av information misslyckades',
     noAccess: 'Rättigheter saknas',
+    endpointDisabled:
+      'eVaka genomgår för närvarande ett partiellt underhållsavbrott. Vissa funktioner är inte tillgängliga just nu. Försök igen om en stund.',
     edit: 'Redigera',
     add: 'Lägg till',
     addNew: 'Lägg till ny',

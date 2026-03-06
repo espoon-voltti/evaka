@@ -18,6 +18,8 @@ import {
   useInfiniteQuery as useInfiniteQueryOriginal,
   useQueryClient
 } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
+import axios from 'axios'
 import uniqBy from 'lodash/uniqBy'
 import { useCallback, useMemo } from 'react'
 
@@ -25,6 +27,25 @@ import type { Result } from 'lib-common/api'
 import { Failure, Loading, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
+
+const getErrorCode = (error: AxiosError): string | undefined => {
+  const data: unknown = error.response?.data
+  if (typeof data === 'object' && data !== null && 'errorCode' in data) {
+    const { errorCode } = data
+    return typeof errorCode === 'string' ? errorCode : undefined
+  }
+  return undefined
+}
+
+export const shouldRetry = (failureCount: number, error: unknown): boolean => {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status
+    if (status === 403) return false
+    if (status === 503 && getErrorCode(error) === 'ENDPOINT_DISABLED')
+      return false
+  }
+  return failureCount < 3
+}
 
 const isQuery: unique symbol = Symbol('isQuery')
 

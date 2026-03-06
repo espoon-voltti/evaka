@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   SpinnerOverlay,
@@ -34,6 +34,16 @@ export interface SpinnerOptions {
 interface FailureMessages {
   generic: string
   http403: string
+  endpointDisabled: string
+}
+
+function failureTitle(
+  result: Failure<unknown>,
+  messages: FailureMessages
+): string {
+  if (result.errorCode === 'ENDPOINT_DISABLED') return messages.endpointDisabled
+  if (result.statusCode === 403) return messages.http403
+  return messages.generic
 }
 
 export function makeHelpers(useFailureMessage: () => FailureMessages) {
@@ -56,15 +66,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
       }
       if (result.isFailure) {
         if (failure) return failure()
-        return (
-          <ErrorSegment
-            title={
-              result.statusCode === 403
-                ? failureMessages.http403
-                : failureMessages.generic
-            }
-          />
-        )
+        return <ErrorSegment title={failureTitle(result, failureMessages)} />
       }
       if (!children) {
         return null
@@ -100,13 +102,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
           <Relative>
             {result.isSuccess && result.isReloading && <SpinnerOverlay />}
             {result.isFailure ? (
-              <ErrorSegment
-                title={
-                  result.statusCode === 403
-                    ? failureMessages.http403
-                    : failureMessages.generic
-                }
-              />
+              <ErrorSegment title={failureTitle(result, failureMessages)} />
             ) : result.isSuccess ? (
               renderer(result.value, result.isReloading)
             ) : null}

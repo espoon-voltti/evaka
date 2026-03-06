@@ -4,10 +4,13 @@
 
 import { QueryClient } from '@tanstack/react-query'
 
+import { shouldRetry } from 'lib-common/query'
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      networkMode: 'always'
+      networkMode: 'always',
+      retry: shouldRetry
     },
     mutations: {
       networkMode: 'always'
