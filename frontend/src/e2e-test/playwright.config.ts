@@ -7,8 +7,10 @@ import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from '@playwright/test'
 
+// e2e-test directory
+const testDir = dirname(fileURLToPath(import.meta.url))
 // frontend directory
-const dir = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const dir = join(testDir, '..', '..')
 
 const baseURL = process.env.BASE_URL ?? 'http://localhost:9099'
 const isCI = process.env.CI === 'true' || process.env.CI === '1'
@@ -17,13 +19,17 @@ const isHeaded = process.env.HEADED === 'true' || process.env.HEADED === '1'
 export default defineConfig({
   testDir: './specs',
   testMatch: '**/*.spec.ts',
+  outputDir: join(dir, 'test-results', 'artifacts'),
   fullyParallel: true,
   timeout: isHeaded ? 1_000_000_000 : 60_000,
   workers: 1,
   retries: isCI ? 2 : 0,
   reporter: [
     ['list'],
-    ['html', { open: 'never', outputFolder: join(dir, 'test-results') }],
+    [
+      'html',
+      { open: 'never', outputFolder: join(dir, 'test-results', 'html') }
+    ],
     ['junit', { outputFile: join(dir, 'test-results/junit.xml') }]
   ],
   use: {
@@ -40,5 +46,6 @@ export default defineConfig({
       name: 'chromium',
       use: { browserName: 'chromium' }
     }
-  ]
+  ],
+  tsconfig: join(testDir, 'tsconfig.json')
 })
