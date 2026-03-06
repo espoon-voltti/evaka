@@ -4,7 +4,7 @@
 
 import fs from 'fs'
 
-import type { Download } from 'playwright'
+import type { Download } from '@playwright/test'
 
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type { JsonOf } from 'lib-common/json'

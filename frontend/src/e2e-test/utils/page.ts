@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { expect } from '@playwright/test'
 import type {
   ElementHandle,
@@ -9,7 +12,7 @@ import type {
   Locator,
   Request as PlaywrightRequest,
   Page as PlaywrightPage
-} from 'playwright'
+} from '@playwright/test'
 
 import type LocalDate from 'lib-common/local-date'
 
@@ -397,7 +400,8 @@ export class FileInput extends Element {
 }
 
 export const testFileName = 'test_file.png'
-export const testFilePath = `src/e2e-test/assets/${testFileName}`
+const assetsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets')
+export const testFilePath = join(assetsDir, testFileName)
 
 export class FileUpload extends Element {
   #input = new FileInput(this.findByDataQa('btn-upload-file'))
