@@ -11,6 +11,7 @@ import fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.insertPreschoolTerm
+import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
@@ -32,6 +33,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHolidayQuestionnaire
+import fi.espoo.evaka.shared.dev.DevHolidayQuestionnaireAnswer
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -152,6 +155,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     today.year,
                     today.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -202,6 +206,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -307,6 +312,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfMonth.year,
                     firstOfMonth.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -366,6 +372,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate.year,
                     placementDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -466,6 +473,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -530,6 +538,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -626,6 +635,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -787,6 +797,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -839,6 +850,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -902,6 +914,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart.year,
                     placementStart.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -976,6 +989,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate.year,
                     absenceDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         val child =
@@ -1016,6 +1030,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate.year,
                     absenceDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1045,6 +1060,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate.year,
                     absenceDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1072,6 +1088,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate.year,
                     absenceDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1180,6 +1197,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020.year,
                     firstOfJanuary2020.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1202,6 +1220,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020.year,
                     firstOfJanuary2020.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1231,6 +1250,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
@@ -1265,6 +1285,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(60), result.children.map { it.reservationTotalHours })
@@ -1291,6 +1312,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
@@ -1317,6 +1339,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
@@ -1346,6 +1369,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
@@ -1375,6 +1399,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
@@ -1405,6 +1430,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
@@ -1435,6 +1461,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(16), result.children.map { it.reservationTotalHours })
@@ -1473,6 +1500,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -1512,6 +1540,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         // 22 operational days * 8h
@@ -1546,6 +1575,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         // 8-16 + 8-14 (saturday is not included because the unit is not operational on saturdays)
@@ -1581,6 +1611,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         // 21 operational days * 8h + 12h
@@ -1613,6 +1644,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         // 21-9 + 9-15 (overlapping 2 hours are left out)
@@ -1652,6 +1684,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         // the start and end of absence date overlaps with two reservations but only one reservation
@@ -1684,6 +1717,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(21 + 20 * 8), result.children.map { it.reservationTotalHours })
@@ -1738,6 +1772,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(
@@ -1779,6 +1814,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
@@ -1813,6 +1849,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(60), result.children.map { it.attendanceTotalHours })
@@ -1840,6 +1877,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
@@ -1867,6 +1905,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
@@ -1897,6 +1936,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(24), result.children.map { it.attendanceTotalHours })
@@ -1927,6 +1967,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
@@ -1957,6 +1998,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(16), result.children.map { it.attendanceTotalHours })
@@ -1977,6 +2019,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(0), result.children.map { it.attendanceTotalHours })
@@ -2013,6 +2056,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(listOf(6), result.children.map { it.attendanceTotalHours })
@@ -2053,6 +2097,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     2019,
                     8,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
         assertEquals(1, result.children.size)
@@ -2111,6 +2156,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate.year,
                     placementDate.monthValue,
                     testFeatureConfig,
+                    calendarOpenBeforePlacementDays = 0,
                 )
             }
 
@@ -2249,6 +2295,308 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     departed = it.second,
                 )
             }
+        }
+    }
+
+    @Test
+    fun `missingHolidayQuestionnaireAnswer is true when child had placement during questionnaire active period but different placement on calendar day`() {
+        val questionnaireActive =
+            FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 7, 15))
+        val holidayWeek = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 9))
+        val questionnaire =
+            DevHolidayQuestionnaire(
+                type = QuestionnaireType.OPEN_RANGES,
+                active = questionnaireActive,
+                periodOptions = null,
+                periodOptionLabel = null,
+                period = holidayWeek,
+                absenceTypeThreshold = 30,
+            )
+
+        val julyPlacement = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 7, 31))
+        val augustPlacement = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31))
+
+        db.transaction { tx ->
+            tx.insert(questionnaire)
+            val julyPlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = julyPlacement.start,
+                        endDate = julyPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = julyPlacementId,
+                    daycareGroupId = group.id,
+                    startDate = julyPlacement.start,
+                    endDate = julyPlacement.end,
+                )
+            )
+            val augustPlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = augustPlacement.start,
+                        endDate = augustPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = augustPlacementId,
+                    daycareGroupId = group.id,
+                    startDate = augustPlacement.start,
+                    endDate = augustPlacement.end,
+                )
+            )
+        }
+
+        val openRangesConfig =
+            testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 15),
+                    group.id,
+                    2019,
+                    8,
+                    openRangesConfig,
+                    calendarOpenBeforePlacementDays = 0,
+                )
+            }
+
+        val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
+        holidayDays.forEach { day ->
+            val childDay = day.children.find { it.childId == child1.id }
+            assertTrue(
+                childDay?.missingHolidayQuestionnaireAnswer ?: false,
+                "Expected missingHolidayQuestionnaireAnswer=true on ${day.date}",
+            )
+        }
+    }
+
+    @Test
+    fun `missingHolidayQuestionnaireAnswer is false when child has no placement during questionnaire active period`() {
+        val questionnaireActive =
+            FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 7, 15))
+        val holidayWeek = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 9))
+        val questionnaire =
+            DevHolidayQuestionnaire(
+                type = QuestionnaireType.OPEN_RANGES,
+                active = questionnaireActive,
+                periodOptions = null,
+                periodOptionLabel = null,
+                period = holidayWeek,
+                absenceTypeThreshold = 30,
+            )
+
+        val augustPlacement = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31))
+
+        db.transaction { tx ->
+            tx.insert(questionnaire)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = augustPlacement.start,
+                        endDate = augustPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = augustPlacement.start,
+                    endDate = augustPlacement.end,
+                )
+            )
+        }
+
+        val openRangesConfig =
+            testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 15),
+                    group.id,
+                    2019,
+                    8,
+                    openRangesConfig,
+                    calendarOpenBeforePlacementDays = 0,
+                )
+            }
+
+        val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
+        holidayDays.forEach { day ->
+            val childDay = day.children.find { it.childId == child1.id }
+            assertFalse(
+                childDay?.missingHolidayQuestionnaireAnswer ?: false,
+                "Expected missingHolidayQuestionnaireAnswer=false on ${day.date}",
+            )
+        }
+    }
+
+    @Test
+    fun `missingHolidayQuestionnaireAnswer is false when child has placement during active period and has answered`() {
+        val questionnaireActive =
+            FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 7, 15))
+        val holidayWeek = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 9))
+        val questionnaire =
+            DevHolidayQuestionnaire(
+                type = QuestionnaireType.OPEN_RANGES,
+                active = questionnaireActive,
+                periodOptions = null,
+                periodOptionLabel = null,
+                period = holidayWeek,
+                absenceTypeThreshold = 30,
+            )
+
+        val julyPlacement = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 7, 31))
+        val augustPlacement = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31))
+
+        db.transaction { tx ->
+            tx.insert(questionnaire)
+            val julyPlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = julyPlacement.start,
+                        endDate = julyPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = julyPlacementId,
+                    daycareGroupId = group.id,
+                    startDate = julyPlacement.start,
+                    endDate = julyPlacement.end,
+                )
+            )
+            val augustPlacementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = augustPlacement.start,
+                        endDate = augustPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = augustPlacementId,
+                    daycareGroupId = group.id,
+                    startDate = augustPlacement.start,
+                    endDate = augustPlacement.end,
+                )
+            )
+            tx.insert(
+                DevHolidayQuestionnaireAnswer(
+                    modifiedBy = employee.evakaUserId,
+                    questionnaireId = questionnaire.id,
+                    childId = child1.id,
+                    fixedPeriod = holidayWeek,
+                )
+            )
+        }
+
+        val openRangesConfig =
+            testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 15),
+                    group.id,
+                    2019,
+                    8,
+                    openRangesConfig,
+                    calendarOpenBeforePlacementDays = 0,
+                )
+            }
+
+        val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
+        holidayDays.forEach { day ->
+            val childDay = day.children.find { it.childId == child1.id }
+            assertFalse(
+                childDay?.missingHolidayQuestionnaireAnswer ?: false,
+                "Expected missingHolidayQuestionnaireAnswer=false on ${day.date} (child answered)",
+            )
+        }
+    }
+
+    @Test
+    fun `missingHolidayQuestionnaireAnswer is true when questionnaire active period falls within pre-placement window`() {
+        val questionnaireActive =
+            FiniteDateRange(LocalDate.of(2019, 7, 5), LocalDate.of(2019, 7, 15))
+        val holidayWeek = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 9))
+        val questionnaire =
+            DevHolidayQuestionnaire(
+                type = QuestionnaireType.OPEN_RANGES,
+                active = questionnaireActive,
+                periodOptions = null,
+                periodOptionLabel = null,
+                period = holidayWeek,
+                absenceTypeThreshold = 30,
+            )
+
+        val augustPlacement = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2019, 8, 31))
+
+        db.transaction { tx ->
+            tx.insert(questionnaire)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        type = PlacementType.DAYCARE,
+                        startDate = augustPlacement.start,
+                        endDate = augustPlacement.end,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = augustPlacement.start,
+                    endDate = augustPlacement.end,
+                )
+            )
+        }
+
+        val openRangesConfig =
+            testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    LocalDate.of(2019, 8, 15),
+                    group.id,
+                    2019,
+                    8,
+                    openRangesConfig,
+                    calendarOpenBeforePlacementDays = 30,
+                )
+            }
+
+        val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
+        holidayDays.forEach { day ->
+            val childDay = day.children.find { it.childId == child1.id }
+            assertTrue(
+                childDay?.missingHolidayQuestionnaireAnswer ?: false,
+                "Expected missingHolidayQuestionnaireAnswer=true on ${day.date} (pre-placement window)",
+            )
         }
     }
 
