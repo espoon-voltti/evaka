@@ -372,7 +372,7 @@ describe('Employee - Unit month calendar', () => {
 
     test('Missing holiday questionnaire answer indicators are not shown if placement started after questionnaire active period', async () => {
       await Fixture.holidayQuestionnaire({
-        active: new FiniteDateRange(today.addWeeks(-2), today.addDays(-1)),
+        active: new FiniteDateRange(today.addWeeks(-8), today.addWeeks(-6)),
         periodOptions: [holidayRange]
       }).save()
 

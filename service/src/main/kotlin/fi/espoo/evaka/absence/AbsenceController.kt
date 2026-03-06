@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
 import fi.espoo.evaka.reservations.getReservableRange
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 class AbsenceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
     @GetMapping("/{groupId}")
     fun groupMonthCalendar(
@@ -50,7 +52,15 @@ class AbsenceController(
                         Action.Group.READ_ABSENCES,
                         groupId,
                     )
-                    getGroupMonthCalendar(it, clock.today(), groupId, year, month, featureConfig)
+                    getGroupMonthCalendar(
+                        it,
+                        clock.today(),
+                        groupId,
+                        year,
+                        month,
+                        featureConfig,
+                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                    )
                 }
             }
             .also {

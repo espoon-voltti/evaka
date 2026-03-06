@@ -104,6 +104,21 @@ fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildI
         )
         .firstOrNull()
 
+fun Database.Read.getChildIdsWithPlacementInRange(
+    childIds: Collection<ChildId>,
+    range: FiniteDateRange,
+): Set<ChildId> =
+    createQuery {
+            sql(
+                """
+SELECT DISTINCT child_id
+FROM placement
+WHERE child_id = ANY(${bind(childIds)}) AND daterange(start_date, end_date, '[]') && ${bind(range)}
+"""
+            )
+        }
+        .toSet<ChildId>()
+
 fun Database.Read.getPlacementsForChildrenAt(
     childIds: Set<ChildId>,
     date: LocalDate,
