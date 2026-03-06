@@ -43,23 +43,29 @@ else
   export DD_AGENT_HOST="localhost"
 fi
 
+mkdir -p /nginx/config
+cp -r /etc/nginx/* /nginx/config/
+
 if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
-  s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
+  s3download "$DEPLOYMENT_BUCKET" "proxy" /nginx/config/
 fi
 
-for directory in /etc/nginx/conf.d/ /etc/nginx/ /internal/; do
+mkdir -p /internal/
+cp -r /web/* /internal/
+
+for directory in /nginx/config/conf.d/ /nginx/config/ /internal/; do
   gomplate --input-dir="$directory" --output-map="$directory"'{{ .in | strings.ReplaceAll ".template" "" }}'
 done
 
-mkdir -p /static/.well-known
-cp /internal/security.txt /static/.well-known/
+mkdir -p /internal/.well-known
+cp /internal/security.txt /internal/.well-known/
 
 if [ "${DEBUG:-false}" = "true" ]; then
-  cat /etc/nginx/nginx.conf
+  cat /nginx/config/nginx.conf
 fi
 
 if [ "${BASIC_AUTH_ENABLED:-false}" = 'true' ]; then
-  echo "$BASIC_AUTH_CREDENTIALS" > /etc/nginx/.htpasswd
+  echo "$BASIC_AUTH_CREDENTIALS" > /nginx/config/.htpasswd
 fi
 
 exec "$@"

@@ -46,14 +46,17 @@ FROM base
 
 ENV NODE_ENV=production
 
-RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password
+RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password \
+ && mkdir -p /config \
+ && chown evaka:evaka /config \
+ && ln -s /config /home/evaka/s3 # old config path for backwards compatibility
+
+VOLUME /config
 
 COPY --from=builder /project .
 
 RUN yarn workspaces focus --production \
  && yarn cache clean --all
-
-USER evaka
 
 ARG build=none
 ARG commit=none
@@ -63,6 +66,8 @@ ENV APP_COMMIT="$commit"
 
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
+
+USER evaka
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "src/index.ts"]
