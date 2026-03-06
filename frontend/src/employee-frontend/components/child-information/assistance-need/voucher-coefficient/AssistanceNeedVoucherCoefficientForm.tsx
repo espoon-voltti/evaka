@@ -53,7 +53,7 @@ const CoefficientInputContainer = styled.div`
   }
 `
 
-const coefficientRegex = /^\d+([.,]\d{1,2})?$/
+const coefficientRegex = /^\d+([.,]\d{1,4})?$/
 
 interface CommonProps {
   onSuccess: () => void
