@@ -12,7 +12,11 @@ export HOST_IP=$(curl --silent --fail --show-error http://169.254.169.254/latest
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
-  s3download "$DEPLOYMENT_BUCKET" evaka-srv /home/evaka/s3
+  echo "Debug: /config permissions before s3download:"
+  ls -alh /config
+  s3download "$DEPLOYMENT_BUCKET" evaka-srv /config
+  echo "Debug: /config contents after s3download:"
+  ls -alh /config
 fi
 
 # Run as exec so the application can receive any Unix signals sent to the container, e.g.,

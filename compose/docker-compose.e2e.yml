@@ -16,6 +16,10 @@ services:
       cache_from:
         - ghcr.io/espoon-voltti/evaka/frontend-common:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/frontend-common:cache-master
+    read_only: true
+    tmpfs: # In ECS these are disk-backed via Dockerfile VOLUME (ext4 on ephemeral NVMe)
+      - /nginx:uid=101,gid=101,size=64m
+      - /internal:uid=101,gid=101,size=64m
     ports:
       - "9099:8080"
     environment:
@@ -41,6 +45,9 @@ services:
       cache_from:
         - ghcr.io/espoon-voltti/evaka/api-gateway:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/api-gateway:cache-master
+    read_only: true
+    tmpfs: # In ECS these are disk-backed via Dockerfile VOLUME (ext4 on ephemeral NVMe)
+      - /config:uid=1001,gid=1001,size=64m
     ports:
       - "3000"
     hostname: api-gw
@@ -70,6 +77,10 @@ services:
       cache_from:
         - ghcr.io/espoon-voltti/evaka/service:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/service:cache-master
+    read_only: true
+    tmpfs: # In ECS these are disk-backed via Dockerfile VOLUME (ext4 on ephemeral NVMe)
+      - /config:uid=1000,gid=1000,size=64m
+      - /tmp:mode=1777,size=128m
     ports:
       - "8888"
     hostname: evaka-srv

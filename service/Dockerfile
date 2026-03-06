@@ -76,8 +76,16 @@ ENTRYPOINT ["./entrypoint.sh"]
 ENV USERNAME=evaka
 ENV HOME_DIR=/home/${USERNAME}
 ENV USER_ID=1000
+ENV GROUP_ID=1000
 
-RUN adduser ${USERNAME} --gecos "" -q --home ${HOME_DIR} --uid ${USER_ID} --disabled-password
+RUN addgroup --gid ${GROUP_ID} ${USERNAME} \
+ && adduser --uid ${USER_ID} --gid ${GROUP_ID} --gecos "" -q --home ${HOME_DIR} --disabled-password ${USERNAME} \
+ && mkdir -p /config \
+ && chown ${USERNAME}:${USERNAME} /config \
+ && ln -s /config ${HOME_DIR}/s3 # old config path for backwards compatibility
+
+VOLUME /config
+VOLUME /tmp
 
 COPY --from=builder /evaka/service/target/ .
 
