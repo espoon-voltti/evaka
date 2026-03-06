@@ -15,12 +15,15 @@ import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfigu
 class Main
 
 fun main(args: Array<String>) {
+    val municipality = System.getenv("EVAKA_MUNICIPALITY") ?: "espoo"
+    val municipalityProfile = "${municipality}_evaka"
+
     val profiles =
         when (System.getenv("VOLTTI_ENV")) {
             "dev",
-            "test" -> arrayOf("espoo_evaka", "enable_dev_api")
+            "test" -> arrayOf(municipalityProfile, "enable_dev_api")
 
-            else -> arrayOf("espoo_evaka")
+            else -> arrayOf(municipalityProfile)
         }
 
     SpringApplicationBuilder().profiles(*profiles).sources(Main::class.java).run(*args)
