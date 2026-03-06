@@ -4,7 +4,7 @@
 
 import type express from 'express'
 
-import { logWarn } from '../logging.ts'
+import { logError } from '../logging.ts'
 import type { RedisClient } from '../redis-client.ts'
 
 export function matchPath(pattern: string, path: string): boolean {
@@ -46,24 +46,24 @@ function matchSegments(
   return pathIndex === pathSegments.length
 }
 
-interface ParsedEntry {
+interface DisabledEndpoint {
   original: string
   method: string
   patternSegments: string[]
 }
 
-function parseEntries(rawEntries: string[]): ParsedEntry[] {
-  const result: ParsedEntry[] = []
+function parseDisabledEndpoints(rawEntries: string[]): DisabledEndpoint[] {
+  const result: DisabledEndpoint[] = []
   for (const entry of rawEntries) {
     const spaceIndex = entry.indexOf(' ')
     if (spaceIndex <= 0) {
-      logWarn(`Ignoring invalid disabled-endpoints entry: ${entry}`)
+      logError(`Ignoring invalid disabled-endpoints entry: ${entry}`)
       continue
     }
     const method = entry.substring(0, spaceIndex).toUpperCase()
     const pathPattern = entry.substring(spaceIndex + 1)
     if (!pathPattern) {
-      logWarn(`Ignoring invalid disabled-endpoints entry: ${entry}`)
+      logError(`Ignoring invalid disabled-endpoints entry: ${entry}`)
       continue
     }
     result.push({
@@ -79,14 +79,14 @@ const DISABLED_ENDPOINTS_KEY = 'disabled-endpoints'
 const REFRESH_INTERVAL_MS = 10_000
 
 export function createEndpointDisablingMiddleware(redisClient: RedisClient) {
-  let parsedEntries: ParsedEntry[] = []
+  let disabledEndpoints: DisabledEndpoint[] = []
 
   async function refreshCache() {
     try {
       const raw = await redisClient.sMembers(DISABLED_ENDPOINTS_KEY)
-      parsedEntries = parseEntries(raw)
+      disabledEndpoints = parseDisabledEndpoints(raw)
     } catch (error) {
-      logWarn(
+      logError(
         `Failed to refresh disabled endpoints cache: ${error instanceof Error ? error.message : String(error)}`
       )
     }
@@ -99,7 +99,7 @@ export function createEndpointDisablingMiddleware(redisClient: RedisClient) {
   void refreshCache()
 
   const middleware: express.RequestHandler = (req, res, next) => {
-    const match = findMatch(parsedEntries, req.method, req.path)
+    const match = findMatch(disabledEndpoints, req.method, req.path)
     if (match) {
       res.status(503).json({
         errorCode: 'ENDPOINT_DISABLED',
@@ -118,15 +118,16 @@ export function createEndpointDisablingMiddleware(redisClient: RedisClient) {
 }
 
 function findMatch(
-  entries: ParsedEntry[],
+  disabledEndpoints: DisabledEndpoint[],
   method: string,
   path: string
 ): string | null {
   const pathSegments = path.split('/')
-  for (const entry of entries) {
-    if (entry.method !== '*' && entry.method !== method) continue
-    if (matchSegments(entry.patternSegments, pathSegments, 0, 0))
-      return entry.original
+  for (const disabledEndpoint of disabledEndpoints) {
+    if (disabledEndpoint.method !== '*' && disabledEndpoint.method !== method)
+      continue
+    if (matchSegments(disabledEndpoint.patternSegments, pathSegments, 0, 0))
+      return disabledEndpoint.original
   }
   return null
 }
