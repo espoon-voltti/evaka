@@ -2,10 +2,18 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "lib-common/*": ["../lib-common/*"],
+      "lodash/*": [
+        "../../node_modules/@types/lodash/*",
+        "../../node_modules/lodash/*"
+      ]
+    },
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/e2e-test",
-    "types": ["jest", "node"]
+    "types": ["jest", "node", "@playwright/test"]
   },
   "references": [
     { "path": "../lib-common" },
