@@ -2267,8 +2267,8 @@ data class DevApplicationWithForm(
 data class DevDaycareGroupAcl(
     val groupId: GroupId,
     val employeeId: EmployeeId,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevServiceNeed(

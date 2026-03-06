@@ -57,7 +57,7 @@ UNION ALL
 SELECT dst.child_id                       as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id
@@ -102,7 +102,7 @@ UNION ALL
 SELECT childId                            as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id
@@ -149,7 +149,7 @@ UNION ALL
 SELECT dst.child_id                       as child_id,
        theDate                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id

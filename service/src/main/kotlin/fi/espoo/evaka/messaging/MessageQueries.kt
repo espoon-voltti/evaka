@@ -80,8 +80,8 @@ fun Database.Read.getUnreadMessagesCountsEmployee(
         WITH limits AS (
             SELECT
                 daycare_group_id,
-                (created - interval '1 week')::date AS access_limit
-            FROM daycare_group_acl 
+                (created_at - interval '1 week')::date AS access_limit
+            FROM daycare_group_acl
             WHERE employee_id = ${bind(employeeId)}
         ),
         accounts AS (
@@ -305,7 +305,7 @@ fun Database.Transaction.insertMessage(
     return createQuery {
             sql(
                 """
-INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, sent_at, recipient_names)
+INSERT INTO message (created_at, content_id, thread_id, sender_id, sender_name, sent_at, recipient_names)
 SELECT
     ${bind(now)},
     ${bind(contentId)},
@@ -504,7 +504,7 @@ WITH new_threads AS (
     FROM generate_series(1, ${bind(count)})
     RETURNING id
 )
-INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, recipient_names)
+INSERT INTO message (created_at, content_id, thread_id, sender_id, sender_name, recipient_names)
 SELECT
     ${bind(now)},
     ${bind(contentId)},
@@ -678,7 +678,7 @@ fun Database.Read.getAccountAccessLimit(
             sql(
                 """
 SELECT
-    (dga.created - interval '1 week')::date
+    (dga.created_at - interval '1 week')::date
 FROM daycare_group_acl dga
 JOIN message_account ma ON ma.daycare_group_id = dga.daycare_group_id
 JOIN daycare_group dg ON dga.daycare_group_id = dg.id
@@ -794,7 +794,7 @@ private fun Database.Read.getThreadMessages(
 SELECT
     m.id,
     m.thread_id,
-    COALESCE(m.sent_at, m.created) AS sent_at,
+    COALESCE(m.sent_at, m.created_at) AS sent_at,
     mc.content,
     mr_self.read_at,
     jsonb_build_object(
@@ -1048,7 +1048,7 @@ fun Database.Read.getSentMessage(
 SELECT
     m.id,
     m.thread_id,
-    COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
+    COALESCE(m.sent_at, m.created_at) AS sent_at,  -- use the created_at timestamp until the asyncjob marks the message as sent
     mc.content,
     (
         SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} WHEN 'FINANCE' THEN ${bind(financeAccountName)} ELSE mav.name END, 'type', mav.type)
@@ -1263,7 +1263,7 @@ fun Database.Read.getMessagesSentByAccount(
 WITH pageable_messages AS (
     SELECT
         m.content_id,
-        COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
+        COALESCE(m.sent_at, m.created_at) AS sent_at,  -- use the created_at timestamp until the asyncjob marks the message as sent
         m.recipient_names,
         t.title,
         t.message_type,
@@ -1274,7 +1274,7 @@ WITH pageable_messages AS (
     JOIN message_thread t ON m.thread_id = t.id
     WHERE sender_id = ${bind(accountId)} AND
         ${predicate(accountAccessPredicate.forTable("m"))}
-    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
+    GROUP BY m.content_id, m.sent_at, m.created_at, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
     LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 )
