@@ -139,6 +139,56 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         assertEquals(listOf(BigDecimal("1.00")), readVoucherValueDecisionAssistanceCoefficients())
     }
 
+    @Test
+    fun `coefficient supports four decimal places`() {
+        val created =
+            createAssistanceNeedVoucherCoefficient(
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 1.5234,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                )
+            )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(BigDecimal("1.5234"), created.coefficient)
+        assertEquals(listOf(BigDecimal("1.5234")), readVoucherValueDecisionAssistanceCoefficients())
+
+        val updated =
+            updateAssistanceNeedVoucherCoefficient(
+                created.id,
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 2.7891,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                ),
+            )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(BigDecimal("2.7891"), updated.coefficient)
+        assertEquals(listOf(BigDecimal("2.7891")), readVoucherValueDecisionAssistanceCoefficients())
+    }
+
+    @Test
+    fun `coefficient with four decimal places can be retrieved`() {
+        val created =
+            createAssistanceNeedVoucherCoefficient(
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 1.2345,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                )
+            )
+
+        val coefficients =
+            assistanceNeedVoucherCoefficientController.getAssistanceNeedVoucherCoefficients(
+                dbInstance(),
+                employee.user,
+                clock,
+                child.id,
+            )
+
+        val coefficient = coefficients.find { it.voucherCoefficient.id == created.id }
+        assertEquals(BigDecimal("1.2345"), coefficient?.voucherCoefficient?.coefficient)
+    }
+
     private fun createAssistanceNeedVoucherCoefficient(
         body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
