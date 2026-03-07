@@ -8,7 +8,7 @@ java = "zulu-25"
 lefthook = "2.1.1"
 node = "24.14.0"
 "npm:pm2" = "6.0.14"
-uv = "0.10.5"
+uv = "0.10.7"
 "pipx:reuse" = "6.2.0"
 yarn = "4.12.0"
 
