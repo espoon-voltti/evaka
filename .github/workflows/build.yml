@@ -523,7 +523,7 @@ jobs:
           ./compose-integration run integration-test $args
 
       - name: Store test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-test-results-${{ matrix.test_chunk_number }}
@@ -543,7 +543,7 @@ jobs:
         run: |
           ./bin/timings.sh $CHUNK_COUNT e2e-test-chunk--{}.txt
       - name: Upload test chunks
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-test-chunks
           path: e2e-test-chunk--*.txt
@@ -624,7 +624,7 @@ jobs:
 
       - name: Store screenshots and logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-test-results-${{ matrix.test_chunk_number }}
           path: |
