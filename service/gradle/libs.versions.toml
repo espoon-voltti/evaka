@@ -5,7 +5,7 @@
 [versions]
 bouncycastle = "1.83"
 dd-java-agent = "1.59.0"
-flyingsaucer = "10.0.6"
+flyingsaucer = "10.0.7"
 flyway = "12.0.2"
 java = "25"
 kotlin = "2.3.10"
