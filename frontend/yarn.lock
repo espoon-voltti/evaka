@@ -3592,6 +3592,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tabby_ai/hijri-converter@npm:1.0.5":
+  version: 1.0.5
+  resolution: "@tabby_ai/hijri-converter@npm:1.0.5"
+  checksum: 10/35711b606870889eaafd76f8fb94bd095a15c5d066a3062d7c3987344949e9d7638726863cf7c9439f9c5efc9a56f289485fd9d99a77e5d29cd23897c8d748ce
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.90.20":
   version: 5.90.20
   resolution: "@tanstack/query-core@npm:5.90.20"
@@ -5410,7 +5417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns-jalali@npm:^4.1.0-0":
+"date-fns-jalali@npm:4.1.0-0":
   version: 4.1.0-0
   resolution: "date-fns-jalali@npm:4.1.0-0"
   checksum: 10/0005e0e37d449aa998cfc353395b0292eea4778aba4283dad4fa0e3559cf0a7fc7ce9123fb6f22c235285219d4f4774c88bb9c01fa2694c6a5efbbcd33efe7fc
@@ -6303,7 +6310,7 @@ __metadata:
     punycode: "npm:2.3.1"
     react: "npm:19.2.4"
     react-chartjs-2: "npm:5.3.1"
-    react-day-picker: "npm:9.13.2"
+    react-day-picker: "npm:9.14.0"
     react-dom: "npm:19.2.4"
     react-focus-lock: "npm:2.13.7"
     react-focus-on: "npm:3.10.2"
@@ -9618,16 +9625,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:9.13.2":
-  version: 9.13.2
-  resolution: "react-day-picker@npm:9.13.2"
+"react-day-picker@npm:9.14.0":
+  version: 9.14.0
+  resolution: "react-day-picker@npm:9.14.0"
   dependencies:
     "@date-fns/tz": "npm:^1.4.1"
+    "@tabby_ai/hijri-converter": "npm:1.0.5"
     date-fns: "npm:^4.1.0"
-    date-fns-jalali: "npm:^4.1.0-0"
+    date-fns-jalali: "npm:4.1.0-0"
   peerDependencies:
     react: ">=16.8.0"
-  checksum: 10/ccddfa93182bed830ddc97720dfbe013456df738beae9563e5e9461621a36bc0ca1e32f3fd8916f90471cea88f2ab82a59a7d1bfbcab9fcfc42d11dcf5439997
+  checksum: 10/a4e05e6af3d5535e34909aa1c258904765da73f5299ddf031838f92fff8493d4bad9140088e94ddc9041b07410f9803d3ee27e7fc67d78cf0d2c8622089723f5
   languageName: node
   linkType: hard
 
