@@ -96,33 +96,39 @@ export default React.memo(function FixedPeriodSelectionModal({
               newTab
             />
           </HolidaySection>
-          {availableChildren.map((child) => (
-            <HolidaySection
-              key={child.id}
-              data-qa={`holiday-section-${child.id}`}
-            >
-              <H2 translate="no">
-                <PersonName person={child} format="FirstFirst" />
-                {duplicateChildInfo[child.id] !== undefined
-                  ? ` ${duplicateChildInfo[child.id]}`
-                  : ''}
-              </H2>
-              {eligibleChildren[child.id] !== undefined ? (
-                <PeriodSelector
-                  label={questionnaire.periodOptionLabel[lang]}
-                  options={eligibleChildren[child.id]!}
-                  value={fixedPeriods[child.id] ?? null}
-                  onSelectPeriod={selectPeriod(child.id)}
-                />
-              ) : questionnaire.conditions.continuousPlacement ? (
-                <div data-qa="not-eligible">
-                  {i18n.calendar.holidayModal.notEligible(
-                    questionnaire.conditions.continuousPlacement
-                  )}
-                </div>
-              ) : null}
-            </HolidaySection>
-          ))}
+          {availableChildren
+            .filter(
+              (child) =>
+                eligibleChildren[child.id] !== undefined ||
+                questionnaire.conditions.continuousPlacement != null
+            )
+            .map((child) => (
+              <HolidaySection
+                key={child.id}
+                data-qa={`holiday-section-${child.id}`}
+              >
+                <H2 translate="no">
+                  <PersonName person={child} format="FirstFirst" />
+                  {duplicateChildInfo[child.id] !== undefined
+                    ? ` ${duplicateChildInfo[child.id]}`
+                    : ''}
+                </H2>
+                {eligibleChildren[child.id] !== undefined ? (
+                  <PeriodSelector
+                    label={questionnaire.periodOptionLabel[lang]}
+                    options={eligibleChildren[child.id]!}
+                    value={fixedPeriods[child.id] ?? null}
+                    onSelectPeriod={selectPeriod(child.id)}
+                  />
+                ) : (
+                  <div data-qa="not-eligible">
+                    {i18n.calendar.holidayModal.notEligible(
+                      questionnaire.conditions.continuousPlacement!
+                    )}
+                  </div>
+                )}
+              </HolidaySection>
+            ))}
         </FixedSpaceColumn>
       </MutateFormModal>
     </ModalAccessibilityWrapper>

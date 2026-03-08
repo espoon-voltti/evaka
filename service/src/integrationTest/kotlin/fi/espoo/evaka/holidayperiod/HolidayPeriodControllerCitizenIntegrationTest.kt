@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.holidayperiod
 
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -22,6 +25,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -36,6 +40,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlTest.TestActionRuleMapping
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -44,11 +49,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class HolidayPeriodControllerCitizenIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var holidayPeriodControllerCitizen: HolidayPeriodControllerCitizen
+    @Autowired private lateinit var citizenCalendarEnv: CitizenCalendarEnv
 
     private val emptyTranslatable = Translatable("", "", "")
     private val freePeriodQuestionnaire =
@@ -419,10 +426,158 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             HolidayPeriodControllerCitizen(
                 AccessControl(rules, noopTracer()),
                 featureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES),
+                citizenCalendarEnv,
+                evakaEnv,
             )
         val response = getActiveQuestionnaires(mockToday, controller)
 
         assertEquals(1, response.size)
+    }
+
+    @Test
+    fun `open ranges questionnaire excludes child whose placement visibility window does not overlap the questionnaire active period`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate =
+                        mockToday.plusDays(
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 10
+                        ),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+        createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+
+        val rules = TestActionRuleMapping()
+        rules.add(
+            Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES,
+            IsCitizen(allowWeakLogin = false).any(),
+        )
+        val controller =
+            HolidayPeriodControllerCitizen(
+                AccessControl(rules, noopTracer()),
+                featureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES),
+                citizenCalendarEnv,
+                evakaEnv,
+            )
+        val response = getActiveQuestionnaires(mockToday, controller)
+
+        assertEquals(1, response.size)
+        assertThat(response[0].eligibleChildren).containsKey(child1.id)
+        assertThat(response[0].eligibleChildren).doesNotContainKey(child2.id)
+    }
+
+    @Test
+    fun `open ranges answer uses PLANNED_ABSENCE for child with hour-based service need`() {
+        val hourBasedOptionId = ServiceNeedOptionId(UUID.randomUUID())
+        val hourBasedOption =
+            ServiceNeedOption(
+                id = hourBasedOptionId,
+                nameFi = "Tuntiperusteinen",
+                nameSv = "Tuntiperusteinen",
+                nameEn = "Hour-based",
+                validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                defaultOption = false,
+                feeCoefficient = BigDecimal("1.0"),
+                occupancyCoefficient = BigDecimal("1.0"),
+                occupancyCoefficientUnder3y = BigDecimal("1.75"),
+                realizedOccupancyCoefficient = BigDecimal("1.0"),
+                realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
+                daycareHoursPerWeek = 35,
+                contractDaysPerMonth = null,
+                daycareHoursPerMonth = 120,
+                partDay = false,
+                partWeek = false,
+                feeDescriptionFi = "",
+                feeDescriptionSv = "",
+                voucherValueDescriptionFi = "",
+                voucherValueDescriptionSv = "",
+                validFrom = LocalDate.of(2000, 1, 1),
+                validTo = null,
+                showForCitizen = true,
+            )
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insertServiceNeedOption(hourBasedOption)
+            val placement =
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = mockToday.minusYears(2),
+                        endDate = mockToday.plusYears(1),
+                    )
+                )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.plusYears(1),
+                    optionId = hourBasedOptionId,
+                    confirmedBy = authenticatedParent.evakaUserId,
+                )
+            )
+        }
+        whenever(evakaEnv.plannedAbsenceEnabledForHourBasedServiceNeeds).thenReturn(true)
+
+        val id = createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+        val shortRange =
+            FiniteDateRange(
+                freeRangesQuestionnaire.period.start,
+                freeRangesQuestionnaire.period.start.plusDays(10),
+            )
+
+        val rules = TestActionRuleMapping()
+        rules.add(
+            Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
+            IsCitizen(allowWeakLogin = false).any(),
+        )
+        val controller =
+            HolidayPeriodControllerCitizen(
+                AccessControl(rules, noopTracer()),
+                featureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES),
+                citizenCalendarEnv,
+                evakaEnv,
+            )
+        val mockClock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(11, 0)))
+        controller.answerOpenRangeQuestionnaire(
+            dbInstance(),
+            authenticatedParent,
+            mockClock,
+            id,
+            OpenRangesBody(mapOf(child2.id to listOf(shortRange))),
+        )
+
+        val absences =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT child_id, date, absence_type, category FROM absence ORDER BY date"
+                        )
+                    }
+                    .toList<BillableAbsence>()
+            }
+        val billableAbsences =
+            absences.filter {
+                it.childId == child2.id && it.category == "BILLABLE" && !it.date.isWeekend()
+            }
+        assertThat(billableAbsences).isNotEmpty
+        billableAbsences.forEach { absence ->
+            assertEquals(AbsenceType.PLANNED_ABSENCE, absence.absenceType)
+        }
+        val nonbillableAbsences =
+            absences.filter {
+                it.childId == child2.id && it.category == "NONBILLABLE" && !it.date.isWeekend()
+            }
+        assertThat(nonbillableAbsences).isNotEmpty
+        nonbillableAbsences.forEach { absence ->
+            assertEquals(AbsenceType.OTHER_ABSENCE, absence.absenceType)
+        }
     }
 
     @Test
@@ -554,6 +709,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         db.transaction { it.createOpenRangesQuestionnaire(body) }
 
     private data class Absence(val childId: ChildId, val date: LocalDate, val type: AbsenceType)
+
+    private data class BillableAbsence(
+        val childId: ChildId,
+        val date: LocalDate,
+        val absenceType: AbsenceType,
+        val category: String,
+    )
 
     private fun Database.Read.getAllAbsences(): List<Absence> =
         createQuery {

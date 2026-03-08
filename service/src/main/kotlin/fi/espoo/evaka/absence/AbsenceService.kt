@@ -18,6 +18,7 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.holidayperiod.HolidayQuestionnaire
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.holidayperiod.getHolidayQuestionnaires
 import fi.espoo.evaka.holidayperiod.getQuestionnaireAnswers
@@ -187,6 +188,7 @@ fun getGroupMonthCalendar(
     year: Int,
     month: Int,
     featureConfig: FeatureConfig,
+    calendarOpenBeforePlacementDays: Int,
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -197,7 +199,21 @@ fun getGroupMonthCalendar(
             ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
     val groupName =
         tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
-    val placementList = tx.getPlacementsByRange(groupId, range)
+
+    val holidays = getHolidays(range)
+    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+    val questionnaires =
+        tx.getHolidayQuestionnaires(featureConfig.holidayQuestionnaireType).filter {
+            it.getPeriods().any { dateRange -> dateRange.overlaps(range) }
+        }
+
+    val placementQueryRange =
+        if (questionnaires.isNotEmpty()) {
+            val earliestActive = questionnaires.minOf { it.active.start }
+            FiniteDateRange(minOf(earliestActive, range.start), range.end)
+        } else range
+    val extendedRangePlacements = tx.getPlacementsByRange(groupId, placementQueryRange)
+
     val absences = tx.getAbsencesInGroupByRange(groupId, range)
     val actualServiceNeeds =
         tx.getActualServiceNeedInfosByRangeAndGroup(groupId, range).groupBy { it.childId }.toMap()
@@ -207,15 +223,11 @@ fun getGroupMonthCalendar(
     val attendancesByChild = allAttendances.groupBy { it.childId }
     val attendances = allAttendances.groupBy { it.childId to it.date }
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
-
-    val holidays = getHolidays(range)
-    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
-    val questionnaires =
-        tx.getHolidayQuestionnaires(featureConfig.holidayQuestionnaireType).filter {
-            it.getPeriods().any { dateRange -> dateRange.overlaps(range) }
-        }
     val answers =
-        tx.getQuestionnaireAnswers(questionnaires.map { it.id }, placementList.keys.map { it.id })
+        tx.getQuestionnaireAnswers(
+            questionnaires.map { it.id },
+            extendedRangePlacements.keys.map { it.id },
+        )
 
     val childIdsWithHourBasedServiceNeed =
         actualServiceNeeds
@@ -245,7 +257,7 @@ fun getGroupMonthCalendar(
                     isOperationDay = isOperationDay || isShiftCareOperationDay,
                     isInHolidayPeriod = isHolidayPeriodDate,
                     children =
-                        placementList
+                        extendedRangePlacements
                             .mapNotNull { (child, placements) ->
                                 val placement =
                                     placements.find { it.range.includes(date) }
@@ -257,7 +269,12 @@ fun getGroupMonthCalendar(
                                     reservations[child.id to date] ?: emptyList()
                                 val childShouldHaveAnswers =
                                     isQuestionnaireDate &&
-                                        questionnaires.any { it.active.overlaps(placement.range) }
+                                        wasQuestionnaireVisibleForChild(
+                                            date,
+                                            questionnaires,
+                                            placements,
+                                            calendarOpenBeforePlacementDays,
+                                        )
                                 val noAnswersForChild =
                                     answers.none {
                                         it.childId == child.id &&
@@ -354,8 +371,13 @@ fun getGroupMonthCalendar(
             }
             .toList()
 
+    val monthPlacements =
+        extendedRangePlacements
+            .mapValues { (_, placements) -> placements.filter { it.range.overlaps(range) } }
+            .filterValues { it.isNotEmpty() }
+
     val children =
-        placementList
+        monthPlacements
             .map { (child, placements) ->
                 val placementDateRanges = placements.map { it.range }
                 val absenceDates =
@@ -739,6 +761,24 @@ data class AbsencePlacement(
     val preschoolTime: TimeRange?,
     val preparatoryTime: TimeRange?,
 )
+
+private fun wasQuestionnaireVisibleForChild(
+    date: LocalDate,
+    questionnaires: List<HolidayQuestionnaire>,
+    placements: List<AbsencePlacement>,
+    calendarOpenBeforePlacementDays: Int,
+): Boolean =
+    questionnaires.any { q ->
+        q.getPeriods().any { it.includes(date) } &&
+            placements.any { p ->
+                val visibilityRange =
+                    FiniteDateRange(
+                        p.range.start.minusDays(calendarOpenBeforePlacementDays.toLong()),
+                        p.range.end,
+                    )
+                q.active.overlaps(visibilityRange)
+            }
+    }
 
 data class Absence(
     val childId: ChildId,
