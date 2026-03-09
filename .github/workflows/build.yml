@@ -767,6 +767,23 @@ jobs:
               }
             })
 
+  notify-tracker:
+    if: github.ref == 'refs/heads/master' && github.repository_owner == 'espoon-voltti'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          github-token: '${{ secrets.EVAKA_PAT }}'
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: 'espoon-voltti',
+              repo: 'evaka-update-tracker',
+              event_type: 'evaka-pr-merged',
+              client_payload: {
+                sha: context.sha
+              }
+            })
+
   notify:
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
