@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FIDCCP02>
+    <IDOC BEGIN="1">
+        <EDI_DC40 SEGMENT="1">
+            <TABNAM>EDI_DC40</TABNAM>
+            <DIRECT>2</DIRECT>
+            <IDOCTYP>FIDCCP02</IDOCTYP>
+            <MESTYP>FIDCC2</MESTYP>
+            <SNDPOR></SNDPOR>
+            <SNDPRT>LS</SNDPRT>
+            <SNDPRN>VAK_1002</SNDPRN>
+            <RCVPOR></RCVPOR>
+            <RCVPRT>LS</RCVPRT>
+            <RCVPRN></RCVPRN>
+        </EDI_DC40>
+        <E1FIKPF SEGMENT="1">
+            <BUKRS>1002</BUKRS>
+            <GJAHR>2022</GJAHR>
+            <BLART>KR</BLART>
+            <BLDAT>20220803</BLDAT>
+            <BUDAT>20220715</BUDAT>
+            <MONAT>07</MONAT>
+            <XBLNR>VAK2022070001234</XBLNR>
+            <BKTXT>eVAKA</BKTXT>
+            <WAERS>EUR</WAERS>
+            <GLVOR>RFBU</GLVOR>
+            <E1FISEG SEGMENT="1">
+                <BUZEI>001</BUZEI>
+                <BSCHL>31</BSCHL>
+                <SHKZG>H</SHKZG>
+                <WRBTR>6572.85</WRBTR>
+                <SGTXT>eVAKA 07/2022</SGTXT>
+                <XREF3></XREF3>
+                <E1FINBU SEGMENT="1">
+                    <ZFBDT>20220815</ZFBDT>
+                    <ZTERM>T000</ZTERM>
+                    <SKFBT>6572.85</SKFBT>
+                    <RESERVE>1234567-8;FI01234567890123456789</RESERVE>
+                </E1FINBU>
+            </E1FISEG>
+            <E1FISEG SEGMENT="1">
+                <BUZEI>002</BUZEI>
+                <BSCHL>40</BSCHL>
+                <SHKZG>S</SHKZG>
+                <MWSKZ>P4</MWSKZ>
+                <WRBTR>6572.85</WRBTR>
+                <SGTXT>eVAKA 07/2022 Private test care pro</SGTXT>
+                <KOKRS>1000</KOKRS>
+                <KOSTL>0000031440</KOSTL>
+                <AUFNR>000000000000</AUFNR>
+                <HKONT>0000431500</HKONT>
+                <PRCTR></PRCTR>
+            </E1FISEG>
+        </E1FIKPF>
+    </IDOC>
+</FIDCCP02>

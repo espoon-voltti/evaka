@@ -1,0 +1,104 @@
+<!--
+SPDX-FileCopyrightText: 2021 City of Turku
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<th:block th:fragment="daycare-correction">
+    <h2 th:text="#{title}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{daycare.p0}"></p>
+    </div>
+    <h2 th:text="#{right}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{daycare.p1}"></p>
+        <p th:utext="#{daycare.p2}"></p>
+        <p th:utext="#{daycare.p3}"></p>
+        <p th:utext="#{daycare.p4}"></p>
+        <p th:utext="#{daycare.p5}"></p>
+        <p th:utext="#{daycare.p6}"></p>
+        <p th:utext="#{daycare.p7}"></p>
+    </div>
+
+    <div class="correction-content">
+        <div th:utext="#{address.content}">Oikaisuvaatimus toimitetaan joko....</div>
+    </div>
+</th:block>
+
+<th:block th:fragment="daycare-voucher-correction">
+    <h2 th:text="#{title}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{daycare.voucher.p1}"></p>
+        <p th:utext="#{daycare.voucher.p2}"></p>
+    </div>
+
+    <div class="correction-content">
+        <div th:utext="#{address.content}">Oikaisuvaatimus toimitetaan joko....</div>
+    </div>
+
+</th:block>
+
+<th:block th:fragment="preschool-correction">
+    <h2 th:utext="#{preschool.title}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{preschool.p0}"></p>
+    </div>
+    <h2 th:text="#{right}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{preschool.p1}"></p>
+        <p th:utext="#{preschool.p2}"></p>
+        <p th:utext="#{preschool.p3}"></p>
+        <p th:utext="#{preschool.p4}"></p>
+        <p th:utext="#{preschool.p5}"></p>
+        <p th:utext="#{preschool.p6}"></p>
+        <p th:utext="#{preschool.p7}"></p>
+        <p th:utext="#{preschool.p8}"></p>
+        <p th:utext="#{preschool.p9}"></p>
+        <p th:utext="#{preschool.p10}"></p>
+        <p th:utext="#{preschool.p11}"></p>
+        <p th:utext="#{preschool.p12}"></p>
+    </div>
+
+    <div class="correction-content">
+        <div th:utext="#{preschool.complaint.address}">Oikaisuvaatimus toimitetaan joko....</div>
+        <p th:utext="#{preschool.p13}"></p>
+    </div>
+
+</th:block>
+
+<th:block th:fragment="correction">
+    <h2 th:text="#{title}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{content.p1}"></p>
+        <p th:utext="#{content.p2}"></p>
+    </div>
+
+    <div class="correction-content">
+        <div th:utext="#{address.content}">Oikaisuvaatimus toimitetaan joko....</div>
+    </div>
+</th:block>
+
+<th:block th:fragment="fee-decision-correction">
+    <h2 th:text="#{title}"></h2>
+    <div class="correction-content">
+        <p th:utext="#{fee-decision-correction.p1}"></p>
+        <p th:utext="#{fee-decision-correction.p2}"></p>
+        <p th:utext="#{fee-decision-correction.p3}"></p>
+        <p th:utext="#{fee-decision-correction.p4}"></p>
+        <p th:utext="#{fee-decision-correction.p5}"></p>
+        <p th:utext="#{fee-decision-correction.p6}"></p>
+        <p th:utext="#{fee-decision-correction.p7}"></p>
+    </div>
+    
+    <div class="correction-content">
+        <div th:utext="#{address.content}">Oikaisuvaatimus toimitetaan joko....</div>
+    </div>
+</th:block>
+
+</body>
+</html>

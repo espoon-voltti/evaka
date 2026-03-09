@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2021 City of Turku
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+fi.espoo.evaka.turku:
+  MessageProvider:
+    DECISION_HEADER:
+      fi: Turun varhaiskasvatukseen liittyvät päätökset
+      sv: Beslut angående Åbo stads småbarnspedagogik
+    DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen Turun kaupungin varhaiskasvatuksesta, joka on luettavissa oheisesta liitteestä.
+        
+        Huomioithan, että vastaus päätökseen tulee antaa kahden viikon kuluessa tämän päätöksen saamisesta joko sähköisesti osoitteessa evaka.turku.fi (vaatii vahvan tunnistautumisen) tai olemalla yhteydessä sen päiväkodin johtajaan, josta paikka myönnettiin.
+
+        Esiopetuspaikka osoitetaan, jolloin siihen ei vaadita erikseen hyväksyntää.
+      sv: |
+        Ni har fått ett beslut angående Åbo stads småbarnspedagogik. Beslutet finns som bilaga.
+        
+        Observera att ert svar på beslutet ska lämnas in inom två veckor från det att beslutet har mottagits, antingen elektroniskt på adressen evaka.turku.fi (kräver stark identifiering) eller genom att kontakta föreståndaren vid det daghem där den beviljade platsen finns.
+
+        Förskoleplatsen anvisas, vilket innebär att den inte kräver separat godkännande.
+    FEE_DECISION_HEADER:
+      fi: Turun varhaiskasvatukseen liittyvät päätökset
+      sv: Beslut angående Åbo stads småbarnspedagogik
+    FEE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen asiakasmaksusta Turun kaupungilta. Päätös on luettavissa oheisesta liitteestä.  
+        
+        Maksupäätös on voimassa toistaiseksi.  Jos perheen bruttotuloissa tapahtuu olennaisia (+/-10 %) muutoksia, on uusi tuloselvitys tehtävä välittömästi.
+        
+        Lisätietoja maksun määräytymisestä löytyy Turun kaupungin verkkosivuilta: Varhaiskasvatuksen asiakasmaksut.
+
+      sv: |
+        Åbo stad har skickat er ett beslut om kundavgiften inom småbarnspedagogiken. Beslutet finns som bilaga till detta meddelande.  
+        
+        Avgiftsbeslutet gäller tills vidare.  Om det sker betydande förändringar (+/-10 %) i familjens bruttoinkomst, ska en ny inkomstutredning göras omedelbart.
+        
+        För mer information om hur avgiften bestäms, besök Åbo stads webbplats: Avgifter inom småbarnspedagogiken.
+
+    VOUCHER_VALUE_DECISION_HEADER:
+      fi: Turun varhaiskasvatukseen liittyvät päätökset
+      sv: Beslut angående Åbo stads småbarnspedagogik
+    VOUCHER_VALUE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen palvelusetelin arvosta ja omavastuuosuudesta. Päätös on luettavissa oheisesta liitteestä. 
+        
+        Päätös omavastuuosuudesta on voimassa toistaiseksi.  Päiväkodin / perhepäivähoitajan perimä omavastuu voi olla suurempi, kuin mitä päätöksessä ilmoitettu, jos päiväkodin hinta on suurempi kuin palvelusetelin enimmäisarvo. Jos perheen bruttotuloissa tapahtuu olennaisia (+/-10 %) muutoksia, on uusi tuloselvitys tehtävä välittömästi. 
+        
+        Lisätietoja maksun määräytymisestä löytyy Turun kaupungin verkkosivuilta: Varhaiskasvatuksen asiakasmaksut.
+      sv: |
+        Ni har fått ett beslut om värdet och självriskandelen för en servicesedel inom småbarnspedagogiken. Beslutet finns som bilaga till detta meddelande.
+  
+        Beslutet om självriskandelen gäller tills vidare.  Om daghemmets avgift är större än servicesedelns maximivärde, kan självriskandelen som daghemmet eller familjedagvårdaren tar ut vara vara högre än det belopp som anges i beslutet. Om det sker betydande förändringar (+/-10 %) i familjens bruttoinkomst, ska en ny inkomstutredning göras omedelbart.
+
+        För mer information om hur avgiften bestäms, besök Åbo stads webbplats: Avgifter inom småbarnspedagogiken.
+
+    ASSISTANCE_NEED_DECISION_HEADER:
+      fi: Turun varhaiskasvatukseen liittyvät päätökset
+      sv: Beslut angående Åbo stads småbarnspedagogik
+    ASSISTANCE_NEED_DECISION_CONTENT:
+      fi: |
+        Lapsellenne on tehty päätös. Voit katsella päätöstä eVakassa.
+        
+        Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.
+      sv: |
+        Ditt barn har fått ett nytt beslut. Du kan läsa beslutet i eVaka.
+
+        Eftersom ni har tagit Suomi.fi-tjänsten i bruk kan ni bekanta er med beslutet via bilagorna nedan.

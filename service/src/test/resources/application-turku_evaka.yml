@@ -1,0 +1,78 @@
+# SPDX-FileCopyrightText: 2021 City of Turku
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# see AbstractIntegrationTest for dynamic properties
+evaka:
+  aws:
+    region: eu-west-1
+  bucket:
+    data: evakaturku-data-it
+    attachments: evakaturku-attachments-it
+    decisions: evakaturku-daycaredecisions-it
+    fee_decisions: evakaturku-paymentdecisions-it
+    voucher_value_decisions: evakaturku-vouchervaluedecisions-it
+  database:
+    url: jdbc:postgresql://localhost:5432/evaka_it
+    username: evaka_it
+    password: evaka_it
+    flyway:
+      username: evaka_it
+      password: evaka_it
+      locations: db/migration,db/data/turku
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_it_fi
+      sv: evaka_it_sv
+  frontend:
+    base_url:
+      fi: http://localhost:${server.port}
+      sv: http://localhost:${server.port}
+  integration:
+    sfi:
+      enabled: false
+    dvv_modifications:
+      url: url
+      user_id: user
+      password: pass
+      xroad_client_id: evakaturku
+      product_code: evakaturku
+    koski:
+      enabled: false
+      url: url
+      source_system: evakaturku
+      user: user
+      secret: pass
+    varda:
+      url: url
+      source_system: evakaturku
+      basic_auth: dXNlcjpwYXNz # user:pass
+    vtj:
+      enabled: false
+      username: user
+      password: pass
+      xroad:
+        address: address
+  local_s3:
+    url: "https://localhost:${EVAKA_S3_PORT:9876}"
+evakaturku:
+  sapInvoicing:
+    username: user
+    password: pass
+    address: address
+    path: path
+  sapPayments:
+    username: user
+    password: pass
+    address: address
+    path: path
+  bucket:
+    export: evakaturku-export-it
+  dwExport:
+    prefix: reports
+    sftp:
+      username: user
+      password: pass
+      address: address
+      path: path

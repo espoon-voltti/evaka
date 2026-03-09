@@ -1,0 +1,140 @@
+<!--
+SPDX-FileCopyrightText: 2021 City of Turku
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{shared/common.html :: css}"></style>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{ shared/common :: feeDecisionHeader}"></header>
+<footer th:replace="~{ shared/common :: footer}"></footer>
+
+<div class="page first-page">
+
+    <div class="address">
+        <div th:text="${headFullName}"></div>
+        <div th:if="${isElementaryFamily}" th:text="${partnerFullName}"></div>
+    </div>
+
+    <h1 th:if="${isReliefDecision}" th:text="#{text.relief.title}"></h1>
+    <h1 th:unless="${isReliefDecision}" th:text="#{text.title}"></h1>
+
+    <p th:if="${decisionType == 'RELIEF_ACCEPTED'}" th:text="#{text.relief.accepted}"></p>
+    <p th:if="${decisionType == 'RELIEF_PARTLY_ACCEPTED'}" th:text="#{text.relief.partlyAccepted}"></p>
+    <p th:if="${decisionType == 'RELIEF_REJECTED'}" th:text="#{text.relief.rejected}"></p>
+
+    <p th:if="${isReliefDecision}"
+       th:utext="${not #strings.isEmpty(validTo)} ? #{text.relief.decision_retroactive(${totalFee}, ${validFrom}, ${validTo})} : #{text.relief.decision(${totalFee}, ${validFrom})}"></p>
+    <p th:unless="${isReliefDecision}"
+       th:utext="${not #strings.isEmpty(validTo)} ? #{text.decision_retroactive(${totalFee}, ${validFrom}, ${validTo})} : #{text.decision(${totalFee}, ${validFrom})}"></p>
+
+    <tbody th:each="part: ${parts}">
+    <div>
+        <span th:text="${part.childName}"></span>
+        <span th:text="${part.serviceNeedDescription}"></span>
+        <span th:text="${part.feeFormatted}"></span>
+    </div>
+    <tr th:each="alteration: ${part.feeAlterations}">
+        <td>
+            <th:block th:switch="${alteration.type.name}">
+                <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
+                <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
+                <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
+            </th:block>
+            <span>
+                <th:block th:text="${alteration.amount}"/><th:block th:text="${alteration.isAbsolute}? '€' : '%'"/>
+            </span>
+        </td>
+        <td class="text-right" th:text="${alteration.effectFormatted}"></td>
+    </tr>
+    <tr>
+        <td th:text="#{text.table.finalFee}"></td>
+        <td class="text-right" th:text="${part.finalFeeFormatted}"></td>
+    </tr>
+    </tbody>
+
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td><strong class="semi" th:text="#{text.table.combined}"></strong></td>
+            <td class="text-right"><strong class="semi" th:text="${totalFee}"></strong></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2 th:text="#{text.table.intro}"></h2>
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td th:text="${headFullName}"></td>
+            <td class="text-right" th:switch="${headIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{text.income.max_fee_accepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{text.income.incomplete}"></span>
+                <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{text.income.not_available}"></span>
+            </td>
+        </tr>
+        <tr th:if="${hasPartner}">
+            <td th:text="${partnerFullName}"></td>
+            <td class="text-right" th:switch="${partnerIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{text.income.max_fee_accepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{text.income.incomplete}"></span>
+                <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{text.income.not_available}"></span>
+            </td>
+        </tr>
+        </tbody>
+        <tbody th:if="${showTotalIncome}">
+        <tr>
+            <td><strong class="semi" th:text="#{decision.combined}"></strong></td>
+            <td class="text-right" th:text="${totalIncome}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="legal-content">
+        <p th:text="#{text.legal.p1}"></p>
+        <p th:text="#{text.legal.p2}"></p>
+        <span th:text="#{text.reference}"></span>
+        <span><a th:href="#{text.referenceUrl}" th:text="#{text.referenceUrlText}"></a></span>
+        <span th:text="#{text.reference.p2}"></span>
+        <p th:text="#{text.reference.p3}"></p>
+    </div>
+
+
+
+</div>
+
+<div class="page last-page">
+
+    <div class="decision-details-container">
+        <div th:utext="#{decision.jurisdiction}"></div>
+        <p>
+            <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
+            <span th:text="${approvedAt}"></span>
+        </p>
+        <div>
+            <span th:text="#{decision.approver.prefix}">Päätöksentekijä: ></span>
+            <span th:text="${approverFirstName}"></span>
+            <span th:text="${approverLastName}"></span>
+        </div>
+        <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu sähköisesti)</div>
+        <div th:utext="#{decision.approver.details}"></div>
+    </div>
+
+    <div th:utext="#{decision.legalInstructions}"></div>
+    <div th:replace="~{ shared/daycare-correction :: fee-decision-correction}"></div>
+</div>
+
+
+</body>
+</html>

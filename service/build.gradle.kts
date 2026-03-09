@@ -112,6 +112,7 @@ dependencies {
     implementation("software.amazon.awssdk:ssm")
     implementation("software.amazon.awssdk:sts")
     implementation("software.amazon.awssdk:ses")
+    implementation("software.amazon.awssdk:http-auth-aws-crt")
 
     // Voltti
     implementation(project(":service-lib"))
@@ -140,6 +141,7 @@ dependencies {
     implementation("org.apache.commons:commons-imaging")
     implementation("org.jsoup:jsoup")
     implementation("org.apache.commons:commons-csv")
+    implementation("org.unbescape:unbescape:1.1.6.RELEASE")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -153,6 +155,8 @@ dependencies {
     testImplementation("org.springframework.ws:spring-ws-test")
     testImplementation("com.networknt:json-schema-validator")
     testImplementation("com.squareup.okhttp3:mockwebserver")
+    testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
+    testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.0.8")
 
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")

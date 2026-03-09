@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ORDERS05>
+    <IDOC BEGIN="1">
+        <EDI_DC40 SEGMENT="1">
+            <TABNAM>EDI_DC40</TABNAM>
+            <DIRECT>2</DIRECT>
+            <IDOCTYP>ORDERS05</IDOCTYP>
+            <MESTYP>ORDERS</MESTYP>
+            <SNDPOR></SNDPOR>
+            <SNDPRT>LS</SNDPRT>
+            <SNDPRN>VAK_1002</SNDPRN>
+            <RCVPOR></RCVPOR>
+            <RCVPRT></RCVPRT>
+            <RCVPRN></RCVPRN>
+        </EDI_DC40>
+        <E1EDK01 SEGMENT="1">
+            <ZTERM></ZTERM>
+            <AUGRU></AUGRU>
+        </E1EDK01>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>006</QUALF>
+            <ORGID>2E</ORGID>
+        </E1EDK14>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>007</QUALF>
+            <ORGID>22</ORGID>
+        </E1EDK14>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>008</QUALF>
+            <ORGID>2100</ORGID>
+        </E1EDK14>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>012</QUALF>
+            <ORGID>ZMT</ORGID>
+        </E1EDK14>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>016</QUALF>
+            <ORGID>A010</ORGID>
+        </E1EDK14>
+        <E1EDK14 SEGMENT="1">
+            <QUALF>019</QUALF>
+            <ORGID>VAK</ORGID>
+        </E1EDK14>
+        <E1EDK03 SEGMENT="1">
+            <IDDAT>016</IDDAT>
+            <DATUM>20210204</DATUM>
+        </E1EDK03>
+        <E1EDK03 SEGMENT="1">
+            <IDDAT>024</IDDAT>
+            <DATUM>20210204</DATUM>
+        </E1EDK03>
+        <E1EDKA1 SEGMENT="1">
+            <PARVW>AG</PARVW>
+            <PARTN>310382-956D</PARTN>
+            <NAME1>Paavola-Mäkinen Kirsi Marjatta Susa</NAME1>
+            <NAME2>nna Kirsi Marjatta Susanna Kirsi Ma</NAME2>
+            <STRAS>Meikäläisenkuja Teikäläisenkuja Hei</STRAS>
+            <ORT01>TURKU</ORT01>
+            <PSTLZ>20100</PSTLZ>
+            <LAND1>FI</LAND1>
+        </E1EDKA1>
+        <E1EDKA1 SEGMENT="1">
+            <PARVW>RE</PARVW>
+            <PARTN>310382-956D</PARTN>
+            <NAME1>Paavola-Mäkinen Kirsi Marjatta Susa</NAME1>
+            <NAME2>nna Kirsi Marjatta Susanna Kirsi Ma</NAME2>
+            <STRAS>Meikäläisenkuja Teikäläisenkuja Hei</STRAS>
+            <ORT01>TURKU</ORT01>
+            <PSTLZ>20100</PSTLZ>
+            <LAND1>FI</LAND1>
+        </E1EDKA1>
+        <E1EDKA1 SEGMENT="1">
+            <PARVW>RG</PARVW>
+            <PARTN>310382-956D</PARTN>
+            <NAME1>Paavola-Mäkinen Kirsi Marjatta Susa</NAME1>
+            <NAME2>nna Kirsi Marjatta Susanna Kirsi Ma</NAME2>
+            <STRAS>Meikäläisenkuja Teikäläisenkuja Hei</STRAS>
+            <ORT01>TURKU</ORT01>
+            <PSTLZ>20100</PSTLZ>
+            <LAND1>FI</LAND1>
+        </E1EDKA1>
+        <E1EDKA1 SEGMENT="1">
+            <PARVW>WE</PARVW>
+            <PARTN>310382-956D</PARTN>
+            <NAME1>Paavola-Mäkinen Kirsi Marjatta Susa</NAME1>
+            <NAME2>nna Kirsi Marjatta Susanna Kirsi Ma</NAME2>
+            <STRAS>Meikäläisenkuja Teikäläisenkuja Hei</STRAS>
+            <ORT01>TURKU</ORT01>
+            <PSTLZ>20100</PSTLZ>
+            <LAND1>FI</LAND1>
+        </E1EDKA1>
+        <E1EDKA1 SEGMENT="1">
+            <PARVW>Y1</PARVW>
+            <PARTN>310384-956D</PARTN>
+            <NAME1>Meikäläinen-Mäkinen Jorma Pertti Ol</NAME1>
+            <NAME2>avi Jorma Pertti Olavi Jorma Pertti</NAME2>
+            <STRAS>Meikäläisenkuja Teikäläisenkuja Hei</STRAS>
+            <ORT01>TURKU</ORT01>
+            <PSTLZ>20100</PSTLZ>
+            <LAND1>FI</LAND1>
+        </E1EDKA1>
+        <E1EDK02 SEGMENT="1">
+            <QUALF>001</QUALF>
+            <BELNR>2021A01012345</BELNR>
+        </E1EDK02>
+        <E1EDKT1 SEGMENT="1">
+            <TDID>Z002</TDID>
+            <E1EDKT2 SEGMENT="1">
+                <TDLINE>Lisätietoja laskusta varhaiskasvatusmaksut@turku.fi/ 02-2625609</TDLINE>
+                <TDFORMAT>*</TDFORMAT>
+            </E1EDKT2>
+        </E1EDKT1>
+        <E1EDP01 SEGMENT="1">
+            <POSEX>000010</POSEX>
+            <MENGE>1.000</MENGE>
+            <WERKS>102S</WERKS>
+            <E1EDP02 SEGMENT="1">
+                <QUALF>048</QUALF>
+                <ZEILE>000010</ZEILE>
+                <BSARK>0000112627</BSARK>
+            </E1EDP02>
+            <E1EDP03 SEGMENT="1">
+                <IDDAT>002</IDDAT>
+                <DATUM>20210204</DATUM>
+            </E1EDP03>
+            <E1EDP05 SEGMENT="1">
+                <ALCKZ>+</ALCKZ>
+                <KSCHL>ZPR0</KSCHL>
+                <KRATE>243.00</KRATE>
+            </E1EDP05>
+            <E1EDP19 SEGMENT="1">
+                <QUALF>002</QUALF>
+                <IDTNR>000000000000007246</IDTNR>
+            </E1EDP19>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ01</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Satunnainen päiväkoti 1</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ02</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Matti Meikäläinen</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ03</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>01.01.2021-31.01.2021</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+        </E1EDP01>
+        <E1EDP01 SEGMENT="1">
+            <POSEX>000020</POSEX>
+            <MENGE>1.000</MENGE>
+            <WERKS>102S</WERKS>
+            <E1EDP02 SEGMENT="1">
+                <QUALF>048</QUALF>
+                <ZEILE>000020</ZEILE>
+                <BSARK>0000000000</BSARK>
+            </E1EDP02>
+            <E1EDP03 SEGMENT="1">
+                <IDDAT>002</IDDAT>
+                <DATUM>20210204</DATUM>
+            </E1EDP03>
+            <E1EDP05 SEGMENT="1">
+                <ALCKZ>+</ALCKZ>
+                <KSCHL>ZPR0</KSCHL>
+                <KRATE>482.00</KRATE>
+            </E1EDP05>
+            <E1EDP19 SEGMENT="1">
+                <QUALF>002</QUALF>
+                <IDTNR>000000000000007251</IDTNR>
+            </E1EDP19>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ01</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Satunnainen päiväkoti 2</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ02</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Maiju Meikäläinen</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ03</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>01.01.2021-31.01.2021</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+        </E1EDP01>
+        <E1EDP01 SEGMENT="1">
+            <POSEX>000030</POSEX>
+            <MENGE>1.000</MENGE>
+            <WERKS>102S</WERKS>
+            <E1EDP02 SEGMENT="1">
+                <QUALF>048</QUALF>
+                <ZEILE>000030</ZEILE>
+                <BSARK>0000002627</BSARK>
+            </E1EDP02>
+            <E1EDP03 SEGMENT="1">
+                <IDDAT>002</IDDAT>
+                <DATUM>20210204</DATUM>
+            </E1EDP03>
+            <E1EDP05 SEGMENT="1">
+                <ALCKZ>+</ALCKZ>
+                <KSCHL>ZPR0</KSCHL>
+                <KRATE>250.00</KRATE>
+            </E1EDP05>
+            <E1EDP19 SEGMENT="1">
+                <QUALF>002</QUALF>
+                <IDTNR>000000000000007246</IDTNR>
+            </E1EDP19>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ01</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Satunnainen päiväkoti 3</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ02</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Matti Meikäläinen</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ03</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>01.01.2021-31.01.2021</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+        </E1EDP01>
+        <E1EDP01 SEGMENT="1">
+            <POSEX>000040</POSEX>
+            <MENGE>1.000</MENGE>
+            <WERKS>102S</WERKS>
+            <E1EDP02 SEGMENT="1">
+                <QUALF>048</QUALF>
+                <ZEILE>000040</ZEILE>
+                <BSARK>0000002627</BSARK>
+            </E1EDP02>
+            <E1EDP03 SEGMENT="1">
+                <IDDAT>002</IDDAT>
+                <DATUM>20210204</DATUM>
+            </E1EDP03>
+            <E1EDP05 SEGMENT="1">
+                <ALCKZ>+</ALCKZ>
+                <KSCHL>ZPR0</KSCHL>
+                <KRATE>25.00-</KRATE>
+            </E1EDP05>
+            <E1EDP19 SEGMENT="1">
+                <QUALF>002</QUALF>
+                <IDTNR>000000000000007246</IDTNR>
+            </E1EDP19>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ01</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Satunnainen päiväkoti 3</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ02</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>Matti Meikäläinen</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+            <E1EDPT1 SEGMENT="1">
+                <TDID>ZZ03</TDID>
+                <E1EDPT2 SEGMENT="1">
+                    <TDLINE>01.01.2021-31.01.2021</TDLINE>
+                    <TDFORMAT>*</TDFORMAT>
+                </E1EDPT2>
+            </E1EDPT1>
+        </E1EDP01>
+    </IDOC>
+</ORDERS05>
