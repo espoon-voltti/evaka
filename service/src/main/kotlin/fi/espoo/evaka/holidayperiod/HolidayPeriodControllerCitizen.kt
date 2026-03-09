@@ -6,6 +6,8 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.CitizenCalendarEnv
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
@@ -17,10 +19,12 @@ import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getChildIdsWithPlacementInRange
 import fi.espoo.evaka.placement.getConsecutivePlacementRanges
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
+import fi.espoo.evaka.reservations.getPlannedAbsenceEnabledRanges
 import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -57,6 +61,8 @@ data class ActiveQuestionnaire(
 class HolidayPeriodControllerCitizen(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
+    private val env: EvakaEnv,
 ) {
     @GetMapping
     fun getHolidayPeriods(
@@ -104,7 +110,13 @@ class HolidayPeriodControllerCitizen(
                         } ?: return@read listOf()
 
                     val eligibleChildren =
-                        getEligibleChildren(tx, user, clock.today(), activeQuestionnaire)
+                        getEligibleChildren(
+                            tx,
+                            user,
+                            clock.today(),
+                            activeQuestionnaire,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
                     if (eligibleChildren.isEmpty()) {
                         listOf()
                     } else {
@@ -231,6 +243,19 @@ class HolidayPeriodControllerCitizen(
                     } ?: throw BadRequest("Questionnaire not found")
                 validate(questionnaire, tx, today, user, body.openRanges)
 
+                val allRanges = body.openRanges.values.flatten()
+                val plannedAbsenceEnabledRanges =
+                    if (allRanges.isNotEmpty()) {
+                        tx.getPlannedAbsenceEnabledRanges(
+                            childIds,
+                            FiniteDateRange(
+                                allRanges.minOf { it.start },
+                                allRanges.maxOf { it.end },
+                            ),
+                            env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                        )
+                    } else emptyMap()
+
                 val absences =
                     body.openRanges.entries.flatMap { (childId, ranges) ->
                         val placements =
@@ -268,11 +293,23 @@ class HolidayPeriodControllerCitizen(
                                         holidays,
                                     )
                                 }
-                                .map {
+                                .map { date ->
+                                    val plannedAbsenceEnabled =
+                                        plannedAbsenceEnabledRanges[childId]?.includes(date)
+                                            ?: false
+                                    val billableType =
+                                        if (
+                                            absenceType == AbsenceType.OTHER_ABSENCE &&
+                                                plannedAbsenceEnabled
+                                        ) {
+                                            AbsenceType.PLANNED_ABSENCE
+                                        } else {
+                                            absenceType
+                                        }
                                     FullDayAbsenseUpsert(
                                         childId = childId,
-                                        date = it,
-                                        absenceTypeBillable = absenceType,
+                                        date = date,
+                                        absenceTypeBillable = billableType,
                                         absenceTypeNonbillable = absenceType,
                                         questionnaireId = questionnaire.id,
                                     )
@@ -299,7 +336,14 @@ class HolidayPeriodControllerCitizen(
         user: AuthenticatedUser.Citizen,
         data: Map<ChildId, List<FiniteDateRange>?>,
     ) {
-        val eligibleChildren = getEligibleChildren(tx, user, today, questionnaire)
+        val eligibleChildren =
+            getEligibleChildren(
+                tx,
+                user,
+                today,
+                questionnaire,
+                citizenCalendarEnv.calendarOpenBeforePlacementDays,
+            )
         val invalid =
             data
                 .mapNotNull { (childId, periods) ->
@@ -327,6 +371,7 @@ class HolidayPeriodControllerCitizen(
         user: AuthenticatedUser.Citizen,
         date: LocalDate,
         questionnaire: HolidayQuestionnaire,
+        calendarOpenBeforePlacementDays: Int,
     ): Map<ChildId, List<FiniteDateRange>> {
         val continuousPlacementPeriod = questionnaire.conditions.continuousPlacement
         val eligibleChildren =
@@ -364,9 +409,26 @@ class HolidayPeriodControllerCitizen(
             }
 
             is HolidayQuestionnaire.OpenRangesQuestionnaire -> {
+                val placementRangesByChild =
+                    tx.getConsecutivePlacementRanges(
+                        eligibleChildren,
+                        PlacementType.invoiced,
+                        questionnaire.period,
+                    )
+                val childrenWithPlacementInWindow =
+                    tx.getChildIdsWithPlacementInRange(
+                        eligibleChildren,
+                        FiniteDateRange(
+                            date,
+                            date.plusDays(calendarOpenBeforePlacementDays.toLong()),
+                        ),
+                    )
                 eligibleChildren
+                    .filter { childId ->
+                        placementRangesByChild[childId]?.isNotEmpty() == true &&
+                            childId in childrenWithPlacementInWindow
+                    }
                     .associateWith { listOf(questionnaire.period) }
-                    .filterValues { it.isNotEmpty() }
             }
         }
     }
