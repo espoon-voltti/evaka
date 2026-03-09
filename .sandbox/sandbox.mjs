@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { execFileSync, spawn } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { userInfo } from "node:os";
 import { parseArgs } from "node:util";
@@ -25,6 +25,7 @@ function loadConfig() {
     mounts: raw.mounts ?? [],
     copies: raw.copies ?? [],
     ports: raw.ports ?? [],
+    notify: raw.notify ?? null,
   };
 }
 
@@ -93,6 +94,48 @@ function ancestorsUnderHome(path) {
     dir = dirname(dir);
   }
   return dirs;
+}
+
+const notifyPort = 39813;
+const notifyPidFile = resolve(import.meta.dirname, "notify.pid");
+
+function listenerRunning() {
+  if (!existsSync(notifyPidFile)) return false;
+  try {
+    process.kill(parseInt(readFileSync(notifyPidFile, "utf-8")), 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function ensureListener(notifyCommand) {
+  if (!notifyCommand || listenerRunning()) return;
+  const script = `
+    const net = require("net");
+    const { execFile } = require("child_process");
+    net.createServer((conn) => {
+      conn.on("data", () => {
+        execFile("bash", ["-c", ${JSON.stringify(notifyCommand)}]);
+      });
+      conn.resume();
+    }).listen(${notifyPort}, "0.0.0.0");
+  `;
+  const child = spawn(process.execPath, ["-e", script], {
+    detached: true,
+    stdio: "ignore",
+  });
+  child.unref();
+  writeFileSync(notifyPidFile, String(child.pid));
+}
+
+function stopListener() {
+  if (existsSync(notifyPidFile)) {
+    try {
+      process.kill(parseInt(readFileSync(notifyPidFile, "utf-8")), "SIGTERM");
+    } catch {}
+    try { unlinkSync(notifyPidFile); } catch {}
+  }
 }
 
 function docker(args, stdio = "inherit") {
@@ -249,6 +292,7 @@ function ensureRunning() {
 
 function exec(cmd) {
   ensureRunning();
+  ensureListener(loadConfig().notify);
   const command = cmd.length > 0 ? cmd : ["bash"];
   const ttyFlag = process.stdin.isTTY ? "-it" : "-i";
   const envArgs = [];
@@ -257,7 +301,11 @@ function exec(cmd) {
       envArgs.push("-e", `${name}=${process.env[name]}`);
     }
   }
-  docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
+  try {
+    docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
+  } catch (e) {
+    process.exit(e.status ?? 1);
+  }
 }
 
 function recreate(options) {
@@ -294,10 +342,13 @@ if (values.help || command === undefined) {
 } else if (command === "exec") {
   exec(rest);
 } else if (command === "stop") {
+  stopListener();
   docker(["stop", containerName]);
 } else if (command === "rm") {
+  stopListener();
   docker(["rm", containerName]);
 } else if (command === "recreate") {
+  stopListener();
   recreate({ noCache: values["no-cache"] });
 } else {
   console.error(`Unknown command: ${command}\nRun 'sandbox --help' for usage.`);
