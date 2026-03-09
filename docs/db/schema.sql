@@ -2209,7 +2209,7 @@ CREATE TABLE public.assistance_need_voucher_coefficient (
     updated_at timestamp with time zone DEFAULT now() CONSTRAINT assistance_need_voucher_coefficient_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     validity_period daterange NOT NULL,
-    coefficient numeric(4,2) NOT NULL,
+    coefficient numeric(6,4) NOT NULL,
     modified_at timestamp with time zone NOT NULL,
     modified_by uuid NOT NULL,
     CONSTRAINT check_validity_period CHECK ((NOT (lower_inf(validity_period) OR upper_inf(validity_period))))
@@ -4157,7 +4157,7 @@ CREATE TABLE public.voucher_value_decision (
     service_need_voucher_value_description_fi text,
     service_need_voucher_value_description_sv text,
     updated timestamp with time zone DEFAULT now() NOT NULL,
-    assistance_need_coefficient numeric(4,2) CONSTRAINT voucher_value_decision_capacity_factor_not_null NOT NULL,
+    assistance_need_coefficient numeric(6,4) CONSTRAINT voucher_value_decision_capacity_factor_not_null NOT NULL,
     decision_type public.voucher_value_decision_type DEFAULT 'NORMAL'::public.voucher_value_decision_type NOT NULL,
     annulled_at timestamp with time zone,
     validity_updated_at timestamp with time zone,
