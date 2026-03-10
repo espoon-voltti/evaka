@@ -368,9 +368,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
+                ChildAudit.ApplicationUpdate.log(
+                    childId = AuditId(applicationDetails.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
                 )
             }
     }
@@ -403,9 +403,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
+                ChildAudit.ApplicationUpdate.log(
+                    childId = AuditId(applicationDetails.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
                 )
             }
     }
