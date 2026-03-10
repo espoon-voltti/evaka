@@ -623,9 +623,10 @@ class ApplicationStateService(
             }
         }
 
-        Audit.ApplicationCancel.log(
+        ChildAudit.ApplicationCancel.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
