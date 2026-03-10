@@ -741,9 +741,11 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         val decisionIds = finalizeDecisions(tx, user, clock, application, config)
-        Audit.ApplicationSendDecisionsWithoutProposal.log(
+        ChildAudit.ApplicationSendDecisionsWithoutProposal.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
             objectId = AuditId(decisionIds),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
