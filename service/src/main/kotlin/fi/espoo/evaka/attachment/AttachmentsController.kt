@@ -13,6 +13,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.getIncomePersonId
+import fi.espoo.evaka.getIncomeStatementPersonId
 import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
 import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getInvoice
@@ -129,31 +130,37 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
+                val personId =
+                    dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.IncomeStatement.UPLOAD_ATTACHMENT,
+                            incomeStatementId,
+                        )
+                        tx.getIncomeStatementPersonId(incomeStatementId)
+                    }
+                Pair(
+                    handleFileUpload(
+                        dbc,
                         user,
                         clock,
-                        Action.IncomeStatement.UPLOAD_ATTACHMENT,
-                        incomeStatementId,
-                    )
-                }
-                handleFileUpload(
-                    dbc,
-                    user,
-                    clock,
-                    AttachmentParent.IncomeStatement(incomeStatementId),
-                    file,
-                    attachmentType,
+                        AttachmentParent.IncomeStatement(incomeStatementId),
+                        file,
+                        attachmentType,
+                    ),
+                    personId,
                 )
             }
-            .also { attachmentId ->
+            .also { (attachmentId, personId) ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = AuditId(incomeStatementId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size),
+                    meta = mapOf("size" to file.size, "personId" to personId),
                 )
             }
+            .first
     }
 
     @PostMapping(
