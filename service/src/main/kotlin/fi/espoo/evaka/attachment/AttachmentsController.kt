@@ -6,10 +6,12 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationAttachmentType
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -72,33 +74,44 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
+                val personIds =
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Application.UPLOAD_ATTACHMENT,
+                            applicationId,
+                        )
+                        it.getApplicationPersonIds(applicationId)
+                    }
+                val attachmentId =
+                    handleFileUpload(
+                        dbc,
                         user,
                         clock,
-                        Action.Application.UPLOAD_ATTACHMENT,
-                        applicationId,
-                    )
-                }
-                handleFileUpload(
-                    dbc,
-                    user,
-                    clock,
-                    AttachmentParent.Application(applicationId),
-                    file,
-                    type,
-                ) { tx ->
-                    stateService.reCalculateDueDate(tx, clock.today(), applicationId)
-                }
+                        AttachmentParent.Application(applicationId),
+                        file,
+                        type,
+                    ) { tx ->
+                        stateService.reCalculateDueDate(tx, clock.today(), applicationId)
+                    }
+                Pair(attachmentId, personIds)
             }
-            .also { attachmentId ->
-                Audit.AttachmentsUploadForApplication.log(
+            .also { (attachmentId, personIds) ->
+                ChildAudit.AttachmentsUploadForApplication.log(
+                    childId = AuditId(personIds.childId),
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("type" to type.name, "size" to file.size),
+                    meta =
+                        mapOf(
+                            "personId" to personIds.guardianId,
+                            "type" to type.name,
+                            "size" to file.size,
+                        ),
                 )
             }
+            .first
     }
 
     @PostMapping(
@@ -321,27 +334,33 @@ class AttachmentsController(
     ): AttachmentId {
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Citizen.Application.UPLOAD_ATTACHMENT,
-                        applicationId,
-                    )
-                }
+                val personIds =
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Citizen.Application.UPLOAD_ATTACHMENT,
+                            applicationId,
+                        )
+                        it.getApplicationPersonIds(applicationId)
+                    }
 
-                handleFileUpload(dbc, user, clock, attachTo, file, type) { tx ->
-                    stateService.reCalculateDueDate(tx, clock.today(), applicationId)
-                }
+                val attachmentId =
+                    handleFileUpload(dbc, user, clock, attachTo, file, type) { tx ->
+                        stateService.reCalculateDueDate(tx, clock.today(), applicationId)
+                    }
+                Pair(attachmentId, personIds)
             }
-            .also { attachmentId ->
-                Audit.AttachmentsUploadForApplication.log(
+            .also { (attachmentId, personIds) ->
+                ChildAudit.AttachmentsUploadForApplication.log(
+                    childId = AuditId(personIds.childId),
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("type" to type.name, "size" to file.size),
                 )
             }
+            .first
     }
 
     @PostMapping(
