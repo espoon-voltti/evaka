@@ -562,7 +562,11 @@ class ApplicationStateService(
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.deleteApplicationPlacementDraftIfExists(applicationId)
 
-        Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToSent.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun cancelApplication(
