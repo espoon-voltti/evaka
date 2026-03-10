@@ -46,7 +46,13 @@ FROM base
 
 ENV NODE_ENV=production
 
-RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password
+RUN addgroup --gid 1001 evaka \
+ && adduser --uid 1001 --gid 1001 --gecos "" -q --home /home/evaka --disabled-password evaka \
+ && mkdir -p /config \
+ && chown evaka:evaka /config \
+ && ln -s /config /home/evaka/s3 # old config path for backwards compatibility
+
+VOLUME /config
 
 COPY --from=builder /project .
 
