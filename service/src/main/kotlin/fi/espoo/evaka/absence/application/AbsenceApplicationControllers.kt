@@ -372,11 +372,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     )
                 }
             }
-            .also {
-                Audit.AbsenceApplicationPossibleRead.log(
-                    meta = mapOf("childId" to AuditId(childId))
-                )
-            }
+            .also { ChildAudit.AbsenceApplicationPossibleRead.log(childId = AuditId(childId)) }
     }
 }
 
