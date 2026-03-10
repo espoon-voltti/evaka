@@ -42,7 +42,8 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementDraftUpdateRequest,
     ): PlacementDraftUpdateResponse {
-        return db.connect { dbc ->
+        val (result, personIds) =
+            db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -61,10 +62,18 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                             userId = user.evakaUserId,
                         )
 
-                    PlacementDraftUpdateResponse(startDate)
+                    Pair(
+                        PlacementDraftUpdateResponse(startDate),
+                        tx.getApplicationPersonIds(applicationId),
+                    )
                 }
             }
-            .also { Audit.ApplicationPlacementDraftUpdate.log(targetId = AuditId(applicationId)) }
+        ChildAudit.ApplicationPlacementDraftUpdate.log(
+            childId = AuditId(personIds.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to personIds.guardianId),
+        )
+        return result
     }
 
     @DeleteMapping("/applications/{applicationId}/placement-draft")
