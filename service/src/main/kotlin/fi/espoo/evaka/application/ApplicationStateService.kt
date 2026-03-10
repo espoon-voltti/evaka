@@ -529,7 +529,11 @@ class ApplicationStateService(
             }
         }
 
-        Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationVerify.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun returnToSent(
