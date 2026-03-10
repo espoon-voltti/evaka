@@ -199,9 +199,9 @@ class AbsenceApplicationControllerEmployee(
                 }
             }
             .also {
-                Audit.AbsenceApplicationReject.log(
+                ChildAudit.AbsenceApplicationReject.log(
                     targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
+                    childId = AuditId(it.childId),
                 )
             }
     }
