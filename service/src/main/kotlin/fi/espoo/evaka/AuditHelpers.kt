@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
@@ -22,4 +23,8 @@ fun Database.Read.getIncomePersonId(id: IncomeId): PersonId =
 
 fun Database.Read.getIncomeStatementPersonId(id: IncomeStatementId): PersonId =
     createQuery { sql("SELECT person_id FROM income_statement WHERE id = ${bind(id)}") }
+        .exactlyOne()
+
+fun Database.Read.getPedagogicalDocumentChildId(id: PedagogicalDocumentId): ChildId =
+    createQuery { sql("SELECT child_id FROM pedagogical_document WHERE id = ${bind(id)}") }
         .exactlyOne()

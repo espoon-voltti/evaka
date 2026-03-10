@@ -14,6 +14,7 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.getIncomePersonId
 import fi.espoo.evaka.getIncomeStatementPersonId
+import fi.espoo.evaka.getPedagogicalDocumentChildId
 import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
 import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getInvoice
@@ -307,35 +308,42 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
+                val childId =
+                    dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.PedagogicalDocument.CREATE_ATTACHMENT,
+                            documentId,
+                        )
+                        tx.getPedagogicalDocumentChildId(documentId)
+                    }
+                Pair(
+                    handleFileUpload(
+                        dbc,
                         user,
                         clock,
-                        Action.PedagogicalDocument.CREATE_ATTACHMENT,
-                        documentId,
-                    )
-                }
-                handleFileUpload(
-                    dbc,
-                    user,
-                    clock,
-                    AttachmentParent.PedagogicalDocument(documentId),
-                    file,
-                ) { tx ->
-                    pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
-                        tx,
-                        documentId,
-                    )
-                }
+                        AttachmentParent.PedagogicalDocument(documentId),
+                        file,
+                    ) { tx ->
+                        pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
+                            tx,
+                            documentId,
+                        )
+                    },
+                    childId,
+                )
             }
-            .also { attachmentId ->
-                Audit.AttachmentsUploadForPedagogicalDocument.log(
+            .also { (attachmentId, childId) ->
+                ChildAudit.AttachmentsUploadForPedagogicalDocument.log(
+                    childId = AuditId(childId),
                     targetId = AuditId(documentId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )
             }
+            .first
     }
 
     @PostMapping(
