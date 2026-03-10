@@ -371,33 +371,39 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
     ) {
-        val deletedId =
+        val result =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(tx, user, clock, Action.AssistanceFactor.DELETE, id)
                         .let {
                             if (it.isPermitted()) {
-                                tx.deleteAssistanceFactor(id)?.also { deleted ->
+                                val deleted = tx.deleteAssistanceFactor(id)
+                                deleted?.also {
                                     asyncJobRunner.plan(
                                         tx,
                                         listOf(
                                             AsyncJob.GenerateFinanceDecisions.forChild(
-                                                deleted.childId,
-                                                deleted.validDuring.asDateRange(),
+                                                it.childId,
+                                                it.validDuring.asDateRange(),
                                             )
                                         ),
                                         runAt = clock.now(),
                                     )
                                 }
-                                id
+                                deleted
                             } else {
                                 null
                             }
                         }
                 }
             }
-        deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
+        result?.let {
+            ChildAudit.AssistanceFactorDelete.log(
+                childId = AuditId(it.childId),
+                targetId = AuditId(id),
+            )
+        }
     }
 
     @PostMapping("/employee/children/{child}/daycare-assistances")
