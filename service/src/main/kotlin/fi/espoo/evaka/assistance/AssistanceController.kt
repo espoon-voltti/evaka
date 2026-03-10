@@ -354,9 +354,15 @@ class AssistanceController(
                             )
                         }
                     }
+                    original?.childId
                 }
             }
-            .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
+            .also { childId ->
+                ChildAudit.AssistanceFactorUpdate.log(
+                    childId = childId?.let(AuditId::invoke) ?: AuditId(id),
+                    targetId = AuditId(id),
+                )
+            }
 
     @DeleteMapping("/employee/assistance-factors/{id}")
     fun deleteAssistanceFactor(
