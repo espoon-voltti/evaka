@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -337,29 +338,27 @@ class AssistanceController(
                         Action.AssistanceFactor.UPDATE,
                         id,
                     )
-                    val original = tx.getAssistanceFactor(id)
+                    val original = tx.getAssistanceFactor(id) ?: throw NotFound()
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
-                    if (original != null) {
-                        val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
-                        affectedRanges.spanningRange()?.let {
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        original.childId,
-                                        it.asDateRange(),
-                                    )
-                                ),
-                                runAt = clock.now(),
-                            )
-                        }
+                    val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
+                    affectedRanges.spanningRange()?.let {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    original.childId,
+                                    it.asDateRange(),
+                                )
+                            ),
+                            runAt = clock.now(),
+                        )
                     }
-                    original?.childId
+                    original.childId
                 }
             }
             .also { childId ->
                 ChildAudit.AssistanceFactorUpdate.log(
-                    childId = childId?.let(AuditId::invoke) ?: AuditId(id),
+                    childId = AuditId(childId),
                     targetId = AuditId(id),
                 )
             }
