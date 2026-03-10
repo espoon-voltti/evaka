@@ -2557,7 +2557,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 DevDaycareGroupAcl(
                     groupId = group.id,
                     employeeId = employee.id,
-                    created = HelsinkiDateTime.of(aclCreationDate, LocalTime.of(12, 0)),
+                    createdAt = HelsinkiDateTime.of(aclCreationDate, LocalTime.of(12, 0)),
                 )
             val adult = DevPerson()
             val adultUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)

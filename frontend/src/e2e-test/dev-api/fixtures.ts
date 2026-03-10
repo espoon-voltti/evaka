@@ -535,8 +535,8 @@ export class Fixture {
           body: groupAcl.map(({ groupId, createdAt, updatedAt }) => ({
             groupId,
             employeeId: value.id,
-            created: createdAt ?? HelsinkiDateTime.now(),
-            updated: updatedAt ?? HelsinkiDateTime.now()
+            createdAt: createdAt ?? HelsinkiDateTime.now(),
+            updatedAt: updatedAt ?? HelsinkiDateTime.now()
           }))
         })
       }
