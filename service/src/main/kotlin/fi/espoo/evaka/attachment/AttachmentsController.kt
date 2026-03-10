@@ -13,6 +13,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
+import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
@@ -487,25 +488,29 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.FeeAlteration.UPLOAD_ATTACHMENT,
-                        feeAlterationId,
-                    )
-                }
+                val childId =
+                    dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.FeeAlteration.UPLOAD_ATTACHMENT,
+                            feeAlterationId,
+                        )
+                        tx.getFeeAlteration(feeAlterationId)!!.personId
+                    }
                 val attachTo = AttachmentParent.FeeAlteration(feeAlterationId)
-                handleFileUpload(dbc, user, clock, attachTo, file)
+                Pair(handleFileUpload(dbc, user, clock, attachTo, file), childId)
             }
-            .also { attachmentId ->
-                Audit.AttachmentsUploadForFeeAlteration.log(
-                    targetId = feeAlterationId.let(AuditId::invoke),
+            .also { (attachmentId, childId) ->
+                ChildAudit.AttachmentsUploadForFeeAlteration.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(feeAlterationId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size),
                 )
             }
+            .first
     }
 
     private fun checkAttachmentCount(

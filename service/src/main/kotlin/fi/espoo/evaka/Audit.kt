@@ -669,7 +669,8 @@ enum class ChildAudit(
     AssistanceFactorCreate,
     AssistanceFactorDelete,
     AssistanceFactorUpdate,
-    AttachmentsUploadForApplication;
+    AttachmentsUploadForApplication,
+    AttachmentsUploadForFeeAlteration;
 
     private val eventCode = name
 
