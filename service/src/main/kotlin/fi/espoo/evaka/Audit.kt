@@ -53,7 +53,6 @@ enum class Audit(
     AbsenceApplicationRead,
     AbsenceRead,
     AddressPageDownloadPdf,
-    ApplicationDelete,
     ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
     ApplicationReadMetadata,
@@ -669,6 +668,7 @@ enum class ChildAudit(
     ApplicationCancel,
     ApplicationConfirmDecisionsMailed,
     ApplicationCreate,
+    ApplicationDelete,
     ApplicationRead;
 
     private val eventCode = name

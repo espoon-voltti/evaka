@@ -460,9 +460,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { application ->
-                Audit.ApplicationDelete.log(
+                ChildAudit.ApplicationDelete.log(
+                    childId = AuditId(application.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(application.childId),
                 )
             }
     }
