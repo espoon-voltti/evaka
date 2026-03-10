@@ -50,7 +50,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    AbsenceApplicationCreate,
     AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
@@ -667,6 +666,7 @@ enum class ChildAudit(
     private val securityLevel: String = "low",
 ) {
     AbsenceApplicationAccept,
+    AbsenceApplicationCreate,
     ApplicationRead;
 
     private val eventCode = name

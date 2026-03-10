@@ -263,9 +263,9 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                 }
             }
             .also {
-                Audit.AbsenceApplicationCreate.log(
+                ChildAudit.AbsenceApplicationCreate.log(
                     targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
+                    childId = AuditId(it.childId),
                 )
             }
             .id
