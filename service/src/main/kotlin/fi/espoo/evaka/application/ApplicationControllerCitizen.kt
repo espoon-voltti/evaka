@@ -308,12 +308,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also {
-                Audit.ApplicationReadDuplicates.log(
-                    targetId = AuditId(user.id),
-                    objectId = AuditId(childId),
-                )
-            }
+            .also { ChildAudit.ApplicationReadDuplicates.log(childId = AuditId(childId)) }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
