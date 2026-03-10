@@ -231,6 +231,7 @@ class ApplicationControllerV2(
                 ChildAudit.ApplicationRead.log(
                     targetId = AuditId(guardianId),
                     childId = AuditId(childIds),
+                    meta = mapOf("personId" to guardianId),
                 )
             }
     }

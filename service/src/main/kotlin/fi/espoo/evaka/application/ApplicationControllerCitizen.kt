@@ -126,10 +126,7 @@ class ApplicationControllerCitizen(
             }
             .also { childApplicationList ->
                 val childIds = childApplicationList.map { it.childId }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                ChildAudit.ApplicationRead.log(childId = AuditId(childIds))
             }
     }
 
@@ -153,10 +150,7 @@ class ApplicationControllerCitizen(
             }
             .also { childList ->
                 val childIds = childList.map { it.id }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                ChildAudit.ApplicationRead.log(childId = AuditId(childIds))
             }
     }
 
