@@ -58,7 +58,6 @@ enum class Audit(
     ApplicationsReportRead,
     AssistanceActionOptionsRead,
     // AssistanceBasisOptionsRead,
-    AssistanceFactorCreate,
     AssistanceFactorUpdate,
     AssistanceFactorDelete,
     AssistanceNeedsReportRead,
@@ -669,7 +668,8 @@ enum class ChildAudit(
     ApplicationSend,
     ApplicationSendDecisionsWithoutProposal,
     ApplicationUpdate,
-    ApplicationVerify;
+    ApplicationVerify,
+    AssistanceFactorCreate;
 
     private val eventCode = name
 
