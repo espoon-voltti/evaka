@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
@@ -243,8 +244,8 @@ class AbsenceController(
                 }
             }
             .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(childId),
+                ChildAudit.AbsenceRead.log(
+                    childId = AuditId(childId),
                     meta = mapOf("year" to year, "month" to month),
                 )
             }
