@@ -715,7 +715,11 @@ class ApplicationStateService(
         tx.clearDecisionDrafts(listOf(application.id))
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingPlacement.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToWaitingPlacement.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun sendDecisionsWithoutProposal(
