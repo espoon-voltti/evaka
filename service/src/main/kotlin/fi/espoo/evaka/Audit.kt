@@ -667,6 +667,7 @@ enum class ChildAudit(
     AbsenceApplicationCreate,
     AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
+    AbsenceApplicationRead,
     ApplicationRead;
 
     private val eventCode = name

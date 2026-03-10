@@ -123,11 +123,8 @@ class AbsenceApplicationControllerEmployee(
             }
             .also {
                 Audit.AbsenceApplicationRead.log(
-                    meta =
-                        mapOfNotNullValues(
-                            "unitId" to unitId?.let { AuditId(it) },
-                            "childId" to childId?.let { AuditId(it) },
-                        )
+                    targetId = unitId?.let { AuditId(it) },
+                    meta = mapOfNotNullValues("childId" to childId?.let { AuditId(it) }),
                 )
             }
     }
@@ -303,7 +300,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     }
                 }
             }
-            .also { Audit.AbsenceApplicationRead.log(meta = mapOf("childId" to AuditId(childId))) }
+            .also { ChildAudit.AbsenceApplicationRead.log(childId = AuditId(childId)) }
     }
 
     @DeleteMapping("/{id}")
