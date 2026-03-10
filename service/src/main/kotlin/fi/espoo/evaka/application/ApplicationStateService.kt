@@ -947,7 +947,11 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION, user.evakaUserId, now)
         tx.markApplicationDecisionsSent(application.id, now)
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendNewDecisionEmail(application.id)), runAt = now)
-        Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationConfirmDecisionsMailed.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun acceptDecision(
