@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeId
@@ -21,8 +22,10 @@ fun Database.Read.getApplicationPersonIds(id: ApplicationId): ApplicationPersonI
 fun Database.Read.getIncomePersonId(id: IncomeId): PersonId =
     createQuery { sql("SELECT person_id FROM income WHERE id = ${bind(id)}") }.exactlyOne()
 
-fun Database.Read.getIncomeStatementPersonId(id: IncomeStatementId): PersonId =
-    createQuery { sql("SELECT person_id FROM income_statement WHERE id = ${bind(id)}") }
+data class IncomeStatementPersonInfo(val personId: PersonId, val type: IncomeStatementType)
+
+fun Database.Read.getIncomeStatementPersonInfo(id: IncomeStatementId): IncomeStatementPersonInfo =
+    createQuery { sql("SELECT person_id, type FROM income_statement WHERE id = ${bind(id)}") }
         .exactlyOne()
 
 fun Database.Read.getPedagogicalDocumentChildId(id: PedagogicalDocumentId): ChildId =

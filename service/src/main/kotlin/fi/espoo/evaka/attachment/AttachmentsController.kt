@@ -13,9 +13,10 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.getIncomePersonId
-import fi.espoo.evaka.getIncomeStatementPersonId
+import fi.espoo.evaka.getIncomeStatementPersonInfo
 import fi.espoo.evaka.getPedagogicalDocumentChildId
 import fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
+import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -131,7 +132,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                val personId =
+                val personInfo =
                     dbc.read { tx ->
                         accessControl.requirePermissionFor(
                             tx,
@@ -140,7 +141,7 @@ class AttachmentsController(
                             Action.IncomeStatement.UPLOAD_ATTACHMENT,
                             incomeStatementId,
                         )
-                        tx.getIncomeStatementPersonId(incomeStatementId)
+                        tx.getIncomeStatementPersonInfo(incomeStatementId)
                     }
                 Pair(
                     handleFileUpload(
@@ -151,15 +152,24 @@ class AttachmentsController(
                         file,
                         attachmentType,
                     ),
-                    personId,
+                    personInfo,
                 )
             }
-            .also { (attachmentId, personId) ->
-                Audit.AttachmentsUploadForIncomeStatement.log(
-                    targetId = AuditId(incomeStatementId),
-                    objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size, "personId" to personId),
-                )
+            .also { (attachmentId, personInfo) ->
+                if (personInfo.type == IncomeStatementType.CHILD_INCOME) {
+                    ChildAudit.AttachmentsUploadForIncomeStatement.log(
+                        childId = AuditId(personInfo.personId),
+                        targetId = AuditId(incomeStatementId),
+                        objectId = AuditId(attachmentId),
+                        meta = mapOf("size" to file.size),
+                    )
+                } else {
+                    Audit.AttachmentsUploadForIncomeStatement.log(
+                        targetId = AuditId(incomeStatementId),
+                        objectId = AuditId(attachmentId),
+                        meta = mapOf("size" to file.size, "personId" to personInfo.personId),
+                    )
+                }
             }
             .first
     }
@@ -434,25 +444,37 @@ class AttachmentsController(
         // anymore, i.e. they have been sent and marked as handled. At some point we could
         // delete all drafts that are old enough.
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
-                        incomeStatementId,
+                val personInfo =
+                    dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
+                            incomeStatementId,
+                        )
+                        tx.getIncomeStatementPersonInfo(incomeStatementId)
+                    }
+                val attachTo = AttachmentParent.IncomeStatement(incomeStatementId)
+                Pair(handleFileUpload(dbc, user, clock, attachTo, file, attachmentType), personInfo)
+            }
+            .also { (attachmentId, personInfo) ->
+                if (personInfo.type == IncomeStatementType.CHILD_INCOME) {
+                    ChildAudit.AttachmentsUploadForIncomeStatement.log(
+                        childId = AuditId(personInfo.personId),
+                        targetId = AuditId(incomeStatementId),
+                        objectId = AuditId(attachmentId),
+                        meta = mapOf("size" to file.size),
+                    )
+                } else {
+                    Audit.AttachmentsUploadForIncomeStatement.log(
+                        targetId = AuditId(incomeStatementId),
+                        objectId = AuditId(attachmentId),
+                        meta = mapOf("size" to file.size),
                     )
                 }
-                val attachTo = AttachmentParent.IncomeStatement(incomeStatementId)
-                handleFileUpload(dbc, user, clock, attachTo, file, attachmentType)
             }
-            .also { attachmentId ->
-                Audit.AttachmentsUploadForIncomeStatement.log(
-                    targetId = incomeStatementId.let(AuditId::invoke),
-                    objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size),
-                )
-            }
+            .first
     }
 
     @PostMapping("/citizen/attachments/messages", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

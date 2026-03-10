@@ -665,6 +665,7 @@ enum class ChildAudit(
     AssistanceFactorUpdate,
     AttachmentsUploadForApplication,
     AttachmentsUploadForFeeAlteration,
+    AttachmentsUploadForIncomeStatement,
     AttachmentsUploadForPedagogicalDocument,
     AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
