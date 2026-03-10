@@ -597,7 +597,12 @@ class PersonController(
                         .body(resource)
                 }
             }
-            .also { Audit.AddressPageDownloadPdf.log(targetId = AuditId(guardianId)) }
+            .also {
+                Audit.AddressPageDownloadPdf.log(
+                    targetId = AuditId(guardianId),
+                    meta = mapOf("personId" to guardianId),
+                )
+            }
 
     data class PersonResponse(val person: PersonJSON, val permittedActions: Set<Action.Person>)
 
