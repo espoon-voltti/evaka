@@ -52,7 +52,6 @@ enum class Audit(
 ) {
     AbsenceApplicationRead,
     AbsenceRead,
-    AbsenceDeleteRange,
     AbsenceUpsert,
     AddressPageDownloadPdf,
     ApplicationAdminDetailsUpdate,
@@ -668,6 +667,7 @@ enum class ChildAudit(
     AbsenceApplicationReject,
     AbsenceCitizenCreate,
     AbsenceDelete,
+    AbsenceDeleteRange,
     AbsenceRead,
     ApplicationRead;
 

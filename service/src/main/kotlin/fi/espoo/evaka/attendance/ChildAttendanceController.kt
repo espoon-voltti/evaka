@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceUpsert
@@ -680,8 +681,8 @@ class ChildAttendanceController(
                     tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
                 }
             }
-        Audit.AbsenceDeleteRange.log(
-            targetId = AuditId(childId),
+        ChildAudit.AbsenceDeleteRange.log(
+            childId = AuditId(childId),
             objectId = AuditId(deleted),
             meta = mapOf("from" to from, "to" to to),
         )
