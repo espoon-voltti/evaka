@@ -131,9 +131,10 @@ class AbsenceController(
                 }
             }
             .also { absenceIdList ->
-                Audit.AbsenceUpsert.log(
+                ChildAudit.AbsenceUpsert.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
-                    objectId = AuditId(absenceIdList) + AuditId(children),
+                    objectId = AuditId(absenceIdList),
                 )
             }
     }
