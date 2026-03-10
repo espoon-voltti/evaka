@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
@@ -156,70 +157,65 @@ class BackupCareController(private val accessControl: AccessControl) {
                             )
                         }
 
-                        val existing = tx.getBackupCare(id)
-                        if (existing != null) {
-                            if (!existing.period.start.isEqual(body.period.start)) {
-                                if (existing.period.start.isBefore(body.period.start)) {
-                                    // start was shrunk
-                                    tx.clearCalendarEventAttendees(
+                        val existing = tx.getBackupCare(id) ?: throw NotFound()
+                        if (!existing.period.start.isEqual(body.period.start)) {
+                            if (existing.period.start.isBefore(body.period.start)) {
+                                // start was shrunk
+                                tx.clearCalendarEventAttendees(
+                                    existing.childId,
+                                    existing.unitId,
+                                    FiniteDateRange(
+                                        existing.period.start,
+                                        body.period.start.minusDays(1),
+                                    ),
+                                )
+                            } else {
+                                // the backup care was extended; clear calendar event attendees
+                                // for the main placement for the extended period
+                                tx.getPlacementsForChildDuring(
                                         existing.childId,
-                                        existing.unitId,
-                                        FiniteDateRange(
-                                            existing.period.start,
-                                            body.period.start.minusDays(1),
-                                        ),
+                                        body.period.start,
+                                        existing.period.start,
                                     )
-                                } else {
-                                    // the backup care was extended; clear calendar event attendees
-                                    // for the main placement for the extended period
-                                    tx.getPlacementsForChildDuring(
+                                    .forEach { placement ->
+                                        tx.clearCalendarEventAttendees(
                                             existing.childId,
-                                            body.period.start,
-                                            existing.period.start,
+                                            placement.unitId,
+                                            FiniteDateRange(
+                                                body.period.start,
+                                                existing.period.start,
+                                            ),
                                         )
-                                        .forEach { placement ->
-                                            tx.clearCalendarEventAttendees(
-                                                existing.childId,
-                                                placement.unitId,
-                                                FiniteDateRange(
-                                                    body.period.start,
-                                                    existing.period.start,
-                                                ),
-                                            )
-                                        }
-                                }
+                                    }
                             }
+                        }
 
-                            if (!existing.period.end.isEqual(body.period.end)) {
-                                if (existing.period.end.isAfter(body.period.end)) {
-                                    // end was shrunk
-                                    tx.clearCalendarEventAttendees(
+                        if (!existing.period.end.isEqual(body.period.end)) {
+                            if (existing.period.end.isAfter(body.period.end)) {
+                                // end was shrunk
+                                tx.clearCalendarEventAttendees(
+                                    existing.childId,
+                                    existing.unitId,
+                                    FiniteDateRange(
+                                        body.period.end.plusDays(1),
+                                        existing.period.end,
+                                    ),
+                                )
+                            } else {
+                                // the backup care was extended; clear calendar event attendees
+                                // for the main placement for the extended period
+                                tx.getPlacementsForChildDuring(
                                         existing.childId,
-                                        existing.unitId,
-                                        FiniteDateRange(
-                                            body.period.end.plusDays(1),
-                                            existing.period.end,
-                                        ),
+                                        existing.period.end,
+                                        body.period.end,
                                     )
-                                } else {
-                                    // the backup care was extended; clear calendar event attendees
-                                    // for the main placement for the extended period
-                                    tx.getPlacementsForChildDuring(
+                                    .forEach { placement ->
+                                        tx.clearCalendarEventAttendees(
                                             existing.childId,
-                                            existing.period.end,
-                                            body.period.end,
+                                            placement.unitId,
+                                            FiniteDateRange(existing.period.end, body.period.end),
                                         )
-                                        .forEach { placement ->
-                                            tx.clearCalendarEventAttendees(
-                                                existing.childId,
-                                                placement.unitId,
-                                                FiniteDateRange(
-                                                    existing.period.end,
-                                                    body.period.end,
-                                                ),
-                                            )
-                                        }
-                                }
+                                    }
                             }
                         }
                         tx.updateBackupCare(
@@ -259,23 +255,17 @@ class BackupCareController(private val accessControl: AccessControl) {
                         Action.BackupCare.DELETE,
                         id,
                     )
-                    val backupCare = tx.getBackupCare(id)
-                    if (backupCare != null) {
-                        tx.clearCalendarEventAttendees(
-                            backupCare.childId,
-                            backupCare.unitId,
-                            backupCare.period,
-                        )
-                    }
+                    val backupCare = tx.getBackupCare(id) ?: throw NotFound()
+                    tx.clearCalendarEventAttendees(
+                        backupCare.childId,
+                        backupCare.unitId,
+                        backupCare.period,
+                    )
                     tx.deleteBackupCare(id)
-                    backupCare?.childId
+                    backupCare.childId
                 }
             }
-        if (childId != null) {
-            ChildAudit.BackupCareDelete.log(childId = AuditId(childId), targetId = AuditId(id))
-        } else {
-            Audit.BackupCareDelete.log(targetId = AuditId(id))
-        }
+        ChildAudit.BackupCareDelete.log(childId = AuditId(childId), targetId = AuditId(id))
     }
 }
 

@@ -69,7 +69,6 @@ enum class Audit(
     AttachmentsUploadForMessage,
     AttachmentsUploadForMessageDraft,
     AttendanceReservationReportRead,
-    BackupCareDelete,
     CalendarEventCreate,
     CalendarEventDelete,
     CalendarEventRead,
