@@ -173,9 +173,10 @@ class AbsenceController(
                 }
             }
             .also { (deleted, reservations) ->
-                Audit.AbsenceDelete.log(
+                ChildAudit.AbsenceDelete.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
-                    objectId = AuditId(deleted) + AuditId(children),
+                    objectId = AuditId(deleted),
                     meta = mapOf("createdHolidayReservations" to reservations),
                 )
             }
