@@ -144,10 +144,10 @@ class ApplicationControllerV2(
                     )
                 }
             }
-        Audit.ApplicationCreate.log(
-            targetId = AuditId(body.childId),
+        ChildAudit.ApplicationCreate.log(
+            childId = AuditId(body.childId),
             objectId = AuditId(applicationId),
-            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
+            meta = mapOf("personId" to guardianId, "applicationType" to body.type),
         )
         return applicationId
     }

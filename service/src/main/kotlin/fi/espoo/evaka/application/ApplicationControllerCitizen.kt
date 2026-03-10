@@ -274,10 +274,10 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationId ->
-                Audit.ApplicationCreate.log(
-                    targetId = AuditId(body.childId),
+                ChildAudit.ApplicationCreate.log(
+                    childId = AuditId(body.childId),
                     objectId = AuditId(applicationId),
-                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type),
+                    meta = mapOf("applicationType" to body.type),
                 )
             }
     }
