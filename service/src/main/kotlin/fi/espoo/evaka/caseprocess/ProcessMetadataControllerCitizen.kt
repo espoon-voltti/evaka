@@ -6,6 +6,8 @@ package fi.espoo.evaka.caseprocess
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
+import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -32,7 +34,8 @@ class ProcessMetadataControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): ProcessMetadataResponse {
-        return db.connect { dbc ->
+        val (result, personIds) =
+            db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -43,7 +46,10 @@ class ProcessMetadataControllerCitizen(
                     )
                     val process =
                         tx.getCaseProcessByApplicationId(applicationId)
-                            ?: return@read ProcessMetadataResponse(null)
+                            ?: return@read Pair(
+                                ProcessMetadataResponse(null),
+                                tx.getApplicationPersonIds(applicationId),
+                            )
                     val processMetadata =
                         processMetadataService.getApplicationProcessMetadata(
                             tx,
@@ -52,15 +58,18 @@ class ProcessMetadataControllerCitizen(
                             applicationId,
                             process,
                         )
-                    ProcessMetadataResponse(processMetadata.redactForCitizen())
+                    Pair(
+                        ProcessMetadataResponse(processMetadata.redactForCitizen()),
+                        tx.getApplicationPersonIds(applicationId),
+                    )
                 }
             }
-            .also { response ->
-                Audit.ApplicationReadMetadata.log(
-                    targetId = AuditId(applicationId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+        ChildAudit.ApplicationReadMetadata.log(
+            childId = AuditId(personIds.childId),
+            targetId = AuditId(applicationId),
+            objectId = result.data?.process?.id?.let(AuditId::invoke),
+        )
+        return result
     }
 
     @GetMapping("/fee-decisions/{feeDecisionId}")
