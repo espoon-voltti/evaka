@@ -330,12 +330,13 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         )
                     }
                     tx.deleteAbsenceApplication(application.id)
+                    application
                 }
             }
             .also {
-                Audit.AbsenceApplicationDelete.log(
+                ChildAudit.AbsenceApplicationDelete.log(
                     targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
+                    childId = AuditId(it.childId),
                 )
             }
     }
