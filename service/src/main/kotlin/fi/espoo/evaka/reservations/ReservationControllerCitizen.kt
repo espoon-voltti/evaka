@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
@@ -328,8 +329,8 @@ class ReservationControllerCitizen(
                     absenceService.createAbsences(tx, user, clock, body)
                 }
             }
-        Audit.AbsenceCitizenCreate.log(
-            targetId = AuditId(body.childIds),
+        ChildAudit.AbsenceCitizenCreate.log(
+            childId = AuditId(body.childIds),
             objectId = AuditId(insertedAbsences),
             meta =
                 mapOf(
