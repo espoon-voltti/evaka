@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.absence.AbsenceService
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -167,9 +168,9 @@ class AbsenceApplicationControllerEmployee(
                 }
             }
             .also {
-                Audit.AbsenceApplicationAccept.log(
+                ChildAudit.AbsenceApplicationAccept.log(
                     targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
+                    childId = AuditId(it.childId),
                 )
             }
     }
