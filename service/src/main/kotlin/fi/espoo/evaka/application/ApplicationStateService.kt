@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -658,9 +659,10 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
-        Audit.ApplicationAdminDetailsUpdate.log(
+        ChildAudit.ApplicationAdminDetailsUpdate.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
