@@ -55,7 +55,6 @@ enum class Audit(
     AddressPageDownloadPdf,
     ApplicationReadNotifications,
     ApplicationSearch,
-    ApplicationSend,
     ApplicationSendDecisionsWithoutProposal,
     ApplicationUpdate,
     ApplicationVerify,
@@ -669,7 +668,8 @@ enum class ChildAudit(
     ApplicationReadMetadata,
     ApplicationReturnToSent,
     ApplicationReturnToWaitingDecision,
-    ApplicationReturnToWaitingPlacement;
+    ApplicationReturnToWaitingPlacement,
+    ApplicationSend;
 
     private val eventCode = name
 

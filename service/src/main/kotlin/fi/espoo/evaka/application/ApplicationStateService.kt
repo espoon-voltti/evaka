@@ -413,9 +413,10 @@ class ApplicationStateService(
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, now, user.evakaUserId)
 
-        Audit.ApplicationSend.log(
+        ChildAudit.ApplicationSend.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
