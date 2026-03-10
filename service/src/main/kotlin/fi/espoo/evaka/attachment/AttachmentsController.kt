@@ -175,29 +175,35 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Invoice.UPLOAD_ATTACHMENT,
-                        invoiceId,
-                    )
+                val personId =
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Invoice.UPLOAD_ATTACHMENT,
+                            invoiceId,
+                        )
 
-                    val invoice = it.getInvoice(invoiceId) ?: throw NotFound()
-                    if (invoice.status != InvoiceStatus.REPLACEMENT_DRAFT) {
-                        throw BadRequest("Wrong invoice status")
+                        val invoice = it.getInvoice(invoiceId) ?: throw NotFound()
+                        if (invoice.status != InvoiceStatus.REPLACEMENT_DRAFT) {
+                            throw BadRequest("Wrong invoice status")
+                        }
+                        invoice.headOfFamily.id
                     }
-                }
-                handleFileUpload(dbc, user, clock, AttachmentParent.Invoice(invoiceId), file)
+                Pair(
+                    handleFileUpload(dbc, user, clock, AttachmentParent.Invoice(invoiceId), file),
+                    personId,
+                )
             }
-            .also { attachmentId ->
+            .also { (attachmentId, personId) ->
                 Audit.AttachmentsUploadForInvoice.log(
                     targetId = AuditId(invoiceId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size),
+                    meta = mapOf("size" to file.size, "personId" to personId),
                 )
             }
+            .first
     }
 
     @PostMapping("/employee/attachments/income", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
