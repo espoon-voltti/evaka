@@ -790,7 +790,11 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToWaitingDecision.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun respondToPlacementProposal(
