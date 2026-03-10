@@ -670,7 +670,8 @@ enum class ChildAudit(
     AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
     AttendanceReservationDelete,
-    AttendanceReservationEmployeeCreate;
+    AttendanceReservationEmployeeCreate,
+    BackupCareDelete;
 
     private val eventCode = name
 

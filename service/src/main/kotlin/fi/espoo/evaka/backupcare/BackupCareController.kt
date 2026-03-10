@@ -6,6 +6,7 @@ package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
 import fi.espoo.evaka.daycare.isDaycareOpenForPeriod
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
@@ -248,21 +249,33 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: BackupCareId,
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.BackupCare.DELETE, id)
-                val backupCare = tx.getBackupCare(id)
-                if (backupCare != null) {
-                    tx.clearCalendarEventAttendees(
-                        backupCare.childId,
-                        backupCare.unitId,
-                        backupCare.period,
+        val childId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.BackupCare.DELETE,
+                        id,
                     )
+                    val backupCare = tx.getBackupCare(id)
+                    if (backupCare != null) {
+                        tx.clearCalendarEventAttendees(
+                            backupCare.childId,
+                            backupCare.unitId,
+                            backupCare.period,
+                        )
+                    }
+                    tx.deleteBackupCare(id)
+                    backupCare?.childId
                 }
-                tx.deleteBackupCare(id)
             }
+        if (childId != null) {
+            ChildAudit.BackupCareDelete.log(childId = AuditId(childId), targetId = AuditId(id))
+        } else {
+            Audit.BackupCareDelete.log(targetId = AuditId(id))
         }
-        Audit.BackupCareDelete.log(targetId = AuditId(id))
     }
 }
 
