@@ -6,6 +6,8 @@ package fi.espoo.evaka.application.placementdesktop
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
+import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -72,19 +74,25 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         @PathVariable applicationId: ApplicationId,
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Application.UPDATE_PLACEMENT_DRAFT,
-                    applicationId,
-                )
-                tx.deleteApplicationPlacementDraftIfExists(applicationId)
+        val personIds =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.UPDATE_PLACEMENT_DRAFT,
+                        applicationId,
+                    )
+                    tx.deleteApplicationPlacementDraftIfExists(applicationId)
+                    tx.getApplicationPersonIds(applicationId)
+                }
             }
-        }
-        Audit.ApplicationPlacementDraftDelete.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationPlacementDraftDelete.log(
+            childId = AuditId(personIds.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to personIds.guardianId),
+        )
     }
 
     @GetMapping("/daycares/{unitId}")
