@@ -68,7 +68,6 @@ enum class Audit(
     AttachmentsUploadForInvoice,
     AttachmentsUploadForMessage,
     AttachmentsUploadForMessageDraft,
-    AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
     AttendanceReservationDelete,
     AttendanceReservationEmployeeCreate,
@@ -670,7 +669,8 @@ enum class ChildAudit(
     AssistanceFactorUpdate,
     AttachmentsUploadForApplication,
     AttachmentsUploadForFeeAlteration,
-    AttachmentsUploadForPedagogicalDocument;
+    AttachmentsUploadForPedagogicalDocument,
+    AttendanceReservationCitizenCreate;
 
     private val eventCode = name
 

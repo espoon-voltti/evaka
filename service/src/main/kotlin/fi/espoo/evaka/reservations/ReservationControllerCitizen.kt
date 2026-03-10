@@ -296,8 +296,8 @@ class ReservationControllerCitizen(
                 }
             }
             ?.also {
-                Audit.AttendanceReservationCitizenCreate.log(
-                    targetId = AuditId(children),
+                ChildAudit.AttendanceReservationCitizenCreate.log(
+                    childId = AuditId(children),
                     meta =
                         mapOf(
                             "deletedAbsences" to it.deletedAbsences,
