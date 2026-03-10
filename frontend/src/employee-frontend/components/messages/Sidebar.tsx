@@ -130,7 +130,10 @@ function Accounts({ setRecipients }: AccountsProps) {
         groupAccounts.filter(
           (acc) => acc.daycareGroup.unitId === selectedUnit.value
         ),
-        (val) => val.daycareGroup.name
+        [
+          (val) => (val.daycareGroup.closed ? 1 : 0),
+          (val) => val.daycareGroup.name
+        ]
       )
     : []
 
