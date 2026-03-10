@@ -336,7 +336,9 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ApplicationReadActivePlacementsByType.log(childId = AuditId(childId))
+            }
     }
 
     @PutMapping("/applications/{applicationId}")

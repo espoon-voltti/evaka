@@ -54,7 +54,6 @@ enum class Audit(
     AbsenceRead,
     AddressPageDownloadPdf,
     ApplicationReadNotifications,
-    ApplicationReadActivePlacementsByType,
     ApplicationReturnToSent,
     ApplicationReturnToWaitingPlacement,
     ApplicationReturnToWaitingDecision,
@@ -668,6 +667,7 @@ enum class ChildAudit(
     ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
     ApplicationRead,
+    ApplicationReadActivePlacementsByType,
     ApplicationReadDuplicates,
     ApplicationReadMetadata;
 
