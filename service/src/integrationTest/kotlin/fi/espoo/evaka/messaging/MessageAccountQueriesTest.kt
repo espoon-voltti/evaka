@@ -151,6 +151,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "Espoo",
                     "Espoo palveluohjaus",
                     "Espoo asiakasmaksut",
+                    today = clock.today(),
                 )
             }
         assertEquals(3, accounts2.size)
@@ -205,6 +206,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "Espoo",
                     "Espoo palveluohjaus",
                     "Espoo asiakasmaksut",
+                    today = clock.today(),
                 )
             }
         assertEquals(1, accounts2.size)
@@ -245,6 +247,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "Espoo",
                     "Espoo palveluohjaus",
                     "Espoo asiakasmaksut",
+                    today = clock.today(),
                 )
             }
         assertEquals(0, accounts2.size)

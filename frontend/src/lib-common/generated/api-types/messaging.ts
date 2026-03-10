@@ -144,6 +144,7 @@ export interface GetRecipientsResponse {
 * Generated from fi.espoo.evaka.messaging.Group
 */
 export interface Group {
+  closed: boolean
   id: GroupId
   name: string
   unitId: DaycareId
