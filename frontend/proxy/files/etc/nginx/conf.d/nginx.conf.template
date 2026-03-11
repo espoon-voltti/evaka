@@ -204,6 +204,7 @@ server {
 
   location /.well-known/ {
     root /internal;
+    log_not_found off;
   }
 
   location /health {
