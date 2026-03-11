@@ -109,9 +109,9 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(child.id, created.childId)
-        assertEquals(BigDecimal("2.00"), created.coefficient)
+        assertEquals(BigDecimal("2.0000"), created.coefficient)
         assertEquals(FiniteDateRange(today, today.plusDays(30)), created.validityPeriod)
-        assertEquals(listOf(BigDecimal("2.00")), readVoucherValueDecisionAssistanceCoefficients())
+        assertEquals(listOf(BigDecimal("2.0000")), readVoucherValueDecisionAssistanceCoefficients())
 
         val updated =
             updateAssistanceNeedVoucherCoefficient(
@@ -124,19 +124,19 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(child.id, updated.childId)
-        assertEquals(BigDecimal("3.00"), updated.coefficient)
+        assertEquals(BigDecimal("3.0000"), updated.coefficient)
         assertEquals(
             FiniteDateRange(today.plusDays(10), today.plusDays(20)),
             updated.validityPeriod,
         )
         assertEquals(
-            listOf(BigDecimal("1.00"), BigDecimal("3.00"), BigDecimal("1.00")),
+            listOf(BigDecimal("1.0000"), BigDecimal("3.0000"), BigDecimal("1.0000")),
             readVoucherValueDecisionAssistanceCoefficients(),
         )
 
         deleteAssistanceNeedVoucherCoefficient(created.id)
         asyncJobRunner.runPendingJobsSync(clock)
-        assertEquals(listOf(BigDecimal("1.00")), readVoucherValueDecisionAssistanceCoefficients())
+        assertEquals(listOf(BigDecimal("1.0000")), readVoucherValueDecisionAssistanceCoefficients())
     }
 
     @Test
