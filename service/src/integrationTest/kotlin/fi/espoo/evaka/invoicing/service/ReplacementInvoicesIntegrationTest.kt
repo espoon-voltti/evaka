@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.invoicing.controller.InvoiceController
@@ -47,8 +48,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Autowired private lateinit var invoiceService: InvoiceService
     @Autowired private lateinit var invoiceController: InvoiceController
 
-    @Autowired private lateinit var draftInvoiceGenerator: DraftInvoiceGenerator
-    @Autowired private lateinit var invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
+    private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
 
     private val replacementInvoicesStart = YearMonth.of(2021, 1)
     private lateinit var invoiceGenerator: InvoiceGenerator
@@ -66,10 +66,10 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun beforeEach() {
         invoiceGenerator =
             InvoiceGenerator(
-                draftInvoiceGenerator,
+                DraftInvoiceGenerator(productProvider, featureConfig),
                 featureConfig,
                 evakaEnv.copy(replacementInvoicesStart = replacementInvoicesStart),
-                invoiceGenerationLogicChooser,
+                DefaultInvoiceGenerationLogic,
             )
         db.transaction { tx ->
             tx.insert(feeThresholds2020)

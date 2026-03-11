@@ -68,10 +68,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
 class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var generator: InvoiceGenerator
+    private val generator by lazy { invoiceGenerator() }
 
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
 

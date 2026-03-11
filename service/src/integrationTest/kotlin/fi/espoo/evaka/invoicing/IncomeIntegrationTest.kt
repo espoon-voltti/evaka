@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.controller.IncomeController
 import fi.espoo.evaka.invoicing.data.insertIncome
 import fi.espoo.evaka.invoicing.domain.Income
@@ -12,7 +13,6 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var incomeController: IncomeController
-    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
     private val adult = DevPerson()

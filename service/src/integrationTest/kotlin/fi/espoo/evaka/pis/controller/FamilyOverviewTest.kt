@@ -5,12 +5,12 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.controllers.FamilyController
 import fi.espoo.evaka.pis.createParentship
@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var familyController: FamilyController
-    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     private val clock = RealEvakaClock()
     private val area = DevCareArea()
