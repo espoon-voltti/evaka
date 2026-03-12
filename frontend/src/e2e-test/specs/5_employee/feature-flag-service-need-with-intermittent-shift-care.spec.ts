@@ -16,55 +16,60 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = HelsinkiDateTime.of(2025, 10, 31, 9, 47)
 const mockedDate = mockedTime.toLocalDate()
 
-let page: Page
-let admin: DevEmployee
-let childId: PersonId
-let placement: DevPlacement
-let activeServiceNeedOption: ServiceNeedOption
-
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await familyWithTwoGuardians.save()
-  const unitId = testDaycare.id
-  childId = familyWithTwoGuardians.children[0].id
-  await Fixture.employee({ roles: ['ADMIN'] }).save()
-  placement = await Fixture.placement({
-    childId,
-    unitId,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-  activeServiceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type
-  }).save()
-
-  admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime,
     employeeCustomizations: {
       featureFlags: { intermittentShiftCare: true }
     }
-  })
-  await employeeLogin(page, admin)
+  }
 })
 
-const openCollapsible = async () => {
-  await page.goto(config.employeeUrl + '/child-information/' + childId)
-  const childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.waitUntilLoaded()
-  return await childInformationPage.openCollapsible('placements')
-}
+test.describe('Intermittent shiftcare', () => {
+  let page: Page
+  let admin: DevEmployee
+  let childId: PersonId
+  let placement: DevPlacement
+  let activeServiceNeedOption: ServiceNeedOption
 
-describe('Intermittent shiftcare', () => {
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithTwoGuardians.save()
+    const unitId = testDaycare.id
+    childId = familyWithTwoGuardians.children[0].id
+    await Fixture.employee({ roles: ['ADMIN'] }).save()
+    placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+    activeServiceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type
+    }).save()
+
+    admin = await Fixture.employee().admin().save()
+
+    await employeeLogin(page, admin)
+  })
+
+  const openCollapsible = async () => {
+    await page.goto(config.employeeUrl + '/child-information/' + childId)
+    const childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.waitUntilLoaded()
+    return await childInformationPage.openCollapsible('placements')
+  }
+
   test('service need can be added with intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(

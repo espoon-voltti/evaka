@@ -32,17 +32,18 @@ import {
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { test } from '../../playwright'
 import {
   Checkbox,
   Combobox,
   DatePicker,
   Modal,
-  Page,
+  type Page,
   Select
 } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+test.beforeEach(async (): Promise<void> => resetServiceState())
 
 const setupPlacement = async (
   placementId: PlacementId,
@@ -71,12 +72,12 @@ async function openChildPlacements(page: Page, childId: UUID) {
   return await childInformationPage.openCollapsible('placements')
 }
 
-describe('Child Information placement info', () => {
+test.describe('Child Information placement info', () => {
   let page: Page
   let childId: PersonId
   let unitId: DaycareId
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
     await testCareArea.save()
     await testDaycare.save()
     await familyWithTwoGuardians.save()
@@ -89,7 +90,7 @@ describe('Child Information placement info', () => {
       .unitSupervisor(unitId)
       .save()
 
-    page = await Page.open()
+    page = evaka
     await employeeLogin(page, unitSupervisor)
   })
 
@@ -123,13 +124,20 @@ describe('Child Information placement info', () => {
   })
 })
 
-describe('Child Information placement create (feature flag place guarantee = true)', () => {
+test.describe('Child Information placement create (feature flag place guarantee = true)', () => {
   const mockedTime = HelsinkiDateTime.fromLocal(
     LocalDate.of(2023, 9, 6),
     LocalTime.of(9, 35)
   )
 
-  test('place guarantee can be set with create modal', async () => {
+  test.use({
+    evakaOptions: {
+      mockedTime,
+      employeeCustomizations: { featureFlags: { placementGuarantee: true } }
+    }
+  })
+
+  test('place guarantee can be set with create modal', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -137,9 +145,8 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
-    const childPlacements = await openChildPlacements(page, childId)
+    await employeeLogin(evaka, admin)
+    const childPlacements = await openChildPlacements(evaka, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
@@ -174,7 +181,9 @@ describe('Child Information placement create (feature flag place guarantee = tru
     ])
   })
 
-  test('place guarantee placement shows correctly active status', async () => {
+  test('place guarantee placement shows correctly active status', async ({
+    evaka
+  }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -182,9 +191,8 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
-    const childPlacements = await openChildPlacements(page, childId)
+    await employeeLogin(evaka, admin)
+    const childPlacements = await openChildPlacements(evaka, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
@@ -198,7 +206,9 @@ describe('Child Information placement create (feature flag place guarantee = tru
     ])
   })
 
-  test('non place guarantee placement shows correctly active status', async () => {
+  test('non place guarantee placement shows correctly active status', async ({
+    evaka
+  }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -206,9 +216,8 @@ describe('Child Information placement create (feature flag place guarantee = tru
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
-    const childPlacements = await openChildPlacements(page, childId)
+    await employeeLogin(evaka, admin)
+    const childPlacements = await openChildPlacements(evaka, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
@@ -221,22 +230,22 @@ describe('Child Information placement create (feature flag place guarantee = tru
       { unitName, period: '06.09.2023 - 06.09.2023', status: 'Aktiivinen' }
     ])
   })
-
-  async function openPage() {
-    return await Page.open({
-      mockedTime,
-      employeeCustomizations: { featureFlags: { placementGuarantee: true } }
-    })
-  }
 })
 
-describe('Child Information placement create (feature flag place guarantee = false)', () => {
+test.describe('Child Information placement create (feature flag place guarantee = false)', () => {
   const mockedTime = HelsinkiDateTime.fromLocal(
     LocalDate.of(2023, 9, 6),
     LocalTime.of(9, 35)
   )
 
-  test('placement create works', async () => {
+  test.use({
+    evakaOptions: {
+      mockedTime,
+      employeeCustomizations: { featureFlags: { placementGuarantee: false } }
+    }
+  })
+
+  test('placement create works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -244,10 +253,9 @@ describe('Child Information placement create (feature flag place guarantee = fal
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
+    await employeeLogin(evaka, admin)
 
-    const childPlacements = await openChildPlacements(page, childId)
+    const childPlacements = await openChildPlacements(evaka, childId)
 
     await childPlacements.createNewPlacement({
       unitName,
@@ -272,7 +280,9 @@ describe('Child Information placement create (feature flag place guarantee = fal
     ])
   })
 
-  test('placement end date is initially empty but mandatory', async () => {
+  test('placement end date is initially empty but mandatory', async ({
+    evaka
+  }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -280,20 +290,21 @@ describe('Child Information placement create (feature flag place guarantee = fal
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
+    await employeeLogin(evaka, admin)
 
-    await openChildPlacements(page, childId)
-    await page.findByDataQa('create-new-placement-button').click()
+    await openChildPlacements(evaka, childId)
+    await evaka.findByDataQa('create-new-placement-button').click()
 
-    const modal = new Modal(page.findByDataQa('modal'))
+    const modal = new Modal(evaka.findByDataQa('modal'))
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
     await modal.findByDataQa('create-placement-end-date').assertTextEquals('')
     await modal.submitButton.assertDisabled(true)
   })
 
-  test('placement create dialog shows errors on dates outside preschool and extended terms', async () => {
+  test('placement create dialog shows errors on dates outside preschool and extended terms', async ({
+    evaka
+  }) => {
     const preschoolTerms = await preschoolTerm2023.save()
 
     const admin = await Fixture.employee().admin().save()
@@ -303,13 +314,12 @@ describe('Child Information placement create (feature flag place guarantee = fal
     const child = await Fixture.person().saveChild({ updateMockVtj: true })
     const childId = child.id
 
-    const page = await openPage()
-    await employeeLogin(page, admin)
+    await employeeLogin(evaka, admin)
 
-    await openChildPlacements(page, childId)
-    await page.findByDataQa('create-new-placement-button').click()
+    await openChildPlacements(evaka, childId)
+    await evaka.findByDataQa('create-new-placement-button').click()
 
-    const modal = new Modal(page.findByDataQa('modal'))
+    const modal = new Modal(evaka.findByDataQa('modal'))
 
     const placementTypeSelect = new Select(
       modal.find('[data-qa="placement-type-select"]')
@@ -353,7 +363,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
     await start.fill(preschoolTerms.extendedTerm.start)
     await modal.submitButton.click()
 
-    const placements = page.findByDataQa('child-placements-collapsible')
+    const placements = evaka.findByDataQa('child-placements-collapsible')
     await placements.findByDataQa('btn-edit-placement').click()
 
     const editedStart = new DatePicker(
@@ -365,11 +375,4 @@ describe('Child Information placement create (feature flag place guarantee = fal
       .findText('Sijoituksen tulee olla esiopetuskaudella')
       .waitUntilVisible()
   })
-
-  async function openPage() {
-    return await Page.open({
-      mockedTime,
-      employeeCustomizations: { featureFlags: { placementGuarantee: false } }
-    })
-  }
 })

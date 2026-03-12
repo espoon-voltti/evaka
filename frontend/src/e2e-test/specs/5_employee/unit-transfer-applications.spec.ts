@@ -22,18 +22,22 @@ import type {
   DevEmployee
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(() => resetServiceState())
+const clock = HelsinkiDateTime.of(2020, 8, 10, 8, 0)
 
-describe('unit transfer applications', () => {
+test.use({ evakaOptions: { mockedTime: clock } })
+
+test.describe('unit transfer applications', () => {
   let area: DevCareArea
   let placementUnit1: DevDaycare
   let applicationUnit1: DevDaycare
   let expected: TransferApplicationUnitSummary[]
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
+    await resetServiceState()
     area = await Fixture.careArea().save()
     placementUnit1 = await Fixture.daycare({ areaId: area.id }).save()
     applicationUnit1 = await Fixture.daycare({ areaId: area.id }).save()
@@ -87,30 +91,29 @@ describe('unit transfer applications', () => {
     }))
   })
 
-  test('admin sees transfer applications', async () => {
-    const clock = HelsinkiDateTime.of(2020, 8, 10, 8, 0)
+  test('admin sees transfer applications', async ({ evaka }) => {
     const user = await Fixture.employee().admin().save()
-    const page = await openApplicationProcessTab(clock, user, placementUnit1.id)
+    const page = await openApplicationProcessTab(evaka, user, placementUnit1.id)
     await page.transferApplications.waitUntilVisible()
     await page.transferApplications.assertTable(expected)
   })
 
-  test("unit supervisor doesn't see transfer applications section", async () => {
-    const clock = HelsinkiDateTime.of(2020, 8, 10, 8, 0)
+  test("unit supervisor doesn't see transfer applications section", async ({
+    evaka
+  }) => {
     const user = await Fixture.employee()
       .unitSupervisor(placementUnit1.id)
       .save()
-    const page = await openApplicationProcessTab(clock, user, placementUnit1.id)
+    const page = await openApplicationProcessTab(evaka, user, placementUnit1.id)
     await page.transferApplications.waitUntilHidden()
   })
 })
 
 const openApplicationProcessTab = async (
-  clock: HelsinkiDateTime,
+  page: Page,
   user: DevEmployee,
   unitId: DaycareId
 ) => {
-  const page = await Page.open({ mockedTime: clock })
   await employeeLogin(page, user)
   const unitPage = await UnitPage.openUnit(page, unitId)
   return await unitPage.openApplicationProcessTab()

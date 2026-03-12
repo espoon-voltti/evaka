@@ -21,7 +21,8 @@ import {
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
@@ -33,26 +34,28 @@ const testFilePath = `src/e2e-test/assets`
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+test.describe('Citizen pedagogical documents', () => {
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
 
-  await createDaycarePlacements({
-    body: [
-      createDaycarePlacementFixture(randomId(), testChild.id, testDaycare.id)
-    ]
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(randomId(), testChild.id, testDaycare.id)
+      ]
+    })
+
+    page = evaka
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page)
+    pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
   })
 
-  page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-  pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
-})
-
-describe('Citizen pedagogical documents', () => {
-  describe('Citizen main page pedagogical documents header', () => {
+  test.describe('Citizen main page pedagogical documents header', () => {
     test('Number of unread pedagogical documents is shown correctly', async () => {
       await page.reload()
       await header.assertUnreadChildrenCount(0)
@@ -82,7 +85,7 @@ describe('Citizen pedagogical documents', () => {
     })
   })
 
-  describe('Pedagogical documents view', () => {
+  test.describe('Pedagogical documents view', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument({
         childId: testChild.id,

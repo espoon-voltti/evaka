@@ -19,28 +19,29 @@ import {
 } from '../../generated/api-clients'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let applicationsPage: ApplicationListView
+test.describe('Applications', () => {
+  let page: Page
+  let applicationsPage: ApplicationListView
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await familyWithDeadGuardian.save()
-  const serviceWorker = await Fixture.employee().serviceWorker().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithDeadGuardian.save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  page = await Page.open()
-  applicationsPage = new ApplicationListView(page)
+    page = evaka
+    applicationsPage = new ApplicationListView(page)
 
-  await employeeLogin(page, serviceWorker)
-  await page.goto(config.employeeUrl)
-  await new EmployeeNav(page).applicationsTab.click()
-})
+    await employeeLogin(page, serviceWorker)
+    await page.goto(config.employeeUrl)
+    await new EmployeeNav(page).applicationsTab.click()
+  })
 
-describe('Applications', () => {
   test('Application with a dead applicant has to be manually sent', async () => {
     const application = applicationFixture(
       familyWithDeadGuardian.children[0],

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Locator } from 'playwright'
+import type { Locator } from '@playwright/test'
 
 import type { Page } from '../../../utils/page'
 import {

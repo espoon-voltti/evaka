@@ -21,60 +21,64 @@ import {
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let groupsPage: UnitGroupsPage
+const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testDaycarePrivateVoucher.save()
-  await testChild2.saveChild()
+test.use({ evakaOptions: { mockedTime: now } })
 
-  const unitSupervisor = await Fixture.employee()
-    .unitSupervisor(testDaycare.id)
-    .save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
+test.describe('Employee - Backup care', () => {
+  let page: Page
+  let groupsPage: UnitGroupsPage
 
-  const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
-  const startDate = LocalDate.of(2023, 2, 1).subYears(1)
-  const endDate = LocalDate.of(2023, 2, 3).addYears(1)
-  const placement = await Fixture.placement({
-    childId: testChild2.id,
-    unitId: testDaycarePrivateVoucher.id,
-    startDate: startDate,
-    endDate: endDate
-  }).save()
-  const serviceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: placement.type
-  }).save()
-  await Fixture.serviceNeed({
-    placementId: placement.id,
-    startDate: startDate,
-    endDate: endDate,
-    optionId: serviceNeedOption.id,
-    confirmedBy: evakaUserId(unitSupervisor.id)
-  }).save()
-  await Fixture.backupCare({
-    childId: testChild2.id,
-    unitId: testDaycare.id,
-    period: new FiniteDateRange(
-      LocalDate.of(2023, 2, 1),
-      LocalDate.of(2023, 2, 3)
-    )
-  }).save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testDaycarePrivateVoucher.save()
+    await testChild2.saveChild()
 
-  page = await Page.open({ mockedTime: now })
-  await employeeLogin(page, unitSupervisor)
-  const unitPage = new UnitPage(page)
-  await unitPage.navigateToUnit(testDaycare.id)
-  groupsPage = await unitPage.openGroupsPage()
-})
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
 
-describe('Employee - Backup care', () => {
+    const startDate = LocalDate.of(2023, 2, 1).subYears(1)
+    const endDate = LocalDate.of(2023, 2, 3).addYears(1)
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycarePrivateVoucher.id,
+      startDate: startDate,
+      endDate: endDate
+    }).save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: placement.type
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: startDate,
+      endDate: endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(unitSupervisor.id)
+    }).save()
+    await Fixture.backupCare({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      period: new FiniteDateRange(
+        LocalDate.of(2023, 2, 1),
+        LocalDate.of(2023, 2, 3)
+      )
+    }).save()
+
+    page = evaka
+    await employeeLogin(page, unitSupervisor)
+    const unitPage = new UnitPage(page)
+    await unitPage.navigateToUnit(testDaycare.id)
+    groupsPage = await unitPage.openGroupsPage()
+  })
+
   test('daycare has one backup care child missing group', async () => {
     await groupsPage.selectPeriod('1 year')
 

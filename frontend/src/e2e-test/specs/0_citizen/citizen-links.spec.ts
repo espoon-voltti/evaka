@@ -8,17 +8,18 @@ import {
   resetServiceState,
   upsertWeakCredentials
 } from '../../generated/api-clients'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
-describe('Citizen links', () => {
+test.describe('Citizen links', () => {
   let page: Page
   const credentials = {
     username: 'test@example.com',
     password: 'TestPassword456!'
   }
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await testAdult.saveAdult({
       updateMockVtjWithDependants: []
@@ -28,30 +29,27 @@ describe('Citizen links', () => {
       body: credentials
     })
 
-    page = await Page.open()
+    page = evaka
   })
 
-  const initConfigurations = [
-    [
-      'direct login',
-      async (page: Page) => enduserLogin(page, testAdult)
-    ] as const,
-    [
-      'weak login',
-      async (page: Page) => enduserLoginWeak(page, credentials)
-    ] as const
-  ]
-
-  describe('without login', () => {
+  test.describe('without login', () => {
     test('accessibility page can be accessed', async () => {
       await page.goto(`${config.enduserUrl}/accessibility`)
       await page.findByDataQa('accessibility-statement').waitUntilVisible()
     })
   })
 
-  describe.each(initConfigurations)(`Interactions with %s`, (_name, login) => {
+  test.describe('Interactions with direct login', () => {
     test('accessibility page can be accessed', async () => {
-      await login(page)
+      await enduserLogin(page, testAdult)
+      await page.goto(`${config.enduserUrl}/accessibility`)
+      await page.findByDataQa('accessibility-statement').waitUntilVisible()
+    })
+  })
+
+  test.describe('Interactions with weak login', () => {
+    test('accessibility page can be accessed', async () => {
+      await enduserLoginWeak(page, credentials)
       await page.goto(`${config.enduserUrl}/accessibility`)
       await page.findByDataQa('accessibility-statement').waitUntilVisible()
     })

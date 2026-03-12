@@ -13,18 +13,22 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import type { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
-beforeEach(() => resetServiceState())
-
-describe('Absence application', () => {
+test.describe('Absence application', () => {
   const mockedTime = HelsinkiDateTime.of(2025, 5, 5, 13, 0)
 
   const adult = Fixture.person({ ssn: '070644-937X' })
   const child = Fixture.person()
 
-  test('absence modal shows link to absence application page for child in preschool', async () => {
+  test.beforeEach(async () => {
+    await resetServiceState()
+  })
+
+  test('absence modal shows link to absence application page for child in preschool', async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -47,7 +51,7 @@ describe('Absence application', () => {
       endDate: termRange.end
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -78,7 +82,9 @@ describe('Absence application', () => {
     await absenceModal.modalSendButton.assertDisabled(false)
   })
 
-  test('absence modal shows link to absence application page handling preschool term break', async () => {
+  test('absence modal shows link to absence application page handling preschool term break', async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     const startDate = termRange.start.addMonths(1)
@@ -103,7 +109,7 @@ describe('Absence application', () => {
       endDate: termRange.end
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -130,7 +136,9 @@ describe('Absence application', () => {
     await absenceModal.modalSendButton.assertDisabled(true)
   })
 
-  test('absence modal shows link to absence application page handling holiday', async () => {
+  test('absence modal shows link to absence application page handling holiday', async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     const startDate = LocalDate.of(2025, 5, 29) // ascension day
@@ -154,7 +162,7 @@ describe('Absence application', () => {
       endDate: termRange.end
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -181,7 +189,9 @@ describe('Absence application', () => {
     await absenceModal.modalSendButton.assertDisabled(true)
   })
 
-  test("absence modal doesn't show link to absence application page for child in daycare", async () => {
+  test("absence modal doesn't show link to absence application page for child in daycare", async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -204,7 +214,7 @@ describe('Absence application', () => {
       endDate: termRange.end
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -222,7 +232,7 @@ describe('Absence application', () => {
     await absenceModal.modalSendButton.assertDisabled(false)
   })
 
-  test('accepted flow', async () => {
+  test('accepted flow', async ({ newEvakaPage }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -245,7 +255,7 @@ describe('Absence application', () => {
       endDate: mockedTime.toLocalDate()
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -268,7 +278,7 @@ describe('Absence application', () => {
       }
     ])
 
-    const employeePage = await Page.open({
+    const employeePage = await newEvakaPage({
       mockedTime,
       employeeCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -291,7 +301,7 @@ describe('Absence application', () => {
     ])
   })
 
-  test('rejected flow', async () => {
+  test('rejected flow', async ({ newEvakaPage }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -314,7 +324,7 @@ describe('Absence application', () => {
       endDate: mockedTime.toLocalDate()
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -337,7 +347,7 @@ describe('Absence application', () => {
       }
     ])
 
-    const employeePage = await Page.open({
+    const employeePage = await newEvakaPage({
       mockedTime,
       employeeCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -364,7 +374,7 @@ describe('Absence application', () => {
     await applicationProcessTab.assertAbsenceApplications([])
   })
 
-  test('delete flow', async () => {
+  test('delete flow', async ({ newEvakaPage }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -387,7 +397,7 @@ describe('Absence application', () => {
       endDate: mockedTime.toLocalDate()
     }).save()
 
-    const citizenPage = await Page.open({
+    const citizenPage = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -412,7 +422,7 @@ describe('Absence application', () => {
     await citizenChildPage.deleteAbsenceApplication(0)
     await citizenChildPage.assertAbsenceApplications([])
 
-    const employeePage = await Page.open({
+    const employeePage = await newEvakaPage({
       mockedTime,
       employeeCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -423,7 +433,9 @@ describe('Absence application', () => {
     await applicationProcessTab.assertAbsenceApplications([])
   })
 
-  test('Form is invalid if absence date range is not on possible absence application date range', async () => {
+  test('Form is invalid if absence date range is not on possible absence application date range', async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -443,7 +455,7 @@ describe('Absence application', () => {
       endDate: mockedTime.toLocalDate()
     }).save()
 
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
@@ -465,7 +477,9 @@ describe('Absence application', () => {
     await newAbsenceApplicationPage.createButton.assertDisabled(true)
   })
 
-  test('Form is valid if absence date range is partly within possible absence application date range', async () => {
+  test('Form is valid if absence date range is partly within possible absence application date range', async ({
+    newEvakaPage
+  }) => {
     const mockedDate = mockedTime.toLocalDate()
     const termRange = new FiniteDateRange(mockedDate, mockedDate.addYears(1))
     await Fixture.preschoolTerm({
@@ -485,7 +499,7 @@ describe('Absence application', () => {
       endDate: mockedTime.toLocalDate().addDays(5)
     }).save()
 
-    const page = await Page.open({
+    const page = await newEvakaPage({
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })

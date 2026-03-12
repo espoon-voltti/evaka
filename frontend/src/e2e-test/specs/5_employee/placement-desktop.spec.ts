@@ -18,15 +18,12 @@ import type { DevApplicationWithForm } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import PlacementDesktopView from '../../pages/employee/applications/placement-desktop-view'
 import { PlacementDraftPage } from '../../pages/employee/placement-draft-page'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedDate = LocalDate.of(2021, 8, 16)
-
-let page: Page
-let applicationListView: ApplicationListView
-let placementDesktopView: PlacementDesktopView
 
 const careArea = Fixture.careArea()
 const daycare1 = Fixture.daycare({ areaId: careArea.id, name: 'Daycare 1' })
@@ -95,53 +92,61 @@ const application2: DevApplicationWithForm = {
   dueDate
 }
 
-beforeEach(async () => {
-  await resetServiceState()
-  await createDefaultServiceNeedOptions()
-  await careArea.save()
-  for (const daycare of daycares) {
-    await daycare.save()
-    const group = await Fixture.daycareGroup({
-      daycareId: daycare.id
-    }).save()
-    await Fixture.daycareCaretakers({
-      groupId: group.id,
-      startDate: mockedDate,
-      amount: 1
-    }).save()
-  }
-  await serviceWorker.save()
-
-  await Fixture.family({
-    guardian: adult,
-    children: [child1, child2, child3, child4]
-  }).save()
-
-  // Create an existing placement to show confirmed occupancy values
-  await Fixture.placement({
-    unitId: daycare1.id,
-    childId: child4.id,
-    startDate: mockedDate
-  }).save()
-
-  const applications = [application1, application2]
-  await createApplications({ body: applications })
-  for (const application of applications) {
-    await execSimpleApplicationActions(
-      application.id,
-      ['MOVE_TO_WAITING_PLACEMENT'],
-      mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    )
-  }
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
-  applicationListView = new ApplicationListView(page)
-  placementDesktopView = new PlacementDesktopView(page)
+  }
 })
 
-describe('Placement desktop', () => {
+test.describe('Placement desktop', () => {
+  let page: Page
+  let applicationListView: ApplicationListView
+  let placementDesktopView: PlacementDesktopView
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await createDefaultServiceNeedOptions()
+    await careArea.save()
+    for (const daycare of daycares) {
+      await daycare.save()
+      const group = await Fixture.daycareGroup({
+        daycareId: daycare.id
+      }).save()
+      await Fixture.daycareCaretakers({
+        groupId: group.id,
+        startDate: mockedDate,
+        amount: 1
+      }).save()
+    }
+    await serviceWorker.save()
+
+    await Fixture.family({
+      guardian: adult,
+      children: [child1, child2, child3, child4]
+    }).save()
+
+    // Create an existing placement to show confirmed occupancy values
+    await Fixture.placement({
+      unitId: daycare1.id,
+      childId: child4.id,
+      startDate: mockedDate
+    }).save()
+
+    const applications = [application1, application2]
+    await createApplications({ body: applications })
+    for (const application of applications) {
+      await execSimpleApplicationActions(
+        application.id,
+        ['MOVE_TO_WAITING_PLACEMENT'],
+        mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+      )
+    }
+
+    page = evaka
+    applicationListView = new ApplicationListView(page)
+    placementDesktopView = new PlacementDesktopView(page)
+  })
+
   test('Data is shown', async () => {
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)

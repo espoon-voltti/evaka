@@ -37,16 +37,17 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenNotificationsPage from '../../pages/citizen/citizen-app-notifications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import { test, expect } from '../../playwright'
+import type { NewEvakaPage } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { envs, Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 5)
 
-let page: Page
-
 async function openCalendarPage(
+  newEvakaPage: NewEvakaPage,
   envType: EnvType,
   options?: {
     featureFlags?: DeepPartial<FeatureFlags>
@@ -58,7 +59,7 @@ async function openCalendarPage(
       ? { width: 375, height: 812 }
       : { width: 1920, height: 1080 }
 
-  page = await Page.open({
+  const page = await newEvakaPage({
     viewport,
     mockedTime:
       options?.mockedTime ?? today.toHelsinkiDateTime(LocalTime.of(12, 0)),
@@ -70,635 +71,11 @@ async function openCalendarPage(
   return new CitizenCalendarPage(page, envType)
 }
 
-describe.each(envs)('Citizen attendance reservations (%s)', (env) => {
-  let children: DevPerson[]
-
-  beforeEach(async () => {
-    await resetServiceState()
-    await preschoolTerm2021.save()
-    await testCareArea.save()
-    await testDaycare.save()
-
-    children = [testChild, testChild2, testChildRestricted]
-    await Fixture.family({ guardian: testAdult, children }).save()
-    const placementTypes = ['DAYCARE', 'PRESCHOOL_DAYCARE', 'DAYCARE'] as const
-
-    const placementFixtures = zip(children, placementTypes).map(
-      ([child, placementType]) =>
-        createDaycarePlacementFixture(
-          randomId(),
-          child!.id,
-          testDaycare.id,
-          today,
-          today.addYears(1),
-          placementType
-        )
-    )
-    await createDaycarePlacements({ body: placementFixtures })
-    await createDefaultServiceNeedOptions()
-
-    const group = await Fixture.daycareGroup({
-      daycareId: testDaycare.id
-    }).save()
-
-    await Promise.all(
-      placementFixtures.map((placement) =>
-        Fixture.groupPlacement({
-          daycareGroupId: group.id,
-          daycarePlacementId: placement.id,
-          startDate: placement.startDate,
-          endDate: placement.endDate
-        }).save()
-      )
-    )
-  })
-
-  test('Citizen creates a repeating reservation for all children', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      '08:00',
-      '16:00'
-    )
-
-    await calendarPage.assertDay(firstReservationDay, [
-      {
-        childIds: children.map(({ id }) => id),
-        text: '08:00–16:00'
-      }
-    ])
-  })
-
-  test('Citizen creates a repeating weekly reservation for all children', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a monday
-    const firstReservationDay = today
-      .addDays(14)
-      .subDays(today.getIsoDayOfWeek() - 1)
-    const weekdays = [0, 1, 2, 3, 4]
-    const reservations = weekdays.map((index) => ({
-      startTime: `08:0${index}`,
-      endTime: `16:0${index}`,
-      childIds: children.map(({ id }) => id)
-    }))
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingWeeklyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservations
-    )
-
-    for (const index of weekdays) {
-      await calendarPage.assertDay(firstReservationDay.addDays(index), [
-        {
-          childIds: children.map(({ id }) => id),
-          text: `08:0${index}–16:0${index}`
-        }
-      ])
-    }
-  })
-
-  test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
-    const employee = await Fixture.employee().staff(testDaycare.id).save()
-    await Fixture.absence({
-      childId: testChildRestricted.id,
-      absenceType: 'UNKNOWN_ABSENCE',
-      date: today.addDays(35),
-      absenceCategory: 'BILLABLE',
-      modifiedBy: evakaUserId(employee.id)
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a monday
-    const firstReservationDay = today
-      .addDays(35)
-      .subDays(today.getIsoDayOfWeek() - 1)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.waitUntilVisible()
-    await reservationsModal.deselectAllChildren()
-    await reservationsModal.selectChild(testChildRestricted.id)
-    await reservationsModal.startDate.fill(firstReservationDay)
-    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
-    await reservationsModal.selectRepetition('WEEKLY')
-
-    await reservationsModal.assertReadOnlyWeeklyDay(2, 'absentNotEditable')
-  })
-
-  test('Citizen cannot create reservation on not-yet-open holiday period', async () => {
-    const start = today.addDays(35)
-    const end = start.addDays(6)
-    const opens = today.addDays(1)
-
-    await Fixture.holidayPeriod({
-      period: new FiniteDateRange(start, end),
-      reservationsOpenOn: opens,
-      reservationDeadline: opens
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.deselectAllChildren()
-    await reservationsModal.selectChild(testChildRestricted.id)
-    await reservationsModal.startDate.fill(start)
-    await reservationsModal.endDate.fill(end)
-    await reservationsModal.selectRepetition('IRREGULAR')
-
-    let date = start
-    while (date.isEqualOrBefore(end)) {
-      if (!date.isWeekend()) {
-        await reservationsModal.assertReadOnlyIrregularDay(
-          date,
-          'notYetReservable'
-        )
-      }
-      date = date.addDays(1)
-    }
-  })
-
-  test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-    const reservation = {
-      startTime: '08:00',
-      endTime: '16:00',
-      absence: true,
-      childIds: [children[0].id]
-    }
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservation.startTime,
-      reservation.endTime
-    )
-
-    const absencesModal = await calendarPage.openAbsencesModal()
-    await absencesModal.toggleChildren(children)
-    await absencesModal.markAbsence(
-      children[0],
-      children.length,
-      new FiniteDateRange(firstReservationDay, firstReservationDay),
-      'SICKLEAVE'
-    )
-
-    await calendarPage.assertDay(firstReservationDay, [
-      { childIds: [children[1].id, children[2].id], text: '08:00–16:00' },
-      { childIds: [children[0].id], text: 'Poissa' }
-    ])
-  })
-
-  test('Citizen creates a repeating reservation and then overwrites it', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-
-    let reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      '08:00',
-      '16:00'
-    )
-
-    await calendarPage.assertDay(firstReservationDay, [
-      { childIds: children.map(({ id }) => id), text: '08:00–16:00' }
-    ])
-
-    reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      '09:00',
-      '17:00'
-    )
-
-    await calendarPage.assertDay(firstReservationDay, [
-      { childIds: children.map(({ id }) => id), text: '09:00–17:00' }
-    ])
-  })
-
-  test('Citizen creates a reservation from day view', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationDay = today.addDays(14)
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-
-    const reservation1 = {
-      startTime: '08:00',
-      endTime: '16:00'
-    }
-
-    expect(children.length).toEqual(3)
-    await dayView.assertNoReservation(children[0].id)
-    await dayView.assertNoReservation(children[1].id)
-    await dayView.assertNoReservation(children[2].id)
-
-    const editor = await dayView.edit()
-    const child = editor.childSection(children[1].id)
-    await child.reservationStart.fill(reservation1.startTime)
-    await child.reservationEnd.fill(reservation1.endTime)
-    await editor.saveButton.click()
-
-    await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, '08:00–16:00')
-    await dayView.assertNoReservation(children[2].id)
-  })
-
-  test('Citizen creates a part-day reservation for a preschooler from day view', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationDay = today.addDays(14)
-
-    const reservation1 = {
-      startTime: '09:00',
-      endTime: '13:00'
-    }
-    const childIds = children.map((child) => child.id)
-
-    await calendarPage.assertDay(reservationDay, [
-      { childIds, text: 'Ilmoitus puuttuu' }
-    ])
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-
-    expect(children.length).toEqual(3)
-    await dayView.assertNoReservation(children[0].id)
-    await dayView.assertNoReservation(children[1].id)
-    await dayView.assertNoReservation(children[2].id)
-
-    const editor = await dayView.edit()
-    const child = editor.childSection(children[1].id)
-    await child.reservationStart.fill(reservation1.startTime)
-    await child.reservationEnd.fill(reservation1.endTime)
-    await editor.saveButton.click()
-
-    await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, '09:00–13:00')
-    await dayView.assertNoReservation(children[2].id)
-
-    // There's no way for the citizen to see that an absence was created, so use DevApi for that
-    const absences = await getAbsences({
-      childId: children[1].id,
-      date: reservationDay
-    })
-    expect(absences.map((a) => a.category)).toEqual(['BILLABLE'])
-
-    await calendarPage.closeTimedToasts()
-    await dayView.close()
-    await calendarPage.assertDay(reservationDay, [
-      { childIds: [children[0].id, children[2].id], text: 'Ilmoitus puuttuu' },
-      { childIds: [children[1].id], text: '09:00–13:00' }
-    ])
-
-    // When the day with a part-day absence is in the past and the child has no attendances,
-    // it should be shown as an absence
-    const calendarPageInFuture = await openCalendarPage(env, {
-      mockedTime: reservationDay
-        .addDays(1)
-        .toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-
-    await calendarPageInFuture.assertDay(reservationDay, [
-      { childIds: [children[0].id, children[2].id], text: 'Ilmoitus puuttuu' },
-      { childIds: [children[1].id], text: 'Poissa' }
-    ])
-
-    const dayViewInFuture =
-      await calendarPageInFuture.openDayView(reservationDay)
-    await dayViewInFuture.assertNoReservation(children[0].id)
-    await dayViewInFuture.assertAbsence(children[1].id, 'Poissa')
-    await dayViewInFuture.assertNoReservation(children[2].id)
-  })
-
-  test('If absence modal is opened from day view, that day is filled by default', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationDay = today.addDays(14)
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-    const absencesModal = await dayView.createAbsence()
-
-    await absencesModal.startDateInput.assertValueEquals(
-      reservationDay.format()
-    )
-    await absencesModal.endDateInput.assertValueEquals(reservationDay.format())
-  })
-
-  test('Children are grouped correctly in calendar', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      '08:00',
-      '16:00',
-      [children[0].id],
-      3
-    )
-
-    const reservationsModal2 = await calendarPage.openReservationModal()
-    await reservationsModal2.createRepeatingDailyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      '09:00',
-      '17:30',
-      [children[1].id, children[2].id],
-      3
-    )
-
-    await calendarPage.assertDay(firstReservationDay, [
-      { childIds: [children[1].id, children[2].id], text: '09:00–17:30' },
-      { childIds: [children[0].id], text: '08:00–16:00' }
-    ])
-  })
-
-  test('Citizen creates a repeating weekly reservation for all children with absent day', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a monday
-    const firstReservationDay = today
-      .addDays(14)
-      .subDays(today.getIsoDayOfWeek() - 1)
-    const weekdays = [0, 1, 2, 3, 4]
-
-    const reservations: (
-      | { startTime: string; endTime: string }
-      | { absence: true }
-    )[] = weekdays.map((index) => ({
-      startTime: `08:0${index}`,
-      endTime: `16:0${index}`
-    }))
-    reservations[1] = { absence: true }
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.createRepeatingWeeklyReservation(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      reservations
-    )
-
-    for (const index of weekdays) {
-      await calendarPage.assertDay(firstReservationDay.addDays(index), [
-        {
-          childIds: children.map(({ id }) => id),
-          text: index === 1 ? 'Poissa' : `08:0${index}–16:0${index}`
-        }
-      ])
-    }
-  })
-
-  test('Citizen cannot create daily reservation outside unit opening hours, validation errors shown', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a friday
-    const reservationDay = today.addDays(16)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.deselectAllChildren()
-    await reservationsModal.selectChild(testChildRestricted.id)
-
-    const reservation1 = {
-      startTime: '00:00',
-      endTime: '23:59',
-      childIds: [testChildRestricted.id]
-    }
-
-    await reservationsModal.fillDailyReservationInfo(
-      new FiniteDateRange(reservationDay, reservationDay),
-      reservation1.startTime,
-      reservation1.endTime,
-      reservation1.childIds
-    )
-
-    await reservationsModal.assertSendButtonDisabled(true)
-    await reservationsModal.assertDailyInputValidationWarningVisible('start', 0)
-    await reservationsModal.assertDailyInputValidationWarningVisible('end', 0)
-  })
-
-  test('Citizen cannot create weekly reservation outside unit opening hours, validation errors shown', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a monday
-    const reservationDay = today.addDays(19)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.deselectAllChildren()
-    await reservationsModal.selectChild(testChildRestricted.id)
-
-    //Reservations should cover entire work week from monday to friday
-    const reservations = [0, 1, 2, 3, 4].map(() => ({
-      startTime: '00:00',
-      endTime: '23:59',
-      childIds: [testChildRestricted.id]
-    }))
-
-    await reservationsModal.fillWeeklyReservationInfo(
-      new FiniteDateRange(reservationDay, reservationDay.addDays(4)),
-      reservations
-    )
-
-    await reservationsModal.assertSendButtonDisabled(true)
-    await reservationsModal.assertWeeklyInputValidationWarningVisible(
-      'start',
-      4,
-      0
-    )
-    await reservationsModal.assertWeeklyInputValidationWarningVisible(
-      'end',
-      4,
-      0
-    )
-  })
-
-  test('Citizen cannot create irregular reservation outside unit opening hours, validation errors shown', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a friday
-    const reservationDay = today.addDays(16)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-    await reservationsModal.deselectAllChildren()
-    await reservationsModal.selectChild(testChildRestricted.id)
-
-    const reservation1 = {
-      startTime: '00:00',
-      endTime: '23:59',
-      childIds: [testChildRestricted.id]
-    }
-
-    await reservationsModal.fillIrregularReservationInfo(
-      new FiniteDateRange(reservationDay, reservationDay),
-      [
-        {
-          date: reservationDay,
-          startTime: reservation1.startTime,
-          endTime: reservation1.endTime
-        }
-      ]
-    )
-
-    await reservationsModal.assertSendButtonDisabled(true)
-    await reservationsModal.assertIrregularInputValidationWarningVisible(
-      'start',
-      0,
-      reservationDay
-    )
-    await reservationsModal.assertIrregularInputValidationWarningVisible(
-      'end',
-      0,
-      reservationDay
-    )
-  })
-
-  test('Citizen cannot edit calendar reservation from day view to end up outside unit opening hours, validation errors shown', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    // This should be a friday
-    const reservationDay = today.addDays(16)
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-
-    const editor = await dayView.edit()
-    const child = editor.childSection(testChildRestricted.id)
-    await child.reservationStart.fill('00:00')
-    await child.reservationEnd.fill('23:59')
-    await child.reservationEnd.blur()
-
-    await editor.saveButton.assertDisabled(true)
-    await editor
-      .findByDataQa('edit-reservation-time-0-start-info')
-      .waitUntilVisible()
-    await editor
-      .findByDataQa('edit-reservation-time-0-end-info')
-      .waitUntilVisible()
-  })
-
-  test('Citizen creates an absence and turns it back to a reservation', async () => {
-    const reservationDay = today.addWeeks(2)
-
-    const calendarPage = await openCalendarPage(env)
-    let dayView = await calendarPage.openDayView(reservationDay)
-
-    let editor = await dayView.edit()
-    let childSection = editor.childSection(testChild.id)
-    await childSection.absentButton.click()
-    await editor.saveButton.click()
-
-    await dayView.assertAbsence(testChild.id, 'Poissa')
-    await calendarPage.closeTimedToasts()
-    await dayView.close()
-
-    dayView = await calendarPage.openDayView(reservationDay)
-    editor = await dayView.edit()
-    childSection = editor.childSection(testChild.id)
-    await childSection.absentButton.click()
-    await childSection.reservationStart.fill('08:00')
-    await childSection.reservationEnd.fill('16:00')
-    await editor.saveButton.click()
-
-    await dayView.assertReservations(testChild.id, '08:00–16:00')
-  })
-
-  test('Citizen creates a weekly reservation that spans a holiday', async () => {
-    // Monday
-    const reservationDay = LocalDate.of(2022, 4, 4)
-    const reservationRange = new FiniteDateRange(
-      reservationDay,
-      reservationDay.addWeeks(2).subDays(1)
-    )
-
-    // Pitkäperjantai
-    const holiday = LocalDate.of(2022, 4, 15)
-
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationsModal = await calendarPage.openReservationModal()
-
-    // Reservations should cover entire work week from monday to friday
-    const reservations = [0, 1, 2, 3, 4].map(() => ({
-      startTime: '08:00',
-      endTime: '16:00',
-      childIds: [testChild.id]
-    }))
-
-    await reservationsModal.fillWeeklyReservationInfo(
-      reservationRange,
-      reservations
-    )
-    await reservationsModal.save()
-
-    if (env === 'desktop') {
-      await calendarPage.navigateToNextMonths(3)
-      await calendarPage.assertMonthTitle('Huhtikuu 2022')
-    }
-
-    for (const date of reservationRange.dates()) {
-      if (date.isWeekend()) {
-        // nothing
-      } else if (date.isEqual(holiday)) {
-        await calendarPage.assertHoliday(date)
-        await calendarPage.assertDay(date, [])
-      } else {
-        await calendarPage.assertDay(date, [
-          {
-            childIds: [testChild.id, testChild2.id, testChildRestricted.id],
-            text: '08:00–16:00'
-          }
-        ])
-      }
-    }
-  })
-
-  test('Screen reader text is set for removing 2nd reservation', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-    const reservationsModal = await calendarPage.openReservationModal()
-
-    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
-    await reservationsModal.selectRepetition('DAILY')
-    await reservationsModal.fillDaily2ndReservationInfo('09:00', '17:00')
-    await reservationsModal.dailyAddReservationButton.assertDisabled(true)
-    await reservationsModal.dailySecondRangeDeleteButton.click()
-    await reservationsModal.dailyAddReservationButton.assertDisabled(false)
-    await reservationsModal.dailyAddReservationButton.assertFocused(true)
-    await waitUntilEqual(
-      () => reservationsModal.dailyScreenReaderMessage.text,
-      'Toinen aikaväli poistettu'
-    )
-  })
-  test('Screen reader text is set for marking absence', async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const firstReservationDay = today.addDays(14)
-    const reservationsModal = await calendarPage.openReservationModal()
-
-    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
-    await reservationsModal.selectRepetition('DAILY')
-    await reservationsModal.dailyAbsentButton.click()
-    await waitUntilEqual(
-      () => reservationsModal.dailyScreenReaderMessage.text,
-      'Merkitty poissaolevaksi'
-    )
-    await reservationsModal.dailyAbsentButton.assertFocused(true)
-  })
-})
-
-describe.each(envs)(
-  'Citizen attendance reservation modal infoboxes (%s)',
-  (env) => {
-    let notificationsPage: CitizenNotificationsPage
+for (const env of ['desktop', 'mobile'] as const) {
+  test.describe(`Citizen attendance reservations (${env})`, () => {
     let children: DevPerson[]
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       await resetServiceState()
       await preschoolTerm2021.save()
       await testCareArea.save()
@@ -706,10 +83,711 @@ describe.each(envs)(
 
       children = [testChild, testChild2, testChildRestricted]
       await Fixture.family({ guardian: testAdult, children }).save()
-      notificationsPage = new CitizenNotificationsPage(page)
+      const placementTypes = [
+        'DAYCARE',
+        'PRESCHOOL_DAYCARE',
+        'DAYCARE'
+      ] as const
+
+      const placementFixtures = zip(children, placementTypes).map(
+        ([child, placementType]) =>
+          createDaycarePlacementFixture(
+            randomId(),
+            child!.id,
+            testDaycare.id,
+            today,
+            today.addYears(1),
+            placementType
+          )
+      )
+      await createDaycarePlacements({ body: placementFixtures })
+      await createDefaultServiceNeedOptions()
+
+      const group = await Fixture.daycareGroup({
+        daycareId: testDaycare.id
+      }).save()
+
+      await Promise.all(
+        placementFixtures.map((placement) =>
+          Fixture.groupPlacement({
+            daycareGroupId: group.id,
+            daycarePlacementId: placement.id,
+            startDate: placement.startDate,
+            endDate: placement.endDate
+          }).save()
+        )
+      )
     })
 
-    test('Citizen sees an info box about a child starting later than the selected range end date', async () => {
+    test('Citizen creates a repeating reservation for all children', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        '08:00',
+        '16:00'
+      )
+
+      await calendarPage.assertDay(firstReservationDay, [
+        {
+          childIds: children.map(({ id }) => id),
+          text: '08:00–16:00'
+        }
+      ])
+    })
+
+    test('Citizen creates a repeating weekly reservation for all children', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a monday
+      const firstReservationDay = today
+        .addDays(14)
+        .subDays(today.getIsoDayOfWeek() - 1)
+      const weekdays = [0, 1, 2, 3, 4]
+      const reservations = weekdays.map((index) => ({
+        startTime: `08:0${index}`,
+        endTime: `16:0${index}`,
+        childIds: children.map(({ id }) => id)
+      }))
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingWeeklyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        reservations
+      )
+
+      for (const index of weekdays) {
+        await calendarPage.assertDay(firstReservationDay.addDays(index), [
+          {
+            childIds: children.map(({ id }) => id),
+            text: `08:0${index}–16:0${index}`
+          }
+        ])
+      }
+    })
+
+    test('Citizen cannot create reservation on day where staff has marked an absence', async ({
+      newEvakaPage
+    }) => {
+      const employee = await Fixture.employee().staff(testDaycare.id).save()
+      await Fixture.absence({
+        childId: testChildRestricted.id,
+        absenceType: 'UNKNOWN_ABSENCE',
+        date: today.addDays(35),
+        absenceCategory: 'BILLABLE',
+        modifiedBy: evakaUserId(employee.id)
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a monday
+      const firstReservationDay = today
+        .addDays(35)
+        .subDays(today.getIsoDayOfWeek() - 1)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.waitUntilVisible()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChildRestricted.id)
+      await reservationsModal.startDate.fill(firstReservationDay)
+      await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+      await reservationsModal.selectRepetition('WEEKLY')
+
+      await reservationsModal.assertReadOnlyWeeklyDay(2, 'absentNotEditable')
+    })
+
+    test('Citizen cannot create reservation on not-yet-open holiday period', async ({
+      newEvakaPage
+    }) => {
+      const start = today.addDays(35)
+      const end = start.addDays(6)
+      const opens = today.addDays(1)
+
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(start, end),
+        reservationsOpenOn: opens,
+        reservationDeadline: opens
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChildRestricted.id)
+      await reservationsModal.startDate.fill(start)
+      await reservationsModal.endDate.fill(end)
+      await reservationsModal.selectRepetition('IRREGULAR')
+
+      let date = start
+      while (date.isEqualOrBefore(end)) {
+        if (!date.isWeekend()) {
+          await reservationsModal.assertReadOnlyIrregularDay(
+            date,
+            'notYetReservable'
+          )
+        }
+        date = date.addDays(1)
+      }
+    })
+
+    test('Citizen creates a repeating reservation and then marks an absence for one child', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+      const reservation = {
+        startTime: '08:00',
+        endTime: '16:00',
+        absence: true,
+        childIds: [children[0].id]
+      }
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        reservation.startTime,
+        reservation.endTime
+      )
+
+      const absencesModal = await calendarPage.openAbsencesModal()
+      await absencesModal.toggleChildren(children)
+      await absencesModal.markAbsence(
+        children[0],
+        children.length,
+        new FiniteDateRange(firstReservationDay, firstReservationDay),
+        'SICKLEAVE'
+      )
+
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: [children[1].id, children[2].id], text: '08:00–16:00' },
+        { childIds: [children[0].id], text: 'Poissa' }
+      ])
+    })
+
+    test('Citizen creates a repeating reservation and then overwrites it', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+
+      let reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        '08:00',
+        '16:00'
+      )
+
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: children.map(({ id }) => id), text: '08:00–16:00' }
+      ])
+
+      reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        '09:00',
+        '17:00'
+      )
+
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: children.map(({ id }) => id), text: '09:00–17:00' }
+      ])
+    })
+
+    test('Citizen creates a reservation from day view', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationDay = today.addDays(14)
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+
+      const reservation1 = {
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+
+      expect(children.length).toEqual(3)
+      await dayView.assertNoReservation(children[0].id)
+      await dayView.assertNoReservation(children[1].id)
+      await dayView.assertNoReservation(children[2].id)
+
+      const editor = await dayView.edit()
+      const child = editor.childSection(children[1].id)
+      await child.reservationStart.fill(reservation1.startTime)
+      await child.reservationEnd.fill(reservation1.endTime)
+      await editor.saveButton.click()
+
+      await dayView.assertNoReservation(children[0].id)
+      await dayView.assertReservations(children[1].id, '08:00–16:00')
+      await dayView.assertNoReservation(children[2].id)
+    })
+
+    test('Citizen creates a part-day reservation for a preschooler from day view', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationDay = today.addDays(14)
+
+      const reservation1 = {
+        startTime: '09:00',
+        endTime: '13:00'
+      }
+      const childIds = children.map((child) => child.id)
+
+      await calendarPage.assertDay(reservationDay, [
+        { childIds, text: 'Ilmoitus puuttuu' }
+      ])
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+
+      expect(children.length).toEqual(3)
+      await dayView.assertNoReservation(children[0].id)
+      await dayView.assertNoReservation(children[1].id)
+      await dayView.assertNoReservation(children[2].id)
+
+      const editor = await dayView.edit()
+      const child = editor.childSection(children[1].id)
+      await child.reservationStart.fill(reservation1.startTime)
+      await child.reservationEnd.fill(reservation1.endTime)
+      await editor.saveButton.click()
+
+      await dayView.assertNoReservation(children[0].id)
+      await dayView.assertReservations(children[1].id, '09:00–13:00')
+      await dayView.assertNoReservation(children[2].id)
+
+      // There's no way for the citizen to see that an absence was created, so use DevApi for that
+      const absences = await getAbsences({
+        childId: children[1].id,
+        date: reservationDay
+      })
+      expect(absences.map((a) => a.category)).toEqual(['BILLABLE'])
+
+      await calendarPage.closeTimedToasts()
+      await dayView.close()
+      await calendarPage.assertDay(reservationDay, [
+        {
+          childIds: [children[0].id, children[2].id],
+          text: 'Ilmoitus puuttuu'
+        },
+        { childIds: [children[1].id], text: '09:00–13:00' }
+      ])
+
+      // When the day with a part-day absence is in the past and the child has no attendances,
+      // it should be shown as an absence
+      const calendarPageInFuture = await openCalendarPage(newEvakaPage, env, {
+        mockedTime: reservationDay
+          .addDays(1)
+          .toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+
+      await calendarPageInFuture.assertDay(reservationDay, [
+        {
+          childIds: [children[0].id, children[2].id],
+          text: 'Ilmoitus puuttuu'
+        },
+        { childIds: [children[1].id], text: 'Poissa' }
+      ])
+
+      const dayViewInFuture =
+        await calendarPageInFuture.openDayView(reservationDay)
+      await dayViewInFuture.assertNoReservation(children[0].id)
+      await dayViewInFuture.assertAbsence(children[1].id, 'Poissa')
+      await dayViewInFuture.assertNoReservation(children[2].id)
+    })
+
+    test('If absence modal is opened from day view, that day is filled by default', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationDay = today.addDays(14)
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+      const absencesModal = await dayView.createAbsence()
+
+      await absencesModal.startDateInput.assertValueEquals(
+        reservationDay.format()
+      )
+      await absencesModal.endDateInput.assertValueEquals(
+        reservationDay.format()
+      )
+    })
+
+    test('Children are grouped correctly in calendar', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        '08:00',
+        '16:00',
+        [children[0].id],
+        3
+      )
+
+      const reservationsModal2 = await calendarPage.openReservationModal()
+      await reservationsModal2.createRepeatingDailyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        '09:00',
+        '17:30',
+        [children[1].id, children[2].id],
+        3
+      )
+
+      await calendarPage.assertDay(firstReservationDay, [
+        { childIds: [children[1].id, children[2].id], text: '09:00–17:30' },
+        { childIds: [children[0].id], text: '08:00–16:00' }
+      ])
+    })
+
+    test('Citizen creates a repeating weekly reservation for all children with absent day', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a monday
+      const firstReservationDay = today
+        .addDays(14)
+        .subDays(today.getIsoDayOfWeek() - 1)
+      const weekdays = [0, 1, 2, 3, 4]
+
+      const reservations: (
+        | { startTime: string; endTime: string }
+        | { absence: true }
+      )[] = weekdays.map((index) => ({
+        startTime: `08:0${index}`,
+        endTime: `16:0${index}`
+      }))
+      reservations[1] = { absence: true }
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.createRepeatingWeeklyReservation(
+        new FiniteDateRange(
+          firstReservationDay,
+          firstReservationDay.addDays(6)
+        ),
+        reservations
+      )
+
+      for (const index of weekdays) {
+        await calendarPage.assertDay(firstReservationDay.addDays(index), [
+          {
+            childIds: children.map(({ id }) => id),
+            text: index === 1 ? 'Poissa' : `08:0${index}–16:0${index}`
+          }
+        ])
+      }
+    })
+
+    test('Citizen cannot create daily reservation outside unit opening hours, validation errors shown', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a friday
+      const reservationDay = today.addDays(16)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChildRestricted.id)
+
+      const reservation1 = {
+        startTime: '00:00',
+        endTime: '23:59',
+        childIds: [testChildRestricted.id]
+      }
+
+      await reservationsModal.fillDailyReservationInfo(
+        new FiniteDateRange(reservationDay, reservationDay),
+        reservation1.startTime,
+        reservation1.endTime,
+        reservation1.childIds
+      )
+
+      await reservationsModal.assertSendButtonDisabled(true)
+      await reservationsModal.assertDailyInputValidationWarningVisible(
+        'start',
+        0
+      )
+      await reservationsModal.assertDailyInputValidationWarningVisible('end', 0)
+    })
+
+    test('Citizen cannot create weekly reservation outside unit opening hours, validation errors shown', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a monday
+      const reservationDay = today.addDays(19)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChildRestricted.id)
+
+      //Reservations should cover entire work week from monday to friday
+      const reservations = [0, 1, 2, 3, 4].map(() => ({
+        startTime: '00:00',
+        endTime: '23:59',
+        childIds: [testChildRestricted.id]
+      }))
+
+      await reservationsModal.fillWeeklyReservationInfo(
+        new FiniteDateRange(reservationDay, reservationDay.addDays(4)),
+        reservations
+      )
+
+      await reservationsModal.assertSendButtonDisabled(true)
+      await reservationsModal.assertWeeklyInputValidationWarningVisible(
+        'start',
+        4,
+        0
+      )
+      await reservationsModal.assertWeeklyInputValidationWarningVisible(
+        'end',
+        4,
+        0
+      )
+    })
+
+    test('Citizen cannot create irregular reservation outside unit opening hours, validation errors shown', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a friday
+      const reservationDay = today.addDays(16)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+      await reservationsModal.deselectAllChildren()
+      await reservationsModal.selectChild(testChildRestricted.id)
+
+      const reservation1 = {
+        startTime: '00:00',
+        endTime: '23:59',
+        childIds: [testChildRestricted.id]
+      }
+
+      await reservationsModal.fillIrregularReservationInfo(
+        new FiniteDateRange(reservationDay, reservationDay),
+        [
+          {
+            date: reservationDay,
+            startTime: reservation1.startTime,
+            endTime: reservation1.endTime
+          }
+        ]
+      )
+
+      await reservationsModal.assertSendButtonDisabled(true)
+      await reservationsModal.assertIrregularInputValidationWarningVisible(
+        'start',
+        0,
+        reservationDay
+      )
+      await reservationsModal.assertIrregularInputValidationWarningVisible(
+        'end',
+        0,
+        reservationDay
+      )
+    })
+
+    test('Citizen cannot edit calendar reservation from day view to end up outside unit opening hours, validation errors shown', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      // This should be a friday
+      const reservationDay = today.addDays(16)
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+
+      const editor = await dayView.edit()
+      const child = editor.childSection(testChildRestricted.id)
+      await child.reservationStart.fill('00:00')
+      await child.reservationEnd.fill('23:59')
+      await child.reservationEnd.blur()
+
+      await editor.saveButton.assertDisabled(true)
+      await editor
+        .findByDataQa('edit-reservation-time-0-start-info')
+        .waitUntilVisible()
+      await editor
+        .findByDataQa('edit-reservation-time-0-end-info')
+        .waitUntilVisible()
+    })
+
+    test('Citizen creates an absence and turns it back to a reservation', async ({
+      newEvakaPage
+    }) => {
+      const reservationDay = today.addWeeks(2)
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      let dayView = await calendarPage.openDayView(reservationDay)
+
+      let editor = await dayView.edit()
+      let childSection = editor.childSection(testChild.id)
+      await childSection.absentButton.click()
+      await editor.saveButton.click()
+
+      await dayView.assertAbsence(testChild.id, 'Poissa')
+      await calendarPage.closeTimedToasts()
+      await dayView.close()
+
+      dayView = await calendarPage.openDayView(reservationDay)
+      editor = await dayView.edit()
+      childSection = editor.childSection(testChild.id)
+      await childSection.absentButton.click()
+      await childSection.reservationStart.fill('08:00')
+      await childSection.reservationEnd.fill('16:00')
+      await editor.saveButton.click()
+
+      await dayView.assertReservations(testChild.id, '08:00–16:00')
+    })
+
+    test('Citizen creates a weekly reservation that spans a holiday', async ({
+      newEvakaPage
+    }) => {
+      // Monday
+      const reservationDay = LocalDate.of(2022, 4, 4)
+      const reservationRange = new FiniteDateRange(
+        reservationDay,
+        reservationDay.addWeeks(2).subDays(1)
+      )
+
+      // Pitkäperjantai
+      const holiday = LocalDate.of(2022, 4, 15)
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationsModal = await calendarPage.openReservationModal()
+
+      // Reservations should cover entire work week from monday to friday
+      const reservations = [0, 1, 2, 3, 4].map(() => ({
+        startTime: '08:00',
+        endTime: '16:00',
+        childIds: [testChild.id]
+      }))
+
+      await reservationsModal.fillWeeklyReservationInfo(
+        reservationRange,
+        reservations
+      )
+      await reservationsModal.save()
+
+      if (env === 'desktop') {
+        await calendarPage.navigateToNextMonths(3)
+        await calendarPage.assertMonthTitle('Huhtikuu 2022')
+      }
+
+      for (const date of reservationRange.dates()) {
+        if (date.isWeekend()) {
+          // nothing
+        } else if (date.isEqual(holiday)) {
+          await calendarPage.assertHoliday(date)
+          await calendarPage.assertDay(date, [])
+        } else {
+          await calendarPage.assertDay(date, [
+            {
+              childIds: [testChild.id, testChild2.id, testChildRestricted.id],
+              text: '08:00–16:00'
+            }
+          ])
+        }
+      }
+    })
+
+    test('Screen reader text is set for removing 2nd reservation', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+      const reservationsModal = await calendarPage.openReservationModal()
+
+      await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+      await reservationsModal.selectRepetition('DAILY')
+      await reservationsModal.fillDaily2ndReservationInfo('09:00', '17:00')
+      await reservationsModal.dailyAddReservationButton.assertDisabled(true)
+      await reservationsModal.dailySecondRangeDeleteButton.click()
+      await reservationsModal.dailyAddReservationButton.assertDisabled(false)
+      await reservationsModal.dailyAddReservationButton.assertFocused(true)
+      await waitUntilEqual(
+        () => reservationsModal.dailyScreenReaderMessage.text,
+        'Toinen aikaväli poistettu'
+      )
+    })
+    test('Screen reader text is set for marking absence', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const firstReservationDay = today.addDays(14)
+      const reservationsModal = await calendarPage.openReservationModal()
+
+      await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+      await reservationsModal.selectRepetition('DAILY')
+      await reservationsModal.dailyAbsentButton.click()
+      await waitUntilEqual(
+        () => reservationsModal.dailyScreenReaderMessage.text,
+        'Merkitty poissaolevaksi'
+      )
+      await reservationsModal.dailyAbsentButton.assertFocused(true)
+    })
+  })
+
+  test.describe(`Citizen attendance reservation modal infoboxes (${env})`, () => {
+    let notificationsPage: CitizenNotificationsPage
+    let children: DevPerson[]
+
+    test.beforeEach(async () => {
+      await resetServiceState()
+      await preschoolTerm2021.save()
+      await testCareArea.save()
+      await testDaycare.save()
+
+      children = [testChild, testChild2, testChildRestricted]
+      await Fixture.family({ guardian: testAdult, children }).save()
+    })
+
+    test('Citizen sees an info box about a child starting later than the selected range end date', async ({
+      newEvakaPage
+    }) => {
       const child2StartDate = today.addDays(25)
       await Fixture.placement({
         childId: testChild.id,
@@ -726,7 +804,17 @@ describe.each(envs)(
         type: 'DAYCARE'
       }).save()
 
-      const calendarPage = await openCalendarPage(env)
+      const viewport =
+        env === 'mobile'
+          ? { width: 375, height: 812 }
+          : { width: 1920, height: 1080 }
+      const page = await newEvakaPage({
+        viewport,
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+      await enduserLogin(page, testAdult)
+      const calendarPage = new CitizenCalendarPage(page, env)
+      notificationsPage = new CitizenNotificationsPage(page)
 
       const firstReservationDay = today.addDays(14)
 
@@ -750,7 +838,9 @@ describe.each(envs)(
         child2StartDate
       )
     })
-    test('Citizen sees an info box about more than one child starting later than the selected range end date', async () => {
+    test('Citizen sees an info box about more than one child starting later than the selected range end date', async ({
+      newEvakaPage
+    }) => {
       const child2StartDate = today.addDays(25)
       const child3StartDate = today.addDays(26)
       await Fixture.placement({
@@ -775,7 +865,17 @@ describe.each(envs)(
         type: 'DAYCARE'
       }).save()
 
-      const calendarPage = await openCalendarPage(env)
+      const viewport =
+        env === 'mobile'
+          ? { width: 375, height: 812 }
+          : { width: 1920, height: 1080 }
+      const page = await newEvakaPage({
+        viewport,
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+      await enduserLogin(page, testAdult)
+      const calendarPage = new CitizenCalendarPage(page, env)
+      notificationsPage = new CitizenNotificationsPage(page)
 
       const firstReservationDay = today.addDays(14)
 
@@ -811,7 +911,9 @@ describe.each(envs)(
       )
     })
 
-    test('Absences - citizen sees an info box about a child starting later than the selected range end date', async () => {
+    test('Absences - citizen sees an info box about a child starting later than the selected range end date', async ({
+      newEvakaPage
+    }) => {
       const child2StartDate = today.addDays(25) // Less than 30 which is the limit for calendar being open for a child
       const selectedAbsencesEndDate = child2StartDate.subDays(1)
       await Fixture.placement({
@@ -829,7 +931,17 @@ describe.each(envs)(
         type: 'DAYCARE'
       }).save()
 
-      const calendarPage = await openCalendarPage(env)
+      const viewport =
+        env === 'mobile'
+          ? { width: 375, height: 812 }
+          : { width: 1920, height: 1080 }
+      const page = await newEvakaPage({
+        viewport,
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+      await enduserLogin(page, testAdult)
+      const calendarPage = new CitizenCalendarPage(page, env)
+      notificationsPage = new CitizenNotificationsPage(page)
 
       const absencesModal = await calendarPage.openAbsencesModal()
       await absencesModal.toggleChildren([testChild, testChild2])
@@ -852,517 +964,528 @@ describe.each(envs)(
         child2StartDate
       )
     })
-  }
-)
+  })
 
-describe.each(envs)('Calendar day content (%s)', (env) => {
-  async function init(options?: { placementType?: PlacementType }) {
-    await resetServiceState()
+  test.describe(`Calendar day content (${env})`, () => {
+    async function init(options?: { placementType?: PlacementType }) {
+      await resetServiceState()
 
-    await testCareArea.save()
-    await testDaycare.save()
-    const child = await testChild2.saveChild({
-      updateMockVtj: true
+      await testCareArea.save()
+      await testDaycare.save()
+      const child = await testChild2.saveChild({
+        updateMockVtj: true
+      })
+      const guardian = await testAdult.saveAdult({
+        updateMockVtjWithDependants: [child]
+      })
+      await Fixture.guardian(child, guardian).save()
+
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addYears(1),
+        type: options?.placementType ?? 'DAYCARE'
+      }).save()
+    }
+
+    test('No placements', async ({ newEvakaPage }) => {
+      await init()
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today.subDays(1), [])
+
+      const day = await calendarPage.openDayView(today.subDays(1))
+      await day.assertNoActivePlacementsMsgVisible()
     })
-    const guardian = await testAdult.saveAdult({
-      updateMockVtjWithDependants: [child]
+
+    test('Holiday', async ({ newEvakaPage }) => {
+      await init()
+      const holiday = LocalDate.of(2022, 1, 6)
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertHoliday(holiday)
+      await calendarPage.assertDay(holiday, [])
+
+      const day = await calendarPage.openDayView(holiday)
+      await day.assertNoActivePlacementsMsgVisible()
     })
-    await Fixture.guardian(child, guardian).save()
 
-    await Fixture.placement({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      startDate: today,
-      endDate: today.addYears(1),
-      type: options?.placementType ?? 'DAYCARE'
-    }).save()
-  }
+    test('Missing reservation', async ({ newEvakaPage }) => {
+      await init()
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        { childIds: [testChild2.id], text: 'Ilmoitus puuttuu' }
+      ])
 
-  it('No placements', async () => {
-    await init()
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today.subDays(1), [])
+      const day = await calendarPage.openDayView(today)
+      await day.assertNoReservation(testChild2.id)
+    })
 
-    const day = await calendarPage.openDayView(today.subDays(1))
-    await day.assertNoActivePlacementsMsgVisible()
-  })
+    test('Reservation', async ({ newEvakaPage }) => {
+      await init()
+      await Fixture.attendanceReservation({
+        type: 'RESERVATIONS',
+        date: today,
+        childId: testChild2.id,
+        reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+        secondReservation: null
+      }).save()
 
-  it('Holiday', async () => {
-    await init()
-    const holiday = LocalDate.of(2022, 1, 6)
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '08:00–16:00'
+        }
+      ])
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertHoliday(holiday)
-    await calendarPage.assertDay(holiday, [])
+      const day = await calendarPage.openDayView(today)
+      await day.assertReservations(testChild2.id, '08:00–16:00')
+    })
 
-    const day = await calendarPage.openDayView(holiday)
-    await day.assertNoActivePlacementsMsgVisible()
-  })
+    test('Two reservations', async ({ newEvakaPage }) => {
+      await init()
+      await Fixture.attendanceReservation({
+        type: 'RESERVATIONS',
+        date: today,
+        childId: testChild2.id,
+        reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+        secondReservation: new TimeRange(
+          LocalTime.of(18, 0),
+          LocalTime.of(23, 59)
+        )
+      }).save()
 
-  it('Missing reservation', async () => {
-    await init()
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      { childIds: [testChild2.id], text: 'Ilmoitus puuttuu' }
-    ])
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '08:00–12:00, 18:00–23:59'
+        }
+      ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertNoReservation(testChild2.id)
-  })
+      const day = await calendarPage.openDayView(today)
+      await day.assertReservations(testChild2.id, '08:00–12:00, 18:00–23:59')
+    })
 
-  it('Reservation', async () => {
-    await init()
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
-      date: today,
-      childId: testChild2.id,
-      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-      secondReservation: null
-    }).save()
+    test('Holiday period highlight', async ({ newEvakaPage }) => {
+      await init()
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today,
+        reservationDeadline: today
+      }).save()
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '08:00–16:00'
-      }
-    ])
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDayHighlight(today, 'holidayPeriod')
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertReservations(testChild2.id, '08:00–16:00')
-  })
+      const day = await calendarPage.openDayView(today)
+      await day.assertNoReservation(testChild2.id)
+    })
 
-  it('Two reservations', async () => {
-    await init()
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
-      date: today,
-      childId: testChild2.id,
-      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
-      secondReservation: new TimeRange(
-        LocalTime.of(18, 0),
-        LocalTime.of(23, 59)
-      )
-    }).save()
+    test('Holiday period not yet open', async ({ newEvakaPage }) => {
+      await init()
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today.addDays(1),
+        reservationDeadline: today.addDays(1)
+      }).save()
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '08:00–12:00, 18:00–23:59'
-      }
-    ])
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: `Ilmoittautuminen avataan ${today.addDays(1).format()}`
+        }
+      ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertReservations(testChild2.id, '08:00–12:00, 18:00–23:59')
-  })
+      const day = await calendarPage.openDayView(today)
+      await day.assertNotYetReservable(testChild2.id)
+    })
 
-  it('Holiday period highlight', async () => {
-    await init()
-    await Fixture.holidayPeriod({
-      period: new FiniteDateRange(today, today),
-      reservationsOpenOn: today,
-      reservationDeadline: today
-    }).save()
+    test('Reservation without times', async ({ newEvakaPage }) => {
+      await init()
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today,
+        reservationDeadline: today
+      }).save()
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDayHighlight(today, 'holidayPeriod')
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: null
+      }).save()
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertNoReservation(testChild2.id)
-  })
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        { childIds: [testChild2.id], text: 'Läsnä' }
+      ])
 
-  it('Holiday period not yet open', async () => {
-    await init()
-    await Fixture.holidayPeriod({
-      period: new FiniteDateRange(today, today),
-      reservationsOpenOn: today.addDays(1),
-      reservationDeadline: today.addDays(1)
-    }).save()
+      const day = await calendarPage.openDayView(today)
+      await day.assertReservationNoTimes(testChild2.id)
+    })
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: `Ilmoittautuminen avataan ${today.addDays(1).format()}`
-      }
-    ])
+    test('Fixed schedule', async ({ newEvakaPage }) => {
+      await init({ placementType: 'PRESCHOOL' })
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertNotYetReservable(testChild2.id)
-  })
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        { childIds: [testChild2.id], text: 'Läsnä' }
+      ])
 
-  it('Reservation without times', async () => {
-    await init()
-    await Fixture.holidayPeriod({
-      period: new FiniteDateRange(today, today),
-      reservationsOpenOn: today,
-      reservationDeadline: today
-    }).save()
+      const day = await calendarPage.openDayView(today)
+      await day.assertReservationNotRequired(testChild2.id)
+    })
 
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: null
-    }).save()
+    test('Ongoing attendance', async ({ newEvakaPage }) => {
+      await init()
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      { childIds: [testChild2.id], text: 'Läsnä' }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertReservationNoTimes(testChild2.id)
-  })
-
-  it('Fixed schedule', async () => {
-    await init({ placementType: 'PRESCHOOL' })
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      { childIds: [testChild2.id], text: 'Läsnä' }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertReservationNotRequired(testChild2.id)
-  })
-
-  it('Ongoing attendance', async () => {
-    await init()
-
-    await Fixture.childAttendance({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      date: today,
-      arrived: LocalTime.of(8, 0),
-      departed: null
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '08:00–'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertNoReservation(testChild2.id)
-    await day.assertAttendances(testChild2.id, ['08:00–'])
-  })
-
-  it('Attendance', async () => {
-    await init()
-
-    await Fixture.childAttendance({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      date: today,
-      arrived: LocalTime.of(8, 0),
-      departed: LocalTime.of(15, 30)
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '08:00–15:30'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertNoReservation(testChild2.id)
-    await day.assertAttendances(testChild2.id, ['08:00–15:30'])
-  })
-
-  it('Three attendances', async () => {
-    await init()
-
-    const attendanceHours: [number, number][] = [
-      [8, 12],
-      [14, 18],
-      [20, 23]
-    ]
-    for (const [start, end] of attendanceHours) {
       await Fixture.childAttendance({
         childId: testChild2.id,
         unitId: testDaycare.id,
         date: today,
-        arrived: LocalTime.of(start, 0),
-        departed: LocalTime.of(end, 0)
+        arrived: LocalTime.of(8, 0),
+        departed: null
       }).save()
-    }
 
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '08:00–12:00, 14:00–18:00, 20:00–23:00'
-      }
-    ])
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '08:00–'
+        }
+      ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertNoReservation(testChild2.id)
-    await day.assertAttendances(testChild2.id, [
-      '08:00–12:00',
-      '14:00–18:00',
-      '20:00–23:00'
-    ])
-  })
-
-  it('Absent', async () => {
-    await init()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id)
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDayHighlight(today, 'none')
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Poissa'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Poissa')
-  })
-
-  it('Absent (marked by staff)', async () => {
-    await init()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: systemInternalUser.id
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Poissa'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Henkilökunnan merkitsemä poissaolo')
-  })
-
-  it('Free absence', async () => {
-    await init()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: systemInternalUser.id,
-      absenceType: 'FREE_ABSENCE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Maksuton poissaolo'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Henkilökunnan merkitsemä poissaolo')
-  })
-
-  it('Planned absence', async () => {
-    await init()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceType: 'PLANNED_ABSENCE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env, {
-      featureFlags: {
-        citizenAttendanceSummary: true
-      }
+      const day = await calendarPage.openDayView(today)
+      await day.assertNoReservation(testChild2.id)
+      await day.assertAttendances(testChild2.id, ['08:00–'])
     })
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Vuorotyöpoissaolo'
-      }
-    ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
-  })
+    test('Attendance', async ({ newEvakaPage }) => {
+      await init()
 
-  it('Reservation + full day absence (daycare)', async () => {
-    await init()
+      await Fixture.childAttendance({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        date: today,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 30)
+      }).save()
 
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-    }).save()
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '08:00–15:30'
+        }
+      ])
 
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceType: 'SICKLEAVE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Poissa'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Sairauspoissaolo')
-  })
-
-  it('Reservation + full day absence (preschool + daycare)', async () => {
-    await init({ placementType: 'PRESCHOOL_DAYCARE' })
-
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
-    }).save()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceCategory: 'BILLABLE'
-    }).save()
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceCategory: 'NONBILLABLE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Poissa'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Poissa')
-  })
-
-  it('Reservation + part-day planned absence', async () => {
-    await init({ placementType: 'PRESCHOOL_DAYCARE' })
-
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
-    }).save()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceCategory: 'BILLABLE',
-      absenceType: 'PLANNED_ABSENCE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env)
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: '09:00–13:00'
-      }
-    ])
-
-    const day = await calendarPage.openDayView(today)
-    await day.assertReservations(testChild2.id, '09:00–13:00')
-  })
-
-  it('Reservation + part-day planned absence (in the past)', async () => {
-    await init({ placementType: 'PRESCHOOL_DAYCARE' })
-
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
-    }).save()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceCategory: 'BILLABLE',
-      absenceType: 'PLANNED_ABSENCE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env, {
-      mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+      const day = await calendarPage.openDayView(today)
+      await day.assertNoReservation(testChild2.id)
+      await day.assertAttendances(testChild2.id, ['08:00–15:30'])
     })
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Poissa'
+
+    test('Three attendances', async ({ newEvakaPage }) => {
+      await init()
+
+      const attendanceHours: [number, number][] = [
+        [8, 12],
+        [14, 18],
+        [20, 23]
+      ]
+      for (const [start, end] of attendanceHours) {
+        await Fixture.childAttendance({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          date: today,
+          arrived: LocalTime.of(start, 0),
+          departed: LocalTime.of(end, 0)
+        }).save()
       }
-    ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Poissa')
-  })
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '08:00–12:00, 14:00–18:00, 20:00–23:00'
+        }
+      ])
 
-  it('Reservation + part-day planned absence (in the past) with citizenAttendanceSummary feature flag', async () => {
-    await init({ placementType: 'PRESCHOOL_DAYCARE' })
-
-    await Fixture.attendanceReservationRaw({
-      childId: testChild2.id,
-      date: today,
-      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
-    }).save()
-
-    await Fixture.absence({
-      childId: testChild2.id,
-      date: today,
-      modifiedBy: evakaUserId(testAdult.id),
-      absenceCategory: 'BILLABLE',
-      absenceType: 'PLANNED_ABSENCE'
-    }).save()
-
-    const calendarPage = await openCalendarPage(env, {
-      mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0)),
-      featureFlags: { citizenAttendanceSummary: true }
+      const day = await calendarPage.openDayView(today)
+      await day.assertNoReservation(testChild2.id)
+      await day.assertAttendances(testChild2.id, [
+        '08:00–12:00',
+        '14:00–18:00',
+        '20:00–23:00'
+      ])
     })
-    await calendarPage.assertDay(today, [
-      {
-        childIds: [testChild2.id],
-        text: 'Vuorotyöpoissaolo'
-      }
-    ])
 
-    const day = await calendarPage.openDayView(today)
-    await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
+    test('Absent', async ({ newEvakaPage }) => {
+      await init()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id)
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDayHighlight(today, 'none')
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Poissa'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Poissa')
+    })
+
+    test('Absent (marked by staff)', async ({ newEvakaPage }) => {
+      await init()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: systemInternalUser.id
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Poissa'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(
+        testChild2.id,
+        'Henkilökunnan merkitsemä poissaolo'
+      )
+    })
+
+    test('Free absence', async ({ newEvakaPage }) => {
+      await init()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: systemInternalUser.id,
+        absenceType: 'FREE_ABSENCE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Maksuton poissaolo'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(
+        testChild2.id,
+        'Henkilökunnan merkitsemä poissaolo'
+      )
+    })
+
+    test('Planned absence', async ({ newEvakaPage }) => {
+      await init()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceType: 'PLANNED_ABSENCE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env, {
+        featureFlags: {
+          citizenAttendanceSummary: true
+        }
+      })
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Vuorotyöpoissaolo'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
+    })
+
+    test('Reservation + full day absence (daycare)', async ({
+      newEvakaPage
+    }) => {
+      await init()
+
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+      }).save()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceType: 'SICKLEAVE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Poissa'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Sairauspoissaolo')
+    })
+
+    test('Reservation + full day absence (preschool + daycare)', async ({
+      newEvakaPage
+    }) => {
+      await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+      }).save()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceCategory: 'BILLABLE'
+      }).save()
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceCategory: 'NONBILLABLE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Poissa'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Poissa')
+    })
+
+    test('Reservation + part-day planned absence', async ({ newEvakaPage }) => {
+      await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+      }).save()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceCategory: 'BILLABLE',
+        absenceType: 'PLANNED_ABSENCE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: '09:00–13:00'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertReservations(testChild2.id, '09:00–13:00')
+    })
+
+    test('Reservation + part-day planned absence (in the past)', async ({
+      newEvakaPage
+    }) => {
+      await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+      }).save()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceCategory: 'BILLABLE',
+        absenceType: 'PLANNED_ABSENCE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env, {
+        mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Poissa'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Poissa')
+    })
+
+    test('Reservation + part-day planned absence (in the past) with citizenAttendanceSummary feature flag', async ({
+      newEvakaPage
+    }) => {
+      await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+      await Fixture.attendanceReservationRaw({
+        childId: testChild2.id,
+        date: today,
+        range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+      }).save()
+
+      await Fixture.absence({
+        childId: testChild2.id,
+        date: today,
+        modifiedBy: evakaUserId(testAdult.id),
+        absenceCategory: 'BILLABLE',
+        absenceType: 'PLANNED_ABSENCE'
+      }).save()
+
+      const calendarPage = await openCalendarPage(newEvakaPage, env, {
+        mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0)),
+        featureFlags: { citizenAttendanceSummary: true }
+      })
+      await calendarPage.assertDay(today, [
+        {
+          childIds: [testChild2.id],
+          text: 'Vuorotyöpoissaolo'
+        }
+      ])
+
+      const day = await calendarPage.openDayView(today)
+      await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
+    })
   })
-})
 
-describe.each(envs)(
-  'Citizen calendar previous month contents on (%s)',
-  (env) => {
+  test.describe(`Citizen calendar previous month contents on (${env})`, () => {
     const attendanceDateInPast = LocalDate.of(2021, 10, 4)
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       const startDate = today.subMonths(4)
       await resetServiceState()
       await testCareArea.save()
@@ -1392,8 +1515,10 @@ describe.each(envs)(
       }).save()
     })
 
-    test('Citizen can browse calendar history and view attendances', async () => {
-      const calendarPage = await openCalendarPage(env)
+    test('Citizen can browse calendar history and view attendances', async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
 
       await calendarPage.assertHasNoDate(attendanceDateInPast)
 
@@ -1421,14 +1546,11 @@ describe.each(envs)(
         }
       ])
     })
-  }
-)
+  })
+}
 
-describe('Citizen calendar child visibility', () => {
-  let page: Page
-
+test.describe('Citizen calendar child visibility', () => {
   let calendarPage: CitizenCalendarPage
-  const today = LocalDate.of(2022, 1, 5)
   const placement1start = today
   const placement1end = today.addMonths(6)
   const placement2start = today.addMonths(8)
@@ -1436,7 +1558,7 @@ describe('Citizen calendar child visibility', () => {
   let child: DevPerson
   let child2: DevPerson
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -1472,14 +1594,15 @@ describe('Citizen calendar child visibility', () => {
         )
       ]
     })
+  })
 
-    page = await Page.open({
+  test('Child visible only while placement is active', async ({
+    newEvakaPage
+  }) => {
+    const page = await newEvakaPage({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     calendarPage = new CitizenCalendarPage(page, 'desktop')
-  })
-
-  test('Child visible only while placement is active', async () => {
     await enduserLogin(page, testAdult)
 
     await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
@@ -1508,7 +1631,13 @@ describe('Citizen calendar child visibility', () => {
     await absencesModal.assertChildrenSelectable([child.id])
   })
 
-  test('Day popup contains message if no children placements on that date', async () => {
+  test('Day popup contains message if no children placements on that date', async ({
+    newEvakaPage
+  }) => {
+    const page = await newEvakaPage({
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    calendarPage = new CitizenCalendarPage(page, 'desktop')
     await enduserLogin(page, testAdult)
 
     let dayView = await calendarPage.openDayView(today.subDays(1))
@@ -1522,7 +1651,9 @@ describe('Citizen calendar child visibility', () => {
     await dayView.assertNoActivePlacementsMsgVisible()
   })
 
-  test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
+  test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async ({
+    newEvakaPage
+  }) => {
     const careArea = await testCareArea2.save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
@@ -1553,19 +1684,27 @@ describe('Citizen calendar child visibility', () => {
       shiftCare: 'FULL'
     }).save()
 
+    const page = await newEvakaPage({
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    calendarPage = new CitizenCalendarPage(page, 'desktop')
     await enduserLogin(page, testAdult)
 
     // Saturday
     await calendarPage.assertChildCountOnDay(today.addDays(3), 1)
   })
 
-  test('Citizen sees only children with ongoing placements', async () => {
-    const calendarPage = await openCalendarPage('desktop')
+  test('Citizen sees only children with ongoing placements', async ({
+    newEvakaPage
+  }) => {
+    const calendarPage = await openCalendarPage(newEvakaPage, 'desktop')
     const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.assertChildrenSelectable([child.id])
   })
 
-  test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
+  test('Citizen creates a reservation for a child in round the clock daycare for holidays', async ({
+    newEvakaPage
+  }) => {
     const careArea = await testCareArea2.save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
@@ -1600,7 +1739,7 @@ describe('Citizen calendar child visibility', () => {
     // Pitkäperjantai
     const firstReservationDay = LocalDate.of(2022, 4, 15)
 
-    const calendarPage = await openCalendarPage('desktop')
+    const calendarPage = await openCalendarPage(newEvakaPage, 'desktop')
 
     await calendarPage.navigateToNextMonths(3)
     await calendarPage.assertMonthTitle('Huhtikuu 2022')
@@ -1634,13 +1773,11 @@ describe('Citizen calendar child visibility', () => {
   })
 })
 
-describe('Citizen calendar visibility', () => {
-  let page: Page
-  const today = LocalDate.todayInSystemTz()
+test.describe('Citizen calendar visibility', () => {
   let child: DevPerson
   let daycareId: DaycareId
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -1649,34 +1786,40 @@ describe('Citizen calendar visibility', () => {
     daycareId = testDaycare.id
   })
 
-  test('Child is visible when placement starts within 1 month (30 days)', async () => {
+  test('Child is visible when placement starts within 1 month (30 days)', async ({
+    newEvakaPage
+  }) => {
+    const visibilityToday = LocalDate.todayInSystemTz()
     await Fixture.placement({
       childId: child.id,
       unitId: daycareId,
-      startDate: today.addDays(30),
-      endDate: today.addYears(1),
+      startDate: visibilityToday.addDays(30),
+      endDate: visibilityToday.addYears(1),
       type: 'DAYCARE'
     }).save()
 
-    page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    const page = await newEvakaPage({
+      mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page, testAdult)
 
     await page.findByDataQa('nav-calendar-desktop').waitUntilVisible()
   })
 
-  test('Child is not visible when placement starts later than 1 month (30 + 1) days', async () => {
+  test('Child is not visible when placement starts later than 1 month (30 + 1) days', async ({
+    newEvakaPage
+  }) => {
+    const visibilityToday = LocalDate.todayInSystemTz()
     await Fixture.placement({
       childId: child.id,
       unitId: daycareId,
-      startDate: today.addDays(31),
-      endDate: today.addYears(1),
+      startDate: visibilityToday.addDays(31),
+      endDate: visibilityToday.addYears(1),
       type: 'DAYCARE'
     }).save()
 
-    page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    const page = await newEvakaPage({
+      mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
     await enduserLogin(page, testAdult)
@@ -1686,21 +1829,24 @@ describe('Citizen calendar visibility', () => {
     await page.findByDataQa('nav-calendar-desktop').waitUntilHidden()
   })
 
-  test('Child is not visible when placement is in the past', async () => {
+  test('Child is not visible when placement is in the past', async ({
+    newEvakaPage
+  }) => {
+    const visibilityToday = LocalDate.todayInSystemTz()
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
           randomId(),
           child.id,
           daycareId,
-          today.subYears(1),
-          today.subDays(1)
+          visibilityToday.subYears(1),
+          visibilityToday.subDays(1)
         )
       ]
     })
 
-    page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+    const page = await newEvakaPage({
+      mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
     await enduserLogin(page, testAdult)
@@ -1711,19 +1857,18 @@ describe('Citizen calendar visibility', () => {
   })
 })
 
-describe.each(envs)(
-  'Citizen notification toasts about children starting',
-  (env) => {
+for (const env of ['desktop', 'mobile'] as const) {
+  test.describe(`Citizen notification toasts about children starting (${env})`, () => {
     let page: Page
     let notificationsPage: CitizenNotificationsPage
-    const today = LocalDate.todayInSystemTz()
+    const notificationToday = LocalDate.todayInSystemTz()
     let child1: DevPerson
     let child2: DevPerson
     let child3: DevPerson
     let daycareId1: DaycareId
     let daycareId2: DaycareId
 
-    beforeEach(async () => {
+    test.beforeEach(async ({ newEvakaPage }) => {
       await resetServiceState()
       await testCareArea.save()
       await testCareArea2.save()
@@ -1785,10 +1930,10 @@ describe.each(envs)(
         env === 'mobile'
           ? { width: 375, height: 812 }
           : { width: 1920, height: 1080 }
-      page = await Page.open({
+      page = await newEvakaPage({
         viewport,
         screen: viewport,
-        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+        mockedTime: notificationToday.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
       notificationsPage = new CitizenNotificationsPage(page)
     })
@@ -1802,8 +1947,8 @@ describe.each(envs)(
       await Fixture.placement({
         childId: child.id,
         unitId: daycareId,
-        startDate: today.addDays(startDaysFromToday),
-        endDate: today.addYears(1),
+        startDate: notificationToday.addDays(startDaysFromToday),
+        endDate: notificationToday.addYears(1),
         type
       }).save()
     }
@@ -1812,7 +1957,7 @@ describe.each(envs)(
     const startDateOffsetAfterLimit = startDateOffsetLimit + 1
     const startDateOffsetBeforeLimit = startDateOffsetLimit - 1
 
-    test(`Notifications are shown for all children starting over 30 days from now: ${env}`, async () => {
+    test(`Notifications are shown for all children starting over 30 days from now`, async () => {
       await addPlacement(
         child1,
         daycareId1,
@@ -1839,19 +1984,19 @@ describe.each(envs)(
         0,
         child1,
         testDaycare.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
       await notificationsPage.assertStartingInfoNotificationContent(
         1,
         child2,
         testDaycare2.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
       await notificationsPage.assertStartingInfoNotificationContent(
         2,
         child3,
         testDaycare2.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
     })
 
@@ -1876,13 +2021,13 @@ describe.each(envs)(
         0,
         child2,
         testDaycare2.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
       await notificationsPage.assertStartingInfoNotificationContent(
         1,
         child3,
         testDaycare2.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
       await notificationsPage.assertNotificationIndexHidden(2)
     })
@@ -1908,7 +2053,7 @@ describe.each(envs)(
         0,
         child3,
         testDaycare2.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
 
       await notificationsPage.assertNotificationIndexHidden(1)
@@ -1949,7 +2094,7 @@ describe.each(envs)(
         0,
         child1,
         testDaycare.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
 
       await page.reload()
@@ -1958,7 +2103,7 @@ describe.each(envs)(
         0,
         child1,
         testDaycare.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
     })
     test('A dismissed notification does not appear after page reload', async () => {
@@ -1975,7 +2120,7 @@ describe.each(envs)(
         0,
         child1,
         testDaycare.name,
-        today.addDays(startDateOffsetAfterLimit)
+        notificationToday.addDays(startDateOffsetAfterLimit)
       )
 
       const closeButton = notificationsPage.getNotificationCloseButton(0)
@@ -1987,108 +2132,121 @@ describe.each(envs)(
 
       await notificationsPage.assertNotificationIndexHidden(0)
     })
-  }
-)
+  })
+}
 
-describe.each(envs)('Citizen calendar shift care reservations', (env) => {
-  let page: Page
-  const today = LocalDate.of(2022, 1, 5)
-  const placement1start = today
-  const placement1end = today.addMonths(6)
+for (const env of ['desktop', 'mobile'] as const) {
+  test.describe(`Citizen calendar shift care reservations (${env})`, () => {
+    const placement1start = today
+    const placement1end = today.addMonths(6)
 
-  beforeEach(async () => {
-    await resetServiceState()
-    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-    const careArea = await testCareArea2.save()
-    await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
+    test.beforeEach(async ({ newEvakaPage }) => {
+      await resetServiceState()
+      await Fixture.family({
+        guardian: testAdult,
+        children: [testChild2]
+      }).save()
+      const careArea = await testCareArea2.save()
+      await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          testChild2.id,
-          testDaycare2.id,
-          placement1start,
-          placement1end
-        )
-      ]
+      await createDaycarePlacements({
+        body: [
+          createDaycarePlacementFixture(
+            randomId(),
+            testChild2.id,
+            testDaycare2.id,
+            placement1start,
+            placement1end
+          )
+        ]
+      })
+      const page = await newEvakaPage({
+        mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+      })
+      await enduserLogin(page, testAdult)
     })
-    page = await Page.open({
-      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+
+    test(`Citizen creates 2 reservations from day view`, async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+
+      const reservationDay = today.addDays(14)
+
+      const reservation1 = {
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+
+      const reservation2 = {
+        startTime: '17:00',
+        endTime: '19:00'
+      }
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+
+      await dayView.assertNoReservation(testChild2.id)
+
+      let editor = await dayView.edit()
+      let child = editor.childSection(testChild2.id)
+      await child.reservationStart.fill(reservation1.startTime)
+      await child.reservationEnd.fill(reservation1.endTime)
+      await editor.saveButton.click()
+
+      await dayView.assertReservations(testChild2.id, '08:00–16:00')
+
+      editor = await dayView.edit()
+      child = editor.childSection(testChild2.id)
+      await child.addSecondReservationButton.click()
+      await child.reservation2Start.fill(reservation2.startTime)
+      await child.reservation2End.fill(reservation2.endTime)
+      await editor.saveButton.click()
+
+      await dayView.assertReservations(
+        testChild2.id,
+        '08:00–16:00, 17:00–19:00'
+      )
     })
-    await enduserLogin(page, testAdult)
+
+    test(`Citizen creates 2 reservations from reservation modal`, async ({
+      newEvakaPage
+    }) => {
+      const calendarPage = await openCalendarPage(newEvakaPage, env)
+      const reservationDay = today.addDays(14)
+
+      const reservation1 = {
+        startTime: '10:00',
+        endTime: '16:00',
+        childIds: [testChild2.id]
+      }
+
+      const reservation2 = {
+        startTime: '17:00',
+        endTime: '18:00'
+      }
+      const reservationsModal = await calendarPage.openReservationModal()
+
+      await reservationsModal.fillDailyReservationInfo(
+        new FiniteDateRange(reservationDay, reservationDay),
+        reservation1.startTime,
+        reservation1.endTime,
+        reservation1.childIds,
+        1
+      )
+
+      await reservationsModal.fillDaily2ndReservationInfo(
+        reservation2.startTime,
+        reservation2.endTime
+      )
+
+      await reservationsModal.save()
+
+      const dayView = await calendarPage.openDayView(reservationDay)
+
+      await dayView.assertReservations(
+        testChild2.id,
+        '10:00–16:00, 17:00–18:00'
+      )
+    })
   })
-
-  test(`Citizen creates 2 reservations from day view: ${env}`, async () => {
-    const calendarPage = await openCalendarPage(env)
-
-    const reservationDay = today.addDays(14)
-
-    const reservation1 = {
-      startTime: '08:00',
-      endTime: '16:00'
-    }
-
-    const reservation2 = {
-      startTime: '17:00',
-      endTime: '19:00'
-    }
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-
-    await dayView.assertNoReservation(testChild2.id)
-
-    let editor = await dayView.edit()
-    let child = editor.childSection(testChild2.id)
-    await child.reservationStart.fill(reservation1.startTime)
-    await child.reservationEnd.fill(reservation1.endTime)
-    await editor.saveButton.click()
-
-    await dayView.assertReservations(testChild2.id, '08:00–16:00')
-
-    editor = await dayView.edit()
-    child = editor.childSection(testChild2.id)
-    await child.addSecondReservationButton.click()
-    await child.reservation2Start.fill(reservation2.startTime)
-    await child.reservation2End.fill(reservation2.endTime)
-    await editor.saveButton.click()
-
-    await dayView.assertReservations(testChild2.id, '08:00–16:00, 17:00–19:00')
-  })
-
-  test(`Citizen creates 2 reservations from reservation modal: ${env}`, async () => {
-    const calendarPage = await openCalendarPage(env)
-    const reservationDay = today.addDays(14)
-
-    const reservation1 = {
-      startTime: '10:00',
-      endTime: '16:00',
-      childIds: [testChild2.id]
-    }
-
-    const reservation2 = {
-      startTime: '17:00',
-      endTime: '18:00'
-    }
-    const reservationsModal = await calendarPage.openReservationModal()
-
-    await reservationsModal.fillDailyReservationInfo(
-      new FiniteDateRange(reservationDay, reservationDay),
-      reservation1.startTime,
-      reservation1.endTime,
-      reservation1.childIds,
-      1
-    )
-
-    await reservationsModal.fillDaily2ndReservationInfo(
-      reservation2.startTime,
-      reservation2.endTime
-    )
-
-    await reservationsModal.save()
-
-    const dayView = await calendarPage.openDayView(reservationDay)
-
-    await dayView.assertReservations(testChild2.id, '10:00–16:00, 17:00–18:00')
-  })
-})
+}

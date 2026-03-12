@@ -22,34 +22,37 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
-let personId: UUID
-let child: DevPerson
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
+test.describe('Guardian income statements', () => {
+  let page: Page
+  let personId: UUID
+  let child: DevPerson
 
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChildRestricted]
-  }).save()
-  personId = testAdult.id
-  child = testChildRestricted
+  test.use({ evakaOptions: { mockedTime: mockedNow } })
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
 
-  page = await Page.open({ mockedTime: mockedNow })
-  await employeeLogin(page, financeAdmin)
-})
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChildRestricted]
+    }).save()
+    personId = testAdult.id
+    child = testChildRestricted
 
-describe('Guardian income statements', () => {
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+
+    page = evaka
+    await employeeLogin(page, financeAdmin)
+  })
+
   test("Shows placed child's income statements", async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       randomId(),

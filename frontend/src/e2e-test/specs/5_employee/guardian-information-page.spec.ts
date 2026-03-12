@@ -32,58 +32,59 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
+test.describe('Employee - Guardian Information', () => {
+  let page: Page
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  await familyWithTwoGuardians.save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await familyWithTwoGuardians.save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const admin = await Fixture.employee().admin().save()
+    const admin = await Fixture.employee().admin().save()
 
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    randomId<PlacementId>(),
-    testChild.id,
-    testDaycare.id
-  )
-  const application = applicationFixture(testChild, testAdult)
+    const daycarePlacementFixture = createDaycarePlacementFixture(
+      randomId<PlacementId>(),
+      testChild.id,
+      testDaycare.id
+    )
+    const application = applicationFixture(testChild, testAdult)
 
-  const application2 = {
-    ...applicationFixture(
-      testChild2,
-      familyWithTwoGuardians.guardian,
-      testAdult
-    ),
-    id: randomId<ApplicationId>()
-  }
+    const application2 = {
+      ...applicationFixture(
+        testChild2,
+        familyWithTwoGuardians.guardian,
+        testAdult
+      ),
+      id: randomId<ApplicationId>()
+    }
 
-  const startDate = LocalDate.of(2021, 8, 16)
-  await createDaycarePlacements({ body: [daycarePlacementFixture] })
-  await createApplications({ body: [application, application2] })
-  await createDecisions({
-    body: [
-      decisionFixture(admin.id, application.id, startDate, startDate),
-      {
-        ...decisionFixture(admin.id, application2.id, startDate, startDate),
-        id: randomId<DecisionId>()
-      }
-    ]
+    const startDate = LocalDate.of(2021, 8, 16)
+    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+    await createApplications({ body: [application, application2] })
+    await createDecisions({
+      body: [
+        decisionFixture(admin.id, application.id, startDate, startDate),
+        {
+          ...decisionFixture(admin.id, application2.id, startDate, startDate),
+          id: randomId<DecisionId>()
+        }
+      ]
+    })
+
+    page = evaka
+    await employeeLogin(page, admin)
   })
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
-})
-
-describe('Employee - Guardian Information', () => {
   test('guardian information is shown', async () => {
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)

@@ -48,18 +48,11 @@ import type {
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
+import type { NewEvakaPage } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
-
-let unitSupervisorPage: Page
-let citizenPage: Page
-let childId: PersonId
-let unitSupervisor: DevEmployee
-let careArea: DevCareArea
-let daycarePlacementFixture: DevPlacement
-let backupDaycareId: DaycareId
-let backupGroupFixtureId: GroupId
 
 const mockedDate = LocalDate.of(2022, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -79,106 +72,6 @@ const credentials = {
   username: 'test@example.com',
   password: 'TestPassword456!'
 }
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testDaycarePrivateVoucher.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2, testChildRestricted]
-  }).save()
-  await testAdult2.saveAdult({
-    updateMockVtjWithDependants: [testChild]
-  })
-
-  careArea = testCareArea
-  await createDaycareGroups({ body: [testDaycareGroup] })
-
-  await upsertWeakCredentials({
-    id: testAdult.id,
-    body: credentials
-  })
-
-  unitSupervisor = await Fixture.employee({
-    firstName: 'Essi',
-    lastName: 'Esimies'
-  })
-    .unitSupervisor(testDaycare.id)
-    .save()
-
-  const unitId = testDaycare.id
-  childId = testChild.id
-
-  daycarePlacementFixture = await Fixture.placement({
-    childId,
-    unitId,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-
-  await Fixture.groupPlacement({
-    daycarePlacementId: daycarePlacementFixture.id,
-    daycareGroupId: testDaycareGroup.id,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-
-  await Fixture.daycare({
-    ...testDaycare2,
-    areaId: careArea.id
-  }).save()
-
-  backupDaycareId = testDaycare2.id
-  backupGroupFixtureId = randomId()
-  await createDaycareGroups({
-    body: [
-      {
-        id: backupGroupFixtureId,
-        daycareId: backupDaycareId,
-        name: 'Varayksikön ryhmä',
-        startDate: LocalDate.of(2000, 1, 1),
-        endDate: null,
-        jamixCustomerNumber: null,
-        aromiCustomerId: null,
-        nekkuCustomerNumber: null
-      }
-    ]
-  })
-
-  await createMessageAccounts()
-  await insertGuardians({
-    body: [
-      {
-        childId: childId,
-        guardianId: testAdult.id
-      }
-    ]
-  })
-})
-
-async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
-  unitSupervisorPage = await Page.open({
-    mockedTime: mockedTime
-  })
-  await employeeLogin(unitSupervisorPage, unitSupervisor)
-}
-
-async function openCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({
-    mockedTime: mockedTime,
-    ignoreHTTPSErrors: true
-  })
-  await enduserLogin(citizenPage, testAdult)
-}
-
-async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({
-    mockedTime: mockedTime,
-    ignoreHTTPSErrors: true
-  })
-  await enduserLoginWeak(citizenPage, credentials)
-}
 
 const defaultTitle = 'Otsikko'
 const defaultContent = 'Testiviestin sisältö'
@@ -189,15 +82,117 @@ const defaultMessage = {
   content: 'Testiviestin sisältö'
 }
 
-describe('Sending and receiving messages', () => {
-  const initConfigurations = [
-    ['direct login', openCitizenPage] as const,
-    ['weak login', openCitizenPageWeak] as const
-  ]
+test.describe('Sending and receiving messages', () => {
+  let unitSupervisorPage: Page
+  let citizenPage: Page
+  let childId: PersonId
+  let unitSupervisor: DevEmployee
+  let careArea: DevCareArea
+  let daycarePlacementFixture: DevPlacement
+  let backupDaycareId: DaycareId
+  let backupGroupFixtureId: GroupId
+  let newPage: NewEvakaPage
 
-  describe.each(initConfigurations)(
-    'Interactions with %s',
-    (_name, openCitizen) => {
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testDaycarePrivateVoucher.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
+
+    careArea = testCareArea
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    unitSupervisor = await Fixture.employee({
+      firstName: 'Essi',
+      lastName: 'Esimies'
+    })
+      .unitSupervisor(testDaycare.id)
+      .save()
+
+    const unitId = testDaycare.id
+    childId = testChild.id
+
+    daycarePlacementFixture = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id
+    }).save()
+
+    backupDaycareId = testDaycare2.id
+    backupGroupFixtureId = randomId()
+    await createDaycareGroups({
+      body: [
+        {
+          id: backupGroupFixtureId,
+          daycareId: backupDaycareId,
+          name: 'Varayksikön ryhmä',
+          startDate: LocalDate.of(2000, 1, 1),
+          endDate: null,
+          jamixCustomerNumber: null,
+          aromiCustomerId: null,
+          nekkuCustomerNumber: null
+        }
+      ]
+    })
+
+    await createMessageAccounts()
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    newPage = newEvakaPage
+  })
+
+  async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
+    unitSupervisorPage = await newPage({ mockedTime })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+  }
+
+  async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLogin(citizenPage, testAdult)
+  }
+
+  async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime })
+    await enduserLoginWeak(citizenPage, credentials)
+  }
+
+  for (const [name, openCitizen] of [
+    ['direct login', openCitizenPage],
+    ['weak login', openCitizenPageWeak]
+  ] as const) {
+    test.describe(`Interactions with ${name}`, () => {
       test('Unit supervisor sends message and citizen replies', async () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -367,7 +362,6 @@ describe('Sending and receiving messages', () => {
           2
         )
 
-        // Download and verify first attachment
         await citizenMessagesPage.openFirstThread()
         const downloadedContent =
           await citizenMessagesPage.downloadFirstAttachment()
@@ -934,7 +928,7 @@ describe('Sending and receiving messages', () => {
 
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        const employeePage = await Page.open({
+        const employeePage = await newPage({
           mockedTime: mockedDateAt11
         })
         await employeeLogin(employeePage, employee)
@@ -952,10 +946,7 @@ describe('Sending and receiving messages', () => {
         await messagesPage.markUnreadButton.click()
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
 
-        await employeePage.close()
-
-        // Another staff role in the same group should be able to repeat the same process
-        const employeePage2 = await Page.open({
+        const employeePage2 = await newPage({
           mockedTime: mockedDateAt11.addMinutes(5)
         })
         await employeeLogin(employeePage2, employee2)
@@ -972,8 +963,6 @@ describe('Sending and receiving messages', () => {
         await messagesPage2.markUnreadButton.waitUntilVisible()
         await messagesPage2.markUnreadButton.click()
         await waitUntilEqual(() => messagesPage2.getReceivedMessageCount(), 1)
-
-        await employeePage2.close()
       })
 
       test('Citizen reply recipient toggles persist while typing', async () => {
@@ -1007,7 +996,7 @@ describe('Sending and receiving messages', () => {
         await otherGuardian.assertIsSelected()
       })
 
-      describe('Messages can be deleted / archived', () => {
+      test.describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)
           await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -1050,12 +1039,12 @@ describe('Sending and receiving messages', () => {
           )
         })
       })
-    }
-  )
+    })
+  }
 
-  describe('Session keepalive while typing', () => {
+  test.describe('Session keepalive while typing', () => {
     test('Citizen session is kept alive as long as user keeps typing', async () => {
-      citizenPage = await Page.open({
+      citizenPage = await newPage({
         mockedTime: mockedDateAt10
       })
       await enduserLoginWeak(citizenPage, credentials)
@@ -1088,14 +1077,12 @@ describe('Sending and receiving messages', () => {
       })
 
       const finalExpiry = await citizenMessagesPage.getSessionExpiry()
-      // session expiry should be at least 0.3s longer than initially
       expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
-      // slow typing should have caused at least 3 auth status requests to keep session alive
       expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
     })
   })
 
-  describe('Drafts', () => {
+  test.describe('Drafts', () => {
     test('A draft is saved correctly', async () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -1128,7 +1115,79 @@ describe('Sending and receiving messages', () => {
   })
 })
 
-describe('Foster parent messaging', () => {
+test.describe('Foster parent messaging', () => {
+  let unitSupervisorPage: Page
+  let childId: PersonId
+  let unitSupervisor: DevEmployee
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testDaycarePrivateVoucher.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
+
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+
+    unitSupervisor = await Fixture.employee({
+      firstName: 'Essi',
+      lastName: 'Esimies'
+    })
+      .unitSupervisor(testDaycare.id)
+      .save()
+
+    const unitId = testDaycare.id
+    childId = testChild.id
+
+    const daycarePlacementFixture = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    }).save()
+
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: testCareArea.id
+    }).save()
+
+    await createMessageAccounts()
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: testAdult.id
+        }
+      ]
+    })
+
+    newPage = newEvakaPage
+  })
+
+  async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
+    unitSupervisorPage = await newPage({ mockedTime })
+    await employeeLogin(unitSupervisorPage, unitSupervisor)
+  }
+
   test('Foster parent sends message to group with guardian as secondary recipient, employee reply has guardian selected by default', async () => {
     const fosterParent = await Fixture.person().saveAdult({
       updateMockVtjWithDependants: []
@@ -1147,8 +1206,7 @@ describe('Foster parent messaging', () => {
       ]
     })
 
-    // Foster parent sends message
-    const fosterParentPage = await Page.open({
+    const fosterParentPage = await newPage({
       mockedTime: mockedDateAt10
     })
     await enduserLogin(fosterParentPage, fosterParent)
@@ -1161,22 +1219,17 @@ describe('Foster parent messaging', () => {
     const recipients = ['Kosmiset vakiot (Henkilökunta)']
     await editor.selectRecipients(recipients)
 
-    // Guardian should be visible as secondary recipient but unselected
     const guardianRecipient = editor.secondaryRecipient(
       `${testAdult.lastName} ${testAdult.firstName}`
     )
     await guardianRecipient.assertIsUnselected()
 
-    // Select guardian and send message
     await guardianRecipient.click()
     await guardianRecipient.assertIsSelected()
     await editor.fillMessage(defaultTitle, defaultContent)
     await editor.sendMessage()
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await fosterParentPage.close()
-
-    // Employee opens group mailbox
     await openSupervisorPage(mockedDateAt11)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -1184,7 +1237,6 @@ describe('Foster parent messaging', () => {
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
     await messagesPage.openFirstThreadReplyEditor()
 
-    // Guardian should be selected by default in reply
     const guardianButton = messagesPage.secondaryRecipient(
       `${testAdult.lastName} ${testAdult.firstName}`
     )
@@ -1209,7 +1261,6 @@ describe('Foster parent messaging', () => {
       ]
     })
 
-    // Employee sends message to child from group account
     await openSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -1220,8 +1271,7 @@ describe('Foster parent messaging', () => {
     })
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    // Foster parent opens message and reply editor
-    const fosterParentPage = await Page.open({
+    const fosterParentPage = await newPage({
       mockedTime: mockedDateAt11
     })
     await enduserLogin(fosterParentPage, fosterParent)
@@ -1232,7 +1282,6 @@ describe('Foster parent messaging', () => {
     )
     await fosterParentMessagesPage.startReplyToFirstThread()
 
-    // Guardian should be visible as secondary recipient but unselected by default
     const guardianRecipient = fosterParentMessagesPage.secondaryRecipient(
       `${testAdult.lastName} ${testAdult.firstName}`
     )

@@ -29,36 +29,41 @@ import {
 } from '../../generated/api-clients'
 import type { DevApplicationWithForm } from '../../generated/api-types'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-
-let page: Page
 
 const mockToday = LocalDate.of(2021, 2, 1)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2, testChildRestricted]
-  }).save()
-  const admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({
-    mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+test.describe('Placement sketching report', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+    }
   })
-  await employeeLogin(page, admin)
-})
 
-async function openPlacementSketchingReport() {
-  await page.goto(config.employeeUrl + '/reports')
-  const reports = new ReportsPage(page)
-  return await reports.openPlacementSketchingReport()
-}
+  let page: Page
 
-describe('Placement sketching report', () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
+    const admin = await Fixture.employee().admin().save()
+
+    page = evaka
+    await employeeLogin(page, admin)
+  })
+
+  async function openPlacementSketchingReport() {
+    await page.goto(config.employeeUrl + '/reports')
+    const reports = new ReportsPage(page)
+    return await reports.openPlacementSketchingReport()
+  }
+
   test('Not placed child shows on report', async () => {
     const fixture = applicationFixture(
       testChild,

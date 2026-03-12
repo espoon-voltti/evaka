@@ -10,22 +10,23 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
+import { test, expect } from '../../playwright'
 import { waitUntilTrue } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
-let page: Page
-let pairingFlow: PairingFlow
+test.describe('Mobile pairing', () => {
+  let page: Page
+  let pairingFlow: PairingFlow
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
 
-  page = await Page.open({ acceptDownloads: true })
-  pairingFlow = new PairingFlow(page)
-})
+    page = evaka
+    pairingFlow = new PairingFlow(page)
+  })
 
-describe('Mobile pairing', () => {
   test('User can add a mobile device mobile side', async () => {
     await page.goto(config.mobileUrl)
 

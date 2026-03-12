@@ -14,32 +14,33 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let guardianInformation: GuardianInformationPage
-let childInformation: ChildInformationPage
+test.describe('Foster parents', () => {
+  let page: Page
+  let guardianInformation: GuardianInformationPage
+  let childInformation: ChildInformationPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  await testAdultRestricted.saveAdult({
-    updateMockVtjWithDependants: []
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await testAdultRestricted.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+
+    const admin = await Fixture.employee().admin().save()
+    page = evaka
+    await employeeLogin(page, admin)
+
+    guardianInformation = new GuardianInformationPage(page)
+    childInformation = new ChildInformationPage(page)
   })
 
-  const admin = await Fixture.employee().admin().save()
-  page = await Page.open()
-  await employeeLogin(page, admin)
-
-  guardianInformation = new GuardianInformationPage(page)
-  childInformation = new ChildInformationPage(page)
-})
-
-describe('Foster parents', () => {
   test('adding, editing and deleting foster children works', async () => {
     await guardianInformation.navigateToGuardian(testAdultRestricted.id)
     const section = await guardianInformation.openCollapsible('fosterChildren')

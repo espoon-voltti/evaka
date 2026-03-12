@@ -29,12 +29,10 @@ import {
 } from '../../generated/api-clients'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
+import { test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
-let page: Page
-let confirmedReservationPage: ConfirmedDayReservationPage
-let attendanceListPage: MobileListPage
 const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
 
 const group2 = Fixture.daycareGroup({
@@ -43,23 +41,29 @@ const group2 = Fixture.daycareGroup({
   startDate: LocalDate.of(2021, 1, 1)
 })
 
-beforeEach(async () => {
-  await resetServiceState()
-  await createDefaultServiceNeedOptions()
-  await insertConfirmedDaysTestData()
+test.use({ evakaOptions: { mockedTime: now } })
 
-  const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
-  page = await Page.open({ mockedTime: now })
+test.describe('Child confirmed reservations', () => {
+  let page: Page
+  let confirmedReservationPage: ConfirmedDayReservationPage
+  let attendanceListPage: MobileListPage
 
-  await page.goto(mobileSignupUrl)
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await createDefaultServiceNeedOptions()
+    await insertConfirmedDaysTestData()
 
-  attendanceListPage = new MobileListPage(page)
-  await attendanceListPage.confirmedDaysTab.click()
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+    page = evaka
 
-  confirmedReservationPage = new ConfirmedDayReservationPage(page)
-})
+    await page.goto(mobileSignupUrl)
 
-describe('Child confirmed reservations', () => {
+    attendanceListPage = new MobileListPage(page)
+    await attendanceListPage.confirmedDaysTab.click()
+
+    confirmedReservationPage = new ConfirmedDayReservationPage(page)
+  })
+
   test('Confirmed days are present', async () => {
     const confirmedDaysOnTestDate = [
       LocalDate.of(2022, 5, 18),
@@ -141,6 +145,7 @@ describe('Child confirmed reservations', () => {
       )
     }
   })
+
   test('Daily children are correct (Thursday)', async () => {
     const testDay = LocalDate.of(2022, 5, 19)
     await confirmedReservationPage.openDayItem(testDay)

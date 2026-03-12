@@ -31,16 +31,20 @@ import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { envs, Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
-
-let page: Page
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
-describe('Citizen children page', () => {
-  beforeEach(async () => {
+test.describe('Citizen children page', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    }
+  })
+
+  test.beforeEach(async () => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
@@ -49,13 +53,11 @@ describe('Citizen children page', () => {
       guardian: testAdult,
       children: [testChild, testChild2]
     }).save()
-
-    page = await Page.open({
-      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
   })
 
-  test('Citizen can see its children and navigate to their page', async () => {
+  test('Citizen can see its children and navigate to their page', async ({
+    evaka
+  }) => {
     await createDaycarePlacements({
       body: [testChild, testChild2].map((child) =>
         Fixture.placement({
@@ -68,9 +70,9 @@ describe('Citizen children page', () => {
       )
     })
 
-    await enduserLogin(page, testAdult)
-    const header = new CitizenHeader(page)
-    const childPage = new CitizenChildPage(page)
+    await enduserLogin(evaka, testAdult)
+    const header = new CitizenHeader(evaka)
+    const childPage = new CitizenChildPage(evaka)
 
     await header.openChildPage(testChild.id)
     await childPage.assertChildNameIsShown(
@@ -80,43 +82,29 @@ describe('Citizen children page', () => {
     await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
   })
 
-  async function createDaycarePlacement(
-    endDate: LocalDate,
-    unitId = testDaycare.id,
-    type: PlacementType = 'DAYCARE',
-    startDate: LocalDate = mockedDate.subMonths(2)
-  ) {
-    await Fixture.placement({
-      type,
-      childId: testChild2.id,
-      unitId,
-      startDate: startDate,
-      endDate: endDate
-    }).save()
-  }
+  test.describe('Placement termination', () => {
+    async function createDaycarePlacement(
+      endDate: LocalDate,
+      unitId = testDaycare.id,
+      type: PlacementType = 'DAYCARE',
+      startDate: LocalDate = mockedDate.subMonths(2)
+    ) {
+      await Fixture.placement({
+        type,
+        childId: testChild2.id,
+        unitId,
+        startDate: startDate,
+        endDate: endDate
+      }).save()
+    }
 
-  describe('Placement termination', () => {
-    let childPage: CitizenChildPage
-
-    const assertToggledPlacements = async (labels: string[]) =>
-      waitUntilEqual(() => childPage.getToggledPlacements(), labels)
-    const assertTerminatablePlacements = async (labels: string[]) =>
-      waitUntilEqual(() => childPage.getTerminatablePlacements(), labels)
-    const assertNonTerminatablePlacements = async (labels: string[]) =>
-      waitUntilEqual(() => childPage.getNonTerminatablePlacements(), labels)
-    const assertTerminatedPlacements = async (labels: string | string[]) =>
-      waitUntilEqual(
-        () => childPage.getTerminatedPlacements(),
-        typeof labels === 'string' ? [labels] : labels
-      )
-
-    test('Simple daycare placement can be terminated', async () => {
+    test('Simple daycare placement can be terminated', async ({ evaka }) => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       await header.openChildPage(testChild2.id)
       await childPage.openCollapsible('termination')
@@ -131,32 +119,40 @@ describe('Citizen children page', () => {
       await childPage.assertTerminatablePlacementCount(0)
 
       await childPage.assertTerminatedPlacementCount(1)
-      await assertTerminatedPlacements(
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+        ]
       )
     })
 
-    test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
+    test('Daycare placement cannot be terminated if termination is not enabled for unit', async ({
+      evaka
+    }) => {
       await testClub.save()
 
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, testClub.id, 'CLUB')
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       await header.openChildPage(testChild2.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await assertNonTerminatablePlacements([
-        `Alkuräjähdyksen kerho, voimassa ${endDate.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getNonTerminatablePlacements(),
+        [`Alkuräjähdyksen kerho, voimassa ${endDate.format()}`]
+      )
     })
 
-    test('Daycare placement cannot be terminated if placement is in the future', async () => {
+    test('Daycare placement cannot be terminated if placement is in the future', async ({
+      evaka
+    }) => {
       const startDate = mockedDate.addDays(1)
       const endDate = startDate
       await createDaycarePlacement(
@@ -166,21 +162,24 @@ describe('Citizen children page', () => {
         startDate
       )
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       await header.openChildPage(testChild2.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await assertNonTerminatablePlacements([
-        `Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getNonTerminatablePlacements(),
+        [`Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`]
+      )
     })
 
-    test('Upcoming transfer application is deleted when placement is terminated', async () => {
+    test('Upcoming transfer application is deleted when placement is terminated', async ({
+      evaka
+    }) => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
@@ -198,12 +197,12 @@ describe('Citizen children page', () => {
       )
       await createApplications({ body: [application] })
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       await header.selectTab('applications')
-      await new CitizenApplicationsPage(page).assertApplicationExists(
+      await new CitizenApplicationsPage(evaka).assertApplicationExists(
         applicationFixtureId
       )
 
@@ -216,12 +215,14 @@ describe('Citizen children page', () => {
       await childPage.assertTerminatablePlacementCount(0)
 
       await header.selectTab('applications')
-      await new CitizenApplicationsPage(page).assertApplicationDoesNotExist(
+      await new CitizenApplicationsPage(evaka).assertApplicationDoesNotExist(
         applicationFixtureId
       )
     })
 
-    test('Daycare placements are grouped by type and unit, and invoiced daycare can be terminated separately', async () => {
+    test('Daycare placements are grouped by type and unit, and invoiced daycare can be terminated separately', async ({
+      evaka
+    }) => {
       const daycare1Start = mockedDate.subMonths(2)
       const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
@@ -268,9 +269,9 @@ describe('Citizen children page', () => {
         endDate: daycareAfterPreschoolEnd
       }).save()
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
@@ -285,14 +286,22 @@ describe('Citizen children page', () => {
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
       await childPage.assertNonTerminatablePlacementCount(2)
-      await assertTerminatablePlacements([labels.daycare1])
-      await assertNonTerminatablePlacements([
-        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
-        `Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getTerminatablePlacements(),
+        [labels.daycare1]
+      )
+      await waitUntilEqual(
+        () => childPage.getNonTerminatablePlacements(),
+        [
+          `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
+          `Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`
+        ]
+      )
     })
 
-    test('Daycare placements are grouped by type and unit, future placement cannot be terminated', async () => {
+    test('Daycare placements are grouped by type and unit, future placement cannot be terminated', async ({
+      evaka
+    }) => {
       const daycare1Start = mockedDate.subMonths(2)
       const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
@@ -312,9 +321,9 @@ describe('Citizen children page', () => {
         endDate: daycare2end
       }).save()
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
@@ -326,34 +335,44 @@ describe('Citizen children page', () => {
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
-      await assertTerminatablePlacements([labels.daycare1])
+      await waitUntilEqual(
+        () => childPage.getTerminatablePlacements(),
+        [labels.daycare1]
+      )
       await childPage.togglePlacement(labels.daycare1)
       const daycare1FirstTermination = mockedDate.addWeeks(1)
       await childPage.fillTerminationDate(daycare1FirstTermination, 0)
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(1)
       await childPage.assertTerminatedPlacementCount(1)
-      await assertTerminatedPlacements(
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
+        ]
       )
-      await assertToggledPlacements([])
+      await waitUntilEqual(() => childPage.getToggledPlacements(), [])
       await childPage.togglePlacement(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1FirstTermination.format()}`
       )
       await childPage.fillTerminationDate(mockedDate, 0)
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await assertTerminatedPlacements(
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+        ]
       )
 
       await childPage.assertNonTerminatablePlacementCount(1)
-      await assertNonTerminatablePlacements([
-        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getNonTerminatablePlacements(),
+        [`Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`]
+      )
     })
 
-    test('Invoiced daycare can be terminated separately', async () => {
+    test('Invoiced daycare can be terminated separately', async ({ evaka }) => {
       const preschool2Start = mockedDate.subMonths(2)
       const preschool2End = mockedDate.addMonths(3)
       const daycareAfterPreschoolStart = preschool2End.addDays(1)
@@ -373,9 +392,9 @@ describe('Citizen children page', () => {
         endDate: daycareAfterPreschoolEnd
       }).save()
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       const labels = {
         preschool: `Esiopetus, Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`,
@@ -390,43 +409,52 @@ describe('Citizen children page', () => {
 
       // selecting preschool selects daycare after preschool too
       await childPage.togglePlacement(labels.preschool)
-      await assertToggledPlacements([
-        labels.preschool,
-        labels.daycareAfterPreschool
-      ])
+      await waitUntilEqual(
+        () => childPage.getToggledPlacements(),
+        [labels.preschool, labels.daycareAfterPreschool]
+      )
       // deselecting preschool does not deselect daycare after preschool
       await childPage.togglePlacement(labels.preschool)
-      await assertToggledPlacements([labels.daycareAfterPreschool])
+      await waitUntilEqual(
+        () => childPage.getToggledPlacements(),
+        [labels.daycareAfterPreschool]
+      )
       // re-selecting preschool selects daycare after preschool too
       await childPage.togglePlacement(labels.preschool)
-      await assertToggledPlacements([
-        labels.preschool,
-        labels.daycareAfterPreschool
-      ])
+      await waitUntilEqual(
+        () => childPage.getToggledPlacements(),
+        [labels.preschool, labels.daycareAfterPreschool]
+      )
       // de-selecting daycare after preschool de-selects preschool too
       await childPage.togglePlacement(labels.daycareAfterPreschool)
-      await assertToggledPlacements([])
+      await waitUntilEqual(() => childPage.getToggledPlacements(), [])
 
       await childPage.togglePlacement(labels.daycareAfterPreschool)
       await childPage.fillTerminationDate(daycareAfterPreschoolEnd.subMonths(1))
       await childPage.submitTermination()
 
-      await assertTerminatedPlacements([
-        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
-          .subMonths(1)
-          .format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
+            .subMonths(1)
+            .format()}`
+        ]
+      )
 
       // terminating preschool terminates daycare after preschool
       await childPage.togglePlacement(labels.preschool)
       await childPage.fillTerminationDate(mockedDate)
       await childPage.submitTermination()
-      await assertTerminatedPlacements([
-        `Esiopetus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Esiopetus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+        ]
+      )
     })
 
-    test('Terminating paid daycare only is possible', async () => {
+    test('Terminating paid daycare only is possible', async ({ evaka }) => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(
         endDate,
@@ -434,184 +462,199 @@ describe('Citizen children page', () => {
         'PRESCHOOL_DAYCARE'
       )
 
-      await enduserLogin(page, testAdult)
-      const header = new CitizenHeader(page)
-      childPage = new CitizenChildPage(page)
+      await enduserLogin(evaka, testAdult)
+      const header = new CitizenHeader(evaka)
+      const childPage = new CitizenChildPage(evaka)
 
       await header.openChildPage(testChild2.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
-      await assertTerminatablePlacements([
-        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
-        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getTerminatablePlacements(),
+        [
+          `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
+        ]
+      )
       await childPage.togglePlacement(
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
       )
       const terminationDate = mockedDate.addMonths(1)
       await childPage.fillTerminationDate(terminationDate)
       await childPage.submitTermination()
-      await assertTerminatablePlacements([
-        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
-        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
-      ])
+      await waitUntilEqual(
+        () => childPage.getTerminatablePlacements(),
+        [
+          `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
+        ]
+      )
 
       await childPage.assertTerminatedPlacementCount(1) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
-      await assertTerminatedPlacements([
-        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${terminationDate.format()}`
+      await waitUntilEqual(
+        () => childPage.getTerminatedPlacements(),
+        [
+          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${terminationDate.format()}`
+        ]
+      )
+    })
+  })
+})
+
+for (const env of ['desktop', 'mobile'] as const) {
+  const viewport =
+    env === 'mobile'
+      ? { width: 375, height: 812 }
+      : { width: 1920, height: 1080 }
+
+  test.describe(`Citizen children page with weak login (${env})`, () => {
+    test.use({
+      evakaOptions: {
+        mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+      },
+      viewport
+    })
+
+    test.beforeEach(async () => {
+      await resetServiceState()
+      await testCareArea.save()
+      await testDaycare.save()
+      await testPreschool.save()
+      await Fixture.family({
+        guardian: testAdult,
+        children: [testChild, testChild2]
+      }).save()
+    })
+
+    test('Citizen can see its children and their service needs and daily service times', async ({
+      evaka
+    }) => {
+      const daycareSupervisor = await Fixture.employee()
+        .unitSupervisor(testDaycare.id)
+        .save()
+      const serviceNeedOption = await Fixture.serviceNeedOption({
+        validPlacementType: 'DAYCARE',
+        defaultOption: false,
+        nameFi: 'Kokopäiväinen',
+        nameSv: 'Kokopäiväinen (sv)',
+        nameEn: 'Kokopäiväinen (en)'
+      }).save()
+      await Fixture.serviceNeedOption({
+        validPlacementType: 'PRESCHOOL',
+        defaultOption: true,
+        nameFi: 'Esiopetus',
+        nameSv: 'Esiopetus (sv)',
+        nameEn: 'Esiopetus (en)'
+      }).save()
+      const placement = await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        type: 'DAYCARE',
+        startDate: mockedDate.subMonths(2),
+        endDate: mockedDate
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: placement.id,
+        startDate: mockedDate.subMonths(1),
+        endDate: mockedDate,
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(daycareSupervisor.id)
+      }).save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(
+          mockedDate.subMonths(3),
+          mockedDate.subMonths(2).subDays(1)
+        ),
+        type: 'REGULAR',
+        regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
+      }).save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(
+          mockedDate.subMonths(2),
+          mockedDate.subMonths(1).subDays(1)
+        ),
+        type: 'IRREGULAR',
+        regularTimes: null,
+        mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
+        thursdayTimes: new TimeRange(LocalTime.of(7, 46), LocalTime.of(16, 32))
+      }).save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(mockedDate.subMonths(1), null),
+        type: 'VARIABLE_TIME',
+        regularTimes: null
+      }).save()
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        type: 'PRESCHOOL',
+        startDate: mockedDate.subMonths(1),
+        endDate: mockedDate
+      }).save()
+
+      const credentials = {
+        username: 'test@example.com',
+        password: 'TestPassword456!'
+      }
+      await upsertWeakCredentials({
+        id: testAdult.id,
+        body: credentials
+      })
+      await enduserLoginWeak(evaka, credentials)
+      const defaultPage = new CitizenCalendarPage(evaka, env)
+      const header = new CitizenHeader(evaka, env)
+      const childPage = new CitizenChildPage(evaka, env)
+
+      //wait until the default page has loaded on desktop
+      if (env === 'desktop') {
+        await defaultPage.assertMonthTitle('Maaliskuu 2022')
+      }
+      await header.openChildPage(testChild.id)
+      await childPage.assertChildNameIsShown(
+        'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
+      )
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Kokopäiväinen',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: 'Palveluntarvetta ei määritelty',
+          unit: 'Alkuräjähdyksen päiväkoti'
+        }
       ])
+      await childPage.assertDailyServiceTimeTable([
+        {
+          dateRange: '01.02.2022 -',
+          description: 'Päivittäinen aika vaihtelee'
+        },
+        {
+          dateRange: '01.01.2022 - 31.01.2022',
+          description: 'Ma 08:15–14:46, To 07:46–16:32'
+        },
+        {
+          dateRange: '01.12.2021 - 31.12.2021',
+          description: '08:15–14:46'
+        }
+      ])
+      await childPage.closeCollapsible()
+      await header.openChildPage(testChild2.id)
+      await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
+      await childPage.openCollapsible('service-need-and-daily-service-time')
+      await childPage.assertServiceNeedTable([
+        {
+          dateRange: '01.02.2022 - 01.03.2022',
+          description: 'Esiopetus',
+          unit: 'Alkuräjähdyksen eskari'
+        }
+      ])
+      await childPage.assertDailyServiceTimeTable([])
     })
   })
-})
-
-describe.each(envs)('Citizen children page with weak login (%s)', (env) => {
-  beforeEach(async () => {
-    await resetServiceState()
-    await testCareArea.save()
-    await testDaycare.save()
-    await testPreschool.save()
-    await Fixture.family({
-      guardian: testAdult,
-      children: [testChild, testChild2]
-    }).save()
-
-    const viewport =
-      env === 'mobile'
-        ? { width: 375, height: 812 }
-        : { width: 1920, height: 1080 }
-    page = await Page.open({
-      viewport,
-      screen: viewport,
-      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-  })
-
-  test('Citizen can see its children and their service needs and daily service times', async () => {
-    const daycareSupervisor = await Fixture.employee()
-      .unitSupervisor(testDaycare.id)
-      .save()
-    const serviceNeedOption = await Fixture.serviceNeedOption({
-      validPlacementType: 'DAYCARE',
-      defaultOption: false,
-      nameFi: 'Kokopäiväinen',
-      nameSv: 'Kokopäiväinen (sv)',
-      nameEn: 'Kokopäiväinen (en)'
-    }).save()
-    await Fixture.serviceNeedOption({
-      validPlacementType: 'PRESCHOOL',
-      defaultOption: true,
-      nameFi: 'Esiopetus',
-      nameSv: 'Esiopetus (sv)',
-      nameEn: 'Esiopetus (en)'
-    }).save()
-    const placement = await Fixture.placement({
-      childId: testChild.id,
-      unitId: testDaycare.id,
-      type: 'DAYCARE',
-      startDate: mockedDate.subMonths(2),
-      endDate: mockedDate
-    }).save()
-    await Fixture.serviceNeed({
-      placementId: placement.id,
-      startDate: mockedDate.subMonths(1),
-      endDate: mockedDate,
-      optionId: serviceNeedOption.id,
-      confirmedBy: evakaUserId(daycareSupervisor.id)
-    }).save()
-    await Fixture.dailyServiceTime({
-      childId: testChild.id,
-      validityPeriod: new DateRange(
-        mockedDate.subMonths(3),
-        mockedDate.subMonths(2).subDays(1)
-      ),
-      type: 'REGULAR',
-      regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
-    }).save()
-    await Fixture.dailyServiceTime({
-      childId: testChild.id,
-      validityPeriod: new DateRange(
-        mockedDate.subMonths(2),
-        mockedDate.subMonths(1).subDays(1)
-      ),
-      type: 'IRREGULAR',
-      regularTimes: null,
-      mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
-      thursdayTimes: new TimeRange(LocalTime.of(7, 46), LocalTime.of(16, 32))
-    }).save()
-    await Fixture.dailyServiceTime({
-      childId: testChild.id,
-      validityPeriod: new DateRange(mockedDate.subMonths(1), null),
-      type: 'VARIABLE_TIME',
-      regularTimes: null
-    }).save()
-    await Fixture.placement({
-      childId: testChild2.id,
-      unitId: testPreschool.id,
-      type: 'PRESCHOOL',
-      startDate: mockedDate.subMonths(1),
-      endDate: mockedDate
-    }).save()
-
-    const credentials = {
-      username: 'test@example.com',
-      password: 'TestPassword456!'
-    }
-    await upsertWeakCredentials({
-      id: testAdult.id,
-      body: credentials
-    })
-    await enduserLoginWeak(page, credentials)
-    const defaultPage = new CitizenCalendarPage(page, env)
-    const header = new CitizenHeader(page, env)
-    const childPage = new CitizenChildPage(page, env)
-
-    //wait until the default page has loaded on desktop
-    if (env === 'desktop') {
-      await defaultPage.assertMonthTitle('Maaliskuu 2022')
-    }
-    await header.openChildPage(testChild.id)
-    await childPage.assertChildNameIsShown(
-      'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
-    )
-    await childPage.openCollapsible('service-need-and-daily-service-time')
-    await childPage.assertServiceNeedTable([
-      {
-        dateRange: '01.02.2022 - 01.03.2022',
-        description: 'Kokopäiväinen',
-        unit: 'Alkuräjähdyksen päiväkoti'
-      },
-      {
-        dateRange: '01.01.2022 - 31.01.2022',
-        description: 'Palveluntarvetta ei määritelty',
-        unit: 'Alkuräjähdyksen päiväkoti'
-      }
-    ])
-    await childPage.assertDailyServiceTimeTable([
-      {
-        dateRange: '01.02.2022 -',
-        description: 'Päivittäinen aika vaihtelee'
-      },
-      {
-        dateRange: '01.01.2022 - 31.01.2022',
-        description: 'Ma 08:15–14:46, To 07:46–16:32'
-      },
-      {
-        dateRange: '01.12.2021 - 31.12.2021',
-        description: '08:15–14:46'
-      }
-    ])
-    await childPage.closeCollapsible()
-    await header.openChildPage(testChild2.id)
-    await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
-    await childPage.openCollapsible('service-need-and-daily-service-time')
-    await childPage.assertServiceNeedTable([
-      {
-        dateRange: '01.02.2022 - 01.03.2022',
-        description: 'Esiopetus',
-        unit: 'Alkuräjähdyksen eskari'
-      }
-    ])
-    await childPage.assertDailyServiceTimeTable([])
-  })
-})
+}

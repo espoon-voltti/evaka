@@ -22,15 +22,15 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { CitizenNewServiceApplicationPage } from '../../pages/citizen/citizen-new-service-application'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let unitSupervisor: DevEmployee
 let serviceNeedOption1: ServiceNeedOption
 let serviceNeedOption2: ServiceNeedOption
 
-describe('Service applications', () => {
-  beforeEach(async () => {
+test.describe('Service applications', () => {
+  test.beforeEach(async () => {
     await resetServiceState()
     await testCareArea.save()
     serviceNeedOption1 = await Fixture.serviceNeedOption({
@@ -57,7 +57,7 @@ describe('Service applications', () => {
     }).save()
   })
 
-  it('accept flow works', async () => {
+  test('accept flow works', async ({ newEvakaPage }) => {
     const mockedTime1 = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
       LocalTime.of(8, 0)
     )
@@ -76,7 +76,7 @@ describe('Service applications', () => {
       confirmedBy: evakaUserId(unitSupervisor.id)
     }).save()
 
-    let citizenPage = await Page.open({ mockedTime: mockedTime1 })
+    let citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
     await enduserLogin(citizenPage, testAdult)
     let citizenHeader = new CitizenHeader(citizenPage)
@@ -127,7 +127,7 @@ describe('Service applications', () => {
     const mockedTime2 = LocalDate.of(2022, 3, 2).toHelsinkiDateTime(
       LocalTime.of(14, 0)
     )
-    const employeePage = await Page.open({ mockedTime: mockedTime2 })
+    const employeePage = await newEvakaPage({ mockedTime: mockedTime2 })
     await employeeLogin(employeePage, unitSupervisor)
 
     const unitPage = new UnitPage(employeePage)
@@ -187,7 +187,7 @@ describe('Service applications', () => {
     const mockedTime3 = LocalDate.of(2022, 3, 5).toHelsinkiDateTime(
       LocalTime.of(18, 0)
     )
-    citizenPage = await Page.open({ mockedTime: mockedTime3 })
+    citizenPage = await newEvakaPage({ mockedTime: mockedTime3 })
 
     await enduserLogin(citizenPage, testAdult)
     citizenHeader = new CitizenHeader(citizenPage)
@@ -209,7 +209,7 @@ describe('Service applications', () => {
     )
   })
 
-  it('reject flow works', async () => {
+  test('reject flow works', async ({ newEvakaPage }) => {
     const mockedTime1 = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
       LocalTime.of(8, 0)
     )
@@ -221,7 +221,7 @@ describe('Service applications', () => {
       type: 'DAYCARE'
     }).save()
 
-    let citizenPage = await Page.open({ mockedTime: mockedTime1 })
+    let citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
     await enduserLogin(citizenPage, testAdult)
     let citizenHeader = new CitizenHeader(citizenPage)
@@ -256,7 +256,7 @@ describe('Service applications', () => {
     const mockedTime2 = LocalDate.of(2022, 3, 2).toHelsinkiDateTime(
       LocalTime.of(14, 0)
     )
-    const employeePage = await Page.open({ mockedTime: mockedTime2 })
+    const employeePage = await newEvakaPage({ mockedTime: mockedTime2 })
     await employeeLogin(employeePage, unitSupervisor)
 
     const childInformationPage = new ChildInformationPage(employeePage)
@@ -281,7 +281,7 @@ describe('Service applications', () => {
     const mockedTime3 = LocalDate.of(2022, 3, 5).toHelsinkiDateTime(
       LocalTime.of(18, 0)
     )
-    citizenPage = await Page.open({ mockedTime: mockedTime3 })
+    citizenPage = await newEvakaPage({ mockedTime: mockedTime3 })
 
     await enduserLogin(citizenPage, testAdult)
     citizenHeader = new CitizenHeader(citizenPage)
@@ -304,7 +304,7 @@ describe('Service applications', () => {
     )
   })
 
-  it('cancelling application', async () => {
+  test('cancelling application', async ({ newEvakaPage }) => {
     const mockedTime1 = LocalDate.of(2022, 3, 1).toHelsinkiDateTime(
       LocalTime.of(8, 0)
     )
@@ -316,7 +316,7 @@ describe('Service applications', () => {
       type: 'DAYCARE'
     }).save()
 
-    const citizenPage = await Page.open({ mockedTime: mockedTime1 })
+    const citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
     await enduserLogin(citizenPage, testAdult)
     const citizenHeader = new CitizenHeader(citizenPage)
@@ -351,7 +351,7 @@ describe('Service applications', () => {
     const mockedTime2 = LocalDate.of(2022, 3, 2).toHelsinkiDateTime(
       LocalTime.of(14, 0)
     )
-    const employeePage = await Page.open({ mockedTime: mockedTime2 })
+    const employeePage = await newEvakaPage({ mockedTime: mockedTime2 })
     await employeeLogin(employeePage, unitSupervisor)
 
     const unitPage = new UnitPage(employeePage)

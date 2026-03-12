@@ -11,12 +11,9 @@ import type { DevCareArea, DevDaycare } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
 import UnitListPage from '../../pages/mobile/unit-list-page'
+import { test } from '../../playwright'
 import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let page: Page
-let area: DevCareArea
-let unit: DevDaycare
+import type { Page } from '../../utils/page'
 
 const enabledPilotFeatures: PilotFeature[] = [
   'MESSAGING',
@@ -24,18 +21,24 @@ const enabledPilotFeatures: PilotFeature[] = [
   'PUSH_NOTIFICATIONS'
 ]
 
-beforeEach(async () => {
+test.use({ viewport: mobileViewport })
+
+let page: Page
+let area: DevCareArea
+let unit: DevDaycare
+
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
   area = await Fixture.careArea().save()
   unit = await Fixture.daycare({
     enabledPilotFeatures,
     areaId: area.id
   }).save()
-  page = await Page.open({ viewport: mobileViewport })
+  page = evaka
 })
 
-describe('Settings page push permission section', () => {
-  it('should show prompt/granted states correctly', async () => {
+test.describe('Settings page push permission section', () => {
+  test('should show prompt/granted states correctly', async () => {
     await Fixture.daycareGroup({ daycareId: unit.id }).save()
 
     const mobileSignupUrl = await pairMobileDevice(unit.id)
@@ -57,8 +60,8 @@ describe('Settings page push permission section', () => {
   })
 })
 
-describe('Settings page category/group sections', () => {
-  it('should show settings and allow editing them for a normal unit-level mobile device', async () => {
+test.describe('Settings page category/group sections', () => {
+  test('should show settings and allow editing them for a normal unit-level mobile device', async () => {
     const groups = [
       await Fixture.daycareGroup({ daycareId: unit.id }).save(),
       await Fixture.daycareGroup({ daycareId: unit.id }).save()
@@ -91,7 +94,7 @@ describe('Settings page category/group sections', () => {
     await groupCheckboxes[0].waitUntilChecked(false)
     await groupCheckboxes[1].waitUntilChecked(true)
   })
-  it('should show settings and allow editing them for a personal mobile device', async () => {
+  test('should show settings and allow editing them for a personal mobile device', async () => {
     // personal mobile devices may have multiple units with multiple groups, and the settings page
     // only shows groups for the currently selected units, but internally retains state for the other units
     const group = await Fixture.daycareGroup({ daycareId: unit.id }).save()

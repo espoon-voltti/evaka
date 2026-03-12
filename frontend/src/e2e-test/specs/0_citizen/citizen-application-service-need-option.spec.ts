@@ -18,49 +18,52 @@ import {
 import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import { test } from '../../playwright'
 import {
   minimalDaycareFormWithServiceNeedOption,
   minimalPreschoolFormWithServiceNeedOption
 } from '../../utils/application-forms'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const mockedDate = LocalDate.of(2021, 4, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(15, 0))
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild]
-  }).save()
-  await testAdult2.saveAdult({
-    updateMockVtjWithDependants: [testChild]
-  })
-})
-
-describe('Citizen daycare applications', () => {
+test.describe('Citizen daycare applications', () => {
   let page: Page
   let header: CitizenHeader
   let applicationsPage: CitizenApplicationsPage
 
-  beforeEach(async () => {
-    page = await Page.open({
+  test.use({
+    evakaOptions: {
       mockedTime,
       citizenCustomizations: {
         featureFlags: {
           daycareApplication: { dailyTimes: false, serviceNeedOption: true }
         }
       }
+    }
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
     })
+
+    page = evaka
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
-  it('Minimal valid daycare application with service need option can be sent', async () => {
+  test('Minimal valid daycare application with service need option can be sent', async () => {
     await Fixture.serviceNeedOption({
       nameFi: 'Kokopäiväinen mennyt',
       validPlacementType: 'DAYCARE',
@@ -125,15 +128,13 @@ describe('Citizen daycare applications', () => {
   })
 })
 
-describe('Citizen preschool applications', () => {
+test.describe('Citizen preschool applications', () => {
   let page: Page
   let header: CitizenHeader
   let applicationsPage: CitizenApplicationsPage
 
-  beforeEach(async () => {
-    await preschoolTerm2021.save()
-
-    page = await Page.open({
+  test.use({
+    evakaOptions: {
       mockedTime,
       citizenCustomizations: {
         featureFlags: {
@@ -143,13 +144,29 @@ describe('Citizen preschool applications', () => {
           }
         }
       }
+    }
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
     })
+    await preschoolTerm2021.save()
+
+    page = evaka
     await enduserLogin(page, testAdult)
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
-  it('Minimal valid preschool application with service need option can be sent', async () => {
+  test('Minimal valid preschool application with service need option can be sent', async () => {
     await Fixture.serviceNeedOption({
       nameFi: 'Mennyt',
       validPlacementType: 'PRESCHOOL_DAYCARE',

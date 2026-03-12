@@ -4,7 +4,6 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -22,18 +21,25 @@ import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileReservationsPage from '../../pages/mobile/reservations-page'
+import { test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
-beforeEach(async (): Promise<void> => resetServiceState())
-
-describe('when placement is ending tomorrow', () => {
+test.describe('when placement is ending tomorrow', () => {
   const mockedToday = LocalDate.of(2023, 11, 13)
   const mockedTomorrow = mockedToday.addDays(1)
+
+  test.use({
+    evakaOptions: {
+      mockedTime: HelsinkiDateTime.fromLocal(mockedToday, LocalTime.of(14, 50))
+    }
+  })
+
   let unit: DevDaycare
   let child: DevPerson
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
     const area = await Fixture.careArea().save()
     unit = await Fixture.daycare({
       areaId: area.id,
@@ -56,11 +62,12 @@ describe('when placement is ending tomorrow', () => {
       startDate: placement.startDate,
       endDate: placement.endDate
     }).save()
+
+    await evaka.goto(await pairMobileDevice(unit.id))
   })
 
-  test('reservation times can be added', async () => {
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+  test('reservation times can be added', async ({ evaka }) => {
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
@@ -74,7 +81,7 @@ describe('when placement is ending tomorrow', () => {
     ])
   })
 
-  test('reservation time can be removed', async () => {
+  test('reservation time can be removed', async ({ evaka }) => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       childId: child.id,
@@ -83,8 +90,7 @@ describe('when placement is ending tomorrow', () => {
       secondReservation: new TimeRange(LocalTime.of(16, 0), LocalTime.of(18, 0))
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00,16:00–18:00' }
     ])
@@ -96,7 +102,7 @@ describe('when placement is ending tomorrow', () => {
     ])
   })
 
-  test('reservation with time can be overridden', async () => {
+  test('reservation with time can be overridden', async ({ evaka }) => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       childId: child.id,
@@ -105,8 +111,7 @@ describe('when placement is ending tomorrow', () => {
       secondReservation: null
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00' }
     ])
@@ -118,7 +123,7 @@ describe('when placement is ending tomorrow', () => {
     ])
   })
 
-  test('reservation without time can be overridden', async () => {
+  test('reservation without time can be overridden', async ({ evaka }) => {
     await Fixture.holidayPeriod({
       period: new FiniteDateRange(mockedTomorrow, mockedTomorrow)
     }).save()
@@ -128,8 +133,7 @@ describe('when placement is ending tomorrow', () => {
       range: null
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
@@ -141,11 +145,10 @@ describe('when placement is ending tomorrow', () => {
     ])
   })
 
-  test('absence can be overridden', async () => {
+  test('absence can be overridden', async ({ evaka }) => {
     await Fixture.absence({ childId: child.id, date: mockedTomorrow }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Poissa' }
     ])
@@ -158,7 +161,7 @@ describe('when placement is ending tomorrow', () => {
     ])
   })
 
-  test('daily service time can be overridden', async () => {
+  test('daily service time can be overridden', async ({ evaka }) => {
     await Fixture.dailyServiceTime({
       childId: child.id,
       validityPeriod: new DateRange(mockedTomorrow, mockedTomorrow),
@@ -166,8 +169,7 @@ describe('when placement is ending tomorrow', () => {
       regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Varhaiskasvatusaika tänään 08:00-16:00' }
     ])
@@ -180,13 +182,21 @@ describe('when placement is ending tomorrow', () => {
   })
 })
 
-describe('when child is in preschool only', () => {
+test.describe('when child is in preschool only', () => {
   const mockedToday = LocalDate.of(2023, 11, 13)
   const mockedTomorrow = mockedToday.addDays(1)
+
+  test.use({
+    evakaOptions: {
+      mockedTime: HelsinkiDateTime.fromLocal(mockedToday, LocalTime.of(14, 50))
+    }
+  })
+
   let unit: DevDaycare
   let child: DevPerson
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
     const area = await Fixture.careArea().save()
     unit = await Fixture.daycare({
       areaId: area.id,
@@ -219,11 +229,12 @@ describe('when child is in preschool only', () => {
       startDate: placement.startDate,
       endDate: placement.endDate
     }).save()
+
+    await evaka.goto(await pairMobileDevice(unit.id))
   })
 
-  test('fixed schedule day', async () => {
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+  test('fixed schedule day', async ({ evaka }) => {
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Läsnä' }
     ])
@@ -231,15 +242,14 @@ describe('when child is in preschool only', () => {
     await editPage.assertFixedSchedule(mockedTomorrow)
   })
 
-  test('absence can be removed from fixed schedule day', async () => {
+  test('absence can be removed from fixed schedule day', async ({ evaka }) => {
     await Fixture.absence({
       childId: child.id,
       date: mockedTomorrow,
       absenceCategory: 'NONBILLABLE'
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Poissa' }
     ])
@@ -252,15 +262,14 @@ describe('when child is in preschool only', () => {
     ])
   })
 
-  test('term break day', async () => {
+  test('term break day', async ({ evaka }) => {
     await Fixture.preschoolTerm({
       ...preschoolTerm2023,
       finnishPreschool: new FiniteDateRange(mockedTomorrow, mockedTomorrow),
       termBreaks: [new FiniteDateRange(mockedTomorrow, mockedTomorrow)]
     }).save()
 
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Ei toimintaa tänään' }
     ])
@@ -269,12 +278,20 @@ describe('when child is in preschool only', () => {
   })
 })
 
-describe('when unit is open every day for shift care child', () => {
+test.describe('when unit is open every day for shift care child', () => {
   const mockedToday = LocalDate.of(2023, 11, 14) // Tue
+
+  test.use({
+    evakaOptions: {
+      mockedTime: HelsinkiDateTime.fromLocal(mockedToday, LocalTime.of(14, 50))
+    }
+  })
+
   let unit: DevDaycare
   let child: DevPerson
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
     const area = await Fixture.careArea().save()
     unit = await Fixture.daycare({
       areaId: area.id,
@@ -327,11 +344,14 @@ describe('when unit is open every day for shift care child', () => {
       startDate: placement.startDate,
       endDate: placement.endDate
     }).save()
+
+    await evaka.goto(await pairMobileDevice(unit.id))
   })
 
-  test('reservation can be added to every non-reservable day', async () => {
-    const page = await loginToMobile(mockedToday, unit.id)
-    const reservationsPage = await navigateToReservations(page, child.id)
+  test('reservation can be added to every non-reservable day', async ({
+    evaka
+  }) => {
+    const reservationsPage = await navigateToReservations(evaka, child.id)
     const editPage = await reservationsPage.edit()
     await editPage.fillTime(mockedToday.addDays(1), 0, '08:01', '16:01')
     await editPage.fillTime(mockedToday.addDays(2), 0, '08:02', '16:02')
@@ -362,14 +382,6 @@ describe('when unit is open every day for shift care child', () => {
     ])
   })
 })
-
-const loginToMobile = async (today: LocalDate, unitId: DaycareId) => {
-  const page = await Page.open({
-    mockedTime: HelsinkiDateTime.fromLocal(today, LocalTime.of(14, 50))
-  })
-  await page.goto(await pairMobileDevice(unitId))
-  return page
-}
 
 const navigateToReservations = async (page: Page, childId: UUID) => {
   const listPage = new MobileListPage(page)

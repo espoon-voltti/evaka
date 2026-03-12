@@ -29,38 +29,47 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
-import { Page } from '../../utils/page'
+import { test, expect } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = LocalDate.of(2021, 8, 16)
-let page: Page
-let applicationListView: ApplicationListView
 
-let serviceWorker: DevEmployee
-
-beforeEach(async () => {
-  await resetServiceState()
-  await cleanUpMessages()
-  await preschoolTerm2021.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testPreschool.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-  await familyWithTwoGuardians.save()
-  serviceWorker = await Fixture.employee().serviceWorker().save()
-  await createDefaultServiceNeedOptions()
-  await Fixture.feeThresholds().save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
       featureFlags: { decisionDraftMultipleUnits: true }
     }
-  })
-  applicationListView = new ApplicationListView(page)
+  }
 })
 
-describe('Application transitions', () => {
+test.describe('Application transitions', () => {
+  let page: Page
+  let applicationListView: ApplicationListView
+
+  let serviceWorker: DevEmployee
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await cleanUpMessages()
+    await preschoolTerm2021.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testPreschool.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild2]
+    }).save()
+    await familyWithTwoGuardians.save()
+    serviceWorker = await Fixture.employee().serviceWorker().save()
+    await createDefaultServiceNeedOptions()
+    await Fixture.feeThresholds().save()
+
+    page = evaka
+    applicationListView = new ApplicationListView(page)
+  })
+
   test('Decision draft page works without unit selection', async () => {
     const fixture = {
       ...applicationFixture(

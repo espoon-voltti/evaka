@@ -34,8 +34,9 @@ import type {
   GuardiansSection
 } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -45,7 +46,13 @@ let admin: DevEmployee
 
 const mockedDate = LocalDate.of(2020, 3, 1)
 
-beforeEach(async () => {
+test.use({
+  evakaOptions: {
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+  }
+})
+
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
 
   await testCareArea.save()
@@ -74,16 +81,14 @@ beforeEach(async () => {
   // is up to date or will return wrong results
   await forceFullVtjRefresh({ person: childId })
 
-  page = await Page.open({
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
+  page = evaka
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.waitUntilLoaded()
 })
 
-describe('Child Information - edit child information', () => {
+test.describe('Child Information - edit child information', () => {
   test('Oph person oid can be edited', async () => {
     await page.goto(
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
@@ -96,9 +101,9 @@ describe('Child Information - edit child information', () => {
   })
 })
 
-describe('Child Information - edit additional information', () => {
+test.describe('Child Information - edit additional information', () => {
   let section: AdditionalInformationSection
-  beforeEach(() => {
+  test.beforeEach(() => {
     section = childInformationPage.additionalInformationSection()
   })
 
@@ -171,7 +176,7 @@ describe('Child Information - edit additional information', () => {
   })
 })
 
-describe('Child Information - header', () => {
+test.describe('Child Information - header', () => {
   test('Child has no guardian indicator and restricted labels are shown', async () => {
     await testChildRestricted.saveChild({ updateMockVtj: true })
     await page.goto(
@@ -192,9 +197,9 @@ describe('Child Information - header', () => {
   })
 })
 
-describe('Child Information - daily service times', () => {
+test.describe('Child Information - daily service times', () => {
   let section: DailyServiceTimeSection
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
@@ -246,7 +251,9 @@ describe('Child Information - daily service times', () => {
     )
   })
 
-  test('can create regular daily service times starting tomorrow', async () => {
+  test('can create regular daily service times starting tomorrow', async ({
+    newEvakaPage
+  }) => {
     const form = await section.create()
     await form.validityPeriodStart.fill(tomorrow)
     await form.checkType('REGULAR')
@@ -260,7 +267,7 @@ describe('Child Information - daily service times', () => {
     )
 
     // Status changes to active tomorrow
-    const pageTomorrow = await Page.open({
+    const pageTomorrow = await newEvakaPage({
       mockedTime: tomorrowDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(pageTomorrow, admin)
@@ -382,9 +389,9 @@ describe('Child Information - daily service times', () => {
   })
 })
 
-describe('Child information - backup care', () => {
+test.describe('Child information - backup care', () => {
   let section: BackupCaresSection
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     section = await childInformationPage.openCollapsible('backupCares')
   })
 
@@ -521,9 +528,9 @@ describe('Child information - backup care', () => {
   })
 })
 
-describe('Child information - backup pickups', () => {
+test.describe('Child information - backup pickups', () => {
   let section: FamilyContactsSection
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     section = await childInformationPage.openCollapsible('familyContacts')
   })
 
@@ -542,9 +549,9 @@ describe('Child information - backup pickups', () => {
   })
 })
 
-describe('Child information - family contacts', () => {
+test.describe('Child information - family contacts', () => {
   let section: FamilyContactsSection
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     section = await childInformationPage.openCollapsible('familyContacts')
   })
 
@@ -587,9 +594,9 @@ describe('Child information - family contacts', () => {
   })
 })
 
-describe('Child information - guardian information', () => {
+test.describe('Child information - guardian information', () => {
   let section: GuardiansSection
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     section = await childInformationPage.openCollapsible('guardians')
   })
 
@@ -597,16 +604,16 @@ describe('Child information - guardian information', () => {
     await section.assertGuardianExists(familyWithTwoGuardians.guardian.id)
   })
 
-  test('guardian information is shown to unit supervisor', async () => {
+  test('guardian information is shown to unit supervisor', async ({
+    newEvakaPage
+  }) => {
     const unitSupervisor: DevEmployee = await Fixture.employee()
       .unitSupervisor(testDaycare.id)
       .save()
-    page = await Page.open({
-      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-    await employeeLogin(page, unitSupervisor)
-    await page.goto(config.employeeUrl + '/child-information/' + childId)
-    childInformationPage = new ChildInformationPage(page)
+    const page2 = await newEvakaPage()
+    await employeeLogin(page2, unitSupervisor)
+    await page2.goto(config.employeeUrl + '/child-information/' + childId)
+    childInformationPage = new ChildInformationPage(page2)
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.openCollapsible('guardians')
     await section.assertGuardianExists(familyWithTwoGuardians.guardian.id)

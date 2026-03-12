@@ -17,30 +17,31 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let applicationReadView: ApplicationReadView
+test.describe('Employee reads applications', () => {
+  let page: Page
+  let applicationReadView: ApplicationReadView
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  await familyWithTwoGuardians.save()
-  const admin = await Fixture.employee().admin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await familyWithTwoGuardians.save()
+    const admin = await Fixture.employee().admin().save()
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
+    page = evaka
+    await employeeLogin(page, admin)
 
-  applicationReadView = new ApplicationReadView(page)
-})
+    applicationReadView = new ApplicationReadView(page)
+  })
 
-describe('Employee reads applications', () => {
   test('Daycare application opens by link', async () => {
     const fixture = applicationFixture(testChild, testAdult)
     await createApplications({ body: [fixture] })

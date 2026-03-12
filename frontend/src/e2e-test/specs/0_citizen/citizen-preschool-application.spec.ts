@@ -24,11 +24,12 @@ import {
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
+import { test, expect } from '../../playwright'
 import {
   fullPreschoolForm,
   minimalPreschoolForm
 } from '../../utils/application-forms'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
@@ -37,29 +38,33 @@ let applicationsPage: CitizenApplicationsPage
 
 const mockedDate = LocalDate.of(2021, 1, 15)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await preschoolTerm2020.save()
-  await preschoolTerm2021.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  await testAdult2.saveAdult({
-    updateMockVtjWithDependants: [testChild]
+test.describe('Citizen preschool applications', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    }
   })
 
-  page = await Page.open({
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-  applicationsPage = new CitizenApplicationsPage(page)
-})
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await preschoolTerm2020.save()
+    await preschoolTerm2021.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
 
-describe('Citizen preschool applications', () => {
+    page = evaka
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page)
+    applicationsPage = new CitizenApplicationsPage(page)
+  })
+
   test('Sending incomplete preschool application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
@@ -168,79 +173,181 @@ describe('Citizen preschool applications', () => {
   })
 })
 
-describe('Citizen preschool applications - connected daycare preferred start date', () => {
-  const testCases = [
-    {
-      name: 'can be same as preschool preferred start date',
-      preferredStartDate: LocalDate.of(2021, 8, 11),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
-      isValid: true
-    },
-    {
-      name: 'can be after preschool preferred start date',
-      preferredStartDate: LocalDate.of(2021, 8, 11),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 12),
-      isValid: true
-    },
-    {
-      name: 'can be before preschool preferred start date when preschool preferred start date is term start',
-      preferredStartDate: LocalDate.of(2021, 8, 11),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 10),
-      isValid: true
-    },
-    {
-      name: 'cannot be before preschool term',
-      preferredStartDate: LocalDate.of(2021, 8, 11),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 7, 31),
-      isValid: false
-    },
-    {
-      name: 'cannot be before preschool preferred start date when preschool preferred start date is in the middle of term',
-      preferredStartDate: LocalDate.of(2021, 8, 12),
-      connectedDaycarePreferredStartDate: LocalDate.of(2021, 8, 11),
-      isValid: false
+test.describe('Citizen preschool applications - connected daycare preferred start date', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     }
-  ]
+  })
 
-  test.each(testCases)(
-    '$name',
-    async ({
-      preferredStartDate,
-      connectedDaycarePreferredStartDate,
-      isValid
-    }) => {
-      await header.selectTab('applications')
-      const editorPage = await applicationsPage.createApplication(
-        testChild.id,
-        'PRESCHOOL'
-      )
-      const applicationId = editorPage.getNewApplicationId()
-      await editorPage.fillData({
-        ...minimalPreschoolForm.form,
-        serviceNeed: {
-          ...minimalPreschoolForm.form.serviceNeed,
-          preferredStartDate: preferredStartDate.format(),
-          connectedDaycare: true,
-          connectedDaycarePreferredStartDate:
-            connectedDaycarePreferredStartDate.format(),
-          startTime: '08:00',
-          endTime: '16:00'
-        }
-      })
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await preschoolTerm2020.save()
+    await preschoolTerm2021.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    await testAdult2.saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
 
-      if (isValid) {
-        await editorPage.verifyAndSend({ hasOtherGuardian: true })
-        const application = await getApplication({ applicationId })
-        expect(application.form.preferences.preferredStartDate).toEqual(
-          preferredStartDate
-        )
-        expect(
-          application.form.preferences.connectedDaycarePreferredStartDate
-        ).toEqual(connectedDaycarePreferredStartDate)
-      } else {
-        await editorPage.goToVerification()
-        await editorPage.assertErrorsExist()
+    page = evaka
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page)
+    applicationsPage = new CitizenApplicationsPage(page)
+  })
+
+  test('can be same as preschool preferred start date', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 11)
+    const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 11)
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: preferredStartDate.format(),
+        connectedDaycare: true,
+        connectedDaycarePreferredStartDate:
+          connectedDaycarePreferredStartDate.format(),
+        startTime: '08:00',
+        endTime: '16:00'
       }
-    }
-  )
+    })
+
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+    const application = await getApplication({ applicationId })
+    expect(application.form.preferences.preferredStartDate).toEqual(
+      preferredStartDate
+    )
+    expect(
+      application.form.preferences.connectedDaycarePreferredStartDate
+    ).toEqual(connectedDaycarePreferredStartDate)
+  })
+
+  test('can be after preschool preferred start date', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 11)
+    const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 12)
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: preferredStartDate.format(),
+        connectedDaycare: true,
+        connectedDaycarePreferredStartDate:
+          connectedDaycarePreferredStartDate.format(),
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+    })
+
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+    const application = await getApplication({ applicationId })
+    expect(application.form.preferences.preferredStartDate).toEqual(
+      preferredStartDate
+    )
+    expect(
+      application.form.preferences.connectedDaycarePreferredStartDate
+    ).toEqual(connectedDaycarePreferredStartDate)
+  })
+
+  test('can be before preschool preferred start date when preschool preferred start date is term start', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 11)
+    const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 10)
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: preferredStartDate.format(),
+        connectedDaycare: true,
+        connectedDaycarePreferredStartDate:
+          connectedDaycarePreferredStartDate.format(),
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+    })
+
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+    const application = await getApplication({ applicationId })
+    expect(application.form.preferences.preferredStartDate).toEqual(
+      preferredStartDate
+    )
+    expect(
+      application.form.preferences.connectedDaycarePreferredStartDate
+    ).toEqual(connectedDaycarePreferredStartDate)
+  })
+
+  test('cannot be before preschool term', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 11)
+    const connectedDaycarePreferredStartDate = LocalDate.of(2021, 7, 31)
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: preferredStartDate.format(),
+        connectedDaycare: true,
+        connectedDaycarePreferredStartDate:
+          connectedDaycarePreferredStartDate.format(),
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+    })
+
+    await editorPage.goToVerification()
+    await editorPage.assertErrorsExist()
+  })
+
+  test('cannot be before preschool preferred start date when preschool preferred start date is in the middle of term', async () => {
+    const preferredStartDate = LocalDate.of(2021, 8, 12)
+    const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 11)
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'PRESCHOOL'
+    )
+    await editorPage.fillData({
+      ...minimalPreschoolForm.form,
+      serviceNeed: {
+        ...minimalPreschoolForm.form.serviceNeed,
+        preferredStartDate: preferredStartDate.format(),
+        connectedDaycare: true,
+        connectedDaycarePreferredStartDate:
+          connectedDaycarePreferredStartDate.format(),
+        startTime: '08:00',
+        endTime: '16:00'
+      }
+    })
+
+    await editorPage.goToVerification()
+    await editorPage.assertErrorsExist()
+  })
 })

@@ -15,19 +15,16 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-let page: Page
 
 const child = testChild
 let daycare: DevDaycare
 let guardian: DevPerson
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
-  page = await Page.open()
 
   const area = await testCareArea.save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
@@ -52,14 +49,16 @@ beforeEach(async () => {
   }).save()
 })
 
-describe('Daily service times', () => {
-  test('modal notification is shown when notification exists', async () => {
+test.describe('Daily service times', () => {
+  test('modal notification is shown when notification exists', async ({
+    evaka
+  }) => {
     await Fixture.dailyServiceTimeNotification({
       guardianId: guardian.id
     }).save()
 
-    await enduserLogin(page, testAdult)
-    const calendar = new CitizenCalendarPage(page, 'desktop')
+    await enduserLogin(evaka, testAdult)
+    const calendar = new CitizenCalendarPage(evaka, 'desktop')
 
     await waitUntilEqual(
       () => calendar.getDailyServiceTimeNotificationModalContent(),

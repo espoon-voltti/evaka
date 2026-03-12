@@ -5,22 +5,23 @@
 import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let page: Page
-let header: CitizenHeader
+test.describe('Citizen page', () => {
+  let page: Page
+  let header: CitizenHeader
 
-beforeEach(async () => {
-  await resetServiceState()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
-  page = await Page.open()
-  await enduserLogin(page, testAdult)
-  header = new CitizenHeader(page)
-})
+    page = evaka
+    await enduserLogin(page, testAdult)
+    header = new CitizenHeader(page)
+  })
 
-describe('Citizen page', () => {
   test('UI language can be changed', async () => {
     await header.selectLanguage('fi')
     await header.assertSubNavMenuHasText('Valikko')

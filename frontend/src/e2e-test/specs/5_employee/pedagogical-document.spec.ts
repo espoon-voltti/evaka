@@ -22,13 +22,11 @@ import {
 } from '../../generated/api-clients'
 import type { PedagogicalDocumentsSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let childInformationPage: ChildInformationPage
-let childId: PersonId
 const mockNow = HelsinkiDateTime.of(2025, 4, 10, 12, 0, 0)
 
 const testfile1Name = 'test_file.png'
@@ -37,35 +35,38 @@ const testfile1Path = `src/e2e-test/assets/${testfile1Name}`
 const testfile2Name = 'test_file.jpg'
 const testfile2Path = `src/e2e-test/assets/${testfile2Name}`
 
-beforeEach(async () => {
-  await resetServiceState()
-
-  await testCareArea.save()
-  await testDaycare.save()
-  await familyWithTwoGuardians.save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
-
-  const unitId = testDaycare.id
-  childId = familyWithTwoGuardians.children[0].id
-
-  const daycarePlacementFixture = createDaycarePlacementFixture(
-    randomId(),
-    childId,
-    unitId
-  )
-  await createDaycarePlacements({ body: [daycarePlacementFixture] })
-
-  const admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({ mockedTime: mockNow })
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl + '/child-information/' + childId)
-  childInformationPage = new ChildInformationPage(page)
-})
-
-describe('Child Information - Pedagogical documents', () => {
+test.describe('Child Information - Pedagogical documents', () => {
+  let page: Page
+  let childInformationPage: ChildInformationPage
+  let childId: PersonId
   let section: PedagogicalDocumentsSection
-  beforeEach(async () => {
+
+  test.use({ evakaOptions: { mockedTime: mockNow } })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+
+    await testCareArea.save()
+    await testDaycare.save()
+    await familyWithTwoGuardians.save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+
+    const unitId = testDaycare.id
+    childId = familyWithTwoGuardians.children[0].id
+
+    const daycarePlacementFixture = createDaycarePlacementFixture(
+      randomId(),
+      childId,
+      unitId
+    )
+    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+
+    const admin = await Fixture.employee().admin().save()
+
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl + '/child-information/' + childId)
+    childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('pedagogicalDocuments')
   })
 

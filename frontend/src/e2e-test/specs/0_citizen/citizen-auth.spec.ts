@@ -8,47 +8,46 @@ import {
   upsertWeakCredentials
 } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
-describe('Citizen authentication', () => {
-  let page: Page
-  const credentials = {
-    username: 'test@example.com',
-    password: 'TestPassword456!'
-  }
+const credentials = {
+  username: 'test@example.com',
+  password: 'TestPassword456!'
+}
 
-  beforeEach(async () => {
-    await resetServiceState()
-    await testAdult.saveAdult({
-      updateMockVtjWithDependants: []
-    })
-    await upsertWeakCredentials({
-      id: testAdult.id,
-      body: credentials
-    })
-
-    page = await Page.open()
+test.beforeEach(async () => {
+  await resetServiceState()
+  await testAdult.saveAdult({
+    updateMockVtjWithDependants: []
   })
+  await upsertWeakCredentials({
+    id: testAdult.id,
+    body: credentials
+  })
+})
 
-  const initConfigurations = [
-    [
-      'direct login',
-      async (page: Page) => enduserLogin(page, testAdult)
-    ] as const,
-    [
-      'weak login',
-      async (page: Page) => enduserLoginWeak(page, credentials)
-    ] as const
-  ]
+test.describe('Citizen authentication - direct login', () => {
+  const login = async (page: Page) => enduserLogin(page, testAdult)
 
-  describe.each(initConfigurations)(`Interactions with %s`, (_name, login) => {
-    test('Logout leads back to login page', async () => {
-      await login(page)
-      const header = new CitizenHeader(page)
-      await header.logout()
-      await page.findByDataQa('weak-login').waitUntilVisible()
-      await page.findByDataQa('strong-login').waitUntilVisible()
-    })
+  test('Logout leads back to login page', async ({ evaka }) => {
+    await login(evaka)
+    const header = new CitizenHeader(evaka)
+    await header.logout()
+    await evaka.findByDataQa('weak-login').waitUntilVisible()
+    await evaka.findByDataQa('strong-login').waitUntilVisible()
+  })
+})
+
+test.describe('Citizen authentication - weak login', () => {
+  const login = async (page: Page) => enduserLoginWeak(page, credentials)
+
+  test('Logout leads back to login page', async ({ evaka }) => {
+    await login(evaka)
+    const header = new CitizenHeader(evaka)
+    await header.logout()
+    await evaka.findByDataQa('weak-login').waitUntilVisible()
+    await evaka.findByDataQa('strong-login').waitUntilVisible()
   })
 })

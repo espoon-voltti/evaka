@@ -29,30 +29,34 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let guardianPage: GuardianInformationPage
+test.describe('Person finance decisions', () => {
+  let page: Page
+  let guardianPage: GuardianInformationPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  await createDefaultServiceNeedOptions()
-  await testCareArea.save()
-  await testDaycare.save()
-  await testDaycarePrivateVoucher.save()
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await createDefaultServiceNeedOptions()
+    await testCareArea.save()
+    await testDaycare.save()
+    await testDaycarePrivateVoucher.save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
-  page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, financeAdmin)
+    page = evaka
+    await employeeLogin(page, financeAdmin)
 
-  await page.goto(config.employeeUrl)
-  guardianPage = new GuardianInformationPage(page)
-})
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+  })
 
-describe('Person finance decisions', () => {
   test('Fee decisions are sorted by sent date', async () => {
-    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild2]
+    }).save()
 
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
@@ -88,7 +92,10 @@ describe('Person finance decisions', () => {
   })
 
   test('Voucher value decisions are sorted by sent date', async () => {
-    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild2]
+    }).save()
 
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
@@ -126,13 +133,18 @@ describe('Person finance decisions', () => {
     await voucherValueDecisions.checkVoucherValueDecisionSentAt(2, sentAtFirst)
   })
 
-  test('Retroactive voucher value decisions can be generated on demand', async () => {
+  test('Retroactive voucher value decisions can be generated on demand', async ({
+    newEvakaPage
+  }) => {
     const from = LocalDate.todayInSystemTz().subMonths(2)
 
     await Fixture.feeThresholds().save()
     await createVoucherValues()
 
-    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild2]
+    }).save()
     await Fixture.parentship({
       childId: testChild2.id,
       headOfChildId: testAdult.id,
@@ -153,7 +165,7 @@ describe('Person finance decisions', () => {
     })
 
     const adminUser = await Fixture.employee().admin().save()
-    page = await Page.open({ acceptDownloads: true })
+    page = await newEvakaPage()
     await employeeLogin(page, adminUser)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)

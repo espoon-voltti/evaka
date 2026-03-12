@@ -33,12 +33,11 @@ import type {
 } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
-
-let page: Page
 
 const period = new FiniteDateRange(
   LocalDate.of(2035, 12, 18),
@@ -46,10 +45,6 @@ const period = new FiniteDateRange(
 )
 const child = testChild
 const today = LocalDate.of(2035, 12, 1)
-let daycare: DevDaycare
-let daycarePrivateVoucher: DevDaycare
-let guardian: DevPerson
-let supervisor: DevEmployee
 
 const holidayQuestionnaireFixture = (
   initial?: Partial<FixedPeriodQuestionnaire>
@@ -98,105 +93,116 @@ async function assertCalendarDayRange(
   }
 }
 
-beforeEach(async () => {
-  await resetServiceState()
-  page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+test.describe('Holiday periods and questionnaires', () => {
+  let page: Page
+  let daycare: DevDaycare
+  let daycarePrivateVoucher: DevDaycare
+  let guardian: DevPerson
+  let supervisor: DevEmployee
+
+  test.use({
+    evakaOptions: { mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)) }
   })
 
-  const area = await testCareArea.save()
-  daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
-  await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    daycareId: daycare.id
-  }).save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    page = evaka
 
-  daycarePrivateVoucher = await Fixture.daycare({
-    ...testDaycarePrivateVoucher,
-    areaId: area.id
-  }).save()
-  await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    id: fromUuid<GroupId>('2f998c23-0f90-4afd-829b-d09ecf2f6189'),
-    daycareId: daycarePrivateVoucher.id
-  }).save()
+    const area = await testCareArea.save()
+    daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
+    await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      daycareId: daycare.id
+    }).save()
 
-  const child1 = await child.saveChild({ updateMockVtj: true })
-  guardian = await testAdult.saveAdult({
-    updateMockVtjWithDependants: [child1]
+    daycarePrivateVoucher = await Fixture.daycare({
+      ...testDaycarePrivateVoucher,
+      areaId: area.id
+    }).save()
+    await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      id: fromUuid<GroupId>('2f998c23-0f90-4afd-829b-d09ecf2f6189'),
+      daycareId: daycarePrivateVoucher.id
+    }).save()
+
+    const child1 = await child.saveChild({ updateMockVtj: true })
+    guardian = await testAdult.saveAdult({
+      updateMockVtjWithDependants: [child1]
+    })
+    await Fixture.guardian(child1, guardian).save()
+    supervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
   })
-  await Fixture.guardian(child1, guardian).save()
-  supervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
-})
-async function setupFirstChildPlacement(initial?: Partial<DevPlacement>) {
-  const placement = await Fixture.placement({
-    childId: child.id,
-    unitId: daycare.id,
-    startDate: LocalDate.of(2022, 1, 1),
-    endDate: LocalDate.of(2036, 6, 30),
-    ...initial
-  }).save()
-  const serviceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: 'DAYCARE',
-    defaultOption: false,
-    nameFi: 'Kokopäiväinen',
-    nameSv: 'Kokopäiväinen (sv)',
-    nameEn: 'Kokopäiväinen (en)'
-  }).save()
-  await Fixture.serviceNeed({
-    placementId: placement.id,
-    startDate: placement.startDate,
-    endDate: placement.endDate,
-    optionId: serviceNeedOption.id,
-    confirmedBy: evakaUserId(supervisor.id)
-  }).save()
-}
 
-async function setupAnotherChild(
-  startDate = LocalDate.of(2022, 1, 1),
-  endDate = LocalDate.of(2036, 6, 30)
-) {
-  const child2 = await testChild2.saveChild({
-    updateMockVtj: true
-  })
-  await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
-  await Fixture.guardian(child2, guardian).save()
-  const placement = await Fixture.placement({
-    childId: child2.id,
-    unitId: daycare.id,
-    startDate: startDate,
-    endDate: endDate
-  }).save()
-  const serviceNeedOption = await Fixture.serviceNeedOption({
-    validPlacementType: 'DAYCARE',
-    defaultOption: false,
-    nameFi: 'Kokopäiväinen',
-    nameSv: 'Kokopäiväinen (sv)',
-    nameEn: 'Kokopäiväinen (en)'
-  }).save()
-  await Fixture.serviceNeed({
-    placementId: placement.id,
-    startDate: placement.startDate,
-    endDate: placement.endDate,
-    optionId: serviceNeedOption.id,
-    confirmedBy: evakaUserId(supervisor.id),
-    shiftCare: 'FULL'
-  }).save()
+  async function setupFirstChildPlacement(initial?: Partial<DevPlacement>) {
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      startDate: LocalDate.of(2022, 1, 1),
+      endDate: LocalDate.of(2036, 6, 30),
+      ...initial
+    }).save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)'
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(supervisor.id)
+    }).save()
+  }
 
-  return child2
-}
+  async function setupAnotherChild(
+    startDate = LocalDate.of(2022, 1, 1),
+    endDate = LocalDate.of(2036, 6, 30)
+  ) {
+    const child2 = await testChild2.saveChild({
+      updateMockVtj: true
+    })
+    await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
+    await Fixture.guardian(child2, guardian).save()
+    const placement = await Fixture.placement({
+      childId: child2.id,
+      unitId: daycare.id,
+      startDate: startDate,
+      endDate: endDate
+    }).save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)'
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: evakaUserId(supervisor.id),
+      shiftCare: 'FULL'
+    }).save()
 
-describe('Holiday periods and questionnaires', () => {
-  describe('Holiday period CTA toast visibility', () => {
-    beforeEach(async () => {
+    return child2
+  }
+
+  test.describe('Holiday period CTA toast visibility', () => {
+    test.beforeEach(async () => {
       await setupFirstChildPlacement()
     })
+
     test('No holiday period exists -> no CTA toast', async () => {
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
+
     test('Holiday period with reservations not open yet -> no CTA toast', async () => {
       await Fixture.holidayPeriod({
         period,
@@ -209,6 +215,7 @@ describe('Holiday periods and questionnaires', () => {
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
+
     test('Holiday period with reservations open -> CTA toast is visible', async () => {
       await Fixture.holidayPeriod({
         period,
@@ -226,6 +233,7 @@ describe('Holiday periods and questionnaires', () => {
       await calendar.clickHolidayCta()
       await calendar.reservationModal.waitUntilVisible()
     })
+
     test('Holiday period with reservations deadline passed -> no CTA toast', async () => {
       await Fixture.holidayPeriod({
         period,
@@ -240,8 +248,8 @@ describe('Holiday periods and questionnaires', () => {
     })
   })
 
-  describe('Holiday questionnaire is active', () => {
-    beforeEach(async () => {
+  test.describe('Holiday questionnaire is active', () => {
+    test.beforeEach(async () => {
       await setupFirstChildPlacement()
       await holidayQuestionnaireFixture().save()
     })
@@ -283,6 +291,8 @@ describe('Holiday periods and questionnaires', () => {
     })
 
     test('Holidays can be reported and cleared', async () => {
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertCalendarDayRange(
           calendar,
@@ -298,7 +308,6 @@ describe('Holiday periods and questionnaires', () => {
 
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
-      const calendar = new CitizenCalendarPage(page, 'desktop')
 
       await assertFreeAbsences(false)
 
@@ -314,6 +323,10 @@ describe('Holiday periods and questionnaires', () => {
     })
 
     test('Holidays can be marked an cleared for two children', async () => {
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+
+      const child2 = await setupAnotherChild()
+
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertCalendarDayRange(
           calendar,
@@ -327,11 +340,8 @@ describe('Holiday periods and questionnaires', () => {
           ]
         )
 
-      const child2 = await setupAnotherChild()
-
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
-      const calendar = new CitizenCalendarPage(page, 'desktop')
 
       await assertFreeAbsences(false)
 
@@ -369,8 +379,8 @@ describe('Holiday periods and questionnaires', () => {
     })
   })
 
-  describe('Holiday questionnaire is inactive', () => {
-    beforeEach(async () => {
+  test.describe('Holiday questionnaire is inactive', () => {
+    test.beforeEach(async () => {
       await setupFirstChildPlacement()
       await holidayQuestionnaireFixture({
         active: new FiniteDateRange(
@@ -388,7 +398,7 @@ describe('Holiday periods and questionnaires', () => {
     })
   })
 
-  describe('Child eligibility', () => {
+  test.describe('Child eligibility', () => {
     test('The holiday reservations toast is not shown if no child is eligible', async () => {
       await setupFirstChildPlacement()
       await holidayQuestionnaireFixture({
@@ -405,6 +415,7 @@ describe('Holiday periods and questionnaires', () => {
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
+
     test('The holiday reservations toast is not shown if no child is eligible: placement ends after active period', async () => {
       // today is LocalDate.of(2035, 12, 1)
       await setupFirstChildPlacement({
@@ -596,7 +607,7 @@ describe('Holiday periods and questionnaires', () => {
     await dayView2.close()
   })
 
-  describe('Holiday period reservations', () => {
+  test.describe('Holiday period reservations', () => {
     test('Daily reservation', async () => {
       await setupFirstChildPlacement()
       await Fixture.holidayPeriod({

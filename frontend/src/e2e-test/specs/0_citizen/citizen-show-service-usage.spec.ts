@@ -18,25 +18,28 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 14)
 const yesterday = today.subDays(1)
-let page: Page
 
-async function openCalendarPage() {
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
-  })
+  }
+})
+
+async function openCalendarPage(page: Page) {
   await enduserLogin(page, testAdult)
   const header = new CitizenHeader(page, 'desktop')
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, 'desktop')
 }
 
-describe('Service time usage', () => {
-  beforeEach(async () => {
+test.describe('Service time usage', () => {
+  test.beforeEach(async () => {
     await resetServiceState()
 
     await testCareArea.save()
@@ -78,7 +81,7 @@ describe('Service time usage', () => {
     }).save()
   })
 
-  it('Reservation time shown in monthly summary', async () => {
+  test('Reservation time shown in monthly summary', async ({ evaka }) => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: yesterday,
@@ -87,7 +90,7 @@ describe('Service time usage', () => {
       secondReservation: null
     }).save()
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const summary = await calendarPage.openMonthlySummary(
       today.year,
       today.month
@@ -98,8 +101,10 @@ describe('Service time usage', () => {
     )
   })
 
-  it('Reservation time updated in monthly summary after change', async () => {
-    const calendarPage = await openCalendarPage()
+  test('Reservation time updated in monthly summary after change', async ({
+    evaka
+  }) => {
+    const calendarPage = await openCalendarPage(evaka)
     const summary = await calendarPage.openMonthlySummary(
       today.year,
       today.month
@@ -134,8 +139,10 @@ describe('Service time usage', () => {
     )
   })
 
-  it('Reservation time updated correctly in monthly summary after citizen moves away from the initial data range and then back', async () => {
-    const calendarPage = await openCalendarPage()
+  test('Reservation time updated correctly in monthly summary after citizen moves away from the initial data range and then back', async ({
+    evaka
+  }) => {
+    const calendarPage = await openCalendarPage(evaka)
     const summary = await calendarPage.openMonthlySummary(
       today.year,
       today.month
@@ -172,7 +179,7 @@ describe('Service time usage', () => {
     )
   })
 
-  it('Attendance time shown in monthly summary', async () => {
+  test('Attendance time shown in monthly summary', async ({ evaka }) => {
     await Fixture.childAttendance({
       childId: testChild2.id,
       unitId: testDaycare.id,
@@ -181,7 +188,7 @@ describe('Service time usage', () => {
       departed: LocalTime.of(15, 30)
     }).save()
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const summary = await calendarPage.openMonthlySummary(
       today.year,
       today.month
@@ -195,7 +202,9 @@ describe('Service time usage', () => {
     )
   })
 
-  it('Service time usage based on reservation shown in day view', async () => {
+  test('Service time usage based on reservation shown in day view', async ({
+    evaka
+  }) => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: yesterday,
@@ -204,14 +213,16 @@ describe('Service time usage', () => {
       secondReservation: null
     }).save()
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(yesterday)
     await dayView
       .getUsedService(testChild2.id)
       .assertTextEquals('08:00–16:00 (8 h)')
   })
 
-  it('Service time usage based on attendance shown in day view', async () => {
+  test('Service time usage based on attendance shown in day view', async ({
+    evaka
+  }) => {
     await Fixture.childAttendance({
       childId: testChild2.id,
       unitId: testDaycare.id,
@@ -220,7 +231,7 @@ describe('Service time usage', () => {
       departed: LocalTime.of(15, 30)
     }).save()
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
     await dayView
       .getUsedService(testChild2.id)
@@ -230,7 +241,9 @@ describe('Service time usage', () => {
       .assertTextEquals('Toteunut läsnäoloaika ylittää ilmoitetun ajan.')
   })
 
-  it('Service time warning when attendance is longer than reservation', async () => {
+  test('Service time warning when attendance is longer than reservation', async ({
+    evaka
+  }) => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: today,
@@ -246,7 +259,7 @@ describe('Service time usage', () => {
       departed: LocalTime.of(16, 0)
     }).save()
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
     await dayView
       .getUsedService(testChild2.id)
@@ -258,8 +271,9 @@ describe('Service time usage', () => {
       )
   })
 })
-describe('Service time alert', () => {
-  beforeEach(async () => {
+
+test.describe('Service time alert', () => {
+  test.beforeEach(async () => {
     await resetServiceState()
 
     await testCareArea.save()
@@ -301,7 +315,7 @@ describe('Service time alert', () => {
     }).save()
   })
 
-  it('Service time alert shown in month heading', async () => {
+  test('Service time alert shown in month heading', async ({ evaka }) => {
     let i = 1
     while (i < 31) {
       const date = LocalDate.of(2022, 1, i)
@@ -328,7 +342,7 @@ describe('Service time alert', () => {
       }).save()
     }
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
     const summary = await calendarPage.openMonthlySummary(
       today.year,
       today.month
@@ -342,7 +356,7 @@ describe('Service time alert', () => {
     )
   })
 
-  it('Too much reservations show info box initially', async () => {
+  test('Too much reservations show info box initially', async ({ evaka }) => {
     let i = 1
     while (i < 15) {
       const date = LocalDate.of(2022, 2, i)
@@ -357,7 +371,7 @@ describe('Service time alert', () => {
       }).save()
     }
 
-    const calendarPage = await openCalendarPage()
+    const calendarPage = await openCalendarPage(evaka)
 
     await calendarPage.navigateToNextMonth()
     await calendarPage.assertMonthTitle('Helmikuu 2022')

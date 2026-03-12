@@ -36,32 +36,16 @@ import MobileNav from '../../pages/mobile/mobile-nav'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
 import ThreadViewPage from '../../pages/mobile/thread-view'
 import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
+import type { NewEvakaPage } from '../../playwright'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
-
-let page: Page
-let listPage: MobileListPage
-let childPage: MobileChildPage
-let childMessagesPage: MobileChildMessagesPage
-let citizenPage: Page
-let messageEditor: MessageEditor
-let messagesPage: MobileMessagesPage
-let threadView: ThreadViewPage
-let pinLoginPage: PinLoginPage
-let unreadMessageCountsPage: UnreadMobileMessagesPage
-let nav: MobileNav
 
 const daycareGroupId = randomId<GroupId>()
 const daycareGroup2Id = randomId<GroupId>()
 const daycareGroup3Id = randomId<GroupId>()
-
-let daycareGroup: DevDaycareGroup
-let daycareGroup2: DevDaycareGroup
-let daycareGroup3: DevDaycareGroup
-let child: DevPerson
-let child2: DevPerson
 
 const employeeId = randomId<EmployeeId>()
 const empFirstName = 'Yrjö'
@@ -92,7 +76,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
   LocalTime.of(12, 17)
 )
 
-beforeEach(async () => {
+async function setupTestData() {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -100,20 +84,18 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  child = testChild
-  child2 = testChild2
 
-  daycareGroup = await Fixture.daycareGroup({
+  const daycareGroup = await Fixture.daycareGroup({
     id: daycareGroupId,
     daycareId: testDaycare.id
   }).save()
 
-  daycareGroup2 = await Fixture.daycareGroup({
+  const daycareGroup2 = await Fixture.daycareGroup({
     id: daycareGroup2Id,
     daycareId: testDaycare.id
   }).save()
 
-  daycareGroup3 = await Fixture.daycareGroup({
+  const daycareGroup3 = await Fixture.daycareGroup({
     id: daycareGroup3Id,
     daycareId: testDaycare.id
   }).save()
@@ -154,7 +136,7 @@ beforeEach(async () => {
   await Fixture.employeePin({ userId: staff2.id, pin }).save()
 
   const placementFixture = await Fixture.placement({
-    childId: child.id,
+    childId: testChild.id,
     unitId: testDaycare.id,
     startDate: mockedDate,
     endDate: mockedDate
@@ -167,7 +149,7 @@ beforeEach(async () => {
   }).save()
 
   const placement2Fixture = await Fixture.placement({
-    childId: child2.id,
+    childId: testChild2.id,
     unitId: testDaycare.id,
     startDate: mockedDate,
     endDate: mockedDate
@@ -183,41 +165,64 @@ beforeEach(async () => {
   await insertGuardians({
     body: [
       {
-        childId: child.id,
+        childId: testChild.id,
         guardianId: testAdult.id
       },
       {
-        childId: child2.id,
+        childId: testChild2.id,
         guardianId: testAdult.id
       }
     ]
   })
 
-  page = await Page.open({
-    mockedTime: mockedDateAt11,
-    viewport: mobileViewport
-  })
-  listPage = new MobileListPage(page)
-  childPage = new MobileChildPage(page)
-  childMessagesPage = new MobileChildMessagesPage(page)
-  unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
-  pinLoginPage = new PinLoginPage(page)
-  messageEditor = new MessageEditor(page)
-  messagesPage = new MobileMessagesPage(page)
-  threadView = new ThreadViewPage(page)
-  nav = new MobileNav(page)
-})
-
-async function initCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime, viewport: mobileViewport })
-  await enduserLogin(citizenPage, testAdult)
+  return { daycareGroup, daycareGroup2, daycareGroup3 }
 }
 
-describe('Messages in child page', () => {
-  beforeEach(async () => {
+test.describe('Messages in child page', () => {
+  test.use({
+    viewport: mobileViewport,
+    evakaOptions: { mockedTime: mockedDateAt11 }
+  })
+
+  let page: Page
+  let listPage: MobileListPage
+  let childPage: MobileChildPage
+  let childMessagesPage: MobileChildMessagesPage
+  let citizenPage: Page
+  let messageEditor: MessageEditor
+  let threadView: ThreadViewPage
+  let pinLoginPage: PinLoginPage
+
+  let daycareGroup: DevDaycareGroup
+  let child: DevPerson
+
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ evaka, newEvakaPage }) => {
+    const data = await setupTestData()
+    daycareGroup = data.daycareGroup
+    child = testChild
+
+    page = evaka
+    listPage = new MobileListPage(page)
+    childPage = new MobileChildPage(page)
+    childMessagesPage = new MobileChildMessagesPage(page)
+    pinLoginPage = new PinLoginPage(page)
+    messageEditor = new MessageEditor(page)
+    threadView = new ThreadViewPage(page)
+    newPage = newEvakaPage
+
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
+
+  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({
+      viewport: mobileViewport,
+      mockedTime
+    })
+    await enduserLogin(citizenPage, testAdult)
+  }
 
   test('Employee can open editor and send message', async () => {
     await listPage.selectChild(child.id)
@@ -229,6 +234,7 @@ describe('Messages in child page', () => {
     await childMessagesPage.backButton.click()
     await childPage.waitUntilLoaded()
   })
+
   test('Employee can open editor and send an urgent message', async () => {
     const message = { title: 'Foo', content: 'Bar', urgent: true }
     await listPage.selectChild(child.id)
@@ -246,6 +252,7 @@ describe('Messages in child page', () => {
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
     await citizenMessagesPage.assertThreadContent(message)
   })
+
   test('Employee sees a received message', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
@@ -263,13 +270,175 @@ describe('Messages in child page', () => {
       .nth(0)
       .assertText((s) => s.includes('Testiviestin sisältö'))
   })
+
+  async function citizenSendsMessageToGroup() {
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const childIds = [child.id]
+    const recipients = [daycareGroup.name + ' (Henkilökunta)']
+    await citizenMessagesPage.sendNewMessage(
+      title,
+      content,
+      childIds,
+      recipients,
+      false
+    )
+  }
 })
 
-describe('Messages page', () => {
-  beforeEach(async () => {
+test.describe('Messages page', () => {
+  test.use({
+    viewport: mobileViewport,
+    evakaOptions: { mockedTime: mockedDateAt11 }
+  })
+
+  let page: Page
+  let listPage: MobileListPage
+  let citizenPage: Page
+  let messageEditor: MessageEditor
+  let messagesPage: MobileMessagesPage
+  let threadView: ThreadViewPage
+  let pinLoginPage: PinLoginPage
+  let unreadMessageCountsPage: UnreadMobileMessagesPage
+  let nav: MobileNav
+
+  let daycareGroup: DevDaycareGroup
+  let daycareGroup2: DevDaycareGroup
+  let daycareGroup3: DevDaycareGroup
+  let child: DevPerson
+  let child2: DevPerson
+
+  let newPage: NewEvakaPage
+
+  test.beforeEach(async ({ evaka, newEvakaPage }) => {
+    const data = await setupTestData()
+    daycareGroup = data.daycareGroup
+    daycareGroup2 = data.daycareGroup2
+    daycareGroup3 = data.daycareGroup3
+    child = testChild
+    child2 = testChild2
+
+    page = evaka
+    listPage = new MobileListPage(page)
+    unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
+    pinLoginPage = new PinLoginPage(page)
+    messageEditor = new MessageEditor(page)
+    messagesPage = new MobileMessagesPage(page)
+    threadView = new ThreadViewPage(page)
+    nav = new MobileNav(page)
+    newPage = newEvakaPage
+
     const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
+
+  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+    citizenPage = await newPage({
+      viewport: mobileViewport,
+      mockedTime
+    })
+    await enduserLogin(citizenPage, testAdult)
+  }
+
+  async function citizenSendsMessageToGroup() {
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const childIds = [child.id]
+    const recipients = [daycareGroup.name + ' (Henkilökunta)']
+    await citizenMessagesPage.sendNewMessage(
+      title,
+      content,
+      childIds,
+      recipients,
+      false
+    )
+  }
+
+  async function citizenSendsMessageToGroup2() {
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
+    const title = 'Hei ryhmä 2'
+    const content = 'Testiviestin sisältö'
+    const childIds = [child2.id]
+    const recipients = [daycareGroup2.name + ' (Henkilökunta)']
+    await citizenMessagesPage.sendNewMessage(
+      title,
+      content,
+      childIds,
+      recipients,
+      false
+    )
+  }
+
+  async function citizenSeesMessage(message: {
+    title: string
+    content: string
+    urgent?: boolean
+  }) {
+    await initCitizenPage(mockedDateAt12)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
+    await citizenMessagesPage.assertThreadContent(message)
+  }
+
+  async function userSeesNewMessagesIndicator() {
+    await page.goto(config.mobileUrl)
+    await listPage.unreadMessagesIndicator.waitUntilVisible()
+  }
+
+  async function userSeesNewMessageIndicatorAndClicks() {
+    await userSeesNewMessagesIndicator()
+    await nav.messages.click()
+  }
+
+  async function staffLoginsToMessagesPage() {
+    await nav.messages.click()
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.login(staffName, pin)
+  }
+
+  async function staff2LoginsToMessagesPage() {
+    await nav.messages.click()
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.login(staff2Name, pin)
+  }
+
+  async function employeeNavigatesToMessagesSelectingLogin() {
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.login(employeeName, pin)
+  }
+
+  async function employeeNavigatesToMessagesSelectingGroup() {
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.login(employeeName, pin)
+    const linkToGroup = unreadMessageCountsPage.linkToGroup(daycareGroupId)
+    await linkToGroup.waitUntilVisible()
+    await linkToGroup.click()
+  }
+
+  async function employeeLoginsToMessagesPage() {
+    await nav.messages.click()
+    await employeeNavigatesToMessagesSelectingLogin()
+  }
+
+  async function employeeLoginsToMessagesPageThroughGroup() {
+    await nav.messages.click()
+    await employeeNavigatesToMessagesSelectingGroup()
+  }
+
+  async function staffStartsNewMessage(): Promise<MobileMessageEditor> {
+    await page.goto(config.mobileUrl)
+    await nav.messages.click()
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.login(employeeName, pin)
+    await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
+    await messagesPage.newMessage.click()
+    return new MobileMessageEditor(page)
+  }
 
   test('Employee sees unread counts and pin login button', async () => {
     await initCitizenPage(mockedDateAt10)
@@ -541,8 +710,30 @@ describe('Messages page', () => {
   })
 })
 
-describe('Personal mobile device', () => {
-  beforeEach(async () => {
+test.describe('Personal mobile device', () => {
+  test.use({
+    viewport: mobileViewport,
+    evakaOptions: { mockedTime: mockedDateAt11 }
+  })
+
+  let page: Page
+  let unreadMessageCountsPage: UnreadMobileMessagesPage
+  let pinLoginPage: PinLoginPage
+  let messagesPage: MobileMessagesPage
+  let nav: MobileNav
+
+  let daycareGroup: DevDaycareGroup
+
+  test.beforeEach(async ({ evaka }) => {
+    const data = await setupTestData()
+    daycareGroup = data.daycareGroup
+
+    page = evaka
+    unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
+    pinLoginPage = new PinLoginPage(page)
+    messagesPage = new MobileMessagesPage(page)
+    nav = new MobileNav(page)
+
     const mobileSignupUrl = await pairPersonalMobileDevice(employeeId)
     await page.goto(mobileSignupUrl)
   })
@@ -558,101 +749,3 @@ describe('Personal mobile device', () => {
     await messagesPage.draftsTab.waitUntilVisible()
   })
 })
-
-async function citizenSendsMessageToGroup() {
-  await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
-  const title = 'Otsikko'
-  const content = 'Testiviestin sisältö'
-  const childIds = [child.id]
-  const recipients = [daycareGroup.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(
-    title,
-    content,
-    childIds,
-    recipients,
-    false
-  )
-}
-
-async function citizenSendsMessageToGroup2() {
-  await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
-  const title = 'Hei ryhmä 2'
-  const content = 'Testiviestin sisältö'
-  const childIds = [child2.id]
-  const recipients = [daycareGroup2.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(
-    title,
-    content,
-    childIds,
-    recipients,
-    false
-  )
-}
-
-async function citizenSeesMessage(message: {
-  title: string
-  content: string
-  urgent?: boolean
-}) {
-  await initCitizenPage(mockedDateAt12)
-  await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
-  await citizenMessagesPage.assertThreadContent(message)
-}
-
-async function userSeesNewMessagesIndicator() {
-  await page.goto(config.mobileUrl)
-  await listPage.unreadMessagesIndicator.waitUntilVisible()
-}
-
-async function userSeesNewMessageIndicatorAndClicks() {
-  await userSeesNewMessagesIndicator()
-  await nav.messages.click()
-}
-
-async function staffLoginsToMessagesPage() {
-  await nav.messages.click()
-  await unreadMessageCountsPage.pinLoginButton.click()
-  await pinLoginPage.login(staffName, pin)
-}
-
-async function staff2LoginsToMessagesPage() {
-  await nav.messages.click()
-  await unreadMessageCountsPage.pinLoginButton.click()
-  await pinLoginPage.login(staff2Name, pin)
-}
-
-async function employeeNavigatesToMessagesSelectingLogin() {
-  await unreadMessageCountsPage.pinLoginButton.click()
-  await pinLoginPage.login(employeeName, pin)
-}
-
-async function employeeNavigatesToMessagesSelectingGroup() {
-  await unreadMessageCountsPage.pinLoginButton.click()
-  await pinLoginPage.login(employeeName, pin)
-  const linkToGroup = unreadMessageCountsPage.linkToGroup(daycareGroupId)
-  await linkToGroup.waitUntilVisible()
-  await linkToGroup.click()
-}
-
-async function employeeLoginsToMessagesPage() {
-  await nav.messages.click()
-  await employeeNavigatesToMessagesSelectingLogin()
-}
-
-async function employeeLoginsToMessagesPageThroughGroup() {
-  await nav.messages.click()
-  await employeeNavigatesToMessagesSelectingGroup()
-}
-
-async function staffStartsNewMessage(): Promise<MobileMessageEditor> {
-  await page.goto(config.mobileUrl)
-  await nav.messages.click()
-  await unreadMessageCountsPage.pinLoginButton.click()
-  await pinLoginPage.login(employeeName, pin)
-  await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
-  await messagesPage.newMessage.click()
-  return new MobileMessageEditor(page)
-}

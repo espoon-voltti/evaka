@@ -11,22 +11,23 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import { DocumentTemplatesListPage } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { Page } from '../../utils/page'
+import { test, expect } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: DevEmployee
-let page: Page
+test.describe('Employee - Document templates', () => {
+  let admin: DevEmployee
+  let page: Page
 
-beforeEach(async () => {
-  await resetServiceState()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
 
-  admin = await Fixture.employee().admin().save()
-  page = await Page.open()
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl)
-})
+    admin = await Fixture.employee().admin().save()
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+  })
 
-describe('Employee - Document templates', () => {
   test('A document template can be exported and imported', async () => {
     const template = await Fixture.documentTemplate({
       content: {

@@ -39,8 +39,10 @@ import {
   StaffAttendanceEditPage,
   StaffAttendancePage
 } from '../../pages/mobile/staff-page'
+import type { NewEvakaPage } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -60,57 +62,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
   name: 'Ryhmä 2'
 }
 
-beforeEach(async () => {
-  await resetServiceState()
-  await familyWithTwoGuardians.save()
-  await createDefaultServiceNeedOptions()
-
-  careArea = await Fixture.careArea().save()
-  await Fixture.daycare({
-    ...testDaycare2,
-    areaId: careArea.id,
-    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
-    operationTimes: [
-      fullDayTimeRange,
-      fullDayTimeRange,
-      fullDayTimeRange,
-      fullDayTimeRange,
-      fullDayTimeRange,
-      null,
-      null
-    ],
-    shiftCareOperationTimes: null,
-    shiftCareOpenOnHolidays: false
-  }).save()
-
-  await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    daycareId: testDaycare2.id
-  }).save()
-  await Fixture.daycareGroup({
-    ...daycareGroup2Fixture,
-    daycareId: testDaycare2.id
-  }).save()
-  const daycarePlacementFixture = await Fixture.placement({
-    childId: familyWithTwoGuardians.children[0].id,
-    unitId: testDaycare2.id
-  }).save()
-  await Fixture.groupPlacement({
-    daycarePlacementId: daycarePlacementFixture.id,
-    daycareGroupId: testDaycareGroup.id,
-    startDate: daycarePlacementFixture.startDate,
-    endDate: daycarePlacementFixture.endDate
-  }).save()
-  staffFixture = await Fixture.employee({
-    preferredFirstName: 'Kutsumanimi'
-  })
-    .staff(testDaycare2.id)
-    .groupAcl(testDaycareGroup.id)
-    .groupAcl(daycareGroup2Fixture.id)
-    .save()
-  await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
-  employeeName = `${staffFixture.lastName} Kutsumanimi`
-})
+let newEvakaPageFn: NewEvakaPage
 
 const initPages = async (
   mockedTime: HelsinkiDateTime,
@@ -118,7 +70,7 @@ const initPages = async (
     JsonOf<EmployeeMobileCustomizations>
   >
 ) => {
-  page = await Page.open({
+  page = await newEvakaPageFn({
     viewport: mobileViewport,
     mockedTime,
     employeeMobileCustomizations
@@ -131,7 +83,60 @@ const initPages = async (
   staffAttendancePage = new StaffAttendancePage(page)
 }
 
-describe('Realtime staff attendance page', () => {
+test.describe('Realtime staff attendance page', () => {
+  test.beforeEach(async ({ newEvakaPage }) => {
+    newEvakaPageFn = newEvakaPage
+    await resetServiceState()
+    await familyWithTwoGuardians.save()
+    await createDefaultServiceNeedOptions()
+
+    careArea = await Fixture.careArea().save()
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ],
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false
+    }).save()
+
+    await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      daycareId: testDaycare2.id
+    }).save()
+    await Fixture.daycareGroup({
+      ...daycareGroup2Fixture,
+      daycareId: testDaycare2.id
+    }).save()
+    const daycarePlacementFixture = await Fixture.placement({
+      childId: familyWithTwoGuardians.children[0].id,
+      unitId: testDaycare2.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
+    }).save()
+    staffFixture = await Fixture.employee({
+      preferredFirstName: 'Kutsumanimi'
+    })
+      .staff(testDaycare2.id)
+      .groupAcl(testDaycareGroup.id)
+      .groupAcl(daycareGroup2Fixture.id)
+      .save()
+    await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
+    employeeName = `${staffFixture.lastName} Kutsumanimi`
+  })
+
   test('Staff member can be marked as arrived and departed', async () => {
     const date = LocalDate.of(2022, 5, 5)
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(6, 0)))
@@ -168,7 +173,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
 
-    const desktopPage = await Page.open({
+    const desktopPage = await newEvakaPageFn({
       mockedTime: HelsinkiDateTime.fromLocal(date, LocalTime.of(13, 30))
     })
     await employeeLogin(desktopPage, staffFixture)
@@ -793,7 +798,60 @@ describe('Realtime staff attendance page', () => {
   })
 })
 
-describe('Realtime staff attendance edit page', () => {
+test.describe('Realtime staff attendance edit page', () => {
+  test.beforeEach(async ({ newEvakaPage }) => {
+    newEvakaPageFn = newEvakaPage
+    await resetServiceState()
+    await familyWithTwoGuardians.save()
+    await createDefaultServiceNeedOptions()
+
+    careArea = await Fixture.careArea().save()
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ],
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false
+    }).save()
+
+    await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      daycareId: testDaycare2.id
+    }).save()
+    await Fixture.daycareGroup({
+      ...daycareGroup2Fixture,
+      daycareId: testDaycare2.id
+    }).save()
+    const daycarePlacementFixture = await Fixture.placement({
+      childId: familyWithTwoGuardians.children[0].id,
+      unitId: testDaycare2.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
+    }).save()
+    staffFixture = await Fixture.employee({
+      preferredFirstName: 'Kutsumanimi'
+    })
+      .staff(testDaycare2.id)
+      .groupAcl(testDaycareGroup.id)
+      .groupAcl(daycareGroup2Fixture.id)
+      .save()
+    await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
+    employeeName = `${staffFixture.lastName} Kutsumanimi`
+  })
+
   test('Staff member can add new attendance with attendance types disabled', async () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'

@@ -35,13 +35,10 @@ import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { Page } from '../../utils/page'
+import type { NewEvakaPage } from '../../playwright'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
-
-let citizenPage: Page
-let staffPage: Page
-let serviceWorker: DevEmployee
-let messagingAndServiceWorker: DevEmployee
 
 const mockedToday = LocalDate.of(2022, 11, 8)
 const mockedTime = HelsinkiDateTime.fromLocal(
@@ -49,44 +46,51 @@ const mockedTime = HelsinkiDateTime.fromLocal(
   LocalTime.of(10, 49, 0)
 )
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-  serviceWorker = await Fixture.employee().serviceWorker().save()
-  messagingAndServiceWorker = await Fixture.employee({
-    roles: ['SERVICE_WORKER', 'MESSAGING']
-  }).save()
-  await createMessageAccounts()
-})
+test.describe('Service Worker Messaging', () => {
+  let citizenPage: Page
+  let staffPage: Page
+  let serviceWorker: DevEmployee
+  let messagingAndServiceWorker: DevEmployee
+  let newPage: NewEvakaPage
 
-async function openCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, testAdult)
-}
+  test.beforeEach(async ({ newEvakaPage }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild]
+    }).save()
+    serviceWorker = await Fixture.employee().serviceWorker().save()
+    messagingAndServiceWorker = await Fixture.employee({
+      roles: ['SERVICE_WORKER', 'MESSAGING']
+    }).save()
+    await createMessageAccounts()
+    newPage = newEvakaPage
+  })
 
-async function openStaffPage(
-  mockedTime: HelsinkiDateTime,
-  employee: DevEmployee
-) {
-  staffPage = await Page.open({ mockedTime })
-  await employeeLogin(staffPage, employee)
-  await staffPage.goto(config.employeeUrl)
-  return staffPage
-}
+  async function openCitizenPage(time: HelsinkiDateTime) {
+    citizenPage = await newPage({ mockedTime: time })
+    await enduserLogin(citizenPage, testAdult)
+  }
 
-describe('Service Worker Messaging', () => {
-  describe('Citizen only', () => {
-    it('should NOT show the messaging section for a citizen', async () => {
+  async function openStaffPage(time: HelsinkiDateTime, employee: DevEmployee) {
+    staffPage = await newPage({ mockedTime: time })
+    await employeeLogin(staffPage, employee)
+    await staffPage.goto(config.employeeUrl)
+    return staffPage
+  }
+
+  test.describe('Citizen only', () => {
+    test('should NOT show the messaging section for a citizen', async () => {
       await openCitizenPage(mockedTime)
       const header = new CitizenHeader(citizenPage)
       await header.assertNoTab('messages')
     })
   })
 
-  describe('Service Worker and citizen', () => {
-    beforeEach(async () => {
+  test.describe('Service Worker and citizen', () => {
+    test.beforeEach(async () => {
       const applFixture = {
         ...applicationFixture(testChild, testAdult),
         sentDate: mockedToday
@@ -94,7 +98,7 @@ describe('Service Worker Messaging', () => {
       await createApplications({ body: [applFixture] })
     })
 
-    it('should be possible for service workers to send messages relating to an application', async () => {
+    test('should be possible for service workers to send messages relating to an application', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -120,7 +124,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.assertThreadContent({ title, content })
     })
 
-    it('should NOT be possible for a citizen without placed children to send new messages', async () => {
+    test('should NOT be possible for a citizen without placed children to send new messages', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -142,7 +146,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.newMessageButton.assertDisabled(true)
     })
 
-    it('citizen can reply to a message when it is in progress, but not after that', async () => {
+    test('citizen can reply to a message when it is in progress, but not after that', async () => {
       // Service worker sends a message regarding an application
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
@@ -196,7 +200,7 @@ describe('Service Worker Messaging', () => {
       await citizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
     })
 
-    it('service worker can organize threads in folders', async () => {
+    test('service worker can organize threads in folders', async () => {
       // Service worker sends a message regarding an application
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
@@ -204,7 +208,9 @@ describe('Service Worker Messaging', () => {
       const messagesPage = await applReadView.openMessagesPage()
       const messageEditor = messagesPage.getMessageEditor()
       await messageEditor.inputContent.fill('message')
-      await messageEditor.folderSelection.selectOption({ label: 'Kansio 1' })
+      await messageEditor.folderSelection.selectOption({
+        label: 'Kansio 1'
+      })
       await messageEditor.sendButton.click()
       await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
@@ -221,16 +227,16 @@ describe('Service Worker Messaging', () => {
       await folderMessagesPage.openFirstThreadReplyEditor()
     })
 
-    it('service worker cannot mark a message sent by them as unread', async () => {
-      // Using this scenario from the previous test as it enables testing
-      // the "Mark unread" button to be not shown on employee side
+    test('service worker cannot mark a message sent by them as unread', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
       const messagesPage = await applReadView.openMessagesPage()
       const messageEditor = messagesPage.getMessageEditor()
       await messageEditor.inputContent.fill('message')
-      await messageEditor.folderSelection.selectOption({ label: 'Kansio 1' })
+      await messageEditor.folderSelection.selectOption({
+        label: 'Kansio 1'
+      })
       await messageEditor.sendButton.click()
       await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
@@ -241,7 +247,7 @@ describe('Service Worker Messaging', () => {
       await folderMessagesPage.assertHasNoMarkUnreadButton()
     })
 
-    it('should prefill the recipient and title fields when sending a new message', async () => {
+    test('should prefill the recipient and title fields when sending a new message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -257,7 +263,7 @@ describe('Service Worker Messaging', () => {
       )
     })
 
-    it('should create an application note with the message contents when sending a new message', async () => {
+    test('should create an application note with the message contents when sending a new message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -274,7 +280,7 @@ describe('Service Worker Messaging', () => {
       await applReadView.assertNote(0, `Lähetetty viesti\n\n${content}`)
     })
 
-    it('should create an application note with a clickable link to the message thread', async () => {
+    test('should create an application note with a clickable link to the message thread', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -295,7 +301,7 @@ describe('Service Worker Messaging', () => {
       await messagesPageWithThread.assertMessageContent(0, content)
     })
 
-    it('should create an application note when the citizen answers a message', async () => {
+    test('should create an application note when the citizen answers a message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -327,7 +333,7 @@ describe('Service Worker Messaging', () => {
       await applReadView.assertNote(1, `Lähetetty viesti\n\n${replyContent}`)
     })
 
-    it('should open the reply to thread box and create an application note when the service worker sends a second message', async () => {
+    test('should open the reply to thread box and create an application note when the service worker sends a second message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       let applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -370,14 +376,14 @@ describe('Service Worker Messaging', () => {
       await applReadView.assertNote(2, `Lähetetty viesti\n\n${replyContent}`)
     })
 
-    it('should not be possible for service workers to compose new messages from the messages page', async () => {
+    test('should not be possible for service workers to compose new messages from the messages page', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       await new EmployeeNav(staffPage).messagesTab.click()
       const messagesPage = new MessagesPage(staffPage)
       await messagesPage.newMessageButton.assertDisabled(true)
     })
 
-    it('should show the simple message editor for service workers', async () => {
+    test('should show the simple message editor for service workers', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -387,7 +393,7 @@ describe('Service Worker Messaging', () => {
       await messageEditor.assertSimpleViewVisible()
     })
 
-    it('should not be possible for service workers to delete or edit notes created from messages', async () => {
+    test('should not be possible for service workers to delete or edit notes created from messages', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -404,7 +410,7 @@ describe('Service Worker Messaging', () => {
       await applReadView.assertNoteNotDeletable(0)
     })
 
-    it('should show the correct thread even when an employee with both messaging and service worker roles click the thread link on the application', async () => {
+    test('should show the correct thread even when an employee with both messaging and service worker roles click the thread link on the application', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationFixtureId)
@@ -426,11 +432,11 @@ describe('Service Worker Messaging', () => {
     })
   })
 
-  describe('Special education teacher', () => {
+  test.describe('Special education teacher', () => {
     let specialEducationTeacher: DevEmployee
     const applicationId: ApplicationId = uuidv4() as ApplicationId
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       await createApplications({
         body: [
           {
@@ -457,7 +463,7 @@ describe('Service Worker Messaging', () => {
         .save()
     })
 
-    it('should not be possible for special education teacher to send messages relating to an application', async () => {
+    test('should not be possible for special education teacher to send messages relating to an application', async () => {
       const staffPage = await openStaffPage(mockedTime, specialEducationTeacher)
       const applReadView = new ApplicationReadView(staffPage)
       await applReadView.navigateToApplication(applicationId)

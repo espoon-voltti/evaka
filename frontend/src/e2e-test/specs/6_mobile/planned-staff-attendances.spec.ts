@@ -21,18 +21,9 @@ import {
   StaffAttendancePage,
   StaffMemberPlannedAttendancesPage
 } from '../../pages/mobile/staff-page'
+import { test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let page: Page
-let nav: MobileNav
-let staffPage: StaffAttendancePage
-let plannedAttendancesPage: PlannedAttendancesPage
-let staffMemberPlannedAttendancesPage: StaffMemberPlannedAttendancesPage
-
-let careArea: DevCareArea
-let aku: DevEmployee
-let mikki: DevEmployee
+import type { Page } from '../../utils/page'
 
 const pin = '4242'
 
@@ -44,63 +35,78 @@ const daycareGroup2Fixture: DevDaycareGroup = {
   name: 'Ryhmä 2'
 }
 
-beforeEach(async () => {
-  await resetServiceState()
+test.describe('Planned staff attendances', () => {
+  let page: Page
+  let nav: MobileNav
+  let staffPage: StaffAttendancePage
+  let plannedAttendancesPage: PlannedAttendancesPage
+  let staffMemberPlannedAttendancesPage: StaffMemberPlannedAttendancesPage
 
-  careArea = await Fixture.careArea().save()
-  await Fixture.daycare({
-    ...testDaycare2,
-    areaId: careArea.id,
-    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
-  }).save()
+  let careArea: DevCareArea
+  let aku: DevEmployee
+  let mikki: DevEmployee
 
-  await Fixture.daycareGroup({
-    ...testDaycareGroup,
-    daycareId: testDaycare2.id
-  }).save()
-  await Fixture.daycareGroup({
-    ...daycareGroup2Fixture,
-    daycareId: testDaycare2.id
-  }).save()
-
-  aku = await Fixture.employee({
-    preferredFirstName: 'Aku',
-    firstName: 'Antero',
-    lastName: 'Ankka'
-  })
-    .staff(testDaycare2.id)
-    .groupAcl(testDaycareGroup.id)
-    .save()
-  mikki = await Fixture.employee({
-    firstName: 'Mikki',
-    lastName: 'Hiiri'
-  })
-    .staff(testDaycare2.id)
-    .groupAcl(testDaycareGroup.id)
-    .groupAcl(daycareGroup2Fixture.id)
-    .save()
-  await Fixture.employeePin({ userId: aku.id, pin }).save()
-  await Fixture.employeePin({ userId: mikki.id, pin }).save()
-})
-
-const initPages = async (mockedTime: HelsinkiDateTime) => {
-  page = await Page.open({
+  test.use({
     viewport: mobileViewport,
-    mockedTime
+    evakaOptions: {
+      mockedTime: HelsinkiDateTime.fromLocal(today, LocalTime.of(6, 0))
+    }
   })
-  nav = new MobileNav(page)
-  staffPage = new StaffAttendancePage(page)
-  plannedAttendancesPage = new PlannedAttendancesPage(page)
-  staffMemberPlannedAttendancesPage = new StaffMemberPlannedAttendancesPage(
-    page
-  )
 
-  const mobileSignupUrl = await pairMobileDevice(testDaycare2.id)
-  await page.goto(mobileSignupUrl)
-  await nav.staff.click()
-}
+  const initPages = async () => {
+    nav = new MobileNav(page)
+    staffPage = new StaffAttendancePage(page)
+    plannedAttendancesPage = new PlannedAttendancesPage(page)
+    staffMemberPlannedAttendancesPage = new StaffMemberPlannedAttendancesPage(
+      page
+    )
 
-describe('Planned staff attendances', () => {
+    const mobileSignupUrl = await pairMobileDevice(testDaycare2.id)
+    await page.goto(mobileSignupUrl)
+    await nav.staff.click()
+  }
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+
+    careArea = await Fixture.careArea().save()
+    await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+    }).save()
+
+    await Fixture.daycareGroup({
+      ...testDaycareGroup,
+      daycareId: testDaycare2.id
+    }).save()
+    await Fixture.daycareGroup({
+      ...daycareGroup2Fixture,
+      daycareId: testDaycare2.id
+    }).save()
+
+    aku = await Fixture.employee({
+      preferredFirstName: 'Aku',
+      firstName: 'Antero',
+      lastName: 'Ankka'
+    })
+      .staff(testDaycare2.id)
+      .groupAcl(testDaycareGroup.id)
+      .save()
+    mikki = await Fixture.employee({
+      firstName: 'Mikki',
+      lastName: 'Hiiri'
+    })
+      .staff(testDaycare2.id)
+      .groupAcl(testDaycareGroup.id)
+      .groupAcl(daycareGroup2Fixture.id)
+      .save()
+    await Fixture.employeePin({ userId: aku.id, pin }).save()
+    await Fixture.employeePin({ userId: mikki.id, pin }).save()
+
+    page = evaka
+  })
+
   test('shows who has planned attendances during next days', async () => {
     const tuesday = today.addDays(1)
     const wednesday = today.addDays(2)
@@ -122,7 +128,7 @@ describe('Planned staff attendances', () => {
       endTime: HelsinkiDateTime.fromLocal(thursday, LocalTime.of(7, 0))
     }).save()
 
-    await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(6, 0)))
+    await initPages()
     await staffPage.selectPrimaryTab('planned')
 
     await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
@@ -189,7 +195,7 @@ describe('Planned staff attendances', () => {
       endTime: HelsinkiDateTime.fromLocal(thursday, LocalTime.of(7, 0))
     }).save()
 
-    await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(6, 0)))
+    await initPages()
     await staffPage.openStaffPage('Hiiri Mikki')
     await staffPage.plannedAttendancesButton.click()
 

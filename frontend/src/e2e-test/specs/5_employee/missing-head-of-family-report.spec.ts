@@ -11,15 +11,24 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+const mockedToday = LocalDate.of(2023, 6, 12)
 
-describe('Missing head of family report', () => {
-  test('report works', async () => {
-    const mockedToday = LocalDate.of(2023, 6, 12)
+test.describe('Missing head of family report', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
+    }
+  })
 
+  test.beforeEach(async () => {
+    await resetServiceState()
+  })
+
+  test('report works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
@@ -44,10 +53,7 @@ describe('Missing head of family report', () => {
       endDate: mockedToday.addDays(2)
     }).save()
 
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,

@@ -10,22 +10,20 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import FinanceBasicsPage from '../../pages/employee/finance-basics'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let financeBasicsPage: FinanceBasicsPage
-let nav: EmployeeNav
+test.describe('Finance basics', () => {
+  let page: Page
+  let financeBasicsPage: FinanceBasicsPage
+  let nav: EmployeeNav
 
-beforeEach(async () => {
-  await resetServiceState()
-})
-
-describe('Finance basics', () => {
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
     const financeAdmin = await Fixture.employee().financeAdmin().save()
 
-    page = await Page.open({ acceptDownloads: true })
+    page = evaka
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
 

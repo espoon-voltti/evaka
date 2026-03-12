@@ -28,17 +28,10 @@ import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
 import TopNav from '../../pages/mobile/top-nav'
+import { test, expect } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
-import { Page } from '../../utils/page'
-
-let page: Page
-let listPage: MobileListPage
-let childPage: MobileChildPage
-let pinLoginPage: PinLoginPage
-let topNav: TopNav
-
-let child: DevPerson
+import type { Page } from '../../utils/page'
 
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
@@ -50,48 +43,63 @@ const pin = '2580'
 const mockedNow = HelsinkiDateTime.of(2024, 11, 20, 13, 0)
 const today = mockedNow.toLocalDate()
 
-beforeEach(async () => {
-  await resetServiceState()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-  child = testChild
-  const unit = testDaycare
-
-  const employee = await Fixture.employee({
-    firstName: empFirstName,
-    lastName: empLastName,
-    email: 'yy@example.com',
-    roles: []
+test.describe('Mobile PIN login', () => {
+  test.use({
+    viewport: mobileViewport,
+    evakaOptions: { mockedTime: mockedNow }
   })
-    .unitSupervisor(unit.id)
-    .save()
-  await Fixture.employeePin({ userId: employee.id, pin }).save()
-  const daycareGroup = await Fixture.daycareGroup({ daycareId: unit.id }).save()
-  const placementFixture = await Fixture.placement({
-    childId: child.id,
-    unitId: unit.id,
-    startDate: today,
-    endDate: today.addYears(1)
-  }).save()
-  await Fixture.groupPlacement({
-    daycareGroupId: daycareGroup.id,
-    daycarePlacementId: placementFixture.id,
-    startDate: placementFixture.startDate,
-    endDate: placementFixture.endDate
-  }).save()
 
-  page = await Page.open({ mockedTime: mockedNow, viewport: mobileViewport })
-  listPage = new MobileListPage(page)
-  childPage = new MobileChildPage(page)
-  pinLoginPage = new PinLoginPage(page)
-  topNav = new TopNav(page)
+  let page: Page
+  let listPage: MobileListPage
+  let childPage: MobileChildPage
+  let pinLoginPage: PinLoginPage
+  let topNav: TopNav
 
-  const mobileSignupUrl = await pairMobileDevice(unit.id)
-  await page.goto(mobileSignupUrl)
-})
+  let child: DevPerson
 
-describe('Mobile PIN login', () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+    child = testChild
+    const unit = testDaycare
+
+    const employee = await Fixture.employee({
+      firstName: empFirstName,
+      lastName: empLastName,
+      email: 'yy@example.com',
+      roles: []
+    })
+      .unitSupervisor(unit.id)
+      .save()
+    await Fixture.employeePin({ userId: employee.id, pin }).save()
+    const daycareGroup = await Fixture.daycareGroup({
+      daycareId: unit.id
+    }).save()
+    const placementFixture = await Fixture.placement({
+      childId: child.id,
+      unitId: unit.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementFixture.id,
+      startDate: placementFixture.startDate,
+      endDate: placementFixture.endDate
+    }).save()
+
+    page = evaka
+    listPage = new MobileListPage(page)
+    childPage = new MobileChildPage(page)
+    pinLoginPage = new PinLoginPage(page)
+    topNav = new TopNav(page)
+
+    const mobileSignupUrl = await pairMobileDevice(unit.id)
+    await page.goto(mobileSignupUrl)
+  })
+
   test('User can login with PIN and see child sensitive info', async () => {
     const childAdditionalInfo = await Fixture.childAdditionalInfo({
       id: child.id,

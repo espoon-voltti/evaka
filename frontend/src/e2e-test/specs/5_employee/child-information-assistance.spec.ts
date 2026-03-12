@@ -25,8 +25,9 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AssistanceSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
@@ -38,7 +39,9 @@ let voucherUnitId: DaycareId
 let admin: DevEmployee
 const mockNow = HelsinkiDateTime.of(2023, 4, 10, 12, 0, 0)
 
-beforeEach(async () => {
+test.use({ evakaOptions: { mockedTime: mockNow } })
+
+test.beforeEach(async ({ evaka }) => {
   await resetServiceState()
 
   await testCareArea.save()
@@ -51,7 +54,7 @@ beforeEach(async () => {
   unitId = testDaycare.id
   voucherUnitId = testDaycarePrivateVoucher.id
   childId = familyWithTwoGuardians.children[0].id
-  page = await Page.open({ mockedTime: mockNow })
+  page = evaka
   admin = await Fixture.employee().admin().save()
 })
 
@@ -74,9 +77,9 @@ const logUserIn = async (user: DevEmployee) => {
   assistance = await childInformationPage.openCollapsible('assistance')
 }
 
-describe('Child Information assistance functionality for employees', () => {
-  describe('assistance factor', () => {
-    it('can be added', async () => {
+test.describe('Child Information assistance functionality for employees', () => {
+  test.describe('assistance factor', () => {
+    test('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
@@ -92,7 +95,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.validDuring.assertTextEquals(validDuring.format())
     })
 
-    it('can be edited', async () => {
+    test('can be edited', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.assistanceFactor({
         childId,
@@ -112,7 +115,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.capacityFactor.assertTextEquals('2,5')
     })
 
-    it('can be deleted', async () => {
+    test('can be deleted', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.assistanceFactor({
         childId,
@@ -139,8 +142,8 @@ describe('Child Information assistance functionality for employees', () => {
     })
   })
 
-  describe('daycare assistance', () => {
-    it('can be added', async () => {
+  test.describe('daycare assistance', () => {
+    test('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
@@ -155,7 +158,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.validDuring.assertTextEquals(validDuring.format())
     })
 
-    it('can be edited', async () => {
+    test('can be edited', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.daycareAssistance({
         childId,
@@ -175,7 +178,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.level.assertTextEquals('Erityinen tuki')
     })
 
-    it('can be deleted', async () => {
+    test('can be deleted', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.daycareAssistance({
         childId,
@@ -202,8 +205,8 @@ describe('Child Information assistance functionality for employees', () => {
     })
   })
 
-  describe('preschool assistance', () => {
-    it('can be added', async () => {
+  test.describe('preschool assistance', () => {
+    test('can be added', async () => {
       const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
@@ -220,7 +223,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.validDuring.assertTextEquals(validDuring.format())
     })
 
-    it('can be edited', async () => {
+    test('can be edited', async () => {
       const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
       await Fixture.preschoolAssistance({
         childId,
@@ -242,7 +245,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.level.assertTextEquals('Tehostettu tuki')
     })
 
-    it('can be deleted', async () => {
+    test('can be deleted', async () => {
       const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
       await Fixture.preschoolAssistance({
         childId,
@@ -269,8 +272,8 @@ describe('Child Information assistance functionality for employees', () => {
     })
   })
 
-  describe('other assistance measure', () => {
-    it('can be added', async () => {
+  test.describe('other assistance measure', () => {
+    test('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
@@ -285,7 +288,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.validDuring.assertTextEquals(validDuring.format())
     })
 
-    it('can be edited', async () => {
+    test('can be edited', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.otherAssistanceMeasure({
         childId,
@@ -305,7 +308,7 @@ describe('Child Information assistance functionality for employees', () => {
       await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
     })
 
-    it('can be deleted', async () => {
+    test('can be deleted', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
       await Fixture.otherAssistanceMeasure({
         childId,
@@ -440,7 +443,7 @@ describe('Child Information assistance functionality for employees', () => {
   })
 })
 
-describe('Child assistance need voucher coefficients for employees', () => {
+test.describe('Child assistance need voucher coefficients for employees', () => {
   async function createVoucherCoefficient(
     coefficient: string,
     validityPeriodStart: string,

@@ -17,57 +17,58 @@ import {
 } from '../../generated/api-clients'
 import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let daycare: DevDaycare
-let daycareGroup: DevDaycareGroup
-let unitPage: UnitPage
+test.describe('Mobile employee daily notes', () => {
+  let page: Page
+  let daycare: DevDaycare
+  let daycareGroup: DevDaycareGroup
+  let unitPage: UnitPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
-  const admin = await Fixture.employee().admin().save()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2]
+    }).save()
+    const admin = await Fixture.employee().admin().save()
 
-  await createDefaultServiceNeedOptions()
+    await createDefaultServiceNeedOptions()
 
-  const careArea = await Fixture.careArea().save()
-  daycare = await Fixture.daycare({ areaId: careArea.id }).save()
-  daycareGroup = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
+    const careArea = await Fixture.careArea().save()
+    daycare = await Fixture.daycare({ areaId: careArea.id }).save()
+    daycareGroup = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
 
-  const placementFixtureJari = await Fixture.placement({
-    childId: testChild.id,
-    unitId: daycare.id
-  }).save()
-  await Fixture.groupPlacement({
-    daycareGroupId: daycareGroup.id,
-    daycarePlacementId: placementFixtureJari.id,
-    startDate: placementFixtureJari.startDate,
-    endDate: placementFixtureJari.endDate
-  }).save()
+    const placementFixtureJari = await Fixture.placement({
+      childId: testChild.id,
+      unitId: daycare.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementFixtureJari.id,
+      startDate: placementFixtureJari.startDate,
+      endDate: placementFixtureJari.endDate
+    }).save()
 
-  const placementFixtureKaarina = await Fixture.placement({
-    childId: testChild2.id,
-    unitId: daycare.id
-  }).save()
-  await Fixture.groupPlacement({
-    daycareGroupId: daycareGroup.id,
-    daycarePlacementId: placementFixtureKaarina.id,
-    startDate: placementFixtureKaarina.startDate,
-    endDate: placementFixtureKaarina.endDate
-  }).save()
+    const placementFixtureKaarina = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: daycare.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementFixtureKaarina.id,
+      startDate: placementFixtureKaarina.startDate,
+      endDate: placementFixtureKaarina.endDate
+    }).save()
 
-  page = await Page.open()
-  await employeeLogin(page, admin)
+    page = evaka
+    await employeeLogin(page, admin)
 
-  unitPage = new UnitPage(page)
-})
+    unitPage = new UnitPage(page)
+  })
 
-describe('Mobile employee daily notes', () => {
   test('Child daycare daily note indicators are shown on group view and can be edited', async () => {
     const childId = testChild.id
     const daycareDailyNote: ChildDailyNoteBody = {

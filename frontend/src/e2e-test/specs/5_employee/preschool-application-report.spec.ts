@@ -17,24 +17,30 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2024, 10, 16)
 
-beforeEach(resetServiceState)
-
-xdescribe('Preschool application report', () => {
-  test('no results is shown', async () => {
-    const admin = await Fixture.employee().admin().save()
-    const page = await Page.open({
+test.describe.skip('Preschool application report', () => {
+  test.use({
+    evakaOptions: {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-    const report = await navigateToReport(page, admin)
+    }
+  })
+
+  test.beforeEach(async () => {
+    await resetServiceState()
+  })
+
+  test('no results is shown', async ({ evaka }) => {
+    const admin = await Fixture.employee().admin().save()
+    const report = await navigateToReport(evaka, admin)
     await report.assertNoResults()
   })
 
-  test('rows are shown', async () => {
+  test('rows are shown', async ({ evaka }) => {
     const nextTermStart = LocalDate.of(2025, 8, 6)
     const nextTermRange = new FiniteDateRange(
       nextTermStart,
@@ -111,10 +117,7 @@ xdescribe('Preschool application report', () => {
     await createApplications({ body: [application1, application2] })
 
     const admin = await Fixture.employee().admin().save()
-    const page = await Page.open({
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
-    })
-    const report = await navigateToReport(page, admin)
+    const report = await navigateToReport(evaka, admin)
     await report.assertRows([
       `${unit1.name}\t${child1.lastName}\t${child1.firstName}\t01.01.2019\t${child1.streetAddress}\t${child1.postalCode}\t\tEi`,
       `${unit2.name}\t${child2.lastName}\t${child2.firstName}\t02.01.2019\t${child2.streetAddress}\t${child2.postalCode}\t\tEi`

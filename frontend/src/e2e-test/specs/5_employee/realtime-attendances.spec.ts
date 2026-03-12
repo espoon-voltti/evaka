@@ -37,8 +37,9 @@ import type {
 import type { UnitCalendarPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitStaffAttendancesTable } from '../../pages/employee/units/unit-calendar-page-base'
+import { test, type NewEvakaPage } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let unitPage: UnitPage
@@ -57,7 +58,14 @@ const placementEndDate = mockedToday.addWeeks(4)
 const groupId = randomId<GroupId>()
 const groupId2 = randomId<GroupId>()
 
-beforeEach(async () => {
+test.use({
+  viewport: { width: 1440, height: 720 },
+  evakaOptions: {
+    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0))
+  }
+})
+
+test.beforeEach(async () => {
   await resetServiceState()
 
   await familyWithTwoGuardians.save()
@@ -127,15 +135,11 @@ beforeEach(async () => {
   await Fixture.staffOccupancyCoefficient(daycare.id, groupStaff.id).save()
 })
 
-describe('Realtime staff attendances', () => {
+test.describe('Realtime staff attendances', () => {
   let page: Page
 
-  beforeEach(async () => {
-    page = await Page.open({
-      viewport: { width: 1440, height: 720 },
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0))
-    })
-
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
     await employeeLogin(page, unitSupervisor)
   })
 
@@ -160,10 +164,10 @@ describe('Realtime staff attendances', () => {
     await calendarPage.occupancies.assertGraphHasNoData()
   })
 
-  describe('Group selection: staff', () => {
+  test.describe('Group selection: staff', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       calendarPage = await openCalendar()
       await calendarPage.selectGroup('staff')
       staffAttendances = calendarPage.staffAttendances
@@ -198,7 +202,7 @@ describe('Realtime staff attendances', () => {
     })
   })
 
-  describe('Group staff attendances', () => {
+  test.describe('Group staff attendances', () => {
     test('Attendance is shown on week view and day modal', async () => {
       await Fixture.staffAttendancePlan({
         id: randomId<StaffAttendancePlanId>(),
@@ -388,7 +392,8 @@ describe('Realtime staff attendances', () => {
       )
     })
   })
-  describe('Details modal', () => {
+
+  test.describe('Details modal', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     async function prepareTest({
@@ -611,6 +616,7 @@ describe('Realtime staff attendances', () => {
       await modal.newAttendanceButton.assertDisabled(true)
       await modal.openAttendanceWarning.waitUntilVisible()
     })
+
     test('If there is open attendance entry for yesterday in another unit, warning is visible', async () => {
       const anotherDaycare = await Fixture.daycare({
         ...testDaycare,
@@ -634,10 +640,10 @@ describe('Realtime staff attendances', () => {
     })
   })
 
-  describe('Staff count sums in the table', () => {
+  test.describe('Staff count sums in the table', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       const times: [number, number, number][] = [
         [0, 12, 15],
         [4, 9, 10],
@@ -681,10 +687,11 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => staffAttendances.personCountSum(5), '– hlö')
     })
   })
-  describe('External staff members', () => {
+
+  test.describe('External staff members', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       calendarPage = await openCalendar()
       await calendarPage.selectGroup(groupId)
       staffAttendances = calendarPage.staffAttendances
@@ -803,13 +810,13 @@ describe('Realtime staff attendances', () => {
   })
 })
 
-describe('Realtime staff attendance customizations', () => {
+test.describe('Realtime staff attendance customizations', () => {
   const openStaffAttendanceDetailsModal = async (
+    newEvakaPage: NewEvakaPage,
     employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
   ) => {
-    const page = await Page.open({
+    const page = await newEvakaPage({
       viewport: { width: 1440, height: 720 },
-      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(18, 0)),
       employeeCustomizations
     })
     await employeeLogin(page, unitSupervisor)
@@ -821,8 +828,8 @@ describe('Realtime staff attendance customizations', () => {
     return await staffAttendances.openDetails(1, mockedToday)
   }
 
-  test('staff attendance types can be customized', async () => {
-    const modal = await openStaffAttendanceDetailsModal({
+  test('staff attendance types can be customized', async ({ newEvakaPage }) => {
+    const modal = await openStaffAttendanceDetailsModal(newEvakaPage, {
       additionalStaffAttendanceTypes: ['TRAINING', 'SICKNESS']
     })
     await modal.addNewAttendance()

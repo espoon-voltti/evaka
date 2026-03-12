@@ -11,17 +11,21 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevDaycare, DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async () => await resetServiceState())
+const now = HelsinkiDateTime.of(2022, 1, 1, 12, 15, 53)
 
-describe('Sextet report', () => {
-  const now = HelsinkiDateTime.of(2022, 1, 1, 12, 15, 53)
+test.use({ evakaOptions: { mockedTime: now } })
+
+test.beforeEach(async () => await resetServiceState())
+
+test.describe('Sextet report', () => {
   let unitMunicipal: DevDaycare
   let unitPurchased: DevDaycare
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     const area = await Fixture.careArea().save()
     unitMunicipal = await Fixture.daycare({
       areaId: area.id,
@@ -52,9 +56,9 @@ describe('Sextet report', () => {
     }).save()
   })
 
-  test('unit provider type filter works', async () => {
+  test('unit provider type filter works', async ({ evaka }) => {
     const admin = await Fixture.employee().admin().save()
-    const report = await openSextetReport(now, admin)
+    const report = await openSextetReport(evaka, admin)
 
     await report.selectYear(2021)
     await report.selectPlacementType('DAYCARE')
@@ -81,8 +85,7 @@ describe('Sextet report', () => {
   })
 })
 
-const openSextetReport = async (now: HelsinkiDateTime, user: DevEmployee) => {
-  const page = await Page.open({ mockedTime: now })
+const openSextetReport = async (page: Page, user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')

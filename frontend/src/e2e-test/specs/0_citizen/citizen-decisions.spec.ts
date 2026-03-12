@@ -27,39 +27,45 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await preschoolTerm2022.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2, testChildRestricted]
-  }).save()
-})
+test.describe('Citizen application decisions', () => {
+  test.use({ evakaOptions: { mockedTime: now } })
 
-async function openCitizenDecisionsPage(citizen: DevPerson) {
-  const page = await Page.open({
-    mockedTime: now
+  test.beforeEach(async () => {
+    await resetServiceState()
+    await preschoolTerm2022.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({
+      guardian: testAdult,
+      children: [testChild, testChild2, testChildRestricted]
+    }).save()
   })
-  await enduserLogin(page, citizen)
-  const header = new CitizenHeader(page)
-  await header.selectTab('decisions')
-  const citizenDecisionsPage = new CitizenDecisionsPage(page)
-  return {
-    page,
-    header,
-    citizenDecisionsPage
-  }
-}
 
-describe('Citizen application decisions', () => {
-  test('Citizen sees their decisions, accepts preschool and rejects preschool daycare', async () => {
+  async function openCitizenDecisionsPage(
+    citizen: DevPerson,
+    newEvakaPage: () => Promise<Page>
+  ) {
+    const page = await newEvakaPage()
+    await enduserLogin(page, citizen)
+    const header = new CitizenHeader(page)
+    await header.selectTab('decisions')
+    const citizenDecisionsPage = new CitizenDecisionsPage(page)
+    return {
+      page,
+      header,
+      citizenDecisionsPage
+    }
+  }
+
+  test('Citizen sees their decisions, accepts preschool and rejects preschool daycare', async ({
+    newEvakaPage
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -95,7 +101,10 @@ describe('Citizen application decisions', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      testAdult,
+      newEvakaPage
+    )
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     await citizenDecisionsPage.assertApplicationDecision(
@@ -155,7 +164,9 @@ describe('Citizen application decisions', () => {
     await responsePage.assertNoDecisionsVisible()
   })
 
-  test('Rejecting preschool decision also rejects connected daycare after confirmation', async () => {
+  test('Rejecting preschool decision also rejects connected daycare after confirmation', async ({
+    newEvakaPage
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -192,7 +203,10 @@ describe('Citizen application decisions', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      testAdult,
+      newEvakaPage
+    )
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
@@ -210,7 +224,9 @@ describe('Citizen application decisions', () => {
     await responsePage.assertPageTitle(0)
   })
 
-  test('Guardian sees decisions related to applications made by the other guardian', async () => {
+  test('Guardian sees decisions related to applications made by the other guardian', async ({
+    newEvakaPage
+  }) => {
     const child = await Fixture.person({ ssn: '010116A9219' }).saveChild({
       updateMockVtj: true
     })
@@ -242,14 +258,18 @@ describe('Citizen application decisions', () => {
       now
     )
 
-    const { citizenDecisionsPage } =
-      await openCitizenDecisionsPage(otherGuardian)
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      otherGuardian,
+      newEvakaPage
+    )
     await citizenDecisionsPage.assertChildDecisionCount(2, child.id)
     // other guardian can only see the decisions but not resolve them -> not shown in counts
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(0)
   })
 
-  test('Citizen can open and view decision metadata', async () => {
+  test('Citizen can open and view decision metadata', async ({
+    newEvakaPage
+  }) => {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -275,7 +295,10 @@ describe('Citizen application decisions', () => {
     })
     if (decisions.length !== 1) throw Error('Expected 1 decision')
 
-    const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      testAdult,
+      newEvakaPage
+    )
 
     await citizenDecisionsPage.viewDecisionMetadata(decisions[0].id)
   })

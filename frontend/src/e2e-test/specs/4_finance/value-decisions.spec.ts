@@ -29,20 +29,21 @@ import {
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { ValueDecisionsPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
-let page: Page
-let valueDecisionsPage: ValueDecisionsPage
 const decision1DateFrom = now.toLocalDate().subWeeks(1)
 const decision1DateTo = now.toLocalDate().addWeeks(2)
 const decision2DateFrom = now.toLocalDate()
 const decision2DateTo = now.toLocalDate().addWeeks(5)
 
-beforeEach(async () => {
+test.use({ evakaOptions: { mockedTime: now } })
+
+async function setupFixtures() {
   await resetServiceState()
   await testCareArea.save()
   await testDaycare.save()
@@ -53,9 +54,11 @@ beforeEach(async () => {
   await familyWithTwoGuardians.save()
   const careArea = await testCareArea2.save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
-})
+}
 
-const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
+const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async (
+  page: Page
+): Promise<ValueDecisionsPage> => {
   await createVoucherValueDecisions({
     body: [
       voucherValueDecisionsFixture(
@@ -81,12 +84,13 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
     ]
   })
   await new EmployeeNav(page).openTab('finance')
-  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
+  return await new FinancePage(page).selectValueDecisionsTab()
 }
 
 const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
+  page: Page,
   childIncome: DecisionIncome | null = null
-) => {
+): Promise<ValueDecisionsPage> => {
   const decision = voucherValueDecisionsFixture(
     fromUuid('e2d75fa4-7359-406b-81b8-1703785ca649'),
     familyWithTwoGuardians.guardian.id,
@@ -107,23 +111,24 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
     ]
   })
   await new EmployeeNav(page).openTab('finance')
-  valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
+  return await new FinancePage(page).selectValueDecisionsTab()
 }
 
-describe('Value decisions', () => {
-  beforeEach(async () => {
-    page = await Page.open({
-      acceptDownloads: true,
-      mockedTime: now
-    })
+test.describe('Value decisions', () => {
+  let page: Page
+  let valueDecisionsPage: ValueDecisionsPage
 
+  test.beforeEach(async ({ evaka }) => {
+    await setupFixtures()
     const financeAdmin = await Fixture.employee().financeAdmin().save()
+    page = evaka
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
   test('Date filter filters out decisions', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
 
     await valueDecisionsPage.setDates(
       decision1DateFrom.subDays(1),
@@ -141,7 +146,8 @@ describe('Value decisions', () => {
   })
 
   test('With two decisions any date filter overlap will show the decision', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
 
     await valueDecisionsPage.setDates(
       decision1DateTo.subDays(1),
@@ -152,7 +158,8 @@ describe('Value decisions', () => {
   })
 
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
 
     await valueDecisionsPage.setDates(
       decision2DateFrom.subDays(1),
@@ -166,13 +173,15 @@ describe('Value decisions', () => {
   })
 
   test('Navigate to the decision details page', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.openFirstValueDecision()
   })
 
   test('Send value decision from details page', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     const valueDecisionDetailsPage =
       await valueDecisionsPage.openFirstValueDecision()
@@ -182,7 +191,8 @@ describe('Value decisions', () => {
   })
 
   test('Voucher value decisions are toggled and sent', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     await valueDecisionsPage.sendValueDecisions(now)
@@ -202,7 +212,10 @@ describe('Value decisions', () => {
         }
       ]
     })
-    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
+        page
+      )
     await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
@@ -221,7 +234,10 @@ describe('Value decisions', () => {
         }
       ]
     })
-    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
+        page
+      )
     await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
@@ -238,9 +254,11 @@ describe('Value decisions', () => {
         }
       ]
     })
-    await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
-      DecisionIncomeFixture(54321)
-    )
+    valueDecisionsPage =
+      await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
+        page,
+        DecisionIncomeFixture(54321)
+      )
     await valueDecisionsPage.searchButton.click()
 
     const valueDecisionDetailsPage =
@@ -249,30 +267,37 @@ describe('Value decisions', () => {
   })
 })
 
-describe('Value decisions with finance decision handler select enabled', () => {
-  beforeEach(async () => {
-    page = await Page.open({
-      acceptDownloads: true,
+test.describe('Value decisions with finance decision handler select enabled', () => {
+  test.use({
+    evakaOptions: {
+      mockedTime: now,
       employeeCustomizations: {
         featureFlags: {
           financeDecisionHandlerSelect: true
         }
-      },
-      mockedTime: now
-    })
+      }
+    }
+  })
 
+  let page: Page
+  let valueDecisionsPage: ValueDecisionsPage
+
+  test.beforeEach(async ({ evaka }) => {
+    await setupFixtures()
     const financeAdmin = await Fixture.employee({
       firstName: 'Lasse',
       lastName: 'Laskuttaja'
     })
       .financeAdmin()
       .save()
+    page = evaka
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
   test('Voucher value decisions are toggled and cancelled', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
@@ -281,7 +306,8 @@ describe('Value decisions with finance decision handler select enabled', () => {
   })
 
   test('Voucher value decisions are toggled and sent without selecting decision handler', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
@@ -293,7 +319,8 @@ describe('Value decisions with finance decision handler select enabled', () => {
   })
 
   test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',
@@ -313,7 +340,8 @@ describe('Value decisions with finance decision handler select enabled', () => {
   })
 
   test('Voucher value decision is sent without selecting decision handler', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     const valueDecisionDetailsPageDraft =
       await valueDecisionsPage.openFirstValueDecision()
@@ -329,7 +357,8 @@ describe('Value decisions with finance decision handler select enabled', () => {
   })
 
   test('Voucher value decision is sent with selecting decision handler', async () => {
-    await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
+    valueDecisionsPage =
+      await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions(page)
     await valueDecisionsPage.searchButton.click()
     const otherFinanceAdmin = await Fixture.employee({
       email: 'laura.laskuttaja@evaka.test',

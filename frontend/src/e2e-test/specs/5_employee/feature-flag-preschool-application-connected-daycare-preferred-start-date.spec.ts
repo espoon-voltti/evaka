@@ -19,25 +19,14 @@ import {
 } from '../../generated/api-clients'
 import type CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let childInformationPage: ChildInformationPage
-
-let page: Page
-let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
-beforeEach(async () => {
-  await resetServiceState()
-  await preschoolTerm2022.save()
-  await testCareArea.save()
-  await testDaycare.save()
-  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-  await createDaycareGroups({ body: [testDaycareGroup] })
-  const admin = await Fixture.employee().admin().save()
-
-  page = await Page.open({
+test.use({
+  evakaOptions: {
     mockedTime: now,
     employeeCustomizations: {
       featureFlags: {
@@ -46,18 +35,34 @@ beforeEach(async () => {
         }
       }
     }
-  })
-  await employeeLogin(page, admin)
-
-  childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(testChild.id)
-
-  const applications =
-    await childInformationPage.openCollapsible('applications')
-  createApplicationModal = await applications.openCreateApplicationModal()
+  }
 })
 
-describe('Employee - paper application', () => {
+test.describe('Employee - paper application', () => {
+  let page: Page
+  let childInformationPage: ChildInformationPage
+  let createApplicationModal: CreateApplicationModal
+
+  test.beforeEach(async ({ evaka }) => {
+    page = evaka
+    await resetServiceState()
+    await preschoolTerm2022.save()
+    await testCareArea.save()
+    await testDaycare.save()
+    await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+    await createDaycareGroups({ body: [testDaycareGroup] })
+    const admin = await Fixture.employee().admin().save()
+
+    await employeeLogin(page, admin)
+
+    childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.navigateToChild(testChild.id)
+
+    const applications =
+      await childInformationPage.openCollapsible('applications')
+    createApplicationModal = await applications.openCreateApplicationModal()
+  })
+
   test('Service worker fills preschool application with connected daycare preferred start date disabled', async () => {
     await createApplicationModal.selectApplicationType('PRESCHOOL')
     const applicationEditPage = await createApplicationModal.submit()

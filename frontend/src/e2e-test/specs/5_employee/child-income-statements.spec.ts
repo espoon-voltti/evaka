@@ -19,28 +19,29 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { test } from '../../playwright'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let personId: UUID
+test.describe('Child profile income statements', () => {
+  let page: Page
+  let personId: UUID
 
-beforeEach(async () => {
-  await resetServiceState()
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
 
-  await testCareArea.save()
-  await testDaycare.save()
-  await testChild.saveChild({ updateMockVtj: true })
-  personId = testChild.id
+    await testCareArea.save()
+    await testDaycare.save()
+    await testChild.saveChild({ updateMockVtj: true })
+    personId = testChild.id
 
-  const financeAdmin = await Fixture.employee().financeAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
-  page = await Page.open()
-  await employeeLogin(page, financeAdmin)
-  await page.goto(config.employeeUrl + '/child-information/' + personId)
-})
+    page = evaka
+    await employeeLogin(page, financeAdmin)
+    await page.goto(config.employeeUrl + '/child-information/' + personId)
+  })
 
-describe('Child profile income statements', () => {
   test('Shows income statements', async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       randomId(),

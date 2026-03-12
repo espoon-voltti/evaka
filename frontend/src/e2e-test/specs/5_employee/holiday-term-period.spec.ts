@@ -11,28 +11,30 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { HolidayAndTermPeriodsPage } from '../../pages/employee/holiday-term-periods'
+import { test } from '../../playwright'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let page: Page
-let holidayAndTermPeriodsPage: HolidayAndTermPeriodsPage
+test.describe('Holiday and term periods page', () => {
+  let page: Page
+  let holidayAndTermPeriodsPage: HolidayAndTermPeriodsPage
 
-beforeEach(async () => {
-  await resetServiceState()
-  const admin = await Fixture.employee().admin().save()
-  page = await Page.open({
-    mockedTime: LocalDate.of(2021, 11, 1).toHelsinkiDateTime(
-      LocalTime.of(12, 0)
-    )
+  test.use({
+    evakaOptions: {
+      mockedTime: LocalDate.of(2021, 11, 1).toHelsinkiDateTime(
+        LocalTime.of(12, 0)
+      )
+    }
   })
-  await employeeLogin(page, admin)
-  await page.goto(config.employeeUrl)
-  holidayAndTermPeriodsPage = new HolidayAndTermPeriodsPage(page)
-})
 
-describe('Holiday and term periods page', () => {
-  beforeEach(async () => {
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    const admin = await Fixture.employee().admin().save()
+    page = evaka
+    await employeeLogin(page, admin)
+    await page.goto(config.employeeUrl)
+    holidayAndTermPeriodsPage = new HolidayAndTermPeriodsPage(page)
     await new EmployeeNav(page).openAndClickDropdownMenuItem('holiday-periods')
   })
 
