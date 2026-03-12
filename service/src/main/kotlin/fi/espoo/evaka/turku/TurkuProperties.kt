@@ -16,6 +16,7 @@ data class TurkuProperties(
 
 data class SftpProperties(
     val address: String,
+    val port: Int,
     val path: String,
     val username: String,
     val password: String,

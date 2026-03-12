@@ -16,6 +16,7 @@ class SftpSender(val sftpProperties: SftpProperties, val sftpConnector: SftpConn
         try {
             sftpConnector.connect(
                 sftpProperties.address,
+                sftpProperties.port,
                 sftpProperties.username,
                 sftpProperties.password,
             )
@@ -35,6 +36,7 @@ class SftpSender(val sftpProperties: SftpProperties, val sftpConnector: SftpConn
         try {
             sftpConnector.connect(
                 sftpProperties.address,
+                sftpProperties.port,
                 sftpProperties.username,
                 sftpProperties.password,
             )

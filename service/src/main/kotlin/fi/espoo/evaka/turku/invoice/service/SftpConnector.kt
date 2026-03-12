@@ -14,8 +14,8 @@ class SftpConnector(val jsch: JSch) {
     var channelSftp: ChannelSftp? = null
 
     @Throws(Exception::class)
-    fun connect(address: String, username: String, password: String) {
-        jschSession = jsch.getSession(username, address)
+    fun connect(address: String, port: Int, username: String, password: String) {
+        jschSession = jsch.getSession(username, address, port)
         jschSession?.setConfig("StrictHostKeyChecking", "no")
         jschSession?.setPassword(password)
         jschSession?.connect()
