@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -412,9 +413,10 @@ class ApplicationStateService(
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, now, user.evakaUserId)
 
-        Audit.ApplicationSend.log(
+        ChildAudit.ApplicationSend.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
@@ -527,7 +529,11 @@ class ApplicationStateService(
             }
         }
 
-        Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationVerify.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun returnToSent(
@@ -561,7 +567,11 @@ class ApplicationStateService(
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.deleteApplicationPlacementDraftIfExists(applicationId)
 
-        Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToSent.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun cancelApplication(
@@ -622,9 +632,10 @@ class ApplicationStateService(
             }
         }
 
-        Audit.ApplicationCancel.log(
+        ChildAudit.ApplicationCancel.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
@@ -658,9 +669,10 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
-        Audit.ApplicationAdminDetailsUpdate.log(
+        ChildAudit.ApplicationAdminDetailsUpdate.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
@@ -708,7 +720,11 @@ class ApplicationStateService(
         tx.clearDecisionDrafts(listOf(application.id))
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingPlacement.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToWaitingPlacement.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun sendDecisionsWithoutProposal(
@@ -729,9 +745,11 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         val decisionIds = finalizeDecisions(tx, user, clock, application, config)
-        Audit.ApplicationSendDecisionsWithoutProposal.log(
+        ChildAudit.ApplicationSendDecisionsWithoutProposal.log(
+            childId = AuditId(application.childId),
             targetId = AuditId(applicationId),
             objectId = AuditId(decisionIds),
+            meta = mapOf("personId" to application.guardianId),
         )
     }
 
@@ -779,7 +797,11 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationReturnToWaitingDecision.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun respondToPlacementProposal(
@@ -944,7 +966,11 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION, user.evakaUserId, now)
         tx.markApplicationDecisionsSent(application.id, now)
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendNewDecisionEmail(application.id)), runAt = now)
-        Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationConfirmDecisionsMailed.log(
+            childId = AuditId(application.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to application.guardianId),
+        )
     }
 
     fun acceptDecision(

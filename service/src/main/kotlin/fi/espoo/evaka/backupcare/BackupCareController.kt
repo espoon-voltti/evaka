@@ -6,6 +6,7 @@ package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.attendance.getOngoingAttendanceInAnyUnitForChild
 import fi.espoo.evaka.daycare.isDaycareOpenForPeriod
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
@@ -138,28 +140,24 @@ class BackupCareController(private val accessControl: AccessControl) {
         @RequestBody body: BackupCareUpdateRequest,
     ) {
         try {
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.BackupCare.UPDATE,
-                        id,
-                    )
-                    if (
-                        !tx.childPlacementsHasConsecutiveRange(
-                            tx.getBackupCareChildId(id),
-                            body.period,
+            val childId =
+                db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.BackupCare.UPDATE,
+                            id,
                         )
-                    ) {
-                        throw BadRequest(
-                            "The new backup care period is not contained within a placement"
-                        )
-                    }
+                        val childId = tx.getBackupCareChildId(id)
+                        if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
+                            throw BadRequest(
+                                "The new backup care period is not contained within a placement"
+                            )
+                        }
 
-                    val existing = tx.getBackupCare(id)
-                    if (existing != null) {
+                        val existing = tx.getBackupCare(id) ?: throw NotFound()
                         if (!existing.period.start.isEqual(body.period.start)) {
                             if (existing.period.start.isBefore(body.period.start)) {
                                 // start was shrunk
@@ -172,9 +170,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     ),
                                 )
                             } else {
-                                // the backup care was extended; clear calendar event attendees for
-                                // the main placement
-                                // for the extended period
+                                // the backup care was extended; clear calendar event attendees
+                                // for the main placement for the extended period
                                 tx.getPlacementsForChildDuring(
                                         existing.childId,
                                         body.period.start,
@@ -205,9 +202,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     ),
                                 )
                             } else {
-                                // the backup care was extended; clear calendar event attendees for
-                                // the main placement
-                                // for the extended period
+                                // the backup care was extended; clear calendar event attendees
+                                // for the main placement for the extended period
                                 tx.getPlacementsForChildDuring(
                                         existing.childId,
                                         existing.period.end,
@@ -222,17 +218,18 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     }
                             }
                         }
+                        tx.updateBackupCare(
+                            user.evakaUserId,
+                            clock.now(),
+                            id,
+                            body.period,
+                            body.groupId,
+                        )
+                        childId
                     }
-                    tx.updateBackupCare(
-                        user.evakaUserId,
-                        clock.now(),
-                        id,
-                        body.period,
-                        body.groupId,
-                    )
                 }
-            }
-            Audit.BackupCareUpdate.log(
+            ChildAudit.BackupCareUpdate.log(
+                childId = AuditId(childId),
                 targetId = AuditId(id),
                 objectId = body.groupId?.let(AuditId::invoke),
             )
@@ -248,21 +245,27 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: BackupCareId,
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.BackupCare.DELETE, id)
-                val backupCare = tx.getBackupCare(id)
-                if (backupCare != null) {
+        val childId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.BackupCare.DELETE,
+                        id,
+                    )
+                    val backupCare = tx.getBackupCare(id) ?: throw NotFound()
                     tx.clearCalendarEventAttendees(
                         backupCare.childId,
                         backupCare.unitId,
                         backupCare.period,
                     )
+                    tx.deleteBackupCare(id)
+                    backupCare.childId
                 }
-                tx.deleteBackupCare(id)
             }
-        }
-        Audit.BackupCareDelete.log(targetId = AuditId(id))
+        ChildAudit.BackupCareDelete.log(childId = AuditId(childId), targetId = AuditId(id))
     }
 }
 

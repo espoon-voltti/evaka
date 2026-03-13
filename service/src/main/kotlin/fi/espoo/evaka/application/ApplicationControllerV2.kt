@@ -16,6 +16,7 @@ import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionUnit
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
+import fi.espoo.evaka.getApplicationPersonIds
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.getPersonById
@@ -144,10 +145,10 @@ class ApplicationControllerV2(
                     )
                 }
             }
-        Audit.ApplicationCreate.log(
-            targetId = AuditId(body.childId),
+        ChildAudit.ApplicationCreate.log(
+            childId = AuditId(body.childId),
             objectId = AuditId(applicationId),
-            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
+            meta = mapOf("personId" to guardianId, "applicationType" to body.type),
         )
         return applicationId
     }
@@ -231,6 +232,7 @@ class ApplicationControllerV2(
                 ChildAudit.ApplicationRead.log(
                     targetId = AuditId(guardianId),
                     childId = AuditId(childIds),
+                    meta = mapOf("personId" to guardianId),
                 )
             }
     }
@@ -362,26 +364,32 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate,
     ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateApplicationContentsServiceWorker(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    application,
-                    user.evakaUserId,
-                )
+        val personIds =
+            db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateApplicationContentsServiceWorker(
+                        it,
+                        user,
+                        clock.now(),
+                        applicationId,
+                        application,
+                        user.evakaUserId,
+                    )
+                    it.getApplicationPersonIds(applicationId)
+                }
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationUpdate.log(
+            childId = AuditId(personIds.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to personIds.guardianId),
+        )
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
@@ -406,27 +414,33 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate,
     ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateApplicationContentsServiceWorker(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    application,
-                    user.evakaUserId,
-                )
-                applicationStateService.sendApplication(it, user, clock, applicationId)
+        val personIds =
+            db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateApplicationContentsServiceWorker(
+                        it,
+                        user,
+                        clock.now(),
+                        applicationId,
+                        application,
+                        user.evakaUserId,
+                    )
+                    applicationStateService.sendApplication(it, user, clock, applicationId)
+                    it.getApplicationPersonIds(applicationId)
+                }
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
+        ChildAudit.ApplicationUpdate.log(
+            childId = AuditId(personIds.childId),
+            targetId = AuditId(applicationId),
+            meta = mapOf("personId" to personIds.guardianId),
+        )
     }
 
     @PostMapping("/{applicationId}/actions/set-verified")

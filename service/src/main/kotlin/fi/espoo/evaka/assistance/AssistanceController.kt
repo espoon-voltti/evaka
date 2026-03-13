@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.assistanceaction.AssistanceAction
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -313,7 +315,10 @@ class AssistanceController(
                 }
             }
             .also { id ->
-                Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
+                ChildAudit.AssistanceFactorCreate.log(
+                    childId = AuditId(child),
+                    objectId = AuditId(id),
+                )
             }
 
     @PostMapping("/employee/assistance-factors/{id}")
@@ -333,26 +338,30 @@ class AssistanceController(
                         Action.AssistanceFactor.UPDATE,
                         id,
                     )
-                    val original = tx.getAssistanceFactor(id)
+                    val original = tx.getAssistanceFactor(id) ?: throw NotFound()
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
-                    if (original != null) {
-                        val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
-                        affectedRanges.spanningRange()?.let {
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        original.childId,
-                                        it.asDateRange(),
-                                    )
-                                ),
-                                runAt = clock.now(),
-                            )
-                        }
+                    val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
+                    affectedRanges.spanningRange()?.let {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    original.childId,
+                                    it.asDateRange(),
+                                )
+                            ),
+                            runAt = clock.now(),
+                        )
                     }
+                    original.childId
                 }
             }
-            .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
+            .also { childId ->
+                ChildAudit.AssistanceFactorUpdate.log(
+                    childId = AuditId(childId),
+                    targetId = AuditId(id),
+                )
+            }
 
     @DeleteMapping("/employee/assistance-factors/{id}")
     fun deleteAssistanceFactor(
@@ -361,33 +370,39 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
     ) {
-        val deletedId =
+        val result =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(tx, user, clock, Action.AssistanceFactor.DELETE, id)
                         .let {
                             if (it.isPermitted()) {
-                                tx.deleteAssistanceFactor(id)?.also { deleted ->
+                                val deleted = tx.deleteAssistanceFactor(id)
+                                deleted?.also {
                                     asyncJobRunner.plan(
                                         tx,
                                         listOf(
                                             AsyncJob.GenerateFinanceDecisions.forChild(
-                                                deleted.childId,
-                                                deleted.validDuring.asDateRange(),
+                                                it.childId,
+                                                it.validDuring.asDateRange(),
                                             )
                                         ),
                                         runAt = clock.now(),
                                     )
                                 }
-                                id
+                                deleted
                             } else {
                                 null
                             }
                         }
                 }
             }
-        deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
+        result?.let {
+            ChildAudit.AssistanceFactorDelete.log(
+                childId = AuditId(it.childId),
+                targetId = AuditId(id),
+            )
+        }
     }
 
     @PostMapping("/employee/children/{child}/daycare-assistances")

@@ -126,10 +126,7 @@ class ApplicationControllerCitizen(
             }
             .also { childApplicationList ->
                 val childIds = childApplicationList.map { it.childId }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                ChildAudit.ApplicationRead.log(childId = AuditId(childIds))
             }
     }
 
@@ -153,10 +150,7 @@ class ApplicationControllerCitizen(
             }
             .also { childList ->
                 val childIds = childList.map { it.id }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                ChildAudit.ApplicationRead.log(childId = AuditId(childIds))
             }
     }
 
@@ -280,10 +274,10 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationId ->
-                Audit.ApplicationCreate.log(
-                    targetId = AuditId(body.childId),
+                ChildAudit.ApplicationCreate.log(
+                    childId = AuditId(body.childId),
                     objectId = AuditId(applicationId),
-                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type),
+                    meta = mapOf("applicationType" to body.type),
                 )
             }
     }
@@ -314,12 +308,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also {
-                Audit.ApplicationReadDuplicates.log(
-                    targetId = AuditId(user.id),
-                    objectId = AuditId(childId),
-                )
-            }
+            .also { ChildAudit.ApplicationReadDuplicates.log(childId = AuditId(childId)) }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
@@ -347,7 +336,9 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
+            .also {
+                ChildAudit.ApplicationReadActivePlacementsByType.log(childId = AuditId(childId))
+            }
     }
 
     @PutMapping("/applications/{applicationId}")
@@ -377,9 +368,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
+                ChildAudit.ApplicationUpdate.log(
+                    childId = AuditId(applicationDetails.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
                 )
             }
     }
@@ -412,9 +403,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
+                ChildAudit.ApplicationUpdate.log(
+                    childId = AuditId(applicationDetails.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
                 )
             }
     }
@@ -466,9 +457,9 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { application ->
-                Audit.ApplicationDelete.log(
+                ChildAudit.ApplicationDelete.log(
+                    childId = AuditId(application.childId),
                     targetId = AuditId(applicationId),
-                    objectId = AuditId(application.childId),
                 )
             }
     }

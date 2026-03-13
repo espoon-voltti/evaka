@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -330,8 +331,8 @@ class AttendanceReservationController(
                 }
             }
             ?.also {
-                Audit.AttendanceReservationEmployeeCreate.log(
-                    targetId = AuditId(children),
+                ChildAudit.AttendanceReservationEmployeeCreate.log(
+                    childId = AuditId(children),
                     meta =
                         mapOf(
                             "deletedAbsences" to it.deletedAbsences,

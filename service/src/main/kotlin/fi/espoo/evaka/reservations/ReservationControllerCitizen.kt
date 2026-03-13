@@ -6,8 +6,8 @@ package fi.espoo.evaka.reservations
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
@@ -244,25 +244,29 @@ class ReservationControllerCitizen(
                             }
                             .toList()
 
-                    ReservationsResponse(
-                        children =
-                            children.mapNotNull { child ->
-                                // Only return children with at least one placement
-                                placements[child.id]?.let { childPlacements ->
-                                    ReservationChild.from(child, days, childPlacements, today)
-                                }
-                            },
-                        days = days,
-                        reservableRange = reservableRange,
+                    Pair(
+                        ReservationsResponse(
+                            children =
+                                children.mapNotNull { child ->
+                                    // Only return children with at least one placement
+                                    placements[child.id]?.let { childPlacements ->
+                                        ReservationChild.from(child, days, childPlacements, today)
+                                    }
+                                },
+                            days = days,
+                            reservableRange = reservableRange,
+                        ),
+                        childIds,
                     )
                 }
             }
-            .also {
-                Audit.AttendanceReservationCitizenRead.log(
-                    targetId = AuditId(user.id),
+            .also { (_, childIds) ->
+                ChildAudit.AttendanceReservationCitizenRead.log(
+                    childId = AuditId(childIds),
                     meta = mapOf("from" to from, "to" to to),
                 )
             }
+            .first
     }
 
     @PostMapping("/citizen/reservations")
@@ -295,8 +299,8 @@ class ReservationControllerCitizen(
                 }
             }
             ?.also {
-                Audit.AttendanceReservationCitizenCreate.log(
-                    targetId = AuditId(children),
+                ChildAudit.AttendanceReservationCitizenCreate.log(
+                    childId = AuditId(children),
                     meta =
                         mapOf(
                             "deletedAbsences" to it.deletedAbsences,
@@ -328,8 +332,8 @@ class ReservationControllerCitizen(
                     absenceService.createAbsences(tx, user, clock, body)
                 }
             }
-        Audit.AbsenceCitizenCreate.log(
-            targetId = AuditId(body.childIds),
+        ChildAudit.AbsenceCitizenCreate.log(
+            childId = AuditId(body.childIds),
             objectId = AuditId(insertedAbsences),
             meta =
                 mapOf(

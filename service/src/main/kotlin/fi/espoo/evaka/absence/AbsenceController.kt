@@ -6,6 +6,7 @@ package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
@@ -130,9 +131,10 @@ class AbsenceController(
                 }
             }
             .also { absenceIdList ->
-                Audit.AbsenceUpsert.log(
+                ChildAudit.AbsenceUpsert.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
-                    objectId = AuditId(absenceIdList) + AuditId(children),
+                    objectId = AuditId(absenceIdList),
                 )
             }
     }
@@ -172,9 +174,10 @@ class AbsenceController(
                 }
             }
             .also { (deleted, reservations) ->
-                Audit.AbsenceDelete.log(
+                ChildAudit.AbsenceDelete.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
-                    objectId = AuditId(deleted) + AuditId(children),
+                    objectId = AuditId(deleted),
                     meta = mapOf("createdHolidayReservations" to reservations),
                 )
             }
@@ -209,9 +212,9 @@ class AbsenceController(
                 }
             }
             .also { (deletedReservations, deletedAbsences) ->
-                Audit.AttendanceReservationDelete.log(
+                ChildAudit.AttendanceReservationDelete.log(
+                    childId = AuditId(children),
                     targetId = AuditId(groupId),
-                    objectId = AuditId(children),
                     meta =
                         mapOf(
                             "deletedReservations" to deletedReservations,
@@ -243,8 +246,8 @@ class AbsenceController(
                 }
             }
             .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(childId),
+                ChildAudit.AbsenceRead.log(
+                    childId = AuditId(childId),
                     meta = mapOf("year" to year, "month" to month),
                 )
             }
