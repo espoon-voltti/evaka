@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.turku.message
+package fi.espoo.evaka.turku.message.config
 
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.turku.AbstractIntegrationTest
 import java.lang.reflect.Method
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.valueParameters
@@ -14,10 +13,11 @@ import kotlin.reflect.jvm.javaMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junitpioneer.jupiter.cartesian.ArgumentSets
 import org.junitpioneer.jupiter.cartesian.CartesianTest
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ClassPathResource
 
-internal class MessageProviderTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var messageProvider: IMessageProvider
+internal class MessageProviderTest {
+    private val messageProvider: IMessageProvider =
+        TurkuMessageProvider(YamlMessageSource(ClassPathResource("turku/messages.yaml")))
 
     @CartesianTest()
     @CartesianTest.MethodFactory("methodsWithLang")

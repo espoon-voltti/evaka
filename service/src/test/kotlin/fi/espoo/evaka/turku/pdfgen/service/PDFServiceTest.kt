@@ -7,13 +7,33 @@ package fi.espoo.evaka.turku.pdfgen.service
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
-import fi.espoo.evaka.turku.AbstractIntegrationTest
+import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.turku.template.config.TemplateConfiguration
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.thymeleaf.context.Context
 
-internal class PDFServiceTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var pdfService: PdfGenerator
+internal class PDFServiceTest {
+    private lateinit var pdfService: PdfGenerator
+
+    @BeforeEach
+    fun setup() {
+        val pdfConfig = PDFConfig()
+        val turkuResolver =
+            org.thymeleaf.templateresolver.ClassLoaderTemplateResolver().apply {
+                prefix = "turku/templates/"
+                suffix = ".html"
+                setTemplateMode("HTML")
+                checkExistence = true
+                order = 1
+            }
+        val resolvers = setOf(pdfConfig.coreTemplateResolver(), turkuResolver)
+        pdfService =
+            PdfGenerator(
+                TemplateConfiguration().templateProvider(),
+                pdfConfig.templateEngine(resolvers),
+            )
+    }
 
     @Test
     fun render() {
