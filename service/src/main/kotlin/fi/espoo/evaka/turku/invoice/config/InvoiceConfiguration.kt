@@ -44,6 +44,8 @@ class InvoiceConfiguration {
 
     @Bean fun jsch(): JSch = JSch()
 
+    @Bean fun sftpConnector(jsch: JSch): SftpConnector = SftpConnector(jsch)
+
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = TurkuIncomeTypesProvider()
 
     @Bean
