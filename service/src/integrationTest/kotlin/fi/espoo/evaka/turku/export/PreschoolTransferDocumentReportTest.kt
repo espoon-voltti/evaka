@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.turku.export
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -22,16 +23,16 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.turku.AbstractIntegrationTest
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class PreschoolTransferDocumentReportTest : AbstractIntegrationTest() {
+class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val date = LocalDate.of(2025, 11, 18)
     private val timestamp = HelsinkiDateTime.of(date, LocalTime.of(12, 0))
 
@@ -43,6 +44,19 @@ class PreschoolTransferDocumentReportTest : AbstractIntegrationTest() {
         "Tiedonsiirto esiopetuksesta perusopetukseen koulupaikkapäätöksen suunnittelun tueksi ja opetuksen järjestämiseksi."
     private val templateNameSv =
         "Överföring av uppgifter från förskoleundervisningen till den grundläggande utbildningen som stöd för beslut om skolplacering och för ordnandet av undervisningen."
+
+    @BeforeAll
+    fun createSqlFunction() {
+        val sql =
+            this::class
+                .java
+                .getResourceAsStream(
+                    "/db/data/turku/afterMigrate__preschool_transfer_document_report.sql"
+                )!!
+                .bufferedReader()
+                .readText()
+        db.transaction { tx -> tx.execute { sql(sql) } }
+    }
 
     @BeforeEach
     fun initTestData() {

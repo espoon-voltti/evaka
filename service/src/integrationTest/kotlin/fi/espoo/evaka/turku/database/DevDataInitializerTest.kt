@@ -4,16 +4,12 @@
 
 package fi.espoo.evaka.turku.database
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.turku.AbstractIntegrationTest
-import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
-class DevDataInitializerTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var jdbi: Jdbi
-
+class DevDataInitializerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun init() {
         db.transaction { tx ->

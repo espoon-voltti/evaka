@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.turku.payment.service
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -17,13 +18,12 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevVoucherValueDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.turku.AbstractIntegrationTest
 import java.time.LocalDate
 import java.time.Month
 import java.util.UUID
 import org.junit.jupiter.api.Test
 
-class PreschoolValuesFetcherTest : AbstractIntegrationTest(resetDbBeforeEach = true) {
+class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val area = DevCareArea()
 
     @Test
