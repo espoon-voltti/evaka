@@ -5,9 +5,9 @@
 package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.Caretakers
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
-import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange

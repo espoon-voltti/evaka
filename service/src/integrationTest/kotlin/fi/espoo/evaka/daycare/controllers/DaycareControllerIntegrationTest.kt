@@ -11,12 +11,12 @@ import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.daycare.Caretakers
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
+import fi.espoo.evaka.daycare.DaycareGroup
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
-import fi.espoo.evaka.daycare.service.Caretakers
-import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount

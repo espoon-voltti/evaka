@@ -4,13 +4,24 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
+
+data class DaycareGroup(
+    val id: GroupId,
+    val daycareId: DaycareId,
+    val name: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
+    val deletable: Boolean,
+    val jamixCustomerNumber: Int?,
+    val aromiCustomerId: String?,
+    val nekkuCustomerNumber: String?,
+)
 
 private fun Database.Read.createDaycareGroupQuery(
     groupId: GroupId?,

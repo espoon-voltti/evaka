@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.occupancy.GroupPredicate
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -13,6 +12,18 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
 import java.time.LocalDate
+
+data class Caretakers(val minimum: Double, val maximum: Double) {
+    companion object {
+        fun fromDailyCounts(caretakers: DateMap<BigDecimal>): Caretakers =
+            Caretakers(
+                minimum =
+                    caretakers.entries().minOfOrNull { (_, count) -> count }?.toDouble() ?: 0.0,
+                maximum =
+                    caretakers.entries().maxOfOrNull { (_, count) -> count }?.toDouble() ?: 0.0,
+            )
+    }
+}
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     execute {
