@@ -20,7 +20,3 @@ fun Database.Transaction.ensureTurkuDevData() {
         }
     }
 }
-
-fun Database.Transaction.resetTurkuDatabaseForE2ETests() {
-    execute { sql("SELECT reset_turku_database_for_e2e_tests()") }
-}
