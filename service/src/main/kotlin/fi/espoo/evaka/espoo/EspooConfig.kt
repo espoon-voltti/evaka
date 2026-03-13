@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka
+package fi.espoo.evaka.espoo
 
+import fi.espoo.evaka.ArchiveEnv
+import fi.espoo.evaka.ChildDocumentArchivalEnv
+import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.document.archival.ArchivalClient
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.espoo.*
 import fi.espoo.evaka.espoo.archival.SärmäChildDocumentClient
 import fi.espoo.evaka.espoo.archival.SärmäHttpClient
 import fi.espoo.evaka.espoo.archival.SärmäMockClient
@@ -28,6 +32,7 @@ import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
+import fi.espoo.evaka.lookup
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
@@ -59,6 +64,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
+import org.thymeleaf.templateresolver.ITemplateResolver
 import tools.jackson.databind.json.JsonMapper
 
 @Configuration
@@ -124,6 +131,16 @@ class EspooConfig {
     fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EvakaEmailMessageProvider(env)
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+
+    @Bean
+    fun espooTemplateResolver(): ITemplateResolver =
+        ClassLoaderTemplateResolver().apply {
+            prefix = "espoo/templates/"
+            suffix = ".html"
+            setTemplateMode("HTML")
+            checkExistence = true
+            order = 1
+        }
 
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =

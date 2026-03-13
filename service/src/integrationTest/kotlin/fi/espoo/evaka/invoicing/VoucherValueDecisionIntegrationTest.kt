@@ -11,7 +11,7 @@ import fi.espoo.evaka.caseprocess.ProcessMetadataController
 import fi.espoo.evaka.caseprocess.getCaseProcessByVoucherValueDecisionId
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.Email
-import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired lateinit var emailMessageProvider: IEmailMessageProvider
+    private val emailMessageProvider by lazy { EvakaEmailMessageProvider(evakaEnv) }
     @Autowired lateinit var emailEnv: EmailEnv
     @Autowired lateinit var processMetadataController: ProcessMetadataController
     @Autowired private lateinit var sfiAsyncJobs: SfiAsyncJobs

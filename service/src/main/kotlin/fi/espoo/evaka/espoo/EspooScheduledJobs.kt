@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.espoo
 
-import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.espoo.bi.EspooBiTable

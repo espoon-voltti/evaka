@@ -16,7 +16,7 @@ import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailContent
-import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -82,7 +82,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var placementControllerCitizen: PlacementControllerCitizen
     @Autowired lateinit var calendarEventNotificationService: CalendarEventNotificationService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+    private val emailMessageProvider by lazy { EvakaEmailMessageProvider(evakaEnv) }
     @Autowired private lateinit var emailEnv: EmailEnv
 
     private val area = DevCareArea()

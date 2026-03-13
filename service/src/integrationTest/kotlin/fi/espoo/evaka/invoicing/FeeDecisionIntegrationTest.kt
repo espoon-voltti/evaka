@@ -10,7 +10,7 @@ import fi.espoo.evaka.caseprocess.CaseProcessState
 import fi.espoo.evaka.caseprocess.ProcessMetadataController
 import fi.espoo.evaka.caseprocess.getCaseProcessByFeeDecisionId
 import fi.espoo.evaka.emailclient.Email
-import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.IncomeStatementStatus
@@ -83,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+    private val emailMessageProvider by lazy { EvakaEmailMessageProvider(evakaEnv) }
     @Autowired private lateinit var emailEnv: EmailEnv
     @Autowired private lateinit var processMetadataController: ProcessMetadataController
     @Autowired private lateinit var sfiAsyncJobs: SfiAsyncJobs

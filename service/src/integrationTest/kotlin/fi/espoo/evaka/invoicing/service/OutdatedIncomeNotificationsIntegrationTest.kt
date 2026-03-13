@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.incomestatement.Gross
 import fi.espoo.evaka.incomestatement.IncomeSource
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
@@ -56,8 +57,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
-    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    private val incomeTypesProvider = EspooIncomeTypesProvider()
+    private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))

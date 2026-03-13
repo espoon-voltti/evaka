@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.linkity
 
-import fi.espoo.evaka.LinkityEnv
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.espoo.EspooAsyncJob
+import fi.espoo.evaka.espoo.LinkityEnv
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock

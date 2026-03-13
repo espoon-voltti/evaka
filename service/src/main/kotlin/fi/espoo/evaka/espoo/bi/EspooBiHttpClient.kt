@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import fi.espoo.evaka.EspooBiEnv
+import fi.espoo.evaka.espoo.EspooBiEnv
 import fi.espoo.evaka.shared.TimeoutConfig
 import fi.espoo.evaka.shared.buildHttpClient
 import fi.espoo.evaka.shared.utils.basicAuthInterceptor

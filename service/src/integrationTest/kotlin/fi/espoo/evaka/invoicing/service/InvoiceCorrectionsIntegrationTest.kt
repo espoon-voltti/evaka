@@ -30,10 +30,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var generator: InvoiceGenerator
     @Autowired private lateinit var invoiceService: InvoiceService
 
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
+    private val generator by lazy {
+        InvoiceGenerator(
+            DraftInvoiceGenerator(productProvider, featureConfig),
+            featureConfig,
+            evakaEnv,
+            DefaultInvoiceGenerationLogic,
+        )
+    }
 
     private val clock = MockEvakaClock(2024, 10, 1, 12, 0)
 
