@@ -723,7 +723,7 @@ export default {
         )
       },
       create: 'Tee hakemus',
-      daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+      daycare4monthWarning: <>Hakemuksen käsittelyaika on 4 kuukautta.</>,
       applicationInfo: (
         <P>
           Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole

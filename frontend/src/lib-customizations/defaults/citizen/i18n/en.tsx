@@ -721,7 +721,7 @@ const en: Translations = {
         )
       },
       create: 'Apply',
-      daycare4monthWarning: 'The application processing time is 4 months.',
+      daycare4monthWarning: <>The application processing time is 4 months.</>,
       applicationInfo: (
         <P>
           You can make changes to your application until its processing starts.
