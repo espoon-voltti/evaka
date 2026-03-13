@@ -227,6 +227,7 @@ data class Group(
     val name: String,
     val unitId: DaycareId,
     val unitName: String,
+    val closed: Boolean,
 )
 
 data class AuthorizedMessageAccount(

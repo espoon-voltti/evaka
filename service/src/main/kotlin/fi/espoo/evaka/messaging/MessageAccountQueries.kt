@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import java.time.LocalDate
 
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     return createQuery {
@@ -61,6 +62,7 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     financeAccountName: String,
+    today: LocalDate,
 ): List<AuthorizedMessageAccount> {
     return createQuery {
             sql(
@@ -71,6 +73,7 @@ SELECT DISTINCT ON (acc.id)
     acc.type AS account_type,
     dg.id AS group_id,
     dg.name AS group_name,
+    dg.end_date IS NOT NULL AND dg.end_date < ${bind(today)} as group_closed,
     dc.id AS group_unitId,
     dc.name AS group_unitName
 FROM message_account acc
@@ -115,6 +118,7 @@ AND (
                             name = column("group_name"),
                             unitId = column("group_unitId"),
                             unitName = column("group_unitName"),
+                            closed = column("group_closed"),
                         )
                     },
             )
