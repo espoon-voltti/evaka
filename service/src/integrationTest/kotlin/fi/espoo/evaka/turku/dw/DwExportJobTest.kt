@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.turku.dw
 
+import com.jcraft.jsch.JSch
+import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
@@ -23,7 +26,11 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.turku.AbstractIntegrationTest
+import fi.espoo.evaka.turku.BucketProperties
+import fi.espoo.evaka.turku.DwExportProperties
+import fi.espoo.evaka.turku.SftpProperties
+import fi.espoo.evaka.turku.TurkuProperties
+import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
 import java.time.LocalDate
 import java.time.LocalTime
@@ -32,21 +39,85 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.springframework.beans.factory.annotation.Autowired
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 
-class DwExportJobTest : AbstractIntegrationTest() {
+class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2019, 7, 15), LocalTime.of(23, 0)))
 
-    @Autowired private lateinit var s3AsyncClient: S3AsyncClient
-
-    @Autowired private lateinit var sftpSender: SftpSender
+    @Autowired private lateinit var bucketEnv: BucketEnv
+    @Autowired private lateinit var s3Client: S3Client
 
     private lateinit var job: DwExportJob
 
+    companion object {
+        private val sftpPort = System.getenv("EVAKA_SFTP_PORT")?.toIntOrNull() ?: 2222
+        private const val EXPORT_BUCKET = "evakaturku-export-it"
+    }
+
     @BeforeAll
-    fun beforeAll() {
-        val exportClient = FileDWExportClient(s3AsyncClient, sftpSender, properties)
+    fun setup() {
+        val turkuProperties =
+            TurkuProperties(
+                sapInvoicing =
+                    SftpProperties(
+                        address = "localhost",
+                        port = 22,
+                        path = "path",
+                        username = "user",
+                        password = "pass",
+                    ),
+                sapPayments =
+                    SftpProperties(
+                        address = "localhost",
+                        port = 22,
+                        path = "path",
+                        username = "user",
+                        password = "pass",
+                    ),
+                bucket = BucketProperties(export = EXPORT_BUCKET),
+                dwExport =
+                    DwExportProperties(
+                        prefix = "reports",
+                        sftp =
+                            SftpProperties(
+                                address = "localhost",
+                                port = sftpPort,
+                                path = "upload",
+                                username = "foo",
+                                password = "pass",
+                            ),
+                    ),
+            )
+
+        val existingBuckets = s3Client.listBuckets().buckets().map { it.name()!! }
+        if (EXPORT_BUCKET !in existingBuckets) {
+            s3Client.createBucket(CreateBucketRequest.builder().bucket(EXPORT_BUCKET).build())
+        }
+
+        val s3AsyncClient =
+            S3AsyncClient.crtBuilder()
+                .httpConfiguration { it.trustAllCertificatesEnabled(true) }
+                .region(Region.EU_WEST_1)
+                .forcePathStyle(true)
+                .endpointOverride(bucketEnv.localS3Url)
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(
+                            bucketEnv.localS3AccessKeyId,
+                            bucketEnv.localS3SecretAccessKey,
+                        )
+                    )
+                )
+                .build()
+
+        val sftpSender = SftpSender(turkuProperties.dwExport.sftp, SftpConnector(JSch()))
+        val exportClient = FileDWExportClient(s3AsyncClient, sftpSender, turkuProperties)
         job = DwExportJob(exportClient)
     }
 
@@ -88,7 +159,6 @@ class DwExportJobTest : AbstractIntegrationTest() {
             tx.insert(
                 DevDaycareGroupPlacement(daycarePlacementId = placementId, daycareGroupId = groupId)
             )
-
             tx.insert(
                 DevAbsence(
                     childId = childId,
