@@ -4,7 +4,7 @@
 
 [versions]
 bouncycastle = "1.83"
-dd-java-agent = "1.60.0"
+dd-java-agent = "1.60.1"
 flyingsaucer = "10.0.7"
 flyway = "12.0.3"
 java = "25"
