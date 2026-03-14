@@ -683,7 +683,7 @@ jobs:
         id: metadata
         env:
           DOCKER_METADATA_PR_HEAD_SHA: "true"
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             evaka/dummy
