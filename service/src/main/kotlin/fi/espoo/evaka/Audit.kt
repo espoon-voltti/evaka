@@ -69,6 +69,7 @@ enum class Audit(
     ApplicationDelete,
     ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
+    ApplicationRead,
     ApplicationReadMetadata,
     ApplicationReadNotifications,
     ApplicationReadDuplicates,
@@ -653,76 +654,6 @@ enum class Audit(
                 "eventCode" to eventCode,
                 "targetId" to targetId?.value,
                 "objectId" to objectId?.value,
-                "securityLevel" to securityLevel,
-                "securityEvent" to securityEvent,
-            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
-        ) {
-            eventCode
-        }
-    }
-}
-
-// Audit events that are enforced to be logged with child id(s)
-enum class ChildAudit(
-    private val securityEvent: Boolean = false,
-    private val securityLevel: String = "low",
-) {
-    ApplicationRead;
-
-    private val eventCode = name
-
-    class UseNamedArguments private constructor()
-
-    /**
-     * Logs an audit event that requires child ID(s) to be specified.
-     *
-     * The childId is automatically combined with objectId in the audit log to ensure child-related
-     * operations are always traceable.
-     *
-     * Examples:
-     * ```
-     * // Simple child-related read with single child
-     * ChildAudit.ApplicationRead.log(
-     *     targetId = AuditId(userId),
-     *     childId = AuditId(childId)
-     * )
-     *
-     * // Multiple children with count metadata
-     * ChildAudit.ApplicationRead.log(
-     *     targetId = AuditId(userId),
-     *     childId = AuditId(childIds),
-     *     meta = mapOf("count" to childIds.size)
-     * )
-     *
-     * // Child operation with additional context in objectId
-     * ChildAudit.ApplicationRead.log(
-     *     targetId = AuditId(applicationId),
-     *     childId = AuditId(childId),
-     *     objectId = AuditId(guardianId)
-     * )
-     * ```
-     */
-    fun log(
-        // This is a hack to force passing all real parameters by name
-        @Suppress("UNUSED_PARAMETER") vararg forceNamed: Array<out UseNamedArguments>,
-        /** The child ID that must be logged for this audit event. */
-        childId: AuditId,
-        /** The primary resource or entity being acted upon by this audit event. */
-        targetId: AuditId? = null,
-        /** Related or secondary entities affected by the action, or the result of the action. */
-        objectId: AuditId? = null,
-        /**
-         * Additional contextual information such as counts, date ranges, or other metadata relevant
-         * to the audit event.
-         */
-        meta: Map<String, Any?> = emptyMap(),
-    ) {
-        val combinedObjectIds = objectId?.let { childId + it } ?: childId
-        logger.audit(
-            mapOf(
-                "eventCode" to eventCode,
-                "targetId" to targetId?.value,
-                "objectId" to combinedObjectIds.value,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
             ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()

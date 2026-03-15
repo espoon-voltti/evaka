@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.ChildAudit
 import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
@@ -126,10 +125,7 @@ class ApplicationControllerCitizen(
             }
             .also { childApplicationList ->
                 val childIds = childApplicationList.map { it.childId }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                Audit.ApplicationRead.log(targetId = AuditId(user.id))
             }
     }
 
@@ -153,10 +149,7 @@ class ApplicationControllerCitizen(
             }
             .also { childList ->
                 val childIds = childList.map { it.id }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
+                Audit.ApplicationRead.log(targetId = AuditId(user.id))
             }
     }
 
@@ -221,12 +214,7 @@ class ApplicationControllerCitizen(
             } else {
                 throw NotFound("Application not found")
             }
-            .also {
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(applicationId),
-                    childId = AuditId(application.childId),
-                )
-            }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(applicationId)) }
     }
 
     @PostMapping("/applications")
