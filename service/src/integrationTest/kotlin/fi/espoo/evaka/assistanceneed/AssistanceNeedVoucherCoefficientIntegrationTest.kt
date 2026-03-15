@@ -109,9 +109,9 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(child.id, created.childId)
-        assertEquals(BigDecimal("2.00"), created.coefficient)
+        assertEquals(BigDecimal("2.0000"), created.coefficient)
         assertEquals(FiniteDateRange(today, today.plusDays(30)), created.validityPeriod)
-        assertEquals(listOf(BigDecimal("2.00")), readVoucherValueDecisionAssistanceCoefficients())
+        assertEquals(listOf(BigDecimal("2.0000")), readVoucherValueDecisionAssistanceCoefficients())
 
         val updated =
             updateAssistanceNeedVoucherCoefficient(
@@ -124,19 +124,69 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(child.id, updated.childId)
-        assertEquals(BigDecimal("3.00"), updated.coefficient)
+        assertEquals(BigDecimal("3.0000"), updated.coefficient)
         assertEquals(
             FiniteDateRange(today.plusDays(10), today.plusDays(20)),
             updated.validityPeriod,
         )
         assertEquals(
-            listOf(BigDecimal("1.00"), BigDecimal("3.00"), BigDecimal("1.00")),
+            listOf(BigDecimal("1.0000"), BigDecimal("3.0000"), BigDecimal("1.0000")),
             readVoucherValueDecisionAssistanceCoefficients(),
         )
 
         deleteAssistanceNeedVoucherCoefficient(created.id)
         asyncJobRunner.runPendingJobsSync(clock)
-        assertEquals(listOf(BigDecimal("1.00")), readVoucherValueDecisionAssistanceCoefficients())
+        assertEquals(listOf(BigDecimal("1.0000")), readVoucherValueDecisionAssistanceCoefficients())
+    }
+
+    @Test
+    fun `coefficient supports four decimal places`() {
+        val created =
+            createAssistanceNeedVoucherCoefficient(
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 1.5234,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                )
+            )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(BigDecimal("1.5234"), created.coefficient)
+        assertEquals(listOf(BigDecimal("1.5234")), readVoucherValueDecisionAssistanceCoefficients())
+
+        val updated =
+            updateAssistanceNeedVoucherCoefficient(
+                created.id,
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 2.7891,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                ),
+            )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(BigDecimal("2.7891"), updated.coefficient)
+        assertEquals(listOf(BigDecimal("2.7891")), readVoucherValueDecisionAssistanceCoefficients())
+    }
+
+    @Test
+    fun `coefficient with four decimal places can be retrieved`() {
+        val created =
+            createAssistanceNeedVoucherCoefficient(
+                AssistanceNeedVoucherCoefficientRequest(
+                    coefficient = 1.2345,
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
+                )
+            )
+
+        val coefficients =
+            assistanceNeedVoucherCoefficientController.getAssistanceNeedVoucherCoefficients(
+                dbInstance(),
+                employee.user,
+                clock,
+                child.id,
+            )
+
+        val coefficient = coefficients.find { it.voucherCoefficient.id == created.id }
+        assertEquals(BigDecimal("1.2345"), coefficient?.voucherCoefficient?.coefficient)
     }
 
     private fun createAssistanceNeedVoucherCoefficient(
