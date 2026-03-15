@@ -10,8 +10,12 @@ import fi.espoo.evaka.assistanceaction.AssistanceAction
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
 import fi.espoo.evaka.assistanceaction.AssistanceActionResponse
-import fi.espoo.evaka.assistanceaction.AssistanceActionService
+import fi.espoo.evaka.assistanceaction.deleteAssistanceAction
+import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.assistanceaction.getAssistanceActionsByChild
+import fi.espoo.evaka.assistanceaction.insertAssistanceAction
+import fi.espoo.evaka.assistanceaction.shortenOverlappingAssistanceAction
+import fi.espoo.evaka.assistanceaction.updateAssistanceAction
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.ChildId
@@ -23,9 +27,12 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.JdbiException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,7 +44,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceController(
     private val accessControl: AccessControl,
-    private val assistanceActionService: AssistanceActionService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     data class AssistanceFactorResponse(
@@ -185,22 +191,27 @@ class AssistanceController(
         @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_ACTION,
                         childId,
                     )
+                    try {
+                        validateActions(body, tx.getAssistanceActionOptions())
+                        tx.shortenOverlappingAssistanceAction(
+                            user,
+                            clock.now(),
+                            childId,
+                            body.startDate,
+                        )
+                        tx.insertAssistanceAction(user, clock.now(), childId, body)
+                    } catch (e: JdbiException) {
+                        throw mapPSQLException(e)
+                    }
                 }
-                assistanceActionService.createAssistanceAction(
-                    dbc,
-                    user = user,
-                    now = clock.now(),
-                    childId = childId,
-                    data = body,
-                )
             }
             .also { assistanceAction ->
                 Audit.ChildAssistanceActionCreate.log(
@@ -219,22 +230,21 @@ class AssistanceController(
         @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.AssistanceAction.UPDATE,
                         id,
                     )
+                    try {
+                        validateActions(body, tx.getAssistanceActionOptions())
+                        tx.updateAssistanceAction(user, clock.now(), id, body)
+                    } catch (e: JdbiException) {
+                        throw mapPSQLException(e)
+                    }
                 }
-                assistanceActionService.updateAssistanceAction(
-                    dbc,
-                    user = user,
-                    now = clock.now(),
-                    id = id,
-                    data = body,
-                )
             }
             .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
     }
@@ -247,16 +257,16 @@ class AssistanceController(
         @PathVariable id: AssistanceActionId,
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.AssistanceAction.DELETE,
                     id,
                 )
+                tx.deleteAssistanceAction(id)
             }
-            assistanceActionService.deleteAssistanceAction(dbc, id)
         }
         Audit.ChildAssistanceActionDelete.log(targetId = AuditId(id))
     }
@@ -268,15 +278,15 @@ class AssistanceController(
         clock: EvakaClock,
     ): List<AssistanceActionOption> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Global.READ_ASSISTANCE_ACTION_OPTIONS,
                     )
+                    tx.getAssistanceActionOptions()
                 }
-                assistanceActionService.getAssistanceActionOptions(dbc)
             }
             .also { Audit.AssistanceActionOptionsRead.log() }
     }
@@ -616,5 +626,25 @@ class AssistanceController(
             .also { deletedId ->
                 deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
             }
+    }
+
+    private fun validateActions(
+        data: AssistanceActionRequest,
+        options: List<AssistanceActionOption>,
+    ) {
+        data.actions.forEach { action ->
+            val option =
+                options.find { it.value == action }
+                    ?: throw BadRequest(
+                        "Action $action is not a recognized option, all options: ${options.map { it.value }}"
+                    )
+
+            if (option.validFrom != null && data.startDate < option.validFrom) {
+                throw BadRequest("Action $action cannot be used before ${option.validFrom}")
+            }
+            if (option.validTo != null && data.endDate > option.validTo) {
+                throw BadRequest("Action $action cannot be used after ${option.validTo}")
+            }
+        }
     }
 }

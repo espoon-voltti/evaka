@@ -59,6 +59,18 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     fun <T> connect(f: (db: Connection) -> T): T = connectWithManualLifecycle().use(f)
 
     /**
+     * Opens a database connection with audit context, runs the given function, closes the
+     * connection, and returns the result wrapped with the accumulated audit context.
+     *
+     * Throws `IllegalStateException` if a connection is already open
+     */
+    fun <T> connectWithAudit(f: (db: AuditableConnection) -> T): AuditedResult<T> {
+        val conn = AuditableConnection(threadId, tracer, this::openHandle)
+        val result = conn.use(f)
+        return AuditedResult(result, conn.audit)
+    }
+
+    /**
      * Opens a new database connection and returns it. The connection *must be closed after use*.
      *
      * Throws `IllegalStateException` if a connection is already open
@@ -97,6 +109,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         private fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
 
+        protected open fun auditContext(): AuditContext = AuditContext()
+
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any
          * exceptions the function may have thrown.
@@ -111,7 +125,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             handle.isReadOnly = true
             try {
                 return tracer.withSpan("db.transaction read") {
-                    handle.inTransaction<T, Exception> { f(Read(handle)) }
+                    handle.inTransaction<T, Exception> { f(Read(handle, auditContext())) }
                 }
             } finally {
                 handle.isReadOnly = false
@@ -132,7 +146,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             val hooks = TransactionHooks()
             return tracer
                 .withSpan("db.transaction read/write") {
-                    handle.inTransaction<T, Exception> { f(Transaction(it, hooks)) }
+                    handle.inTransaction<T, Exception> { f(Transaction(it, hooks, auditContext())) }
                 }
                 .also { hooks.afterCommit.forEach { it() } }
         }
@@ -144,13 +158,21 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         }
     }
 
+    class AuditableConnection
+    internal constructor(threadId: ThreadId, tracer: Tracer, openRawHandle: () -> Handle) :
+        Connection(threadId, tracer, openRawHandle) {
+        val audit: AuditContext = AuditContext()
+
+        override fun auditContext(): AuditContext = audit
+    }
+
     /**
      * A single database connection in read mode.
      *
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong
      * thread.
      */
-    open class Read internal constructor(val handle: Handle) {
+    open class Read internal constructor(val handle: Handle, val audit: AuditContext) {
         fun createQuery(f: QuerySql.Builder.() -> QuerySql): Query =
             createQuery(QuerySql.Builder().run { f(this) })
 
@@ -175,8 +197,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong
      * thread.
      */
-    class Transaction internal constructor(handle: Handle, private val hooks: TransactionHooks) :
-        Read(handle) {
+    class Transaction
+    internal constructor(handle: Handle, private val hooks: TransactionHooks, audit: AuditContext) :
+        Read(handle, audit) {
         private var savepointId: Long = 0
 
         private fun nextSavepoint(): String = "savepoint-${savepointId++}"
@@ -259,7 +282,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             fun wrap(handle: Handle): Transaction {
                 check(handle.isInTransaction) { "Wrapped handle must have an active transaction" }
                 check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
-                return Transaction(handle, TransactionHooks())
+                return Transaction(handle, TransactionHooks(), AuditContext())
             }
         }
     }

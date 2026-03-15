@@ -6,9 +6,10 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.daycare.DaycareGroup
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.service.DaycareGroup
-import fi.espoo.evaka.daycare.service.DaycareService
+import fi.espoo.evaka.daycare.getDaycareGroups
+import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
@@ -22,6 +23,7 @@ import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
@@ -33,10 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CitizenDocumentResponseReport(
-    private val accessControl: AccessControl,
-    private val daycareService: DaycareService,
-) {
+class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
 
     @GetMapping("/employee/reports/citizen-document-response-report")
     fun getCitizenDocumentResponseReport(
@@ -144,8 +143,9 @@ class CitizenDocumentResponseReport(
                             clock,
                             Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT,
                         )
-                    daycareService.getDaycareGroups(
-                        tx,
+                    if (!tx.isValidDaycareId(unitId))
+                        throw NotFound("No daycare found with id $unitId")
+                    tx.getDaycareGroups(
                         unitId,
                         from,
                         to,

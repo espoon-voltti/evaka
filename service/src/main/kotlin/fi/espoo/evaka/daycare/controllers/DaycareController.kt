@@ -12,13 +12,17 @@ import fi.espoo.evaka.application.getActiveTransferApplicationsFromUnit
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.CaretakerAmount
+import fi.espoo.evaka.daycare.Caretakers
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
+import fi.espoo.evaka.daycare.DaycareGroup
 import fi.espoo.evaka.daycare.UnitFeatures
 import fi.espoo.evaka.daycare.UnitOperationPeriod
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
+import fi.espoo.evaka.daycare.createDaycareGroup
 import fi.espoo.evaka.daycare.deleteCaretakers
+import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.getCaretakers
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
@@ -31,16 +35,17 @@ import fi.espoo.evaka.daycare.getLastPlacementDate
 import fi.espoo.evaka.daycare.getOphUnitOIDs
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.getUnitOperationPeriods
+import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.insertCaretakers
+import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.daycare.removeUnitFeatures
-import fi.espoo.evaka.daycare.service.Caretakers
-import fi.espoo.evaka.daycare.service.DaycareGroup
-import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.daycare.updateUnitClosingDate
 import fi.espoo.evaka.daycare.validateUnitClosingDate
+import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
@@ -56,6 +61,7 @@ import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
 import fi.espoo.evaka.placement.getWaitingUnitConfirmationApplicationsCount
+import fi.espoo.evaka.placement.hasGroupPlacements
 import fi.espoo.evaka.serviceneed.application.getUndecidedServiceApplicationsByUnit
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareCaretakerId
@@ -65,6 +71,8 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -73,6 +81,8 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
+import org.postgresql.util.PSQLState
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -86,10 +96,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/daycares")
-class DaycareController(
-    private val daycareService: DaycareService,
-    private val accessControl: AccessControl,
-) {
+class DaycareController(private val accessControl: AccessControl) {
     @GetMapping
     fun getDaycares(
         db: Database,
@@ -285,7 +292,9 @@ class DaycareController(
                         Action.Unit.READ_GROUPS,
                         daycareId,
                     )
-                    daycareService.getDaycareGroups(it, daycareId, from, to, includeClosed)
+                    if (!it.isValidDaycareId(daycareId))
+                        throw NotFound("No daycare found with id $daycareId")
+                    it.getDaycareGroups(daycareId, from, to, includeClosed)
                 }
             }
             .also {
@@ -305,22 +314,24 @@ class DaycareController(
         @RequestBody body: CreateGroupRequest,
     ): DaycareGroup {
         return db.connect { dbc ->
-                dbc.transaction {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Unit.CREATE_GROUP,
                         daycareId,
                     )
-                    daycareService.createGroup(
-                        it,
-                        daycareId,
-                        body.name,
-                        body.startDate,
-                        body.initialCaretakers,
-                        body.aromiCustomerId,
-                    )
+                    tx.createDaycareGroup(
+                            daycareId,
+                            body.name,
+                            body.startDate,
+                            body.aromiCustomerId,
+                        )
+                        .also {
+                            tx.initCaretakers(it.id, it.startDate, body.initialCaretakers)
+                            tx.createDaycareGroupMessageAccount(it.id)
+                        }
                 }
             }
             .also { group ->
@@ -375,9 +386,23 @@ class DaycareController(
         @PathVariable groupId: GroupId,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Group.DELETE, groupId)
-                daycareService.deleteGroup(it, groupId)
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Group.DELETE, groupId)
+                try {
+                    if (tx.hasGroupPlacements(groupId))
+                        throw Conflict("Cannot delete group which has children placed in it")
+                    tx.deleteDaycareGroupMessageAccount(groupId)
+                    tx.deleteDaycareGroup(groupId)
+                } catch (e: UnableToExecuteStatementException) {
+                    throw e.psqlCause()
+                        ?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
+                        ?.let {
+                            Conflict(
+                                "Cannot delete group which is still referred to from other data",
+                                cause = e,
+                            )
+                        } ?: e
+                }
             }
         }
         Audit.UnitGroupsDelete.log(targetId = AuditId(groupId))
