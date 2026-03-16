@@ -197,7 +197,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -442,7 +442,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -492,7 +492,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -551,14 +551,14 @@ jobs:
 
       - name: Login to Docker Hub
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -673,7 +673,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
