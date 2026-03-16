@@ -24,8 +24,8 @@ fun Database.Read.getServiceNeedsByChild(childId: ChildId): List<ServiceNeed> {
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
-    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated_at AS updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated_at as option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
 JOIN service_need_option sno on sno.id = sn.option_id
@@ -47,8 +47,8 @@ fun Database.Read.getServiceNeedsByUnit(
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
-    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated_at AS updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated_at AS option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
 JOIN service_need_option sno on sno.id = sn.option_id
@@ -96,8 +96,8 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
-    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated_at AS updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated_at AS option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
 JOIN service_need_option sno on sn.option_id = sno.id
@@ -181,8 +181,8 @@ fun Database.Read.getOverlappingServiceNeeds(
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
-    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated_at AS updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated_at as option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
 JOIN service_need_option sno on sn.option_id = sno.id

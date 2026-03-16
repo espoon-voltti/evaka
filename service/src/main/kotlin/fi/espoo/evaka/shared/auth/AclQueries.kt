@@ -191,7 +191,7 @@ AND daycare_group_id <> ALL (${bind(groupIds)})
     executeBatch(groupIds) {
         sql(
             """
-INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created, updated)
+INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created_at, updated_at)
 SELECT id, ${bind(employeeId)}, ${bind(now)}, ${bind(now)}
 FROM daycare_group
 WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}

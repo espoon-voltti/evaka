@@ -542,7 +542,7 @@ fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
     createUpdate {
             sql(
                 """
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, updated)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, updated_at)
 VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.validFrom)}, ${bind(option.validTo)}, ${bind(option.updated)})
 """
             )
@@ -555,9 +555,9 @@ fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
             sql(
                 """
 ALTER TABLE service_need_option DISABLE TRIGGER set_timestamp;
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, updated)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to, updated_at)
 VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.validFrom)}, ${bind(option.validTo)}, ${bind(option.updated)})
-ON CONFLICT (id) DO UPDATE SET updated = ${bind(option.updated)}, daycare_hours_per_week = ${bind(option.daycareHoursPerWeek)};
+ON CONFLICT (id) DO UPDATE SET updated_at = ${bind(option.updated)}, daycare_hours_per_week = ${bind(option.daycareHoursPerWeek)};
 ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
 """
             )
@@ -703,7 +703,7 @@ data class DevPlacementPlan(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val preschoolDaycareStartDate: LocalDate? = null,
     val preschoolDaycareEndDate: LocalDate? = null,
-    val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val deleted: Boolean? = false,
 )
 
@@ -711,8 +711,8 @@ fun Database.Transaction.insert(row: DevPlacementPlan): PlacementPlanId =
     createUpdate {
             sql(
                 """
-INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
-VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind(row.type)}::placement_type, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.preschoolDaycareStartDate)}, ${bind(row.preschoolDaycareEndDate)}, ${bind(row.updated)}, ${bind(row.deleted)})
+INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated_at, deleted)
+VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.applicationId)}, ${bind(row.type)}::placement_type, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.preschoolDaycareStartDate)}, ${bind(row.preschoolDaycareEndDate)}, ${bind(row.updatedAt)}, ${bind(row.deleted)})
 """
             )
         }
@@ -1142,8 +1142,8 @@ fun Database.Transaction.insert(row: DevDaycareGroupAcl) {
     createUpdate {
             sql(
                 """
-INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created, updated)
-VALUES (${bind(row.groupId)}, ${bind(row.employeeId)}, ${bind(row.created)}, ${bind(row.updated)})
+INSERT INTO daycare_group_acl (daycare_group_id, employee_id, created_at, updated_at)
+VALUES (${bind(row.groupId)}, ${bind(row.employeeId)}, ${bind(row.createdAt)}, ${bind(row.updatedAt)})
 """
             )
         }

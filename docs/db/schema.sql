@@ -838,7 +838,7 @@ UNION ALL
 SELECT dst.child_id                       as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id
@@ -888,7 +888,7 @@ UNION ALL
 SELECT childId                            as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id
@@ -922,7 +922,7 @@ UNION ALL
 SELECT dst.child_id                       as child_id,
        theDate                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
-       dst.updated                        as modified_at,
+       dst.updated_at                     as modified_at,
        null::uuid                         as modified_by,
        unnest(absence_categories(p.type)) as category,
        null::uuid                         as questionnaire_id
@@ -1073,8 +1073,8 @@ $$;
 
 CREATE TABLE public.daily_service_time (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daily_service_time_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daily_service_time_updated_not_null NOT NULL,
     child_id uuid NOT NULL,
     regular_start text,
     regular_end text,
@@ -1088,6 +1088,8 @@ CREATE TABLE public.daily_service_time (
     friday_times public.timerange_non_nullable_range,
     saturday_times public.timerange_non_nullable_range,
     sunday_times public.timerange_non_nullable_range,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$regular_daily_service_times" CHECK (((type <> 'REGULAR'::public.daily_service_time_type) OR ((regular_times IS NOT NULL) AND (monday_times IS NULL) AND (tuesday_times IS NULL) AND (wednesday_times IS NULL) AND (thursday_times IS NULL) AND (friday_times IS NULL) AND (saturday_times IS NULL) AND (sunday_times IS NULL)))),
     CONSTRAINT "check$variable_daily_service_times" CHECK (((type <> 'VARIABLE_TIME'::public.daily_service_time_type) OR ((regular_times IS NULL) AND (monday_times IS NULL) AND (tuesday_times IS NULL) AND (wednesday_times IS NULL) AND (thursday_times IS NULL) AND (friday_times IS NULL) AND (saturday_times IS NULL) AND (sunday_times IS NULL))))
 );
@@ -1294,8 +1296,8 @@ CREATE TABLE public.daycare (
     care_area_id uuid NOT NULL,
     phone text,
     url text,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_updated_not_null NOT NULL,
     backup_location text,
     opening_date date,
     closing_date date,
@@ -1418,6 +1420,8 @@ END) STORED,
     partner_code text DEFAULT ''::text NOT NULL,
     nekku_order_reduction_percentage integer DEFAULT 10 NOT NULL,
     nekku_no_weekend_meal_orders boolean DEFAULT false NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$full_week_operation_times" CHECK ((cardinality(operation_times) = 7)),
     CONSTRAINT "check$full_week_shift_care_operation_times" CHECK (((shift_care_operation_times IS NULL) OR (cardinality(shift_care_operation_times) = 7))),
     CONSTRAINT "check$shift_care_open_on_holidays_only_for_shift_care" CHECK (((provides_shift_care = true) OR (shift_care_open_on_holidays = false))),
@@ -1785,8 +1789,8 @@ CREATE TABLE public.application_other_guardian (
 CREATE TABLE public.decision (
     id uuid DEFAULT ext.uuid_generate_v1mc() CONSTRAINT decision2_id_not_null NOT NULL,
     number integer CONSTRAINT decision2_number_not_null NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT decision_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT decision_updated_not_null NOT NULL,
     created_by uuid CONSTRAINT decision2_created_by_not_null NOT NULL,
     sent_date date,
     unit_id uuid CONSTRAINT decision2_unit_id_not_null NOT NULL,
@@ -1805,15 +1809,17 @@ CREATE TABLE public.decision (
     other_guardian_document_key text,
     document_contains_contact_info boolean DEFAULT false NOT NULL,
     archived_at timestamp with time zone,
-    sent_time time without time zone
+    sent_time time without time zone,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: placement_plan; Type: TABLE; Schema: public
 
 CREATE TABLE public.placement_plan (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT placement_plan_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT placement_plan_updated_not_null NOT NULL,
     type public.placement_type NOT NULL,
     unit_id uuid NOT NULL,
     application_id uuid NOT NULL,
@@ -1825,6 +1831,8 @@ CREATE TABLE public.placement_plan (
     unit_confirmation_status public.confirmation_status DEFAULT 'PENDING'::public.confirmation_status NOT NULL,
     unit_reject_reason public.placement_reject_reason,
     unit_reject_other_reason text,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT preschool_daycare_not_null CHECK (((type <> 'PRESCHOOL_DAYCARE'::public.placement_type) OR ((preschool_daycare_start_date IS NOT NULL) AND (preschool_daycare_end_date IS NOT NULL)))),
     CONSTRAINT preschool_daycare_start_before_end CHECK ((preschool_daycare_start_date <= preschool_daycare_end_date)),
     CONSTRAINT start_before_end CHECK ((start_date <= end_date))
@@ -2334,12 +2342,14 @@ CREATE TABLE public.calendar_event_attendee (
 
 CREATE TABLE public.daycare_group_placement (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_group_placement_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_group_placement_updated_not_null NOT NULL,
     daycare_placement_id uuid NOT NULL,
     daycare_group_id uuid NOT NULL,
     start_date date NOT NULL,
     end_date date NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT start_before_end CHECK ((start_date <= end_date))
 );
 
@@ -2387,11 +2397,13 @@ CREATE TABLE public.calendar_event_time (
 CREATE TABLE public.care_area (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
     name text NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT care_area_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT care_area_updated_not_null NOT NULL,
     area_code integer,
     sub_cost_center text,
-    short_name text DEFAULT ''::text NOT NULL
+    short_name text DEFAULT ''::text NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: child; Type: TABLE; Schema: public
@@ -2637,11 +2649,13 @@ CREATE TABLE public.citizen_user (
 
 CREATE TABLE public.club_term (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT club_term_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT club_term_updated_not_null NOT NULL,
     term daterange NOT NULL,
     application_period daterange NOT NULL,
     term_breaks datemultirange NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$application_period_valid" CHECK ((NOT (lower_inf(application_period) OR upper_inf(application_period)))),
     CONSTRAINT "check$term_breaks_valid" CHECK ((NOT (lower_inf(term_breaks) OR upper_inf(term_breaks)))),
     CONSTRAINT "check$term_contains_term_breaks" CHECK ((term @> term_breaks)),
@@ -2660,10 +2674,12 @@ CREATE TABLE public.daily_service_time_notification (
 CREATE TABLE public.daycare_acl (
     daycare_id uuid NOT NULL,
     employee_id uuid NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_acl_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_acl_updated_not_null NOT NULL,
     role public.user_role NOT NULL,
     end_date date,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "chk$valid_role" CHECK ((role = ANY (ARRAY['UNIT_SUPERVISOR'::public.user_role, 'STAFF'::public.user_role, 'SPECIAL_EDUCATION_TEACHER'::public.user_role, 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'::public.user_role])))
 );
 
@@ -2745,12 +2761,14 @@ CREATE TABLE public.daycare_assistance (
 
 CREATE TABLE public.daycare_caretaker (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_caretaker_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_caretaker_updated_not_null NOT NULL,
     group_id uuid NOT NULL,
     amount numeric DEFAULT 0 NOT NULL,
     start_date date NOT NULL,
     end_date date,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT daycare_caretaker_no_negative_people CHECK ((amount >= (0)::numeric)),
     CONSTRAINT daycare_caretaker_start_before_end CHECK ((start_date <= end_date))
 );
@@ -2776,8 +2794,10 @@ CREATE TABLE public.daycare_group (
 CREATE TABLE public.daycare_group_acl (
     daycare_group_id uuid NOT NULL,
     employee_id uuid NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_group_acl_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT daycare_group_acl_updated_not_null NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: decision_number_seq; Type: SEQUENCE; Schema: public
@@ -3365,27 +3385,31 @@ CREATE TABLE public.meal_texture (
 
 CREATE TABLE public.message (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_updated_not_null NOT NULL,
     sender_name text NOT NULL,
     content_id uuid CONSTRAINT message_content_id_not_null1 NOT NULL,
     thread_id uuid CONSTRAINT message_thread_id_not_null1 NOT NULL,
     sender_id uuid NOT NULL,
     sent_at timestamp with time zone,
-    recipient_names text[] DEFAULT '{}'::text[] NOT NULL
+    recipient_names text[] DEFAULT '{}'::text[] NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_account; Type: TABLE; Schema: public
 
 CREATE TABLE public.message_account (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_account_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_account_updated_not_null NOT NULL,
     daycare_group_id uuid,
     employee_id uuid,
     person_id uuid,
     active boolean DEFAULT true,
     type public.message_account_type,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$message_account_foreign_keys" CHECK ((((type = 'PERSONAL'::public.message_account_type) AND (employee_id IS NOT NULL) AND (daycare_group_id IS NULL) AND (person_id IS NULL)) OR ((type = 'GROUP'::public.message_account_type) AND (employee_id IS NULL) AND (daycare_group_id IS NOT NULL) AND (person_id IS NULL)) OR ((type = 'CITIZEN'::public.message_account_type) AND (employee_id IS NULL) AND (daycare_group_id IS NULL) AND (person_id IS NOT NULL)) OR ((type <> 'PERSONAL'::public.message_account_type) AND (type <> 'GROUP'::public.message_account_type) AND (type <> 'CITIZEN'::public.message_account_type) AND (employee_id IS NULL) AND (daycare_group_id IS NULL) AND (person_id IS NULL))))
 );
 
@@ -3417,10 +3441,12 @@ CREATE VIEW public.message_account_view AS
 
 CREATE TABLE public.message_content (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_content_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_content_updated_not_null NOT NULL,
     author_id uuid NOT NULL,
-    content text NOT NULL
+    content text NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_draft; Type: TABLE; Schema: public
@@ -3444,60 +3470,70 @@ CREATE TABLE public.message_draft (
 
 CREATE TABLE public.message_recipients (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_recipients_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_recipients_updated_not_null NOT NULL,
     message_id uuid NOT NULL,
     recipient_id uuid NOT NULL,
     read_at timestamp with time zone,
-    email_notification_sent_at timestamp with time zone
+    email_notification_sent_at timestamp with time zone,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_thread; Type: TABLE; Schema: public
 
 CREATE TABLE public.message_thread (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_updated_not_null NOT NULL,
     message_type public.message_type NOT NULL,
     title text NOT NULL,
     urgent boolean DEFAULT false NOT NULL,
     is_copy boolean NOT NULL,
     application_id uuid,
-    sensitive boolean NOT NULL
+    sensitive boolean NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_thread_children; Type: TABLE; Schema: public
 
 CREATE TABLE public.message_thread_children (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_children_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_children_updated_not_null NOT NULL,
     thread_id uuid NOT NULL,
-    child_id uuid NOT NULL
+    child_id uuid NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_thread_folder; Type: TABLE; Schema: public
 
 CREATE TABLE public.message_thread_folder (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_folder_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_folder_updated_not_null NOT NULL,
     name text DEFAULT ''::text NOT NULL,
-    owner_id uuid NOT NULL
+    owner_id uuid NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: message_thread_participant; Type: TABLE; Schema: public
 
 CREATE TABLE public.message_thread_participant (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_participant_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT message_thread_participant_updated_not_null NOT NULL,
     thread_id uuid NOT NULL,
     participant_id uuid NOT NULL,
     last_message_timestamp timestamp with time zone NOT NULL,
     last_received_timestamp timestamp with time zone,
     last_sent_timestamp timestamp with time zone,
-    folder_id uuid
+    folder_id uuid,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: mobile_device_push_group; Type: TABLE; Schema: public
@@ -3751,13 +3787,15 @@ CREATE TABLE public.placement_draft (
 
 CREATE TABLE public.preschool_term (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT preschool_term_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT preschool_term_updated_not_null NOT NULL,
     finnish_preschool daterange NOT NULL,
     swedish_preschool daterange NOT NULL,
     extended_term daterange NOT NULL,
     application_period daterange NOT NULL,
     term_breaks datemultirange NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$application_period_valid" CHECK ((NOT (lower_inf(application_period) OR upper_inf(application_period)))),
     CONSTRAINT "check$extended_term_valid" CHECK ((NOT (lower_inf(extended_term) OR upper_inf(extended_term)))),
     CONSTRAINT "check$finnish_preschool_contains_term_breaks" CHECK ((finnish_preschool @> term_breaks)),
@@ -3832,8 +3870,8 @@ CREATE TABLE public.service_application (
 
 CREATE TABLE public.service_need (
     id uuid DEFAULT ext.uuid_generate_v1mc() CONSTRAINT new_service_need_id_not_null NOT NULL,
-    created timestamp with time zone DEFAULT now() CONSTRAINT new_service_need_created_not_null NOT NULL,
-    updated timestamp with time zone DEFAULT now() CONSTRAINT new_service_need_updated_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT new_service_need_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT new_service_need_updated_not_null NOT NULL,
     option_id uuid CONSTRAINT new_service_need_option_id_not_null NOT NULL,
     placement_id uuid CONSTRAINT new_service_need_placement_id_not_null NOT NULL,
     start_date date CONSTRAINT new_service_need_start_date_not_null NOT NULL,
@@ -3842,6 +3880,8 @@ CREATE TABLE public.service_need (
     confirmed_at timestamp with time zone,
     shift_care public.shift_care_type DEFAULT 'NONE'::public.shift_care_type CONSTRAINT service_need_shift_care_temp_not_null NOT NULL,
     part_week boolean NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT start_before_end CHECK ((start_date <= end_date))
 );
 
@@ -3849,8 +3889,8 @@ CREATE TABLE public.service_need (
 
 CREATE TABLE public.service_need_option (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_updated_not_null NOT NULL,
     name_fi text CONSTRAINT service_need_option_name_not_null NOT NULL,
     valid_placement_type public.placement_type NOT NULL,
     fee_coefficient numeric(6,2) NOT NULL,
@@ -3874,6 +3914,8 @@ CREATE TABLE public.service_need_option (
     daycare_hours_per_month integer,
     valid_from date NOT NULL,
     valid_to date,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT "check$no_contract_days_and_hours" CHECK (((contract_days_per_month IS NULL) OR (daycare_hours_per_month IS NULL))),
     CONSTRAINT start_before_end CHECK (((valid_to IS NULL) OR (valid_to >= valid_from)))
 );
@@ -3882,23 +3924,25 @@ CREATE TABLE public.service_need_option (
 
 CREATE TABLE public.service_need_option_fee (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_fee_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_fee_updated_not_null NOT NULL,
     service_need_option_id uuid NOT NULL,
     validity daterange NOT NULL,
     base_fee integer NOT NULL,
     sibling_discount_2 numeric(5,4) NOT NULL,
     sibling_fee_2 integer NOT NULL,
     sibling_discount_2_plus numeric(5,4) NOT NULL,
-    sibling_fee_2_plus integer NOT NULL
+    sibling_fee_2_plus integer NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: service_need_option_voucher_value; Type: TABLE; Schema: public
 
 CREATE TABLE public.service_need_option_voucher_value (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    updated timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_voucher_value_created_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT service_need_option_voucher_value_updated_not_null NOT NULL,
     service_need_option_id uuid CONSTRAINT service_need_option_voucher_val_service_need_option_id_not_null NOT NULL,
     validity daterange NOT NULL,
     base_value integer NOT NULL,
@@ -3906,7 +3950,9 @@ CREATE TABLE public.service_need_option_voucher_value (
     value integer NOT NULL,
     base_value_under_3y integer NOT NULL,
     coefficient_under_3y numeric(3,2) NOT NULL,
-    value_under_3y integer NOT NULL
+    value_under_3y integer NOT NULL,
+    created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
+    updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
 -- Name: setting; Type: TABLE; Schema: public
@@ -6540,7 +6586,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.calendar_event_time FOR EAC
 
 -- Name: care_area set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.care_area FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.care_area FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: case_process set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6580,19 +6626,19 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.citizen_user FOR EACH ROW E
 
 -- Name: club_term set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.club_term FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.club_term FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daily_service_time set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daily_service_time FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daily_service_time FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare_acl set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_acl FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_acl FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare_acl_schedule set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6604,7 +6650,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_assistance FOR EACH
 
 -- Name: daycare_caretaker set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_caretaker FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_caretaker FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare_group set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6612,15 +6658,15 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group FOR EACH ROW 
 
 -- Name: daycare_group_acl set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group_acl FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group_acl FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: daycare_group_placement set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group_placement FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group_placement FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: decision set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: document_template set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6708,15 +6754,15 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.koski_study_right FOR EACH 
 
 -- Name: message set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_account set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_account FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_account FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_content set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_content FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_content FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_draft set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6724,23 +6770,23 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_draft FOR EACH ROW 
 
 -- Name: message_recipients set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_recipients FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_recipients FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_thread set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_thread_children set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_children FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_children FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_thread_folder set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_folder FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_folder FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message_thread_participant set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_participant FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.message_thread_participant FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: mobile_device set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6784,7 +6830,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.placement_draft FOR EACH RO
 
 -- Name: placement_plan set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.placement_plan FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.placement_plan FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: preschool_assistance set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6792,7 +6838,7 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.preschool_assistance FOR EA
 
 -- Name: preschool_term set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.preschool_term FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.preschool_term FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: service_application set_timestamp; Type: TRIGGER; Schema: public
 
@@ -6800,19 +6846,19 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_application FOR EAC
 
 -- Name: service_need set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: service_need_option set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: service_need_option_fee set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option_fee FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option_fee FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: service_need_option_voucher_value set_timestamp; Type: TRIGGER; Schema: public
 
-CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option_voucher_value FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.service_need_option_voucher_value FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: setting set_timestamp; Type: TRIGGER; Schema: public
 
