@@ -36,6 +36,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -101,6 +102,55 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         val updated = getEmployeeDetails(employee.id)
         assertEquals(setOf(UserRole.FINANCE_ADMIN, UserRole.DIRECTOR), updated.globalRoles.toSet())
+    }
+
+    @Test
+    fun `ADMIN role can only be set on AD-only employees by default`() {
+        val adEmployee =
+            DevEmployee(
+                externalId =
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+            )
+        val sfiEmployee = DevEmployee(ssn = "010107A9917")
+        db.transaction { tx ->
+            tx.insert(adEmployee)
+            tx.insert(sfiEmployee)
+        }
+
+        // AD-only employee: canSetAsAdmin=true, setting ADMIN succeeds
+        assertTrue(getEmployeeDetails(adEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(adEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(adEmployee.id).globalRoles)
+
+        // SFI employee: canSetAsAdmin=false, setting ADMIN is rejected
+        assertFalse(getEmployeeDetails(sfiEmployee.id).canSetAsAdmin)
+        assertThrows<BadRequest> {
+            updateEmployeeGlobalRoles(sfiEmployee.id, listOf(UserRole.ADMIN))
+        }
+    }
+
+    @Test
+    fun `ADMIN role can be set on any employee when allowSfiAdmins is true`() {
+        val adEmployee =
+            DevEmployee(
+                externalId =
+                    ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString())
+            )
+        val sfiEmployee = DevEmployee(ssn = "010107A9917")
+        db.transaction { tx ->
+            tx.insert(adEmployee)
+            tx.insert(sfiEmployee)
+        }
+        whenever(evakaEnv.allowSfiAdmins).thenReturn(true)
+
+        // Both employees: canSetAsAdmin=true, setting ADMIN succeeds
+        assertTrue(getEmployeeDetails(adEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(adEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(adEmployee.id).globalRoles)
+
+        assertTrue(getEmployeeDetails(sfiEmployee.id).canSetAsAdmin)
+        updateEmployeeGlobalRoles(sfiEmployee.id, listOf(UserRole.ADMIN))
+        assertEquals(listOf(UserRole.ADMIN), getEmployeeDetails(sfiEmployee.id).globalRoles)
     }
 
     @Test
