@@ -230,6 +230,7 @@ test.describe('Realtime staff attendance page', () => {
     await editPage.occupancyEffect.uncheck()
     await editPage.submit(pin)
 
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.editButton.click()
     await editPage.occupancyEffect.waitUntilChecked(false)
   })
