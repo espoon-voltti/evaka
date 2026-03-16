@@ -715,7 +715,7 @@ const sv: Translations = {
         )
       },
       create: 'Ny ansökan',
-      daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.',
+      daycare4monthWarning: <>Behandlingstiden för ansökningen är 4 månader.</>,
       applicationInfo: (
         <P>
           Du kan ändra i ansökan så länge den inte har tagits till behandling.
