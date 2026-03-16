@@ -8,7 +8,7 @@ import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.shared.config.PDFConfig
-import fi.espoo.evaka.turku.template.config.TemplateConfiguration
+import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.thymeleaf.context.Context
@@ -28,11 +28,7 @@ internal class PDFServiceTest {
                 order = 1
             }
         val resolvers = setOf(pdfConfig.coreTemplateResolver(), turkuResolver)
-        pdfService =
-            PdfGenerator(
-                TemplateConfiguration().templateProvider(),
-                pdfConfig.templateEngine(resolvers),
-            )
+        pdfService = PdfGenerator(TurkuTemplateProvider(), pdfConfig.templateEngine(resolvers))
     }
 
     @Test

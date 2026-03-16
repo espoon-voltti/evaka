@@ -31,3 +31,29 @@ evaka:
         street_address: "PL 355"
         postal_code: "20101"
         post_office: "Turku"
+
+---
+spring.config.activate.on-profile: local
+evakaturku:
+  sapInvoicing:
+    username: user
+    password: pass
+    address: address
+    port: 22
+    path: path
+  sapPayments:
+    username: user
+    password: pass
+    address: address
+    port: 22
+    path: path
+  bucket:
+    export: evakaturku-export-it
+  dwExport:
+    prefix: reports
+    sftp:
+      username: user
+      password: pass
+      address: address
+      port: 22
+      path: path

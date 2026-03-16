@@ -9,11 +9,7 @@ import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import org.jdbi.v3.core.Jdbi
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Component
 
-@Component
-@Profile("local")
 class DevDataInitializer(jdbi: Jdbi) {
     init {
         Database(jdbi, noopTracer()).connect { db ->

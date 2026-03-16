@@ -7,15 +7,8 @@ package fi.espoo.evaka.turku.template.config
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 
-@Configuration
-class TemplateConfiguration {
-    @Bean fun templateProvider(): ITemplateProvider = TurkuTemplateProvider()
-}
-
-internal class TurkuTemplateProvider : ITemplateProvider {
+class TurkuTemplateProvider : ITemplateProvider {
     override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
     override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"

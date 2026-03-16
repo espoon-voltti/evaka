@@ -12,24 +12,12 @@ import java.util.Locale
 import java.util.Properties
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean
 import org.springframework.context.MessageSource
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.AbstractMessageSource
-import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 
 internal const val PREFIX: String = "fi.espoo.evaka.turku.MessageProvider"
 
-@Configuration
-class MessageConfiguration {
-    @Bean
-    fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("turku/messages.yaml"))
-        return TurkuMessageProvider(messageSource)
-    }
-}
-
-internal class TurkuMessageProvider(val messageSource: MessageSource) : IMessageProvider {
+class TurkuMessageProvider(val messageSource: MessageSource) : IMessageProvider {
     override fun getDecisionHeader(lang: OfficialLanguage): String =
         messageSource.getMessage("$PREFIX.DECISION_HEADER", null, resolveLocale(lang))
 

@@ -21,16 +21,22 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
+import fi.espoo.evaka.turku.database.DevDataInitializer
 import fi.espoo.evaka.turku.dw.DwExportClient
 import fi.espoo.evaka.turku.dw.DwExportJob
 import fi.espoo.evaka.turku.dw.FileDWExportClient
 import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
+import fi.espoo.evaka.turku.message.config.TurkuMessageProvider
+import fi.espoo.evaka.turku.message.config.YamlMessageSource
 import fi.espoo.evaka.turku.payment.service.SapPaymentGenerator
 import fi.espoo.evaka.turku.payment.service.TurkuPaymentIntegrationClient
 import fi.espoo.evaka.turku.security.TurkuActionRuleMapping
+import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -41,6 +47,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.core.io.ClassPathResource
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import org.thymeleaf.templateresolver.ITemplateResolver
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
@@ -117,7 +124,19 @@ class TurkuConfig {
             placementToolApplicationStatus = ApplicationStatus.WAITING_DECISION,
         )
 
+    @Bean
+    @Profile("local")
+    fun devDataInitializer(jdbi: Jdbi): DevDataInitializer = DevDataInitializer(jdbi)
+
     @Bean fun actionRuleMapping(): ActionRuleMapping = TurkuActionRuleMapping()
+
+    @Bean
+    fun messageProvider(): IMessageProvider {
+        val messageSource = YamlMessageSource(ClassPathResource("turku/messages.yaml"))
+        return TurkuMessageProvider(messageSource)
+    }
+
+    @Bean fun templateProvider(): ITemplateProvider = TurkuTemplateProvider()
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 

@@ -39,7 +39,7 @@ import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.turku.template.config.TemplateConfiguration
+import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.nio.file.Paths
@@ -76,11 +76,7 @@ internal class PDFServiceTest {
                 order = 1
             }
         val resolvers = setOf(pdfConfig.coreTemplateResolver(), turkuResolver)
-        pdfService =
-            PdfGenerator(
-                TemplateConfiguration().templateProvider(),
-                pdfConfig.templateEngine(resolvers),
-            )
+        pdfService = PdfGenerator(TurkuTemplateProvider(), pdfConfig.templateEngine(resolvers))
     }
 
     @Test
