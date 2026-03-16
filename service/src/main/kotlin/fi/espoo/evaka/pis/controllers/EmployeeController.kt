@@ -56,10 +56,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/employees")
-class EmployeeController(
-    private val accessControl: AccessControl,
-    private val env: EvakaEnv,
-) {
+class EmployeeController(private val accessControl: AccessControl, private val env: EvakaEnv) {
 
     @GetMapping
     fun getEmployees(
@@ -130,12 +127,9 @@ class EmployeeController(
                 )
 
                 if (!env.allowSfiAdmins && body.contains(UserRole.ADMIN)) {
-                    val employee =
-                        it.getEmployee(id) ?: throw NotFound("employee $id not found")
+                    val employee = it.getEmployee(id) ?: throw NotFound("employee $id not found")
                     if (employee.externalId == null || employee.hasSsn) {
-                        throw BadRequest(
-                            "Cannot set ADMIN role for this employee"
-                        )
+                        throw BadRequest("Cannot set ADMIN role for this employee")
                     }
                 }
 

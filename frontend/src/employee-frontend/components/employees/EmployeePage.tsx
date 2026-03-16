@@ -120,6 +120,7 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
             key={role}
             label={i18n.roles.adRoles[role]}
             checked={boundForm.value().includes(role)}
+            disabled={role === 'ADMIN' && !employee.canSetAsAdmin}
             onChange={(checked) => {
               if (checked) {
                 boundForm.update((prev) => [

@@ -76,9 +76,7 @@ data class EvakaEnv(
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
                         ?: false,
-                allowSfiAdmins =
-                    env.lookup("evaka.not_for_prod.allow_sfi_admins")
-                        ?: false,
+                allowSfiAdmins = env.lookup("evaka.not_for_prod.allow_sfi_admins") ?: false,
                 asyncJobRunnerDisabled =
                     env.lookup("evaka.async_job_runner.disable_runner") ?: false,
                 frontendBaseUrlFi = env.lookup("evaka.frontend.base_url.fi"),
