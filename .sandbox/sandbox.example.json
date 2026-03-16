@@ -1,4 +1,7 @@
 {
+  "cpu": 8,
+  "memory": 12,
+  "disk": 160,
   "mounts": [
     "~/.gitconfig"
   ],
