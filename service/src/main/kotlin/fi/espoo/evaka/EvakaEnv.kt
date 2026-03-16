@@ -39,6 +39,7 @@ data class EvakaEnv(
     val archivalEnabled: Boolean,
     val nekkuEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
+    val allowSfiAdmins: Boolean,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
     val frontendBaseUrlSv: String,
@@ -74,6 +75,9 @@ data class EvakaEnv(
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
+                        ?: false,
+                allowSfiAdmins =
+                    env.lookup("evaka.not_for_prod.allow_sfi_admins")
                         ?: false,
                 asyncJobRunnerDisabled =
                     env.lookup("evaka.async_job_runner.disable_runner") ?: false,
