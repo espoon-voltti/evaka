@@ -8,12 +8,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 ## Test Isolation
 
-Each test runs against a clean database. Call `resetServiceState()` in `beforeEach` before setting up any fixtures:
+Each test runs against a clean database. Call `resetServiceState()` in `test.beforeEach` before setting up any fixtures:
 
 ```typescript
 import { resetServiceState } from '../../generated/api-clients'
 
-beforeEach(async () => {
+test.beforeEach(async () => {
   await resetServiceState()
   // fixture setup follows...
 })
@@ -38,18 +38,29 @@ const supervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
 ## Mocked Time
 
-Pass `mockedTime` when opening a page to control what time the browser and frontend see:
+Set `mockedTime` via `test.use()` to control what time the browser and frontend see for all tests in a describe block:
 
 ```typescript
-const page = await Page.open({
-  mockedTime: HelsinkiDateTime.of(2024, 3, 15, 10, 0)
+const mockedNow = HelsinkiDateTime.of(2024, 3, 15, 10, 0)
+test.use({ evakaOptions: { mockedTime: mockedNow } })
+```
+
+In multi-page tests, pass `mockedTime` when creating additional pages via the `newEvakaPage` fixture:
+
+```typescript
+test('multi-page scenario', async ({ newEvakaPage }) => {
+  const page = await newEvakaPage({ mockedTime: mockedNow })
 })
 ```
 
 Dev-api functions also accept `mockedTime` to stamp server-side operations at the correct time:
 
 ```typescript
-await execSimpleApplicationActions(applicationId, ['MOVE_TO_WAITING_PLACEMENT'], mockedNow)
+await execSimpleApplicationActions(
+  applicationId,
+  ['MOVE_TO_WAITING_PLACEMENT'],
+  mockedNow,
+)
 ```
 
 Open a new page with a different time when a test needs to observe how the UI looks at multiple points in time.
@@ -131,19 +142,19 @@ this.typeSelect = new Select(page.findByDataQa('type-select'))
 
 Key wrappers and their main methods:
 
-| Wrapper | Key methods |
-|---|---|
-| `TextInput` | `.fill()`, `.type()`, `.clear()`, `.assertValueEquals()` |
-| `Checkbox` / `Radio` | `.check()`, `.uncheck()`, `.waitUntilChecked()` |
-| `DatePicker` | `.fill(localDate \| string)`, `.clear()` |
-| `DateRangePicker` | `.fill(start, end)`, `.start`, `.end` |
-| `Select` | `.selectOption()`, `.assertOptions()` |
-| `Combobox` | `.fill()`, `.fillAndSelectFirst()`, `.fillAndSelectItem()`, `.selectItem()` |
-| `MultiSelect` | `.fill()`, `.selectItem()`, `.fillAndSelectFirst()`, `.assertOptions()` |
-| `FileUpload` | `.upload(path)`, `.deleteUploadedFile(index?)` |
-| `AsyncButton` | `.waitUntilIdle()`, `.waitUntilSuccess()` |
-| `Modal` | `.submit()`, `.close()`, `.submitButton`, `.closeButton` |
-| `Collapsible` | `.isOpen()`, `.open()` |
+| Wrapper              | Key methods                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| `TextInput`          | `.fill()`, `.type()`, `.clear()`, `.assertValueEquals()`                    |
+| `Checkbox` / `Radio` | `.check()`, `.uncheck()`, `.waitUntilChecked()`                             |
+| `DatePicker`         | `.fill(localDate \| string)`, `.clear()`                                    |
+| `DateRangePicker`    | `.fill(start, end)`, `.start`, `.end`                                       |
+| `Select`             | `.selectOption()`, `.assertOptions()`                                       |
+| `Combobox`           | `.fill()`, `.fillAndSelectFirst()`, `.fillAndSelectItem()`, `.selectItem()` |
+| `MultiSelect`        | `.fill()`, `.selectItem()`, `.fillAndSelectFirst()`, `.assertOptions()`     |
+| `FileUpload`         | `.upload(path)`, `.deleteUploadedFile(index?)`                              |
+| `AsyncButton`        | `.waitUntilIdle()`, `.waitUntilSuccess()`                                   |
+| `Modal`              | `.submit()`, `.close()`, `.submitButton`, `.closeButton`                    |
+| `Collapsible`        | `.isOpen()`, `.open()`                                                      |
 
 All wrappers are defined in `frontend/src/e2e-test/utils/page.ts`.
 
@@ -166,7 +177,11 @@ Pass the same mocked time used by the test so scheduled jobs evaluate at the cor
 For polling async state that isn't tied to a specific element:
 
 ```typescript
-import { waitUntilEqual, waitUntilTrue, waitUntilDefined } from 'e2e-test/utils'
+import {
+  waitUntilEqual,
+  waitUntilTrue,
+  waitUntilDefined,
+} from 'e2e-test/utils'
 
 await waitUntilEqual(() => page.getFeeDecisionCount(), 3)
 await waitUntilNotEqual(() => page.getStatus(), 'LOADING')
