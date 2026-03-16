@@ -293,15 +293,24 @@ function resetSshControlMaster() {
   } catch {}
 }
 
+function vmUsername() {
+  return execFileSync(
+    "colima",
+    ["ssh", "--profile", profile, "--", "whoami"],
+    { encoding: "utf-8" }
+  ).trim();
+}
+
 function provision() {
   console.log("Provisioning VM...");
+  const vmUser = vmUsername();
   ssh([
     "sudo", "bash", "-c",
     [
       "if [ -f /etc/vmbox-provisioned ]; then exit 0; fi",
       `mkdir -p ${shellQuote(hostHome)}`,
-      `sed -i 's|:/home/${hostUser.username}.linux:|:${hostHome}:|' /etc/passwd`,
-      `cp -a /home/${hostUser.username}.linux/. ${shellQuote(hostHome)}/`,
+      `sed -i 's|:/home/${vmUser}.linux:|:${hostHome}:|' /etc/passwd`,
+      `cp -a /home/${vmUser}.linux/. ${shellQuote(hostHome)}/`,
       "apt-get update",
       "apt-get install -y --no-install-recommends locales netcat-openbsd",
       "sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen",
