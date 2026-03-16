@@ -90,6 +90,7 @@ data class EmployeeWithDaycareRoles(
     val temporaryUnitName: String?,
     val active: Boolean,
     val hasSsn: Boolean,
+    val canSetAsAdmin: Boolean = false,
 )
 
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
