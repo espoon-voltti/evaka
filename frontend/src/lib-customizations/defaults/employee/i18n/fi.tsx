@@ -1206,7 +1206,7 @@ export const fi = {
       startDate: 'Aloituspäivämäärä',
       endDate: 'Päättymispäivämäärä',
       createdBy: 'Luoja',
-      source: 'Luonnin lähde',
+      source: 'Paikan vastaanottaja',
       sourceOptions: {
         CITIZEN: 'Kuntalaisen hakemus',
         EMPLOYEE_MANUAL: 'Työntekijä manuaalisesti',
