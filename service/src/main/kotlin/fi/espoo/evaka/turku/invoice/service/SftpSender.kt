@@ -17,8 +17,8 @@ class SftpSender(val sftpProperties: SftpProperties, val sftpConnector: SftpConn
             sftpConnector.connect(
                 sftpProperties.address,
                 sftpProperties.port,
-                sftpProperties.username,
-                sftpProperties.password,
+                sftpProperties.username.value,
+                sftpProperties.password.value,
             )
 
             sftpConnector.send(filepath, content)
@@ -37,8 +37,8 @@ class SftpSender(val sftpProperties: SftpProperties, val sftpConnector: SftpConn
             sftpConnector.connect(
                 sftpProperties.address,
                 sftpProperties.port,
-                sftpProperties.username,
-                sftpProperties.password,
+                sftpProperties.username.value,
+                sftpProperties.password.value,
             )
 
             contents.forEach {

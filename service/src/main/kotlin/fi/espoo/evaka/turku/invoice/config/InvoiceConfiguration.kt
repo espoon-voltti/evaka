@@ -17,7 +17,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.invoicing.service.ProductWithName
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.turku.TurkuProperties
+import fi.espoo.evaka.turku.TurkuEnv
 import fi.espoo.evaka.turku.invoice.service.SapInvoiceGenerator
 import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
@@ -34,7 +34,7 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["evakaTurkuInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        properties: TurkuProperties,
+        properties: TurkuEnv,
         invoiceGenerator: SapInvoiceGenerator,
         sftpConnector: SftpConnector,
     ): InvoiceIntegrationClient {

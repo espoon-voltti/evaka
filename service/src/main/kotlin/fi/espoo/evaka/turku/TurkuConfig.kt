@@ -39,7 +39,6 @@ import fi.espoo.evaka.turku.security.TurkuActionRuleMapping
 import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
-import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
@@ -57,8 +56,9 @@ import software.amazon.awssdk.services.s3.S3AsyncClient
 @Configuration
 @Profile("turku_evaka")
 @Import(TurkuAsyncJobRegistration::class)
-@EnableConfigurationProperties(TurkuProperties::class)
 class TurkuConfig {
+    @Bean fun turkuEnv(env: Environment): TurkuEnv = TurkuEnv.fromEnvironment(env)
+
     @Bean
     fun featureConfig(env: Environment): FeatureConfig =
         FeatureConfig(
@@ -142,7 +142,7 @@ class TurkuConfig {
 
     @Bean
     fun paymentIntegrationClient(
-        evakaProperties: TurkuProperties,
+        evakaProperties: TurkuEnv,
         paymentGenerator: SapPaymentGenerator,
         sftpConnector: SftpConnector,
     ): PaymentIntegrationClient {
@@ -186,7 +186,7 @@ class TurkuConfig {
     fun fileDwExportClient(
         asyncClient: S3AsyncClient,
         sftpConnector: SftpConnector,
-        properties: TurkuProperties,
+        properties: TurkuEnv,
     ): DwExportClient =
         FileDWExportClient(
             asyncClient,

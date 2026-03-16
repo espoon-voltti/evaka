@@ -6,7 +6,7 @@ package fi.espoo.evaka.turku.dw
 
 import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.turku.TurkuProperties
+import fi.espoo.evaka.turku.TurkuEnv
 import fi.espoo.evaka.turku.invoice.service.SftpSender
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedOutputStream
@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient
 class FileDWExportClient(
     private val asyncClient: S3AsyncClient,
     private val sftpSender: SftpSender,
-    private val properties: TurkuProperties,
+    private val properties: TurkuEnv,
 ) : DwExportClient {
     private val logger = KotlinLogging.logger {}
 

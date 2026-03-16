@@ -7,6 +7,7 @@ package fi.espoo.evaka.turku.dw
 import com.jcraft.jsch.JSch
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
@@ -29,7 +30,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.turku.BucketProperties
 import fi.espoo.evaka.turku.DwExportProperties
 import fi.espoo.evaka.turku.SftpProperties
-import fi.espoo.evaka.turku.TurkuProperties
+import fi.espoo.evaka.turku.TurkuEnv
 import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
 import java.time.LocalDate
@@ -62,23 +63,23 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeAll
     fun setup() {
-        val turkuProperties =
-            TurkuProperties(
+        val turkuEnv =
+            TurkuEnv(
                 sapInvoicing =
                     SftpProperties(
                         address = "localhost",
                         port = 22,
                         path = "path",
-                        username = "user",
-                        password = "pass",
+                        username = Sensitive("user"),
+                        password = Sensitive("pass"),
                     ),
                 sapPayments =
                     SftpProperties(
                         address = "localhost",
                         port = 22,
                         path = "path",
-                        username = "user",
-                        password = "pass",
+                        username = Sensitive("user"),
+                        password = Sensitive("pass"),
                     ),
                 bucket = BucketProperties(export = EXPORT_BUCKET),
                 dwExport =
@@ -89,8 +90,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 address = "localhost",
                                 port = sftpPort,
                                 path = "upload",
-                                username = "foo",
-                                password = "pass",
+                                username = Sensitive("foo"),
+                                password = Sensitive("pass"),
                             ),
                     ),
             )
@@ -116,8 +117,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
                 .build()
 
-        val sftpSender = SftpSender(turkuProperties.dwExport.sftp, SftpConnector(JSch()))
-        val exportClient = FileDWExportClient(s3AsyncClient, sftpSender, turkuProperties)
+        val sftpSender = SftpSender(turkuEnv.dwExport.sftp, SftpConnector(JSch()))
+        val exportClient = FileDWExportClient(s3AsyncClient, sftpSender, turkuEnv)
         job = DwExportJob(exportClient)
     }
 
