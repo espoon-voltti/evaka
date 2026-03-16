@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.deactivatePersonalMessageAccountIfNeeded
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
@@ -55,7 +56,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/employees")
-class EmployeeController(private val accessControl: AccessControl) {
+class EmployeeController(
+    private val accessControl: AccessControl,
+    private val env: EvakaEnv,
+) {
 
     @GetMapping
     fun getEmployees(
@@ -124,6 +128,16 @@ class EmployeeController(private val accessControl: AccessControl) {
                     Action.Employee.UPDATE_GLOBAL_ROLES,
                     id,
                 )
+
+                if (!env.allowSfiAdmins && body.contains(UserRole.ADMIN)) {
+                    val employee =
+                        it.getEmployee(id) ?: throw NotFound("employee $id not found")
+                    if (employee.externalId == null || employee.hasSsn) {
+                        throw BadRequest(
+                            "Cannot set ADMIN role for this employee"
+                        )
+                    }
+                }
 
                 it.updateEmployeeGlobalRoles(id = id, globalRoles = body)
             }
@@ -310,6 +324,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.getEmployeeWithRoles(id)
                 } ?: throw NotFound("employee $id not found")
             }
+            .let { it.copy(canSetAsAdmin = canSetAsAdmin(it.externalId, it.hasSsn)) }
             .also { Audit.EmployeeRead.log(targetId = AuditId(id)) }
     }
 
@@ -380,6 +395,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     )
                 }
             }
+            .map { it.copy(canSetAsAdmin = canSetAsAdmin(it.externalId, it.hasSsn)) }
             .also { Audit.EmployeesRead.log() }
     }
 
@@ -493,6 +509,9 @@ class EmployeeController(private val accessControl: AccessControl) {
 
         return fullFirstNames + splitTwoPartNames
     }
+
+    private fun canSetAsAdmin(externalId: String?, hasSsn: Boolean): Boolean =
+        env.allowSfiAdmins || (externalId != null && !hasSsn)
 }
 
 data class PinCode(val pin: String)
