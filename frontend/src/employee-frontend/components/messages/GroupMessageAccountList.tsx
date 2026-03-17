@@ -45,7 +45,7 @@ function CollapsibleRow({
   return (
     <AccountContainer>
       <CollapseToggle onClick={() => setExpanded(!expanded)}>
-        <div>{title}</div>
+        <div data-qa="group-message-account-name">{title}</div>
         <FontAwesomeIcon
           icon={expanded ? faChevronUp : faChevronDown}
           size="xs"

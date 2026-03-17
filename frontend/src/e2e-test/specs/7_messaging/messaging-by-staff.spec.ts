@@ -1043,3 +1043,52 @@ test.describe('Additional filters', () => {
     await citizenMessagesPage.assertInboxIsEmpty()
   })
 })
+
+test('Closed group accounts are sorted after open ones, both alphabetically by name', async ({
+  newEvakaPage
+}) => {
+  await resetServiceState()
+  await testCareArea.save()
+  await testDaycare.save()
+
+  const closedEndDate = mockedDate.addDays(-1)
+
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Beta'
+  }).save()
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Alpha'
+  }).save()
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Aapeli',
+    endDate: closedEndDate
+  }).save()
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Delta',
+    endDate: closedEndDate
+  }).save()
+  await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Charlie',
+    endDate: closedEndDate
+  }).save()
+
+  const unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
+    .save()
+
+  await createMessageAccounts()
+
+  const unitSupervisorPage = await newEvakaPage({ mockedTime: mockedDateAt10 })
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
+  await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+  const messagesPage = new MessagesPage(unitSupervisorPage)
+  await waitUntilEqual(
+    () => messagesPage.getGroupAccountNames(),
+    ['Alpha', 'Beta', 'Aapeli', 'Charlie', 'Delta']
+  )
+})
