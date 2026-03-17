@@ -4,13 +4,21 @@
 
 package fi.espoo.evaka.turku
 
+import com.jcraft.jsch.JSch
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.DefaultPasswordSpecification
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
+import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
+import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.lookup
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
@@ -29,8 +37,14 @@ import fi.espoo.evaka.turku.database.DevDataInitializer
 import fi.espoo.evaka.turku.dw.DwExportClient
 import fi.espoo.evaka.turku.dw.DwExportJob
 import fi.espoo.evaka.turku.dw.FileDWExportClient
+import fi.espoo.evaka.turku.emailclient.config.TurkuEmailMessageProvider
+import fi.espoo.evaka.turku.invoice.config.TurkuIncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.turku.invoice.config.TurkuIncomeTypesProvider
+import fi.espoo.evaka.turku.invoice.config.TurkuInvoiceProductProvider
+import fi.espoo.evaka.turku.invoice.service.SapInvoiceGenerator
 import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
+import fi.espoo.evaka.turku.invoice.service.TurkuInvoiceClient
 import fi.espoo.evaka.turku.message.config.TurkuMessageProvider
 import fi.espoo.evaka.turku.message.config.YamlMessageSource
 import fi.espoo.evaka.turku.payment.service.SapPaymentGenerator
@@ -136,9 +150,33 @@ class TurkuConfig {
         return TurkuMessageProvider(messageSource)
     }
 
+    @Bean fun emailMessageProvider(): IEmailMessageProvider = TurkuEmailMessageProvider()
+
     @Bean fun templateProvider(): ITemplateProvider = TurkuTemplateProvider()
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
+
+    @Bean
+    fun invoiceIntegrationClient(
+        properties: TurkuEnv,
+        invoiceGenerator: SapInvoiceGenerator,
+        sftpConnector: SftpConnector,
+    ): InvoiceIntegrationClient {
+        val sftpSender = SftpSender(properties.sapInvoicing, sftpConnector)
+        return TurkuInvoiceClient(sftpSender, invoiceGenerator)
+    }
+
+    @Bean fun sftpConnector(): SftpConnector = SftpConnector(JSch())
+
+    @Bean fun incomeTypesProvider(): IncomeTypesProvider = TurkuIncomeTypesProvider()
+
+    @Bean
+    fun incomeCoefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
+        TurkuIncomeCoefficientMultiplierProvider()
+
+    @Bean fun invoiceProductProvider(): InvoiceProductProvider = TurkuInvoiceProductProvider()
+
+    @Bean fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(1)
 
     @Bean
     fun paymentIntegrationClient(

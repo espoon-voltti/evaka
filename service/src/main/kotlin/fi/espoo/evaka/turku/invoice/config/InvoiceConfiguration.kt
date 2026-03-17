@@ -4,58 +4,16 @@
 
 package fi.espoo.evaka.turku.invoice.config
 
-import com.jcraft.jsch.JSch
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeType
-import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.invoicing.service.ProductWithName
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.turku.TurkuEnv
-import fi.espoo.evaka.turku.invoice.service.SapInvoiceGenerator
-import fi.espoo.evaka.turku.invoice.service.SftpConnector
-import fi.espoo.evaka.turku.invoice.service.SftpSender
-import fi.espoo.evaka.turku.invoice.service.TurkuInvoiceClient
 import java.math.BigDecimal
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
-import org.springframework.context.annotation.Profile
-
-@Profile("turku_evaka")
-@Configuration
-class InvoiceConfiguration {
-    @Primary
-    @Bean(name = ["evakaTurkuInvoiceIntegrationClient"])
-    fun invoiceIntegrationClient(
-        properties: TurkuEnv,
-        invoiceGenerator: SapInvoiceGenerator,
-        sftpConnector: SftpConnector,
-    ): InvoiceIntegrationClient {
-        val sftpSender = SftpSender(properties.sapInvoicing, sftpConnector)
-        return TurkuInvoiceClient(sftpSender, invoiceGenerator)
-    }
-
-    @Bean fun jsch(): JSch = JSch()
-
-    @Bean fun sftpConnector(jsch: JSch): SftpConnector = SftpConnector(jsch)
-
-    @Bean fun incomeTypesProvider(): IncomeTypesProvider = TurkuIncomeTypesProvider()
-
-    @Bean
-    fun incomeCoefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
-        TurkuIncomeCoefficientMultiplierProvider()
-
-    @Bean fun invoiceProductProvider(): InvoiceProductProvider = TurkuInvoiceProductProvider()
-
-    @Bean fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(1)
-}
 
 class TurkuIncomeTypesProvider : IncomeTypesProvider {
     override fun get(): Map<String, IncomeType> =
