@@ -17,9 +17,10 @@ fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID =
     createUpdate {
             sql(
                 """
-INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
+INSERT INTO async_job (type, retry_count, initial_retry_count, retry_interval, run_at, payload)
 VALUES (
     ${bind(AsyncJobType.ofPayload(jobParams.payload).name)},
+    ${bind(jobParams.retryCount)},
     ${bind(jobParams.retryCount)},
     ${bind(jobParams.retryInterval)},
     ${bind(jobParams.runAt)},
@@ -95,7 +96,7 @@ SET
   claimed_at = ${bind(now)},
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
-RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
+RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts, initial_retry_count AS initialRetryCount
         """
             )
         }
@@ -109,6 +110,7 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
                     }!!,
                 txId = column("txId"),
                 remainingAttempts = column("remainingAttempts"),
+                initialRetryCount = column("initialRetryCount"),
             )
         }
 

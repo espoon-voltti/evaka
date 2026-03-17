@@ -186,6 +186,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                 "jobId" to job.jobId,
                 "jobType" to job.jobType.name,
                 "remainingAttempts" to job.remainingAttempts,
+                "initialRetryCount" to job.initialRetryCount,
             )
         try {
             val traceId = randomTracingId()
@@ -219,7 +220,14 @@ class AsyncJobPool<T : AsyncJobPayload>(
             Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             Span.current().recordException(exception)
-            logger.error(exception, logMeta) { "Failed to run async job $job" }
+            val isRetryableJob = job.initialRetryCount == null || job.initialRetryCount > 1
+            if (job.remainingAttempts == 0 && isRetryableJob) {
+                logger.error(exception, logMeta) {
+                    "Async job $job permanently failed (remainingAttempts=0)"
+                }
+            } else {
+                logger.error(exception, logMeta) { "Failed to run async job $job" }
+            }
         } finally {
             MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
