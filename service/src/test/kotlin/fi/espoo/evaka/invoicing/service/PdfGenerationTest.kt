@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -37,11 +36,39 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect
 import org.junit.jupiter.api.Test
+import org.thymeleaf.TemplateEngine
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 
 class PdfGenerationTest {
     private val service: PdfGenerator =
-        PdfGenerator(EvakaTemplateProvider(), PDFConfig.templateEngine())
+        PdfGenerator(
+            EvakaTemplateProvider(),
+            TemplateEngine().apply {
+                setTemplateResolvers(
+                    setOf(
+                        ClassLoaderTemplateResolver().apply {
+                            prefix = "WEB-INF/templates/"
+                            suffix = ".html"
+                            setTemplateMode("HTML")
+                            checkExistence = true
+                            order = 100
+                        },
+                        ClassLoaderTemplateResolver().apply {
+                            prefix = "espoo/templates/"
+                            suffix = ".html"
+                            setTemplateMode("HTML")
+                            checkExistence = true
+                            order = 1
+                        },
+                    )
+                )
+                addDialect(Java8TimeDialect())
+                addDialect(LayoutDialect())
+            },
+        )
 
     private val normalDecision =
         FeeDecisionDetailed(

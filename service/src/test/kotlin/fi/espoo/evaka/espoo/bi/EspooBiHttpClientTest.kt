@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.espoo.EspooBiEnv
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import okhttp3.Credentials

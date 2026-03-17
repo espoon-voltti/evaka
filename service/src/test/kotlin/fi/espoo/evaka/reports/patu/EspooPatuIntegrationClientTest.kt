@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.reports.patu
 
-import fi.espoo.evaka.EspooPatuIntegrationEnv
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.espoo.EspooPatuIntegrationEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import kotlin.test.assertEquals
 import okhttp3.Credentials

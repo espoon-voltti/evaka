@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.integration
 
-import fi.espoo.evaka.EspooInvoiceIntegrationEnv
+import fi.espoo.evaka.espoo.EspooInvoiceIntegrationEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts

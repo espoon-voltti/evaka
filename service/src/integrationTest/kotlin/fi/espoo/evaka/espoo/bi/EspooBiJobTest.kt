@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.espoo.EspooBiEnv
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
