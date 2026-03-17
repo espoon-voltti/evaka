@@ -876,6 +876,7 @@ export default React.memo(function MessageEditor({
                 files={message.attachments}
                 getDownloadUrl={getAttachmentUrl}
                 uploadHandler={saveMessageAttachment(draftId, deleteAttachment)}
+                allowedFileTypes={['image', 'document', 'video', 'audio']}
                 onUploaded={(attachment) =>
                   updateMessage({
                     attachments: [...message.attachments, attachment]
