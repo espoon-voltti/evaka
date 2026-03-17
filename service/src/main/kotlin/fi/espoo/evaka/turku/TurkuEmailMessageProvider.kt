@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.turku.emailclient.config
+package fi.espoo.evaka.turku
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentNotificationType

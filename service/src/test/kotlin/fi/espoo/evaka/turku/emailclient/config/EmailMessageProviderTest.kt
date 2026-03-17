@@ -6,6 +6,7 @@ package fi.espoo.evaka.turku.emailclient.config
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.EmailContent
+import fi.espoo.evaka.turku.TurkuEmailMessageProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

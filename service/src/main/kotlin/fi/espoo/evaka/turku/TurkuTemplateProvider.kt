@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.turku.template.config
+package fi.espoo.evaka.turku
 
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.domain.OfficialLanguage

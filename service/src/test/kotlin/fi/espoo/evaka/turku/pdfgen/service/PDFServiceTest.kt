@@ -8,7 +8,7 @@ import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.shared.config.PDFConfig
-import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
+import fi.espoo.evaka.turku.TurkuTemplateProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.thymeleaf.context.Context

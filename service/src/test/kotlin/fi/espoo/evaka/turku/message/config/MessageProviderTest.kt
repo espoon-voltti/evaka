@@ -6,6 +6,8 @@ package fi.espoo.evaka.turku.message.config
 
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.turku.TurkuMessageProvider
+import fi.espoo.evaka.turku.YamlMessageSource
 import java.lang.reflect.Method
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.valueParameters

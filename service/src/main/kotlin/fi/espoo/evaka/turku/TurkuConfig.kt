@@ -37,7 +37,6 @@ import fi.espoo.evaka.turku.database.DevDataInitializer
 import fi.espoo.evaka.turku.dw.DwExportClient
 import fi.espoo.evaka.turku.dw.DwExportJob
 import fi.espoo.evaka.turku.dw.FileDWExportClient
-import fi.espoo.evaka.turku.emailclient.config.TurkuEmailMessageProvider
 import fi.espoo.evaka.turku.invoice.config.TurkuIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.turku.invoice.config.TurkuIncomeTypesProvider
 import fi.espoo.evaka.turku.invoice.config.TurkuInvoiceProductProvider
@@ -45,12 +44,9 @@ import fi.espoo.evaka.turku.invoice.service.SapInvoiceGenerator
 import fi.espoo.evaka.turku.invoice.service.SftpConnector
 import fi.espoo.evaka.turku.invoice.service.SftpSender
 import fi.espoo.evaka.turku.invoice.service.TurkuInvoiceClient
-import fi.espoo.evaka.turku.message.config.TurkuMessageProvider
-import fi.espoo.evaka.turku.message.config.YamlMessageSource
 import fi.espoo.evaka.turku.payment.service.SapPaymentGenerator
 import fi.espoo.evaka.turku.payment.service.TurkuPaymentIntegrationClient
 import fi.espoo.evaka.turku.security.TurkuActionRuleMapping
-import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory

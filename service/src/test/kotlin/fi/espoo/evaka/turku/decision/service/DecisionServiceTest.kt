@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
+import fi.espoo.evaka.turku.TurkuTemplateProvider
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.time.LocalDate

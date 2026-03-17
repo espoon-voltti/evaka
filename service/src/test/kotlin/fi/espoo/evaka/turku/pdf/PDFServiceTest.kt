@@ -39,7 +39,7 @@ import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.turku.template.config.TurkuTemplateProvider
+import fi.espoo.evaka.turku.TurkuTemplateProvider
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.nio.file.Paths
