@@ -553,6 +553,14 @@ class AttachmentsController(
                     pedagogicalDocumentAllowedAttachmentContentTypes
                 }
 
+                is AttachmentParent.MessageDraft -> {
+                    if (user is AuthenticatedUser.Employee) {
+                        employeeMessageAllowedAttachmentContentTypes
+                    } else {
+                        defaultAllowedAttachmentContentTypes
+                    }
+                }
+
                 else -> {
                     defaultAllowedAttachmentContentTypes
                 }
@@ -870,6 +878,10 @@ class AttachmentsController(
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =
+        defaultAllowedAttachmentContentTypes +
+            listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
+
+    private val employeeMessageAllowedAttachmentContentTypes =
         defaultAllowedAttachmentContentTypes +
             listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
 }
