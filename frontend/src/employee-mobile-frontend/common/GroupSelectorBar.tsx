@@ -64,6 +64,8 @@ export interface Props {
   countInfo?: CountInfo
   groups?: GroupInfo[]
   includeSelectAll: boolean
+  shiftCareSelected?: boolean
+  onSelectShiftCare?: () => void
 }
 
 export const GroupSelectorBar = React.memo(function GroupSelectorBar({
@@ -73,7 +75,9 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
   onSearch,
   countInfo,
   groups,
-  includeSelectAll
+  includeSelectAll,
+  shiftCareSelected,
+  onSelectShiftCare
 }: Props) {
   const { i18n } = useTranslation()
   const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
@@ -83,7 +87,9 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
   })
   const hasMultipleGroups = groups && groups.length > 1
   return (
-    <GroupContainer data-qa={`selected-group--${selectedGroup?.id ?? 'all'}`}>
+    <GroupContainer
+      data-qa={`selected-group--${shiftCareSelected ? 'shift-care' : (selectedGroup?.id ?? 'all')}`}
+    >
       <GroupSelectorWrapper
         style={{
           maxHeight: groupSelectorSpring.x.to((x) => `${100 * x}%`)
@@ -92,7 +98,13 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
         {!showGroupSelector && (
           <GroupSelectorButtonRow>
             <GroupSelectorButton
-              text={selectedGroup ? selectedGroup.name : i18n.common.all}
+              text={
+                shiftCareSelected
+                  ? i18n.common.shiftCare
+                  : selectedGroup
+                    ? selectedGroup.name
+                    : i18n.common.all
+              }
               onClick={() => setShowGroupSelector(true)}
               icon={
                 hasMultipleGroups
@@ -115,7 +127,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
         )}
         <GroupSelector
           unitId={unitId}
-          selectedGroup={selectedGroup}
+          selectedGroup={shiftCareSelected ? undefined : selectedGroup}
           onChangeGroup={(group) => {
             onChangeGroup(group)
             setShowGroupSelector(false)
@@ -123,6 +135,15 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           countInfo={countInfo}
           groups={groups}
           includeSelectAll={includeSelectAll}
+          shiftCareSelected={shiftCareSelected}
+          onSelectShiftCare={
+            onSelectShiftCare
+              ? () => {
+                  onSelectShiftCare()
+                  setShowGroupSelector(false)
+                }
+              : undefined
+          }
           data-qa="group-selector"
         />
         <CloseButtonWrapper>

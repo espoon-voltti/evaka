@@ -20,6 +20,7 @@ import { theme } from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
 import { getServiceTimeRangeOrNullForDate } from '../common/dailyServiceTimes'
+import { isUnitView } from '../common/unit-or-group'
 import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildSubListItem from './ChildSubListItem'
@@ -56,7 +57,8 @@ export default React.memo(function ChildReservationList({
   const confirmedDayReservationsResult = useQueryResult(
     confirmedDayReservationsQuery({
       unitId: unitOrGroup.unitId,
-      examinationDate: date
+      examinationDate: date,
+      shiftCare: unitOrGroup.type === 'shift-care'
     })
   )
 
@@ -69,12 +71,11 @@ export default React.memo(function ChildReservationList({
     useMemo(
       () =>
         confirmedDayReservationsResult.map((result) => {
-          const groupReservations =
-            unitOrGroup.type === 'unit'
-              ? result.childReservations
-              : result.childReservations.filter(
-                  (res) => res.groupId === unitOrGroup.id
-                )
+          const groupReservations = isUnitView(unitOrGroup)
+            ? result.childReservations
+            : result.childReservations.filter(
+                (res) => res.groupId === unitOrGroup.id
+              )
 
           const childMap = result.children
 

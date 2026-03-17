@@ -277,6 +277,20 @@ function ChildRouter({ unitId }: { unitId: DaycareId }) {
 }
 
 function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
+  if (unitOrGroup.type === 'shift-care') {
+    return (
+      <Redirect
+        replace
+        to={
+          routes.staffAttendancesToday(
+            toUnitOrGroup(unitOrGroup.unitId),
+            'absent'
+          ).value
+        }
+      />
+    )
+  }
+
   return (
     <Switch>
       <Route path="/today/absent">
@@ -331,6 +345,15 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
 }
 
 function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
+  if (unitOrGroup.type === 'shift-care') {
+    return (
+      <Redirect
+        replace
+        to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value}
+      />
+    )
+  }
+
   return (
     <Switch>
       <Route path="/">
@@ -376,7 +399,12 @@ export const routes = {
     return uri`${this.unit(unitId)}/mark-departed`.appendQuery(params)
   },
   unitOrGroup(unitOrGroup: UnitOrGroup): Uri {
-    const id = unitOrGroup.type === 'unit' ? 'all' : unitOrGroup.id
+    const id =
+      unitOrGroup.type === 'unit'
+        ? 'all'
+        : unitOrGroup.type === 'shift-care'
+          ? 'shift-care'
+          : unitOrGroup.id
     return uri`${this.unit(unitOrGroup.unitId)}/groups/${id}`
   },
   childAttendances(unitOrGroup: UnitOrGroup): Uri {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -110,6 +110,14 @@ export default function BottomNavbar({
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
 
+  const unitOrGroupForNonChildPages: UnitOrGroup = useMemo(
+    () =>
+      unitOrGroup.type === 'shift-care'
+        ? { type: 'unit' as const, unitId: unitOrGroup.unitId }
+        : unitOrGroup,
+    [unitOrGroup]
+  )
+
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
@@ -151,7 +159,10 @@ export default function BottomNavbar({
                 onClick={() =>
                   selected !== 'staff' &&
                   navigate(
-                    routes.staffAttendancesToday(unitOrGroup, 'absent').value
+                    routes.staffAttendancesToday(
+                      unitOrGroupForNonChildPages,
+                      'absent'
+                    ).value
                   )
                 }
               >
@@ -171,8 +182,8 @@ export default function BottomNavbar({
                   selected !== 'messages' &&
                   navigate(
                     user?.pinLoginActive
-                      ? routes.messages(unitOrGroup).value
-                      : routes.unreadMessages(unitOrGroup).value
+                      ? routes.messages(unitOrGroupForNonChildPages).value
+                      : routes.unreadMessages(unitOrGroupForNonChildPages).value
                   )
                 }
               >

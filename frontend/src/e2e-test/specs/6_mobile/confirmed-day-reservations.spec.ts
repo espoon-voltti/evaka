@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -27,6 +28,7 @@ import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
+import type { DevPerson } from '../../generated/api-types'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import { test } from '../../playwright'
@@ -34,6 +36,9 @@ import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
 const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
+
+let shiftCareChild1: DevPerson
+let shiftCareChild2: DevPerson
 
 const group2 = Fixture.daycareGroup({
   name: '#2',
@@ -95,43 +100,43 @@ test.describe('Child confirmed reservations', () => {
     const dayCounts = [
       {
         date: LocalDate.of(2022, 5, 18),
-        presentCount: '3',
+        presentCount: '4',
         presentCalc: '3,75',
-        absentCount: '1'
+        absentCount: '2'
       },
       {
         date: LocalDate.of(2022, 5, 19),
-        presentCount: '2',
+        presentCount: '4',
         presentCalc: '2,75',
         absentCount: '2'
       },
       {
         date: LocalDate.of(2022, 5, 20),
-        presentCount: '3',
+        presentCount: '5',
         presentCalc: '3,75',
         absentCount: '1'
       },
       {
         date: LocalDate.of(2022, 5, 23),
-        presentCount: '4',
+        presentCount: '6',
         presentCalc: '4,25',
         absentCount: '0'
       },
       {
         date: LocalDate.of(2022, 5, 24),
-        presentCount: '3',
+        presentCount: '5',
         presentCalc: '3,25',
         absentCount: '1'
       },
       {
         date: LocalDate.of(2022, 5, 25),
-        presentCount: '4',
+        presentCount: '6',
         presentCalc: '4,25',
         absentCount: '0'
       },
       {
         date: LocalDate.of(2022, 5, 27),
-        presentCount: '4',
+        presentCount: '6',
         presentCalc: '4,75',
         absentCount: '0'
       }
@@ -189,6 +194,26 @@ test.describe('Child confirmed reservations', () => {
           lastName: testChildRestricted.lastName,
           preferredName: testChildRestricted.preferredName
         }
+      },
+      {
+        date: testDay,
+        childId: shiftCareChild1.id,
+        reservationTexts: ['08:00–14:00'],
+        childDetails: {
+          firstName: shiftCareChild1.firstName,
+          lastName: shiftCareChild1.lastName,
+          preferredName: shiftCareChild1.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: shiftCareChild2.id,
+        reservationTexts: ['Ilmoitus puuttuu'],
+        childDetails: {
+          firstName: shiftCareChild2.firstName.split(/\s/)[0],
+          lastName: shiftCareChild2.lastName,
+          preferredName: shiftCareChild2.preferredName
+        }
       }
     ]
 
@@ -200,6 +225,54 @@ test.describe('Child confirmed reservations', () => {
         childItem.childDetails
       )
     }
+  })
+
+  test('Shift care view shows only shift care children', async () => {
+    await attendanceListPage.selectGroup('shift-care')
+    await attendanceListPage.confirmedDaysTab.click()
+    const testDay = LocalDate.of(2022, 5, 19)
+    await confirmedReservationPage.openDayItem(testDay)
+
+    await confirmedReservationPage
+      .childItem(testDay, shiftCareChild1.id)
+      .waitUntilVisible()
+    await confirmedReservationPage
+      .childItem(testDay, shiftCareChild2.id)
+      .waitUntilVisible()
+
+    await confirmedReservationPage
+      .childItem(testDay, testChild.id)
+      .waitUntilHidden()
+    await confirmedReservationPage
+      .childItem(testDay, testChild2.id)
+      .waitUntilHidden()
+    await confirmedReservationPage
+      .childItem(testDay, testChildRestricted.id)
+      .waitUntilHidden()
+    await confirmedReservationPage
+      .childItem(testDay, testChildNoSsn.id)
+      .waitUntilHidden()
+  })
+
+  test('Shift care daily counts are correct', async () => {
+    await attendanceListPage.selectGroup('shift-care')
+    await attendanceListPage.confirmedDaysTab.click()
+
+    // 2022-05-18: shiftCareChild1 has reservation (present), shiftCareChild2 has absence
+    await confirmedReservationPage.assertDailyCounts(
+      LocalDate.of(2022, 5, 18),
+      '1',
+      '0',
+      '1'
+    )
+
+    // 2022-05-19: both present (shiftCareChild1 has reservation, shiftCareChild2 no reservation)
+    await confirmedReservationPage.assertDailyCounts(
+      LocalDate.of(2022, 5, 19),
+      '2',
+      '0',
+      '0'
+    )
   })
 
   test('Holiday period daily children are correct (Thursday)', async () => {
@@ -247,6 +320,26 @@ test.describe('Child confirmed reservations', () => {
           firstName: testChildRestricted.firstName.split(/\s/)[0],
           lastName: testChildRestricted.lastName,
           preferredName: testChildRestricted.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: shiftCareChild1.id,
+        reservationTexts: ['08:00–14:00'],
+        childDetails: {
+          firstName: shiftCareChild1.firstName,
+          lastName: shiftCareChild1.lastName,
+          preferredName: shiftCareChild1.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: shiftCareChild2.id,
+        reservationTexts: ['Lomavaraus puuttuu'],
+        childDetails: {
+          firstName: shiftCareChild2.firstName.split(/\s/)[0],
+          lastName: shiftCareChild2.lastName,
+          preferredName: shiftCareChild2.preferredName
         }
       }
     ]
@@ -311,12 +404,69 @@ async function insertConfirmedDaysTestData() {
   }).saveChild()
   await testChildNoSsn.saveChild()
 
-  await Fixture.employee({ roles: ['ADMIN'] }).save()
+  const admin = await Fixture.employee({ roles: ['ADMIN'] }).save()
 
   await createPlacements(testChildRestricted.id, testDaycareGroup.id)
   await createPlacements(testChild.id, testDaycareGroup.id)
   await createPlacements(testChild2.id, testDaycareGroup.id)
   await createPlacements(testChildNoSsn.id, testDaycareGroup.id, 'PRESCHOOL')
+
+  shiftCareChild1 = await Fixture.person({
+    firstName: 'Vuoro',
+    lastName: 'Lapsi',
+    ssn: null
+  }).saveChild()
+  shiftCareChild2 = await Fixture.person({
+    firstName: 'Toinen Vuoro',
+    lastName: 'Lapsi',
+    ssn: null
+  }).saveChild()
+
+  const scPlacement1 = await createPlacements(
+    shiftCareChild1.id,
+    testDaycareGroup.id
+  )
+  const scPlacement2 = await createPlacements(
+    shiftCareChild2.id,
+    testDaycareGroup.id
+  )
+
+  const serviceNeedOption = await Fixture.serviceNeedOption().save()
+  await Fixture.serviceNeed({
+    placementId: scPlacement1.id,
+    startDate: scPlacement1.startDate,
+    endDate: scPlacement1.endDate,
+    shiftCare: 'FULL',
+    optionId: serviceNeedOption.id,
+    confirmedBy: evakaUserId(admin.id)
+  }).save()
+  await Fixture.serviceNeed({
+    placementId: scPlacement2.id,
+    startDate: scPlacement2.startDate,
+    endDate: scPlacement2.endDate,
+    shiftCare: 'INTERMITTENT',
+    optionId: serviceNeedOption.id,
+    confirmedBy: evakaUserId(admin.id)
+  }).save()
+
+  await Fixture.attendanceReservation({
+    type: 'RESERVATIONS',
+    childId: shiftCareChild1.id,
+    date: LocalDate.of(2022, 5, 18),
+    reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+    secondReservation: null
+  }).save()
+  await Fixture.attendanceReservation({
+    type: 'RESERVATIONS',
+    childId: shiftCareChild1.id,
+    date: LocalDate.of(2022, 5, 19),
+    reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+    secondReservation: null
+  }).save()
+  await Fixture.absence({
+    childId: shiftCareChild2.id,
+    date: LocalDate.of(2022, 5, 18)
+  }).save()
 
   await Fixture.absence({
     childId: testChild2.id,

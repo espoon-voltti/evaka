@@ -561,6 +561,7 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate,
+        @RequestParam shiftCare: Boolean = false,
     ): DailyChildReservationResult {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -573,7 +574,11 @@ class AttendanceReservationController(
                     )
 
                     val rowsByDate =
-                        tx.getChildReservationsOfUnitForDay(unitId = unitId, day = examinationDate)
+                        tx.getChildReservationsOfUnitForDay(
+                            unitId = unitId,
+                            day = examinationDate,
+                            shiftCare = shiftCare,
+                        )
 
                     val clubTerm = tx.getClubTerm(examinationDate)
                     val preschoolTerm = tx.getPreschoolTerm(examinationDate)
@@ -688,6 +693,7 @@ class AttendanceReservationController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
+        @RequestParam shiftCare: Boolean = false,
     ): List<DayReservationStatisticsResult> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -727,6 +733,7 @@ class AttendanceReservationController(
                         tx.getReservationStatisticsForUnit(
                             unitId = unitId,
                             confirmedDays = nextConfirmedUnitDays,
+                            shiftCare = shiftCare,
                         )
 
                     nextConfirmedUnitDays.map { date ->

@@ -48,11 +48,11 @@ export default React.memo(function AttendancePageWrapper({
 
   const selectedGroup = useMemo(
     () =>
-      unitOrGroup.type === 'unit'
-        ? undefined
-        : unitInfoResponse
+      unitOrGroup.type === 'group'
+        ? unitInfoResponse
             .map((res) => res.groups.find((g) => g.id === unitOrGroup.id))
-            .getOrElse(undefined),
+            .getOrElse(undefined)
+        : undefined,
     [unitOrGroup, unitInfoResponse]
   )
 
@@ -67,6 +67,10 @@ export default React.memo(function AttendancePageWrapper({
     },
     [navigate, unitId]
   )
+
+  const changeToShiftCare = useCallback(() => {
+    navigate(routes.childAttendances({ type: 'shift-care', unitId }).value)
+  }, [navigate, unitId])
   const tabs = useMemo(
     (): TabLink[] => [
       {
@@ -128,6 +132,8 @@ export default React.memo(function AttendancePageWrapper({
         onChangeGroup={changeGroup}
         toggleSearch={toggleSearch}
         countInfo={countInfo}
+        shiftCareSelected={unitOrGroup.type === 'shift-care'}
+        onSelectShiftCare={changeToShiftCare}
       >
         <TabLinks tabs={tabs} mobile />
         {renderResult(

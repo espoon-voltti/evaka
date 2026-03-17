@@ -38,7 +38,7 @@ import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
-import { toUnitOrGroup } from '../common/unit-or-group'
+import { isUnitView, toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
@@ -93,7 +93,7 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
     () =>
       unitInfoResponse
         .map(({ groups }) =>
-          unitOrGroup.type === 'unit'
+          isUnitView(unitOrGroup)
             ? undefined
             : groups.find((g) => g.id === unitOrGroup.id)
         )
@@ -161,12 +161,10 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
       staffAttendanceResponse.map(
         (res) =>
           res.staff.filter((s) =>
-            unitOrGroup.type === 'unit'
-              ? s.present
-              : s.present === unitOrGroup.id
+            isUnitView(unitOrGroup) ? s.present : s.present === unitOrGroup.id
           ).length +
           res.extraAttendances.filter(
-            (s) => unitOrGroup.type === 'unit' || s.groupId === unitOrGroup.id
+            (s) => isUnitView(unitOrGroup) || s.groupId === unitOrGroup.id
           ).length
       ),
     [unitOrGroup, staffAttendanceResponse]
@@ -197,7 +195,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
     () =>
       staffAttendanceResponse.map((res) =>
         tab === 'present'
-          ? unitOrGroup.type === 'unit'
+          ? isUnitView(unitOrGroup)
             ? [
                 ...res.staff.filter((s) => s.present !== null),
                 ...res.extraAttendances
@@ -211,8 +209,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
           : res.staff.filter(
               (s) =>
                 s.present === null &&
-                (unitOrGroup.type === 'unit' ||
-                  s.groupIds.includes(unitOrGroup.id))
+                (isUnitView(unitOrGroup) || s.groupIds.includes(unitOrGroup.id))
             )
       ),
     [unitOrGroup, tab, staffAttendanceResponse]

@@ -31,6 +31,8 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
   countInfo,
   includeSelectAll = true,
   allowedGroupIds = undefined,
+  shiftCareSelected,
+  onSelectShiftCare,
   children
 }) => (
   <FixedSpaceColumn $spacing="zero" style={{ height: '100vh' }}>
@@ -42,6 +44,8 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
       countInfo={countInfo}
       includeSelectAll={includeSelectAll}
       allowedGroupIds={allowedGroupIds}
+      shiftCareSelected={shiftCareSelected}
+      onSelectShiftCare={onSelectShiftCare}
     />
     <FlexibleDiv>{children}</FlexibleDiv>
     <BottomNavbar selected={selected} unitOrGroup={unitOrGroup} />

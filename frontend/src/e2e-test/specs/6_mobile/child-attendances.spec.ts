@@ -1147,6 +1147,93 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(1, 0, 0, 0, 1)
     })
 
+    test('Shift care group shows only shift care children', async ({
+      newEvakaPage
+    }) => {
+      await openPage(newEvakaPage)
+
+      const scChild1 = await Fixture.person({ ssn: null }).saveChild()
+      const scChild2 = await Fixture.person({ ssn: null }).saveChild()
+      const regularChild = await Fixture.person({ ssn: null }).saveChild()
+
+      const scPlacement1 = await createPlacements(scChild1.id)
+      const scPlacement2 = await createPlacements(scChild2.id)
+      await createPlacements(regularChild.id)
+
+      const employee = await Fixture.employee().save()
+      const serviceNeedOption = await Fixture.serviceNeedOption().save()
+      await Fixture.serviceNeed({
+        placementId: scPlacement1.id,
+        startDate: scPlacement1.startDate,
+        endDate: scPlacement1.endDate,
+        shiftCare: 'FULL',
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(employee.id)
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: scPlacement2.id,
+        startDate: scPlacement2.startDate,
+        endDate: scPlacement2.endDate,
+        shiftCare: 'INTERMITTENT',
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(employee.id)
+      }).save()
+
+      const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+      await page.goto(mobileSignupUrl)
+
+      await assertAttendanceCounts(3, 0, 0, 0, 3)
+
+      await listPage.selectGroup('shift-care')
+      await assertAttendanceCounts(2, 0, 0, 0, 2)
+    })
+
+    test('Marking attendance works from shift care view', async ({
+      newEvakaPage
+    }) => {
+      await openPage(newEvakaPage)
+
+      const scChild1 = await Fixture.person({ ssn: null }).saveChild()
+      const scChild2 = await Fixture.person({ ssn: null }).saveChild()
+      const regularChild = await Fixture.person({ ssn: null }).saveChild()
+
+      const scPlacement1 = await createPlacements(scChild1.id)
+      const scPlacement2 = await createPlacements(scChild2.id)
+      await createPlacements(regularChild.id)
+
+      const employee = await Fixture.employee().save()
+      const serviceNeedOption = await Fixture.serviceNeedOption().save()
+      await Fixture.serviceNeed({
+        placementId: scPlacement1.id,
+        startDate: scPlacement1.startDate,
+        endDate: scPlacement1.endDate,
+        shiftCare: 'FULL',
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(employee.id)
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: scPlacement2.id,
+        startDate: scPlacement2.startDate,
+        endDate: scPlacement2.endDate,
+        shiftCare: 'INTERMITTENT',
+        optionId: serviceNeedOption.id,
+        confirmedBy: evakaUserId(employee.id)
+      }).save()
+
+      const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+      await page.goto(mobileSignupUrl)
+
+      await listPage.selectGroup('shift-care')
+      await assertAttendanceCounts(2, 0, 0, 0, 2)
+
+      await listPage.selectChild(scChild1.id)
+      await childPage.markPresentLink.click()
+      await childAttendancePage.setTime('08:00')
+      await childAttendancePage.selectMarkPresent()
+
+      await assertAttendanceCounts(1, 1, 0, 0, 2)
+    })
+
     test('If child does not have guardians a message about this is shown ', async ({
       newEvakaPage
     }) => {

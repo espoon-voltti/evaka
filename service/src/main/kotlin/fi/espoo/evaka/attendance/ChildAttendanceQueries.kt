@@ -8,6 +8,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
@@ -169,6 +170,7 @@ data class ChildBasics(
     val groupId: GroupId?,
     val backup: Boolean,
     val imageUrl: String?,
+    val shiftCare: ShiftCareType?,
 )
 
 data class ChildBasicsRow(
@@ -182,6 +184,7 @@ data class ChildBasicsRow(
     val groupId: GroupId?,
     val backup: Boolean,
     val imageId: String?,
+    val shiftCare: ShiftCareType?,
 ) {
     fun toChildBasics() =
         ChildBasics(
@@ -195,6 +198,7 @@ data class ChildBasicsRow(
             groupId,
             backup,
             imageUrl = imageId?.let { id -> "/api/employee-mobile/child-images/$id" },
+            shiftCare,
         )
 }
 
@@ -209,6 +213,7 @@ WITH child_group_placement AS (
         gp.daycare_group_id as group_id,
         p.child_id,
         p.type as placement_type,
+        p.id as placement_id,
         false AS backup
     FROM daycare_group_placement gp
     JOIN placement p ON p.id = gp.daycare_placement_id
@@ -234,6 +239,7 @@ WITH child_group_placement AS (
         bc.group_id,
         p.child_id,
         p.type as placement_type,
+        p.id as placement_id,
         true AS backup
     FROM backup_care bc
     JOIN placement p ON (
@@ -256,6 +262,7 @@ WITH child_group_placement AS (
         (CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE gp.daycare_group_id END) as group_id,
         ca.child_id,
         p.type as placement_type,
+        p.id as placement_id,
         bc.id IS NOT NULL as backup
     FROM child_attendance ca
     JOIN placement p
@@ -289,6 +296,7 @@ SELECT
     dst.sunday_times AS dst_sunday_times,
     dst.validity_period AS dst_validity_period,
     cimg.id AS image_id,
+    sn.shift_care,
     c.group_id,
     c.placement_type,
     c.backup
@@ -296,6 +304,8 @@ FROM child_group_placement c
 JOIN person pe ON pe.id = c.child_id
 LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_period @> ${bind(date)}
 LEFT JOIN child_images cimg ON pe.id = cimg.child_id
+LEFT JOIN service_need sn ON sn.placement_id = c.placement_id
+    AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 """
             )
         }

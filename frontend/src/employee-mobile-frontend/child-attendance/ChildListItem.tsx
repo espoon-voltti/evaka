@@ -27,6 +27,7 @@ import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
+import { isUnitView } from '../common/unit-or-group'
 import type { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
@@ -179,8 +180,7 @@ export default React.memo(function ChildListItem({
     <ChildReservationInfo child={child} />
   )
 
-  const maybeGroupName =
-    type && unitOrGroup.type === 'unit' ? groupName : undefined
+  const maybeGroupName = type && isUnitView(unitOrGroup) ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
 
   const hasActiveStickyNote = useMemo(

@@ -56,7 +56,11 @@ export default React.memo(function AttendanceList({
     () =>
       unitOrGroup.type === 'unit'
         ? unitChildren
-        : unitChildren.filter((c) => c.groupId === unitOrGroup.id),
+        : unitOrGroup.type === 'shift-care'
+          ? unitChildren.filter(
+              (c) => c.shiftCare === 'FULL' || c.shiftCare === 'INTERMITTENT'
+            )
+          : unitChildren.filter((c) => c.groupId === unitOrGroup.id),
     [unitOrGroup, unitChildren]
   )
 

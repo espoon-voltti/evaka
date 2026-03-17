@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import type { UnitOrGroup } from '../common/unit-or-group'
-import { toUnitOrGroup } from '../common/unit-or-group'
+import { isUnitView, toUnitOrGroup } from '../common/unit-or-group'
 
 import MessageEditor from './MessageEditor'
 import { selectableRecipientsQuery } from './queries'
@@ -32,8 +32,10 @@ export default function NewMessagePage({
     navigate(routes.messages(unitOrGroup).value)
   }
 
-  if (unitOrGroup.type === 'unit') {
-    return <Redirect to={routes.messages(unitOrGroup).value} />
+  if (isUnitView(unitOrGroup)) {
+    return (
+      <Redirect to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value} />
+    )
   }
 
   return renderResult(

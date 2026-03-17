@@ -14,6 +14,7 @@ import colors, { theme } from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../common/i18n'
+import { isUnitView } from '../common/unit-or-group'
 import type { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildReservationList from './ChildReservationList'
@@ -34,15 +35,14 @@ export default React.memo(function DayListItem({
   const tomorrow = LocalDate.todayInHelsinkiTz().addDays(1)
 
   const filteredStats = useMemo(() => {
-    const relevantGroupStats =
-      unitOrGroup.type === 'unit'
-        ? dayStats.groupStatistics
-        : dayStats.groupStatistics.map((day) => ({
-            ...day,
-            reservationInfos: dayStats.groupStatistics.filter(
-              (i) => i.groupId === unitOrGroup.id
-            )
-          }))
+    const relevantGroupStats = isUnitView(unitOrGroup)
+      ? dayStats.groupStatistics
+      : dayStats.groupStatistics.map((day) => ({
+          ...day,
+          reservationInfos: dayStats.groupStatistics.filter(
+            (i) => i.groupId === unitOrGroup.id
+          )
+        }))
 
     return relevantGroupStats.reduce(
       (prev, next) => ({
