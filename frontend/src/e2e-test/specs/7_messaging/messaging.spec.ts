@@ -371,6 +371,31 @@ test.describe('Sending and receiving messages', () => {
         expect(downloadedContent).toEqual(originalContent)
       })
 
+      test('Employee can send video attachment', async () => {
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage({
+          ...defaultMessage,
+          attachmentCount: 1,
+          attachmentFilePath: 'src/e2e-test/assets/test_file.mp4'
+        })
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(
+          citizenPage,
+          'desktop'
+        )
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+        await waitUntilEqual(
+          () => citizenMessagesPage.getThreadAttachmentCount(),
+          1
+        )
+      })
+
       test('Employee can discard thread reply', async () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
