@@ -11,25 +11,23 @@ import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
-import org.thymeleaf.templateresolver.ITemplateResolver
 
 @Configuration
 class PDFConfig {
-    @Bean
-    fun coreTemplateResolver(): ITemplateResolver =
-        ClassLoaderTemplateResolver().apply {
-            prefix = "WEB-INF/templates/"
-            suffix = ".html"
-            setTemplateMode("HTML")
-            checkExistence = true
-            order = 100
-        }
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine()
 
-    @Bean
-    fun templateEngine(resolvers: Set<ITemplateResolver>): ITemplateEngine =
-        TemplateEngine().apply {
-            setTemplateResolvers(resolvers)
-            addDialect(Java8TimeDialect())
-            addDialect(LayoutDialect())
-        }
+    companion object {
+        fun templateEngine(): ITemplateEngine =
+            TemplateEngine().apply {
+                setTemplateResolver(
+                    ClassLoaderTemplateResolver().apply {
+                        prefix = "WEB-INF/templates/"
+                        suffix = ".html"
+                        setTemplateMode("HTML")
+                    }
+                )
+                addDialect(Java8TimeDialect())
+                addDialect(LayoutDialect())
+            }
+    }
 }

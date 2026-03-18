@@ -57,7 +57,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <div class="header">
         <div class="headerLeft">
           <div class="logo">
-            <img th:replace="~{shared/espoo-logo :: logo-img}" />
+            <img th:replace="~{espoo/shared/espoo-logo :: logo-img}" />
           </div>
         </div>
         <div class="headerRight">
@@ -65,7 +65,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div th:text="#{header.1}">PÄÄTÖS</div>
             <div th:utext="#{header.2}"></div>
             <div>
-              <span th:replace="~{shared/common :: decision-date}"></span>
+              <span th:replace="~{espoo/shared/common :: decision-date}"></span>
             </div>
           </div>
           <div class="right-column">
@@ -86,7 +86,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <div class="header">
         <div class="headerLeft">
           <div class="logo">
-            <img th:replace="~{shared/espoo-logo :: logo-img}" />
+            <img th:replace="~{espoo/shared/espoo-logo :: logo-img}" />
           </div>
         </div>
         <div class="headerRight">
@@ -129,7 +129,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             >on tehty varhaiskasvatuspäätös varhaiskasvatukseen ajalle</span
           >
           <span
-            th:replace="~{shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
+            th:replace="~{espoo/shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
           ></span>
         </p>
       </div>
@@ -177,7 +177,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
           <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
           <span
-            th:replace="~{shared/common :: format-date(${decision.sentDate})}"
+            th:replace="~{espoo/shared/common :: format-date(${decision.sentDate})}"
           ></span>
         </p>
         <p>
@@ -209,7 +209,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div th:fragment="acceptance-form">
       <div class="accept-placement-wrapper">
         <div
-          th:replace="~{shared/acceptance-form :: daycare-unit-details}"
+          th:replace="~{espoo/shared/acceptance-form :: daycare-unit-details}"
         ></div>
         <p th:unless="${hideDaycareTime}">
           <span th:text="#{decision.daycareTime} + ': '"></span>
@@ -224,8 +224,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </p>
 
         <p th:utext="#{decision.acceptance.furtherInstructions}"></p>
-        <div th:replace="~{shared/acceptance-form :: signatures}"></div>
-        <div th:replace="~{shared/acceptance-form :: return-section}"></div>
+        <div th:replace="~{espoo/shared/acceptance-form :: signatures}"></div>
+        <div th:replace="~{espoo/shared/acceptance-form :: return-section}"></div>
       </div>
     </div>
 
