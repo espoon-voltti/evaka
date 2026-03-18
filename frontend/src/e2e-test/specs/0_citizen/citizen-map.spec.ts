@@ -141,6 +141,16 @@ test.describe('Citizen map page', () => {
     )
   })
 
+  test('Units can be searched by middle words in the name', async () => {
+    await mapPage.searchInput.type('svenska')
+    await mapPage.searchInput.clickUnitResult(swedishDaycare)
+    await mapPage.unitDetailsPanel.waitUntilVisible()
+    await waitUntilEqual(
+      () => mapPage.unitDetailsPanel.name,
+      swedishDaycare.name
+    )
+  })
+
   test('Streets can be searched', async () => {
     await putDigitransitAutocomplete({
       body: {

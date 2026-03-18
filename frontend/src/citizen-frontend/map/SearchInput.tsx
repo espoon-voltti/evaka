@@ -74,17 +74,9 @@ export default React.memo(function SearchInput({
     [allUnits]
   )
 
-  const filteredUnitOptions = useMemo(() => {
-    if (debouncedInputString.length < 3) return []
-
-    return unitOptions.filter(({ unit }) =>
-      unit?.name.toLowerCase().includes(debouncedInputString.toLowerCase())
-    )
-  }, [unitOptions, debouncedInputString])
-
   const options = useMemo(
-    () => [...filteredUnitOptions, ...addressOptions.getOrElse([])],
-    [filteredUnitOptions, addressOptions]
+    () => [...unitOptions, ...addressOptions.getOrElse([])],
+    [unitOptions, addressOptions]
   )
 
   const clearSelection = useCallback(() => {
@@ -139,6 +131,7 @@ export default React.memo(function SearchInput({
         isLoading={combine(addressOptions, allUnits).isLoading}
         onInputChange={onInputChange}
         items={options}
+        filterItems={filterItems}
         getItemLabel={getItemLabel}
         selectedItem={selectedAddress}
         onChange={onChange}
@@ -154,6 +147,21 @@ export default React.memo(function SearchInput({
 
 const onFocus: FocusEventHandler<HTMLInputElement> = (e) => {
   e.target.select()
+}
+
+const matchesAnyWordStart = (text: string, filter: string) => {
+  const lowerText = text.toLowerCase()
+  const lowerFilter = filter.toLowerCase()
+  return (
+    lowerText.startsWith(lowerFilter) || lowerText.includes(` ${lowerFilter}`)
+  )
+}
+
+const filterItems = (inputValue: string, items: readonly MapAddress[]) => {
+  if (inputValue.length < 3) return []
+  return items.filter((item) =>
+    matchesAnyWordStart(getItemLabel(item), inputValue)
+  )
 }
 
 const getItemLabel = (item: MapAddress) =>
