@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
+import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.template.ITemplateProvider
@@ -57,8 +58,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
-import org.thymeleaf.templateresolver.ITemplateResolver
+import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
@@ -151,6 +151,8 @@ class TurkuConfig {
     @Bean fun templateProvider(): ITemplateProvider = TurkuTemplateProvider()
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
+
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("turku")
 
     @Bean
     fun invoiceIntegrationClient(
@@ -267,14 +269,4 @@ class TurkuConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
-
-    @Bean
-    fun turkuTemplateResolver(): ITemplateResolver =
-        ClassLoaderTemplateResolver().apply {
-            prefix = "turku/templates/"
-            suffix = ".html"
-            setTemplateMode("HTML")
-            checkExistence = true
-            order = 1
-        }
 }

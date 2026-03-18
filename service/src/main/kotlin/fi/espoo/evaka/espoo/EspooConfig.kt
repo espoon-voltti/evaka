@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
+import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -64,8 +65,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
-import org.thymeleaf.templateresolver.ITemplateResolver
+import org.thymeleaf.ITemplateEngine
 import tools.jackson.databind.json.JsonMapper
 
 @Configuration
@@ -132,15 +132,7 @@ class EspooConfig {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean
-    fun espooTemplateResolver(): ITemplateResolver =
-        ClassLoaderTemplateResolver().apply {
-            prefix = "espoo/templates/"
-            suffix = ".html"
-            setTemplateMode("HTML")
-            checkExistence = true
-            order = 1
-        }
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
 
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =

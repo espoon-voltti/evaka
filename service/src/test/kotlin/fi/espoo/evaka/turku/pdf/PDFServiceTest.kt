@@ -66,17 +66,7 @@ internal class PDFServiceTest {
 
     @BeforeEach
     fun setup() {
-        val pdfConfig = PDFConfig()
-        val turkuResolver =
-            org.thymeleaf.templateresolver.ClassLoaderTemplateResolver().apply {
-                prefix = "turku/templates/"
-                suffix = ".html"
-                setTemplateMode("HTML")
-                checkExistence = true
-                order = 1
-            }
-        val resolvers = setOf(pdfConfig.coreTemplateResolver(), turkuResolver)
-        pdfService = PdfGenerator(TurkuTemplateProvider(), pdfConfig.templateEngine(resolvers))
+        pdfService = PdfGenerator(TurkuTemplateProvider(), PDFConfig.templateEngine("turku"))
     }
 
     @Test

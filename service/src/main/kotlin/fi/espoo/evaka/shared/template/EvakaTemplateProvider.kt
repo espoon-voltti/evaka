@@ -59,19 +59,19 @@ class EvakaTemplateProvider : ITemplateProvider {
         }
     }
 
-    override fun getFeeDecisionPath(): String = "espoo/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String = "espoo/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "espoo/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
-    override fun getDaycareVoucherDecisionPath(): String = "espoo/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "espoo/daycare/transfer/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/transfer/decision"
 
-    override fun getDaycareDecisionPath(): String = "espoo/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "espoo/preschool/decision"
+    override fun getPreschoolDecisionPath(): String = "preschool/decision"
 
-    override fun getPreparatoryDecisionPath(): String = "espoo/preparatory/decision"
+    override fun getPreparatoryDecisionPath(): String = "preparatory/decision"
 }

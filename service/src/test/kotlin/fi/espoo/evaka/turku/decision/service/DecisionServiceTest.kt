@@ -51,18 +51,8 @@ class DecisionServiceTest {
 
     @BeforeEach
     fun setup() {
-        val pdfConfig = PDFConfig()
-        val turkuResolver =
-            org.thymeleaf.templateresolver.ClassLoaderTemplateResolver().apply {
-                prefix = "turku/templates/"
-                suffix = ".html"
-                setTemplateMode("HTML")
-                checkExistence = true
-                order = 1
-            }
-        val resolvers = setOf(pdfConfig.coreTemplateResolver(), turkuResolver)
         templateProvider = TurkuTemplateProvider()
-        pdfService = PdfGenerator(templateProvider, pdfConfig.templateEngine(resolvers))
+        pdfService = PdfGenerator(templateProvider, PDFConfig.templateEngine("turku"))
     }
 
     @ParameterizedTest
