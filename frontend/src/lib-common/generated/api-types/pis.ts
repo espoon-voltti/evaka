@@ -249,6 +249,7 @@ export interface EmployeeUserResponse {
 */
 export interface EmployeeWithDaycareRoles {
   active: boolean
+  canSetAsAdmin: boolean
   created: HelsinkiDateTime
   daycareGroupRoles: DaycareGroupRole[]
   daycareRoles: DaycareRole[]
