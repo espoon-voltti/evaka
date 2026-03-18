@@ -86,6 +86,7 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
+                        today = clock.today(),
                     )
                 }
             }
@@ -118,6 +119,7 @@ class MessageController(
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
                                 featureConfig.financeMessageAccountName,
+                                today = clock.today(),
                             )
                             // Only return group accounts of the requested unit
                             .filter {
