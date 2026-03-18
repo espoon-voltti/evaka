@@ -126,9 +126,9 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                     id,
                 )
 
-                if (!env.allowSfiAdmins && body.contains(UserRole.ADMIN)) {
+                if (body.contains(UserRole.ADMIN)) {
                     val employee = it.getEmployee(id) ?: throw NotFound("employee $id not found")
-                    if (employee.externalId == null || employee.hasSsn) {
+                    if (!canSetAsAdmin(employee.externalId?.toString(), employee.hasSsn)) {
                         throw BadRequest("Cannot set ADMIN role for this employee")
                     }
                 }
