@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{shared/layout}"
+  layout:decorate="~{espoo/shared/layout}"
 >
   <body>
     <div layout:fragment="content">
@@ -26,7 +26,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <br />
             <span th:utext="#{decision.details.date}"></span>
             <span
-              th:replace="~{shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
+              th:replace="~{espoo/shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
             ></span>
           </p>
         </div>
@@ -53,16 +53,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           </div>
         </div>
 
-        <div th:utext="#{decision.instructions}"></div>
+        <p th:utext="#{decision.instructions}"></p>
       </div>
 
       <div class="page">
-        <p th:utext="#{decision.legalInstructions}"></p>
-        <div th:replace="~{ shared/common :: decision-details }"></div>
+        <div th:replace="~{ espoo/shared/common :: decision-details }"></div>
       </div>
 
       <div class="page">
-        <div th:replace="~{shared/daycare-correction :: correction}"></div>
+        <div th:replace="~{espoo/shared/daycare-correction :: correction}"></div>
       </div>
 
       <div class="page last-page">
@@ -70,19 +69,19 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="accept-placement-wrapper">
           <div
-            th:replace="~{shared/acceptance-form :: preschool-unit-details}"
+            th:replace="~{espoo/shared/acceptance-form :: preschool-unit-details}"
           ></div>
 
           <p>
             <span th:text="#{decision.timeframe}"></span>
             <span
-              th:replace="~{shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
+              th:replace="~{espoo/shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
             ></span>
           </p>
 
-          <div th:utext="#{decision.acceptance.instructions}"></div>
+          <p th:utext="#{decision.acceptance.instructions}"></p>
 
-          <div th:replace="~{shared/acceptance-form :: signatures}"></div>
+          <div th:replace="~{espoo/shared/acceptance-form :: signatures}"></div>
         </div>
       </div>
     </div>

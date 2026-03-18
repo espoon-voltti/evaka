@@ -8,11 +8,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{shared/layout}"
+  layout:decorate="~{espoo/shared/layout}"
 >
   <body>
     <th layout:fragment="header">
-      <header th:replace="~{ shared/common :: feeDecisionHeader}"></header>
+      <header th:replace="~{ espoo/shared/common :: feeDecisionHeader}"></header>
     </th>
 
     <div layout:fragment="address">
@@ -236,7 +236,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       </div>
 
       <div class="page last-page">
-        <div th:replace="~{shared/daycare-correction :: correction}"></div>
+        <div th:replace="~{espoo/shared/daycare-correction :: correction}"></div>
       </div>
     </div>
   </body>
