@@ -31,8 +31,8 @@ spring:
     type: "com.zaxxer.hikari.HikariDataSource"
   servlet:
     multipart:
-      max-file-size: "25MB"
-      max-request-size: "25MB"
+      max-file-size: "100MB"
+      max-request-size: "100MB"
   sql:
     init:
       continue-on-error: false

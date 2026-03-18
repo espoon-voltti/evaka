@@ -387,7 +387,12 @@ function FileUpload<T>(
     event.preventDefault()
   }
 
-  const errorMessage = ({ error }: FileObject) => error && i18n.error[error]
+  const errorMessage = ({ error }: FileObject) => {
+    if (!error) return undefined
+    if (error === 'FILE_TOO_LARGE')
+      return i18n.error.FILE_TOO_LARGE(maxAttachmentMB)
+    return i18n.error[error]
+  }
 
   const processFile = async <T,>(
     fileObject: FileObject,
@@ -476,10 +481,11 @@ function FileUpload<T>(
     setUploadedFilesAndNotify([...others, file])
   }
 
-  const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25 MB
+  const maxAttachmentMB = allowedFileTypes.includes('video') ? 100 : 25
+  const maxAttachmentSize = maxAttachmentMB * 1024 * 1024
 
   const addAttachment = async (file: File) => {
-    const error = file.size > MAX_ATTACHMENT_SIZE ? 'FILE_TOO_LARGE' : undefined
+    const error = file.size > maxAttachmentSize ? 'FILE_TOO_LARGE' : undefined
     const pseudoId = randomId<AttachmentId>()
     const fileObject: FileObject = {
       id: pseudoId,
@@ -589,7 +595,7 @@ function FileUpload<T>(
             <H4>{buttonText ?? i18n.input.title}</H4>
             <P>
               <InformationText>
-                {i18n.input.text(allowedFileTypes)}
+                {i18n.input.text(allowedFileTypes, maxAttachmentMB)}
               </InformationText>
             </P>
           </span>

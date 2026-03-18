@@ -86,13 +86,13 @@ const components: Translations = {
       EXTENSION_MISSING: 'Tiedostopääte puuttuu',
       EXTENSION_INVALID: 'Virheellinen tiedostopääte',
       INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
-      FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 25 MB)',
+      FILE_TOO_LARGE: (maxMB) => `Liian suuri tiedosto (max. ${maxMB} MB)`,
       SERVER_ERROR: 'Lataus ei onnistunut'
     },
     input: {
       title: 'Lisää liite',
-      text: (fileTypes) =>
-        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan. Tiedoston maksimikoko: 25 MB. Sallitut tiedostomuodot: ' +
+      text: (fileTypes, maxMB) =>
+        `Paina tästä tai raahaa liite laatikkoon yksi kerrallaan. Tiedoston maksimikoko: ${maxMB} MB. Sallitut tiedostomuodot: ` +
         fileTypes
           .map((type) => {
             switch (type) {
