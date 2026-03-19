@@ -150,6 +150,64 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
     }
 
+    @Test
+    fun `job permanently fails after exhausting all remaining attempts`() {
+        val job = TestJob()
+        var attemptCount = 0
+
+        db.transaction {
+            asyncJobRunner.plan(it, listOf(job), 2, Duration.ZERO, runAt = HelsinkiDateTime.now())
+        }
+
+        val firstFailingFuture =
+            this.setAsyncJobCallback {
+                attemptCount++
+                throw LetsRollbackException()
+            }
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertThrows<ExecutionException> { firstFailingFuture.get(10, TimeUnit.SECONDS) }
+
+        val secondFailingFuture =
+            this.setAsyncJobCallback {
+                attemptCount++
+                throw LetsRollbackException()
+            }
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertThrows<ExecutionException> { secondFailingFuture.get(10, TimeUnit.SECONDS) }
+
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertEquals(2, attemptCount)
+
+        val completedAt =
+            db.read {
+                it.createQuery { sql("SELECT completed_at FROM async_job") }
+                    .exactlyOneOrNull<HelsinkiDateTime>()
+            }
+        assertEquals(null, completedAt)
+    }
+
+    @Test
+    fun `one-shot job stores initial_retry_count correctly`() {
+        val job = TestJob()
+
+        db.transaction {
+            asyncJobRunner.plan(it, listOf(job), 1, Duration.ZERO, runAt = HelsinkiDateTime.now())
+        }
+
+        val initialRetryCount =
+            db.read {
+                it.createQuery { sql("SELECT initial_retry_count FROM async_job") }
+                    .exactlyOne<Int>()
+            }
+        assertEquals(1, initialRetryCount)
+
+        val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+        assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
+
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+    }
+
     private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {
         val future = CompletableFuture<R>()
         currentCallback.set { msg: TestJob ->
