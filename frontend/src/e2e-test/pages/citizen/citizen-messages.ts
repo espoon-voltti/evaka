@@ -33,6 +33,7 @@ export default class CitizenMessagesPage {
   newMessageButton: Element
   fileUpload: FileUpload
   #threadOutOfOfficeInfo: Element
+  #financeReplyInfo: Element
   markUnreadButton: Element
   constructor(
     private readonly page: Page,
@@ -56,6 +57,9 @@ export default class CitizenMessagesPage {
     this.#openReplyEditorButtonHidden = messageThreadActions.findByDataQa(
       `${this.replyButtonTag}-hidden`
     )
+    this.#financeReplyInfo = page
+      .findByDataQa('thread-reader')
+      .findByDataQa('finance-reply-info')
     this.#sendReplyButton = page.findByDataQa('message-send-btn')
     this.#messageEditor = page.findByDataQa('message-editor')
     this.discardMessageButton = page.findByDataQa('message-discard-btn')
@@ -142,6 +146,13 @@ export default class CitizenMessagesPage {
   }
   async assertOpenReplyEditorButtonIsHidden() {
     await this.#openReplyEditorButtonHidden.waitUntilAttached()
+  }
+  async assertFinanceReplyInfo(visible: boolean) {
+    if (visible) {
+      await this.#financeReplyInfo.waitUntilVisible()
+    } else {
+      await this.#financeReplyInfo.waitUntilHidden()
+    }
   }
   async openStrongAuthPage() {
     await this.#strongAuthLink.click()

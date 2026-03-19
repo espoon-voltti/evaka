@@ -47,6 +47,7 @@ import { MessageCharacteristics } from 'lib-components/messages/MessageCharacter
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
@@ -320,6 +321,16 @@ export default React.memo(
       return recipients.every((r) => allowedReplyAccounts.has(r.id))
     }, [allowedAccounts, applicationStatus, children, recipients])
 
+    const isFinanceThread = useMemo(
+      () =>
+        messages.some(
+          (m) =>
+            m.sender.type === 'FINANCE' ||
+            m.recipients.some((r) => r.type === 'FINANCE')
+        ),
+      [messages]
+    )
+
     const hasReceivedMessages = useMemo(() => {
       return messages.some((m) => m.sender.type !== 'CITIZEN')
     }, [messages])
@@ -399,6 +410,15 @@ export default React.memo(
         ) : (
           messages.length > 0 && (
             <>
+              {messageType === 'MESSAGE' && isFinanceThread && !allowReply && (
+                <InfoBox
+                  message={i18n.messages.thread.financeReplyInfo}
+                  thin
+                  wide
+                  noMargin
+                  data-qa="finance-reply-info"
+                />
+              )}
               <Gap $size="s" />
               <MobileAndTablet data-qa="message-thread-actions-mobile">
                 <MobileFixedSpaceColumn $alignItems="center">

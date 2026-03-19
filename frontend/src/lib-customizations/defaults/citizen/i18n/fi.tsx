@@ -646,7 +646,9 @@ export default {
       close: 'Takaisin listaan',
       sender: 'Lähettäjä',
       sentAt: 'Lähetetty',
-      recipients: 'Vastaanottajat'
+      recipients: 'Vastaanottajat',
+      financeReplyInfo:
+        'Vastaaminen on mahdollista vain silloin, kun tuloselvityksesi on lähetetty tai käsittelyssä.'
     },
     messageEditor: {
       newMessage: 'Uusi viesti',
