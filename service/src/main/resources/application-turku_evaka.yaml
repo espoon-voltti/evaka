@@ -39,13 +39,11 @@ evakaturku:
     username: user
     password: pass
     address: address
-    port: 22
     path: path
   sap_payments:
     username: user
     password: pass
     address: address
-    port: 22
     path: path
   bucket:
     export: evakaturku-export-it
@@ -55,5 +53,4 @@ evakaturku:
       username: user
       password: pass
       address: address
-      port: 22
       path: path

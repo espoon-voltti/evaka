@@ -40,7 +40,7 @@ data class SftpProperties(
         fun fromEnvironment(env: Environment, prefix: String) =
             SftpProperties(
                 address = env.lookup("$prefix.address"),
-                port = env.lookup("$prefix.port"),
+                port = env.lookup<Int?>("$prefix.port") ?: 22,
                 path = env.lookup("$prefix.path"),
                 username = Sensitive(env.lookup("$prefix.username")),
                 password = Sensitive(env.lookup("$prefix.password")),
