@@ -2302,7 +2302,7 @@ const sv: Translations = {
           Avgifterna för kommunal småbarnspedagogik beräknas i procentandel av
           familjens bruttoinkomster. Avgifterna varierar beroende på familjens
           storlek och inkomster samt barnets vårdtid inom småbarnspedagogik.
-          Kontrollera från tabellen som finns i kundcirkuläret (fattas{' '}
+          Kontrollera från tabellen som finns i kundmeddelandet (fattas{' '}
           <a
             target="_blank"
             rel="noreferrer"
