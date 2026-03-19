@@ -25,6 +25,7 @@ import fi.espoo.evaka.pis.updatePersonNonVtjDetails
 import fi.espoo.evaka.pis.updatePersonSsnAddingDisabled
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -40,7 +41,6 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
-import org.unbescape.html.HtmlEscape
 
 private val logger = KotlinLogging.logger {}
 
@@ -799,11 +799,9 @@ fun createAddressPagePdf(
     val sendAddress = DecisionSendAddress.fromPerson(personDetails)
     val window = envelopeWindowPosition
     val html =
-        """
-        <html>
-        <head>
-            <meta charset="UTF-8"/>
-            <style>
+        HtmlBuilder.document(
+            css =
+                """
                 @page {
                     size: A4 portrait;
                     margin-left: ${window.x}mm;
@@ -820,23 +818,25 @@ fun createAddressPagePdf(
                     font-size: 10pt;
                     line-height: 1.4;
                 }
-            </style>
-        </head>
-        <body>
-            <div class="address">
-                <div>${HtmlEscape.escapeHtml5("${personDetails.lastName} ${personDetails.firstName}")}</div>
-                ${sendAddress?.let { addr ->
-                    """
-                    <div>${HtmlEscape.escapeHtml5(addr.row1)}</div>
-                    <div>${HtmlEscape.escapeHtml5(addr.row2)}</div>
-                    ${if (addr.row3.isNotEmpty()) "<div>${HtmlEscape.escapeHtml5(addr.row3)}</div>" else ""}
-                    """.trimIndent()
-                } ?: ""}
-            </div>
-        </body>
-        </html>
-        """
-            .trimIndent()
+                """
+        ) {
+            listOf(
+                div(className = "address") {
+                    listOfNotNull(
+                        div("${personDetails.lastName} ${personDetails.firstName}"),
+                        sendAddress?.let { addr ->
+                            div {
+                                listOfNotNull(
+                                    div(addr.row1),
+                                    div(addr.row2),
+                                    addr.row3.takeIf { it.isNotEmpty() }?.let { div(it) },
+                                )
+                            }
+                        },
+                    )
+                }
+            )
+        }
 
     return Document(
         name = "osoitesivu_${guardian.lastName}_$today.pdf",
