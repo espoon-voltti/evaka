@@ -12,9 +12,7 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
-import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
-import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.getGuardianDependants
@@ -42,7 +40,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
-import org.thymeleaf.context.Context
+import org.unbescape.html.HtmlEscape
 
 private val logger = KotlinLogging.logger {}
 
@@ -782,8 +780,6 @@ fun createAddressPagePdf(
     envelopeWindowPosition: Rectangle,
     guardian: PersonDTO,
 ): Document {
-    // template path hardcoded to prevent need for customization
-    val template = "address-page/address-page"
     val personDetails =
         guardian.let {
             val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
@@ -800,19 +796,51 @@ fun createAddressPagePdf(
             )
         }
 
-    val page =
-        Page(
-            Template(template),
-            Context().apply {
-                setVariable("window", envelopeWindowPosition)
-                setVariable("guardian", personDetails)
-                setVariable("sendAddress", DecisionSendAddress.fromPerson(personDetails))
-            },
-        )
+    val sendAddress = DecisionSendAddress.fromPerson(personDetails)
+    val window = envelopeWindowPosition
+    val html =
+        """
+        <html>
+        <head>
+            <meta charset="UTF-8"/>
+            <style>
+                @page {
+                    size: A4 portrait;
+                    margin-left: ${window.x}mm;
+                    margin-top: ${window.y}mm;
+                    margin-right: 15mm;
+                    margin-bottom: 15mm;
+                }
+                body { margin: 0; }
+                .address {
+                    width: ${window.width}mm;
+                    height: ${window.height}mm;
+                    font-family: 'Open Sans', sans-serif;
+                    font-weight: 400;
+                    font-size: 10pt;
+                    line-height: 1.4;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="address">
+                <div>${HtmlEscape.escapeHtml5("${personDetails.lastName} ${personDetails.firstName}")}</div>
+                ${sendAddress?.let { addr ->
+                    """
+                    <div>${HtmlEscape.escapeHtml5(addr.row1)}</div>
+                    <div>${HtmlEscape.escapeHtml5(addr.row2)}</div>
+                    ${if (addr.row3.isNotEmpty()) "<div>${HtmlEscape.escapeHtml5(addr.row3)}</div>" else ""}
+                    """.trimIndent()
+                } ?: ""}
+            </div>
+        </body>
+        </html>
+        """
+            .trimIndent()
 
     return Document(
         name = "osoitesivu_${guardian.lastName}_$today.pdf",
-        bytes = pdfGenerator.render(page),
+        bytes = pdfGenerator.render(html),
         contentType = "application/pdf",
     )
 }
