@@ -17,6 +17,7 @@ export const fi = {
     confirm: 'Vahvista',
     sort: 'Järjestä',
     all: 'Kaikki',
+    shiftCare: 'Vuorohoito',
     statuses: {
       active: 'Aktiivinen',
       coming: 'Tulossa',

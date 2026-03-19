@@ -8,11 +8,19 @@ import { fromUuid } from 'lib-common/id-type'
 export type UnitOrGroup =
   | { type: 'unit'; unitId: DaycareId }
   | { type: 'group'; unitId: DaycareId; id: GroupId }
+  | { type: 'shift-care'; unitId: DaycareId }
+
+export const isUnitView = (
+  unitOrGroup: UnitOrGroup
+): unitOrGroup is Exclude<UnitOrGroup, { type: 'group' }> =>
+  unitOrGroup.type === 'unit' || unitOrGroup.type === 'shift-care'
 
 export const toUnitOrGroup = (
   unitId: DaycareId,
   groupId?: string | null
 ): UnitOrGroup =>
-  groupId && groupId !== 'all'
-    ? { type: 'group', unitId, id: fromUuid(groupId) }
-    : { type: 'unit', unitId }
+  groupId === 'shift-care'
+    ? { type: 'shift-care', unitId }
+    : groupId && groupId !== 'all'
+      ? { type: 'group', unitId, id: fromUuid(groupId) }
+      : { type: 'unit', unitId }

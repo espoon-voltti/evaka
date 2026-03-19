@@ -27,6 +27,8 @@ interface GroupSelectorProps {
   countInfo?: CountInfo
   groups?: GroupInfo[]
   includeSelectAll: boolean
+  shiftCareSelected?: boolean
+  onSelectShiftCare?: () => void
 }
 
 export interface CountInfo {
@@ -41,7 +43,9 @@ export default function GroupSelector({
   onChangeGroup,
   countInfo,
   groups,
-  includeSelectAll
+  includeSelectAll,
+  shiftCareSelected,
+  onSelectShiftCare
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
@@ -55,7 +59,7 @@ export default function GroupSelector({
       <Wrapper>
         {includeSelectAll && (
           <Group
-            selected={!selectedGroup}
+            selected={!selectedGroup && !shiftCareSelected}
             onClick={() => onChangeGroup(undefined)}
             data-qa="group--all"
             name={i18n.common.all}
@@ -102,6 +106,15 @@ export default function GroupSelector({
             }
           />
         ))}
+        {onSelectShiftCare && (
+          <Group
+            selected={shiftCareSelected ?? false}
+            onClick={onSelectShiftCare}
+            data-qa="group--shift-care"
+            name={i18n.common.shiftCare}
+            count=""
+          />
+        )}
         {countInfo && !realtimeStaffAttendanceEnabled && (
           <Info>{countInfo.infoText}</Info>
         )}

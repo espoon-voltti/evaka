@@ -25,6 +25,7 @@ import type { PilotFeature } from './shared'
 import type { PlacementType } from './placement'
 import type { ReservationResponse } from './reservations'
 import type { ScheduleType } from './placement'
+import type { ShiftCareType } from './serviceneed'
 import type { StaffAttendanceExternalId } from './shared'
 import type { StaffAttendanceRealtimeId } from './shared'
 import { deserializeJsonChildDailyNote } from './note'
@@ -89,6 +90,7 @@ export interface AttendanceChild {
   preferredName: string
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
+  shiftCare: ShiftCareType | null
   stickyNotes: ChildStickyNote[]
 }
 

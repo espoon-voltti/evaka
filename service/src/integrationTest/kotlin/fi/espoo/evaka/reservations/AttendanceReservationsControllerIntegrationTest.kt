@@ -2002,6 +2002,158 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
+    fun `shift care filter on getReservationStatisticsForConfirmedDays returns only shift care statistics`() {
+        val daycareId =
+            db.transaction { tx ->
+                val areaId =
+                    tx.insert(DevCareArea(name = "Shift Care Stats Area", shortName = "area"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            operationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                            shiftCareOperationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
+                        )
+                    )
+                tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
+                daycareId
+            }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val mobileDeviceId = insertMobileDevice(daycareId)
+        val confirmedRangeStart =
+            getConfirmedRange(clock.now(), featureConfig.citizenReservationThresholdHours).start
+        val range = FiniteDateRange(confirmedRangeStart, confirmedRangeStart.plusDays(6))
+        db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.NONE) }
+        db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.FULL) }
+        db.transaction {
+            insertChildData(it, range, daycareId, groupId, ShiftCareType.INTERMITTENT)
+        }
+        db.transaction { tx ->
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = range.start,
+                        endDate = range.end,
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = groupId,
+                            startDate = range.start,
+                            endDate = range.end,
+                        )
+                    )
+                }
+        }
+
+        val withoutFilter =
+            getConfirmedDailyReservationStats(daycareId, mobileDeviceId, clock, shiftCare = false)
+        val withFilter =
+            getConfirmedDailyReservationStats(daycareId, mobileDeviceId, clock, shiftCare = true)
+
+        withoutFilter.forEach { day ->
+            val totalChildren = day.groupStatistics.sumOf { it.presentCount + it.absentCount }
+            assertEquals(4, totalChildren, "Expected 4 children on ${day.date} without filter")
+        }
+        withFilter.forEach { day ->
+            val totalChildren = day.groupStatistics.sumOf { it.presentCount + it.absentCount }
+            assertEquals(
+                2,
+                totalChildren,
+                "Expected 2 children on ${day.date} with shift care filter",
+            )
+        }
+    }
+
+    @Test
+    fun `shift care filter on getChildReservationsForDay returns only shift care children`() {
+        val range = FiniteDateRange(LocalDate.of(2024, 5, 20), LocalDate.of(2024, 5, 26))
+        val daycareId =
+            db.transaction { tx ->
+                val areaId =
+                    tx.insert(DevCareArea(name = "Shift Care Filter Area", shortName = "area"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            operationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                            shiftCareOperationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
+                        )
+                    )
+                tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
+                daycareId
+            }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val mobileDeviceId = insertMobileDevice(daycareId)
+        val normalChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.NONE) }
+        val shiftCareChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.FULL) }
+        val intermittentShiftCareChild =
+            db.transaction {
+                insertChildData(it, range, daycareId, groupId, ShiftCareType.INTERMITTENT)
+            }
+        val childWithoutServiceNeed =
+            db.transaction { tx ->
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+                tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = daycareId,
+                            startDate = range.start,
+                            endDate = range.end,
+                        )
+                    )
+                    .also { placementId ->
+                        tx.insert(
+                            DevDaycareGroupPlacement(
+                                daycarePlacementId = placementId,
+                                daycareGroupId = groupId,
+                                startDate = range.start,
+                                endDate = range.end,
+                            )
+                        )
+                    }
+                childId
+            }
+
+        val weekday = range.start // Monday
+        val withoutFilter =
+            getConfirmedChildReservationsForDay(
+                weekday,
+                daycareId,
+                mobileDeviceId,
+                clock,
+                shiftCare = false,
+            )
+        assertEquals(
+            setOf(normalChild, shiftCareChild, intermittentShiftCareChild, childWithoutServiceNeed),
+            withoutFilter.childReservations.map { it.childId }.toSet(),
+        )
+
+        val withFilter =
+            getConfirmedChildReservationsForDay(
+                weekday,
+                daycareId,
+                mobileDeviceId,
+                clock,
+                shiftCare = true,
+            )
+        assertEquals(
+            setOf(shiftCareChild, intermittentShiftCareChild),
+            withFilter.childReservations.map { it.childId }.toSet(),
+        )
+    }
+
+    @Test
     fun `getAttendanceReservations should not include children on their non-operational days unless service need is intermittent`() {
         val range =
             FiniteDateRange(
@@ -2273,12 +2425,14 @@ class AttendanceReservationsControllerIntegrationTest :
         daycareId: DaycareId,
         mobileDeviceId: MobileDeviceId,
         clock: EvakaClock = this.clock,
+        shiftCare: Boolean = false,
     ): List<AttendanceReservationController.DayReservationStatisticsResult> =
         attendanceReservationController.getReservationStatisticsForConfirmedDays(
             dbInstance(),
             AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
             daycareId,
+            shiftCare,
         )
 
     private fun getConfirmedChildReservationsForDay(
@@ -2286,6 +2440,7 @@ class AttendanceReservationsControllerIntegrationTest :
         daycareId: DaycareId,
         mobileDeviceId: MobileDeviceId,
         clock: EvakaClock = this.clock,
+        shiftCare: Boolean = false,
     ): AttendanceReservationController.DailyChildReservationResult =
         attendanceReservationController.getChildReservationsForDay(
             dbInstance(),
@@ -2293,6 +2448,7 @@ class AttendanceReservationsControllerIntegrationTest :
             clock,
             daycareId,
             date,
+            shiftCare,
         )
 
     private fun insertChildData(

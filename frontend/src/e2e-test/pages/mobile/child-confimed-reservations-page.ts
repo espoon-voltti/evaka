@@ -5,7 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import type { Page } from '../../utils/page'
+import type { Page, Element } from '../../utils/page'
 
 export type ReservationChildDetails = {
   firstName: string
@@ -17,6 +17,9 @@ export default class ConfirmedDayReservationPage {
 
   dayRow = (date: LocalDate) =>
     this.page.findByDataQa(`day-item-${date.formatIso()}`)
+
+  childItem = (date: LocalDate, childId: UUID): Element =>
+    this.dayRow(date).findByDataQa(`child-${childId}`)
 
   async assertDayExists(date: LocalDate) {
     await this.dayRow(date).waitUntilVisible()

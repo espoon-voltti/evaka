@@ -18,7 +18,10 @@ export default React.memo(function ConfirmedReservationsDaysWrapper({
   unitOrGroup: UnitOrGroup
 }) {
   const statisticsResult = useQueryResult(
-    confirmedDaysReservationsStatisticsQuery({ unitId: unitOrGroup.unitId })
+    confirmedDaysReservationsStatisticsQuery({
+      unitId: unitOrGroup.unitId,
+      shiftCare: unitOrGroup.type === 'shift-care'
+    })
   )
 
   return (

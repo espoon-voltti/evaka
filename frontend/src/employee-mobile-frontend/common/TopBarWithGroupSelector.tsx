@@ -28,6 +28,8 @@ export type TopBarWithGroupSelectorProps = {
   toggleSearch?: () => void
   countInfo?: CountInfo | undefined
   allowedGroupIds?: UUID[] | undefined
+  shiftCareSelected?: boolean
+  onSelectShiftCare?: () => void
 }
 
 export default React.memo(function TopBarWithGroupSelector({
@@ -37,7 +39,9 @@ export default React.memo(function TopBarWithGroupSelector({
   selectedGroup,
   countInfo,
   includeSelectAll = true,
-  allowedGroupIds = undefined
+  allowedGroupIds = undefined,
+  shiftCareSelected,
+  onSelectShiftCare
 }: TopBarWithGroupSelectorProps) {
   const [, navigate] = useLocation()
   const { user } = useContext(UserContext)
@@ -83,6 +87,8 @@ export default React.memo(function TopBarWithGroupSelector({
         countInfo={countInfo}
         groups={groups}
         includeSelectAll={includeSelectAll}
+        shiftCareSelected={shiftCareSelected}
+        onSelectShiftCare={onSelectShiftCare}
       />
     </>
   )

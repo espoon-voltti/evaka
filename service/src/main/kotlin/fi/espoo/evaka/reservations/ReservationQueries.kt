@@ -540,7 +540,16 @@ data class ConfirmedDayReservationInfo(
 fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
     unitId: DaycareId,
+    shiftCare: Boolean = false,
 ): List<DailyChildReservationInfoRow> {
+    val shiftCarePredicate =
+        if (shiftCare)
+            Predicate {
+                where(
+                    "EXISTS (SELECT 1 FROM service_need sn WHERE sn.placement_id = $it.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(day)} AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[]))"
+                )
+            }
+        else Predicate.alwaysTrue()
     return createQuery {
             sql(
                 """
@@ -593,6 +602,7 @@ FROM realized_placement_one(${bind(day)}) pcd
 WHERE (pcd.unit_id = ${bind(unitId)} OR pcd.placement_unit_id = ${bind(unitId)})
   -- only show groupless children if they are on back up care in another unit
   AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> ${bind(unitId)})
+  AND ${predicate(shiftCarePredicate.forTable("pcd"))}
 """
             )
         }
@@ -610,10 +620,15 @@ data class GroupReservationStatisticsRow(
 fun Database.Read.getReservationStatisticsForUnit(
     confirmedDays: List<LocalDate>,
     unitId: DaycareId,
+    shiftCare: Boolean = false,
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
     val holidays =
         if (confirmedDays.isEmpty()) emptySet()
         else getHolidays(FiniteDateRange(confirmedDays.min(), confirmedDays.max()))
+    val shiftCarePredicate =
+        if (shiftCare)
+            Predicate { where("$it.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])") }
+        else Predicate.alwaysTrue()
     return createQuery {
             sql(
                 """
@@ -687,7 +702,8 @@ from (SELECT d                                     AS date,
                              AND af.valid_during @> d
                LEFT JOIN club_term ct ON rp.placement_type IN ('CLUB') AND ct.term_breaks @> d
                LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL', 'PREPARATORY') AND pt.term_breaks @> d
-      WHERE (rp.unit_id = ${bind(unitId)} OR rp.placement_unit_id = ${bind(unitId)})) a
+      WHERE (rp.unit_id = ${bind(unitId)} OR rp.placement_unit_id = ${bind(unitId)})
+      AND ${predicate(shiftCarePredicate.forTable("sn"))}) a
 WHERE a.affected_group_id IS NOT NULL
 GROUP BY a.date, a.affected_group_id
 """

@@ -122,6 +122,7 @@ class ChildAttendanceController(
                             hasGuardian =
                                 childHasGuardian[child.id] ?: false ||
                                     childHasFosterParent[child.id] ?: false,
+                            shiftCare = child.shiftCare,
                         )
                     }
                 }

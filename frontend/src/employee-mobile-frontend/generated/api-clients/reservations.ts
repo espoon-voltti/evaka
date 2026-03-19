@@ -27,12 +27,14 @@ import { uri } from 'lib-common/uri'
 export async function getChildReservationsForDay(
   request: {
     unitId: DaycareId,
-    examinationDate: LocalDate
+    examinationDate: LocalDate,
+    shiftCare?: boolean | null
   }
 ): Promise<DailyChildReservationResult> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
-    ['examinationDate', request.examinationDate.formatIso()]
+    ['examinationDate', request.examinationDate.formatIso()],
+    ['shiftCare', request.shiftCare?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DailyChildReservationResult>>({
     url: uri`/employee-mobile/attendance-reservations/confirmed-days/daily`.toString(),
@@ -64,11 +66,13 @@ export async function getConfirmedRangeData(
 */
 export async function getReservationStatisticsForConfirmedDays(
   request: {
-    unitId: DaycareId
+    unitId: DaycareId,
+    shiftCare?: boolean | null
   }
 ): Promise<DayReservationStatisticsResult[]> {
   const params = createUrlSearchParams(
-    ['unitId', request.unitId]
+    ['unitId', request.unitId],
+    ['shiftCare', request.shiftCare?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DayReservationStatisticsResult[]>>({
     url: uri`/employee-mobile/attendance-reservations/confirmed-days/stats`.toString(),

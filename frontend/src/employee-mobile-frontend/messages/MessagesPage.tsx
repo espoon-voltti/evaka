@@ -32,7 +32,7 @@ import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
-import { toUnitOrGroup } from '../common/unit-or-group'
+import { isUnitView, toUnitOrGroup } from '../common/unit-or-group'
 import { FloatingPrimaryActionButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -121,7 +121,7 @@ export default function MessagesPage({
     [navigate, unitId]
   )
   const onBack = useCallback(() => setUiState({ type: 'list' }), [])
-  if (unitOrGroup.type === 'unit') {
+  if (isUnitView(unitOrGroup)) {
     return renderResult(
       combine(unitInfoResponse, groupAccounts),
       ([unit, groupAccounts]) => (
