@@ -18,6 +18,7 @@ class AttachmentsIntegrationTest {
     private val jpgFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg")!!
     private val licenseFile =
         this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg.license")!!
+    private val mp4File = this::class.java.getResource("/attachments-fixtures/test-video.mp4")!!
 
     @Test
     fun `file content type check works for png file`() {
@@ -79,6 +80,52 @@ class AttachmentsIntegrationTest {
                         listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG),
                     )
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `video file is rejected when only default content types are allowed`() {
+        mp4File.openStream().use { file ->
+            assertThrows<BadRequest> {
+                checkFileContentTypeAndExtension(
+                    file,
+                    "mp4",
+                    listOf(
+                        ContentTypePattern.JPEG,
+                        ContentTypePattern.PNG,
+                        ContentTypePattern.PDF,
+                        ContentTypePattern.MSWORD,
+                        ContentTypePattern.MSWORD_DOCX,
+                        ContentTypePattern.OPEN_DOCUMENT_TEXT,
+                        ContentTypePattern.TIKA_MSOFFICE,
+                        ContentTypePattern.TIKA_OOXML,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `video file is accepted when video content type is allowed`() {
+        mp4File.openStream().use { file ->
+            assertDoesNotThrow {
+                checkFileContentTypeAndExtension(
+                    file,
+                    "mp4",
+                    listOf(
+                        ContentTypePattern.JPEG,
+                        ContentTypePattern.PNG,
+                        ContentTypePattern.PDF,
+                        ContentTypePattern.MSWORD,
+                        ContentTypePattern.MSWORD_DOCX,
+                        ContentTypePattern.OPEN_DOCUMENT_TEXT,
+                        ContentTypePattern.TIKA_MSOFFICE,
+                        ContentTypePattern.TIKA_OOXML,
+                        ContentTypePattern.VIDEO_ANY,
+                        ContentTypePattern.AUDIO_ANY,
+                    ),
+                )
             }
         }
     }

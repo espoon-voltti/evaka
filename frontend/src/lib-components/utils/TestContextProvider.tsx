@@ -100,7 +100,7 @@ export const testTranslations: Translations = {
     loading: '',
     loaded: '',
     error: {
-      FILE_TOO_LARGE: '',
+      FILE_TOO_LARGE: () => '',
       EXTENSION_INVALID: '',
       EXTENSION_MISSING: '',
       INVALID_CONTENT_TYPE: '',

@@ -48,6 +48,9 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
+private const val DEFAULT_MAX_UPLOAD_BYTES = 25L * 1024 * 1024 // 25 MB
+private const val EXTENDED_MAX_UPLOAD_BYTES = 100L * 1024 * 1024 // 100 MB
+
 @RestController
 class AttachmentsController(
     private val documentClient: DocumentService,
@@ -553,10 +556,27 @@ class AttachmentsController(
                     pedagogicalDocumentAllowedAttachmentContentTypes
                 }
 
+                is AttachmentParent.MessageDraft -> {
+                    if (user is AuthenticatedUser.Employee) {
+                        employeeMessageAllowedAttachmentContentTypes
+                    } else {
+                        defaultAllowedAttachmentContentTypes
+                    }
+                }
+
                 else -> {
                     defaultAllowedAttachmentContentTypes
                 }
             }
+        val maxUploadBytes =
+            if (allowedContentTypes.contains(ContentTypePattern.VIDEO_ANY)) {
+                EXTENDED_MAX_UPLOAD_BYTES
+            } else {
+                DEFAULT_MAX_UPLOAD_BYTES
+            }
+        if (file.size > maxUploadBytes) {
+            throw BadRequest("File too large", "FILE_TOO_LARGE")
+        }
         val fileName = getAndCheckFileName(file)
         val contentType =
             file.inputStream.use { stream ->
@@ -870,6 +890,10 @@ class AttachmentsController(
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =
+        defaultAllowedAttachmentContentTypes +
+            listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
+
+    private val employeeMessageAllowedAttachmentContentTypes =
         defaultAllowedAttachmentContentTypes +
             listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
 }

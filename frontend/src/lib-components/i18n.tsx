@@ -82,12 +82,12 @@ export interface Translations {
     deleteFile: string
     input: {
       title: string
-      text: (fileTypes: FileType[]) => string
+      text: (fileTypes: FileType[], maxMB: number) => string
     }
     loading: string
     loaded: string
     error: {
-      FILE_TOO_LARGE: string
+      FILE_TOO_LARGE: (maxMB: number) => string
       EXTENSION_INVALID: string
       EXTENSION_MISSING: string
       INVALID_CONTENT_TYPE: string
