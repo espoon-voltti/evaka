@@ -242,16 +242,10 @@ echo "Restart your shell or run: source $RC_FILE"
 """
 
 [tasks.sandbox]
-description = "Manage the sandbox container"
+description = "Manage the Colima VM sandbox"
 dir = ".sandbox"
 usage = 'arg "[args]" var=#true'
 run = "node sandbox.mjs {{arg(name='args')}}"
-
-[tasks.vmbox]
-description = "Manage the vmbox Colima VM sandbox"
-dir = ".sandbox"
-usage = 'arg "[args]" var=#true'
-run = "node vmbox.mjs {{arg(name='args')}}"
 
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"

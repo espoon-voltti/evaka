@@ -3,17 +3,26 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { execFileSync, spawn } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+  unlinkSync,
+} from "node:fs";
 import { basename, dirname, resolve } from "node:path";
-import { userInfo } from "node:os";
+import { homedir, userInfo } from "node:os";
 import { parseArgs } from "node:util";
+
+function shellQuote(s) {
+  return "'" + s.replace(/'/g, "'\\''") + "'";
+}
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const projectName = basename(projectRoot);
-const containerName = `sandbox-${projectName}`;
-const imageName = `sandbox-${projectName}`;
+const profile = `sandbox-${projectName}`;
 const hostUser = userInfo();
-const containerHome = hostUser.homedir;
+const hostHome = process.env.HOME ?? hostUser.homedir;
 
 function loadConfig() {
   const configPath = resolve(import.meta.dirname, "sandbox.json");
@@ -22,6 +31,9 @@ function loadConfig() {
   }
   const raw = JSON.parse(readFileSync(configPath, "utf-8"));
   return {
+    cpu: raw.cpu ?? 8,
+    memory: raw.memory ?? 12,
+    disk: raw.disk ?? 160,
     mounts: raw.mounts ?? [],
     copies: raw.copies ?? [],
     ports: raw.ports ?? [],
@@ -40,61 +52,91 @@ function isMode(s) {
   return s === "ro" || s === "rw";
 }
 
-function parseMount(parts, hostHome) {
-  const home = containerHome;
+function parseMount(spec) {
+  const parts = spec.split(":");
   let src;
-  let dst;
   let mode;
 
   switch (parts.length) {
     case 1:
       src = expandTilde(parts[0], hostHome);
-      dst = expandTilde(parts[0], home);
       mode = "ro";
       break;
     case 2:
       if (isMode(parts[1])) {
         src = expandTilde(parts[0], hostHome);
-        dst = expandTilde(parts[0], home);
         mode = parts[1];
       } else {
         src = expandTilde(parts[0], hostHome);
-        dst = expandTilde(parts[1], home);
+        const dst = expandTilde(parts[1], hostHome);
+        if (dst !== src) {
+          throw new Error(
+            `Invalid mount: ${spec}\n` +
+              `Colima VM mounts don't support remapping destinations. ` +
+              `Source and destination must be the same path.`
+          );
+        }
         mode = "ro";
       }
       break;
     case 3:
       src = expandTilde(parts[0], hostHome);
-      dst = expandTilde(parts[1], home);
       mode = parts[2];
       break;
     default:
-      throw new Error(`Invalid mount: ${parts.join(":")}`);
+      throw new Error(`Invalid mount: ${spec}`);
   }
 
-  return { src, dst, mode };
+  return { location: src, writable: mode === "rw" };
 }
 
-function parseCopy(spec, hostHome) {
-  const home = containerHome;
+function parseCopy(spec) {
   const parts = spec.split(":");
   const src = expandTilde(parts[0], hostHome);
   const dst =
     parts.length > 1
-      ? expandTilde(parts[1], home)
-      : expandTilde(parts[0], home);
+      ? expandTilde(parts[1], hostHome)
+      : expandTilde(parts[0], hostHome);
   return { src, dst };
 }
 
-function ancestorsUnderHome(path) {
-  const dirs = [];
-  let dir = dirname(path);
-  while (dir.startsWith(containerHome + "/") && dir !== containerHome) {
-    dirs.push(dir);
-    dir = dirname(dir);
-  }
-  return dirs;
+// --- Colima helpers ---
+
+function colima(args, opts) {
+  return execFileSync("colima", args, { stdio: "inherit", ...opts });
 }
+
+function ssh(cmd, opts) {
+  return colima(["ssh", "--profile", profile, "--", ...cmd], opts);
+}
+
+function vmIsRunning() {
+  try {
+    execFileSync("colima", ["status", "--profile", profile], {
+      stdio: "ignore",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function vmExists() {
+  try {
+    const output = execFileSync("colima", ["list", "--json"], {
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return output
+      .toString()
+      .split("\n")
+      .filter(Boolean)
+      .some((line) => JSON.parse(line).name === profile);
+  } catch {
+    return false;
+  }
+}
+
+// --- Notify listener ---
 
 const notifyPort = 39813;
 const notifyPidFile = resolve(import.meta.dirname, "notify.pid");
@@ -119,7 +161,7 @@ function ensureListener(notifyCommand) {
         execFile("bash", ["-c", ${JSON.stringify(notifyCommand)}]);
       });
       conn.resume();
-    }).listen(${notifyPort}, "0.0.0.0");
+    }).listen(${notifyPort}, "127.0.0.1");
   `;
   const child = spawn(process.execPath, ["-e", script], {
     detached: true,
@@ -134,201 +176,274 @@ function stopListener() {
     try {
       process.kill(parseInt(readFileSync(notifyPidFile, "utf-8")), "SIGTERM");
     } catch {}
-    try { unlinkSync(notifyPidFile); } catch {}
+    try {
+      unlinkSync(notifyPidFile);
+    } catch {}
   }
 }
 
-function docker(args, stdio = "inherit") {
-  execFileSync("docker", args, { stdio });
+// --- Port forwarding ---
+
+const portFwdPidFile = resolve(import.meta.dirname, "portfwd.pid");
+
+function stopPortForwarding() {
+  if (existsSync(portFwdPidFile)) {
+    try {
+      process.kill(parseInt(readFileSync(portFwdPidFile, "utf-8")), "SIGTERM");
+    } catch {}
+    try {
+      unlinkSync(portFwdPidFile);
+    } catch {}
+  }
 }
 
-function containerIsRunning() {
+function ensurePortForwarding(ports) {
+  if (ports.length === 0) return;
+  if (existsSync(portFwdPidFile)) {
+    try {
+      process.kill(parseInt(readFileSync(portFwdPidFile, "utf-8")), 0);
+      return; // already running
+    } catch {}
+  }
+
+  const sshArgs = ["-N"];
+  for (const port of ports) {
+    const [host, container] = port.includes(":")
+      ? port.split(":")
+      : [port, port];
+    sshArgs.push("-L", `${host}:localhost:${container}`);
+  }
+
+  const child = spawn(
+    "colima",
+    ["ssh", "--profile", profile, "--", ...sshArgs],
+    { detached: true, stdio: "ignore" }
+  );
+  child.unref();
+  writeFileSync(portFwdPidFile, String(child.pid));
+}
+
+// --- Colima YAML generation ---
+
+function isDirectory(path) {
   try {
-    const output = execFileSync(
-      "docker",
-      ["inspect", "-f", "{{.State.Running}}", containerName],
-      { stdio: ["ignore", "pipe", "ignore"] }
-    );
-    return output.toString().trim() === "true";
+    return statSync(path).isDirectory();
   } catch {
     return false;
   }
 }
 
-function containerExists() {
-  try {
-    execFileSync("docker", ["container", "inspect", containerName], {
-      stdio: "ignore",
-    });
-    return true;
-  } catch {
-    return false;
+function buildStartArgs(config) {
+  const mounts = [{ location: projectRoot, writable: true }];
+  for (const m of config.mounts) {
+    const parsed = parseMount(m);
+    if (!isDirectory(parsed.location)) {
+      throw new Error(
+        `Mount "${m}" points to a non-directory path: ${parsed.location}\n` +
+          `Colima only supports directory mounts. Use "copies" for files.`
+      );
+    }
+    mounts.push(parsed);
   }
-}
 
-function imageExists() {
-  try {
-    execFileSync("docker", ["image", "inspect", imageName], {
-      stdio: "ignore",
-    });
-    return true;
-  } catch {
-    return false;
+  // Deduplicate mounts by location
+  const seen = new Set();
+  const uniqueMounts = [];
+  for (const m of mounts) {
+    if (!seen.has(m.location)) {
+      seen.add(m.location);
+      uniqueMounts.push(m);
+    }
   }
-}
 
-function build(options) {
-  docker([
-    "build",
-    ...(options?.noCache ? ["--no-cache"] : []),
-    "-t",
-    imageName,
-    "--build-arg",
-    `USER_NAME=${hostUser.username}`,
-    "--build-arg",
-    `USER_UID=${hostUser.uid}`,
-    "--build-arg",
-    `USER_GID=${hostUser.gid}`,
-    "--build-arg",
-    `USER_HOME=${hostUser.homedir}`,
-    import.meta.dirname,
+  const mountArgs = uniqueMounts.flatMap((m) => [
+    "--mount",
+    m.writable ? `${m.location}:w` : m.location,
   ]);
+
+  return [
+    "--profile", profile,
+    "--cpu", String(config.cpu),
+    "--memory", String(config.memory),
+    "--disk", String(config.disk),
+    "--arch", "aarch64",
+    "--runtime", "docker",
+    "--activate=false",
+    "--vm-type", "vz",
+    "--mount-type", "virtiofs",
+    "--mount-inotify",
+    "--vz-rosetta",
+    "--ssh-agent",
+    ...mountArgs,
+  ];
 }
+
+function resetSshControlMaster() {
+  const sockPath = resolve(
+    homedir(),
+    ".colima",
+    "_lima",
+    `colima-${profile}`,
+    "ssh.sock"
+  );
+  try {
+    execFileSync("ssh", ["-S", sockPath, "-O", "exit", "dummy"], {
+      stdio: "ignore",
+    });
+  } catch {}
+}
+
+function vmUsername() {
+  return execFileSync(
+    "colima",
+    ["ssh", "--profile", profile, "--", "whoami"],
+    { encoding: "utf-8" }
+  ).trim();
+}
+
+function provision() {
+  console.log("Provisioning VM...");
+  const vmUser = vmUsername();
+  ssh([
+    "sudo", "bash", "-c",
+    [
+      "if [ -f /etc/sandbox-provisioned ]; then exit 0; fi",
+      `mkdir -p ${shellQuote(hostHome)}`,
+      `sed -i 's|:/home/${vmUser}.linux:|:${hostHome}:|' /etc/passwd`,
+      `cp -a /home/${vmUser}.linux/. ${shellQuote(hostHome)}/`,
+      "apt-get update",
+      "apt-get install -y --no-install-recommends locales netcat-openbsd",
+      "sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen",
+      "locale-gen en_US.UTF-8 fi_FI.UTF-8",
+      "touch /etc/sandbox-provisioned",
+    ].join(" && "),
+  ]);
+  resetSshControlMaster();
+}
+
+// --- Commands ---
 
 function create() {
-  if (!imageExists()) {
-    build();
+  if (vmExists()) {
+    console.error(
+      `VM "${profile}" already exists. Use 'sandbox recreate' or 'sandbox rm' first.`
+    );
+    process.exit(1);
   }
 
   const config = loadConfig();
-  const hostHome = process.env.HOME ?? "/root";
+  const startArgs = buildStartArgs(config);
 
-  const mounts = config.mounts.map((m) => {
-    const parts = m.split(":");
-    return parseMount(parts, hostHome);
-  });
+  console.log(`Starting Colima VM (profile: ${profile})...`);
+  colima(["start", ...startArgs]);
 
-  const args = [
-    "run",
-    "-d",
-    "--name",
-    containerName,
-    "--privileged",
-    "-v",
-    `${projectRoot}:${projectRoot}`,
-    "-w",
-    projectRoot,
-  ];
-
-  for (const { src, dst, mode } of mounts) {
-    args.push("-v", `${src}:${dst}:${mode}`);
-  }
-
-  for (const port of config.ports) {
-    args.push("-p", port.includes(":") ? port : `${port}:${port}`);
-  }
-
-  args.push(imageName, "bash", "-c", "trap exit TERM; sudo bash -c 'dockerd &>/var/log/dockerd.log' & sleep infinity & wait");
-  docker(args);
-
-  const dirsToChown = new Set();
-  for (const dst of [projectRoot, ...mounts.map((m) => m.dst)]) {
-    for (const dir of ancestorsUnderHome(dst)) {
-      dirsToChown.add(dir);
-    }
-  }
-  if (dirsToChown.size > 0) {
-    docker([
-      "exec",
-      containerName,
-      "sudo",
-      "chown",
-      `${hostUser.uid}:${hostUser.gid}`,
-      ...dirsToChown,
-    ]);
-  }
+  provision();
 
   const postCreatePath = resolve(import.meta.dirname, "post-create.sh");
   if (existsSync(postCreatePath)) {
-    docker(["exec", containerName, "bash", postCreatePath]);
+    console.log("Running post-create.sh...");
+    ssh(["bash", "-c", `cd ${shellQuote(projectRoot)} && bash ${shellQuote(postCreatePath)}`]);
   }
 
-  const copyDsts = [];
+  // Copy files
   for (const copy of config.copies) {
-    const { src, dst } = parseCopy(copy, hostHome);
-    docker(["cp", src, `${containerName}:${dst}`]);
-    copyDsts.push(dst);
-  }
-  if (copyDsts.length > 0) {
-    docker([
-      "exec",
-      containerName,
-      "sudo",
-      "chown",
-      `${hostUser.uid}:${hostUser.gid}`,
-      ...copyDsts,
+    const { src, dst } = parseCopy(copy);
+    console.log(`Copying ${src} → ${dst}`);
+    const dstDir = dirname(dst);
+    ssh(["sudo", "mkdir", "-p", dstDir]);
+    ssh(["sudo", "chown", `${hostUser.uid}:${hostUser.gid}`, dstDir]);
+    execFileSync("bash", [
+      "-c",
+      `cat ${shellQuote(src)} | colima ssh --profile ${profile} -- bash -c ${shellQuote("cat > " + shellQuote(dst))}`,
     ]);
   }
 
+  // Run post-create.local.sh
   const postCreateLocalPath = resolve(
     import.meta.dirname,
     "post-create.local.sh"
   );
   if (existsSync(postCreateLocalPath)) {
-    docker(["exec", containerName, "bash", postCreateLocalPath]);
+    console.log("Running post-create.local.sh...");
+    ssh(["bash", "-c", `cd ${shellQuote(projectRoot)} && bash ${shellQuote(postCreateLocalPath)}`]);
   }
+
+  console.log("VM ready.");
 }
 
-function ensureRunning() {
-  if (containerIsRunning()) {
-    return;
-  }
-  if (containerExists()) {
-    docker(["start", containerName]);
+function ensureVmRunning() {
+  if (vmIsRunning()) return;
+  if (vmExists()) {
+    console.log(`Starting Colima VM (profile: ${profile})...`);
+    colima(["start", "--profile", profile]);
   } else {
     create();
   }
 }
 
 function exec(cmd) {
-  ensureRunning();
-  ensureListener(loadConfig().notify);
-  const command = cmd.length > 0 ? cmd : ["bash"];
-  const ttyFlag = process.stdin.isTTY ? "-it" : "-i";
-  const envArgs = [];
-  for (const name of ["TERM", "COLORTERM"]) {
-    if (process.env[name]) {
-      envArgs.push("-e", `${name}=${process.env[name]}`);
-    }
-  }
+  ensureVmRunning();
+
+  const config = loadConfig();
+  ensureListener(config.notify);
+  ensurePortForwarding(config.ports);
+
+  const envExports = ["COLORTERM"]
+    .filter((name) => process.env[name])
+    .map((name) => `export ${name}=${shellQuote(process.env[name])}`)
+    .join("; ");
+  const prefix = envExports ? `${envExports}; ` : "";
+  const command =
+    cmd.length > 0
+      ? ["bash", "-c", `${prefix}cd ${shellQuote(projectRoot)} && exec ${cmd.map((a) => shellQuote(a)).join(" ")}`]
+      : ["bash", "-c", `${prefix}cd ${shellQuote(projectRoot)} && exec bash`];
   try {
-    docker(["exec", ttyFlag, ...envArgs, containerName, ...command]);
+    ssh(command);
   } catch (e) {
     process.exit(e.status ?? 1);
   }
 }
 
-function recreate(options) {
+function stop() {
+  stopListener();
+  stopPortForwarding();
+  colima(["stop", "--profile", profile]);
+}
+
+function rm() {
+  stopListener();
+  stopPortForwarding();
+  colima(["delete", "--profile", profile, "--force", "--data"]);
+}
+
+function recreate() {
+  stopListener();
+  stopPortForwarding();
   try {
-    docker(["rm", "-f", containerName], "ignore");
+    colima(["delete", "--profile", profile, "--force", "--data"], { stdio: "ignore" });
   } catch {}
-  build(options);
   create();
 }
+
+function status() {
+  colima(["status", "--profile", profile]);
+}
+
+// --- CLI ---
 
 const usage = `Usage: sandbox <command> [options...]
 
 Commands:
-  build [--no-cache]     Build the container image
-  exec [cmd...]          Run a command in the container (default: bash)
-  stop                   Stop the container
-  rm                     Remove the container
-  recreate [--no-cache]  Remove, rebuild and recreate the container`;
+  create                 Create and provision the VM
+  exec [cmd...]          Run a command in the VM (default: bash)
+  stop                   Stop the VM
+  rm                     Remove the VM
+  recreate               Remove and recreate the VM
+  status                 Show VM status`;
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
-    "no-cache": { type: "boolean", default: false },
     help: { type: "boolean", short: "h", default: false },
   },
 });
@@ -337,19 +452,18 @@ const [command, ...rest] = positionals;
 
 if (values.help || command === undefined) {
   console.log(usage);
-} else if (command === "build") {
-  build({ noCache: values["no-cache"] });
+} else if (command === "create") {
+  create();
 } else if (command === "exec") {
   exec(rest);
 } else if (command === "stop") {
-  stopListener();
-  docker(["stop", containerName]);
+  stop();
 } else if (command === "rm") {
-  stopListener();
-  docker(["rm", containerName]);
+  rm();
 } else if (command === "recreate") {
-  stopListener();
-  recreate({ noCache: values["no-cache"] });
+  recreate();
+} else if (command === "status") {
+  status();
 } else {
   console.error(`Unknown command: ${command}\nRun 'sandbox --help' for usage.`);
   process.exit(1);
