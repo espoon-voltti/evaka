@@ -241,11 +241,11 @@ echo "Removed eVaka prompt support from $RC_FILE"
 echo "Restart your shell or run: source $RC_FILE"
 """
 
-[tasks.vmbox]
-description = "Manage the vmbox Colima VM sandbox"
+[tasks.sandbox]
+description = "Manage the Colima VM sandbox"
 dir = ".sandbox"
 usage = 'arg "[args]" var=#true'
-run = "node vmbox.mjs {{arg(name='args')}}"
+run = "node sandbox.mjs {{arg(name='args')}}"
 
 [tasks.reset-local-db]
 description = "Drop and recreate the evaka_local development database"

@@ -136,7 +136,7 @@ function vmExists() {
   }
 }
 
-// --- Notify listener (shared with sandbox.mjs) ---
+// --- Notify listener ---
 
 const notifyPort = 39813;
 const notifyPidFile = resolve(import.meta.dirname, "notify.pid");
@@ -184,7 +184,7 @@ function stopListener() {
 
 // --- Port forwarding ---
 
-const portFwdPidFile = resolve(import.meta.dirname, "vmbox-portfwd.pid");
+const portFwdPidFile = resolve(import.meta.dirname, "portfwd.pid");
 
 function stopPortForwarding() {
   if (existsSync(portFwdPidFile)) {
@@ -307,7 +307,7 @@ function provision() {
   ssh([
     "sudo", "bash", "-c",
     [
-      "if [ -f /etc/vmbox-provisioned ]; then exit 0; fi",
+      "if [ -f /etc/sandbox-provisioned ]; then exit 0; fi",
       `mkdir -p ${shellQuote(hostHome)}`,
       `sed -i 's|:/home/${vmUser}.linux:|:${hostHome}:|' /etc/passwd`,
       `cp -a /home/${vmUser}.linux/. ${shellQuote(hostHome)}/`,
@@ -315,7 +315,7 @@ function provision() {
       "apt-get install -y --no-install-recommends locales netcat-openbsd",
       "sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen",
       "locale-gen en_US.UTF-8 fi_FI.UTF-8",
-      "touch /etc/vmbox-provisioned",
+      "touch /etc/sandbox-provisioned",
     ].join(" && "),
   ]);
   resetSshControlMaster();
@@ -326,7 +326,7 @@ function provision() {
 function create() {
   if (vmExists()) {
     console.error(
-      `VM "${profile}" already exists. Use 'vmbox recreate' or 'vmbox rm' first.`
+      `VM "${profile}" already exists. Use 'sandbox recreate' or 'sandbox rm' first.`
     );
     process.exit(1);
   }
@@ -426,7 +426,7 @@ function status() {
 
 // --- CLI ---
 
-const usage = `Usage: vmbox <command> [options...]
+const usage = `Usage: sandbox <command> [options...]
 
 Commands:
   create                 Create and provision the VM
@@ -460,6 +460,6 @@ if (values.help || command === undefined) {
 } else if (command === "status") {
   status();
 } else {
-  console.error(`Unknown command: ${command}\nRun 'vmbox --help' for usage.`);
+  console.error(`Unknown command: ${command}\nRun 'sandbox --help' for usage.`);
   process.exit(1);
 }
