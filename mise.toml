@@ -241,12 +241,6 @@ echo "Removed eVaka prompt support from $RC_FILE"
 echo "Restart your shell or run: source $RC_FILE"
 """
 
-[tasks.sandbox]
-description = "Manage the sandbox container"
-dir = ".sandbox"
-usage = 'arg "[args]" var=#true'
-run = "node sandbox.mjs {{arg(name='args')}}"
-
 [tasks.vmbox]
 description = "Manage the vmbox Colima VM sandbox"
 dir = ".sandbox"
