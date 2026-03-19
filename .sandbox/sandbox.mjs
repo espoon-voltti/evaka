@@ -388,10 +388,15 @@ function exec(cmd) {
   ensureListener(config.notify);
   ensurePortForwarding(config.ports);
 
+  const envExports = ["COLORTERM"]
+    .filter((name) => process.env[name])
+    .map((name) => `export ${name}=${shellQuote(process.env[name])}`)
+    .join("; ");
+  const prefix = envExports ? `${envExports}; ` : "";
   const command =
     cmd.length > 0
-      ? ["bash", "-c", `cd ${shellQuote(projectRoot)} && exec ${cmd.map((a) => shellQuote(a)).join(" ")}`]
-      : ["bash", "-c", `cd ${shellQuote(projectRoot)} && exec bash`];
+      ? ["bash", "-c", `${prefix}cd ${shellQuote(projectRoot)} && exec ${cmd.map((a) => shellQuote(a)).join(" ")}`]
+      : ["bash", "-c", `${prefix}cd ${shellQuote(projectRoot)} && exec bash`];
   try {
     ssh(command);
   } catch (e) {
