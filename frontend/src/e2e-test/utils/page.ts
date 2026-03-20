@@ -184,7 +184,7 @@ export class ElementCollection {
   }
 
   async assertTextsEqual(values: string[]) {
-    await waitUntilEqual(() => this.allTexts(), values)
+    await expect(this.locator).toHaveText(values, { useInnerText: true })
   }
 
   async assertTextsEqualAnyOrder(values: string[]) {
