@@ -746,11 +746,9 @@ export class StaticChip extends Element {
 
 export class SecondaryRecipient extends Element {
   async assertIsSelected() {
-    await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-checked', 'true')
+    await expect(this.locator).toHaveAttribute('aria-checked', 'true')
   }
   async assertIsUnselected() {
-    await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-checked', 'false')
+    await expect(this.locator).toHaveAttribute('aria-checked', 'false')
   }
 }
