@@ -537,7 +537,10 @@ export class SelectionChip extends Element {
   }
 
   async waitUntilChecked(checked = true) {
-    await waitUntilEqual(() => this.checked, checked)
+    await expect(this.locator).toHaveAttribute(
+      'aria-checked',
+      checked ? 'true' : 'false'
+    )
   }
 
   get disabled(): Promise<boolean> {
@@ -547,7 +550,11 @@ export class SelectionChip extends Element {
   }
 
   async assertDisabled(disabled: boolean) {
-    await waitUntilEqual(() => this.disabled, disabled)
+    if (disabled) {
+      await expect(this.locator).toHaveAttribute('aria-disabled', 'true')
+    } else {
+      await expect(this.locator).not.toHaveAttribute('aria-disabled')
+    }
   }
 }
 
