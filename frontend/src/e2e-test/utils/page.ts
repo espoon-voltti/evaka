@@ -740,7 +740,7 @@ export class StaticChip extends Element {
   }
 
   async assertStatus(status: string) {
-    await waitUntilEqual(() => this.status, status)
+    await expect(this.locator).toHaveAttribute('data-qa-status', status)
   }
 }
 
