@@ -236,11 +236,13 @@ export class Element {
   }
 
   get boundingBox(): Promise<BoundingBox | null> {
-    return this.waitUntilVisible().then(() =>
-      this.locator
-        .boundingBox()
-        .then((value) => (value ? new BoundingBox(value) : null))
-    )
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() =>
+        this.locator
+          .boundingBox()
+          .then((value) => (value ? new BoundingBox(value) : null))
+      )
   }
 
   // Visible text content
@@ -261,7 +263,9 @@ export class Element {
   }
 
   get disabled(): Promise<boolean> {
-    return this.waitUntilVisible().then(() => this.locator.isDisabled())
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() => this.locator.isDisabled())
   }
 
   async assertDisabled(disabled: boolean): Promise<void> {
@@ -269,12 +273,12 @@ export class Element {
   }
 
   async hover(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.hover()
   }
 
   async click(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.click()
   }
 
@@ -284,11 +288,11 @@ export class Element {
   }
 
   async waitUntilVisible(): Promise<void> {
-    await this.locator.waitFor({ state: 'visible' })
+    await expect(this.locator).toBeVisible()
   }
 
   async waitUntilHidden(): Promise<void> {
-    await this.locator.waitFor({ state: 'hidden' })
+    await expect(this.locator).toBeHidden()
   }
 
   async getAttribute(name: string): Promise<string | null> {
@@ -321,43 +325,45 @@ export class Element {
 
 export class TextInput extends Element {
   async type(text: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.type(text)
   }
 
   async fill(text: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.fill(text)
   }
 
   async blur(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.blur()
   }
 
   async clear(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.fill('')
   }
 
   async press(key: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.press(key)
   }
 
   get inputValue(): Promise<string> {
-    return this.waitUntilVisible().then(() => this.locator.inputValue())
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() => this.locator.inputValue())
   }
 
   async assertValueEquals(expectedValue: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await waitUntilEqual(() => this.inputValue, expectedValue)
   }
 }
 
 export class PinInput extends Element {
   async fill(pinCode: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.pressSequentially(pinCode)
   }
 }
