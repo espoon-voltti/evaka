@@ -22,7 +22,7 @@ import kotlin.math.abs
 import org.springframework.stereotype.Component
 
 @Component
-class SapInvoiceGenerator(private val invoiceChecker: InvoiceChecker) : StringInvoiceGenerator {
+class SapInvoiceGenerator : StringInvoiceGenerator {
     override fun generateInvoice(
         invoices: List<InvoiceDetailed>
     ): StringInvoiceGenerator.InvoiceGeneratorResult {
@@ -31,7 +31,7 @@ class SapInvoiceGenerator(private val invoiceChecker: InvoiceChecker) : StringIn
         val manuallySentList = mutableListOf<InvoiceDetailed>()
 
         val (manuallySent, succeeded) =
-            invoices.partition { invoice -> invoiceChecker.shouldSendManually(invoice) }
+            invoices.partition { invoice -> invoice.headOfFamily.ssn == null }
         manuallySentList.addAll(manuallySent)
 
         val idocs: MutableList<ORDERS05.IDOC> = mutableListOf()

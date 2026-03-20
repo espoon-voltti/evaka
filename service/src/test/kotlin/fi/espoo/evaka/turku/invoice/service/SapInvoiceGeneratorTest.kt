@@ -14,7 +14,7 @@ class SapInvoiceGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun generateXml() {
-            val invoiceGenerator = SapInvoiceGenerator(InvoiceChecker())
+            val invoiceGenerator = SapInvoiceGenerator()
             val invoiceList = listOf(validInvoice())
             invoiceXml = invoiceGenerator.generateInvoice(invoiceList).invoiceString
         }
@@ -46,7 +46,7 @@ class SapInvoiceGeneratorTest {
 
     @Test
     fun `should not return iDoc if invoice sum is zero`() {
-        val invoiceGenerator = SapInvoiceGenerator(InvoiceChecker())
+        val invoiceGenerator = SapInvoiceGenerator()
         val invoiceList2 = mutableListOf(validInvoiceZeroSum())
         invoiceList2.add(validInvoice())
         var invoiceIdoc = invoiceGenerator.generateInvoice(invoiceList2).invoiceString
@@ -55,7 +55,7 @@ class SapInvoiceGeneratorTest {
 
     @Test
     fun `success list of invoices still contains zero value invoices`() {
-        val invoiceGenerator = SapInvoiceGenerator(InvoiceChecker())
+        val invoiceGenerator = SapInvoiceGenerator()
         val invoiceList = mutableListOf(validInvoiceZeroSum())
         invoiceList.add(validInvoice())
         var invoiceCount = invoiceList.count()
