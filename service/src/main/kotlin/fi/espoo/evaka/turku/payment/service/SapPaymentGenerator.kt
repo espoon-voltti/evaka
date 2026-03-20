@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class SapPaymentGenerator(
-    private val paymentChecker: PaymentChecker,
     private val paymentMarshaller: PaymentMarshaller,
     private val idocGenerator: IdocGenerator,
 ) {
@@ -19,6 +18,14 @@ class SapPaymentGenerator(
         val sendResult: PaymentIntegrationClient.SendResult = PaymentIntegrationClient.SendResult(),
         val paymentStrings: MutableList<String> = mutableListOf(),
     )
+
+    private fun shouldFail(payment: Payment): Boolean {
+        if (payment.unit.iban == null) return true
+        if (payment.unit.businessId == null) return true
+        if (payment.unit.providerId == null) return true
+        if (payment.amount <= 0) return true
+        return false
+    }
 
     fun generatePayments(payments: List<Payment>, preschoolValues: PreschoolValuesFetcher): Result {
         var successList = mutableListOf<Payment>()
@@ -31,8 +38,7 @@ class SapPaymentGenerator(
         val preSchoolAccountingAmount =
             preschoolValues.fetchPreschoolAccountingAmount(payments[0].period)
 
-        val (failed, succeeded) =
-            payments.partition { payment -> paymentChecker.shouldFail(payment) }
+        val (failed, succeeded) = payments.partition { payment -> shouldFail(payment) }
         failedList.addAll(failed)
 
         succeeded.forEach {

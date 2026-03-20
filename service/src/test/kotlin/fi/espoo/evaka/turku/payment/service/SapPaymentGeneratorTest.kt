@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.turku.payment.service
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -11,11 +12,9 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class SapPaymentGeneratorTest {
-    private val paymentChecker = PaymentChecker()
     private val mockMarshaller = mock<PaymentMarshaller>()
     private val mockIdocGenerator = mock<IdocGenerator>()
-    private val sapPaymentGenerator =
-        SapPaymentGenerator(paymentChecker, mockMarshaller, mockIdocGenerator)
+    private val sapPaymentGenerator = SapPaymentGenerator(mockMarshaller, mockIdocGenerator)
     private val mockFetcher = mock<PreschoolValuesFetcher>()
 
     @Test
@@ -24,7 +23,7 @@ class SapPaymentGeneratorTest {
         val correctPayment =
             object {}.javaClass.getResource("/payment-client/CorrectSapPayment.txt")?.readText()
         val result =
-            SapPaymentGenerator(paymentChecker, PaymentMarshaller(), IdocGenerator())
+            SapPaymentGenerator(PaymentMarshaller(), IdocGenerator())
                 .generatePayments(listOf(payment), mockFetcher)
 
         assert(result.paymentStrings.count() == 1)
@@ -44,5 +43,24 @@ class SapPaymentGeneratorTest {
         sapPaymentGenerator.generatePayments(listOf(payment), mockFetcher)
 
         verify(mockIdocGenerator).generate(payment, 4510, "fi")
+    }
+
+    @Test
+    fun `should filter out invalid payments`() {
+        val failingPayments =
+            listOf(
+                validPayment().copy(unit = validPaymentUnit().copy(iban = null)),
+                validPayment().copy(unit = validPaymentUnit().copy(businessId = null)),
+                validPayment().copy(unit = validPaymentUnit().copy(providerId = null)),
+                validPayment().copy(amount = 0),
+                validPayment().copy(amount = -4200),
+            )
+        val successPayments = listOf(validPayment())
+
+        val result =
+            sapPaymentGenerator.generatePayments(failingPayments + successPayments, mockFetcher)
+
+        assertThat(result.sendResult.succeeded).isEqualTo(successPayments)
+        assertThat(result.sendResult.failed).isEqualTo(failingPayments)
     }
 }
