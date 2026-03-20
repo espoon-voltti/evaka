@@ -16,7 +16,7 @@ import type {
 
 import type LocalDate from 'lib-common/local-date'
 
-import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
+import { BoundingBox, waitUntilDefined, waitUntilTrue } from '.'
 
 export type EnvType = 'desktop' | 'mobile'
 
@@ -449,7 +449,7 @@ export class FileUpload extends Element {
       .nth(index)
       .findByDataQa('file-delete-button')
       .click()
-    await waitUntilEqual(() => this.fileCount, fileCountBefore - 1)
+    await expect(this.#uploadedFiles.locator).toHaveCount(fileCountBefore - 1)
   }
 }
 
