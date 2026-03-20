@@ -12,9 +12,7 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
-import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
-import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.getGuardianDependants
@@ -27,6 +25,7 @@ import fi.espoo.evaka.pis.updatePersonNonVtjDetails
 import fi.espoo.evaka.pis.updatePersonSsnAddingDisabled
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -42,7 +41,6 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
-import org.thymeleaf.context.Context
 
 private val logger = KotlinLogging.logger {}
 
@@ -782,8 +780,6 @@ fun createAddressPagePdf(
     envelopeWindowPosition: Rectangle,
     guardian: PersonDTO,
 ): Document {
-    // template path hardcoded to prevent need for customization
-    val template = "address-page/address-page"
     val personDetails =
         guardian.let {
             val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
@@ -800,19 +796,51 @@ fun createAddressPagePdf(
             )
         }
 
-    val page =
-        Page(
-            Template(template),
-            Context().apply {
-                setVariable("window", envelopeWindowPosition)
-                setVariable("guardian", personDetails)
-                setVariable("sendAddress", DecisionSendAddress.fromPerson(personDetails))
-            },
-        )
+    val sendAddress = DecisionSendAddress.fromPerson(personDetails)
+    val window = envelopeWindowPosition
+    val html =
+        HtmlBuilder.document(
+            css =
+                """
+                @page {
+                    size: A4 portrait;
+                    margin-left: ${window.x}mm;
+                    margin-top: ${window.y}mm;
+                    margin-right: 15mm;
+                    margin-bottom: 15mm;
+                }
+                body { margin: 0; }
+                .address {
+                    width: ${window.width}mm;
+                    height: ${window.height}mm;
+                    font-family: 'Open Sans', sans-serif;
+                    font-weight: 400;
+                    font-size: 10pt;
+                    line-height: 1.4;
+                }
+                """
+        ) {
+            listOf(
+                div(className = "address") {
+                    listOfNotNull(
+                        div("${personDetails.lastName} ${personDetails.firstName}"),
+                        sendAddress?.let { addr ->
+                            div {
+                                listOfNotNull(
+                                    div(addr.row1),
+                                    div(addr.row2),
+                                    addr.row3.takeIf { it.isNotEmpty() }?.let { div(it) },
+                                )
+                            }
+                        },
+                    )
+                }
+            )
+        }
 
     return Document(
         name = "osoitesivu_${guardian.lastName}_$today.pdf",
-        bytes = pdfGenerator.render(page),
+        bytes = pdfGenerator.render(html),
         contentType = "application/pdf",
     )
 }

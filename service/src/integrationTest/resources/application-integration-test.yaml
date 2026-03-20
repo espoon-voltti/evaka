@@ -77,7 +77,7 @@ evaka:
       enabled: true
       sftp:
         host: localhost
-        port: 2222
+        port: ${EVAKA_SFTP_PORT:2222}
         host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
         username: foo
         password: pass

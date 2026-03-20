@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2021 City of Turku
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+---
+evaka:
+  email:
+    sender_address: "no-reply.evaka@turku.fi"
+    sender_name:
+      fi: "Turun varhaiskasvatus"
+      sv: "Åbo småbarnspedagogik"
+    application_received:
+      sender_address:
+        fi: "varhaiskasvatus.palveluohjaus@turku.fi"
+        sv: "varhaiskasvatus.palveluohjaus@turku.fi"
+      sender_name:
+        fi: "Varhaiskasvatuksen palveluohjaus"
+        sv: "Service enheten vid småbarnspedagogik"
+  oph:
+    organizer_oid: "1.2.246.562.10.56820737825"
+    organizer_id: "5"
+    municipality_code: "853"
+  database:
+    flyway:
+      locations:
+        - db/migration
+        - turku/db/migration
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Turku"
+        street_address: "PL 355"
+        postal_code: "20101"
+        post_office: "Turku"
+
+---
+spring.config.activate.on-profile: local
+evakaturku:
+  sap_invoicing:
+    username: user
+    password: pass
+    address: address
+    path: path
+  sap_payments:
+    username: user
+    password: pass
+    address: address
+    path: path
+  bucket:
+    export: evakaturku-export-it
+  dw_export:
+    prefix: reports
+    sftp:
+      username: user
+      password: pass
+      address: address
+      path: path

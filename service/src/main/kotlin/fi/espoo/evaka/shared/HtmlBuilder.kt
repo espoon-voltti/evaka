@@ -48,6 +48,22 @@ private val XML_INCOMPATIBLE_CHARS =
 private fun String.removeXmlIncompatibleChars() = replace(XML_INCOMPATIBLE_CHARS, "")
 
 data object HtmlBuilder {
+    fun document(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        css: String = "",
+        body: HtmlBuilder.() -> List<HtmlElement>,
+    ): String =
+        """
+        <html>
+            <head>
+                <meta charset="UTF-8"/>
+                <style>$css</style>
+            </head>
+            ${body(body).toHtml()}
+        </html>
+        """
+            .trimIndent()
+
     fun text(text: String) = HtmlElement.Text(text)
 
     fun multilineText(text: String) = text.split("\n").flatMap { listOf(text(it), br()) }

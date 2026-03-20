@@ -106,18 +106,7 @@ private val childDocumentCss =
 """
 
 fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
-    return """
-        <html>
-            <head>
-                <style>$childDocumentCss</style>
-            </head>
-            ${generateBody(document).toHtml()}
-        </html>
-    """
-}
-
-private fun generateBody(document: ChildDocumentDetails): HtmlElement {
-    return HtmlBuilder.body {
+    return HtmlBuilder.document(css = childDocumentCss) {
         listOfNotNull(
             generateHeader(document),
             h2(

@@ -1,0 +1,38 @@
+<!--
+SPDX-FileCopyrightText: 2021 City of Turku
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{shared/common.html :: css}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{ shared/common :: header}"></header>
+<footer th:replace="~{ shared/common :: footer}"></footer>
+
+<div class="page first-page">
+    <h1>
+        <strong th:text="#{decision.title}"></strong>
+    </h1>
+    <div th:replace="~{ shared/common :: child-and-unit-details}"></div>
+    <div th:utext="#{decision.instructions}"></div>
+
+</div>
+
+<div class="page last-page">
+    <div th:utext="#{decision.notification}"></div>
+    <div th:utext="#{decision.jurisdiction}"></div>
+    <div th:replace="~{ shared/common :: decision-details }"></div>
+    <p th:utext="#{decision.legalInstructions}"></p>
+    <div th:replace="~{ shared/daycare-correction :: daycare-correction}"></div>
+</div>
+
+</body>
+</html>

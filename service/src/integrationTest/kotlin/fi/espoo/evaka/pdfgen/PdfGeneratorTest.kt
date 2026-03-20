@@ -76,8 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
-import org.thymeleaf.templateresolver.ITemplateResolver
+import org.thymeleaf.ITemplateEngine
 
 val logger = KotlinLogging.logger {}
 
@@ -305,15 +304,7 @@ class PdfGeneratorTestConfiguration {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean
-    fun espooTemplateResolver(): ITemplateResolver =
-        ClassLoaderTemplateResolver().apply {
-            prefix = "espoo/templates/"
-            suffix = ".html"
-            setTemplateMode("HTML")
-            checkExistence = true
-            order = 1
-        }
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
 }
 
 @SpringBootTest(

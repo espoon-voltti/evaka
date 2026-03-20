@@ -9,10 +9,12 @@ import fi.espoo.evaka.SftpEnv
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
+private val sftpPort = System.getenv("EVAKA_SFTP_PORT")?.toIntOrNull() ?: 2222
+
 private val env =
     SftpEnv(
         "localhost",
-        2222,
+        sftpPort,
         listOf("AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq"),
         "foo",
         Sensitive("temp"),

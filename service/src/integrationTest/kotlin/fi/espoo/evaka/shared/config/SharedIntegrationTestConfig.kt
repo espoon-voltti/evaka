@@ -60,8 +60,7 @@ import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
-import org.thymeleaf.templateresolver.ITemplateResolver
+import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.internal.http.loader.DefaultSdkHttpClientBuilder
@@ -204,6 +203,10 @@ class SharedIntegrationTestConfig {
     @Bean
     fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EvakaEmailMessageProvider(env)
 
+    // TODO: It's a convenience to have espoo templates in integration tests, should be better to
+    // have test-specific templates instead
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
+
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
@@ -234,16 +237,6 @@ class SharedIntegrationTestConfig {
         DefaultPasswordSpecification(
             PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1)
         )
-
-    @Bean
-    fun espooTemplateResolver(): ITemplateResolver =
-        ClassLoaderTemplateResolver().apply {
-            prefix = "espoo/templates/"
-            suffix = ".html"
-            setTemplateMode("HTML")
-            checkExistence = true
-            order = 1
-        }
 
     @Bean fun särmäClient(): ArchivalClient = SärmäMockClient()
 
