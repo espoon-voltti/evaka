@@ -644,7 +644,9 @@ const en: Translations = {
       close: 'Back to list',
       sender: 'Sender',
       sentAt: 'Sent at',
-      recipients: 'Recipients'
+      recipients: 'Recipients',
+      financeReplyInfo:
+        'Replying is only possible when your income statement has been sent or is being processed.'
     },
     messageEditor: {
       newMessage: 'New message',
