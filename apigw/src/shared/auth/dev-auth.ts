@@ -50,7 +50,7 @@ export function createDevAuthRouter<T extends SessionType>({
 
           // Set device cookie for citizen authentication
           if (citizenCookieSecret) {
-            setDeviceAuthHistoryCookie(res, user.id)
+            setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
           }
 
           res.redirect(validateRelayStateUrl(req)?.toString() ?? root)

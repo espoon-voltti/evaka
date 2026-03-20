@@ -4,6 +4,7 @@
 
 import { createHash } from 'node:crypto'
 
+import { sign } from 'cookie-signature'
 import type express from 'express'
 
 export const AUTH_HISTORY_COOKIE_PREFIX = '__Host-evaka-device-user-'
@@ -26,19 +27,20 @@ export const filterValidDeviceAuthHistory = (
 
 export const setDeviceAuthHistoryCookie = (
   res: express.Response,
-  userId: string
+  userId: string,
+  secret: string
 ): void => {
-  // create a new cookie for the user if it's a new browser
   const hashGenerator = createHash('sha256')
   hashGenerator.update(userId)
   const hash = hashGenerator.digest('hex')
 
   const cookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${hash}`
-  res.cookie(cookieName, hash, {
+  const signedValue = `s:${sign(hash, secret)}`
+  res.cookie(cookieName, signedValue, {
     secure: true,
     httpOnly: true,
     sameSite: 'strict',
-    signed: true,
+    signed: false,
     expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
   })
 }

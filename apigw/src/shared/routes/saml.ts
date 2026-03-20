@@ -244,7 +244,7 @@ export function createSamlIntegration<T extends SessionType>(
 
       // Set device cookie for citizen authentication
       if (citizenCookieSecret) {
-        setDeviceAuthHistoryCookie(res, user.id)
+        setDeviceAuthHistoryCookie(res, user.id, citizenCookieSecret)
       }
 
       // Persist in session to allow custom logic per strategy
@@ -416,7 +416,6 @@ export function createSamlIntegration<T extends SessionType>(
   router.post(
     `/login/callback`,
     urlencodedParser,
-    cookieParser(secondaryCookieConfig?.cookieSecret ?? ''),
     toRequestHandler(loginCallback)
   )
   // The IDP makes the browser either GET or POST one of these endpoints in two
