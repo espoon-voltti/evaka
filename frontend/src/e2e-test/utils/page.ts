@@ -581,7 +581,7 @@ export class Select extends Element {
   }
 
   async assertOptions(expected: string[]) {
-    expect(await this.allOptions).toEqual(expected)
+    await expect(this.#input.findAll('option').locator).toHaveText(expected)
   }
 }
 
