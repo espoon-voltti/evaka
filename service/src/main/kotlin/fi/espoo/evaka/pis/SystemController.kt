@@ -115,7 +115,13 @@ class SystemController(
                             .hashString(citizen.id.toString(), StandardCharsets.UTF_8)
                             .toString()
                     if (!request.deviceAuthHistory.contains(userIdHash)) {
-                        logger.info(mapOf("eventCode" to "NEW_DEVICE_LOGIN")) {
+                        logger.info(
+                            mapOf(
+                                "eventCode" to "NEW_DEVICE_LOGIN",
+                                "citizenIdHash" to userIdHash,
+                                "deviceAuthHistorySize" to request.deviceAuthHistory.size,
+                            )
+                        ) {
                             "Login from new device detected"
                         }
                         if (env.newBrowserLoginEmailEnabled) {
