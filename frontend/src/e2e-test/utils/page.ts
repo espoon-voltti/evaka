@@ -188,10 +188,13 @@ export class ElementCollection {
   }
 
   async assertTextsEqualAnyOrder(values: string[]) {
-    await waitUntilEqual(async () => {
-      const texts = await this.allTexts()
-      return texts.sort()
-    }, values.slice().sort())
+    const expected = values.slice().sort()
+    await expect
+      .poll(async () => {
+        const texts = await this.allTexts()
+        return texts.sort()
+      })
+      .toEqual(expected)
   }
 }
 
