@@ -366,8 +366,7 @@ export class TextInput extends Element {
   }
 
   async assertValueEquals(expectedValue: string): Promise<void> {
-    await this.locator.waitFor({ state: 'visible' })
-    await waitUntilEqual(() => this.inputValue, expectedValue)
+    await expect(this.locator).toHaveValue(expectedValue)
   }
 }
 
