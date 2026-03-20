@@ -656,6 +656,24 @@ data class NekkuDaycareCustomerMapping(
 
 data class GroupDates(val id: GroupId, val validFrom: LocalDate?, val validTo: LocalDate?)
 
+fun Database.Read.getNekkuCustomerWeekdaysByGroups(
+    groupIds: List<GroupId>
+): Map<GroupId, Set<NekkuCustomerWeekday>> =
+    createQuery {
+            sql(
+                """
+SELECT dg.id AS group_id, unnest(nct.weekdays) AS weekday
+FROM daycare_group dg
+    JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
+    JOIN nekku_customer_type nct ON nc.number = nct.customer_number
+WHERE dg.id = ANY(${bind(groupIds)})
+                """
+            )
+        }
+        .toList { column<GroupId>("group_id") to column<NekkuCustomerWeekday>("weekday") }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { it.value.toSet() }
+
 fun Database.Read.getNekkuOpenDaycareGroupDates(date: LocalDate): List<GroupDates> =
     getNekkuOpenDaycareGroupDates(FiniteDateRange(date, date))
 
