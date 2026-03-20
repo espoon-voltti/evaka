@@ -269,7 +269,11 @@ export class Element {
   }
 
   async assertDisabled(disabled: boolean): Promise<void> {
-    await waitUntilEqual(() => this.disabled, disabled)
+    if (disabled) {
+      await expect(this.locator).toBeDisabled()
+    } else {
+      await expect(this.locator).toBeEnabled()
+    }
   }
 
   async hover(): Promise<void> {
