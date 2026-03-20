@@ -251,7 +251,7 @@ export class Element {
   }
 
   async assertText(assertion: (text: string) => boolean): Promise<void> {
-    await waitUntilTrue(async () => assertion(await this.text))
+    await expect.poll(() => this.text.then(assertion)).toBe(true)
   }
 
   async assertTextEquals(expected: string): Promise<void> {
