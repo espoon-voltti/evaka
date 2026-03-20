@@ -459,11 +459,11 @@ export class AsyncButton extends Element {
   }
 
   async waitUntilIdle() {
-    await waitUntilEqual(() => this.status(), '')
+    await expect(this.locator).toHaveAttribute('data-status', '')
   }
 
   async waitUntilSuccess() {
-    await waitUntilEqual(() => this.status(), 'success')
+    await expect(this.locator).toHaveAttribute('data-status', 'success')
   }
 }
 
