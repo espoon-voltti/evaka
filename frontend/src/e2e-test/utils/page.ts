@@ -323,7 +323,11 @@ export class Element {
   }
 
   async assertFocused(focused: boolean): Promise<void> {
-    await waitUntilEqual(() => this.focused, focused)
+    if (focused) {
+      await expect(this.locator).toBeFocused()
+    } else {
+      await expect(this.locator).not.toBeFocused()
+    }
   }
 }
 
