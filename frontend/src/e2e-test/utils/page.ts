@@ -307,7 +307,11 @@ export class Element {
     name: string,
     value: string | null
   ): Promise<void> {
-    await waitUntilEqual(() => this.getAttribute(name), value)
+    if (value === null) {
+      await expect(this.locator).not.toHaveAttribute(name)
+    } else {
+      await expect(this.locator).toHaveAttribute(name, value)
+    }
   }
 
   async hasAttribute(name: string): Promise<boolean> {
