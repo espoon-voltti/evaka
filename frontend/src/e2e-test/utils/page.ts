@@ -284,7 +284,7 @@ export class Element {
 
   /// Like waitUntilVisible, but also works for elements with zero size
   async waitUntilAttached(): Promise<void> {
-    await this.locator.waitFor({ state: 'attached' })
+    await expect(this.locator).toBeAttached()
   }
 
   async waitUntilVisible(): Promise<void> {
