@@ -253,10 +253,7 @@ export class Element {
   }
 
   async assertTextEquals(expected: string): Promise<void> {
-    if (expected.trim() !== '') {
-      await this.waitUntilVisible()
-    }
-    await waitUntilEqual(() => this.text, expected)
+    await expect(this.locator).toHaveText(expected, { useInnerText: true })
   }
 
   get visible(): Promise<boolean> {
