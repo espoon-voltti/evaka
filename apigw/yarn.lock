@@ -3573,7 +3573,7 @@ __metadata:
     redis: "npm:5.11.0"
     split2: "npm:4.2.0"
     through2: "npm:4.0.2"
-    tough-cookie: "npm:6.0.0"
+    tough-cookie: "npm:6.0.1"
     ts-jest: "npm:29.4.6"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.57.0"
@@ -7439,12 +7439,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:6.0.0":
-  version: 6.0.0
-  resolution: "tough-cookie@npm:6.0.0"
+"tough-cookie@npm:6.0.1":
+  version: 6.0.1
+  resolution: "tough-cookie@npm:6.0.1"
   dependencies:
     tldts: "npm:^7.0.5"
-  checksum: 10/1b0592241655912eb972e1c284ccf975af154576b8e9912cad4ed7b4b408a60ccfdad1bc53eef10d376f6a5ef9d84e2f8ea0b46c92263d52de855247ff100e27
+  checksum: 10/915b1167e0630598eb0644e8bc089ddc28a23bf05f3c329a4a0d879c6b9801a2603be65acb06b5d2dd0f589cabb06bb638837f8222dd82a7023655f07269451a
   languageName: node
   linkType: hard
 
