@@ -5,7 +5,7 @@
 [tools]
 devcontainer-cli = "0.83.2"
 java = "zulu-25"
-lefthook = "2.1.3"
+lefthook = "2.1.4"
 node = "24.14.0"
 "npm:pm2" = "6.0.14"
 uv = "0.10.9"
