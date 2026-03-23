@@ -31,7 +31,7 @@ dependencies {
         api(libs.bouncycastle.bcprov)
         api(libs.flyway.core)
         api(libs.flyway.database.postgresql)
-        api("org.glassfish.jaxb:jaxb-runtime:4.0.6")
+        api("org.glassfish.jaxb:jaxb-runtime:4.0.7")
         api("org.jetbrains:annotations:26.1.0")
         api("org.jsoup:jsoup:1.22.1")
         api(libs.mockito.core)
