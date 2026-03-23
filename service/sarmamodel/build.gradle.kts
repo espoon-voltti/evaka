@@ -15,8 +15,8 @@ sourceSets {
 }
 
 dependencies {
-    xsd2java("com.sun.xml.bind:jaxb-xjc:4.0.6")
-    xsd2java("com.sun.xml.bind:jaxb-impl:4.0.6")
+    xsd2java("com.sun.xml.bind:jaxb-xjc:4.0.7")
+    xsd2java("com.sun.xml.bind:jaxb-impl:4.0.7")
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.5")
 }
 
