@@ -6,7 +6,6 @@ import { expect } from '@playwright/test'
 
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
-import { waitUntilTrue } from '../../utils'
 import type { Element, Page } from '../../utils/page'
 import { AsyncButton, TextInput } from '../../utils/page'
 
@@ -200,7 +199,9 @@ export default class FinanceBasicsPage {
           )
         },
         assertSaveIsDisabled: async () => {
-          await waitUntilTrue(() => this.feesSection.editor.saveButton.disabled)
+          await expect(
+            this.feesSection.editor.saveButton.locator
+          ).toBeDisabled()
         },
         save: async (retroactive: boolean) => {
           await this.feesSection.editor.saveButton.click()

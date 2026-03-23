@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type {
   FeeDecisionStatus,
@@ -13,7 +15,6 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import type { Page, Element, ElementCollection } from '../../../utils/page'
 import {
   AsyncButton,
@@ -120,10 +121,9 @@ export class FeeDecisionsPage {
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-fee-decision-row"]').locator
+    ).toHaveCount(count)
   }
 }
 
@@ -153,8 +153,9 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
+    await expect(this.#childIncome.nth(nth).locator).toContainText(
+      expectedTotalText,
+      { useInnerText: true }
     )
   }
 
@@ -257,10 +258,9 @@ export class ValueDecisionsPage {
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-value-decision-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-value-decision-row"]').locator
+    ).toHaveCount(count)
   }
 }
 
@@ -302,8 +302,9 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
+    await expect(this.#childIncome.nth(nth).locator).toContainText(
+      expectedTotalText,
+      { useInnerText: true }
     )
   }
 
@@ -411,10 +412,9 @@ export class InvoicesPage {
   }
 
   async assertInvoiceCount(count: number) {
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-invoice-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-invoice-row"]').locator
+    ).toHaveCount(count)
   }
 
   async toggleAllInvoices(toggled: boolean) {
@@ -564,10 +564,9 @@ export class PaymentsPage {
   }
 
   async assertPaymentCount(count: number) {
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('table-payment-row').count(),
-      count
-    )
+    await expect(
+      this.page.findAllByDataQa('table-payment-row').locator
+    ).toHaveCount(count)
   }
 
   async togglePayments(toggled: boolean) {

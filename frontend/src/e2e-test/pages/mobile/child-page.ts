@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { DevChild } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 
 export default class MobileChildPage {
@@ -154,26 +155,26 @@ export default class MobileChildPage {
   }
 
   async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.attendance.arrivalTimes
           .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
-          ),
-      arrivalTimeText
-    )
+          )
+      )
+      .toBe(arrivalTimeText)
   }
 
   async assertDepartureTimeInfoIsShown(departureTimeText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.attendance.departureTimes
           .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
-          ),
-      departureTimeText
-    )
+          )
+      )
+      .toBe(departureTimeText)
   }
 }

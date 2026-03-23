@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type {
   ApplicationType,
   TransferApplicationUnitSummary
@@ -12,7 +14,6 @@ import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { postPairingChallenge } from '../../../generated/api-clients'
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import type { Page } from '../../../utils/page'
 import {
   Checkbox,
@@ -561,10 +562,9 @@ class AclSection extends Element {
     } else {
       await row.findByDataQa('coefficient-off').waitUntilAttached()
     }
-    await waitUntilEqual(
-      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
-      fields.groups
-    )
+    await expect(
+      row.find('[data-qa="groups"] > div').findAll('div').locator
+    ).toHaveText(fields.groups, { useInnerText: true })
   }
 
   async assertRows(
@@ -577,7 +577,7 @@ class AclSection extends Element {
       occupancyCoefficient: boolean
     }[]
   ) {
-    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
+    await expect(this.#tableRows.locator).toHaveCount(rows.length)
     await Promise.all(
       rows.map((fields) =>
         this.assertRowFields(this.#tableRow(fields.id), fields)
@@ -668,10 +668,9 @@ class TemporaryEmployeesSection extends Element {
     } else {
       await row.findByDataQa('coefficient-off').waitUntilAttached()
     }
-    await waitUntilEqual(
-      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
-      fields.groups
-    )
+    await expect(
+      row.find('[data-qa="groups"] > div').findAll('div').locator
+    ).toHaveText(fields.groups, { useInnerText: true })
   }
 
   async assertRowsExactly(
@@ -806,11 +805,11 @@ class WaitingConfirmationSection extends Element {
   }
 
   async assertRowCount(count: number) {
-    await waitUntilEqual(() => this.#rows.count(), count)
+    await expect(this.#rows.locator).toHaveCount(count)
   }
 
   async assertRejectedRowCount(count: number) {
-    await waitUntilEqual(() => this.#rejectedRows.count(), count)
+    await expect(this.#rejectedRows.locator).toHaveCount(count)
   }
 
   async assertRow(applicationId: string, rejected: boolean) {
@@ -850,7 +849,7 @@ class PlacementProposalsSection {
   }
 
   async assertAcceptButtonDisabled() {
-    await waitUntilTrue(() => this.#acceptButton.disabled)
+    await expect(this.#acceptButton.locator).toBeDisabled()
   }
 
   async clickAcceptButton() {
@@ -885,11 +884,9 @@ class PlacementProposalsSection {
 
   async assertPlacementProposalRowCount(expected: number) {
     await this.waitUntilVisible()
-    await waitUntilEqual(
-      () =>
-        this.#placementProposalTable.findAll('[data-qa="child-name"]').count(),
-      expected
-    )
+    await expect(
+      this.#placementProposalTable.findAll('[data-qa="child-name"]').locator
+    ).toHaveCount(expected)
   }
 }
 

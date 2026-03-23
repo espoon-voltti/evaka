@@ -13,7 +13,6 @@ import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
-import { waitUntilEqual } from '../../utils'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
@@ -321,8 +320,7 @@ export class VoucherServiceProvidersReport {
   }
 
   async assertRowCount(expectedChildCount: number) {
-    await waitUntilEqual(
-      () => this.page.findAll('.reportRow').count(),
+    await expect(this.page.findAll('.reportRow').locator).toHaveCount(
       expectedChildCount
     )
   }
@@ -363,7 +361,7 @@ export class ServiceVoucherUnitReport {
   }
 
   async assertChildRowCount(expected: number) {
-    await waitUntilEqual(() => this.#childRows.count(), expected)
+    await expect(this.#childRows.locator).toHaveCount(expected)
   }
 
   async assertChild(

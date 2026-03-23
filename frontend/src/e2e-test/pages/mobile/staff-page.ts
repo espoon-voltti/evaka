@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import type { DevDaycareGroup } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
 import type { ElementCollection, Page } from '../../utils/page'
 import {
   AsyncButton,
@@ -199,13 +200,13 @@ export class StaffAttendancePage {
   }
 
   async assertAttendanceTimeTextShown(expectedText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.staffMemberPage.attendanceTimeTexts
           .allTexts()
-          .then((texts) => texts.join(',')),
-      expectedText
-    )
+          .then((texts) => texts.join(','))
+      )
+      .toBe(expectedText)
   }
 
   async markNewExternalStaffArrived(
@@ -331,10 +332,7 @@ export class StaffAttendancePage {
   }
 
   async assertDoneButtonEnabled(enabled: boolean) {
-    await waitUntilEqual(
-      () => this.anyArrivalPage.markArrived.disabled,
-      !enabled
-    )
+    await this.anyArrivalPage.markArrived.assertDisabled(!enabled)
   }
 
   async clickDoneButton() {
@@ -342,17 +340,15 @@ export class StaffAttendancePage {
   }
 
   async assertMarkDepartedButtonEnabled(enabled: boolean) {
-    await waitUntilEqual(
-      () => this.staffDeparturePage.markDepartedBtn.disabled,
-      !enabled
-    )
+    await this.staffDeparturePage.markDepartedBtn.assertDisabled(!enabled)
   }
 
   async assertGroupSelectionVisible(visible: boolean) {
-    await waitUntilEqual(
-      () => this.staffArrivalPage.groupSelect.visible,
-      visible
-    )
+    if (visible) {
+      await expect(this.staffArrivalPage.groupSelect.locator).toBeVisible()
+    } else {
+      await expect(this.staffArrivalPage.groupSelect.locator).toBeHidden()
+    }
   }
 
   async assertArrivalTimeInputInfo(expected: string) {
@@ -373,10 +369,15 @@ export class StaffAttendancePage {
     type: StaffAttendanceType,
     visible: boolean
   ) {
-    await waitUntilEqual(
-      () => this.staffDeparturePage.departureTypeCheckbox(type).visible,
-      visible
-    )
+    if (visible) {
+      await expect(
+        this.staffDeparturePage.departureTypeCheckbox(type).locator
+      ).toBeVisible()
+    } else {
+      await expect(
+        this.staffDeparturePage.departureTypeCheckbox(type).locator
+      ).toBeHidden()
+    }
   }
 }
 

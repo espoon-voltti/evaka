@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -10,7 +12,6 @@ import { fromUuid } from 'lib-common/id-type'
 import type { JsonOf } from 'lib-common/json'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import type { FormInput, Section } from '../../utils/application-forms'
 import { sections } from '../../utils/application-forms'
 import type { Page, Element } from '../../utils/page'
@@ -263,9 +264,11 @@ class CitizenApplicationEditor {
   }
 
   async openSection(section: string) {
-    const status = await waitUntilDefined(() =>
-      this.#section(section).getAttribute('data-status')
+    await expect(this.#section(section).locator).toHaveAttribute(
+      'data-status',
+      /.*/
     )
+    const status = await this.#section(section).getAttribute('data-status')
     if (status !== 'open') {
       await this.#sectionHeader(section).click()
     }
@@ -428,7 +431,11 @@ class CitizenApplicationEditor {
   }
 
   async assertPreferredStartDateWarningIsShown(visible: boolean) {
-    await waitUntilEqual(() => this.#preferredStartDateWarning.visible, visible)
+    if (visible) {
+      await expect(this.#preferredStartDateWarning.locator).toBeVisible()
+    } else {
+      await expect(this.#preferredStartDateWarning.locator).toBeHidden()
+    }
   }
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
@@ -444,7 +451,11 @@ class CitizenApplicationEditor {
   }
 
   async assertPartTimeErrorIsShown(visible: boolean) {
-    await waitUntilEqual(() => this.#partTimeLimitError.visible, visible)
+    if (visible) {
+      await expect(this.#partTimeLimitError.locator).toBeVisible()
+    } else {
+      await expect(this.#partTimeLimitError.locator).toBeHidden()
+    }
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {

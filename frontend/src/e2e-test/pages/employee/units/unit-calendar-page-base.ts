@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../../utils'
 import type { Page } from '../../../utils/page'
 import {
   Element,
@@ -121,7 +122,7 @@ export class UnitCalendarPageBase {
   }
 
   async assertDateRange(expectedRange: FiniteDateRange) {
-    await waitUntilEqual(() => this.getSelectedDateRange(), expectedRange)
+    await expect.poll(() => this.getSelectedDateRange()).toEqual(expectedRange)
   }
 
   async clickAddPersonButton(): Promise<StaffAttendanceAddPersonModal> {
@@ -192,14 +193,14 @@ export class UnitStaffAttendancesTable extends Element {
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient-pos')
-    await waitUntilEqual(() => icons.count(), expectedCount)
+    await expect(icons.locator).toHaveCount(expectedCount)
   }
 
   async assertZeroOccupancyCoefficientCount(
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient')
-    await waitUntilEqual(() => icons.count(), expectedCount)
+    await expect(icons.locator).toHaveCount(expectedCount)
   }
 
   personCountSum(nth: number) {

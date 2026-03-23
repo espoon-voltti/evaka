@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilFalse, waitUntilTrue } from '../../utils'
+import { expect } from '@playwright/test'
+
 import type { Page } from '../../utils/page'
 import { Checkbox, Element, Select, TextInput } from '../../utils/page'
 
@@ -70,16 +71,15 @@ export class CitizenPersonalDetailsSection extends Element {
   }
 
   async checkMissingPhoneWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
-    await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
-        'Puhelinnumerosi puuttuu'
-      )
+    await expect(this.#missingEmailOrPhoneBox.locator).toBeVisible()
+    await expect(this.#missingEmailOrPhoneBox.locator).toContainText(
+      'Puhelinnumerosi puuttuu',
+      { useInnerText: true }
     )
   }
 
   async assertAlertIsNotShown() {
-    await waitUntilFalse(() => this.#missingEmailOrPhoneBox.visible)
+    await expect(this.#missingEmailOrPhoneBox.locator).toBeHidden()
   }
 
   async editPersonalData(
@@ -110,12 +110,12 @@ export class CitizenPersonalDetailsSection extends Element {
 
     if (expectValid) {
       await this.#save.click()
-      await waitUntilFalse(() => this.#startEditing.disabled)
+      await expect(this.#startEditing.locator).toBeEnabled()
     }
   }
 
   async assertSaveIsDisabled() {
-    await waitUntilTrue(() => this.#save.hasAttribute('disabled'))
+    await expect(this.#save.locator).toBeDisabled()
   }
 
   async checkPersonalData(data: {

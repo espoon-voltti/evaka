@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { DevDaycare } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 
@@ -44,7 +45,7 @@ export default class CitizenMapPage {
   async testMapPopup(daycare: DevDaycare) {
     await this.listItemFor(daycare).click()
     await this.map.markerFor(daycare).click()
-    await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
+    await expect.poll(() => this.map.popupFor(daycare).name).toBe(daycare.name)
   }
 }
 

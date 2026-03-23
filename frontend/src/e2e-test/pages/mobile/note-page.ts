@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
@@ -9,7 +11,6 @@ import type {
 } from 'lib-common/generated/api-types/note'
 import type LocalDate from 'lib-common/local-date'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import { Modal, TextInput } from '../../utils/page'
 
@@ -90,12 +91,10 @@ export default class MobileNotePage {
   }
 
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {
-    await waitUntilTrue(() =>
-      this.#stickyNote.note
-        .nth(nth)
-        .find('[data-qa="sticky-note-expires"]')
-        .text.then((t) => !!t?.includes(date.format()))
-    )
+    await expect(
+      this.#stickyNote.note.nth(nth).find('[data-qa="sticky-note-expires"]')
+        .locator
+    ).toContainText(date.format(), { useInnerText: true })
   }
 
   async fillNote(dailyNote: ChildDailyNoteBody) {
@@ -129,21 +128,21 @@ export default class MobileNotePage {
   }
 
   async assertNote(expected: ChildDailyNoteBody) {
-    await waitUntilEqual(
-      () => this.#note.dailyNote.inputValue,
-      expected.note || ''
-    )
-    await waitUntilEqual(
-      () => this.#note.reminderNote.inputValue,
+    await expect(this.#note.dailyNote.locator).toHaveValue(expected.note || '')
+    await expect(this.#note.reminderNote.locator).toHaveValue(
       expected.reminderNote || ''
     )
 
-    await waitUntilEqual(async () => {
-      const hours = Number((await this.#note.sleepingTimeHours.inputValue) || 0)
-      const minutes = Number(
-        (await this.#note.sleepingTimeMinutes.inputValue) || 0
-      )
-      return (hours * 60 + minutes).toString()
-    }, expected.sleepingMinutes?.toString() || '0')
+    await expect
+      .poll(async () => {
+        const hours = Number(
+          (await this.#note.sleepingTimeHours.inputValue) || 0
+        )
+        const minutes = Number(
+          (await this.#note.sleepingTimeMinutes.inputValue) || 0
+        )
+        return (hours * 60 + minutes).toString()
+      })
+      .toBe(expected.sleepingMinutes?.toString() || '0')
   }
 }

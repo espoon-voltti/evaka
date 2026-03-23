@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 
-import { waitUntilEqual } from '../../utils'
 import type { Page, Element } from '../../utils/page'
 
 export default class CitizenDecisionsPage {
@@ -178,9 +179,9 @@ class CitizenDecisionResponsePage {
   }
 
   async assertDecisionStatus(decisionId: string, statusText: string) {
-    await waitUntilEqual(
-      async () => (await this.#decisionStatus(decisionId).text).toLowerCase(),
-      statusText.toLowerCase()
+    await expect(this.#decisionStatus(decisionId).locator).toHaveText(
+      new RegExp(`^${statusText}$`, 'i'),
+      { useInnerText: true }
     )
   }
 

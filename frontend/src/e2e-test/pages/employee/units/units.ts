@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { waitUntilEqual } from '../../../utils'
 import type { ElementCollection, Page } from '../../../utils/page'
 import { Checkbox, Element, MultiSelect, TextInput } from '../../../utils/page'
 
@@ -51,7 +52,7 @@ export default class UnitsPage {
   }
 
   async assertRowCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#rows.count(), expectedCount)
+    await expect(this.#rows.locator).toHaveCount(expectedCount)
   }
 
   unitRow(id: UUID) {

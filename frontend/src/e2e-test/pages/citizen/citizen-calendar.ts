@@ -10,7 +10,6 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import type { Page, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
@@ -239,16 +238,13 @@ export default class CitizenCalendarPage {
           ? this.nonEditableAbsenceBackground
           : null
     if (expectedBackground !== null) {
-      await waitUntilEqual(
-        () => this.getDayBackgroundColor(date),
-        expectedBackground
-      )
+      await expect
+        .poll(() => this.getDayBackgroundColor(date))
+        .toBe(expectedBackground)
     } else {
-      await waitUntilTrue(async () => {
-        const bg = await this.getDayBackgroundColor(date)
-        // White or transparent
-        return bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)'
-      })
+      await expect
+        .poll(() => this.getDayBackgroundColor(date))
+        .toMatch(/^(rgb\(255, 255, 255\)|rgba\(0, 0, 0, 0\))$/)
     }
   }
 
@@ -1073,10 +1069,9 @@ class HolidayModal extends Element {
     values: { child: { id: string }; option: string }[]
   ) {
     for (const { child, option } of values) {
-      await waitUntilEqual(
-        () => this.#childHolidaySelect(child.id).selectedOption,
-        option
-      )
+      await expect
+        .poll(() => this.#childHolidaySelect(child.id).selectedOption)
+        .toBe(option)
     }
   }
 

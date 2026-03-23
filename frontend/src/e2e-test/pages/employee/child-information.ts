@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import type { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
@@ -11,7 +13,6 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -104,14 +105,16 @@ export default class ChildInformationPage {
   }
 
   async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {
-    await waitUntilEqual(() => this.getCollapsiblesVisibility(), params)
+    await expect.poll(() => this.getCollapsiblesVisibility()).toEqual(params)
   }
 
   async assertSomeCollapsiblesVisible(
     params: Partial<Record<Collapsible, boolean>>
   ) {
     const keys = Object.keys(params) as Collapsible[]
-    await waitUntilEqual(() => this.getCollapsiblesVisibility(keys), params)
+    await expect
+      .poll(() => this.getCollapsiblesVisibility(keys))
+      .toEqual(params)
   }
 
   async openCollapsible<C extends Collapsible>(
@@ -731,11 +734,9 @@ export class GuardiansSection extends Section {
   }
 
   async waitUntilNotLoading() {
-    await waitUntilEqual(
-      () =>
-        this.findByDataQa('table-of-guardians').getAttribute('data-loading'),
-      'false'
-    )
+    await expect(
+      this.findByDataQa('table-of-guardians').locator
+    ).toHaveAttribute('data-loading', 'false')
   }
 
   async assertGuardianStatusAllowed(id: UUID) {
@@ -888,20 +889,18 @@ export class PlacementsSection extends Section {
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
     await this.addMissingServiceNeedButton.click()
-    await waitUntilTrue(async () => {
-      const selectableOptions = await this.serviceNeedOptionSelect
-        .findAll('option')
-        .evaluateAll((elements) =>
-          elements
-            .map((e) => e.getAttribute('value'))
-            .filter((value): value is string => !!value)
-        )
-
-      return (
-        optionIds.every((optionId) => selectableOptions.includes(optionId)) &&
-        selectableOptions.every((optionId) => optionIds.includes(optionId))
-      )
-    })
+    await expect
+      .poll(async () => {
+        const selectableOptions = await this.serviceNeedOptionSelect
+          .findAll('option')
+          .evaluateAll((elements) =>
+            elements
+              .map((e) => e.getAttribute('value'))
+              .filter((value): value is string => !!value)
+          )
+        return selectableOptions.sort()
+      })
+      .toEqual([...optionIds].sort())
   }
 
   async assertTerminatedByGuardianIsShown(placementId: string) {
@@ -1293,9 +1292,9 @@ export class FeeAlterationsSection extends Section {
   }
 
   async assertAttachmentExists(name: string) {
-    await waitUntilTrue(async () =>
-      (await this.page.findAllByDataQa('attachment').allTexts()).includes(name)
-    )
+    await expect
+      .poll(() => this.page.findAllByDataQa('attachment').allTexts())
+      .toContainEqual(name)
   }
 }
 

@@ -4,7 +4,8 @@
 
 import assert from 'assert'
 
-import { waitUntilEqual } from '../../utils'
+import { expect } from '@playwright/test'
+
 import type { Page } from '../../utils/page'
 import { AsyncButton, Select } from '../../utils/page'
 
@@ -19,10 +20,9 @@ export class EmployeePreferredFirstNamePage {
   }
 
   async assertSelectedPreferredFirstName(expectedPreferredFirstName: string) {
-    await waitUntilEqual(
-      () => this.preferredFirstNameSelect.selectedOption,
-      expectedPreferredFirstName
-    )
+    await expect
+      .poll(() => this.preferredFirstNameSelect.selectedOption)
+      .toBe(expectedPreferredFirstName)
   }
 
   async assertPreferredFirstNameOptions(

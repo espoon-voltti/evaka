@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
@@ -57,7 +58,7 @@ export default class ChildAttendancePage {
   }
 
   async assertMarkPresentButtonDisabled(disabled: boolean) {
-    await waitUntilEqual(() => this.#markPresentButton.disabled, disabled)
+    await this.#markPresentButton.assertDisabled(disabled)
   }
 
   async selectPresentTab() {
@@ -81,7 +82,7 @@ export default class ChildAttendancePage {
   }
 
   async assertNoChildrenPresentIndicatorIsShown() {
-    await waitUntilTrue(() => this.#noChildrenIndicator.visible)
+    await expect(this.#noChildrenIndicator.locator).toBeVisible()
   }
 
   // time format: "09:46"

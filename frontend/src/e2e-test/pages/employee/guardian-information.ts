@@ -10,7 +10,6 @@ import { formatCents } from 'lib-common/money'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -135,10 +134,9 @@ class FamilyOverviewSection extends Section {
     if (incomeCents !== undefined) {
       const personIncome = person.findByDataQa('person-income-total')
       const expectedIncome = formatCents(incomeCents)
-      await waitUntilEqual(
-        async () => ((await personIncome.text) ?? '').split(' ')[0],
-        expectedIncome
-      )
+      await expect
+        .poll(() => personIncome.text.then((t) => (t ?? '').split(' ')[0]))
+        .toBe(expectedIncome)
     }
   }
 }
@@ -275,7 +273,7 @@ class ApplicationsSection extends Section {
   #applicationRows = this.findAllByDataQa('table-application-row')
 
   async assertApplicationCount(n: number) {
-    await waitUntilEqual(() => this.#applicationRows.count(), n)
+    await expect(this.#applicationRows.locator).toHaveCount(n)
   }
 
   async assertApplicationSummary(
@@ -293,7 +291,7 @@ class DecisionsSection extends Section {
   #decisionRows = this.findAllByDataQa('table-decision-row')
 
   async assertDecisionCount(n: number) {
-    await waitUntilEqual(() => this.#decisionRows.count(), n)
+    await expect(this.#decisionRows.locator).toHaveCount(n)
   }
 
   async assertDecision(
@@ -480,14 +478,13 @@ class FeeDecisionsSection extends Section {
     }
   ) {
     const decision = this.#feeDecisionTableRows.nth(n)
-    await waitUntilTrue(async () =>
-      ((await decision.text) ?? '').includes(
-        `Maksupäätös ${startDate} - ${endDate}`
-      )
+    await expect(decision.locator).toContainText(
+      `Maksupäätös ${startDate} - ${endDate}`,
+      { useInnerText: true }
     )
-    await waitUntilTrue(async () =>
-      ((await decision.text) ?? '').includes(status)
-    )
+    await expect(decision.locator).toContainText(status, {
+      useInnerText: true
+    })
   }
 
   async createRetroactiveFeeDecisions(date: string) {
@@ -532,10 +529,7 @@ class VoucherValueDecisionsSection extends Section {
   }
 
   async checkVoucherValueDecisionCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#voucherValueDecisions.count(),
-      expectedCount
-    )
+    await expect(this.#voucherValueDecisions.locator).toHaveCount(expectedCount)
   }
 
   async createRetroactiveDecisions(from: LocalDate) {
@@ -551,7 +545,7 @@ class InvoicesSection extends Section {
   #invoiceRows = this.findAllByDataQa('table-invoice-row')
 
   async assertInvoiceCount(n: number) {
-    await waitUntilEqual(() => this.#invoiceRows.count(), n)
+    await expect(this.#invoiceRows.locator).toHaveCount(n)
   }
 
   async assertInvoice(n: number, period: string, status: string) {

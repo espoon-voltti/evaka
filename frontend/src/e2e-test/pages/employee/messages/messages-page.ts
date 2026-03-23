@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '@playwright/test'
+
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
 
-import { waitUntilEqual } from '../../../utils'
 import type { Page, ElementCollection } from '../../../utils/page'
 import {
   TextInput,
@@ -376,19 +377,15 @@ export class MessageEditor extends Element {
     await this.recipientSelection.firstOption().click()
     await this.recipientSelection.close()
     await this.inputContent.fill(content)
-    await waitUntilEqual(() => this.getEditorState(), 'clean')
-  }
-
-  async getEditorState() {
-    return this.getAttribute('data-status')
+    await expect(this.locator).toHaveAttribute('data-status', 'clean')
   }
 
   async assertRecipient(recipientName: string) {
-    return waitUntilEqual(() => this.recipientSelection.text, recipientName)
+    await this.recipientSelection.assertTextEquals(recipientName)
   }
 
   async assertTitle(title: string) {
-    return waitUntilEqual(() => this.inputTitle.inputValue, title)
+    await expect(this.inputTitle.locator).toHaveValue(title)
   }
 
   async assertFiltersVisible() {
