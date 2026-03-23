@@ -11,7 +11,7 @@ dependencies {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.12")
         api("com.auth0:java-jwt:4.5.1")
         api("com.github.kagkarlsson:db-scheduler:16.7.1")
-        api("com.github.mwiede:jsch:2.27.8")
+        api("com.github.mwiede:jsch:2.27.9")
         api("com.google.guava:guava:33.5.0-jre")
         api("com.networknt:json-schema-validator:3.0.1")
         api("com.zaxxer:HikariCP:7.0.2")
