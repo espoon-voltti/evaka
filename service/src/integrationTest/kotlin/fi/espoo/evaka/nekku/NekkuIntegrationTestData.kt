@@ -58,6 +58,27 @@ val basicTestClientWithAnotherCustomerNumber =
         )
     )
 
+val weekdayOnlyTestClientCustomers =
+    listOf(
+        NekkuApiCustomer(
+            "2501K6089",
+            "Ahvenojan päiväkoti",
+            "Varhaiskasvatus",
+            listOf(
+                CustomerApiType(
+                    listOf(
+                        NekkuCustomerApiWeekday.MONDAY,
+                        NekkuCustomerApiWeekday.TUESDAY,
+                        NekkuCustomerApiWeekday.WEDNESDAY,
+                        NekkuCustomerApiWeekday.THURSDAY,
+                        NekkuCustomerApiWeekday.FRIDAY,
+                    ),
+                    "100-lasta",
+                )
+            ),
+        )
+    )
+
 val nekkuProducts =
     listOf(
         NekkuApiProduct(

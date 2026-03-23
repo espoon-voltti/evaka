@@ -300,18 +300,27 @@ fun planNekkuOrderJobs(
     val orderDates = now.toLocalDate().weeklyJobsForThirdWeekFromNow()
     dbc.transaction { tx ->
         val openGroups = tx.getNekkuOpenDaycareGroupDates(orderDates)
+        val customerWeekdays = tx.getNekkuCustomerWeekdaysByGroups(openGroups.map { it.id })
         asyncJobRunner.plan(
             tx,
             openGroups.flatMap { nekkuGroup ->
                 val groupOperationDays =
                     tx.getGroupOperationDays(nekkuGroup.id) ?: return@flatMap emptySequence()
                 orderDates.dates().mapNotNull { date ->
+                    val nekkuWeekday = getNekkuWeekday(date)
                     if (
                         isGroupValidOnDate(date, nekkuGroup) &&
                             isGroupOpenOnDate(date, groupOperationDays) &&
                             !(groupOperationDays.noWeekendMealOrders && date.isWeekendOrHoliday())
                     ) {
-                        AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = date)
+                        if (nekkuWeekday in (customerWeekdays[nekkuGroup.id] ?: emptySet())) {
+                            AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = date)
+                        } else {
+                            logger.info {
+                                "Could not find any customer with given date: ${date.dayOfWeek} groupId=${nekkuGroup.id}"
+                            }
+                            null
+                        }
                     } else null
                 }
             },

@@ -118,6 +118,47 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
+    fun `meal order jobs are not planned for days without nekku customer weekday mapping`() {
+
+        val client = TestNekkuClient(customers = weekdayOnlyTestClientCustomers)
+        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, now)
+
+        val area = DevCareArea()
+
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                shiftCareOperationTimes =
+                    listOf(
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                        TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+                    ),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, nekkuCustomerNumber = "2501K6089")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        val now = HelsinkiDateTime.of(LocalDate.of(2025, 3, 21), LocalTime.of(2, 25))
+
+        planNekkuOrderJobs(db, asyncJobRunner, now)
+
+        // Customer only has Mon-Fri, so Saturday and Sunday should be skipped
+        assertEquals(5, getNekkuJobs(db).count())
+    }
+
+    @Test
     fun `meal order jobs for daycare groups are planned for three week time and it does not create job for daycare that is not open`() {
 
         val client = TestNekkuClient(customers = basicTestClientCustomers)
