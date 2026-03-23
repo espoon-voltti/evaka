@@ -138,7 +138,7 @@ function serviceWorker(): Plugin {
             formats: ['es'],
             fileName: () => fileName
           },
-          rollupOptions: {
+          rolldownOptions: {
             output: {
               entryFileNames: fileName
             }
@@ -200,7 +200,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
         return content.length <= 4096
       },
       sourcemap: true, // required by sentry
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           citizen: path.resolve(__dirname, 'src/citizen-frontend/index.html'),
           employee: path.resolve(__dirname, 'src/employee-frontend/index.html'),
