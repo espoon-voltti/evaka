@@ -3,44 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { createHash } from 'node:crypto'
-import fs from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import { afterEach, beforeEach, describe, expect, test } from '@jest/globals'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import type { AxiosResponse } from 'axios'
 import { unsign } from 'cookie-signature'
 import { Cookie } from 'tough-cookie'
-import { SignedXml } from 'xml-crypto'
 
 import type { Config } from '../config.ts'
 import { configFromEnv } from '../config.ts'
 import { AUTH_HISTORY_COOKIE_PREFIX } from '../device-cookies.ts'
 import { GatewayTester } from '../test/gateway-tester.ts'
+import {
+  buildLoginResponse,
+  IDP_ENTRY_POINT_URL,
+  SP_CALLBACK_URL,
+  SP_ISSUER,
+  SP_LOGIN_CALLBACK_ENDPOINT
+} from '../test/saml-test-helpers.ts'
 
 const mockUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3'
 }
-
-const SP_CALLBACK_URL =
-  'https://saml-sp.qwerty.local/api/citizen/auth/sfi/logout/callback'
-const IDP_ENTRY_POINT_URL = 'https://identity-provider.asdf.local/idp'
-
-const SP_LOGIN_CALLBACK_ENDPOINT = '/api/citizen/auth/sfi/login/callback'
-const SP_LOGIN_CALLBACK_URL = `${new URL(SP_CALLBACK_URL).origin}${SP_LOGIN_CALLBACK_ENDPOINT}`
-
-const SP_ISSUER = 'evaka-local'
-const IDP_ISSUER = 'evaka-slo-test'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const IDP_PVK = fs
-  .readFileSync(
-    path.resolve(__dirname, '../../../config/test-cert/slo-test-idp-key.pem'),
-    'utf8'
-  )
-  .toString()
 
 // Use different secrets to verify the device cookie is signed with the
 // citizen secret and not the employee secret
@@ -107,7 +91,11 @@ describe('SAML device cookies', () => {
   })
 
   async function performSamlLogin(): Promise<AxiosResponse> {
-    const loginResponse = buildLoginResponse()
+    const loginResponse = buildLoginResponse(
+      'test@test.local',
+      '_test_session',
+      'testAuthnRequest'
+    )
     tester.nockScope.post('/system/citizen-login').reply(200, mockUser)
     const res = await tester.client.post(
       SP_LOGIN_CALLBACK_ENDPOINT,
@@ -195,91 +183,3 @@ describe('SAML device cookies', () => {
     expect(capturedDeviceHistory).toEqual([expectedUserHash()])
   })
 })
-
-function buildLoginResponse() {
-  const notBefore = '1980-01-01T01:00:00Z'
-  const issueInstant = '1980-01-01T01:01:00Z'
-  const notOnOrAfter = '4980-01-01T01:01:00Z'
-  const nameId = 'test@test.local'
-  const sessionIndex = '_test_session'
-  const inResponseTo = 'testAuthnRequest'
-
-  const assertion = `<saml:Assertion
-      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:xs="http://www.w3.org/2001/XMLSchema"
-      ID="_bbbbbbbbbbbbbbbbbbbbbbbb"
-      Version="2.0" IssueInstant="${issueInstant}">
-      <saml:Issuer>${IDP_ISSUER}</saml:Issuer>
-      <saml:Subject>
-          <saml:NameID
-              SPNameQualifier="${SP_ISSUER}"
-              Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient">${nameId}</saml:NameID>
-          <saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
-              <saml:SubjectConfirmationData
-                  NotOnOrAfter="${notOnOrAfter}"
-                  Recipient="${SP_LOGIN_CALLBACK_URL}"
-                  InResponseTo="${inResponseTo}"/>
-          </saml:SubjectConfirmation>
-      </saml:Subject>
-      <saml:Conditions
-          NotBefore="${notBefore}"
-          NotOnOrAfter="${notOnOrAfter}">
-          <saml:AudienceRestriction>
-              <saml:Audience>${SP_ISSUER}</saml:Audience>
-          </saml:AudienceRestriction>
-      </saml:Conditions>
-      <saml:AttributeStatement>
-        <saml:Attribute Name="urn:oid:1.2.246.21">
-          <saml:AttributeValue>010101-999X</saml:AttributeValue>
-        </saml:Attribute>
-        <saml:Attribute Name="urn:oid:2.5.4.42">
-          <saml:AttributeValue>Etunimi</saml:AttributeValue>
-        </saml:Attribute>
-        <saml:Attribute Name="urn:oid:2.5.4.4">
-          <saml:AttributeValue>Sukunimi</saml:AttributeValue>
-        </saml:Attribute>
-      </saml:AttributeStatement>
-      <saml:AuthnStatement
-          AuthnInstant="${issueInstant}"
-          SessionNotOnOrAfter="${notOnOrAfter}"
-          SessionIndex="${sessionIndex}">
-          <saml:AuthnContext>
-              <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef>
-          </saml:AuthnContext>
-      </saml:AuthnStatement>
-  </saml:Assertion>`
-
-  const loginResponse = `<samlp:Response
-  xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-  ID="_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  Version="2.0"
-  IssueInstant="${issueInstant}"
-  Destination="${SP_LOGIN_CALLBACK_URL}"
-  InResponseTo="${inResponseTo}">
-  <saml:Issuer>${IDP_ISSUER}</saml:Issuer>
-  <samlp:Status>
-      <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
-  </samlp:Status>
-  ${signXml(assertion)}
-</samlp:Response>`
-  return Buffer.from(signXml(loginResponse)).toString('base64')
-}
-
-function signXml(xml: string) {
-  const sig = new SignedXml()
-  sig.addReference({
-    xpath: '/*',
-    transforms: [
-      'http://www.w3.org/2000/09/xmldsig#enveloped-signature',
-      'http://www.w3.org/2001/10/xml-exc-c14n#'
-    ],
-    digestAlgorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
-  })
-  sig.signatureAlgorithm = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-  sig.canonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#'
-  sig.privateKey = IDP_PVK
-  sig.computeSignature(xml)
-  return sig.getSignedXml()
-}
