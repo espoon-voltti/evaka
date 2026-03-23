@@ -7,7 +7,14 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
-import fi.espoo.evaka.pis.*
+import fi.espoo.evaka.pis.Creator
+import fi.espoo.evaka.pis.createParentship
+import fi.espoo.evaka.pis.createPartnership
+import fi.espoo.evaka.pis.getFosterParents
+import fi.espoo.evaka.pis.getParentships
+import fi.espoo.evaka.pis.getPartnershipsForPerson
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -228,6 +235,13 @@ class FamilyInitializerService(
         headOfChildId: PersonId,
         applicationId: ApplicationId,
     ) {
+        val hasFosterParent =
+            tx.getFosterParents(child.id).any { it.validDuring.includes(evakaClock.today()) }
+        if (hasFosterParent) {
+            logger.debug { "Skipped adding child ${child.id} with active foster parent to family" }
+            return
+        }
+
         val startDate = evakaClock.today()
         val alreadyExists =
             tx.getParentships(
