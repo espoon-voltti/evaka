@@ -81,6 +81,7 @@ export default class CitizenMessagesPage {
       .findByDataQa('thread-reader')
       .findByDataQa('out-of-office-info')
     this.markUnreadButton = messageThreadActions.findByDataQa('mark-unread-btn')
+    this.threadAttachments = page.findAllByDataQa('attachment')
   }
 
   replyButtonTag = 'message-reply-editor-btn'
@@ -92,8 +93,8 @@ export default class CitizenMessagesPage {
     return editor
   }
 
-  async getMessageCount() {
-    return this.#threadContent.count()
+  get threadMessages(): ElementCollection {
+    return this.#threadContent
   }
 
   async assertInboxIsEmpty() {
@@ -159,9 +160,7 @@ export default class CitizenMessagesPage {
     return new MockStrongAuthPage(this.page)
   }
 
-  getThreadAttachmentCount(): Promise<number> {
-    return this.page.findAll('[data-qa="attachment"]').count()
-  }
+  threadAttachments: ElementCollection
 
   async openFirstThread() {
     await this.#threadListItem.click()

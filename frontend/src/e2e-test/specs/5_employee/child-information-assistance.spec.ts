@@ -606,6 +606,6 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
 
     await assistance.modalOkBtn.click()
 
-    await expect.poll(assistance.assistanceNeedVoucherCoefficientCount).toBe(0)
+    await expect(assistance.assistanceNeedVoucherCoefficientRows).toHaveCount(0)
   })
 })

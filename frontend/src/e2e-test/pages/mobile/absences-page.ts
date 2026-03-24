@@ -5,7 +5,7 @@
 import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import type LocalDate from 'lib-common/local-date'
 
-import type { Page, Element } from '../../utils/page'
+import type { ElementCollection, Page, Element } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
 export default class MobileAbsencesPage {
@@ -18,15 +18,14 @@ export default class MobileAbsencesPage {
     this.#firstDeleteAbsencePeriodBtn = page
       .findAll('[data-qa="delete-absence-period"]')
       .first()
+    this.absenceRows = page.findAllByDataQa('absence-row')
   }
 
   async markAbsent() {
     return this.#markAbsentBtn.click()
   }
 
-  async getAbsencesCount() {
-    return this.page.findAll('[data-qa="absence-row"]').count()
-  }
+  absenceRows: ElementCollection
 
   absenceChip(absenceType: AbsenceType) {
     return this.page.findByDataQa(`mark-absent-${absenceType}`)

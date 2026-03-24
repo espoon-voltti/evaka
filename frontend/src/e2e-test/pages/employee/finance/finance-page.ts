@@ -80,14 +80,13 @@ export class FeeDecisionsPage {
       .findAll('[data-qa="table-fee-decision-row"]')
       .first()
     this.searchButton = page.findByDataQa('search-button')
+    this.feeDecisionRows = page.findAllByDataQa('table-fee-decision-row')
   }
 
   #statusFilter = (status: FeeDecisionStatus) =>
     new Checkbox(this.page.findByDataQa(`fee-decision-status-filter-${status}`))
 
-  async getFeeDecisionCount() {
-    return this.page.findAll('[data-qa="table-fee-decision-row"]').count()
-  }
+  feeDecisionRows: ElementCollection
 
   async openFirstFeeDecision(): Promise<FeeDecisionDetailsPage> {
     const popup = await this.page.capturePopup(async () => {
@@ -207,6 +206,7 @@ export class ValueDecisionsPage {
       .findAll('[data-qa="table-value-decision-row"]')
       .first()
     this.searchButton = page.findByDataQa('search-button')
+    this.valueDecisionRows = page.findAllByDataQa('table-value-decision-row')
   }
 
   #statusFilter = (status: VoucherValueDecisionStatus) =>
@@ -223,9 +223,7 @@ export class ValueDecisionsPage {
     return detailsPage
   }
 
-  async getValueDecisionCount() {
-    return this.page.findAll('[data-qa="table-value-decision-row"]').count()
-  }
+  valueDecisionRows: ElementCollection
 
   async setDates(from: LocalDate, to: LocalDate) {
     await this.#toDateInput.fill(to.format())

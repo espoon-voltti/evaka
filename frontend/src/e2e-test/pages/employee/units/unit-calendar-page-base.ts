@@ -184,9 +184,7 @@ export class UnitStaffAttendancesTable extends Element {
     return this.findAllByDataQa('staff-attendance-name').allTexts()
   }
 
-  get rowCount(): Promise<number> {
-    return this.find('tbody').findAll('tr').count()
-  }
+  rows = this.find('tbody').findAll('tr')
 
   async assertPositiveOccupancyCoefficientCount(
     expectedCount: number

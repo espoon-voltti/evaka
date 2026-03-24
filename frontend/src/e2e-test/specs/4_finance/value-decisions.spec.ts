@@ -134,14 +134,14 @@ test.describe('Value decisions', () => {
       decision2DateTo.addDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await expect.poll(() => valueDecisionsPage.getValueDecisionCount()).toBe(2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
 
     await valueDecisionsPage.setDates(
       decision1DateTo.addDays(1),
       decision2DateTo.addDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await expect.poll(() => valueDecisionsPage.getValueDecisionCount()).toBe(1)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
   })
 
   test('With two decisions any date filter overlap will show the decision', async () => {
@@ -153,7 +153,7 @@ test.describe('Value decisions', () => {
       decision2DateTo.subDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await expect.poll(() => valueDecisionsPage.getValueDecisionCount()).toBe(2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
   })
 
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
@@ -165,10 +165,10 @@ test.describe('Value decisions', () => {
       decision2DateTo.subDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await expect.poll(() => valueDecisionsPage.getValueDecisionCount()).toBe(2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
     await valueDecisionsPage.startDateWithinRange()
     await valueDecisionsPage.searchButton.click()
-    await expect.poll(() => valueDecisionsPage.getValueDecisionCount()).toBe(1)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
   })
 
   test('Navigate to the decision details page', async () => {

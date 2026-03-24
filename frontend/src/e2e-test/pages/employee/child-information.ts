@@ -442,11 +442,9 @@ export class ChildDocumentsSection extends Section {
     return new ChildDocumentPage(this.page)
   }
 
-  readonly internalChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-internal-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly internalChildDocumentRows = this.page
+    .findByDataQa('table-of-internal-child-documents')
+    .findAllByDataQa('child-document-row')
 
   internalChildDocuments(nth: number) {
     const row = this.page
@@ -462,11 +460,9 @@ export class ChildDocumentsSection extends Section {
     }
   }
 
-  readonly externalChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-external-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly externalChildDocumentRows = this.page
+    .findByDataQa('table-of-external-child-documents')
+    .findAllByDataQa('child-document-row')
 
   externalChildDocuments(nth: number) {
     const row = this.page
@@ -482,11 +478,9 @@ export class ChildDocumentsSection extends Section {
     }
   }
 
-  readonly decisionChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-decision-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly decisionChildDocumentRows = this.page
+    .findByDataQa('table-of-decision-child-documents')
+    .findAllByDataQa('child-document-row')
 
   decisionChildDocuments(nth: number) {
     const row = this.page
@@ -1115,11 +1109,9 @@ export class AssistanceSection extends Section {
     await this.#otherAssistanceMeasureRows.assertCount(count)
   }
 
-  readonly assistanceNeedVoucherCoefficientCount = () =>
-    this.page
-      .findByDataQa('table-of-assistance-need-voucher-coefficients')
-      .findAllByDataQa('table-assistance-need-voucher-coefficient')
-      .count()
+  readonly assistanceNeedVoucherCoefficientRows = this.page
+    .findByDataQa('table-of-assistance-need-voucher-coefficients')
+    .findAllByDataQa('table-assistance-need-voucher-coefficient')
 
   async assistanceNeedVoucherCoefficients(nth: number) {
     const row = this.page

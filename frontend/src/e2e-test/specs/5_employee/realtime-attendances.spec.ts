@@ -729,7 +729,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '13:00')
       await modal.save()
 
-      await expect.poll(() => staffAttendances.rowCount).toBe(2)
+      await expect(staffAttendances.rows).toHaveCount(2)
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 2,
@@ -742,7 +742,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.removeAttendance(0)
       await modal.save()
 
-      await expect.poll(() => staffAttendances.rowCount).toBe(1)
+      await expect(staffAttendances.rows).toHaveCount(1)
     })
 
     test('Can an add multiple entries to an external', async () => {
@@ -768,7 +768,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '17:30')
       await modal.save()
 
-      await expect.poll(() => staffAttendances.rowCount).toBe(2)
+      await expect(staffAttendances.rows).toHaveCount(2)
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,

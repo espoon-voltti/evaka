@@ -427,10 +427,6 @@ export class IncomeSection extends Section {
 
   incomeListItems = this.page.findAllByDataQa('income-list-item')
 
-  async incomeListItemCount() {
-    return await this.incomeListItems.count()
-  }
-
   async deleteIncomeItem(nth: number) {
     await this.incomeListItems
       .nth(nth)
@@ -455,9 +451,7 @@ export class IncomeSection extends Section {
     this.findByDataQa('income-attachment-upload')
   )
 
-  async getAttachmentCount() {
-    return this.findAllByDataQa('attachment').count()
-  }
+  attachments = this.findAllByDataQa('attachment')
 }
 
 class FeeDecisionsSection extends Section {

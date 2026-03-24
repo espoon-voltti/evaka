@@ -211,12 +211,12 @@ test.describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
-        await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
 
         await openSupervisorPage(mockedDateAt12)
         messagesPage = new MessagesPage(unitSupervisorPage)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -270,12 +270,12 @@ test.describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
-        await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
 
         await openSupervisorPage(mockedDateAt12)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(unitSupervisorPage)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -330,12 +330,12 @@ test.describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertThreadContent(message)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
-        await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
 
         await openSupervisorPage(mockedDateAt12)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(unitSupervisorPage)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -358,9 +358,7 @@ test.describe('Sending and receiving messages', () => {
           'desktop'
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
-        await expect
-          .poll(() => citizenMessagesPage.getThreadAttachmentCount())
-          .toBe(2)
+        await expect(citizenMessagesPage.threadAttachments).toHaveCount(2)
 
         await citizenMessagesPage.openFirstThread()
         const downloadedContent =
@@ -390,9 +388,7 @@ test.describe('Sending and receiving messages', () => {
           'desktop'
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
-        await expect
-          .poll(() => citizenMessagesPage.getThreadAttachmentCount())
-          .toBe(1)
+        await expect(citizenMessagesPage.threadAttachments).toHaveCount(1)
       })
 
       test('Employee can discard thread reply', async () => {
@@ -447,9 +443,9 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.openInbox(1)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(0)
+        await expect(messagesPage.receivedMessages).toHaveCount(0)
       })
 
       test('Citizen sends a message to the unit supervisor before the placement, both will reply', async () => {
@@ -481,7 +477,7 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.openFirstThreadReplyEditor()
         await messagesPage.fillReplyContent(defaultReply)
         await messagesPage.sendReplyButton.click()
@@ -499,9 +495,7 @@ test.describe('Sending and receiving messages', () => {
           'desktop'
         )
         await citizenMessagesPageLater.openFirstThread()
-        await expect
-          .poll(() => citizenMessagesPageLater.getMessageCount())
-          .toBe(2)
+        await expect(citizenMessagesPageLater.threadMessages).toHaveCount(2)
         await citizenMessagesPageLater.replyToFirstThread(defaultReply)
       })
 
@@ -561,10 +555,10 @@ test.describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(0, defaultContent)
-        await expect.poll(() => messagesPage.getThreadAttachmentCount()).toBe(1)
+        await expect(messagesPage.threadAttachments).toHaveCount(1)
       })
 
       test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
@@ -588,7 +582,7 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.assertReceivedMessageParticipantsContains(
           0,
           '(Karhula Jari)'
@@ -640,7 +634,7 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.assertReceivedMessageParticipantsContains(
           0,
           '(Karhula Kaarina)'
@@ -795,7 +789,7 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.assertReceivedMessageParticipantsContains(
           0,
           `${otherGuardian.lastName} ${otherGuardian.firstName}`
@@ -823,9 +817,9 @@ test.describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.openInbox(1)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
       })
 
       test('Citizen can discard message', async () => {
@@ -960,14 +954,14 @@ test.describe('Sending and receiving messages', () => {
 
         await messagesPage.unitReceived.click()
 
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.openFirstThread()
         await messagesPage.assertMessageContent(0, defaultContent)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(0)
+        await expect(messagesPage.receivedMessages).toHaveCount(0)
 
         await messagesPage.markUnreadButton.waitUntilVisible()
         await messagesPage.markUnreadButton.click()
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
 
         const employeePage2 = await newPage({
           mockedTime: mockedDateAt11.addMinutes(5)
@@ -978,14 +972,14 @@ test.describe('Sending and receiving messages', () => {
 
         await messagesPage2.unitReceived.click()
 
-        await expect.poll(() => messagesPage2.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage2.receivedMessages).toHaveCount(1)
         await messagesPage2.openFirstThread()
         await messagesPage2.assertMessageContent(0, defaultContent)
-        await expect.poll(() => messagesPage2.getReceivedMessageCount()).toBe(0)
+        await expect(messagesPage2.receivedMessages).toHaveCount(0)
 
         await messagesPage2.markUnreadButton.waitUntilVisible()
         await messagesPage2.markUnreadButton.click()
-        await expect.poll(() => messagesPage2.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage2.receivedMessages).toHaveCount(1)
       })
 
       test('Citizen reply recipient toggles persist while typing', async () => {
@@ -1333,7 +1327,7 @@ test.describe('Foster parent messaging', () => {
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.unitReceived.click()
-    await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+    await expect(messagesPage.receivedMessages).toHaveCount(1)
     await messagesPage.openFirstThreadReplyEditor()
 
     const guardianButton = messagesPage.secondaryRecipient(

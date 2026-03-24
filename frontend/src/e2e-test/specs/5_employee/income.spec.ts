@@ -249,13 +249,13 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await expect.poll(() => incomesSection.getAttachmentCount()).toBe(1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.edit()
 
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await expect.poll(() => incomesSection.getAttachmentCount()).toBe(2)
+    await expect(incomesSection.attachments).toHaveCount(2)
   })
 
   test('Income with attachment can be deleted', async () => {
@@ -266,7 +266,7 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await expect.poll(() => incomesSection.getAttachmentCount()).toBe(1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.deleteIncomeItem(0)
 
@@ -281,13 +281,13 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await expect.poll(() => incomesSection.getAttachmentCount()).toBe(1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.edit()
     await incomesSection.attachmenUpload.deleteUploadedFile(0)
     await incomesSection.cancelEdit()
 
-    await expect.poll(() => incomesSection.getAttachmentCount()).toBe(0)
+    await expect(incomesSection.attachments).toHaveCount(0)
   })
 
   test('Income notifications are shown', async () => {

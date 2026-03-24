@@ -97,7 +97,7 @@ test.describe('Fee decisions', () => {
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.searchButton.click()
-    await expect.poll(() => feeDecisionsPage.getFeeDecisionCount()).toBe(1)
+    await expect(feeDecisionsPage.feeDecisionRows).toHaveCount(1)
   })
 
   test('Navigate to the from decision details page', async () => {

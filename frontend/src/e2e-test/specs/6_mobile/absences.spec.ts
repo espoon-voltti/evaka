@@ -69,7 +69,7 @@ test.describe('Future absences', () => {
   test('User can set and delete future absence periods', async () => {
     await listPage.selectChild(childId)
     await childPage.markAbsentBeforehandLink.click()
-    await expect.poll(() => absencesPage.getAbsencesCount()).toBe(0)
+    await expect(absencesPage.absenceRows).toHaveCount(0)
 
     await absencesPage.markNewAbsencePeriod(
       today.addWeeks(1),
@@ -77,7 +77,7 @@ test.describe('Future absences', () => {
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()
-    await expect.poll(() => absencesPage.getAbsencesCount()).toBe(1)
+    await expect(absencesPage.absenceRows).toHaveCount(1)
 
     await absencesPage.markNewAbsencePeriod(
       today.addWeeks(4),
@@ -85,9 +85,9 @@ test.describe('Future absences', () => {
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()
-    await expect.poll(() => absencesPage.getAbsencesCount()).toBe(2)
+    await expect(absencesPage.absenceRows).toHaveCount(2)
 
     await absencesPage.deleteFirstAbsencePeriod()
-    await expect.poll(() => absencesPage.getAbsencesCount()).toBe(1)
+    await expect(absencesPage.absenceRows).toHaveCount(1)
   })
 })

@@ -281,7 +281,7 @@ test.describe('Foster parents', () => {
     const reply = 'Message reply'
     await citizenMessagesPage.replyToFirstThread(reply)
     await runPendingAsyncJobs(mockedNow.addMinutes(1))
-    await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+    await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
 
     unitSupervisorPage = await newEvakaPage({
       mockedTime: mockedNow.addMinutes(1)
@@ -289,7 +289,7 @@ test.describe('Foster parents', () => {
     await employeeLogin(unitSupervisorPage, unitSupervisor)
     messagesPage = new MessagesPage(unitSupervisorPage)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-    await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+    await expect(messagesPage.receivedMessages).toHaveCount(1)
     await messagesPage.receivedMessage.click()
     await messagesPage.assertMessageContent(1, reply)
 

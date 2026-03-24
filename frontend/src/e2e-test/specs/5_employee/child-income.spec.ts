@@ -43,7 +43,7 @@ test.describe('Child Income', () => {
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
-    await expect.poll(() => incomesSection.incomeListItemCount()).toBe(1)
+    await expect(incomesSection.incomeListItems).toHaveCount(1)
   })
 
   test('Create a new income with main income', async () => {
@@ -57,7 +57,7 @@ test.describe('Child Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await expect.poll(() => incomesSection.incomeListItemCount()).toBe(1)
+    await expect(incomesSection.incomeListItems).toHaveCount(1)
     await expect.poll(() => incomesSection.getIncomeSum()).toBe('5000 €')
     await expect.poll(() => incomesSection.getExpensesSum()).toBe('0 €')
   })

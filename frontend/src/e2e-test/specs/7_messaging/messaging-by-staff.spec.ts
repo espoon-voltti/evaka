@@ -193,13 +193,13 @@ test.describe('Sending and receiving messages', () => {
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -220,16 +220,16 @@ test.describe('Sending and receiving messages', () => {
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
 
         await messagesPage.deleteFirstThread()
-        await expect.poll(() => messagesPage.getReceivedMessageCount()).toBe(0)
+        await expect(messagesPage.receivedMessages).toHaveCount(0)
       })
     })
   }
@@ -381,7 +381,7 @@ test.describe('Sending and receiving messages', () => {
     await employeeLogin(staffPage, futureStaff)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const staffMessagesPage = new MessagesPage(staffPage)
-    await expect.poll(() => staffMessagesPage.getReceivedMessageCount()).toBe(1)
+    await expect(staffMessagesPage.receivedMessages).toHaveCount(1)
     await staffMessagesPage.receivedMessage.click()
     await staffMessagesPage.assertMessageContent(1, 'Vastaukseni')
   })
@@ -998,7 +998,7 @@ test.describe('Additional filters', () => {
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(message)
-    await expect.poll(() => citizenMessagesPage.getMessageCount()).toBe(1)
+    await expect(citizenMessagesPage.threadMessages).toHaveCount(1)
   })
 
   test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {

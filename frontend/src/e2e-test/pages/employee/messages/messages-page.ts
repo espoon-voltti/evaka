@@ -53,6 +53,8 @@ export default class MessagesPage {
       'message-box-row-received'
     )
     this.markUnreadButton = page.findByDataQa('mark-unread-btn')
+    this.receivedMessages = page.findAllByDataQa('received-message-row')
+    this.threadAttachments = page.findAllByDataQa('attachment')
   }
 
   async openSentMessages(nth = 0) {
@@ -68,13 +70,8 @@ export default class MessagesPage {
   #messageContent = (index = 0) =>
     this.page.findByDataQa(`message-content"][data-index="${index}`)
 
-  async getReceivedMessageCount() {
-    return await this.page.findAll('[data-qa="received-message-row"]').count()
-  }
-
-  async getThreadAttachmentCount(): Promise<number> {
-    return this.page.findAll('[data-qa="attachment"]').count()
-  }
+  receivedMessages: ElementCollection
+  threadAttachments: ElementCollection
 
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
     await this.page
