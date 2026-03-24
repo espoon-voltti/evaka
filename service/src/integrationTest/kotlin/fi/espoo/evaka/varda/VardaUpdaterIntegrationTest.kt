@@ -3024,12 +3024,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             @Json val state: VardaUpdater.EvakaHenkiloNode?,
             val lastSuccessAt: HelsinkiDateTime?,
             val erroredAt: HelsinkiDateTime?,
+            val erroredSince: HelsinkiDateTime?,
             val error: String?,
         )
         val result =
             db.read { tx ->
                 tx.createQuery {
-                        sql("SELECT state, last_success_at, errored_at, error FROM varda_state")
+                        sql(
+                            "SELECT state, last_success_at, errored_at, errored_since, error FROM varda_state"
+                        )
                     }
                     .exactlyOne<Result>()
             }
@@ -3037,7 +3040,111 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(result.state)
         assertNull(result.lastSuccessAt)
         assertEquals(now, result.erroredAt)
+        assertEquals(now, result.erroredSince)
         assertEquals("this is an error message", result.error)
+    }
+
+    @Test
+    fun `errored_since lifecycle for varda_state`() {
+        val child = DevPerson(ssn = "030320A904N")
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.execute {
+                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+            }
+        }
+
+        val t1 = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0))
+        val t2 = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 0))
+        val t3 = HelsinkiDateTime.of(LocalDate.of(2021, 3, 1), LocalTime.of(12, 0))
+        val t4 = HelsinkiDateTime.of(LocalDate.of(2021, 4, 1), LocalTime.of(12, 0))
+
+        data class Result(val erroredAt: HelsinkiDateTime?, val erroredSince: HelsinkiDateTime?)
+
+        fun readState(): Result =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT errored_at, errored_since FROM varda_state WHERE child_id = ${bind(child.id)}"
+                        )
+                    }
+                    .exactlyOne<Result>()
+            }
+
+        db.transaction { it.setVardaUpdateError(child.id, t1, "error1") }
+        readState().let {
+            assertEquals(t1, it.erroredAt)
+            assertEquals(t1, it.erroredSince)
+        }
+
+        db.transaction { it.setVardaUpdateError(child.id, t2, "error2") }
+        readState().let {
+            assertEquals(t2, it.erroredAt)
+            assertEquals(t1, it.erroredSince)
+        }
+
+        db.transaction { it.setVardaUpdateSuccess(child.id, t3, null) }
+        readState().let {
+            assertNull(it.erroredAt)
+            assertNull(it.erroredSince)
+        }
+
+        db.transaction { it.setVardaUpdateError(child.id, t4, "error3") }
+        readState().let {
+            assertEquals(t4, it.erroredAt)
+            assertEquals(t4, it.erroredSince)
+        }
+    }
+
+    @Test
+    fun `errored_since lifecycle for varda_unit`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+        }
+
+        val t1 = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0))
+        val t2 = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 0))
+        val t3 = HelsinkiDateTime.of(LocalDate.of(2021, 3, 1), LocalTime.of(12, 0))
+        val t4 = HelsinkiDateTime.of(LocalDate.of(2021, 4, 1), LocalTime.of(12, 0))
+
+        data class Result(val erroredAt: HelsinkiDateTime?, val erroredSince: HelsinkiDateTime?)
+
+        fun readState(): Result =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT errored_at, errored_since FROM varda_unit WHERE evaka_daycare_id = ${bind(daycare.id)}"
+                        )
+                    }
+                    .exactlyOne<Result>()
+            }
+
+        db.transaction { setUnitUploadFailed(it, t1, daycare.id, "error1") }
+        readState().let {
+            assertEquals(t1, it.erroredAt)
+            assertEquals(t1, it.erroredSince)
+        }
+
+        db.transaction { setUnitUploadFailed(it, t2, daycare.id, "error2") }
+        readState().let {
+            assertEquals(t2, it.erroredAt)
+            assertEquals(t1, it.erroredSince)
+        }
+
+        db.transaction { setUnitUploaded(it, t3, daycare.id, "oid", "{}") }
+        readState().let {
+            assertNull(it.erroredAt)
+            assertNull(it.erroredSince)
+        }
+
+        db.transaction { setUnitUploadFailed(it, t4, daycare.id, "error3") }
+        readState().let {
+            assertEquals(t4, it.erroredAt)
+            assertEquals(t4, it.erroredSince)
+        }
     }
 
     @Test

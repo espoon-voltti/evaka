@@ -154,10 +154,10 @@ fun setUnitUploaded(
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, state, last_success_at, errored_at, error)
-                VALUES (${bind(unitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL)
+                INSERT INTO varda_unit (evaka_daycare_id, state, last_success_at, errored_at, errored_since, error)
+                VALUES (${bind(unitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL, NULL)
                 ON CONFLICT (evaka_daycare_id)
-                DO UPDATE SET state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
+                DO UPDATE SET state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, errored_since = NULL, error = NULL
                 """
             )
         }
@@ -180,10 +180,10 @@ fun setUnitUploadFailed(
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, last_success_at, errored_at, error)
-                VALUES (${bind(unitId)}, NULL, ${bind(now)}, ${bind(error)})
+                INSERT INTO varda_unit (evaka_daycare_id, last_success_at, errored_at, errored_since, error)
+                VALUES (${bind(unitId)}, NULL, ${bind(now)}, ${bind(now)}, ${bind(error)})
                 ON CONFLICT (evaka_daycare_id)
-                DO UPDATE SET errored_at = ${bind(now)}, error = ${bind(error)}
+                DO UPDATE SET errored_at = ${bind(now)}, errored_since = coalesce(varda_unit.errored_since, ${bind(now)}), error = ${bind(error)}
                 """
             )
         }

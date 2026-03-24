@@ -1172,18 +1172,18 @@ export interface UnitsReportRow {
 */
 export interface VardaChildErrorReportRow {
   childId: PersonId
-  created: HelsinkiDateTime
   error: string
-  updated: HelsinkiDateTime
+  erroredAt: HelsinkiDateTime
+  erroredSince: HelsinkiDateTime
 }
 
 /**
 * Generated from fi.espoo.evaka.reports.VardaUnitErrorReportRow
 */
 export interface VardaUnitErrorReportRow {
-  createdAt: HelsinkiDateTime
   error: string
   erroredAt: HelsinkiDateTime
+  erroredSince: HelsinkiDateTime
   unitId: DaycareId
   unitName: string
 }
@@ -1471,8 +1471,8 @@ export function deserializeJsonTitaniaErrorUnit(json: JsonOf<TitaniaErrorUnit>):
 export function deserializeJsonVardaChildErrorReportRow(json: JsonOf<VardaChildErrorReportRow>): VardaChildErrorReportRow {
   return {
     ...json,
-    created: HelsinkiDateTime.parseIso(json.created),
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
+    erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }
 }
 
@@ -1480,7 +1480,7 @@ export function deserializeJsonVardaChildErrorReportRow(json: JsonOf<VardaChildE
 export function deserializeJsonVardaUnitErrorReportRow(json: JsonOf<VardaUnitErrorReportRow>): VardaUnitErrorReportRow {
   return {
     ...json,
-    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
-    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt)
+    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
+    erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }
 }

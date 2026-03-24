@@ -280,6 +280,7 @@ fun Database.Transaction.setVardaUpdateSuccess(
                     state = ${bindJson(state)},
                     last_success_at = ${bind(now)},
                     errored_at = NULL,
+                    errored_since = NULL,
                     error = NULL
                 WHERE child_id = ${bind(childId)}
                 """
@@ -296,7 +297,11 @@ fun Database.Transaction.setVardaUpdateError(
     createUpdate {
             sql(
                 """
-                UPDATE varda_state SET state = null, errored_at = ${bind(now)}, error = ${bind(error)}
+                UPDATE varda_state SET
+                    state = null,
+                    errored_at = ${bind(now)},
+                    errored_since = coalesce(errored_since, ${bind(now)}),
+                    error = ${bind(error)}
                 WHERE child_id = ${bind(childId)}
                 """
             )

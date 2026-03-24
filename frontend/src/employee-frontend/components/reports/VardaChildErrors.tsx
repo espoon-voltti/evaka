@@ -74,7 +74,7 @@ export default React.memo(function VardaChildErrors() {
                 {rows.map((row: VardaChildErrorReportRow) => (
                   <Tr data-qa="varda-error-row" key={row.childId}>
                     <Td data-qa={`age-${row.childId}`}>
-                      {ageInDays(row.created)}
+                      {ageInDays(row.erroredSince)}
                     </Td>
                     <Td data-qa={`child-${row.childId}`}>
                       <Link to={`/child-information/${row.childId}`}>
@@ -86,7 +86,7 @@ export default React.memo(function VardaChildErrors() {
                       <BreakAll>{row.error}</BreakAll>
                     </Td>
                     <Td data-qa={`updated-${row.childId}`}>
-                      {row.updated.format()}
+                      {row.erroredAt.format()}
                     </Td>
                     <Td data-qa={`last-reset-${row.childId}`}>
                       <MutateButton
