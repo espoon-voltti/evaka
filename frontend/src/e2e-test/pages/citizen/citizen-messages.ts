@@ -27,7 +27,7 @@ export default class CitizenMessagesPage {
   #messageEditor: Element
   discardMessageButton: Element
   #inboxEmpty: Element
-  #threadContent: ElementCollection
+  threadMessages: ElementCollection
   #threadUrgent: Element
   #threadChildren: ElementCollection
   newMessageButton: Element
@@ -66,7 +66,7 @@ export default class CitizenMessagesPage {
     this.#inboxEmpty = page.find(
       '[data-qa="inbox-empty"][data-loading="false"]'
     )
-    this.#threadContent = page.findAll('[data-qa="thread-reader-content"]')
+    this.threadMessages = page.findAll('[data-qa="thread-reader-content"]')
     this.#threadUrgent = page
       .findByDataQa('thread-reader')
       .findByDataQa('urgent')
@@ -91,10 +91,6 @@ export default class CitizenMessagesPage {
     const editor = new CitizenMessageEditor(this.#messageEditor)
     await editor.waitUntilVisible()
     return editor
-  }
-
-  get threadMessages(): ElementCollection {
-    return this.#threadContent
   }
 
   async assertInboxIsEmpty() {
@@ -131,7 +127,7 @@ export default class CitizenMessagesPage {
     await this.#threadTitle.assertTextEquals(
       message.title + (message.sensitive ? ' (Arkaluontoinen viestiketju)' : '')
     )
-    await this.#threadContent.only().assertTextEquals(message.content)
+    await this.threadMessages.only().assertTextEquals(message.content)
     if (message.urgent ?? false) {
       await this.#threadUrgent.waitUntilVisible()
     } else {

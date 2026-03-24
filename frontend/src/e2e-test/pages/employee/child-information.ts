@@ -326,7 +326,9 @@ export class DailyServiceTimeSection extends Section {
 }
 
 export class PedagogicalDocumentsSection extends Section {
-  readonly #startDate = this.find('[data-qa="pedagogical-document-start-date"]')
+  readonly startDateElement = this.find(
+    '[data-qa="pedagogical-document-start-date"]'
+  )
 
   readonly #document = this.find('[data-qa="pedagogical-document-document"]')
 
@@ -334,7 +336,7 @@ export class PedagogicalDocumentsSection extends Section {
     this.find('[data-qa="pedagogical-document-description"]')
   )
 
-  readonly #description = this.find(
+  readonly descriptionElement = this.find(
     '[data-qa="pedagogical-document-description"]'
   )
 
@@ -364,20 +366,12 @@ export class PedagogicalDocumentsSection extends Section {
     await this.#delete.click()
   }
 
-  get startDateElement() {
-    return this.#startDate
-  }
-
   get document(): Promise<string> {
     return this.#document.text
   }
 
-  get descriptionElement() {
-    return this.#description
-  }
-
   async setDescription(text: string) {
-    await this.#description.click()
+    await this.descriptionElement.click()
     await this.#descriptionInput.type(text)
   }
 

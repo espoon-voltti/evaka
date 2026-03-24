@@ -37,12 +37,12 @@ export default class CitizenCalendarPage {
   #openCalendarActionsModal: Element
   reservationModal: Element
   #holidayCtas: ElementCollection
-  #expiringIncomeCta: Element
+  expiringIncomeCta: Element
   #dailyServiceTimeNotificationModal: Element
   discussionSurveyModal: Element
   discussionReservationModal: Element
   cancelConfirmModal: Element
-  #discussionsCta: Element
+  discussionsCta: Element
 
   constructor(
     private readonly page: Page,
@@ -53,7 +53,7 @@ export default class CitizenCalendarPage {
     )
     this.reservationModal = page.findByDataQa('reservation-modal')
     this.#holidayCtas = page.findAllByDataQa('holiday-period-cta')
-    this.#expiringIncomeCta = page.findByDataQa('expiring-income-cta')
+    this.expiringIncomeCta = page.findByDataQa('expiring-income-cta')
     this.#dailyServiceTimeNotificationModal = page.findByDataQa(
       'daily-service-time-notification-modal'
     )
@@ -62,7 +62,7 @@ export default class CitizenCalendarPage {
     this.discussionReservationModal = page.findByDataQa(
       'discussion-reservations-modal'
     )
-    this.#discussionsCta = page.findByDataQa('active-discussions-cta')
+    this.discussionsCta = page.findByDataQa('active-discussions-cta')
   }
 
   dayCell = (date: LocalDate) =>
@@ -336,16 +336,8 @@ export default class CitizenCalendarPage {
     return this.#holidayCtas.nth(0).click()
   }
 
-  get expiringIncomeCta() {
-    return this.#expiringIncomeCta
-  }
-
   async clickExpiringIncomeCta(): Promise<void> {
-    return await this.#expiringIncomeCta.click()
-  }
-
-  get discussionsCta() {
-    return this.#discussionsCta
+    return await this.expiringIncomeCta.click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
@@ -359,7 +351,7 @@ export default class CitizenCalendarPage {
     await this.page
       .find('[data-expiring-income-cta-status]')
       .assertAttributeEquals('data-expiring-income-cta-status', 'success')
-    await this.#expiringIncomeCta.waitUntilHidden()
+    await this.expiringIncomeCta.waitUntilHidden()
   }
 
   get dailyServiceTimeNotificationText() {

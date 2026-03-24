@@ -16,8 +16,8 @@ import { AsyncButton, Modal, TextInput } from '../../utils/page'
 import { CitizenNewAbsenceApplicationPage } from './citizen-new-absence-application'
 
 export class CitizenChildPage {
-  #placements: ElementCollection
-  #terminatedPlacements: ElementCollection
+  terminatablePlacements: ElementCollection
+  terminatedPlacements: ElementCollection
   createServiceApplicationButton: Element
   openApplicationInfoBox: Element
 
@@ -25,8 +25,8 @@ export class CitizenChildPage {
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
   ) {
-    this.#placements = page.findAllByDataQa('placement')
-    this.#terminatedPlacements = page.findAllByDataQa('terminated-placement')
+    this.terminatablePlacements = page.findAllByDataQa('placement')
+    this.terminatedPlacements = page.findAllByDataQa('terminated-placement')
     this.createServiceApplicationButton = page.findByDataQa(
       'create-service-application'
     )
@@ -127,7 +127,7 @@ export class CitizenChildPage {
   }
 
   async assertTerminatablePlacementCount(count: number) {
-    await this.#placements.assertCount(count)
+    await this.terminatablePlacements.assertCount(count)
   }
 
   async assertNonTerminatablePlacementCount(count: number) {
@@ -137,11 +137,7 @@ export class CitizenChildPage {
   }
 
   async assertTerminatedPlacementCount(count: number) {
-    await this.#terminatedPlacements.assertCount(count)
-  }
-
-  get terminatedPlacements(): ElementCollection {
-    return this.#terminatedPlacements
+    await this.terminatedPlacements.assertCount(count)
   }
 
   async togglePlacement(label: string) {
@@ -161,14 +157,10 @@ export class CitizenChildPage {
     await modalOkButton.waitUntilHidden()
   }
 
-  get terminatablePlacements(): ElementCollection {
-    return this.#placements
-  }
-
   nonTerminatablePlacements: ElementCollection
 
   getToggledPlacements(): Promise<string[]> {
-    return this.#placements.evaluateAll((elems) =>
+    return this.terminatablePlacements.evaluateAll((elems) =>
       elems
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')

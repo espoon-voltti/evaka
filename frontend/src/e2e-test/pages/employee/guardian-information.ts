@@ -309,10 +309,10 @@ class DecisionsSection extends Section {
 export class IncomeSection extends Section {
   #newIncomeButton: Element
   #incomeDateRange: Element
-  #saveIncomeButton: Element
+  saveIncomeButton: Element
   #cancelIncomeButton: Element
-  #incomeSum: Element
-  #expensesSum: Element
+  incomeSum: Element
+  expensesSum: Element
   #editIncomeItemButton: Element
   incomeStartDateInput: DatePicker
   incomeEndDateInput: DatePicker
@@ -321,10 +321,10 @@ export class IncomeSection extends Section {
     super(page, root)
     this.#newIncomeButton = page.findByDataQa('add-income-button')
     this.#incomeDateRange = page.findByDataQa('income-date-range')
-    this.#saveIncomeButton = page.findByDataQa('save-income')
+    this.saveIncomeButton = page.findByDataQa('save-income')
     this.#cancelIncomeButton = page.findByDataQa('cancel-income-edit')
-    this.#incomeSum = page.findByDataQa('income-sum-income')
-    this.#expensesSum = page.findByDataQa('income-sum-expenses')
+    this.incomeSum = page.findByDataQa('income-sum-income')
+    this.expensesSum = page.findByDataQa('income-sum-expenses')
     this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
 
     this.incomeStartDateInput = new DatePicker(
@@ -409,16 +409,12 @@ export class IncomeSection extends Section {
   }
 
   async save() {
-    await this.#saveIncomeButton.click()
-    await this.#saveIncomeButton.waitUntilHidden()
+    await this.saveIncomeButton.click()
+    await this.saveIncomeButton.waitUntilHidden()
   }
 
   async saveFailing() {
-    await this.#saveIncomeButton.click()
-  }
-
-  get saveIncomeButton() {
-    return this.#saveIncomeButton
+    await this.saveIncomeButton.click()
   }
 
   async cancelEdit() {
@@ -433,14 +429,6 @@ export class IncomeSection extends Section {
       .findByDataQa('delete-income-item')
       .click()
     await this.findByDataQa('modal-okBtn').click()
-  }
-
-  get incomeSum() {
-    return this.#incomeSum
-  }
-
-  get expensesSum() {
-    return this.#expensesSum
   }
 
   async edit() {
