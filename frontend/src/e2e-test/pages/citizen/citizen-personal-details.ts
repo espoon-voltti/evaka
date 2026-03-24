@@ -72,8 +72,7 @@ export class CitizenPersonalDetailsSection extends Element {
   async checkMissingPhoneWarningIsShown() {
     await expect(this.#missingEmailOrPhoneBox).toBeVisible()
     await expect(this.#missingEmailOrPhoneBox).toContainText(
-      'Puhelinnumerosi puuttuu',
-      { useInnerText: true }
+      'Puhelinnumerosi puuttuu'
     )
   }
 

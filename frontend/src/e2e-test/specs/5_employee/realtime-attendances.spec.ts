@@ -174,8 +174,7 @@ test.describe('Realtime staff attendances', () => {
 
     test('The staff attendances table shows all unit staff', async () => {
       await expect(staffAttendances.staffNames).toHaveText(
-        [nonGroupStaff, groupStaff].map(staffName),
-        { useInnerText: true }
+        [nonGroupStaff, groupStaff].map(staffName)
       )
     })
 

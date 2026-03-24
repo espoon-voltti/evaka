@@ -118,12 +118,9 @@ test.describe('Citizen children page', () => {
       await childPage.assertTerminatablePlacementCount(0)
 
       await childPage.assertTerminatedPlacementCount(1)
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      ])
     })
 
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async ({
@@ -143,10 +140,9 @@ test.describe('Citizen children page', () => {
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await expect(childPage.nonTerminatablePlacements).toHaveText(
-        [`Alkuräjähdyksen kerho, voimassa ${endDate.format()}`],
-        { useInnerText: true }
-      )
+      await expect(childPage.nonTerminatablePlacements).toHaveText([
+        `Alkuräjähdyksen kerho, voimassa ${endDate.format()}`
+      ])
     })
 
     test('Daycare placement cannot be terminated if placement is in the future', async ({
@@ -170,10 +166,9 @@ test.describe('Citizen children page', () => {
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await expect(childPage.nonTerminatablePlacements).toHaveText(
-        [`Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`],
-        { useInnerText: true }
-      )
+      await expect(childPage.nonTerminatablePlacements).toHaveText([
+        `Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
+      ])
     })
 
     test('Upcoming transfer application is deleted when placement is terminated', async ({
@@ -285,17 +280,13 @@ test.describe('Citizen children page', () => {
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
       await childPage.assertNonTerminatablePlacementCount(2)
-      await expect(childPage.terminatablePlacements).toHaveText(
-        [labels.daycare1],
-        { useInnerText: true }
-      )
-      await expect(childPage.nonTerminatablePlacements).toHaveText(
-        [
-          `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
-          `Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatablePlacements).toHaveText([
+        labels.daycare1
+      ])
+      await expect(childPage.nonTerminatablePlacements).toHaveText([
+        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
+        `Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`
+      ])
     })
 
     test('Daycare placements are grouped by type and unit, future placement cannot be terminated', async ({
@@ -334,22 +325,18 @@ test.describe('Citizen children page', () => {
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
-      await expect(childPage.terminatablePlacements).toHaveText(
-        [labels.daycare1],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatablePlacements).toHaveText([
+        labels.daycare1
+      ])
       await childPage.togglePlacement(labels.daycare1)
       const daycare1FirstTermination = mockedDate.addWeeks(1)
       await childPage.fillTerminationDate(daycare1FirstTermination, 0)
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(1)
       await childPage.assertTerminatedPlacementCount(1)
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
+      ])
       await expect.poll(() => childPage.getToggledPlacements()).toEqual([])
       await childPage.togglePlacement(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1FirstTermination.format()}`
@@ -357,18 +344,14 @@ test.describe('Citizen children page', () => {
       await childPage.fillTerminationDate(mockedDate, 0)
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(0)
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      ])
 
       await childPage.assertNonTerminatablePlacementCount(1)
-      await expect(childPage.nonTerminatablePlacements).toHaveText(
-        [`Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`],
-        { useInnerText: true }
-      )
+      await expect(childPage.nonTerminatablePlacements).toHaveText([
+        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
+      ])
     })
 
     test('Invoiced daycare can be terminated separately', async ({ evaka }) => {
@@ -429,25 +412,19 @@ test.describe('Citizen children page', () => {
       await childPage.fillTerminationDate(daycareAfterPreschoolEnd.subMonths(1))
       await childPage.submitTermination()
 
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
-            .subMonths(1)
-            .format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
+          .subMonths(1)
+          .format()}`
+      ])
 
       // terminating preschool terminates daycare after preschool
       await childPage.togglePlacement(labels.preschool)
       await childPage.fillTerminationDate(mockedDate)
       await childPage.submitTermination()
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Esiopetus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Esiopetus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+      ])
     })
 
     test('Terminating paid daycare only is possible', async ({ evaka }) => {
@@ -466,34 +443,25 @@ test.describe('Citizen children page', () => {
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
-      await expect(childPage.terminatablePlacements).toHaveText(
-        [
-          `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
-          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatablePlacements).toHaveText([
+        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
+      ])
       await childPage.togglePlacement(
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
       )
       const terminationDate = mockedDate.addMonths(1)
       await childPage.fillTerminationDate(terminationDate)
       await childPage.submitTermination()
-      await expect(childPage.terminatablePlacements).toHaveText(
-        [
-          `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
-          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatablePlacements).toHaveText([
+        `Esiopetus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`,
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
+      ])
 
       await childPage.assertTerminatedPlacementCount(1) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
-      await expect(childPage.terminatedPlacements).toHaveText(
-        [
-          `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${terminationDate.format()}`
-        ],
-        { useInnerText: true }
-      )
+      await expect(childPage.terminatedPlacements).toHaveText([
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${terminationDate.format()}`
+      ])
     })
   })
 })

@@ -47,10 +47,9 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
     await holidayAndTermPeriodsPage.submit()
-    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText(
-      ['15.12.2021 - 31.12.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText([
+      '15.12.2021 - 31.12.2021'
+    ])
 
     await holidayAndTermPeriodsPage.clickAddPeriodButton()
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
@@ -61,30 +60,29 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
     await holidayAndTermPeriodsPage.submit()
-    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText(
-      ['01.02.2022 - 07.02.2022', '15.12.2021 - 31.12.2021'],
-      { useInnerText: true }
-    )
-    await expect(holidayAndTermPeriodsPage.holidayPeriodDeadlines).toHaveText(
-      ['15.01.2022', '07.12.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText([
+      '01.02.2022 - 07.02.2022',
+      '15.12.2021 - 31.12.2021'
+    ])
+    await expect(holidayAndTermPeriodsPage.holidayPeriodDeadlines).toHaveText([
+      '15.01.2022',
+      '07.12.2021'
+    ])
 
     await holidayAndTermPeriodsPage.editHolidayPeriod(1)
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
       reservationDeadline: '8.12.2021'
     })
     await holidayAndTermPeriodsPage.submit()
-    await expect(holidayAndTermPeriodsPage.holidayPeriodDeadlines).toHaveText(
-      ['15.01.2022', '08.12.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.holidayPeriodDeadlines).toHaveText([
+      '15.01.2022',
+      '08.12.2021'
+    ])
 
     await holidayAndTermPeriodsPage.deleteHolidayPeriod(1)
-    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText(
-      ['01.02.2022 - 07.02.2022'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.holidayPeriods).toHaveText([
+      '01.02.2022 - 07.02.2022'
+    ])
   })
 
   test('Holiday questionnaires can be created, updated and deleted', async () => {
@@ -126,9 +124,7 @@ test.describe('Holiday and term periods page', () => {
     ])
 
     await holidayAndTermPeriodsPage.deleteQuestionnaire(0)
-    await expect(holidayAndTermPeriodsPage.questionnaires).toHaveText([], {
-      useInnerText: true
-    })
+    await expect(holidayAndTermPeriodsPage.questionnaires).toHaveText([])
   })
 
   test('Preschool terms can be created, updated and deleted', async () => {
@@ -151,22 +147,20 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.submit()
 
-    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText(
-      ['01.08.2021 - 30.05.2022'],
-      { useInnerText: true }
-    )
-    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText(
-      ['01.07.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText([
+      '01.08.2021 - 30.05.2022'
+    ])
+    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText([
+      '01.07.2021'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.06.2021'], { useInnerText: true })
+    ).toHaveText(['01.06.2021'])
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
@@ -186,24 +180,22 @@ test.describe('Holiday and term periods page', () => {
       termBreaks: secondTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
-    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText(
-      ['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022'],
-      {
-        useInnerText: true
-      }
-    )
-    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText(
-      ['01.07.2025', '01.07.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText([
+      '01.08.2025 - 30.05.2026',
+      '01.08.2021 - 30.05.2022'
+    ])
+    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText([
+      '01.07.2025',
+      '01.07.2021'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.06.2025', '01.06.2021'], { useInnerText: true })
+    ).toHaveText(['01.06.2025', '01.06.2021'])
 
     for (const tb of secondTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     // Edit first row
@@ -237,30 +229,28 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.submit()
 
-    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText(
-      ['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022'],
-      {
-        useInnerText: true
-      }
-    )
-    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText(
-      ['01.06.2025', '01.08.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText([
+      '01.07.2025 - 30.04.2026',
+      '10.08.2021 - 01.06.2022'
+    ])
+    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText([
+      '01.06.2025',
+      '01.08.2021'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.05.2025', '01.05.2021'], { useInnerText: true })
+    ).toHaveText(['01.05.2025', '01.05.2021'])
 
     for (const tb of updatedTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     // Delete latest row
@@ -268,22 +258,20 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
 
-    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText(
-      ['10.08.2021 - 01.06.2022'],
-      { useInnerText: true }
-    )
-    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText(
-      ['01.08.2021'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.preschoolTermPeriods).toHaveText([
+      '10.08.2021 - 01.06.2022'
+    ])
+    await expect(holidayAndTermPeriodsPage.extendedTermStartDates).toHaveText([
+      '01.08.2021'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.05.2021'], { useInnerText: true })
+    ).toHaveText(['01.05.2021'])
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
   })
 
@@ -306,18 +294,17 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.submit()
 
-    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText(
-      ['01.08.2021 - 30.05.2022'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText([
+      '01.08.2021 - 30.05.2022'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.06.2021'], { useInnerText: true })
+    ).toHaveText(['01.06.2021'])
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     await holidayAndTermPeriodsPage.clickAddClubTermButton()
@@ -336,18 +323,18 @@ test.describe('Holiday and term periods page', () => {
       termBreaks: secondTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
-    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText(
-      ['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText([
+      '01.08.2025 - 30.05.2026',
+      '01.08.2021 - 30.05.2022'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.06.2025', '01.06.2021'], { useInnerText: true })
+    ).toHaveText(['01.06.2025', '01.06.2021'])
 
     for (const tb of secondTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     // Edit first row
@@ -379,24 +366,24 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.submit()
 
-    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText(
-      ['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText([
+      '01.07.2025 - 30.04.2026',
+      '10.08.2021 - 01.06.2022'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.05.2025', '01.05.2021'], { useInnerText: true })
+    ).toHaveText(['01.05.2025', '01.05.2021'])
 
     for (const tb of updatedTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
 
     // Delete latest row
@@ -404,18 +391,17 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.confirmClubTermModal()
 
-    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText(
-      ['10.08.2021 - 01.06.2022'],
-      { useInnerText: true }
-    )
+    await expect(holidayAndTermPeriodsPage.clubTermPeriods).toHaveText([
+      '10.08.2021 - 01.06.2022'
+    ])
     await expect(
       holidayAndTermPeriodsPage.applicationPeriodStartDates
-    ).toHaveText(['01.05.2021'], { useInnerText: true })
+    ).toHaveText(['01.05.2021'])
 
     for (const tb of firstTermBreaks) {
       await expect(
         holidayAndTermPeriodsPage.termBreaksByDate(tb.start)
-      ).toHaveText([tb.formatCompact()], { useInnerText: true })
+      ).toHaveText([tb.formatCompact()])
     }
   })
 })

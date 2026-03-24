@@ -472,12 +472,9 @@ class FeeDecisionsSection extends Section {
   ) {
     const decision = this.#feeDecisionTableRows.nth(n)
     await expect(decision).toContainText(
-      `Maksupäätös ${startDate} - ${endDate}`,
-      { useInnerText: true }
+      `Maksupäätös ${startDate} - ${endDate}`
     )
-    await expect(decision).toContainText(status, {
-      useInnerText: true
-    })
+    await expect(decision).toContainText(status)
   }
 
   async createRetroactiveFeeDecisions(date: string) {

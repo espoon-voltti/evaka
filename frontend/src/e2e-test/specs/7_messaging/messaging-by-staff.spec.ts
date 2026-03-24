@@ -1086,8 +1086,11 @@ test('Closed group accounts are sorted after open ones, both alphabetically by n
   await employeeLogin(unitSupervisorPage, unitSupervisor)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   const messagesPage = new MessagesPage(unitSupervisorPage)
-  await expect(messagesPage.groupAccountNames).toHaveText(
-    ['Alpha', 'Beta', 'Aapeli', 'Charlie', 'Delta'],
-    { useInnerText: true }
-  )
+  await expect(messagesPage.groupAccountNames).toHaveText([
+    'Alpha',
+    'Beta',
+    'Aapeli',
+    'Charlie',
+    'Delta'
+  ])
 })

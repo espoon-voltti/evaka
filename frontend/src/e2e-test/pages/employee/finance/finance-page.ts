@@ -151,9 +151,7 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText, {
-      useInnerText: true
-    })
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText)
   }
 
   async assertPartnerNameNotShown() {
@@ -298,9 +296,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText, {
-      useInnerText: true
-    })
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText)
   }
 
   async waitUntilVisible() {

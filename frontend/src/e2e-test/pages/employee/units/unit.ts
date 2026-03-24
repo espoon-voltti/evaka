@@ -563,7 +563,7 @@ class AclSection extends Element {
     }
     await expect(
       row.find('[data-qa="groups"] > div').findAll('div')
-    ).toHaveText(fields.groups, { useInnerText: true })
+    ).toHaveText(fields.groups)
   }
 
   async assertRows(
@@ -669,7 +669,7 @@ class TemporaryEmployeesSection extends Element {
     }
     await expect(
       row.find('[data-qa="groups"] > div').findAll('div')
-    ).toHaveText(fields.groups, { useInnerText: true })
+    ).toHaveText(fields.groups)
   }
 
   async assertRowsExactly(

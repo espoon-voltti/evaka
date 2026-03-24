@@ -179,8 +179,7 @@ class CitizenDecisionResponsePage {
 
   async assertDecisionStatus(decisionId: string, statusText: string) {
     await expect(this.#decisionStatus(decisionId)).toHaveText(
-      new RegExp(`^${statusText}$`, 'i'),
-      { useInnerText: true }
+      new RegExp(`^${statusText}$`, 'i')
     )
   }
 

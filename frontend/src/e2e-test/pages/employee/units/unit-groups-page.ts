@@ -371,9 +371,7 @@ export class GroupCollapsibleChildRow extends Element {
 
   async assertDailyNoteContainsText(expectedText: string) {
     await this.#dailyNoteIcon.hover()
-    await expect(this.#dailyNoteTooltip).toContainText(expectedText, {
-      useInnerText: true
-    })
+    await expect(this.#dailyNoteTooltip).toContainText(expectedText)
   }
 
   async openDailyNoteModal() {

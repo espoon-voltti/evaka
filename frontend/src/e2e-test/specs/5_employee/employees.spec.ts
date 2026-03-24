@@ -47,34 +47,30 @@ test.describe('Employees page', () => {
     })
 
     test('users can be searched by name', async () => {
-      await expect(employeesPage.employeeNames).toHaveText(
-        ['Sorsa Seppo', 'Testaaja Teppo'],
-        { useInnerText: true }
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.deactivateEmployee(0)
-      await expect(employeesPage.employeeNames).toHaveText(
-        ['Sorsa Seppo', 'Testaaja Teppo'],
-        { useInnerText: true }
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.clickDeactivatedEmployees()
-      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'], {
-        useInnerText: true
-      })
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.activateEmployee(0)
-      await expect(employeesPage.employeeNames).toHaveText(
-        ['Sorsa Seppo', 'Testaaja Teppo'],
-        { useInnerText: true }
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.nameInput.fill('Test')
-      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'], {
-        useInnerText: true
-      })
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'])
     })
 
     test('can navigate to employee page', async () => {
@@ -105,15 +101,16 @@ test.describe('Employees page', () => {
       await wizard.waitUntilHidden()
 
       await nav.openAndClickDropdownMenuItem('employees')
-      await expect(employeesPage.employeeNames).toHaveText(
-        ['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo'],
-        { useInnerText: true }
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Esimerkki Erkki',
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
       await employeesPage.deleteEmployee(0)
-      await expect(employeesPage.employeeNames).toHaveText(
-        ['Sorsa Seppo', 'Testaaja Teppo'],
-        { useInnerText: true }
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
     })
   })
 })

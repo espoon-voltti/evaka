@@ -369,14 +369,11 @@ test.describe('Foster parents', () => {
     await childPage.assertTerminatablePlacementCount(0)
 
     await childPage.assertTerminatedPlacementCount(1)
-    await expect(childPage.terminatedPlacements).toHaveText(
-      [
-        `Varhaiskasvatus, ${
-          testDaycare.name
-        }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-      ],
-      { useInnerText: true }
-    )
+    await expect(childPage.terminatedPlacements).toHaveText([
+      `Varhaiskasvatus, ${
+        testDaycare.name
+      }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+    ])
 
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))

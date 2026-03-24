@@ -92,7 +92,7 @@ export default class MobileNotePage {
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {
     await expect(
       this.#stickyNote.note.nth(nth).find('[data-qa="sticky-note-expires"]')
-    ).toContainText(date.format(), { useInnerText: true })
+    ).toContainText(date.format())
   }
 
   async fillNote(dailyNote: ChildDailyNoteBody) {

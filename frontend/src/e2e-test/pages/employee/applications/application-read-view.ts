@@ -167,8 +167,7 @@ export default class ApplicationReadView {
     await text.waitUntilVisible()
 
     await expect(text).toContainText(
-      byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti',
-      { useInnerText: true }
+      byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti'
     )
   }
 
