@@ -583,12 +583,12 @@ test.describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(2, '13:20')
       await modal.setDepartureTime(2, '14:30')
 
-      await expect
-        .poll(() => modal.gapWarning(1))
-        .toBe('Kirjaus puuttuu välillä 12:00 – 12:30')
-      await expect
-        .poll(() => modal.gapWarning(2))
-        .toBe('Kirjaus puuttuu välillä 13:00 – 13:20')
+      await modal
+        .gapWarning(1)
+        .assertTextEquals('Kirjaus puuttuu välillä 12:00 – 12:30')
+      await modal
+        .gapWarning(2)
+        .assertTextEquals('Kirjaus puuttuu välillä 13:00 – 13:20')
     })
 
     test('Departure time is required when editing days that are not today', async () => {
@@ -601,9 +601,7 @@ test.describe('Realtime staff attendances', () => {
         mockedToday.subDays(1)
       )
       await modal.setArrivalTime(0, '08:00')
-      await expect
-        .poll(() => modal.departureTimeInfo(0))
-        .toBe('Pakollinen tieto')
+      await modal.departureTimeInfo(0).assertTextEquals('Pakollinen tieto')
     })
 
     test('Departure time is NOT required when editing today', async () => {
@@ -613,7 +611,7 @@ test.describe('Realtime staff attendances', () => {
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setArrivalTime(0, '')
-      await expect.poll(() => modal.arrivalTimeInfo(0)).toBe('Pakollinen tieto')
+      await modal.arrivalTimeInfo(0).assertTextEquals('Pakollinen tieto')
       await modal.assertDepartureTimeInfoHidden(0)
     })
 

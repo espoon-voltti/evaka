@@ -28,8 +28,8 @@ export default class MobileMessagesPage {
     this.newMessage = page.findByDataQa('new-message-btn')
   }
 
-  async getThreadTitle(index: number) {
-    return this.titles.nth(index).text
+  threadTitle(index: number) {
+    return this.titles.nth(index)
   }
 
   async assertThreadsExist() {

@@ -504,10 +504,10 @@ test.describe('Messages page', () => {
     await threadView.replyContent.fill(replyContent)
     await threadView.sendReplyButton.click()
     await expect(threadView.singleMessageContents).toHaveCount(2)
-    await expect.poll(() => threadView.getMessageContent(1)).toBe(replyContent)
-    await expect
-      .poll(() => threadView.getMessageSender(1))
-      .toBe(`${testDaycare.name} - ${daycareGroup.name}`)
+    await threadView.messageContent(1).assertTextEquals(replyContent)
+    await threadView
+      .messageSender(1)
+      .assertTextEquals(`${testDaycare.name} - ${daycareGroup.name}`)
   })
 
   test('Employee discards a reply', async () => {
@@ -679,9 +679,7 @@ test.describe('Messages page', () => {
     await messagesPage.thread(0).click()
 
     await expect(threadView.singleMessageContents).toHaveCount(1)
-    await expect
-      .poll(() => threadView.getMessageContent(0))
-      .toBe('Testiviestin sisältö')
+    await threadView.messageContent(0).assertTextEquals('Testiviestin sisältö')
   })
 
   test('Supervisor navigates through group message boxes', async () => {
@@ -694,11 +692,11 @@ test.describe('Messages page', () => {
 
     await unreadMessageCountsPage.linkToGroup(daycareGroup2.id).click()
     await messagesPage.assertThreadsExist()
-    await expect.poll(() => messagesPage.getThreadTitle(0)).toBe('Hei ryhmä 2')
+    await messagesPage.threadTitle(0).assertTextEquals('Hei ryhmä 2')
 
     await nav.selectGroup(daycareGroup.id)
     await messagesPage.assertThreadsExist()
-    await expect.poll(() => messagesPage.getThreadTitle(0)).toBe('Otsikko')
+    await messagesPage.threadTitle(0).assertTextEquals('Otsikko')
   })
 
   test('Staff without group access sees info that no accounts were found', async () => {

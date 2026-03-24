@@ -746,9 +746,9 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.dailySecondRangeDeleteButton.click()
       await reservationsModal.dailyAddReservationButton.assertDisabled(false)
       await reservationsModal.dailyAddReservationButton.assertFocused(true)
-      await expect
-        .poll(() => reservationsModal.dailyScreenReaderMessage.text)
-        .toBe('Toinen aikaväli poistettu')
+      await reservationsModal.dailyScreenReaderMessage.assertTextEquals(
+        'Toinen aikaväli poistettu'
+      )
     })
     test('Screen reader text is set for marking absence', async ({
       newEvakaPage
@@ -761,9 +761,9 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
       await reservationsModal.selectRepetition('DAILY')
       await reservationsModal.dailyAbsentButton.click()
-      await expect
-        .poll(() => reservationsModal.dailyScreenReaderMessage.text)
-        .toBe('Merkitty poissaolevaksi')
+      await reservationsModal.dailyScreenReaderMessage.assertTextEquals(
+        'Merkitty poissaolevaksi'
+      )
       await reservationsModal.dailyAbsentButton.assertFocused(true)
     })
   })

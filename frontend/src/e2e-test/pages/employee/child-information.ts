@@ -364,16 +364,16 @@ export class PedagogicalDocumentsSection extends Section {
     await this.#delete.click()
   }
 
-  get startDate(): Promise<string> {
-    return this.#startDate.text
+  get startDateElement() {
+    return this.#startDate
   }
 
   get document(): Promise<string> {
     return this.#document.text
   }
 
-  get description(): Promise<string> {
-    return this.#description.text
+  get descriptionElement() {
+    return this.#description
   }
 
   async setDescription(text: string) {
@@ -1284,9 +1284,10 @@ export class FeeAlterationsSection extends Section {
   }
 
   async assertAttachmentExists(name: string) {
-    await expect
-      .poll(() => this.page.findAllByDataQa('attachment').allTexts())
-      .toContainEqual(name)
+    await this.page
+      .findAllByDataQa('attachment')
+      .find(`text="${name}"`)
+      .waitUntilVisible()
   }
 }
 
