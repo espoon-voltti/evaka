@@ -96,8 +96,8 @@ test.describe('Income', () => {
     await incomesSection.save()
 
     await expect(incomesSection.incomeListItems).toHaveCount(1)
-    await expect.poll(() => incomesSection.getIncomeSum()).toBe('5100,50 €')
-    await expect.poll(() => incomesSection.getExpensesSum()).toBe('35,75 €')
+    await incomesSection.incomeSum.assertTextEquals('5100,50 €')
+    await incomesSection.expensesSum.assertTextEquals('35,75 €')
   })
 
   test('Create a new income without end date', async () => {
@@ -118,13 +118,13 @@ test.describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await expect.poll(() => incomesSection.saveIsDisabled()).toBe(false)
+    await expect(incomesSection.saveIncomeButton).toBeEnabled()
 
     await incomesSection.fillIncome('MAIN_INCOME', 'asd')
-    await expect.poll(() => incomesSection.saveIsDisabled()).toBe(true)
+    await expect(incomesSection.saveIncomeButton).toBeDisabled()
 
     await incomesSection.fillIncome('MAIN_INCOME', '123,123')
-    await expect.poll(() => incomesSection.saveIsDisabled()).toBe(true)
+    await expect(incomesSection.saveIncomeButton).toBeDisabled()
   })
 
   test('Existing income item can have its values updated', async () => {
@@ -137,8 +137,8 @@ test.describe('Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await expect.poll(() => incomesSection.getIncomeSum()).toBe('5000 €')
-    await expect.poll(() => incomesSection.getExpensesSum()).toBe('0 €')
+    await incomesSection.incomeSum.assertTextEquals('5000 €')
+    await incomesSection.expensesSum.assertTextEquals('0 €')
 
     await incomesSection.edit()
 
@@ -148,8 +148,8 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
-    await expect.poll(() => incomesSection.getIncomeSum()).toBe('200 €')
-    await expect.poll(() => incomesSection.getExpensesSum()).toBe('300 €')
+    await incomesSection.incomeSum.assertTextEquals('200 €')
+    await incomesSection.expensesSum.assertTextEquals('300 €')
   })
 
   test('Income coefficients are saved and affect the sum', async () => {
@@ -169,8 +169,8 @@ test.describe('Income', () => {
 
     await incomesSection.save()
 
-    await expect.poll(() => incomesSection.getIncomeSum()).toBe('8380 €')
-    await expect.poll(() => incomesSection.getExpensesSum()).toBe('35,75 €')
+    await incomesSection.incomeSum.assertTextEquals('8380 €')
+    await incomesSection.expensesSum.assertTextEquals('35,75 €')
   })
 
   test('Non-contiguous incomes warning', async () => {

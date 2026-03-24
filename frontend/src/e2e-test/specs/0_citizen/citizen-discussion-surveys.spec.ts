@@ -32,7 +32,7 @@ import type { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test, expect, type NewEvakaPage } from '../../playwright'
+import { test, type NewEvakaPage } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Modal } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -236,11 +236,9 @@ for (const env of ['desktop', 'mobile'] as const) {
     })
 
     test('Citizen sees discussions toast message', async () => {
-      await expect
-        .poll(() => calendarPage.getActiveDiscussionsCtaContent())
-        .toBe(
-          'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nVaraa keskusteluaika'
-        )
+      await calendarPage.discussionsCta.assertTextEquals(
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nVaraa keskusteluaika'
+      )
     })
 
     test('Day modals have correct events', async () => {

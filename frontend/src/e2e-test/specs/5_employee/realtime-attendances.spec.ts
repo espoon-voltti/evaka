@@ -686,15 +686,15 @@ test.describe('Realtime staff attendances', () => {
 
     test('Total staff counts', async () => {
       await calendarPage.selectGroup(groupId2)
-      await expect.poll(() => staffAttendances.personCountSum(0)).toBe('– hlö')
+      await staffAttendances.personCountSum(0).assertTextEquals('– hlö')
 
       await calendarPage.selectGroup(groupId)
-      await expect.poll(() => staffAttendances.personCountSum(0)).toBe('– hlö')
-      await expect.poll(() => staffAttendances.personCountSum(1)).toBe('1 hlö')
-      await expect.poll(() => staffAttendances.personCountSum(2)).toBe('2 hlö')
-      await expect.poll(() => staffAttendances.personCountSum(3)).toBe('– hlö')
-      await expect.poll(() => staffAttendances.personCountSum(4)).toBe('– hlö')
-      await expect.poll(() => staffAttendances.personCountSum(5)).toBe('– hlö')
+      await staffAttendances.personCountSum(0).assertTextEquals('– hlö')
+      await staffAttendances.personCountSum(1).assertTextEquals('1 hlö')
+      await staffAttendances.personCountSum(2).assertTextEquals('2 hlö')
+      await staffAttendances.personCountSum(3).assertTextEquals('– hlö')
+      await staffAttendances.personCountSum(4).assertTextEquals('– hlö')
+      await staffAttendances.personCountSum(5).assertTextEquals('– hlö')
     })
   })
 

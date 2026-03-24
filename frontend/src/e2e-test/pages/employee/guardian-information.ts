@@ -360,10 +360,10 @@ export class IncomeSection extends Section {
     await this.#incomeStatementRows.assertCount(expected)
   }
 
-  async isIncomeStatementHandled(nth = 0) {
+  incomeStatementHandledCheckbox(nth = 0) {
     return new Checkbox(
       this.#incomeStatementRows.nth(nth).findByDataQa(`is-handled-checkbox`)
-    ).checked
+    )
   }
 
   async openIncomeStatement(nth = 0) {
@@ -371,8 +371,8 @@ export class IncomeSection extends Section {
     return new IncomeStatementPage(this.page)
   }
 
-  async getIncomeStatementInnerText(nth = 0) {
-    return this.#incomeStatementRows.nth(nth).text
+  incomeStatementRow(nth = 0) {
+    return this.#incomeStatementRows.nth(nth)
   }
 
   async openNewIncomeForm() {
@@ -417,8 +417,8 @@ export class IncomeSection extends Section {
     await this.#saveIncomeButton.click()
   }
 
-  async saveIsDisabled() {
-    return await this.#saveIncomeButton.disabled
+  get saveIncomeButton() {
+    return this.#saveIncomeButton
   }
 
   async cancelEdit() {
@@ -435,12 +435,12 @@ export class IncomeSection extends Section {
     await this.findByDataQa('modal-okBtn').click()
   }
 
-  async getIncomeSum() {
-    return await this.#incomeSum.text
+  get incomeSum() {
+    return this.#incomeSum
   }
 
-  async getExpensesSum() {
-    return await this.#expensesSum.text
+  get expensesSum() {
+    return this.#expensesSum
   }
 
   async edit() {

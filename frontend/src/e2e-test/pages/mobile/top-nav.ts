@@ -27,8 +27,8 @@ export default class TopNav {
     await this.#userMenu.find('[data-qa="logout-btn"]').click()
   }
 
-  getUserInitials(): Promise<string> {
-    return this.#userMenu.text
+  get userInitials() {
+    return this.#userMenu
   }
 
   getFullName(): Promise<string> {

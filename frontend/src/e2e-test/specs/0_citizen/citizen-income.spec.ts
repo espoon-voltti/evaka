@@ -133,9 +133,9 @@ for (const env of ['desktop', 'mobile'] as const) {
       const header = new CitizenHeader(page, env)
       await header.selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      await expect
-        .poll(() => calendar.getExpiringIncomeCtaContent())
-        .toBe('Muista päivittää tulotietosi 01.02.2022 mennessä')
+      await calendar.expiringIncomeCta.assertTextEquals(
+        'Muista päivittää tulotietosi 01.02.2022 mennessä'
+      )
       await calendar.clickExpiringIncomeCta()
 
       const incomeStatementsPage = new IncomeStatementsPage(page, env)

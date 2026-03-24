@@ -199,7 +199,7 @@ export class UnitStaffAttendancesTable extends Element {
   }
 
   personCountSum(nth: number) {
-    return this.findAllByDataQa('person-count-sum').nth(nth).text
+    return this.findAllByDataQa('person-count-sum').nth(nth)
   }
 
   #attendanceCell = (date: LocalDate, row: number) =>

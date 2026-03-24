@@ -58,7 +58,7 @@ test.describe('Child Income', () => {
     await incomesSection.save()
 
     await expect(incomesSection.incomeListItems).toHaveCount(1)
-    await expect.poll(() => incomesSection.getIncomeSum()).toBe('5000 €')
-    await expect.poll(() => incomesSection.getExpensesSum()).toBe('0 €')
+    await incomesSection.incomeSum.assertTextEquals('5000 €')
+    await incomesSection.expensesSum.assertTextEquals('0 €')
   })
 })

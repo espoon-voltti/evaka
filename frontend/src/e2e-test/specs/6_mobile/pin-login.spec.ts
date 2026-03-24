@@ -217,14 +217,14 @@ test.describe('Mobile PIN login', () => {
     await childPage.goBackFromSensitivePage.click()
     await childPage.goBack.click()
 
-    expect(await topNav.getUserInitials()).toEqual('YY')
+    await topNav.userInitials.assertTextEquals('YY')
 
     await topNav.openUserMenu()
     expect(await topNav.getFullName()).toEqual('Yrjö Yksikkö')
 
     // when user logs out
     await topNav.logout()
-    await expect.poll(() => topNav.getUserInitials()).toBe('')
+    await topNav.userInitials.assertTextEquals('')
 
     await listPage.selectChild(child.id)
     await childPage.sensitiveInfoLink.click()

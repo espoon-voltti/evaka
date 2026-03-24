@@ -40,9 +40,8 @@ export default class MobileListPage {
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)
 
-  async readChildGroupName(childId: UUID) {
-    const elem = this.page.findByDataQa(`child-group-name-${childId}`)
-    return elem.text
+  childGroupName(childId: UUID) {
+    return this.page.findByDataQa(`child-group-name-${childId}`)
   }
 
   async assertChildExists(childId: UUID) {

@@ -989,12 +989,12 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
 
       await listPage.selectGroup('all')
-      await expect
-        .poll(() => listPage.readChildGroupName(childId))
-        .toBe(testDaycareGroup.name.toUpperCase())
+      await listPage
+        .childGroupName(childId)
+        .assertTextEquals(testDaycareGroup.name.toUpperCase())
 
       await listPage.selectGroup(testDaycareGroup.id)
-      await expect.poll(() => listPage.readChildGroupName(childId)).toBe('')
+      await listPage.childGroupName(childId).assertTextEquals('')
     })
 
     test('Child will not be visible in two groups at the same time', async ({

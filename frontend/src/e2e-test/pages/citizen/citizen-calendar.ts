@@ -336,16 +336,16 @@ export default class CitizenCalendarPage {
     return this.#holidayCtas.nth(0).click()
   }
 
-  async getExpiringIncomeCtaContent(): Promise<string> {
-    return this.#expiringIncomeCta.text
+  get expiringIncomeCta() {
+    return this.#expiringIncomeCta
   }
 
   async clickExpiringIncomeCta(): Promise<void> {
     return await this.#expiringIncomeCta.click()
   }
 
-  async getActiveDiscussionsCtaContent(): Promise<string> {
-    return this.#discussionsCta.text
+  get discussionsCta() {
+    return this.#discussionsCta
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
@@ -362,8 +362,8 @@ export default class CitizenCalendarPage {
     await this.#expiringIncomeCta.waitUntilHidden()
   }
 
-  async getDailyServiceTimeNotificationModalContent(): Promise<string> {
-    return this.#dailyServiceTimeNotificationModal.findByDataQa('text').text
+  get dailyServiceTimeNotificationText() {
+    return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
