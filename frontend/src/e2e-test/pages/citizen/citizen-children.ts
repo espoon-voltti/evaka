@@ -31,6 +31,9 @@ export class CitizenChildPage {
       'create-service-application'
     )
     this.openApplicationInfoBox = page.findByDataQa('open-application-info-box')
+    this.nonTerminatablePlacements = page.findAllByDataQa(
+      'non-terminatable-placement'
+    )
   }
 
   async assertChildNameIsShown(name: string) {
@@ -137,8 +140,8 @@ export class CitizenChildPage {
     await this.#terminatedPlacements.assertCount(count)
   }
 
-  getTerminatedPlacements(): Promise<string[]> {
-    return this.#terminatedPlacements.allTexts()
+  get terminatedPlacements(): ElementCollection {
+    return this.#terminatedPlacements
   }
 
   async togglePlacement(label: string) {
@@ -158,13 +161,11 @@ export class CitizenChildPage {
     await modalOkButton.waitUntilHidden()
   }
 
-  getTerminatablePlacements(): Promise<string[]> {
-    return this.#placements.allTexts()
+  get terminatablePlacements(): ElementCollection {
+    return this.#placements
   }
 
-  getNonTerminatablePlacements(): Promise<string[]> {
-    return this.page.findAllByDataQa('non-terminatable-placement').allTexts()
-  }
+  nonTerminatablePlacements: ElementCollection
 
   getToggledPlacements(): Promise<string[]> {
     return this.#placements.evaluateAll((elems) =>

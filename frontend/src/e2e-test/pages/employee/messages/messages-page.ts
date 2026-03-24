@@ -172,10 +172,8 @@ export default class MessagesPage {
     )
   }
 
-  async getGroupAccountNames(): Promise<string[]> {
-    return this.#unitAccount
-      .findAllByDataQa('group-message-account-name')
-      .allTexts()
+  get groupAccountNames(): ElementCollection {
+    return this.#unitAccount.findAllByDataQa('group-message-account-name')
   }
 
   async close() {

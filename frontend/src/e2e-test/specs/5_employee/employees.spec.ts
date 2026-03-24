@@ -47,31 +47,34 @@ test.describe('Employees page', () => {
     })
 
     test('users can be searched by name', async () => {
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(
+        ['Sorsa Seppo', 'Testaaja Teppo'],
+        { useInnerText: true }
+      )
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.deactivateEmployee(0)
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(
+        ['Sorsa Seppo', 'Testaaja Teppo'],
+        { useInnerText: true }
+      )
 
       await employeesPage.clickDeactivatedEmployees()
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'], {
+        useInnerText: true
+      })
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.activateEmployee(0)
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(
+        ['Sorsa Seppo', 'Testaaja Teppo'],
+        { useInnerText: true }
+      )
 
       await employeesPage.nameInput.fill('Test')
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'], {
+        useInnerText: true
+      })
     })
 
     test('can navigate to employee page', async () => {
@@ -102,13 +105,15 @@ test.describe('Employees page', () => {
       await wizard.waitUntilHidden()
 
       await nav.openAndClickDropdownMenuItem('employees')
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(
+        ['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo'],
+        { useInnerText: true }
+      )
       await employeesPage.deleteEmployee(0)
-      await expect
-        .poll(() => employeesPage.visibleUsers)
-        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(
+        ['Sorsa Seppo', 'Testaaja Teppo'],
+        { useInnerText: true }
+      )
     })
   })
 })

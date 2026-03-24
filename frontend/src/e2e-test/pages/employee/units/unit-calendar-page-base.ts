@@ -180,9 +180,7 @@ export class UnitStaffAttendancesTable extends Element {
     super(element)
   }
 
-  get allNames(): Promise<string[]> {
-    return this.findAllByDataQa('staff-attendance-name').allTexts()
-  }
+  staffNames = this.findAllByDataQa('staff-attendance-name')
 
   rows = this.find('tbody').findAll('tr')
 

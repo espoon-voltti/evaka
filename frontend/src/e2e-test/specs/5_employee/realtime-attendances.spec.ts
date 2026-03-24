@@ -173,9 +173,10 @@ test.describe('Realtime staff attendances', () => {
     })
 
     test('The staff attendances table shows all unit staff', async () => {
-      await expect
-        .poll(() => staffAttendances.allNames)
-        .toEqual([nonGroupStaff, groupStaff].map(staffName))
+      await expect(staffAttendances.staffNames).toHaveText(
+        [nonGroupStaff, groupStaff].map(staffName),
+        { useInnerText: true }
+      )
     })
 
     test('The icon tells whether a staff member is counted in occupancy or not', async () => {

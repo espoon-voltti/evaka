@@ -114,40 +114,31 @@ export class HolidayAndTermPeriodsPage {
         page.findByDataQa('input-application-period-start')
       )
     }
+    this.holidayPeriods = page.findAllByDataQa('holiday-period')
+    this.holidayPeriodDeadlines = page.findAllByDataQa(
+      'holiday-period-deadline'
+    )
+    this.clubTermPeriods = page.findAllByDataQa('term')
+    this.preschoolTermPeriods = page.findAllByDataQa('finnish-preschool')
+    this.extendedTermStartDates = page.findAllByDataQa('extended-term-start')
+    this.applicationPeriodStartDates = page.findAllByDataQa(
+      'application-period-start'
+    )
   }
 
-  get visiblePeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('holiday-period').allTexts()
+  holidayPeriods: ElementCollection
+  holidayPeriodDeadlines: ElementCollection
+  clubTermPeriods: ElementCollection
+  preschoolTermPeriods: ElementCollection
+  extendedTermStartDates: ElementCollection
+  applicationPeriodStartDates: ElementCollection
+
+  termBreaksByDate(date: LocalDate): ElementCollection {
+    return this.page.findAllByDataQa(`term-break-${date.formatIso()}`)
   }
 
-  get visibleHolidayPeriodDeadlines(): Promise<string[]> {
-    return this.page.findAllByDataQa('holiday-period-deadline').allTexts()
-  }
-
-  get visibleClubTermPeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('term').allTexts()
-  }
-
-  get visiblePreschoolTermPeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('finnish-preschool').allTexts()
-  }
-
-  get visibleExtendedTermStartDates(): Promise<string[]> {
-    return this.page.findAllByDataQa('extended-term-start').allTexts()
-  }
-
-  get visibleApplicationPeriodStartDates(): Promise<string[]> {
-    return this.page.findAllByDataQa('application-period-start').allTexts()
-  }
-
-  async visibleTermBreakByDate(date: LocalDate): Promise<string[]> {
-    return this.page
-      .findAllByDataQa(`term-break-${date.formatIso()}`)
-      .allTexts()
-  }
-
-  get visibleQuestionnaires(): Promise<string[]> {
-    return this.#questionnaireRows.allTexts()
+  get questionnaires(): ElementCollection {
+    return this.#questionnaireRows
   }
 
   async assertQuestionnaireContainsText(nth: number, texts: string[]) {
