@@ -16,7 +16,7 @@ import type {
 
 import type LocalDate from 'lib-common/local-date'
 
-import { BoundingBox, waitUntilDefined, waitUntilTrue } from '.'
+import { BoundingBox } from '.'
 
 export type EnvType = 'desktop' | 'mobile'
 
@@ -657,19 +657,16 @@ export class MultiSelect extends Element {
 
 export class Collapsible extends Element {
   async isOpen() {
-    const status = await waitUntilDefined(() =>
-      this.getAttribute('data-status')
-    )
+    await expect(this.locator).toHaveAttribute('data-status', /.*/)
+    const status = await this.getAttribute('data-status')
     return status !== 'closed'
   }
 
   async open() {
-    await waitUntilTrue(async () => {
-      if (!(await this.isOpen())) {
-        await this.click()
-      }
-      return this.isOpen()
-    })
+    if (!(await this.isOpen())) {
+      await this.click()
+    }
+    await expect(this.locator).not.toHaveAttribute('data-status', 'closed')
   }
 }
 
