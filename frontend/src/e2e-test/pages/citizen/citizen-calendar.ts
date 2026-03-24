@@ -1069,9 +1069,7 @@ class HolidayModal extends Element {
     values: { child: { id: string }; option: string }[]
   ) {
     for (const { child, option } of values) {
-      await expect
-        .poll(() => this.#childHolidaySelect(child.id).selectedOption)
-        .toBe(option)
+      await this.#childHolidaySelect(child.id).assertSelectedOption(option)
     }
   }
 

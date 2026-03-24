@@ -580,6 +580,10 @@ export class Select extends Element {
     return this.#input.findAll('option').allTexts()
   }
 
+  async assertSelectedOption(value: string) {
+    await expect(this.#input.locator).toHaveValue(value)
+  }
+
   async assertOptions(expected: string[]) {
     await expect(this.#input.findAll('option').locator).toHaveText(expected)
   }

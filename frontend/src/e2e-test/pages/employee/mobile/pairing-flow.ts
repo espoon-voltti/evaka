@@ -46,8 +46,8 @@ export class PairingFlow {
     return this.#responseKey.text
   }
 
-  isPairingWizardFinished() {
-    return this.#mobilePairingTitle3.visible
+  async waitUntilPairingWizardFinished() {
+    await this.#mobilePairingTitle3.waitUntilVisible()
   }
 
   async clickStartCta() {

@@ -43,7 +43,7 @@ test.describe('Mobile pairing', () => {
       body: { challengeKey: res.challengeKey, responseKey }
     })
 
-    await expect.poll(() => pairingFlow.isPairingWizardFinished()).toBe(true)
+    await pairingFlow.waitUntilPairingWizardFinished()
     await pairingFlow.clickStartCta()
   })
 })

@@ -4,7 +4,6 @@
 
 import assert from 'assert'
 
-import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { AsyncButton, Select } from '../../utils/page'
 
@@ -19,9 +18,9 @@ export class EmployeePreferredFirstNamePage {
   }
 
   async assertSelectedPreferredFirstName(expectedPreferredFirstName: string) {
-    await expect
-      .poll(() => this.preferredFirstNameSelect.selectedOption)
-      .toBe(expectedPreferredFirstName)
+    await this.preferredFirstNameSelect.assertSelectedOption(
+      expectedPreferredFirstName
+    )
   }
 
   async assertPreferredFirstNameOptions(
