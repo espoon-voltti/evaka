@@ -25,8 +25,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AssistanceSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -469,15 +468,14 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 01.09.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('new assistance need voucher coefficient cuts off previous one', async () => {
@@ -489,25 +487,23 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
     await createVoucherCoefficient('1,2', '16.06.2021', '05.10.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '1,2',
         validityPeriod: '16.06.2021 – 05.10.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(1),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(1))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 15.06.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('assistance need voucher coefficient can be edited', async () => {
@@ -530,21 +526,21 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await form.validityPeriod.endInput.type('21.11.2021')
     await form.saveBtn.click()
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '9,8',
         validityPeriod: '10.02.2021 – 21.11.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () =>
-        !!(await assistance.assistanceNeedVoucherCoefficientModified(0)),
-      true
-    )
+    await expect
+      .poll(
+        async () =>
+          !!(await assistance.assistanceNeedVoucherCoefficientModified(0))
+      )
+      .toBe(true)
   })
 
   test('assistance need voucher coefficient editing cuts off other coefficient', async () => {
@@ -556,15 +552,14 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
     await createVoucherCoefficient('1,9', '29.11.2021', '30.12.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '1,9',
         validityPeriod: '29.11.2021 – 30.12.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
     await assistance.assistanceNeedVoucherCoefficientActions(0).editBtn.click()
     const form = assistance.assistanceNeedVoucherCoefficientForm(
@@ -578,25 +573,23 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await form.validityPeriod.endInput.type('24.11.2021')
     await form.saveBtn.click()
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '9,8',
         validityPeriod: '20.08.2021 – 24.11.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(1),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(1))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 19.08.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('assistance need voucher coefficient can be deleted', async () => {
@@ -613,6 +606,6 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
 
     await assistance.modalOkBtn.click()
 
-    await waitUntilEqual(assistance.assistanceNeedVoucherCoefficientCount, 0)
+    await expect.poll(assistance.assistanceNeedVoucherCoefficientCount).toBe(0)
   })
 })

@@ -8,8 +8,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -48,30 +47,31 @@ test.describe('Employees page', () => {
     })
 
     test('users can be searched by name', async () => {
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.deactivateEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
 
       await employeesPage.clickDeactivatedEmployees()
-      await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Testaaja Teppo'])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.activateEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
 
       await employeesPage.nameInput.fill('Test')
-      await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Testaaja Teppo'])
     })
 
     test('can navigate to employee page', async () => {
@@ -102,15 +102,13 @@ test.describe('Employees page', () => {
       await wizard.waitUntilHidden()
 
       await nav.openAndClickDropdownMenuItem('employees')
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo'])
       await employeesPage.deleteEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect
+        .poll(() => employeesPage.visibleUsers)
+        .toEqual(['Sorsa Seppo', 'Testaaja Teppo'])
     })
   })
 })

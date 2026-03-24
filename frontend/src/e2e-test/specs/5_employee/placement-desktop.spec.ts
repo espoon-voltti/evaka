@@ -18,8 +18,7 @@ import type { DevApplicationWithForm } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import PlacementDesktopView from '../../pages/employee/applications/placement-desktop-view'
 import { PlacementDraftPage } from '../../pages/employee/placement-draft-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -292,21 +291,21 @@ test.describe('Placement desktop', () => {
     let requestsExpectedToDaycare2 = 0
 
     const assertRequests = async () =>
-      waitUntilEqual(
-        () =>
+      expect
+        .poll(() =>
           Promise.resolve([
             requestsMadeToApplicationSearch,
             requestsMadeToDaycares,
             requestsMadeToDaycare1,
             requestsMadeToDaycare2
-          ]),
-        [
+          ])
+        )
+        .toEqual([
           requestsExpectedToApplicationSearch,
           requestsExpectedToDaycares,
           requestsExpectedToDaycare1,
           requestsExpectedToDaycare2
-        ]
-      )
+        ])
 
     await assertRequests()
     await employeeLogin(page, serviceWorker)

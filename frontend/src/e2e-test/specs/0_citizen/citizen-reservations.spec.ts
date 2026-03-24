@@ -39,7 +39,6 @@ import CitizenNotificationsPage from '../../pages/citizen/citizen-app-notificati
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { test, expect } from '../../playwright'
 import type { NewEvakaPage } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -747,10 +746,9 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.dailySecondRangeDeleteButton.click()
       await reservationsModal.dailyAddReservationButton.assertDisabled(false)
       await reservationsModal.dailyAddReservationButton.assertFocused(true)
-      await waitUntilEqual(
-        () => reservationsModal.dailyScreenReaderMessage.text,
-        'Toinen aikaväli poistettu'
-      )
+      await expect
+        .poll(() => reservationsModal.dailyScreenReaderMessage.text)
+        .toBe('Toinen aikaväli poistettu')
     })
     test('Screen reader text is set for marking absence', async ({
       newEvakaPage
@@ -763,10 +761,9 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
       await reservationsModal.selectRepetition('DAILY')
       await reservationsModal.dailyAbsentButton.click()
-      await waitUntilEqual(
-        () => reservationsModal.dailyScreenReaderMessage.text,
-        'Merkitty poissaolevaksi'
-      )
+      await expect
+        .poll(() => reservationsModal.dailyScreenReaderMessage.text)
+        .toBe('Merkitty poissaolevaksi')
       await reservationsModal.dailyAbsentButton.assertFocused(true)
     })
   })

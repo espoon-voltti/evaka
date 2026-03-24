@@ -42,7 +42,6 @@ import ReportsPage, { ChildDocumentsReport } from '../../pages/employee/reports'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { expect, test } from '../../playwright'
 import type { NewEvakaPage } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -153,7 +152,7 @@ test.describe('Employee - Child documents', () => {
     // Assert status draft and unpublished, open the document again
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(1)
     let row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Luonnos')
     await row.published.assertTextEquals('-')
@@ -173,7 +172,7 @@ test.describe('Employee - Child documents', () => {
     await childDocument.returnButton.click()
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(1)
     row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Luonnos')
     await row.published.assertTextEquals(now.format())
@@ -194,7 +193,7 @@ test.describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(1)
     row = childDocumentsSection.internalChildDocuments(0)
     await row.status.assertTextEquals('Valmis')
     await row.modified.assertTextEquals(later.format())
@@ -288,7 +287,7 @@ test.describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.decisionChildDocumentsCount).toBe(1)
     const row = childDocumentsSection.decisionChildDocuments(0)
     const newStart = now.toLocalDate().addDays(3)
     const newEnd = now.toLocalDate().addDays(10)
@@ -613,7 +612,7 @@ test.describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(1)
     await childDocumentsSection.internalChildDocuments(0).openLink.click()
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
@@ -627,7 +626,7 @@ test.describe('Employee - Child documents', () => {
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(1)
     await childDocumentsSection.internalChildDocuments(0).openLink.click()
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
@@ -780,8 +779,8 @@ test.describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
-    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(0)
+    await expect.poll(childDocumentsSection.externalChildDocumentsCount).toBe(1)
     const row = childDocumentsSection.externalChildDocuments(0)
     await row.sent.assertTextEquals(now.toLocalDate().format())
     await row.answered.assertTextEquals('Ei vastattu')
@@ -848,7 +847,7 @@ test.describe('Employee - Child documents', () => {
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.externalChildDocumentsCount).toBe(1)
     const row = childDocumentsSection.externalChildDocuments(0)
     await row.sent.assertTextEquals(publishedAt.toLocalDate().format())
     await row.answered.assertTextEquals(
@@ -931,8 +930,8 @@ test.describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Valmis')
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
-    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(0)
+    await expect.poll(childDocumentsSection.externalChildDocumentsCount).toBe(1)
     const row = childDocumentsSection.externalChildDocuments(0)
     await row.sent.assertTextEquals(now.toLocalDate().format())
     await row.answered.assertTextEquals(
@@ -1397,7 +1396,7 @@ test.describe('Employee - Child documents', () => {
     await childInformationPage.navigateToChild(testChild2.id)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 3)
+    await expect.poll(childDocumentsSection.decisionChildDocumentsCount).toBe(3)
     // First decision is moved to the second row when its end date was updated
     await childDocumentsSection
       .decisionChildDocuments(0)
@@ -1497,7 +1496,7 @@ test.describe('Employee - Child documents', () => {
     await childInformationPage.navigateToChild(testChild2.id)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.decisionChildDocumentsCount, 2)
+    await expect.poll(childDocumentsSection.decisionChildDocumentsCount).toBe(2)
     await childDocumentsSection
       .decisionChildDocuments(0)
       .validity.assertTextEquals('01.02.2023 - 01.02.2023')
@@ -1925,8 +1924,8 @@ test.describe('Employee - Child documents - unit groups page', () => {
 
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
-    await waitUntilEqual(childDocumentsSection.internalChildDocumentsCount, 0)
-    await waitUntilEqual(childDocumentsSection.externalChildDocumentsCount, 1)
+    await expect.poll(childDocumentsSection.internalChildDocumentsCount).toBe(0)
+    await expect.poll(childDocumentsSection.externalChildDocumentsCount).toBe(1)
     const row = childDocumentsSection.externalChildDocuments(0)
     await row.sent.assertTextEquals(now.toLocalDate().format())
     await row.answered.assertTextEquals(

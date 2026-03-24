@@ -30,8 +30,7 @@ import type { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { FeeDecisionsPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -98,7 +97,7 @@ test.describe('Fee decisions', () => {
       new FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => feeDecisionsPage.getFeeDecisionCount(), 1)
+    await expect.poll(() => feeDecisionsPage.getFeeDecisionCount()).toBe(1)
   })
 
   test('Navigate to the from decision details page', async () => {

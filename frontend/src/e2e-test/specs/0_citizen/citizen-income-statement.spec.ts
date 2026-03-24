@@ -11,8 +11,7 @@ import {
 } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -27,7 +26,7 @@ async function assertIncomeStatementCreated(
   sent: HelsinkiDateTime | null,
   env: EnvType
 ) {
-  await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
+  await expect(incomeStatementsPage.rows).toHaveCount(1)
   const row = incomeStatementsPage.rows.only()
   await row.assertText((text) => text.includes(startDate))
   await row.assertText((text) =>

@@ -29,7 +29,6 @@ import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
 import TopNav from '../../pages/mobile/top-nav'
 import { test, expect } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -225,7 +224,7 @@ test.describe('Mobile PIN login', () => {
 
     // when user logs out
     await topNav.logout()
-    await waitUntilEqual(() => topNav.getUserInitials(), '')
+    await expect.poll(() => topNav.getUserInitials()).toBe('')
 
     await listPage.selectChild(child.id)
     await childPage.sensitiveInfoLink.click()

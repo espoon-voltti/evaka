@@ -9,8 +9,7 @@ import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import type { IncomeSection } from '../../pages/employee/guardian-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -44,7 +43,7 @@ test.describe('Child Income', () => {
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
+    await expect.poll(() => incomesSection.incomeListItemCount()).toBe(1)
   })
 
   test('Create a new income with main income', async () => {
@@ -58,8 +57,8 @@ test.describe('Child Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '5000 €')
-    await waitUntilEqual(() => incomesSection.getExpensesSum(), '0 €')
+    await expect.poll(() => incomesSection.incomeListItemCount()).toBe(1)
+    await expect.poll(() => incomesSection.getIncomeSum()).toBe('5000 €')
+    await expect.poll(() => incomesSection.getExpensesSum()).toBe('0 €')
   })
 })

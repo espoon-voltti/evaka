@@ -34,8 +34,7 @@ import type {
   GuardiansSection
 } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -401,17 +400,16 @@ test.describe('Child information - backup care', () => {
       LocalDate.of(2020, 2, 1),
       LocalDate.of(2020, 2, 3)
     )
-    await waitUntilEqual(
-      () => section.getBackupCares(),
-      [
+    await expect
+      .poll(() => section.getBackupCares())
+      .toEqual([
         {
           unit: testDaycare.name,
           period: '01.02.2020 - 03.02.2020'
         }
-      ]
-    )
+      ])
     await section.deleteBackupCare(0)
-    await waitUntilEqual(() => section.getBackupCares(), [])
+    await expect.poll(() => section.getBackupCares()).toEqual([])
   })
 
   test('error is shown if no placement is during the requested range', async () => {

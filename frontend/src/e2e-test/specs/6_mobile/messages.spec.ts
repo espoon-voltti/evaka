@@ -37,8 +37,7 @@ import PinLoginPage from '../../pages/mobile/pin-login-page'
 import ThreadViewPage from '../../pages/mobile/thread-view'
 import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -479,7 +478,7 @@ test.describe('Messages page', () => {
     await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
-    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
+    await expect(threadView.singleMessageContents).toHaveCount(1)
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyButton.click()
     await threadView.replyContent.fill(replyContent)
@@ -499,17 +498,16 @@ test.describe('Messages page', () => {
     await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
-    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
+    await expect(threadView.singleMessageContents).toHaveCount(1)
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyButton.click()
     await threadView.replyContent.fill(replyContent)
     await threadView.sendReplyButton.click()
-    await waitUntilEqual(() => threadView.singleMessageContents.count(), 2)
-    await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
-    await waitUntilEqual(
-      () => threadView.getMessageSender(1),
-      `${testDaycare.name} - ${daycareGroup.name}`
-    )
+    await expect(threadView.singleMessageContents).toHaveCount(2)
+    await expect.poll(() => threadView.getMessageContent(1)).toBe(replyContent)
+    await expect
+      .poll(() => threadView.getMessageSender(1))
+      .toBe(`${testDaycare.name} - ${daycareGroup.name}`)
   })
 
   test('Employee discards a reply', async () => {
@@ -522,12 +520,12 @@ test.describe('Messages page', () => {
     await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
-    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
+    await expect(threadView.singleMessageContents).toHaveCount(1)
     await threadView.replyButton.click()
     await threadView.replyContent.fill('foo bar baz')
     await threadView.discardReplyButton.click()
     await threadView.replyButton.click()
-    await waitUntilEqual(() => threadView.replyContent.inputValue, '')
+    await expect(threadView.replyContent).toHaveValue('')
   })
 
   test('Employee sends a message to a group', async () => {
@@ -680,11 +678,10 @@ test.describe('Messages page', () => {
     await messagesPage.assertThreadsExist()
     await messagesPage.thread(0).click()
 
-    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
-    await waitUntilEqual(
-      () => threadView.getMessageContent(0),
-      'Testiviestin sisältö'
-    )
+    await expect(threadView.singleMessageContents).toHaveCount(1)
+    await expect
+      .poll(() => threadView.getMessageContent(0))
+      .toBe('Testiviestin sisältö')
   })
 
   test('Supervisor navigates through group message boxes', async () => {
@@ -697,11 +694,11 @@ test.describe('Messages page', () => {
 
     await unreadMessageCountsPage.linkToGroup(daycareGroup2.id).click()
     await messagesPage.assertThreadsExist()
-    await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Hei ryhmä 2')
+    await expect.poll(() => messagesPage.getThreadTitle(0)).toBe('Hei ryhmä 2')
 
     await nav.selectGroup(daycareGroup.id)
     await messagesPage.assertThreadsExist()
-    await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Otsikko')
+    await expect.poll(() => messagesPage.getThreadTitle(0)).toBe('Otsikko')
   })
 
   test('Staff without group access sees info that no accounts were found', async () => {

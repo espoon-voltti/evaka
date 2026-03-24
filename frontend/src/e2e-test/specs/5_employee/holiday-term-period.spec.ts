@@ -11,8 +11,7 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { HolidayAndTermPeriodsPage } from '../../pages/employee/holiday-term-periods'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -48,10 +47,9 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
     await holidayAndTermPeriodsPage.submit()
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePeriods,
-      ['15.12.2021 - 31.12.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePeriods)
+      .toEqual(['15.12.2021 - 31.12.2021'])
 
     await holidayAndTermPeriodsPage.clickAddPeriodButton()
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
@@ -62,30 +60,26 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
     await holidayAndTermPeriodsPage.submit()
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePeriods,
-      ['01.02.2022 - 07.02.2022', '15.12.2021 - 31.12.2021']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines,
-      ['15.01.2022', '07.12.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePeriods)
+      .toEqual(['01.02.2022 - 07.02.2022', '15.12.2021 - 31.12.2021'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines)
+      .toEqual(['15.01.2022', '07.12.2021'])
 
     await holidayAndTermPeriodsPage.editHolidayPeriod(1)
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
       reservationDeadline: '8.12.2021'
     })
     await holidayAndTermPeriodsPage.submit()
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines,
-      ['15.01.2022', '08.12.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines)
+      .toEqual(['15.01.2022', '08.12.2021'])
 
     await holidayAndTermPeriodsPage.deleteHolidayPeriod(1)
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePeriods,
-      ['01.02.2022 - 07.02.2022']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePeriods)
+      .toEqual(['01.02.2022 - 07.02.2022'])
   })
 
   test('Holiday questionnaires can be created, updated and deleted', async () => {
@@ -112,10 +106,11 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.submit()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleQuestionnaires,
-      [['15.02.2022 - 03.05.2022', '8 viikon maksuton jakso', ''].join('\t')]
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleQuestionnaires)
+      .toEqual([
+        ['15.02.2022 - 03.05.2022', '8 viikon maksuton jakso', ''].join('\t')
+      ])
 
     await holidayAndTermPeriodsPage.editQuestionnaire(0)
     await holidayAndTermPeriodsPage.fillQuestionnaireForm({
@@ -127,10 +122,9 @@ test.describe('Holiday and term periods page', () => {
     ])
 
     await holidayAndTermPeriodsPage.deleteQuestionnaire(0)
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleQuestionnaires,
-      []
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleQuestionnaires)
+      .toEqual([])
   })
 
   test('Preschool terms can be created, updated and deleted', async () => {
@@ -153,24 +147,20 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.submit()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['01.08.2021 - 30.05.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.07.2021']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods)
+      .toEqual(['01.08.2021 - 30.05.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleExtendedTermStartDates)
+      .toEqual(['01.07.2021'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.06.2021'])
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
@@ -190,24 +180,20 @@ test.describe('Holiday and term periods page', () => {
       termBreaks: secondTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.07.2025', '01.07.2021']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2025', '01.06.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods)
+      .toEqual(['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleExtendedTermStartDates)
+      .toEqual(['01.07.2025', '01.07.2021'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.06.2025', '01.06.2021'])
 
     for (const tb of secondTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     // Edit first row
@@ -241,31 +227,26 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.submit()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.06.2025', '01.08.2021']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.05.2025', '01.05.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods)
+      .toEqual(['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleExtendedTermStartDates)
+      .toEqual(['01.06.2025', '01.08.2021'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.05.2025', '01.05.2021'])
 
     for (const tb of updatedTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     // Delete latest row
@@ -273,24 +254,20 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['10.08.2021 - 01.06.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.08.2021']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.05.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods)
+      .toEqual(['10.08.2021 - 01.06.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleExtendedTermStartDates)
+      .toEqual(['01.08.2021'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.05.2021'])
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
   })
 
@@ -313,20 +290,17 @@ test.describe('Holiday and term periods page', () => {
     })
     await holidayAndTermPeriodsPage.submit()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleClubTermPeriods,
-      ['01.08.2021 - 30.05.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleClubTermPeriods)
+      .toEqual(['01.08.2021 - 30.05.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.06.2021'])
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     await holidayAndTermPeriodsPage.clickAddClubTermButton()
@@ -345,20 +319,17 @@ test.describe('Holiday and term periods page', () => {
       termBreaks: secondTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleClubTermPeriods,
-      ['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2025', '01.06.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleClubTermPeriods)
+      .toEqual(['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.06.2025', '01.06.2021'])
 
     for (const tb of secondTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     // Edit first row
@@ -390,27 +361,23 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.submit()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleClubTermPeriods,
-      ['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.05.2025', '01.05.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleClubTermPeriods)
+      .toEqual(['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.05.2025', '01.05.2021'])
 
     for (const tb of updatedTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
 
     // Delete latest row
@@ -418,20 +385,17 @@ test.describe('Holiday and term periods page', () => {
 
     await holidayAndTermPeriodsPage.confirmClubTermModal()
 
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleClubTermPeriods,
-      ['10.08.2021 - 01.06.2022']
-    )
-    await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.05.2021']
-    )
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleClubTermPeriods)
+      .toEqual(['10.08.2021 - 01.06.2022'])
+    await expect
+      .poll(() => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates)
+      .toEqual(['01.05.2021'])
 
     for (const tb of firstTermBreaks) {
-      await waitUntilEqual(
-        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
-        [tb.formatCompact()]
-      )
+      await expect
+        .poll(() => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start))
+        .toEqual([tb.formatCompact()])
     }
   })
 })

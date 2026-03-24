@@ -22,8 +22,7 @@ import {
 } from '../../generated/api-clients'
 import type { PedagogicalDocumentsSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -72,13 +71,12 @@ test.describe('Child Information - Pedagogical documents', () => {
 
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
-    await waitUntilEqual(
-      () => section.startDate,
-      mockNow.toLocalDate().format()
-    )
+    await expect
+      .poll(() => section.startDate)
+      .toBe(mockNow.toLocalDate().format())
     await section.setDescription('Test description')
     await section.save()
-    await waitUntilEqual(() => section.description, 'Test description')
+    await expect.poll(() => section.description).toBe('Test description')
     await section.fileUpload.upload(testfile1Path)
     await section.fileUpload.upload(testfile2Path)
   })

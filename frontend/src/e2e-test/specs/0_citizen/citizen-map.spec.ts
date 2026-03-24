@@ -22,7 +22,6 @@ import type {
 } from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { test, expect } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 
 const swedishDaycare: DevDaycare = {
@@ -119,36 +118,35 @@ test.describe('Citizen map page', () => {
   test('Unit details can be viewed by clicking a list item', async () => {
     await mapPage.listItemFor(testDaycare2).click()
     await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(() => mapPage.unitDetailsPanel.name, testDaycare2.name)
+    await expect
+      .poll(() => mapPage.unitDetailsPanel.name)
+      .toBe(testDaycare2.name)
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
 
     await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
-      swedishDaycare.name
-    )
+    await expect
+      .poll(() => mapPage.unitDetailsPanel.name)
+      .toBe(swedishDaycare.name)
   })
 
   test('Units can be searched', async () => {
     await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
-      swedishDaycare.name
-    )
+    await expect
+      .poll(() => mapPage.unitDetailsPanel.name)
+      .toBe(swedishDaycare.name)
   })
 
   test('Units can be searched by middle words in the name', async () => {
     await mapPage.searchInput.type('svenska')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
-      swedishDaycare.name
-    )
+    await expect
+      .poll(() => mapPage.unitDetailsPanel.name)
+      .toBe(swedishDaycare.name)
   })
 
   test('Streets can be searched', async () => {
@@ -170,9 +168,8 @@ test.describe('Citizen map page', () => {
 
   test('Private unit without any periods will show up on the map', async () => {
     await mapPage.testMapPopup(privateDaycareWithoutPeriods)
-    await waitUntilEqual(
-      () => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying,
-      'Ei hakua eVakan kautta, ota yhteys yksikköön'
-    )
+    await expect
+      .poll(() => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying)
+      .toBe('Ei hakua eVakan kautta, ota yhteys yksikköön')
   })
 })

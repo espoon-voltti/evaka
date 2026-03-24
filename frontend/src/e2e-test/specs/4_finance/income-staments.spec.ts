@@ -23,8 +23,7 @@ import {
   FinancePage,
   IncomeStatementsPage
 } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
-import { waitUntilFalse, waitUntilTrue } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -83,8 +82,12 @@ test.describe('Income statements', () => {
       await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
 
     const incomesSection = await personProfilePage.openCollapsible('incomes')
-    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(0))
-    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
+    await expect
+      .poll(() => incomesSection.isIncomeStatementHandled(0))
+      .toBe(false)
+    await expect
+      .poll(() => incomesSection.isIncomeStatementHandled(1))
+      .toBe(false)
 
     const incomeStatementPage = await incomesSection.openIncomeStatement(0)
 
@@ -105,14 +108,16 @@ test.describe('Income statements', () => {
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
     await incomeStatementsPage.openNthIncomeStatementForGuardian(0)
 
-    await waitUntilTrue(() => incomesSection.isIncomeStatementHandled(0))
-    await waitUntilFalse(() => incomesSection.isIncomeStatementHandled(1))
+    await expect
+      .poll(() => incomesSection.isIncomeStatementHandled(0))
+      .toBe(true)
+    await expect
+      .poll(() => incomesSection.isIncomeStatementHandled(1))
+      .toBe(false)
 
-    await waitUntilTrue(async () =>
-      (await incomesSection.getIncomeStatementInnerText(0)).includes(
-        'this is a note'
-      )
-    )
+    await expect
+      .poll(() => incomesSection.getIncomeStatementInnerText(0))
+      .toContain('this is a note')
 
     incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()

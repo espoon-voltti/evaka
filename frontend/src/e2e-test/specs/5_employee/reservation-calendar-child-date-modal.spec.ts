@@ -21,8 +21,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -181,10 +180,9 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.billableAbsenceType.selectOption('SICKLEAVE')
 
     await modal.addNonbillableAbsenceBtn.click()
-    await waitUntilEqual(
-      () => modal.nonbillableAbsenceType.selectedOption,
-      'SICKLEAVE' // defaults from the other absence
-    )
+    await expect
+      .poll(() => modal.nonbillableAbsenceType.selectedOption)
+      .toBe('SICKLEAVE') // defaults from the other absence
     await modal.nonbillableAbsenceType.selectOption('UNKNOWN_ABSENCE')
     await modal.submit()
 
