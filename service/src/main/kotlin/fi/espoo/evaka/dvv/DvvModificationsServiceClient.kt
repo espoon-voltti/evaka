@@ -9,6 +9,7 @@ import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.VtjXroadEnv
 import fi.espoo.evaka.shared.buildHttpClient
+import fi.espoo.evaka.shared.utils.basicAuthInterceptor
 import fi.espoo.evaka.shared.utils.get
 import fi.espoo.evaka.shared.utils.headerInterceptor
 import fi.espoo.evaka.shared.utils.post
@@ -47,8 +48,7 @@ class DvvModificationsServiceClient(
             interceptors =
                 buildList {
                     add(headerInterceptor("Accept", "application/json"))
-                    add(headerInterceptor("MUTP-Tunnus", env.userId))
-                    add(headerInterceptor("MUTP-Salasana", env.password.value))
+                    add(basicAuthInterceptor(env.userId, env.password.value))
                     add(headerInterceptor("X-Road-Client", env.xroadClientId))
                     if (customizers.isNotEmpty()) {
                         add(
