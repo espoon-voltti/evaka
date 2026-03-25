@@ -84,8 +84,7 @@ export const authWeakLogin = (
       await sessions.login(req, user)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
-      // Set device cookie if it's a new browser
-      setDeviceAuthHistoryCookie(res, user.id)
+      setDeviceAuthHistoryCookie(res, user.id, cookieSecret)
 
       res.sendStatus(200)
     } catch (err) {

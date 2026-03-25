@@ -5,6 +5,7 @@
 import { createHash } from 'node:crypto'
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { unsign } from 'cookie-signature'
 import type express from 'express'
 
 import {
@@ -16,7 +17,6 @@ import {
 describe('device-cookies', () => {
   const testUserId = 'user123'
 
-  // Helper function to create a user hash
   const createUserHash = (userId: string): string => {
     const hashGenerator = createHash('sha256')
     hashGenerator.update(userId)
@@ -64,6 +64,7 @@ describe('device-cookies', () => {
   })
 
   describe('setDeviceAuthHistoryCookie', () => {
+    const testSecret = 'test-cookie-secret'
     let mockResponse: jest.Mocked<express.Response>
     let cookieFn: jest.MockedFunction<
       (name: string, value: string, options: object) => void
@@ -77,78 +78,61 @@ describe('device-cookies', () => {
       } as unknown as jest.Mocked<express.Response>
     })
 
-    it('sets signed cookie with correct name and value', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId)
+    it('sets cookie with a value that cookie-parser can unsign', () => {
+      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
 
       const expectedHash = createUserHash(testUserId)
       const expectedCookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${expectedHash}`
 
       expect(cookieFn).toHaveBeenCalledTimes(1)
-      expect(cookieFn).toHaveBeenCalledWith(
-        expectedCookieName,
-        expectedHash,
+      const [name, value, options] = cookieFn.mock.calls[0]
+      expect(name).toBe(expectedCookieName)
+
+      // The value is manually signed with cookie-signature, prefixed with 's:'
+      // Express will URL-encode this to 's%3A...' which cookie-parser handles
+      expect(value).toMatch(/^s:/)
+      expect(unsign(value.slice(2), testSecret)).toBe(expectedHash)
+
+      expect(options).toEqual(
         expect.objectContaining({
           secure: true,
           httpOnly: true,
           sameSite: 'strict',
-          signed: true
-        })
-      )
-    })
-
-    it('sets cookie with correct security attributes', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId)
-
-      expect(cookieFn).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          secure: true,
-          httpOnly: true,
-          sameSite: 'strict',
-          signed: true,
+          signed: false,
           expires: expect.any(Date)
         })
       )
     })
 
-    it('creates different cookies for different users', () => {
-      const user1 = 'user1'
-      const user2 = 'user2'
+    it('produces a value that fails unsign with a wrong secret', () => {
+      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
 
-      setDeviceAuthHistoryCookie(mockResponse, user1)
-      setDeviceAuthHistoryCookie(mockResponse, user2)
+      const value = cookieFn.mock.calls[0][1]
+      expect(unsign(value.slice(2), 'wrong-secret')).toBe(false)
+    })
+
+    it('creates different cookies for different users', () => {
+      setDeviceAuthHistoryCookie(mockResponse, 'user1', testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, 'user2', testSecret)
 
       expect(cookieFn).toHaveBeenCalledTimes(2)
 
-      const call1 = cookieFn.mock.calls[0]
-      const call2 = cookieFn.mock.calls[1]
+      const [name1, value1] = cookieFn.mock.calls[0]
+      const [name2, value2] = cookieFn.mock.calls[1]
 
-      // Cookie names should be different
-      expect(call1?.[0]).not.toEqual(call2?.[0])
-      // Values should be different
-      expect(call1?.[1]).not.toEqual(call2?.[1])
+      expect(name1).not.toEqual(name2)
+      expect(value1).not.toEqual(value2)
     })
 
-    it('creates same cookie for same user with same secret', () => {
-      setDeviceAuthHistoryCookie(mockResponse, testUserId)
+    it('is deterministic for the same user and secret', () => {
+      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
+      setDeviceAuthHistoryCookie(mockResponse, testUserId, testSecret)
 
-      // Reset mock to test second call
-      cookieFn.mockReset()
+      const [name1, value1] = cookieFn.mock.calls[0]
+      const [name2, value2] = cookieFn.mock.calls[1]
 
-      setDeviceAuthHistoryCookie(mockResponse, testUserId)
-
-      expect(cookieFn).toHaveBeenCalledTimes(1)
-
-      // Both calls should produce identical results
-      const expectedHash = createUserHash(testUserId)
-      const expectedCookieName = `${AUTH_HISTORY_COOKIE_PREFIX}${expectedHash}`
-
-      expect(cookieFn).toHaveBeenCalledWith(
-        expectedCookieName,
-        expectedHash,
-        expect.any(Object)
-      )
+      expect(name1).toEqual(name2)
+      expect(value1).toEqual(value2)
     })
   })
 })

@@ -1449,6 +1449,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cookie-signature@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@types/cookie-signature@npm:1.1.2"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/552c10e75ca0bbb57e087ccda8ef55eb1d844029c5835d87ce73f8afadd46b58d931193682be9ad51798fe8886f0b4d3003d049abaa6653c70c6c13a770084f5
+  languageName: node
+  linkType: hard
+
 "@types/debug@npm:^4.1.12":
   version: 4.1.12
   resolution: "@types/debug@npm:4.1.12"
@@ -2771,7 +2780,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie-signature@npm:^1.2.1":
+"cookie-signature@npm:1.2.2, cookie-signature@npm:^1.2.1":
   version: 1.2.2
   resolution: "cookie-signature@npm:1.2.2"
   checksum: 10/be44a3c9a56f3771aea3a8bd8ad8f0a8e2679bcb967478267f41a510b4eb5ec55085386ba79c706c4ac21605ca76f4251973444b90283e0eb3eeafe8a92c7708
@@ -3520,6 +3529,7 @@ __metadata:
     "@jest/globals": "npm:30.3.0"
     "@node-saml/node-saml": "npm:5.1.0"
     "@types/cookie-parser": "npm:1.4.10"
+    "@types/cookie-signature": "npm:1.1.2"
     "@types/express-http-proxy": "npm:1.6.7"
     "@types/express-session": "npm:1.18.2"
     "@types/jsonwebtoken": "npm:9.0.10"
@@ -3535,6 +3545,7 @@ __metadata:
     concurrently: "npm:9.2.1"
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
+    cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.1.0"
     dd-trace: "npm:5.90.0"
     eslint: "npm:9.39.4"
