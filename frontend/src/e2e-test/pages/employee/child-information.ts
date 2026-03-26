@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import type { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
@@ -13,6 +11,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -734,9 +733,10 @@ export class GuardiansSection extends Section {
   }
 
   async waitUntilNotLoading() {
-    await expect(
-      this.findByDataQa('table-of-guardians').locator
-    ).toHaveAttribute('data-loading', 'false')
+    await expect(this.findByDataQa('table-of-guardians')).toHaveAttribute(
+      'data-loading',
+      'false'
+    )
   }
 
   async assertGuardianStatusAllowed(id: UUID) {

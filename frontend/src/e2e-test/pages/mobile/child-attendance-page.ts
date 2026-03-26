@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type {
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/absence'
 
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
@@ -82,7 +81,7 @@ export default class ChildAttendancePage {
   }
 
   async assertNoChildrenPresentIndicatorIsShown() {
-    await expect(this.#noChildrenIndicator.locator).toBeVisible()
+    await expect(this.#noChildrenIndicator).toBeVisible()
   }
 
   // time format: "09:46"

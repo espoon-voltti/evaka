@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -273,7 +272,7 @@ class ApplicationsSection extends Section {
   #applicationRows = this.findAllByDataQa('table-application-row')
 
   async assertApplicationCount(n: number) {
-    await expect(this.#applicationRows.locator).toHaveCount(n)
+    await expect(this.#applicationRows).toHaveCount(n)
   }
 
   async assertApplicationSummary(
@@ -291,7 +290,7 @@ class DecisionsSection extends Section {
   #decisionRows = this.findAllByDataQa('table-decision-row')
 
   async assertDecisionCount(n: number) {
-    await expect(this.#decisionRows.locator).toHaveCount(n)
+    await expect(this.#decisionRows).toHaveCount(n)
   }
 
   async assertDecision(
@@ -478,11 +477,11 @@ class FeeDecisionsSection extends Section {
     }
   ) {
     const decision = this.#feeDecisionTableRows.nth(n)
-    await expect(decision.locator).toContainText(
+    await expect(decision).toContainText(
       `Maksupäätös ${startDate} - ${endDate}`,
       { useInnerText: true }
     )
-    await expect(decision.locator).toContainText(status, {
+    await expect(decision).toContainText(status, {
       useInnerText: true
     })
   }
@@ -529,7 +528,7 @@ class VoucherValueDecisionsSection extends Section {
   }
 
   async checkVoucherValueDecisionCount(expectedCount: number) {
-    await expect(this.#voucherValueDecisions.locator).toHaveCount(expectedCount)
+    await expect(this.#voucherValueDecisions).toHaveCount(expectedCount)
   }
 
   async createRetroactiveDecisions(from: LocalDate) {
@@ -545,7 +544,7 @@ class InvoicesSection extends Section {
   #invoiceRows = this.findAllByDataQa('table-invoice-row')
 
   async assertInvoiceCount(n: number) {
-    await expect(this.#invoiceRows.locator).toHaveCount(n)
+    await expect(this.#invoiceRows).toHaveCount(n)
   }
 
   async assertInvoice(n: number, period: string, status: string) {

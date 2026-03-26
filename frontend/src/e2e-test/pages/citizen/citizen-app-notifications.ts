@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 
 import type { DevPerson } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { Element, Page } from '../../utils/page'
 
 const notificationPrefix = 'child-not-started-toast'

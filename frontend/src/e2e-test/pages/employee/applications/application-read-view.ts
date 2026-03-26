@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
+import { expect } from '../../../playwright'
 import type { Page, Element, ElementCollection } from '../../../utils/page'
 import { Radio, TextInput, DatePicker } from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
@@ -167,7 +166,7 @@ export default class ApplicationReadView {
     const text = attachment.findByDataQa(`attachment-received-at`)
     await text.waitUntilVisible()
 
-    await expect(text.locator).toContainText(
+    await expect(text).toContainText(
       byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti',
       { useInnerText: true }
     )

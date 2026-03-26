@@ -4,8 +4,6 @@
 
 import assert from 'assert'
 
-import { expect } from '@playwright/test'
-
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -13,6 +11,7 @@ import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
@@ -320,7 +319,7 @@ export class VoucherServiceProvidersReport {
   }
 
   async assertRowCount(expectedChildCount: number) {
-    await expect(this.page.findAll('.reportRow').locator).toHaveCount(
+    await expect(this.page.findAll('.reportRow')).toHaveCount(
       expectedChildCount
     )
   }
@@ -361,7 +360,7 @@ export class ServiceVoucherUnitReport {
   }
 
   async assertChildRowCount(expected: number) {
-    await expect(this.#childRows.locator).toHaveCount(expected)
+    await expect(this.#childRows).toHaveCount(expected)
   }
 
   async assertChild(

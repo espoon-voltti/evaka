@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type {
   ApplicationType,
   TransferApplicationUnitSummary
@@ -14,6 +12,7 @@ import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { postPairingChallenge } from '../../../generated/api-clients'
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Checkbox,
@@ -563,7 +562,7 @@ class AclSection extends Element {
       await row.findByDataQa('coefficient-off').waitUntilAttached()
     }
     await expect(
-      row.find('[data-qa="groups"] > div').findAll('div').locator
+      row.find('[data-qa="groups"] > div').findAll('div')
     ).toHaveText(fields.groups, { useInnerText: true })
   }
 
@@ -577,7 +576,7 @@ class AclSection extends Element {
       occupancyCoefficient: boolean
     }[]
   ) {
-    await expect(this.#tableRows.locator).toHaveCount(rows.length)
+    await expect(this.#tableRows).toHaveCount(rows.length)
     await Promise.all(
       rows.map((fields) =>
         this.assertRowFields(this.#tableRow(fields.id), fields)
@@ -669,7 +668,7 @@ class TemporaryEmployeesSection extends Element {
       await row.findByDataQa('coefficient-off').waitUntilAttached()
     }
     await expect(
-      row.find('[data-qa="groups"] > div').findAll('div').locator
+      row.find('[data-qa="groups"] > div').findAll('div')
     ).toHaveText(fields.groups, { useInnerText: true })
   }
 
@@ -805,11 +804,11 @@ class WaitingConfirmationSection extends Element {
   }
 
   async assertRowCount(count: number) {
-    await expect(this.#rows.locator).toHaveCount(count)
+    await expect(this.#rows).toHaveCount(count)
   }
 
   async assertRejectedRowCount(count: number) {
-    await expect(this.#rejectedRows.locator).toHaveCount(count)
+    await expect(this.#rejectedRows).toHaveCount(count)
   }
 
   async assertRow(applicationId: string, rejected: boolean) {
@@ -849,7 +848,7 @@ class PlacementProposalsSection {
   }
 
   async assertAcceptButtonDisabled() {
-    await expect(this.#acceptButton.locator).toBeDisabled()
+    await expect(this.#acceptButton).toBeDisabled()
   }
 
   async clickAcceptButton() {
@@ -885,7 +884,7 @@ class PlacementProposalsSection {
   async assertPlacementProposalRowCount(expected: number) {
     await this.waitUntilVisible()
     await expect(
-      this.#placementProposalTable.findAll('[data-qa="child-name"]').locator
+      this.#placementProposalTable.findAll('[data-qa="child-name"]')
     ).toHaveCount(expected)
   }
 }

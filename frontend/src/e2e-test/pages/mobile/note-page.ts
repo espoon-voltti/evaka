@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
@@ -11,6 +9,7 @@ import type {
 } from 'lib-common/generated/api-types/note'
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import { Modal, TextInput } from '../../utils/page'
 
@@ -93,7 +92,6 @@ export default class MobileNotePage {
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {
     await expect(
       this.#stickyNote.note.nth(nth).find('[data-qa="sticky-note-expires"]')
-        .locator
     ).toContainText(date.format(), { useInnerText: true })
   }
 
@@ -128,8 +126,8 @@ export default class MobileNotePage {
   }
 
   async assertNote(expected: ChildDailyNoteBody) {
-    await expect(this.#note.dailyNote.locator).toHaveValue(expected.note || '')
-    await expect(this.#note.reminderNote.locator).toHaveValue(
+    await expect(this.#note.dailyNote).toHaveValue(expected.note || '')
+    await expect(this.#note.reminderNote).toHaveValue(
       expected.reminderNote || ''
     )
 

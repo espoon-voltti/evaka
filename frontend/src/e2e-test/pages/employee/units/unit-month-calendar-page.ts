@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type {
   AbsenceCategory,
   AbsenceType
@@ -11,6 +9,7 @@ import type {
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import { Checkbox, Element, Modal, Radio, TextInput } from '../../../utils/page'
 
@@ -116,7 +115,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     await new TextInput(cell.find('input')).fill(staffCount)
 
     // Wait until saved
-    await expect(cell.locator).toHaveAttribute('data-state', 'clean')
+    await expect(cell).toHaveAttribute('data-state', 'clean')
   }
 
   async assertStaffAttendance(n: number, staffCount: string) {

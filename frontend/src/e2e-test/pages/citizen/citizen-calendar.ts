@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
 import uniq from 'lodash/uniq'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
@@ -10,6 +9,7 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, ElementCollection } from '../../utils/page'
 import {
   Checkbox,

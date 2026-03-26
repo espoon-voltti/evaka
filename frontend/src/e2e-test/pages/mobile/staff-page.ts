@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import type { DevDaycareGroup } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { ElementCollection, Page } from '../../utils/page'
 import {
   AsyncButton,
@@ -345,9 +344,9 @@ export class StaffAttendancePage {
 
   async assertGroupSelectionVisible(visible: boolean) {
     if (visible) {
-      await expect(this.staffArrivalPage.groupSelect.locator).toBeVisible()
+      await expect(this.staffArrivalPage.groupSelect).toBeVisible()
     } else {
-      await expect(this.staffArrivalPage.groupSelect.locator).toBeHidden()
+      await expect(this.staffArrivalPage.groupSelect).toBeHidden()
     }
   }
 
@@ -371,11 +370,11 @@ export class StaffAttendancePage {
   ) {
     if (visible) {
       await expect(
-        this.staffDeparturePage.departureTypeCheckbox(type).locator
+        this.staffDeparturePage.departureTypeCheckbox(type)
       ).toBeVisible()
     } else {
       await expect(
-        this.staffDeparturePage.departureTypeCheckbox(type).locator
+        this.staffDeparturePage.departureTypeCheckbox(type)
       ).toBeHidden()
     }
   }

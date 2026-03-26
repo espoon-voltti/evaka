@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Element,
@@ -193,14 +192,14 @@ export class UnitStaffAttendancesTable extends Element {
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient-pos')
-    await expect(icons.locator).toHaveCount(expectedCount)
+    await expect(icons).toHaveCount(expectedCount)
   }
 
   async assertZeroOccupancyCoefficientCount(
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient')
-    await expect(icons.locator).toHaveCount(expectedCount)
+    await expect(icons).toHaveCount(expectedCount)
   }
 
   personCountSum(nth: number) {

@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
+import { expect } from '../../playwright'
 import type { Page, ElementCollection } from '../../utils/page'
 import { Element } from '../../utils/page'
 
@@ -34,7 +33,7 @@ export default class MobileMessagesPage {
   }
 
   async assertThreadsExist() {
-    await expect(this.threads.locator).not.toHaveCount(0)
+    await expect(this.threads).not.toHaveCount(0)
   }
 
   thread(nth: number) {

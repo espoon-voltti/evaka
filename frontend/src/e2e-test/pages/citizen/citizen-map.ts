@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { DevDaycare } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 

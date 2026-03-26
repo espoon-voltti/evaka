@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -12,6 +10,7 @@ import { fromUuid } from 'lib-common/id-type'
 import type { JsonOf } from 'lib-common/json'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { FormInput, Section } from '../../utils/application-forms'
 import { sections } from '../../utils/application-forms'
 import type { Page, Element } from '../../utils/page'
@@ -264,10 +263,7 @@ class CitizenApplicationEditor {
   }
 
   async openSection(section: string) {
-    await expect(this.#section(section).locator).toHaveAttribute(
-      'data-status',
-      /.*/
-    )
+    await expect(this.#section(section)).toHaveAttribute('data-status', /.*/)
     const status = await this.#section(section).getAttribute('data-status')
     if (status !== 'open') {
       await this.#sectionHeader(section).click()
@@ -432,9 +428,9 @@ class CitizenApplicationEditor {
 
   async assertPreferredStartDateWarningIsShown(visible: boolean) {
     if (visible) {
-      await expect(this.#preferredStartDateWarning.locator).toBeVisible()
+      await expect(this.#preferredStartDateWarning).toBeVisible()
     } else {
-      await expect(this.#preferredStartDateWarning.locator).toBeHidden()
+      await expect(this.#preferredStartDateWarning).toBeHidden()
     }
   }
 
@@ -452,9 +448,9 @@ class CitizenApplicationEditor {
 
   async assertPartTimeErrorIsShown(visible: boolean) {
     if (visible) {
-      await expect(this.#partTimeLimitError.locator).toBeVisible()
+      await expect(this.#partTimeLimitError).toBeVisible()
     } else {
-      await expect(this.#partTimeLimitError.locator).toBeHidden()
+      await expect(this.#partTimeLimitError).toBeHidden()
     }
   }
 

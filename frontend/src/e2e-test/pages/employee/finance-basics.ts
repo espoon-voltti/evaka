@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
+import { expect } from '../../playwright'
 import type { Element, Page } from '../../utils/page'
 import { AsyncButton, TextInput } from '../../utils/page'
 
@@ -199,9 +198,7 @@ export default class FinanceBasicsPage {
           )
         },
         assertSaveIsDisabled: async () => {
-          await expect(
-            this.feesSection.editor.saveButton.locator
-          ).toBeDisabled()
+          await expect(this.feesSection.editor.saveButton).toBeDisabled()
         },
         save: async (retroactive: boolean) => {
           await this.feesSection.editor.saveButton.click()

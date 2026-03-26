@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class EmployeeNav {
@@ -76,9 +75,9 @@ export default class EmployeeNav {
 
   private async assertVisibility(element: Element, visible: boolean) {
     if (visible) {
-      await expect(element.locator).toBeVisible()
+      await expect(element).toBeVisible()
     } else {
-      await expect(element.locator).toBeHidden()
+      await expect(element).toBeHidden()
     }
   }
 

@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
 
+import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
 import {
   TextInput,
@@ -377,7 +376,7 @@ export class MessageEditor extends Element {
     await this.recipientSelection.firstOption().click()
     await this.recipientSelection.close()
     await this.inputContent.fill(content)
-    await expect(this.locator).toHaveAttribute('data-status', 'clean')
+    await expect(this).toHaveAttribute('data-status', 'clean')
   }
 
   async assertRecipient(recipientName: string) {
@@ -385,7 +384,7 @@ export class MessageEditor extends Element {
   }
 
   async assertTitle(title: string) {
-    await expect(this.inputTitle.locator).toHaveValue(title)
+    await expect(this.inputTitle).toHaveValue(title)
   }
 
   async assertFiltersVisible() {

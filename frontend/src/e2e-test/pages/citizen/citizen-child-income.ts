@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 
+import { expect } from '../../playwright'
 import type {
   Page,
   Element,
@@ -138,7 +137,7 @@ export class CitizenChildIncomeStatementListPage {
     await expect(
       this.childIncomeStatementsSection.find(
         '[data-qa="child-income-statement-missing-warning"]'
-      ).locator
+      )
     ).toBeVisible()
   }
 
@@ -147,13 +146,13 @@ export class CitizenChildIncomeStatementListPage {
       .find('[data-qa="children-income-statements"]')
       .waitUntilVisible()
     await expect(
-      this.page.findAll(`[data-qa="child-income-statements"]`).locator
+      this.page.findAll(`[data-qa="child-income-statements"]`)
     ).toHaveCount(expected)
   }
 
   async assertChildIncomeStatementRowCount(expected: number) {
     await this.childIncomeStatementsList.waitUntilVisible()
-    await expect(this.childIncomeStatementRows.locator).toHaveCount(expected)
+    await expect(this.childIncomeStatementRows).toHaveCount(expected)
   }
 
   async incomeStatementId(nth: number) {

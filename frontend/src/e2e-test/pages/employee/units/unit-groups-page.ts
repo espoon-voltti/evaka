@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
+import { expect } from '../../../playwright'
 import type { ElementCollection, Page } from '../../../utils/page'
 import {
   Combobox,
@@ -73,12 +72,12 @@ export class UnitGroupsPage {
   }
 
   async assertGroupCount(expectedCount: number) {
-    await expect(this.#groupCollapsibles.locator).toHaveCount(expectedCount)
+    await expect(this.#groupCollapsibles).toHaveCount(expectedCount)
   }
 
   async openGroupCollapsible(groupId: string) {
     const elem = this.#groupCollapsible(groupId)
-    await expect(elem.locator).toHaveAttribute('data-status', /.*/)
+    await expect(elem).toHaveAttribute('data-status', /.*/)
     const state = await elem.getAttribute('data-status')
     if (state === 'closed') {
       await elem.findByDataQa('group-name').click()
@@ -118,7 +117,7 @@ export class UnitGroupsPage {
   }
 
   async assertChildOccupancyFactorColumnNotVisible() {
-    await expect(this.childCapacityFactorColumnData.locator).toHaveCount(0)
+    await expect(this.childCapacityFactorColumnData).toHaveCount(0)
   }
 }
 
@@ -133,9 +132,7 @@ export class TerminatedPlacementsSection extends Element {
   }
 
   async assertRowCount(expectedCount: number) {
-    await expect(this.#terminatedPlacementRows.locator).toHaveCount(
-      expectedCount
-    )
+    await expect(this.#terminatedPlacementRows).toHaveCount(expectedCount)
   }
 }
 
@@ -150,7 +147,7 @@ export class MissingPlacementsSection extends Element {
   #missingPlacementRows = this.findAllByDataQa('missing-placement-row')
 
   async assertRowCount(expectedCount: number) {
-    await expect(this.#missingPlacementRows.locator).toHaveCount(expectedCount)
+    await expect(this.#missingPlacementRows).toHaveCount(expectedCount)
   }
 
   async createGroupPlacementForChild(n: number) {
@@ -267,7 +264,7 @@ export class GroupCollapsible extends Element {
     if (expectedCount === 0) {
       await this.#noChildren.waitUntilVisible()
     } else {
-      await expect(this.#childRows.locator).toHaveCount(expectedCount)
+      await expect(this.#childRows).toHaveCount(expectedCount)
     }
   }
 
@@ -374,7 +371,7 @@ export class GroupCollapsibleChildRow extends Element {
 
   async assertDailyNoteContainsText(expectedText: string) {
     await this.#dailyNoteIcon.hover()
-    await expect(this.#dailyNoteTooltip.locator).toContainText(expectedText, {
+    await expect(this.#dailyNoteTooltip).toContainText(expectedText, {
       useInnerText: true
     })
   }

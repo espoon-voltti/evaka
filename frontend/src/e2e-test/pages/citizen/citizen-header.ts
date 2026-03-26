@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { Lang } from 'lib-customizations/citizen'
 
+import { expect } from '../../playwright'
 import type { Page, Element, EnvType } from '../../utils/page'
 
 import { CitizenChildPage } from './citizen-children'
@@ -152,7 +151,7 @@ export default class CitizenHeader {
     if (expectedCount !== 0) {
       await this.#unreadMessagesCount.assertTextEquals(expectedCount.toString())
     } else {
-      await expect(this.#unreadMessagesCount.locator).toBeHidden()
+      await expect(this.#unreadMessagesCount).toBeHidden()
     }
   }
 
@@ -161,7 +160,7 @@ export default class CitizenHeader {
     if (expectedCount !== 0) {
       await this.#unreadChildrenCount.assertTextEquals(expectedCount.toString())
     } else {
-      await expect(this.#unreadChildrenCount.locator).toBeHidden()
+      await expect(this.#unreadChildrenCount).toBeHidden()
     }
   }
 

@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class CitizenDecisionsPage {
@@ -179,7 +178,7 @@ class CitizenDecisionResponsePage {
   }
 
   async assertDecisionStatus(decisionId: string, statusText: string) {
-    await expect(this.#decisionStatus(decisionId).locator).toHaveText(
+    await expect(this.#decisionStatus(decisionId)).toHaveText(
       new RegExp(`^${statusText}$`, 'i'),
       { useInnerText: true }
     )

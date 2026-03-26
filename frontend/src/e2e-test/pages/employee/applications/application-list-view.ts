@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type {
   ApplicationStatusOption,
   ApplicationTypeToggle
@@ -13,6 +11,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
+import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
 import {
   MultiSelect,
@@ -116,7 +115,7 @@ export default class ApplicationListView {
   }
 
   async assertApplicationCount(n: number) {
-    await expect(this.#applications.locator).toHaveCount(n)
+    await expect(this.#applications).toHaveCount(n)
   }
 
   async showAsDesktop() {

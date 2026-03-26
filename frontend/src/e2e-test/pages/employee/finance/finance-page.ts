@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type {
   FeeDecisionStatus,
@@ -15,6 +13,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
+import { expect } from '../../../playwright'
 import type { Page, Element, ElementCollection } from '../../../utils/page'
 import {
   AsyncButton,
@@ -122,7 +121,7 @@ export class FeeDecisionsPage {
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
     await expect(
-      this.page.findAll('[data-qa="table-fee-decision-row"]').locator
+      this.page.findAll('[data-qa="table-fee-decision-row"]')
     ).toHaveCount(count)
   }
 }
@@ -153,10 +152,9 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await expect(this.#childIncome.nth(nth).locator).toContainText(
-      expectedTotalText,
-      { useInnerText: true }
-    )
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText, {
+      useInnerText: true
+    })
   }
 
   async assertPartnerNameNotShown() {
@@ -259,7 +257,7 @@ export class ValueDecisionsPage {
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
     await expect(
-      this.page.findAll('[data-qa="table-value-decision-row"]').locator
+      this.page.findAll('[data-qa="table-value-decision-row"]')
     ).toHaveCount(count)
   }
 }
@@ -302,10 +300,9 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await expect(this.#childIncome.nth(nth).locator).toContainText(
-      expectedTotalText,
-      { useInnerText: true }
-    )
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText, {
+      useInnerText: true
+    })
   }
 
   async waitUntilVisible() {
@@ -413,7 +410,7 @@ export class InvoicesPage {
 
   async assertInvoiceCount(count: number) {
     await expect(
-      this.page.findAll('[data-qa="table-invoice-row"]').locator
+      this.page.findAll('[data-qa="table-invoice-row"]')
     ).toHaveCount(count)
   }
 
@@ -564,9 +561,9 @@ export class PaymentsPage {
   }
 
   async assertPaymentCount(count: number) {
-    await expect(
-      this.page.findAllByDataQa('table-payment-row').locator
-    ).toHaveCount(count)
+    await expect(this.page.findAllByDataQa('table-payment-row')).toHaveCount(
+      count
+    )
   }
 
   async togglePayments(toggled: boolean) {

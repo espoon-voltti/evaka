@@ -4,8 +4,7 @@
 
 import assert from 'assert'
 
-import { expect } from '@playwright/test'
-
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { AsyncButton, Select } from '../../utils/page'
 
