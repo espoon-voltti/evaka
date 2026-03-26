@@ -280,11 +280,6 @@ export class Element {
     await this.locator.click()
   }
 
-  /// Like waitUntilVisible, but also works for elements with zero size
-  async waitUntilAttached(): Promise<void> {
-    await expect(this.locator).toBeAttached()
-  }
-
   async waitUntilVisible(): Promise<void> {
     await expect(this.locator).toBeVisible()
   }

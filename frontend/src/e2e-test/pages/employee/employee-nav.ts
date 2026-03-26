@@ -69,7 +69,7 @@ export default class EmployeeNav {
         .findByDataQa('notifications')
         .assertTextEquals(count.toString())
     } else {
-      await tabElem.findByDataQa('no-notifications').waitUntilAttached()
+      await expect(tabElem.findByDataQa('no-notifications')).toBeAttached()
     }
   }
 

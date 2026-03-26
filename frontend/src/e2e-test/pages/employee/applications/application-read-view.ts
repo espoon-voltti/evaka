@@ -220,7 +220,9 @@ export default class ApplicationReadView {
   }
 
   async assertNoNotes() {
-    await this.page.findByDataQa('application-notes-list').waitUntilAttached()
+    await expect(
+      this.page.findByDataQa('application-notes-list')
+    ).toBeAttached()
     await this.notes.nth(0).waitUntilHidden()
   }
 

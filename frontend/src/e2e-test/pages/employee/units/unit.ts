@@ -559,7 +559,7 @@ class AclSection extends Element {
     if (fields.occupancyCoefficient) {
       await row.findByDataQa('coefficient-on').waitUntilVisible()
     } else {
-      await row.findByDataQa('coefficient-off').waitUntilAttached()
+      await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
     await expect(
       row.find('[data-qa="groups"] > div').findAll('div')
@@ -665,7 +665,7 @@ class TemporaryEmployeesSection extends Element {
     if (fields.occupancyCoefficient) {
       await row.findByDataQa('coefficient-on').waitUntilVisible()
     } else {
-      await row.findByDataQa('coefficient-off').waitUntilAttached()
+      await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
     await expect(
       row.find('[data-qa="groups"] > div').findAll('div')

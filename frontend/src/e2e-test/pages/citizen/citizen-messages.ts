@@ -143,7 +143,7 @@ export default class CitizenMessagesPage {
     await this.#redactedThreadTitle.waitUntilVisible()
   }
   async assertOpenReplyEditorButtonIsHidden() {
-    await this.#openReplyEditorButtonHidden.waitUntilAttached()
+    await expect(this.#openReplyEditorButtonHidden).toBeAttached()
   }
   async assertFinanceReplyInfo(visible: boolean) {
     if (visible) {

@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../../playwright'
 import type { ElementCollection, Page } from '../../../utils/page'
 import { Element, Modal, Select, TextInput } from '../../../utils/page'
 
@@ -184,7 +185,7 @@ export class ChildDatePresenceModal extends Modal {
       | 'extra-billable-absence'
     )[]
   ) {
-    await this.#absenceWarnings.waitUntilAttached()
+    await expect(this.#absenceWarnings).toBeAttached()
     if (expectedWarnings.includes('missing-nonbillable-absence')) {
       await this.#warningMissingNonbillableAbsence.waitUntilVisible()
     } else {
