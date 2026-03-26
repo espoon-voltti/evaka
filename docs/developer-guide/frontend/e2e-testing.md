@@ -113,16 +113,16 @@ export class ApplicationListPage {
 // In the test — direct access to selectors
 const listPage = new ApplicationListPage(page)
 await listPage.sendButton.click()
-await listPage.applicationRows.assertCount(3)
+await expect(listPage.applicationRows).toHaveCount(3)
 ```
 
 Add a method only when a sequence of steps is meaningfully reused:
 
 ```typescript
 async waitUntilLoaded() {
-  await this.page
-    .find('[data-qa="application-list"][data-isloading="false"]')
-    .waitUntilVisible()
+  await expect(
+    this.page.find('[data-qa="application-list"][data-isloading="false"]')
+  ).toBeVisible()
 }
 ```
 
@@ -144,7 +144,7 @@ Key wrappers and their main methods:
 
 | Wrapper              | Key methods                                                                 |
 | -------------------- | --------------------------------------------------------------------------- |
-| `TextInput`          | `.fill()`, `.type()`, `.clear()`, `.assertValueEquals()`                    |
+| `TextInput`          | `.fill()`, `.type()`, `.clear()`                                            |
 | `Checkbox` / `Radio` | `.check()`, `.uncheck()`, `.waitUntilChecked()`                             |
 | `DatePicker`         | `.fill(localDate \| string)`, `.clear()`                                    |
 | `DateRangePicker`    | `.fill(start, end)`, `.start`, `.end`                                       |
@@ -172,34 +172,35 @@ await feeDecisionsPage.assertSentDecisionsCount(1)
 
 Pass the same mocked time used by the test so scheduled jobs evaluate at the correct point in time.
 
-## Waiting Utilities
+## Assertions
 
-For polling async state that isn't tied to a specific element:
-
-```typescript
-import {
-  waitUntilEqual,
-  waitUntilTrue,
-  waitUntilDefined,
-} from 'e2e-test/utils'
-
-await waitUntilEqual(() => page.getFeeDecisionCount(), 3)
-await waitUntilNotEqual(() => page.getStatus(), 'LOADING')
-await waitUntilTrue(() => page.isSubmitEnabled())
-const result = await waitUntilDefined(() => page.getFirstRow())
-```
-
-For element-level waiting and assertions:
+Use native Playwright `expect` assertions for all element checks. Import the custom `expect` from `playwright.ts` — it auto-unwraps `Element` and `ElementCollection` to their underlying `locator`:
 
 ```typescript
-await element.waitUntilVisible()
-await element.waitUntilHidden()
-await element.assertTextEquals('expected')
+import { test, expect } from '../../playwright'
+
+// Element assertions
+await expect(element).toBeVisible()
+await expect(element).toBeHidden()
+await expect(element).toHaveText('expected')
+await expect(element).toContainText('partial')
+await expect(element).toBeDisabled()
+await expect(element).toBeEnabled()
+await expect(element).toHaveAttribute('data-status', 'active')
+await expect(element).toHaveValue('input value')
+
+// Collection assertions
+await expect(collection).toHaveCount(5)
+await expect(collection).toHaveText(['A', 'B', 'C'])
+
+// Custom assertion on Element for predicate-based text checks
 await element.assertText((t) => t.includes('partial'))
-await collection.assertCount(5)
-await collection.assertTextsEqual(['A', 'B', 'C'])
+
+// Unordered text comparison on ElementCollection
 await collection.assertTextsEqualAnyOrder(['C', 'A', 'B'])
 ```
+
+Do **not** import `expect` from `@playwright/test` — the custom proxy is required for `Element`/`ElementCollection` unwrapping.
 
 ## Common Gotchas
 
@@ -207,11 +208,11 @@ await collection.assertTextsEqualAnyOrder(['C', 'A', 'B'])
 
 ```typescript
 // ❌ May pass for the wrong reason — data might still be loading
-await errorBanner.waitUntilHidden()
+await expect(errorBanner).toBeHidden()
 
 // ✅ First confirm something that should be visible, then check
-await listPage.titleRow.waitUntilVisible()  // data is loaded
-await listPage.errorBanner.waitUntilHidden() // now safe
+await expect(listPage.titleRow).toBeVisible()  // data is loaded
+await expect(listPage.errorBanner).toBeHidden() // now safe
 ```
 
-The same applies to `assertCount(0)` and similar "nothing here" assertions.
+The same applies to `expect(collection).toHaveCount(0)` and similar "nothing here" assertions.
