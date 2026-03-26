@@ -104,19 +104,13 @@ export default class PersonSearchPage {
     postOffice: string
     ssn?: string
   }) {
-    await expect(this.#personData.firstName).toHaveText(personData.firstName, {
-      useInnerText: true
-    })
-    await expect(this.#personData.lastName).toHaveText(personData.lastName, {
-      useInnerText: true
-    })
+    await expect(this.#personData.firstName).toHaveText(personData.firstName)
+    await expect(this.#personData.lastName).toHaveText(personData.lastName)
     await expect(this.#personData.dateOfBirth).toHaveText(
-      personData.dateOfBirth.format(),
-      { useInnerText: true }
+      personData.dateOfBirth.format()
     )
     await expect(this.#personData.address).toHaveText(
-      `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`,
-      { useInnerText: true }
+      `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
       await expect(
@@ -124,11 +118,9 @@ export default class PersonSearchPage {
       ).toBeVisible()
       await expect(
         this.#personData.ssn.findByDataQa('add-ssn-button')
-      ).toHaveText('Aseta hetu', { useInnerText: true })
+      ).toHaveText('Aseta hetu')
     } else {
-      await expect(this.#personData.ssn).toHaveText(personData.ssn, {
-        useInnerText: true
-      })
+      await expect(this.#personData.ssn).toHaveText(personData.ssn)
     }
   }
 

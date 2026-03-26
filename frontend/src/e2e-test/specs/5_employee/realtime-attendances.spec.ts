@@ -587,12 +587,10 @@ test.describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(2, '14:30')
 
       await expect(modal.gapWarning(1)).toHaveText(
-        'Kirjaus puuttuu välillä 12:00 – 12:30',
-        { useInnerText: true }
+        'Kirjaus puuttuu välillä 12:00 – 12:30'
       )
       await expect(modal.gapWarning(2)).toHaveText(
-        'Kirjaus puuttuu välillä 13:00 – 13:20',
-        { useInnerText: true }
+        'Kirjaus puuttuu välillä 13:00 – 13:20'
       )
     })
 
@@ -606,9 +604,7 @@ test.describe('Realtime staff attendances', () => {
         mockedToday.subDays(1)
       )
       await modal.setArrivalTime(0, '08:00')
-      await expect(modal.departureTimeInfo(0)).toHaveText('Pakollinen tieto', {
-        useInnerText: true
-      })
+      await expect(modal.departureTimeInfo(0)).toHaveText('Pakollinen tieto')
     })
 
     test('Departure time is NOT required when editing today', async () => {
@@ -618,9 +614,7 @@ test.describe('Realtime staff attendances', () => {
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setArrivalTime(0, '')
-      await expect(modal.arrivalTimeInfo(0)).toHaveText('Pakollinen tieto', {
-        useInnerText: true
-      })
+      await expect(modal.arrivalTimeInfo(0)).toHaveText('Pakollinen tieto')
       await modal.assertDepartureTimeInfoHidden(0)
     })
 
@@ -693,29 +687,15 @@ test.describe('Realtime staff attendances', () => {
 
     test('Total staff counts', async () => {
       await calendarPage.selectGroup(groupId2)
-      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö', {
-        useInnerText: true
-      })
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö')
 
       await calendarPage.selectGroup(groupId)
-      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö', {
-        useInnerText: true
-      })
-      await expect(staffAttendances.personCountSum(1)).toHaveText('1 hlö', {
-        useInnerText: true
-      })
-      await expect(staffAttendances.personCountSum(2)).toHaveText('2 hlö', {
-        useInnerText: true
-      })
-      await expect(staffAttendances.personCountSum(3)).toHaveText('– hlö', {
-        useInnerText: true
-      })
-      await expect(staffAttendances.personCountSum(4)).toHaveText('– hlö', {
-        useInnerText: true
-      })
-      await expect(staffAttendances.personCountSum(5)).toHaveText('– hlö', {
-        useInnerText: true
-      })
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(1)).toHaveText('1 hlö')
+      await expect(staffAttendances.personCountSum(2)).toHaveText('2 hlö')
+      await expect(staffAttendances.personCountSum(3)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(4)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(5)).toHaveText('– hlö')
     })
   })
 

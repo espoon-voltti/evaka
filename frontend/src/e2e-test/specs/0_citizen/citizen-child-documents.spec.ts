@@ -230,9 +230,7 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdVasu}`)
     ).toBeTruthy()
-    await expect(evaka.find('h1')).toHaveText('VASU 2023-2024', {
-      useInnerText: true
-    })
+    await expect(evaka.find('h1')).toHaveText('VASU 2023-2024')
   })
 
   test('Published hojks is in the list', async ({ evaka }) => {
@@ -244,9 +242,7 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdHojks}`)
     ).toBeTruthy()
-    await expect(evaka.find('h1')).toHaveText('HOJKS 2023-2024', {
-      useInnerText: true
-    })
+    await expect(evaka.find('h1')).toHaveText('HOJKS 2023-2024')
   })
 
   test('Published pedagogical report is in the list', async ({ evaka }) => {
@@ -256,9 +252,7 @@ test.describe('Citizen child documents listing page', () => {
     await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdPed).click()
     expect(evaka.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
-    await expect(evaka.find('h1')).toHaveText('Pedagoginen selvitys', {
-      useInnerText: true
-    })
+    await expect(evaka.find('h1')).toHaveText('Pedagoginen selvitys')
   })
 
   test('Published decision is in the list', async ({ evaka }) => {
@@ -270,9 +264,7 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdDecision}`)
     ).toBeTruthy()
-    await expect(evaka.find('h1')).toHaveText('Tuenpäätös', {
-      useInnerText: true
-    })
+    await expect(evaka.find('h1')).toHaveText('Tuenpäätös')
   })
 
   test('Answered by employee does not show name', async ({ evaka }) => {
@@ -411,8 +403,7 @@ test.describe('Citizen child documents editor page', () => {
     const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.editButton.click()
     await expect(childDocumentPage.status).toHaveText(
-      'Täytettävänä huoltajalla',
-      { useInnerText: true }
+      'Täytettävänä huoltajalla'
     )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
@@ -429,9 +420,7 @@ test.describe('Citizen child documents editor page', () => {
     })
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
-    await expect(childDocumentPage.status).toHaveText('Valmis', {
-      useInnerText: true
-    })
+    await expect(childDocumentPage.status).toHaveText('Valmis')
     await childDocumentPage.returnButton.click()
     await childPage.openCollapsible('child-documents')
     await expect(row).toHaveText(
@@ -468,8 +457,7 @@ test.describe('Citizen child documents editor page', () => {
     await toast1.click()
     const childDocumentPage = new ChildDocumentPage(evaka)
     await expect(childDocumentPage.status).toHaveText(
-      'Täytettävänä huoltajalla',
-      { useInnerText: true }
+      'Täytettävänä huoltajalla'
     )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
@@ -490,7 +478,7 @@ test.describe('Citizen child documents editor page', () => {
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
-    await expect(toast2).toHaveText('Lomake lähetetty', { useInnerText: true })
+    await expect(toast2).toHaveText('Lomake lähetetty')
   })
 
   test('weak auth guardian can navigate via toast, document is in edit mode', async ({
@@ -540,8 +528,7 @@ test.describe('Citizen child documents editor page', () => {
       )
     ).toBeTruthy()
     await expect(childDocumentPage.status).toHaveText(
-      'Täytettävänä huoltajalla',
-      { useInnerText: true }
+      'Täytettävänä huoltajalla'
     )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
@@ -562,6 +549,6 @@ test.describe('Citizen child documents editor page', () => {
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
-    await expect(toast2).toHaveText('Lomake lähetetty', { useInnerText: true })
+    await expect(toast2).toHaveText('Lomake lähetetty')
   })
 })

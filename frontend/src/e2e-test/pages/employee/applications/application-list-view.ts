@@ -171,10 +171,7 @@ export class ApplicationRow extends Element {
   }
 
   async assertStartDate(date: LocalDate) {
-    await expect(this.root.findByDataQa('start-date')).toHaveText(
-      date.format(),
-      { useInnerText: true }
-    )
+    await expect(this.root.findByDataQa('start-date')).toHaveText(date.format())
   }
 
   async assertServiceWorkerNoteMatches(matchingText: string) {

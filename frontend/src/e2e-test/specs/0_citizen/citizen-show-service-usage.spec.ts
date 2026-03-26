@@ -95,9 +95,7 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h',
       { useInnerText: true }
@@ -112,9 +110,7 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -124,8 +120,7 @@ test.describe('Service time usage', () => {
     )
     const dayCell = calendarPage.dayCell(today.addWeeks(2))
     await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
-      'Ilmoitus puuttuu',
-      { useInnerText: true }
+      'Ilmoitus puuttuu'
     )
     const reservationModal = await calendarPage.openReservationModal()
     await reservationModal.fillDailyReservationInfo(
@@ -135,12 +130,9 @@ test.describe('Service time usage', () => {
     )
     await reservationModal.save()
     await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
-      '08:00–16:00',
-      { useInnerText: true }
+      '08:00–16:00'
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -158,9 +150,7 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -170,8 +160,7 @@ test.describe('Service time usage', () => {
     )
     const dayCell = calendarPage.dayCell(today.addWeeks(2))
     await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
-      'Ilmoitus puuttuu',
-      { useInnerText: true }
+      'Ilmoitus puuttuu'
     )
     await calendarPage.navigateToNextMonths(2)
     await calendarPage.navigateToToday()
@@ -183,12 +172,9 @@ test.describe('Service time usage', () => {
     )
     await reservationModal.save()
     await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
-      '08:00–16:00',
-      { useInnerText: true }
+      '08:00–16:00'
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -212,9 +198,7 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -238,8 +222,7 @@ test.describe('Service time usage', () => {
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(yesterday)
     await expect(dayView.getUsedService(testChild2.id)).toHaveText(
-      '08:00–16:00 (8 h)',
-      { useInnerText: true }
+      '08:00–16:00 (8 h)'
     )
   })
 
@@ -257,12 +240,10 @@ test.describe('Service time usage', () => {
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
     await expect(dayView.getUsedService(testChild2.id)).toHaveText(
-      '08:00–15:30 (7 h 30 min)',
-      { useInnerText: true }
+      '08:00–15:30 (7 h 30 min)'
     )
     await expect(dayView.getServiceUsageWarning(testChild2.id)).toHaveText(
-      'Toteunut läsnäoloaika ylittää ilmoitetun ajan.',
-      { useInnerText: true }
+      'Toteunut läsnäoloaika ylittää ilmoitetun ajan.'
     )
   })
 
@@ -287,12 +268,10 @@ test.describe('Service time usage', () => {
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
     await expect(dayView.getUsedService(testChild2.id)).toHaveText(
-      '07:55–16:00 (8 h 5 min)',
-      { useInnerText: true }
+      '07:55–16:00 (8 h 5 min)'
     )
     await expect(dayView.getServiceUsageWarning(testChild2.id)).toHaveText(
-      'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.',
-      { useInnerText: true }
+      'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.'
     )
   })
 })
@@ -372,9 +351,7 @@ test.describe('Service time alert', () => {
       today.year,
       today.month
     )
-    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
@@ -406,12 +383,9 @@ test.describe('Service time alert', () => {
 
     // Should be open initially, so we call getMonthlySummary instead of openMonthlySummary
     const summary = calendarPage.getMonthlySummary(today.year, 2)
-    await expect(summary.title).toHaveText('Läsnäolot 01.02. - 28.02.2022', {
-      useInnerText: true
-    })
+    await expect(summary.title).toHaveText('Läsnäolot 01.02. - 28.02.2022')
     await expect(summary.warningElement).toHaveText(
-      'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:',
-      { useInnerText: true }
+      'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
     )
     await expect(summary.textElement).toHaveText(
       'Kaarina\n' + '\n' + 'Suunnitelma 80 h / 75 h\n' + 'Toteuma - / 75 h',

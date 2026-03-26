@@ -60,8 +60,7 @@ test.describe('Daily service times', () => {
     const calendar = new CitizenCalendarPage(evaka, 'desktop')
 
     await expect(calendar.dailyServiceTimeNotificationText).toHaveText(
-      'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.',
-      { useInnerText: true }
+      'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.'
     )
   })
 })

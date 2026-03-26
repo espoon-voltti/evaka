@@ -581,7 +581,7 @@ export class Combobox extends Element {
 
   async assertOptions(expected: string[]) {
     const options = this.findAllByDataQa('item')
-    await expect(options.locator).toHaveText(expected, { useInnerText: true })
+    await expect(options.locator).toHaveText(expected)
   }
 
   async selectItem(dataQa: string) {
@@ -622,9 +622,7 @@ export class MultiSelect extends Element {
 
   async assertOptions(options: string[]) {
     const actualOptions = this.findAllByDataQa('option')
-    await expect(actualOptions.locator).toHaveText(options, {
-      useInnerText: true
-    })
+    await expect(actualOptions.locator).toHaveText(options)
   }
 }
 

@@ -64,7 +64,7 @@ test.describe('Applications', () => {
     await applicationsPage.searchButton.click()
     await expect(
       applicationsPage.applicationRow(application.id).status
-    ).toHaveText('Odottaa postitusta', { useInnerText: true })
+    ).toHaveText('Odottaa postitusta')
   })
 
   test('Application with a dead applicant has an indicator for the date of death', async () => {

@@ -244,9 +244,7 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await expect(this.anyMemberPage.status).toHaveText(expected, {
-      useInnerText: true
-    })
+    await expect(this.anyMemberPage.status).toHaveText(expected)
   }
 
   async selectPrimaryTab(tab: 'today' | 'planned') {
@@ -267,15 +265,13 @@ export class StaffAttendancePage {
     return Promise.all(
       expectedArray.map(async (expected, index) => {
         const attendance = attendances.nth(index)
-        await expect(attendance).toHaveText(expected, { useInnerText: true })
+        await expect(attendance).toHaveText(expected)
       })
     )
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
-    await expect(this.externalMemberPage.arrivalTime).toHaveText(expected, {
-      useInnerText: true
-    })
+    await expect(this.externalMemberPage.arrivalTime).toHaveText(expected)
   }
 
   async selectAttendanceType(type: StaffAttendanceType) {
@@ -360,15 +356,13 @@ export class StaffAttendancePage {
 
   async assertArrivalTimeInputInfo(expected: string) {
     await expect(this.staffArrivalPage.timeInputWarningText).toHaveText(
-      expected,
-      { useInnerText: true }
+      expected
     )
   }
 
   async assertDepartureTimeInputInfo(expected: string) {
     await expect(this.staffDeparturePage.timeInputWarningText).toHaveText(
-      expected,
-      { useInnerText: true }
+      expected
     )
   }
 

@@ -842,9 +842,7 @@ test.describe('Sending and receiving messages', () => {
         await citizenMessagesPage.discardReplyEditor()
         await expect(citizenMessagesPage.discardMessageButton).toBeHidden()
         await citizenMessagesPage.startReplyToFirstThread()
-        await expect(citizenMessagesPage.messageReplyContent).toHaveText('', {
-          useInnerText: true
-        })
+        await expect(citizenMessagesPage.messageReplyContent).toHaveText('')
       })
 
       test('Citizen can reply to a thread and receive a notification on success', async () => {

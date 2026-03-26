@@ -63,12 +63,10 @@ export default class ChildInformationPage {
 
   async assertName(lastName: string, firstName: string) {
     await expect(this.page.findByDataQa('person-last-name')).toHaveText(
-      lastName,
-      { useInnerText: true }
+      lastName
     )
     await expect(this.page.findByDataQa('person-first-names')).toHaveText(
-      firstName,
-      { useInnerText: true }
+      firstName
     )
   }
 
@@ -81,9 +79,7 @@ export default class ChildInformationPage {
   }
 
   async assertOphPersonOid(expected: string) {
-    await expect(this.#ophPersonOidInput).toHaveText(expected, {
-      useInnerText: true
-    })
+    await expect(this.#ophPersonOidInput).toHaveText(expected)
   }
 
   async setOphPersonOid(text: string) {
@@ -283,8 +279,7 @@ export class DailyServiceTimeSection extends Section {
     const row = this.findAllByDataQa('daily-service-times-row').nth(nth)
 
     await expect(row.findByDataQa('daily-service-times-row-title')).toHaveText(
-      title,
-      { useInnerText: true }
+      title
     )
     await row
       .findByDataQa('status')
@@ -568,7 +563,7 @@ export class BackupCaresSection extends Section {
   }
 
   async assertError(expectedError: string) {
-    await expect(this.#error).toHaveText(expectedError, { useInnerText: true })
+    await expect(this.#error).toHaveText(expectedError)
   }
 
   async getBackupCares(): Promise<{ unit: string; period: string }[]> {
@@ -648,24 +643,21 @@ export class FamilyContactsSection extends Section {
 
     if (data.email) {
       await expect(row.findByDataQa('family-contact-email')).toHaveText(
-        data.email,
-        { useInnerText: true }
+        data.email
       )
     } else {
       await expect(row.findByDataQa('family-contact-email')).toBeHidden()
     }
     if (data.phone) {
       await expect(row.findByDataQa('family-contact-phone')).toHaveText(
-        data.phone,
-        { useInnerText: true }
+        data.phone
       )
     } else {
       await expect(row.findByDataQa('family-contact-phone')).toBeHidden()
     }
     if (data.backupPhone) {
       await expect(row.findByDataQa('family-contact-backup-phone')).toHaveText(
-        `${data.backupPhone} (Varanro)`,
-        { useInnerText: true }
+        `${data.backupPhone} (Varanro)`
       )
     } else {
       await expect(row.findByDataQa('family-contact-backup-phone')).toBeHidden()
@@ -707,12 +699,8 @@ export class GuardiansSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-parent-row-${parentId}`)
-    await expect(row.findByDataQa('start')).toHaveText(start.format(), {
-      useInnerText: true
-    })
-    await expect(row.findByDataQa('end')).toHaveText(end?.format() ?? '', {
-      useInnerText: true
-    })
+    await expect(row.findByDataQa('start')).toHaveText(start.format())
+    await expect(row.findByDataQa('end')).toHaveText(end?.format() ?? '')
   }
 
   async removeGuardianEvakaRights(id: UUID) {
@@ -749,14 +737,14 @@ export class GuardiansSection extends Section {
     await this.waitUntilNotLoading()
     await expect(
       this.guardianRow(id).findByDataQa('evaka-rights-status')
-    ).toHaveText('Sallittu', { useInnerText: true })
+    ).toHaveText('Sallittu')
   }
 
   async assertGuardianStatusDenied(id: UUID) {
     await this.waitUntilNotLoading()
     await expect(
       this.guardianRow(id).findByDataQa('evaka-rights-status')
-    ).toHaveText('Kielletty', { useInnerText: true })
+    ).toHaveText('Kielletty')
   }
 }
 
@@ -822,13 +810,12 @@ export class PlacementsSection extends Section {
         const placement = placements.nth(index)
         await expect(
           placement.findByDataQa('toolbar-accordion-title')
-        ).toHaveText(row.unitName, { useInnerText: true })
+        ).toHaveText(row.unitName)
         await expect(
           placement.findByDataQa('toolbar-accordion-subtitle')
-        ).toHaveText(row.period, { useInnerText: true })
+        ).toHaveText(row.period)
         await expect(placement.findByDataQa('placement-toolbar')).toHaveText(
-          row.status,
-          { useInnerText: true }
+          row.status
         )
       })
     )
@@ -873,21 +860,16 @@ export class PlacementsSection extends Section {
   }
 
   async assertNthServiceNeedRange(index: number, range: FiniteDateRange) {
-    await expect(this.#serviceNeedRowRange(index)).toHaveText(range.format(), {
-      useInnerText: true
-    })
+    await expect(this.#serviceNeedRowRange(index)).toHaveText(range.format())
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
-    await expect(this.#serviceNeedRowOptionName(index)).toHaveText(optionName, {
-      useInnerText: true
-    })
+    await expect(this.#serviceNeedRowOptionName(index)).toHaveText(optionName)
   }
 
   async assertNthServiceNeedPartWeek(index: number, partWeek: boolean) {
     await expect(this.#serviceNeedPartWeek(index)).toHaveText(
-      partWeek ? 'Kyllä' : 'Ei',
-      { useInnerText: true }
+      partWeek ? 'Kyllä' : 'Ei'
     )
   }
 
@@ -933,13 +915,13 @@ export class PlacementsSection extends Section {
   async assertSource(placementId: string, source: string) {
     await expect(
       this.#placementRow(placementId).findByDataQa('placement-source')
-    ).toHaveText(source, { useInnerText: true })
+    ).toHaveText(source)
   }
 
   async assertCreatedBy(placementId: string, creator: string) {
     await expect(
       this.#placementRow(placementId).findByDataQa('placement-created-by')
-    ).toHaveText(creator, { useInnerText: true })
+    ).toHaveText(creator)
   }
 
   async createNewPlacement({
@@ -1002,13 +984,13 @@ export class ServiceApplicationsSection extends Section {
   ) {
     await expect(
       this.undecidedApplication.findByDataQa('start-date')
-    ).toHaveText(startDate, { useInnerText: true })
+    ).toHaveText(startDate)
     await expect(
       this.undecidedApplication.findByDataQa('service-need')
-    ).toHaveText(serviceNeed, { useInnerText: true })
+    ).toHaveText(serviceNeed)
     await expect(
       this.undecidedApplication.findByDataQa('additional-info')
-    ).toHaveText(additionalInfo, { useInnerText: true })
+    ).toHaveText(additionalInfo)
   }
 
   async acceptApplication() {
@@ -1038,15 +1020,13 @@ export class ServiceApplicationsSection extends Section {
   ) {
     await expect(
       this.decidedApplication(n).findByDataQa('start-date')
-    ).toHaveText(startDate, { useInnerText: true })
+    ).toHaveText(startDate)
     await expect(
       this.decidedApplication(n).findByDataQa('service-need')
-    ).toHaveText(serviceNeed, { useInnerText: true })
+    ).toHaveText(serviceNeed)
     await expect(
       this.decidedApplication(n).findByDataQa('decision-status')
-    ).toHaveText(`${status}, ${decidedAt.toLocalDate().format()}`, {
-      useInnerText: true
-    })
+    ).toHaveText(`${status}, ${decidedAt.toLocalDate().format()}`)
   }
 }
 
@@ -1299,16 +1279,12 @@ export class FeeAlterationsSection extends Section {
 
   async assertAlterationDateRange(expected: string, nth = 0) {
     const feeAlterationDates = this.findAllByDataQa('fee-alteration-dates')
-    await expect(feeAlterationDates.nth(nth)).toHaveText(expected, {
-      useInnerText: true
-    })
+    await expect(feeAlterationDates.nth(nth)).toHaveText(expected)
   }
 
   async assertAlterationAmount(expected: string, nth = 0) {
     const feeAlterationAmounts = this.findAllByDataQa('fee-alteration-amount')
-    await expect(feeAlterationAmounts.nth(nth)).toHaveText(expected, {
-      useInnerText: true
-    })
+    await expect(feeAlterationAmounts.nth(nth)).toHaveText(expected)
   }
 
   async assertAttachmentExists(name: string) {

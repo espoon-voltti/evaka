@@ -583,16 +583,13 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText(
-      [
-        '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
-        '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
-        '1 (1,40)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y
-        '1 (2,80)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y * assistanceFactor
-        '1 (1,60)' // serviceNeedOption2#realizedOccupancyCoefficient * assistanceFactor
-      ],
-      { useInnerText: true }
-    )
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
+      '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
+      '1 (1,40)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y
+      '1 (2,80)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y * assistanceFactor
+      '1 (1,60)' // serviceNeedOption2#realizedOccupancyCoefficient * assistanceFactor
+    ])
   })
 
   test('Totals row sums child rows', async ({ newEvakaPage }) => {
@@ -649,16 +646,13 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText(
-      [
-        '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
-        '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
-        '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
-        '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
-        '2 (2,00)' // realizedOccupancyCoefficient + realizedOccupancyCoefficient
-      ],
-      { useInnerText: true }
-    )
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
+      '2 (2,00)' // realizedOccupancyCoefficient + realizedOccupancyCoefficient
+    ])
   })
 
   test('Totals row uses family unit placement coefficients', async ({
@@ -712,16 +706,13 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText(
-      [
-        '1 (1,75)', // family unit placement coefficient under 3y
-        '1 (1,75)', // family unit placement coefficient under 3y
-        '1 (1,75)', // family unit placement coefficient under 3y
-        '1 (1,75)', // family unit placement coefficient under 3y
-        '1 (1,75)' // family unit placement coefficient
-      ],
-      { useInnerText: true }
-    )
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)', // family unit placement coefficient under 3y
+      '1 (1,75)' // family unit placement coefficient
+    ])
   })
 
   test('Totals row uses default service need option occupancy coefficients', async ({
@@ -770,16 +761,13 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText(
-      [
-        '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
-        '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
-        '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
-        '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
-        '1 (2,00)' // default service need option#realizedOccupancyCoefficient
-      ],
-      { useInnerText: true }
-    )
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
+      '1 (2,00)' // default service need option#realizedOccupancyCoefficient
+    ])
   })
 })
 
@@ -985,18 +973,15 @@ test.describe('Unit group calendar for shift care unit', () => {
     await unitPage.navigateToUnit(daycare1.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group1.id)
-    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText(
-      [
-        '2 (2,00)',
-        '2 (2,00)',
-        '2 (2,00)',
-        '2 (2,00)',
-        '1 (1,00)',
-        '1 (1,00)',
-        '1 (1,00)'
-      ],
-      { useInnerText: true }
-    )
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '2 (2,00)',
+      '2 (2,00)',
+      '2 (2,00)',
+      '2 (2,00)',
+      '1 (1,00)',
+      '1 (1,00)',
+      '1 (1,00)'
+    ])
   })
 
   test('Can make reservations on weekend days when child has shift care', async ({

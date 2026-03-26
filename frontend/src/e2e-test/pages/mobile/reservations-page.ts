@@ -31,7 +31,7 @@ export default class MobileReservationsPage {
         const reservationDate = this.#findReservationDate(date)
         await expect(
           reservationDate.findByDataQa('reservation-text')
-        ).toHaveText(text, { useInnerText: true })
+        ).toHaveText(text)
       })
     )
   }

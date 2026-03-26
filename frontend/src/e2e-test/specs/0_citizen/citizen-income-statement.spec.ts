@@ -108,8 +108,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         // End date can be max 1y from start date so a warning is shown
         await incomeStatementsPage.setValidToDate('25.12.2045')
         await expect(incomeStatementsPage.incomeEndDateInfo).toHaveText(
-          'Valitse aikaisempi päivä',
-          { useInnerText: true }
+          'Valitse aikaisempi päivä'
         )
 
         await incomeStatementsPage.setValidToDate(endDate)

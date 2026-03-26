@@ -86,7 +86,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.ok.click()
     await modal.ok.click()
     await expect(section.weakLoginEnabled).toBeVisible()
-    await expect(section.username).toHaveText(email, { useInnerText: true })
+    await expect(section.username).toHaveText(email)
   })
 
   test('a person with weak credentials can change their password', async ({
@@ -111,7 +111,7 @@ test.describe('Citizen weak credentials', () => {
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginEnabled).toBeVisible()
-    await expect(section.username).toHaveText(email, { useInnerText: true })
+    await expect(section.username).toHaveText(email)
     await section.updatePassword.click()
 
     const modal = new WeakCredentialsModal(evaka)
@@ -160,8 +160,7 @@ test.describe('Citizen weak credentials', () => {
 
     await expect(section.verifiedEmailStatus).toBeVisible()
     await expect(personalDetailsPage.loginDetailsSection.username).toHaveText(
-      newEmail,
-      { useInnerText: true }
+      newEmail
     )
   })
 
@@ -194,8 +193,7 @@ test.describe('Citizen weak credentials', () => {
 
     await expect(section.verifiedEmailStatus).toBeVisible()
     await expect(personalDetailsPage.loginDetailsSection.username).toHaveText(
-      newEmail,
-      { useInnerText: true }
+      newEmail
     )
   })
 
@@ -227,18 +225,12 @@ test.describe('Citizen weak credentials', () => {
     const modal = new WeakCredentialsModal(evaka)
     await modal.password.fill(invalidPassword)
     await modal.password.blur()
-    await expect(modal.passwordInfo).toHaveText(
-      'Salasana ei täytä vaatimuksia',
-      { useInnerText: true }
-    )
+    await expect(modal.passwordInfo).toHaveText('Salasana ei täytä vaatimuksia')
     await modal.ok.assertDisabled(true)
     await modal.password.fill(unacceptablePassword)
     await modal.confirmPassword.fill(invalidPassword)
     await modal.confirmPassword.blur()
-    await expect(modal.confirmPasswordInfo).toHaveText(
-      'Salasanat eivät täsmää',
-      { useInnerText: true }
-    )
+    await expect(modal.confirmPasswordInfo).toHaveText('Salasanat eivät täsmää')
     await modal.ok.assertDisabled(true)
     await modal.confirmPassword.fill(unacceptablePassword)
     await modal.ok.click()
@@ -282,7 +274,7 @@ test.describe('Citizen weak credentials', () => {
     const personalDetailsPage = new CitizenPersonalDetailsPage(strongSession)
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginEnabled).toBeVisible()
-    await expect(section.username).toHaveText(email, { useInnerText: true })
+    await expect(section.username).toHaveText(email)
     await section.updatePassword.click()
 
     const modal = new WeakCredentialsModal(strongSession)

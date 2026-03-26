@@ -504,12 +504,9 @@ test.describe('Messages page', () => {
     await threadView.replyContent.fill(replyContent)
     await threadView.sendReplyButton.click()
     await expect(threadView.singleMessageContents).toHaveCount(2)
-    await expect(threadView.messageContent(1)).toHaveText(replyContent, {
-      useInnerText: true
-    })
+    await expect(threadView.messageContent(1)).toHaveText(replyContent)
     await expect(threadView.messageSender(1)).toHaveText(
-      `${testDaycare.name} - ${daycareGroup.name}`,
-      { useInnerText: true }
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
   })
 
@@ -567,8 +564,7 @@ test.describe('Messages page', () => {
     await staffStartsNewMessage()
 
     await expect(messageEditor.senderName).toHaveText(
-      `${testDaycare.name} - ${daycareGroup.name}`,
-      { useInnerText: true }
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
 
     // Required fields not filled -> send button is disabled
@@ -608,15 +604,11 @@ test.describe('Messages page', () => {
 
     const sentTab = await messagesPage.openSentTab()
     const first = sentTab.message(0)
-    await expect(first.title).toHaveText(message.title, { useInnerText: true })
+    await expect(first.title).toHaveText(message.title)
 
     const firstMessage = await first.openMessage()
-    await expect(firstMessage.topBarTitle).toHaveText(message.title, {
-      useInnerText: true
-    })
-    await expect(firstMessage.content).toHaveText(message.content, {
-      useInnerText: true
-    })
+    await expect(firstMessage.topBarTitle).toHaveText(message.title)
+    await expect(firstMessage.content).toHaveText(message.content)
   })
 
   test('Employee sees a draft message and can send it', async () => {
@@ -629,16 +621,13 @@ test.describe('Messages page', () => {
 
     const draftsTab = await messagesPage.openDraftsTab()
     const firstDraft = draftsTab.message(0)
-    await expect(firstDraft.title).toHaveText(message.title, {
-      useInnerText: true
-    })
+    await expect(firstDraft.title).toHaveText(message.title)
 
     messageEditor = await firstDraft.editDraft()
 
-    await expect(messageEditor.recipients.values).toHaveText(
-      [daycareGroup.name],
-      { useInnerText: true }
-    )
+    await expect(messageEditor.recipients.values).toHaveText([
+      daycareGroup.name
+    ])
     await expect(messageEditor.title).toHaveValue(message.title)
     await expect(messageEditor.content).toHaveValue(message.content)
     await messageEditor.send.click()
@@ -657,9 +646,7 @@ test.describe('Messages page', () => {
 
     const draftsTab = await messagesPage.openDraftsTab()
     const firstDraft = draftsTab.message(0)
-    await expect(firstDraft.title).toHaveText(message.title, {
-      useInnerText: true
-    })
+    await expect(firstDraft.title).toHaveText(message.title)
 
     messageEditor = await firstDraft.editDraft()
     await messageEditor.discard.click()
@@ -695,8 +682,7 @@ test.describe('Messages page', () => {
 
     await expect(threadView.singleMessageContents).toHaveCount(1)
     await expect(threadView.messageContent(0)).toHaveText(
-      'Testiviestin sisältö',
-      { useInnerText: true }
+      'Testiviestin sisältö'
     )
   })
 
@@ -710,15 +696,11 @@ test.describe('Messages page', () => {
 
     await unreadMessageCountsPage.linkToGroup(daycareGroup2.id).click()
     await messagesPage.assertThreadsExist()
-    await expect(messagesPage.threadTitle(0)).toHaveText('Hei ryhmä 2', {
-      useInnerText: true
-    })
+    await expect(messagesPage.threadTitle(0)).toHaveText('Hei ryhmä 2')
 
     await nav.selectGroup(daycareGroup.id)
     await messagesPage.assertThreadsExist()
-    await expect(messagesPage.threadTitle(0)).toHaveText('Otsikko', {
-      useInnerText: true
-    })
+    await expect(messagesPage.threadTitle(0)).toHaveText('Otsikko')
   })
 
   test('Staff without group access sees info that no accounts were found', async () => {

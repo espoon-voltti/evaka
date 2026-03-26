@@ -97,9 +97,7 @@ export class UnitPreference extends Element {
   }
 
   async assertPlacementDate(date: LocalDate) {
-    await expect(this.placementDate).toHaveText(`${date.format()} –`, {
-      useInnerText: true
-    })
+    await expect(this.placementDate).toHaveText(`${date.format()} –`)
   }
 }
 
@@ -126,15 +124,9 @@ export class DaycareCard extends Element {
   }
 
   async assertOccupancies(confirmed: number, planned: number, draft: number) {
-    await expect(this.occupancyConfirmed).toHaveText(`${confirmed} %`, {
-      useInnerText: true
-    })
-    await expect(this.occupancyPlanned).toHaveText(`${planned} %`, {
-      useInnerText: true
-    })
-    await expect(this.occupancyDraft).toHaveText(`${draft} %`, {
-      useInnerText: true
-    })
+    await expect(this.occupancyConfirmed).toHaveText(`${confirmed} %`)
+    await expect(this.occupancyPlanned).toHaveText(`${planned} %`)
+    await expect(this.occupancyDraft).toHaveText(`${draft} %`)
   }
 }
 
@@ -152,8 +144,6 @@ export class DraftPlacementRow extends Element {
   }
 
   async assertPlacementDate(date: LocalDate) {
-    await expect(this.placementDate).toHaveText(`${date.format()} –`, {
-      useInnerText: true
-    })
+    await expect(this.placementDate).toHaveText(`${date.format()} –`)
   }
 }

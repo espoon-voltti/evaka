@@ -88,27 +88,21 @@ test.describe('Nekku fields are editable', () => {
   })
 
   test('Participates in breakfast information can be unset', async () => {
-    await expect(section.participatesInBreakfast).toHaveText('Kyllä', {
-      useInnerText: true
-    })
+    await expect(section.participatesInBreakfast).toHaveText('Kyllä')
 
     await section.editBtn.click()
     await section.participatesInBreakfastCheckbox.uncheck()
     await section.confirmBtn.click()
-    await expect(section.participatesInBreakfast).toHaveText('Ei', {
-      useInnerText: true
-    })
+    await expect(section.participatesInBreakfast).toHaveText('Ei')
   })
 
   test('Nekku diet can be edited', async () => {
-    await expect(section.nekkuDiet).toHaveText('Seka', { useInnerText: true })
+    await expect(section.nekkuDiet).toHaveText('Seka')
 
     await section.editBtn.click()
     await section.nekkuDietSelect.fillAndSelectFirst('V')
     await section.confirmBtn.click()
-    await expect(section.nekkuDiet).toHaveText('Vegaani', {
-      useInnerText: true
-    })
+    await expect(section.nekkuDiet).toHaveText('Vegaani')
   })
 
   test('Special diet fields are rendered correctly', async () => {
@@ -132,13 +126,9 @@ test.describe('Nekku fields are editable', () => {
     await section.confirmBtn.click()
 
     await expect(specialDietEditor.getCheckBoxValue('2', 'b')).toHaveText(
-      'b1, b3',
-      { useInnerText: true }
+      'b1, b3'
     )
-    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText(
-      'a: Foo',
-      { useInnerText: true }
-    )
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText('a: Foo')
   })
 
   test('Special diets are saved to the database correctly', async () => {
@@ -153,10 +143,7 @@ test.describe('Nekku fields are editable', () => {
 
     // we don't really care about this assertion, it just ensures that the
     // data has been updated before we call getNekkuSpecialDietChoices()
-    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText(
-      'a: Foo',
-      { useInnerText: true }
-    )
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText('a: Foo')
 
     const savedValues = await getNekkuSpecialDietChoices({ childId })
     if (savedValues.length !== 3) throw Error('Excepted 3 special diet choices')

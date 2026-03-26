@@ -18,8 +18,6 @@ export default class UnitListPage {
     const staffCount = this.page
       .findByDataQa(`unit-${unitId}`)
       .findByDataQa('staff-count')
-    await expect(staffCount).toHaveText(`${present}/${allocated}`, {
-      useInnerText: true
-    })
+    await expect(staffCount).toHaveText(`${present}/${allocated}`)
   }
 }

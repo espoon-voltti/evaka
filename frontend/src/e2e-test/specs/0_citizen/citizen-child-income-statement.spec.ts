@@ -155,9 +155,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
       // View
       const viewPage = await listPage.viewChildHandledIncomeStatement(0)
-      await expect(viewPage.otherInfo).toHaveText('foo bar baz', {
-        useInnerText: true
-      })
+      await expect(viewPage.otherInfo).toHaveText('foo bar baz')
       await viewPage.assertAttachmentExists('CHILD_INCOME', testFileName)
     })
 

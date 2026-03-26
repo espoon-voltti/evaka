@@ -78,7 +78,7 @@ export default class ApplicationReadView {
   }
 
   async assertPageTitle(expectedTitle: string) {
-    await expect(this.#title).toHaveText(expectedTitle, { useInnerText: true })
+    await expect(this.#title).toHaveText(expectedTitle)
   }
 
   async assertGuardianName(expectedName: string) {
@@ -86,9 +86,7 @@ export default class ApplicationReadView {
   }
 
   async assertOtherVtjGuardianName(expectedName: string) {
-    await expect(this.#vtjGuardianName).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#vtjGuardianName).toHaveText(expectedName)
   }
 
   async assertOtherVtjGuardian(
@@ -96,15 +94,9 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await expect(this.#vtjGuardianName).toHaveText(expectedName, {
-      useInnerText: true
-    })
-    await expect(this.#vtjGuardianPhone).toHaveText(expectedPhone, {
-      useInnerText: true
-    })
-    await expect(this.#vtjGuardianEmail).toHaveText(expectedEmail, {
-      useInnerText: true
-    })
+    await expect(this.#vtjGuardianName).toHaveText(expectedName)
+    await expect(this.#vtjGuardianPhone).toHaveText(expectedPhone)
+    await expect(this.#vtjGuardianEmail).toHaveText(expectedEmail)
   }
 
   async assertOtherVtjGuardianMissing() {
@@ -131,12 +123,8 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await expect(this.#givenOtherGuardianPhone).toHaveText(expectedPhone, {
-      useInnerText: true
-    })
-    await expect(this.#giveOtherGuardianEmail).toHaveText(expectedEmail, {
-      useInnerText: true
-    })
+    await expect(this.#givenOtherGuardianPhone).toHaveText(expectedPhone)
+    await expect(this.#giveOtherGuardianEmail).toHaveText(expectedEmail)
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
@@ -205,8 +193,7 @@ export default class ApplicationReadView {
 
   async assertDueDate(dueDate: LocalDate) {
     await expect(this.page.findByDataQa('application-due-date')).toHaveText(
-      dueDate.format(),
-      { useInnerText: true }
+      dueDate.format()
     )
   }
 

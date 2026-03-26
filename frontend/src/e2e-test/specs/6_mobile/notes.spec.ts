@@ -97,9 +97,7 @@ test.describe('Child and group notes', () => {
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await expect(attendancePage.dailyNote).toHaveText(childDailyNote.note, {
-      useInnerText: true
-    })
+    await expect(attendancePage.dailyNote).toHaveText(childDailyNote.note)
 
     await page.goto(config.mobileUrl)
     await listPage.openChildNotes(child.id)
@@ -118,9 +116,7 @@ test.describe('Child and group notes', () => {
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
     await expect(attendancePage.groupNotes).toHaveCount(1)
-    await expect(attendancePage.groupNotes.nth(0)).toHaveText(groupNote, {
-      useInnerText: true
-    })
+    await expect(attendancePage.groupNotes.nth(0)).toHaveText(groupNote)
   })
 
   test('Sticky notes can be created, edited and deleted', async () => {
@@ -149,9 +145,7 @@ test.describe('Child and group notes', () => {
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
     await expect(attendancePage.stickyNotes).toHaveCount(1)
-    await expect(attendancePage.stickyNotes.nth(0)).toHaveText('Foobar', {
-      useInnerText: true
-    })
+    await expect(attendancePage.stickyNotes.nth(0)).toHaveText('Foobar')
   })
 })
 

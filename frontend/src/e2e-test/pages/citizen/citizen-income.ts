@@ -202,7 +202,7 @@ export default class CitizenIncomePage {
       this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-    ).toHaveText('Tuloselvitys lähetetty', { useInnerText: true })
+    ).toHaveText('Tuloselvitys lähetetty')
   }
 
   async closeNotification() {

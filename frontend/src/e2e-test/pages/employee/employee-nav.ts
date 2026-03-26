@@ -66,8 +66,7 @@ export default class EmployeeNav {
     }
     if (count > 0) {
       await expect(tabElem.findByDataQa('notifications')).toHaveText(
-        count.toString(),
-        { useInnerText: true }
+        count.toString()
       )
     } else {
       await expect(tabElem.findByDataQa('no-notifications')).toBeAttached()

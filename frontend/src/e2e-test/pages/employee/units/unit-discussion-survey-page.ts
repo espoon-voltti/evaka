@@ -50,12 +50,10 @@ export class DiscussionSurveyListPage {
       `survey-${expectedSurvey.id}`
     )
     await expect(surveyItem.findByDataQa('survey-title')).toHaveText(
-      expectedSurvey.title,
-      { useInnerText: true }
+      expectedSurvey.title
     )
     await expect(surveyItem.findByDataQa('survey-status')).toHaveText(
-      expectedSurvey.status,
-      { useInnerText: true }
+      expectedSurvey.status
     )
   }
   async assertDiscussionSurveyNotInList(surveyId: string) {
@@ -167,15 +165,13 @@ export class DiscussionSurveyReadView {
 
   async assertSurveyTitle(expectedTitle: string) {
     await expect(this.page.findByDataQa('survey-title')).toHaveText(
-      expectedTitle,
-      { useInnerText: true }
+      expectedTitle
     )
   }
 
   async assertSurveyDescription(expectedTitle: string) {
     await expect(this.page.findByDataQa('survey-description')).toHaveText(
-      expectedTitle,
-      { useInnerText: true }
+      expectedTitle
     )
   }
 
@@ -206,8 +202,7 @@ export class DiscussionSurveyReadView {
     const eventTimeRanges = calendarDay.findAllByDataQa('event-time-range')
 
     await expect(eventTimeRanges.nth(index)).toHaveText(
-      `${eventTime.startTime} – ${eventTime.endTime}`,
-      { useInnerText: true }
+      `${eventTime.startTime} – ${eventTime.endTime}`
     )
   }
 
@@ -226,7 +221,7 @@ export class DiscussionSurveyReadView {
     const reservationRows = calendarDay.findAllByDataQa('reservation-row')
     await expect(
       reservationRows.nth(index).findByDataQa('reserve-event-time-button')
-    ).toHaveText(name, { useInnerText: true })
+    ).toHaveText(name)
   }
 }
 

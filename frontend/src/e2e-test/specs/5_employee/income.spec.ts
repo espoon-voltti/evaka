@@ -96,12 +96,8 @@ test.describe('Income', () => {
     await incomesSection.save()
 
     await expect(incomesSection.incomeListItems).toHaveCount(1)
-    await expect(incomesSection.incomeSum).toHaveText('5100,50 €', {
-      useInnerText: true
-    })
-    await expect(incomesSection.expensesSum).toHaveText('35,75 €', {
-      useInnerText: true
-    })
+    await expect(incomesSection.incomeSum).toHaveText('5100,50 €')
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €')
   })
 
   test('Create a new income without end date', async () => {
@@ -141,12 +137,8 @@ test.describe('Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await expect(incomesSection.incomeSum).toHaveText('5000 €', {
-      useInnerText: true
-    })
-    await expect(incomesSection.expensesSum).toHaveText('0 €', {
-      useInnerText: true
-    })
+    await expect(incomesSection.incomeSum).toHaveText('5000 €')
+    await expect(incomesSection.expensesSum).toHaveText('0 €')
 
     await incomesSection.edit()
 
@@ -156,12 +148,8 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
-    await expect(incomesSection.incomeSum).toHaveText('200 €', {
-      useInnerText: true
-    })
-    await expect(incomesSection.expensesSum).toHaveText('300 €', {
-      useInnerText: true
-    })
+    await expect(incomesSection.incomeSum).toHaveText('200 €')
+    await expect(incomesSection.expensesSum).toHaveText('300 €')
   })
 
   test('Income coefficients are saved and affect the sum', async () => {
@@ -181,12 +169,8 @@ test.describe('Income', () => {
 
     await incomesSection.save()
 
-    await expect(incomesSection.incomeSum).toHaveText('8380 €', {
-      useInnerText: true
-    })
-    await expect(incomesSection.expensesSum).toHaveText('35,75 €', {
-      useInnerText: true
-    })
+    await expect(incomesSection.incomeSum).toHaveText('8380 €')
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €')
   })
 
   test('Non-contiguous incomes warning', async () => {
@@ -338,16 +322,13 @@ test.describe('Income', () => {
     await incomesSection.toggleNotificationsCollapsible()
     await expect(incomesSection.incomeNotificationRows).toHaveCount(3)
     await expect(incomesSection.incomeNotificationRows.nth(0)).toHaveText(
-      '28.02.2020 06:00 (Aloittava asiakas)',
-      { useInnerText: true }
+      '28.02.2020 06:00 (Aloittava asiakas)'
     )
     await expect(incomesSection.incomeNotificationRows.nth(1)).toHaveText(
-      '22.02.2020 06:00 (Toinen muistutus)',
-      { useInnerText: true }
+      '22.02.2020 06:00 (Toinen muistutus)'
     )
     await expect(incomesSection.incomeNotificationRows.nth(2)).toHaveText(
-      '15.02.2020 06:00 (Ensimmäinen muistutus)',
-      { useInnerText: true }
+      '15.02.2020 06:00 (Ensimmäinen muistutus)'
     )
   })
 })

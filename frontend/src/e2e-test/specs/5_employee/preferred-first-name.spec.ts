@@ -46,9 +46,7 @@ test.describe('Employee preferred first name', () => {
 
     await employeePreferredFirstNamePage.preferredFirstName('Teppo')
     await employeePreferredFirstNamePage.confirm()
-    await expect(page.findByDataQa('username')).toHaveText('Teppo Sorsa', {
-      useInnerText: true
-    })
+    await expect(page.findByDataQa('username')).toHaveText('Teppo Sorsa')
 
     await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
       'Teppo'

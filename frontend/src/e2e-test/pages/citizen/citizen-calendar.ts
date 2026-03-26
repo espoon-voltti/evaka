@@ -85,8 +85,7 @@ export default class CitizenCalendarPage {
 
   async assertEventCount(date: LocalDate, count: number) {
     await expect(this.dayCell(date).findByDataQa('event-count')).toHaveText(
-      count.toString(),
-      { useInnerText: true }
+      count.toString()
     )
   }
 
@@ -204,7 +203,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertMonthTitle(title: string) {
-    await expect(this.monthTitle()).toHaveText(title, { useInnerText: true })
+    await expect(this.monthTitle()).toHaveText(title)
   }
 
   async openMonthlySummary(year: number, month: number) {
@@ -308,8 +307,7 @@ export default class CitizenCalendarPage {
     ).toBeVisible()
 
     await expect(row.findByDataQa('reservation-text')).toHaveText(
-      formatter(twoPartReservation),
-      { useInnerText: true }
+      formatter(twoPartReservation)
     )
   }
 
@@ -332,9 +330,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayCtaContent(content: string): Promise<void> {
-    await expect(this.#holidayCtas.nth(0)).toHaveText(content, {
-      useInnerText: true
-    })
+    await expect(this.#holidayCtas.nth(0)).toHaveText(content)
   }
 
   async clickHolidayCta(): Promise<void> {
@@ -731,9 +727,7 @@ class ReservationModal extends Element {
   }
 
   async assertHolidayPeriodInfoContent(content: string) {
-    await expect(this.findByDataQa('holiday-period-info')).toHaveText(content, {
-      useInnerText: true
-    })
+    await expect(this.findByDataQa('holiday-period-info')).toHaveText(content)
   }
 
   async assertIncompletelyAnsweredPeriodsInfoVisible() {
@@ -882,9 +876,7 @@ class DayView extends Element {
   async assertReservations(childId: UUID, reservations: string) {
     const reservationsElement =
       this.#childSection(childId).findByDataQa('reservations')
-    await expect(reservationsElement).toHaveText(reservations, {
-      useInnerText: true
-    })
+    await expect(reservationsElement).toHaveText(reservations)
   }
 
   async assertReservationNoTimes(childId: UUID) {
@@ -922,7 +914,7 @@ class DayView extends Element {
   async assertAbsence(childId: UUID, value: string) {
     await expect(
       this.#childSection(childId).findByDataQa('absence')
-    ).toHaveText(value, { useInnerText: true })
+    ).toHaveText(value)
   }
 
   async assertNoActivePlacementsMsgVisible() {
@@ -951,12 +943,9 @@ class DayView extends Element {
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
     await expect(event).toBeVisible()
-    await expect(event.findByDataQa('event-title')).toHaveText(title, {
-      useInnerText: true
-    })
+    await expect(event.findByDataQa('event-title')).toHaveText(title)
     await expect(event.findByDataQa('event-description')).toHaveText(
-      description,
-      { useInnerText: true }
+      description
     )
 
     const exportButton = event.findByDataQa(`event-export-button-${eventId}`)
@@ -986,16 +975,13 @@ class DayView extends Element {
     exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await expect(event.findByDataQa('title-text')).toHaveText(title, {
-      useInnerText: true
-    })
+    await expect(event.findByDataQa('title-text')).toHaveText(title)
     await expect(event.findByDataQa('event-description')).toHaveText(
-      description,
-      { useInnerText: true }
+      description
     )
     await expect(
       event.findByDataQa(`reservation-time-${eventTimeId}`)
-    ).toHaveText(reservationText, { useInnerText: true })
+    ).toHaveText(reservationText)
     const cancelButton = new TextInput(
       event.findByDataQa(`reservation-cancel-button-${eventTimeId}`)
     )

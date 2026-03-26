@@ -86,12 +86,10 @@ export class UnitRow extends Element {
 
   async assertFields(fields: { name?: string; visitingAddress?: string }) {
     if (fields.name !== undefined) {
-      await expect(this.#name).toHaveText(fields.name, { useInnerText: true })
+      await expect(this.#name).toHaveText(fields.name)
     }
     if (fields.visitingAddress !== undefined) {
-      await expect(this.#visitingAddress).toHaveText(fields.visitingAddress, {
-        useInnerText: true
-      })
+      await expect(this.#visitingAddress).toHaveText(fields.visitingAddress)
     }
   }
 

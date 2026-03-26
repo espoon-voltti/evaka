@@ -138,75 +138,53 @@ test.describe('Invoices', () => {
 
       const head = invoicePage.headOfFamilySection
       await expect(head.headOfFamilyName).toHaveText(
-        `${testAdult.firstName} ${testAdult.lastName}`,
-        { useInnerText: true }
+        `${testAdult.firstName} ${testAdult.lastName}`
       )
-      await expect(head.headOfFamilySsn).toHaveText(testAdult.ssn!, {
-        useInnerText: true
-      })
+      await expect(head.headOfFamilySsn).toHaveText(testAdult.ssn!)
       await expect(head.codebtorName).toHaveText(
-        `${codebtor.firstName} ${codebtor.lastName}`,
-        { useInnerText: true }
+        `${codebtor.firstName} ${codebtor.lastName}`
       )
-      await expect(head.codebtorSsn).toHaveText(codebtor.ssn!, {
-        useInnerText: true
-      })
+      await expect(head.codebtorSsn).toHaveText(codebtor.ssn!)
 
       const details = invoicePage.detailsSection
-      await expect(details.status).toHaveText('Luonnos', { useInnerText: true })
+      await expect(details.status).toHaveText('Luonnos')
 
       const periodStart = today.subMonths(1).withDate(1)
       const periodEnd = today.withDate(1).subDays(1)
       await expect(details.period).toHaveText(
-        `${periodStart.format()} - ${periodEnd.format()}`,
-        { useInnerText: true }
+        `${periodStart.format()} - ${periodEnd.format()}`
       )
 
-      await expect(details.number).toHaveText('', { useInnerText: true })
-      await expect(details.dueDate).toHaveText(today.addDays(28).format(), {
-        useInnerText: true
-      })
-      await expect(details.account).toHaveText('3295', { useInnerText: true })
-      await expect(details.agreementType).toHaveText('299', {
-        useInnerText: true
-      })
+      await expect(details.number).toHaveText('')
+      await expect(details.dueDate).toHaveText(today.addDays(28).format())
+      await expect(details.account).toHaveText('3295')
+      await expect(details.agreementType).toHaveText('299')
       await expect(details.relatedFeeDecisions).toHaveText(
-        feeDecision.decisionNumber!.toString(),
-        { useInnerText: true }
+        feeDecision.decisionNumber!.toString()
       )
       await expect(details.replacedInvoice).toBeHidden()
 
       const child = invoicePage.nthChild(0)
       await expect(child.childName).toHaveText(
-        `${testChild2.lastName} ${testChild2.firstName}`,
-        { useInnerText: true }
+        `${testChild2.lastName} ${testChild2.firstName}`
       )
-      await expect(child.childSsn).toHaveText(testChild2.ssn!, {
-        useInnerText: true
-      })
+      await expect(child.childSsn).toHaveText(testChild2.ssn!)
 
       const row = child.row(0)
-      await expect(row.product).toHaveText('Varhaiskasvatus', {
-        useInnerText: true
-      })
-      await expect(row.description).toHaveText('', { useInnerText: true })
-      await expect(row.unit).toHaveText(testDaycare.name, {
-        useInnerText: true
-      })
+      await expect(row.product).toHaveText('Varhaiskasvatus')
+      await expect(row.description).toHaveText('')
+      await expect(row.unit).toHaveText(testDaycare.name)
       await expect(row.period).toHaveText(
-        `${periodStart.format()} - ${periodEnd.format()}`,
-        { useInnerText: true }
+        `${periodStart.format()} - ${periodEnd.format()}`
       )
-      await expect(row.amount).toHaveText('1', { useInnerText: true })
-      await expect(row.unitPrice).toHaveText('289', { useInnerText: true })
-      await expect(row.totalPrice).toHaveText('289', { useInnerText: true })
+      await expect(row.amount).toHaveText('1')
+      await expect(row.unitPrice).toHaveText('289')
+      await expect(row.totalPrice).toHaveText('289')
 
-      await expect(child.totalPrice).toHaveText('289', { useInnerText: true })
+      await expect(child.totalPrice).toHaveText('289')
       await expect(child.previousTotalPrice).toBeHidden()
 
-      await expect(invoicePage.totalPrice).toHaveText('289', {
-        useInnerText: true
-      })
+      await expect(invoicePage.totalPrice).toHaveText('289')
       await expect(invoicePage.previousTotalPrice).toBeHidden()
 
       await invoicesPage.navigateBackToInvoices()
@@ -371,32 +349,19 @@ test.describe('Invoices', () => {
       const invoicePage = await invoicesPage.openFirstInvoice()
 
       const details = invoicePage.detailsSection
-      await expect(details.status).toHaveText('Oikaisuluonnos', {
-        useInnerText: true
-      })
+      await expect(details.status).toHaveText('Oikaisuluonnos')
 
       await expect(details.relatedFeeDecisions).toHaveText(
-        feeDecision.decisionNumber!.toString(),
-        { useInnerText: true }
+        feeDecision.decisionNumber!.toString()
       )
-      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024', {
-        useInnerText: true
-      })
+      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024')
 
       const child = invoicePage.nthChild(0)
-      await expect(child.totalPrice).toHaveText('276,43', {
-        useInnerText: true
-      })
-      await expect(child.previousTotalPrice).toHaveText('289', {
-        useInnerText: true
-      })
+      await expect(child.totalPrice).toHaveText('276,43')
+      await expect(child.previousTotalPrice).toHaveText('289')
 
-      await expect(invoicePage.totalPrice).toHaveText('276,43', {
-        useInnerText: true
-      })
-      await expect(invoicePage.previousTotalPrice).toHaveText('289', {
-        useInnerText: true
-      })
+      await expect(invoicePage.totalPrice).toHaveText('276,43')
+      await expect(invoicePage.previousTotalPrice).toHaveText('289')
 
       await invoicesPage.navigateBackToInvoices()
     })
@@ -412,33 +377,20 @@ test.describe('Invoices', () => {
       const invoicePage = await invoicesPage.openFirstInvoice()
 
       const details = invoicePage.detailsSection
-      await expect(details.status).toHaveText('Oikaisuluonnos', {
-        useInnerText: true
-      })
+      await expect(details.status).toHaveText('Oikaisuluonnos')
 
-      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024', {
-        useInnerText: true
-      })
+      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024')
 
       const child = invoicePage.nthChild(0)
       await expect(child.childName).toHaveText(
-        `${testChild2.lastName} ${testChild2.firstName}`,
-        { useInnerText: true }
+        `${testChild2.lastName} ${testChild2.firstName}`
       )
-      await expect(child.childSsn).toHaveText(testChild2.ssn!, {
-        useInnerText: true
-      })
-      await expect(child.totalPrice).toHaveText('0', { useInnerText: true })
-      await expect(child.previousTotalPrice).toHaveText('289', {
-        useInnerText: true
-      })
+      await expect(child.childSsn).toHaveText(testChild2.ssn!)
+      await expect(child.totalPrice).toHaveText('0')
+      await expect(child.previousTotalPrice).toHaveText('289')
 
-      await expect(invoicePage.totalPrice).toHaveText('0', {
-        useInnerText: true
-      })
-      await expect(invoicePage.previousTotalPrice).toHaveText('289', {
-        useInnerText: true
-      })
+      await expect(invoicePage.totalPrice).toHaveText('0')
+      await expect(invoicePage.previousTotalPrice).toHaveText('289')
 
       await invoicesPage.navigateBackToInvoices()
     })
@@ -465,17 +417,12 @@ test.describe('Invoices', () => {
       await form.markSentButton.click()
 
       const view = invoicePage.replacementInfo
-      await expect(view.reason).toHaveText('Päiväkirjamerkintä', {
-        useInnerText: true
-      })
-      await expect(view.notes).toHaveText('Unohtunut päiväkirjamerkintä', {
-        useInnerText: true
-      })
+      await expect(view.reason).toHaveText('Päiväkirjamerkintä')
+      await expect(view.notes).toHaveText('Unohtunut päiväkirjamerkintä')
       await expect(view.attachments).toHaveCount(1)
-      await expect(view.sentAt).toHaveText(now.format(), { useInnerText: true })
+      await expect(view.sentAt).toHaveText(now.format())
       await expect(view.sentBy).toHaveText(
-        `${financeAdmin.lastName} ${financeAdmin.firstName}`,
-        { useInnerText: true }
+        `${financeAdmin.lastName} ${financeAdmin.firstName}`
       )
     })
   })

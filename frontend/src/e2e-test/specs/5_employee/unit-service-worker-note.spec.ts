@@ -51,18 +51,14 @@ test.describe('Employee - Unit - Service worker note', () => {
     await unitPage.serviceWorkerNote.input.fill(text1)
     await unitPage.serviceWorkerNote.saveButton.click()
     await expect(unitPage.serviceWorkerNote.saveButton).toBeHidden()
-    await expect(unitPage.serviceWorkerNote.content).toHaveText(text1, {
-      useInnerText: true
-    })
+    await expect(unitPage.serviceWorkerNote.content).toHaveText(text1)
 
     await unitPage.serviceWorkerNote.editButton.click()
     const text2 = 'Väistötiloissa marraskuussa 2025, esteellinen sijainti'
     await unitPage.serviceWorkerNote.input.fill(text2)
     await unitPage.serviceWorkerNote.saveButton.click()
     await expect(unitPage.serviceWorkerNote.saveButton).toBeHidden()
-    await expect(unitPage.serviceWorkerNote.content).toHaveText(text2, {
-      useInnerText: true
-    })
+    await expect(unitPage.serviceWorkerNote.content).toHaveText(text2)
 
     await unitPage.serviceWorkerNote.removeButton.click()
     await expect(unitPage.serviceWorkerNote.addButton).toBeVisible()

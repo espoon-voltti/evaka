@@ -59,20 +59,16 @@ export class PlacementDraftPage {
       '[data-qa="speculated-occupancies"]'
     )
     await expect(current.find('[data-qa="3months"]')).toHaveText(
-      occupancies.max3Months,
-      { useInnerText: true }
+      occupancies.max3Months
     )
     await expect(current.find('[data-qa="6months"]')).toHaveText(
-      occupancies.max6Months,
-      { useInnerText: true }
+      occupancies.max6Months
     )
     await expect(speculated.find('[data-qa="3months"]')).toHaveText(
-      occupancies.max3MonthsSpeculated,
-      { useInnerText: true }
+      occupancies.max3MonthsSpeculated
     )
     await expect(speculated.find('[data-qa="6months"]')).toHaveText(
-      occupancies.max6MonthsSpeculated,
-      { useInnerText: true }
+      occupancies.max6MonthsSpeculated
     )
   }
 

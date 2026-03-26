@@ -86,10 +86,7 @@ export default class MobileNotePage {
   }
 
   async assertStickyNote(expected: string, nth = 0) {
-    await expect(this.#stickyNote.note.nth(nth).find('p')).toHaveText(
-      expected,
-      { useInnerText: true }
-    )
+    await expect(this.#stickyNote.note.nth(nth).find('p')).toHaveText(expected)
   }
 
   async assertStickyNoteExpires(date: LocalDate, nth = 0) {

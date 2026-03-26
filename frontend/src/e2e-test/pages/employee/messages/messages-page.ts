@@ -108,9 +108,7 @@ export default class MessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    await expect(this.#messageReplyContent).toHaveText('', {
-      useInnerText: true
-    })
+    await expect(this.#messageReplyContent).toHaveText('')
   }
 
   async openMessageEditor() {
@@ -129,19 +127,17 @@ export default class MessagesPage {
   }
 
   async assertMessageContent(index: number, content: string) {
-    await expect(this.#messageContent(index)).toHaveText(content, {
-      useInnerText: true
-    })
+    await expect(this.#messageContent(index)).toHaveText(content)
   }
 
   async assertDraftContent(title: string, content: string) {
     await this.#draftMessagesBoxRow.click()
     await expect(
       this.#draftMessage.find('[data-qa="thread-list-item-title"]')
-    ).toHaveText(title, { useInnerText: true })
+    ).toHaveText(title)
     await expect(
       this.#draftMessage.find('[data-qa="thread-list-item-content"]')
-    ).toHaveText(content, { useInnerText: true })
+    ).toHaveText(content)
   }
 
   async assertNoDrafts() {
@@ -152,12 +148,10 @@ export default class MessagesPage {
   async assertCopyContent(title: string, content: string) {
     await this.#messageCopiesInbox.click()
     await expect(this.page.findByDataQa('thread-list-item-title')).toHaveText(
-      title,
-      { useInnerText: true }
+      title
     )
     await expect(this.page.findByDataQa('thread-list-item-content')).toHaveText(
-      content,
-      { useInnerText: true }
+      content
     )
   }
 
@@ -197,7 +191,7 @@ export class SentMessagesPage {
   async assertMessageParticipants(nth: number, participants: string) {
     await expect(
       this.sentMessages.nth(nth).findByDataQa('participants')
-    ).toHaveText(participants, { useInnerText: true })
+    ).toHaveText(participants)
   }
 
   async openMessage(nth: number) {
@@ -238,8 +232,7 @@ export class SentMessagePage {
 
   async assertMessageRecipients(recipients: string) {
     await expect(this.page.findByDataQa('recipient-names')).toHaveText(
-      recipients,
-      { useInnerText: true }
+      recipients
     )
   }
 }
@@ -249,8 +242,7 @@ export class MessageCopyPage {
 
   async assertMessageRecipients(recipients: string) {
     await expect(this.page.findByDataQa('recipient-names')).toHaveText(
-      recipients,
-      { useInnerText: true }
+      recipients
     )
   }
 }
@@ -387,9 +379,7 @@ export class MessageEditor extends Element {
   }
 
   async assertRecipient(recipientName: string) {
-    await expect(this.recipientSelection).toHaveText(recipientName, {
-      useInnerText: true
-    })
+    await expect(this.recipientSelection).toHaveText(recipientName)
   }
 
   async assertTitle(title: string) {

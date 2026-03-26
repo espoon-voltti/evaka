@@ -33,12 +33,10 @@ export default class CitizenDecisionsPage {
       .findByDataQa(`child-decisions-${childId}`)
       .findByDataQa(`application-decision-${decisionId}`)
     await expect(decision.findByDataQa('title-decision-type')).toHaveText(
-      expectedTitle,
-      { useInnerText: true }
+      expectedTitle
     )
     await expect(decision.findByDataQa('decision-sent-date')).toHaveText(
-      expectedSentDate,
-      { useInnerText: true }
+      expectedSentDate
     )
     await decision
       .findByDataQa('decision-status')
@@ -60,10 +58,10 @@ export default class CitizenDecisionsPage {
     }
     await expect(
       financeDecision.findByDataQa(`finance-decision-title`)
-    ).toHaveText(expectedTitle, { useInnerText: true })
+    ).toHaveText(expectedTitle)
     await expect(
       financeDecision.findByDataQa(`finance-decision-sent-at`)
-    ).toHaveText(expectedSentAt, { useInnerText: true })
+    ).toHaveText(expectedSentAt)
     for (const coDebtor of expectedCoDebtorNames) {
       await financeDecision
         .findByDataQa(`finance-decision-co-debtors`)
@@ -157,8 +155,7 @@ class CitizenDecisionResponsePage {
         ? 'Vahvistettavat paikat'
         : unresolvedCount === 1
           ? '1 paikka odottaa huoltajan vahvistusta'
-          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`,
-      { useInnerText: true }
+          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`
     )
   }
 
@@ -175,12 +172,8 @@ class CitizenDecisionResponsePage {
     decisionUnitText: string,
     decisionStatusText: string
   ) {
-    await expect(this.#decisionTitle(decisionId)).toHaveText(decisionTypeText, {
-      useInnerText: true
-    })
-    await expect(this.#decisionUnit(decisionId)).toHaveText(decisionUnitText, {
-      useInnerText: true
-    })
+    await expect(this.#decisionTitle(decisionId)).toHaveText(decisionTypeText)
+    await expect(this.#decisionUnit(decisionId)).toHaveText(decisionUnitText)
     await this.assertDecisionStatus(decisionId, decisionStatusText)
   }
 
@@ -227,14 +220,10 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   }
 
   if (count === 1) {
-    return expect(element).toHaveText(
-      '1 paikka odottaa huoltajan vahvistusta',
-      { useInnerText: true }
-    )
+    return expect(element).toHaveText('1 paikka odottaa huoltajan vahvistusta')
   }
 
   return expect(element).toHaveText(
-    `${count} paikkaa odottaa huoltajan vahvistusta`,
-    { useInnerText: true }
+    `${count} paikkaa odottaa huoltajan vahvistusta`
   )
 }

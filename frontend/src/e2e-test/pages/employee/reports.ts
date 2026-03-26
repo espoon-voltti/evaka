@@ -118,12 +118,9 @@ export class MissingHeadOfFamilyReport {
     await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
-      await expect(row.findByDataQa('child-name')).toHaveText(data.childName, {
-        useInnerText: true
-      })
+      await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
       await expect(row.findByDataQa('ranges-without-head')).toHaveText(
-        data.rangesWithoutHead,
-        { useInnerText: true }
+        data.rangesWithoutHead
       )
     }
   }
@@ -152,20 +149,15 @@ export class NonSsnChildrenReport {
     await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
-      await expect(row.findByDataQa('child-name')).toHaveText(data.childName, {
-        useInnerText: true
-      })
+      await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
       await expect(row.findByDataQa('date-of-birth')).toHaveText(
-        data.dateOfBirth,
-        { useInnerText: true }
+        data.dateOfBirth
       )
       await expect(row.findByDataQa('oph-person-oid')).toHaveText(
-        data.ophPersonOid,
-        { useInnerText: true }
+        data.ophPersonOid
       )
       await expect(row.findByDataQa('last-sent-to-varda')).toHaveText(
-        data.lastSentToVarda,
-        { useInnerText: true }
+        data.lastSentToVarda
       )
     }
   }
@@ -252,19 +244,11 @@ export class PlacementGuaranteeReport {
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName, {
-          useInnerText: true
-        })
-        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName, {
-          useInnerText: true
-        })
-        await expect(row.findByDataQa('child-name')).toHaveText(
-          data.childName,
-          { useInnerText: true }
-        )
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
         await expect(row.findByDataQa('placement-period')).toHaveText(
-          data.placementPeriod,
-          { useInnerText: true }
+          data.placementPeriod
         )
       })
     )
@@ -290,18 +274,14 @@ export class PlacementSketchingReport {
     await expect(element).toBeVisible()
 
     await expect(element.find('[data-qa="requested-unit"]')).toHaveText(
-      requestedUnitName,
-      { useInnerText: true }
+      requestedUnitName
     )
     if (currentUnitName) {
       await expect(element.find('[data-qa="current-unit"]')).toHaveText(
-        currentUnitName,
-        { useInnerText: true }
+        currentUnitName
       )
     }
-    await expect(element.find('[data-qa="child-name"]')).toHaveText(childName, {
-      useInnerText: true
-    })
+    await expect(element.find('[data-qa="child-name"]')).toHaveText(childName)
   }
 
   async assertNotRow(applicationId: string) {
@@ -394,8 +374,7 @@ export class ServiceVoucherUnitReport {
     expectedRealizedAmount: number
   ) {
     await expect(this.page.findAllByDataQa('child-name').nth(nth)).toHaveText(
-      expectedName,
-      { useInnerText: true }
+      expectedName
     )
     await this.page
       .findAllByDataQa('voucher-value')
@@ -509,35 +488,26 @@ export class PreschoolAbsenceReport {
       expected.map(async (data, index) => {
         const row = rows.nth(index)
         await expect(row.findByDataQa('first-name-column')).toHaveText(
-          data.firstName,
-          { useInnerText: true }
+          data.firstName
         )
         await expect(row.findByDataQa('last-name-column')).toHaveText(
-          data.lastName,
-          { useInnerText: true }
+          data.lastName
         )
         await expect(row.findByDataQa('daycare-name-column')).toHaveText(
-          data.daycareName,
-          { useInnerText: true }
+          data.daycareName
         )
         await expect(row.findByDataQa('group-name-column')).toHaveText(
-          data.groupName,
-          { useInnerText: true }
+          data.groupName
         )
-        await expect(row.findByDataQa('total-column')).toHaveText(data.TOTAL, {
-          useInnerText: true
-        })
+        await expect(row.findByDataQa('total-column')).toHaveText(data.TOTAL)
         await expect(row.findByDataQa('other-absence-column')).toHaveText(
-          data.OTHER_ABSENCE,
-          { useInnerText: true }
+          data.OTHER_ABSENCE
         )
         await expect(row.findByDataQa('sickleave-column')).toHaveText(
-          data.SICKLEAVE,
-          { useInnerText: true }
+          data.SICKLEAVE
         )
         await expect(row.findByDataQa('unknown-absence-column')).toHaveText(
-          data.UNKNOWN_ABSENCE,
-          { useInnerText: true }
+          data.UNKNOWN_ABSENCE
         )
       })
     )
@@ -594,9 +564,7 @@ export class HolidayPeriodAttendanceReport {
       expected.map(async (data, index) => {
         const row = rows.nth(index)
 
-        await expect(row.findByDataQa('date-column')).toHaveText(data.date, {
-          useInnerText: true
-        })
+        await expect(row.findByDataQa('date-column')).toHaveText(data.date)
 
         const presentChildren = row
           .findByDataQa('present-children-column')
@@ -609,16 +577,13 @@ export class HolidayPeriodAttendanceReport {
         await this.assertChildNames(assistanceChildren, data.assistanceChildren)
 
         await expect(row.findByDataQa('coefficient-sum-column')).toHaveText(
-          data.coefficientSum,
-          { useInnerText: true }
+          data.coefficientSum
         )
         await expect(row.findByDataQa('staff-count-column')).toHaveText(
-          data.staffCount,
-          { useInnerText: true }
+          data.staffCount
         )
         await expect(row.findByDataQa('absence-count-column')).toHaveText(
-          data.absenceCount,
-          { useInnerText: true }
+          data.absenceCount
         )
 
         const noResponseChildren = row
@@ -634,9 +599,7 @@ export class HolidayPeriodAttendanceReport {
     assert(childCount === names.length)
     for (let i = 0; i < childCount; i++) {
       const child = children.nth(i)
-      await expect(child).toHaveText(`${i + 1}. ${names[i]}`, {
-        useInnerText: true
-      })
+      await expect(child).toHaveText(`${i + 1}. ${names[i]}`)
     }
   }
 }
@@ -703,21 +666,17 @@ export class ChildAttendanceReservationByChildReport {
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await expect(row.findByDataQa('child-name')).toHaveText(
-          data.childName,
-          { useInnerText: true }
-        )
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
         if (data.attendanceReservationStart && data.attendanceReservationEnd) {
           await expect(
             row.findByDataQa('attendance-reservation-start')
-          ).toHaveText(data.attendanceReservationStart, { useInnerText: true })
+          ).toHaveText(data.attendanceReservationStart)
           await expect(
             row.findByDataQa('attendance-reservation-end')
-          ).toHaveText(data.attendanceReservationEnd, { useInnerText: true })
+          ).toHaveText(data.attendanceReservationEnd)
         } else {
           await expect(row.findByDataQa('missing-reservation-text')).toHaveText(
-            'Varaus puuttuu',
-            { useInnerText: true }
+            'Varaus puuttuu'
           )
         }
       })
@@ -796,15 +755,14 @@ export class OccupanciesReport {
   async assertReportDateColumns(expected: LocalDate[]) {
     const columns = this.page.findAllByDataQa('table-header-date')
     await expect(columns).toHaveText(
-      expected.map((date) => date.format('dd.MM.')),
-      { useInnerText: true }
+      expected.map((date) => date.format('dd.MM.'))
     )
   }
 
   async assertReportUnitNameRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('table-body-row-unit')
     const names = rows.findAllByDataQa('table-body-row-unit-name')
-    await expect(names).toHaveText(expected, { useInnerText: true })
+    await expect(names).toHaveText(expected)
   }
 }
 
@@ -824,19 +782,11 @@ export class StartingPlacementsReport {
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await expect(row.findByDataQa('child-name')).toHaveText(
-          data.childName,
-          { useInnerText: true }
-        )
-        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName, {
-          useInnerText: true
-        })
-        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName, {
-          useInnerText: true
-        })
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
         await expect(row.findByDataQa('placement-start-date')).toHaveText(
-          data.placementStart.format(),
-          { useInnerText: true }
+          data.placementStart.format()
         )
       })
     )
@@ -862,31 +812,20 @@ export class EndedPlacementsReport {
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await expect(row.findByDataQa('child-name')).toHaveText(
-          data.childName,
-          { useInnerText: true }
-        )
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
         await expect(row.findByDataQa('child-date-of-birth')).toHaveText(
-          data.childDateOfBirth.format(),
-          { useInnerText: true }
+          data.childDateOfBirth.format()
         )
-        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName, {
-          useInnerText: true
-        })
-        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName, {
-          useInnerText: true
-        })
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
         await expect(row.findByDataQa('placement-end-date')).toHaveText(
-          data.placementEnd.format(),
-          { useInnerText: true }
+          data.placementEnd.format()
         )
         await expect(row.findByDataQa('next-placement-start-date')).toHaveText(
-          data.nextPlacementStart.format(),
-          { useInnerText: true }
+          data.nextPlacementStart.format()
         )
         await expect(row.findByDataQa('next-placement-unit-name')).toHaveText(
-          data.nextPlacementUnitName,
-          { useInnerText: true }
+          data.nextPlacementUnitName
         )
       })
     )
@@ -926,6 +865,6 @@ export class SextetReport {
 
   async assertSum(expected: number) {
     const sum = this.page.findByDataQa('data-sum')
-    await expect(sum).toHaveText(`${expected}`, { useInnerText: true })
+    await expect(sum).toHaveText(`${expected}`)
   }
 }

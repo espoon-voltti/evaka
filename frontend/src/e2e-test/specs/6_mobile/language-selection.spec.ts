@@ -44,25 +44,19 @@ test.describe('Language selection', () => {
     const langSelection = settingsPage.languageSelection
 
     // Default language is Finnish
-    await expect(settingsPage.title).toHaveText('Asetukset', {
-      useInnerText: true
-    })
+    await expect(settingsPage.title).toHaveText('Asetukset')
     await langSelection.fi.assertAttributeEquals('aria-checked', 'true')
     await langSelection.sv.assertAttributeEquals('aria-checked', 'false')
 
     // Switch to Swedish
     await langSelection.sv.click()
-    await expect(settingsPage.title).toHaveText('Inställningar', {
-      useInnerText: true
-    })
+    await expect(settingsPage.title).toHaveText('Inställningar')
     await langSelection.sv.assertAttributeEquals('aria-checked', 'true')
     await langSelection.fi.assertAttributeEquals('aria-checked', 'false')
 
     // Language persists after reload
     await page.reload()
-    await expect(settingsPage.title).toHaveText('Inställningar', {
-      useInnerText: true
-    })
+    await expect(settingsPage.title).toHaveText('Inställningar')
     await langSelection.sv.assertAttributeEquals('aria-checked', 'true')
   })
 })

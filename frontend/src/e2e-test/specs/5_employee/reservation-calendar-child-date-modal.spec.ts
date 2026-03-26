@@ -200,7 +200,7 @@ test.describe('Reservation calendar child date modal', () => {
     // billable absence has precedence
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Sairaus*', { useInnerText: true })
+    ).toHaveText('Sairaus*')
 
     await reservationsTable.openChildDateModal(childId, date)
     await modal.nonbillableAbsenceRemove.click()
@@ -209,7 +209,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*', { useInnerText: true })
+    ).toHaveText('Poissaolo*')
 
     // reservation times are shown if partially absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -234,10 +234,10 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*', { useInnerText: true })
+    ).toHaveText('Poissaolo*')
     await expect(
       reservationsTable.reservationCells(childId, date).nth(1)
-    ).toHaveText('', { useInnerText: true })
+    ).toHaveText('')
   })
 
   test('Add absence for child in preschool for yesterday', async () => {
@@ -255,7 +255,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*', { useInnerText: true })
+    ).toHaveText('Poissaolo*')
   })
 
   test('Add absence for child in daycare for yesterday', async () => {
@@ -275,7 +275,7 @@ test.describe('Reservation calendar child date modal', () => {
 
     await expect(
       reservationsTable.reservationCells(childId, date).nth(0)
-    ).toHaveText('Poissaolo*', { useInnerText: true })
+    ).toHaveText('Poissaolo*')
   })
 
   test('Absence warnings for child in daycare', async () => {
@@ -384,7 +384,7 @@ test.describe('Reservation calendar child date modal', () => {
       ).toBeVisible()
       await expect(
         reservationsTable.attendanceCells(childId, date1).nth(0)
-      ).toHaveText('Tee varasijoitus ', { useInnerText: true })
+      ).toHaveText('Tee varasijoitus ')
 
       await expect(
         reservationsTable.outsideOpeningHoursWarning(childId, date2, 0)
@@ -440,12 +440,12 @@ test.describe('Reservation calendar child date modal', () => {
       await weekCalendar.changeWeekToDate(date1)
       await expect(
         reservationsTable.attendanceCells(childId, date1).nth(0)
-      ).toHaveText('Tee varasijoitus ', { useInnerText: true })
+      ).toHaveText('Tee varasijoitus ')
 
       await weekCalendar.changeWeekToDate(date2)
       await expect(
         reservationsTable.attendanceCells(childId, date2).nth(0)
-      ).toHaveText('', { useInnerText: true })
+      ).toHaveText('')
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.changeWeekToDate(date1)
@@ -476,7 +476,7 @@ test.describe('Reservation calendar child date modal', () => {
 
       await expect(
         reservationsTable.attendanceCells(childId, date).nth(0)
-      ).toHaveText('Tee varasijoitus ', { useInnerText: true })
+      ).toHaveText('Tee varasijoitus ')
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.assertTooltipContains(childId, date, [

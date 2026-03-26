@@ -143,15 +143,11 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertPartnerName(expectedName: string) {
-    await expect(this.#partnerName).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#partnerName).toHaveText(expectedName)
   }
 
   async assertDecisionHandler(expectedName: string) {
-    await expect(this.#decisionHandler).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#decisionHandler).toHaveText(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
@@ -287,9 +283,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertPartnerName(expectedName: string) {
-    await expect(this.#partnerName).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#partnerName).toHaveText(expectedName)
   }
 
   async assertPartnerNameNotShown() {
@@ -298,9 +292,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertDecisionHandler(expectedName: string) {
-    await expect(this.#decisionHandler).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#decisionHandler).toHaveText(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
@@ -538,10 +530,10 @@ export class IncomeStatementsPage {
   ) {
     await expect(
       this.incomeStatementRows.nth(nth).findByDataQa('person-link')
-    ).toHaveText(expectedName, { useInnerText: true })
+    ).toHaveText(expectedName)
     await expect(
       this.incomeStatementRows.nth(nth).findByDataQa('income-statement-type')
-    ).toHaveText(expectedTypeText, { useInnerText: true })
+    ).toHaveText(expectedTypeText)
   }
 }
 

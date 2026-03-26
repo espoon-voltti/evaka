@@ -84,7 +84,7 @@ export class CitizenChildIncomeStatementEditPage {
       this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-    ).toHaveText('Tuloselvitys lähetetty', { useInnerText: true })
+    ).toHaveText('Tuloselvitys lähetetty')
   }
 
   async closeNotification() {
@@ -131,7 +131,7 @@ export class CitizenChildIncomeStatementListPage {
   async assertChildName(expectedName: string) {
     await expect(
       this.childIncomeStatementsSection.find('[data-qa="child-name"]')
-    ).toHaveText(expectedName, { useInnerText: true })
+    ).toHaveText(expectedName)
   }
 
   async assertIncomeStatementMissingWarningIsShown() {

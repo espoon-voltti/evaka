@@ -97,6 +97,6 @@ export default class MobileListPage {
 
   async assertChildNames(expected: string[]) {
     const rows = this.page.findAllByDataQa('child-name')
-    await expect(rows).toHaveText(expected, { useInnerText: true })
+    await expect(rows).toHaveText(expected)
   }
 }

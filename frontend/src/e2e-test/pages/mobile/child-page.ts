@@ -111,50 +111,40 @@ export default class MobileChildPage {
       phone: string
     }[]
   ) {
-    await expect(this.basicInfo.name).toHaveText(name, { useInnerText: true })
+    await expect(this.basicInfo.name).toHaveText(name)
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
       await expect(this.basicInfo.contactName(i)).toHaveText(
-        `${contact.firstName} ${contact.lastName}`,
-        { useInnerText: true }
+        `${contact.firstName} ${contact.lastName}`
       )
       if (contact.phone) {
-        await expect(this.basicInfo.contactPhone(i)).toHaveText(contact.phone, {
-          useInnerText: true
-        })
+        await expect(this.basicInfo.contactPhone(i)).toHaveText(contact.phone)
       }
       if (contact.email) {
-        await expect(this.basicInfo.contactEmail(i)).toHaveText(contact.email, {
-          useInnerText: true
-        })
+        await expect(this.basicInfo.contactEmail(i)).toHaveText(contact.email)
       }
     }
 
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
       await expect(this.basicInfo.backupPickupName(i)).toHaveText(
-        backupPickup.name,
-        { useInnerText: true }
+        backupPickup.name
       )
       await expect(this.basicInfo.backupPickupPhone(i)).toHaveText(
-        backupPickup.phone,
-        { useInnerText: true }
+        backupPickup.phone
       )
     }
   }
 
   async assertSensitiveInfo(additionalInfo: DevChild) {
     await expect(this.sensitiveInfo.allergies).toHaveText(
-      additionalInfo.allergies ?? 'should be defined',
-      { useInnerText: true }
+      additionalInfo.allergies ?? 'should be defined'
     )
     await expect(this.sensitiveInfo.diet).toHaveText(
-      additionalInfo.diet ?? 'should be defined',
-      { useInnerText: true }
+      additionalInfo.diet ?? 'should be defined'
     )
     await expect(this.sensitiveInfo.medication).toHaveText(
-      additionalInfo.medication ?? 'should be defined',
-      { useInnerText: true }
+      additionalInfo.medication ?? 'should be defined'
     )
   }
 

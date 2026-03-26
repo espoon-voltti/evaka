@@ -199,7 +199,7 @@ test.describe('Calendar events', () => {
         mockedToday.addDays(1),
         0
       )
-    ).toHaveText('Testailijat: Test event (G)', { useInnerText: true })
+    ).toHaveText('Testailijat: Test event (G)')
   })
 
   test('Employee can add multi-day event for individual child and edit and delete it', async () => {
@@ -228,10 +228,10 @@ test.describe('Calendar events', () => {
 
     await expect(
       calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
-    ).toHaveText('Osa ryhmästä: Test event (P)', { useInnerText: true })
+    ).toHaveText('Osa ryhmästä: Test event (P)')
     await expect(
       calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
-    ).toHaveText('Osa ryhmästä: Test event (P)', { useInnerText: true })
+    ).toHaveText('Osa ryhmästä: Test event (P)')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 
@@ -244,10 +244,10 @@ test.describe('Calendar events', () => {
 
     await expect(
       calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
-    ).toHaveText('Osa ryhmästä: Edited event title', { useInnerText: true })
+    ).toHaveText('Osa ryhmästä: Edited event title')
     await expect(
       calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
-    ).toHaveText('Osa ryhmästä: Edited event title', { useInnerText: true })
+    ).toHaveText('Osa ryhmästä: Edited event title')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 

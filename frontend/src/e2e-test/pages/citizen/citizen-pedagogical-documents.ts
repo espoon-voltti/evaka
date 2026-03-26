@@ -20,12 +20,8 @@ export default class CitizenPedagogicalDocumentsPage {
     expectedDate: string,
     expectedDescription: string
   ) {
-    await expect(this.#date(id)).toHaveText(expectedDate, {
-      useInnerText: true
-    })
-    await expect(this.#description(id)).toHaveText(expectedDescription, {
-      useInnerText: true
-    })
+    await expect(this.#date(id)).toHaveText(expectedDate)
+    await expect(this.#description(id)).toHaveText(expectedDescription)
   }
 
   async downloadAttachment(id: string) {

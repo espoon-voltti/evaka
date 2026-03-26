@@ -151,8 +151,7 @@ export default class CitizenHeader {
     await expect(this.#messagesNav).toBeVisible()
     if (expectedCount !== 0) {
       await expect(this.#unreadMessagesCount).toHaveText(
-        expectedCount.toString(),
-        { useInnerText: true }
+        expectedCount.toString()
       )
     } else {
       await expect(this.#unreadMessagesCount).toBeHidden()
@@ -163,8 +162,7 @@ export default class CitizenHeader {
     await expect(this.#childrenNav).toBeVisible()
     if (expectedCount !== 0) {
       await expect(this.#unreadChildrenCount).toHaveText(
-        expectedCount.toString(),
-        { useInnerText: true }
+        expectedCount.toString()
       )
     } else {
       await expect(this.#unreadChildrenCount).toBeHidden()

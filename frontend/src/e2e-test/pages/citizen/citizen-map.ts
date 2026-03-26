@@ -45,8 +45,7 @@ export default class CitizenMapPage {
     await this.listItemFor(daycare).click()
     await this.map.markerFor(daycare).click()
     await expect(this.map.popupFor(daycare).nameElement).toHaveText(
-      daycare.name,
-      { useInnerText: true }
+      daycare.name
     )
   }
 }

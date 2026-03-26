@@ -104,20 +104,16 @@ test.describe('Service applications', () => {
     await expect(citizenChildPage.openApplicationInfoBox).toBeVisible()
     await expect(citizenChildPage.createServiceApplicationButton).toBeHidden()
     await expect(citizenChildPage.serviceApplicationSentDate(0)).toHaveText(
-      mockedTime1.toLocalDate().format(),
-      { useInnerText: true }
+      mockedTime1.toLocalDate().format()
     )
     await expect(citizenChildPage.serviceApplicationStartDate(0)).toHaveText(
-      startDate.format(),
-      { useInnerText: true }
+      startDate.format()
     )
     await expect(citizenChildPage.serviceApplicationServiceNeed(0)).toHaveText(
-      serviceNeedOption2.nameFi,
-      { useInnerText: true }
+      serviceNeedOption2.nameFi
     )
     await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
-      'Ehdotettu',
-      { useInnerText: true }
+      'Ehdotettu'
     )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)
@@ -204,8 +200,7 @@ test.describe('Service applications', () => {
     )
     await citizenChildPage.createServiceApplicationButton.assertDisabled(false)
     await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
-      'Hyväksytty',
-      { useInnerText: true }
+      'Hyväksytty'
     )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)
@@ -301,8 +296,7 @@ test.describe('Service applications', () => {
     )
     await citizenChildPage.createServiceApplicationButton.assertDisabled(false)
     await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
-      'Hylätty',
-      { useInnerText: true }
+      'Hylätty'
     )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)

@@ -72,14 +72,11 @@ test.describe('Child Information - Pedagogical documents', () => {
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
     await expect(section.startDateElement).toHaveText(
-      mockNow.toLocalDate().format(),
-      { useInnerText: true }
+      mockNow.toLocalDate().format()
     )
     await section.setDescription('Test description')
     await section.save()
-    await expect(section.descriptionElement).toHaveText('Test description', {
-      useInnerText: true
-    })
+    await expect(section.descriptionElement).toHaveText('Test description')
     await section.fileUpload.upload(testfile1Path)
     await section.fileUpload.upload(testfile2Path)
   })

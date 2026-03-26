@@ -747,8 +747,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.dailyAddReservationButton.assertDisabled(false)
       await reservationsModal.dailyAddReservationButton.assertFocused(true)
       await expect(reservationsModal.dailyScreenReaderMessage).toHaveText(
-        'Toinen aikaväli poistettu',
-        { useInnerText: true }
+        'Toinen aikaväli poistettu'
       )
     })
     test('Screen reader text is set for marking absence', async ({
@@ -763,8 +762,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.selectRepetition('DAILY')
       await reservationsModal.dailyAbsentButton.click()
       await expect(reservationsModal.dailyScreenReaderMessage).toHaveText(
-        'Merkitty poissaolevaksi',
-        { useInnerText: true }
+        'Merkitty poissaolevaksi'
       )
       await reservationsModal.dailyAbsentButton.assertFocused(true)
     })

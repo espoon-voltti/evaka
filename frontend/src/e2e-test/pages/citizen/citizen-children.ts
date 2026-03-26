@@ -38,9 +38,7 @@ export class CitizenChildPage {
   }
 
   async assertChildNameIsShown(name: string) {
-    await expect(this.page.findByDataQa('child-name')).toHaveText(name, {
-      useInnerText: true
-    })
+    await expect(this.page.findByDataQa('child-name')).toHaveText(name)
   }
 
   async goBack() {
@@ -83,16 +81,13 @@ export class CitizenChildPage {
         data.map(async (expected, index) => {
           const row = rows.nth(index)
           await expect(row.findByDataQa('service-need-date-range')).toHaveText(
-            expected.dateRange,
-            { useInnerText: true }
+            expected.dateRange
           )
           await expect(row.findByDataQa('service-need-description')).toHaveText(
-            expected.description,
-            { useInnerText: true }
+            expected.description
           )
           await expect(row.findByDataQa('service-need-unit')).toHaveText(
-            expected.unit,
-            { useInnerText: true }
+            expected.unit
           )
         })
       )
@@ -119,10 +114,10 @@ export class CitizenChildPage {
           const row = rows.nth(index)
           await expect(
             row.findByDataQa('daily-service-time-date-range')
-          ).toHaveText(expected.dateRange, { useInnerText: true })
+          ).toHaveText(expected.dateRange)
           await expect(
             row.findByDataQa('daily-service-time-description')
-          ).toHaveText(expected.description, { useInnerText: true })
+          ).toHaveText(expected.description)
         })
       )
     } else {
@@ -241,8 +236,7 @@ export class CitizenChildPage {
       const modal = this.page.findByDataQa('service-application-modal')
 
       await expect(modal.findByDataQa('additional-info')).toHaveText(
-        additionalInfo,
-        { useInnerText: true }
+        additionalInfo
       )
       await modal
         .findByDataQa('decision-status')
@@ -250,8 +244,7 @@ export class CitizenChildPage {
 
       if (rejectedReason) {
         await expect(modal.findByDataQa('rejected-reason')).toHaveText(
-          rejectedReason,
-          { useInnerText: true }
+          rejectedReason
         )
       } else {
         await expect(modal.findByDataQa('rejected-reason')).toBeHidden()

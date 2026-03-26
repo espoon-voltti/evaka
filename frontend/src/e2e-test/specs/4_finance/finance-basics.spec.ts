@@ -90,7 +90,7 @@ test.describe('Finance basics', () => {
     await financeBasicsPage.feesSection.editor.assertSaveIsDisabled()
     await expect(
       financeBasicsPage.feesSection.editor.maxFeeError(2)
-    ).toHaveText('Enimmäismaksu ei täsmää (200 €)', { useInnerText: true })
+    ).toHaveText('Enimmäismaksu ei täsmää (200 €)')
   })
 
   test('Copying existing fee thresholds', async () => {

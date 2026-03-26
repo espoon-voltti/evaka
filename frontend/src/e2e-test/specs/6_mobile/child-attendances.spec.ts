@@ -945,9 +945,7 @@ test.describe('Child attendances', () => {
       await childPage.markDepartedLink.click()
 
       await childAttendancePage.setTime('15:15')
-      await expect(childAttendancePage.setTimeInfo).toHaveText('Saapui 15:15', {
-        useInnerText: true
-      })
+      await expect(childAttendancePage.setTimeInfo).toHaveText('Saapui 15:15')
       await childAttendancePage.setTime('15:20')
       await childAttendancePage.markDepartedButton.click()
     })
@@ -992,14 +990,11 @@ test.describe('Child attendances', () => {
 
       await listPage.selectGroup('all')
       await expect(listPage.childGroupName(childId)).toHaveText(
-        testDaycareGroup.name.toUpperCase(),
-        { useInnerText: true }
+        testDaycareGroup.name.toUpperCase()
       )
 
       await listPage.selectGroup(testDaycareGroup.id)
-      await expect(listPage.childGroupName(childId)).toHaveText('', {
-        useInnerText: true
-      })
+      await expect(listPage.childGroupName(childId)).toHaveText('')
     })
 
     test('Child will not be visible in two groups at the same time', async ({
@@ -1070,9 +1065,7 @@ test.describe('Child attendances', () => {
 
       await assertAttendanceCounts(1, 0, 0, 0, 1)
       await listPage.selectChild(child)
-      await expect(childPage.reservation).toHaveText('Läsnä', {
-        useInnerText: true
-      })
+      await expect(childPage.reservation).toHaveText('Läsnä')
     })
 
     test('Term break child is shown in absent list', async ({

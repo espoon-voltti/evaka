@@ -99,9 +99,7 @@ export default class CitizenMessagesPage {
   }
 
   async assertTimedNotification(dataQa: string, content: string) {
-    await expect(this.page.findByDataQa(dataQa)).toHaveText(content, {
-      useInnerText: true
-    })
+    await expect(this.page.findByDataQa(dataQa)).toHaveText(content)
   }
 
   async assertNewMessageButtonIsFocused() {
@@ -116,7 +114,7 @@ export default class CitizenMessagesPage {
       this.page.find(
         '[data-qa="notification-container"] > [data-qa=message-sent-notification]'
       )
-    ).toHaveText('Viesti lähetetty', { useInnerText: true })
+    ).toHaveText('Viesti lähetetty')
   }
 
   async assertThreadContent(message: {
@@ -132,9 +130,7 @@ export default class CitizenMessagesPage {
         (message.sensitive ? ' (Arkaluontoinen viestiketju)' : ''),
       { useInnerText: true }
     )
-    await expect(this.threadMessages.only()).toHaveText(message.content, {
-      useInnerText: true
-    })
+    await expect(this.threadMessages.only()).toHaveText(message.content)
     if (message.urgent ?? false) {
       await expect(this.#threadUrgent).toBeVisible()
     } else {

@@ -34,8 +34,6 @@ export default class PinLoginPage {
   }
 
   async assertWrongPinError() {
-    await expect(this.#pinInfo).toHaveText('Väärä PIN-koodi', {
-      useInnerText: true
-    })
+    await expect(this.#pinInfo).toHaveText('Väärä PIN-koodi')
   }
 }

@@ -37,17 +37,11 @@ export default class ConfirmedDayReservationPage {
     absentCount: string
   ) {
     const day = this.dayRow(date)
-    await expect(day.findByDataQa('present-total')).toHaveText(presentCount, {
-      useInnerText: true
-    })
+    await expect(day.findByDataQa('present-total')).toHaveText(presentCount)
     await expect(day.findByDataQa('present-calc')).toHaveText(
-      `(${presentCalc})`,
-      { useInnerText: true }
+      `(${presentCalc})`
     )
-    await expect(day.findByDataQa('absent-total')).toHaveText(
-      `${absentCount}`,
-      { useInnerText: true }
-    )
+    await expect(day.findByDataQa('absent-total')).toHaveText(`${absentCount}`)
   }
 
   async openDayItem(date: LocalDate) {
@@ -65,14 +59,13 @@ export default class ConfirmedDayReservationPage {
       ? ` (${childDetails.preferredName})`
       : ''
     await expect(childItem.findByDataQa('child-name')).toHaveText(
-      `${childDetails.firstName} ${childDetails.lastName}${childPreferredName}`,
-      { useInnerText: true }
+      `${childDetails.firstName} ${childDetails.lastName}${childPreferredName}`
     )
 
     for (const [index, value] of reservationTexts.entries()) {
       await expect(
         childItem.findByDataQa(`reservation-content-${index}`)
-      ).toHaveText(value, { useInnerText: true })
+      ).toHaveText(value)
     }
   }
 }

@@ -152,15 +152,11 @@ export class UnitInfoPage {
   }
 
   async assertUnitName(expectedName: string) {
-    await expect(this.#unitName).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#unitName).toHaveText(expectedName)
   }
 
   async assertVisitingAddress(expectedAddress: string) {
-    await expect(this.#visitingAddress).toHaveText(expectedAddress, {
-      useInnerText: true
-    })
+    await expect(this.#visitingAddress).toHaveText(expectedAddress)
   }
 
   async openUnitDetails(): Promise<UnitDetailsPage> {
@@ -193,25 +189,19 @@ export class UnitDetailsPage {
   }
 
   async assertUnitName(expectedName: string) {
-    await expect(this.#unitName).toHaveText(expectedName, {
-      useInnerText: true
-    })
+    await expect(this.#unitName).toHaveText(expectedName)
   }
 
   async assertTimeRangeByDay(dayNumber: number, expectedTime: string) {
     await expect(
       this.page.find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
-    ).toHaveText(expectedTime, { useInnerText: true })
+    ).toHaveText(expectedTime)
   }
 
   async assertManagerData(name: string, phone: string, email: string) {
-    await expect(this.#unitManagerName).toHaveText(name, { useInnerText: true })
-    await expect(this.#unitManagerPhone).toHaveText(phone, {
-      useInnerText: true
-    })
-    await expect(this.#unitManagerEmail).toHaveText(email, {
-      useInnerText: true
-    })
+    await expect(this.#unitManagerName).toHaveText(name)
+    await expect(this.#unitManagerPhone).toHaveText(phone)
+    await expect(this.#unitManagerEmail).toHaveText(email)
   }
 
   async edit() {
@@ -230,14 +220,14 @@ export class UnitDetailsPage {
     for (const [key, value] of Object.entries(mealTimes)) {
       await expect(
         this.page.find(`[data-qa="${key}-value-display"]`)
-      ).toHaveText(`${value.start} - ${value.end}`, { useInnerText: true })
+      ).toHaveText(`${value.start} - ${value.end}`)
     }
   }
 
   async assertShiftCareOperationTime(index: number, expected: string) {
     await expect(
       this.page.findByDataQa(`shift-care-unit-timerange-detail-${index}`)
-    ).toHaveText(expected, { useInnerText: true })
+    ).toHaveText(expected)
   }
 }
 
@@ -563,15 +553,9 @@ class AclSection extends Element {
       occupancyCoefficient: boolean
     }
   ) {
-    await expect(row.findByDataQa('name')).toHaveText(fields.name, {
-      useInnerText: true
-    })
-    await expect(row.findByDataQa('email')).toHaveText(fields.email, {
-      useInnerText: true
-    })
-    await expect(row.findByDataQa('role')).toHaveText(fields.role, {
-      useInnerText: true
-    })
+    await expect(row.findByDataQa('name')).toHaveText(fields.name)
+    await expect(row.findByDataQa('email')).toHaveText(fields.email)
+    await expect(row.findByDataQa('role')).toHaveText(fields.role)
     if (fields.occupancyCoefficient) {
       await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
@@ -677,9 +661,7 @@ class TemporaryEmployeesSection extends Element {
       occupancyCoefficient: boolean
     }
   ) {
-    await expect(row.findByDataQa('name')).toHaveText(fields.name, {
-      useInnerText: true
-    })
+    await expect(row.findByDataQa('name')).toHaveText(fields.name)
     if (fields.occupancyCoefficient) {
       await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
@@ -722,9 +704,7 @@ class MobileDevicesSection extends Element {
   #startPairingButton = this.find('[data-qa="start-mobile-pairing"]')
 
   async assertDeviceExists(deviceName: string) {
-    await expect(this.#rows.find('[data-qa="name"]')).toHaveText(deviceName, {
-      useInnerText: true
-    })
+    await expect(this.#rows.find('[data-qa="name"]')).toHaveText(deviceName)
   }
 
   async addMobileDevice(deviceName: string) {
@@ -820,9 +800,7 @@ class WaitingConfirmationSection extends Element {
   )
 
   async assertNotificationCounter(value: number) {
-    await expect(this.#notificationCounter).toHaveText(value.toString(), {
-      useInnerText: true
-    })
+    await expect(this.#notificationCounter).toHaveText(value.toString())
   }
 
   async assertRowCount(count: number) {
@@ -1005,21 +983,16 @@ export class SurveySummaryModal extends Modal {
 
   async assertDescription(description: string) {
     await expect(this.findByDataQa('survey-description')).toHaveText(
-      description,
-      { useInnerText: true }
+      description
     )
   }
 
   async assertEventTime(id: string, timeString: string) {
-    await expect(this.findByDataQa(`times-${id}`)).toHaveText(timeString, {
-      useInnerText: true
-    })
+    await expect(this.findByDataQa(`times-${id}`)).toHaveText(timeString)
   }
 
   async assertReservee(id: string, reservee: string) {
-    await expect(this.findByDataQa(`reservee-${id}`)).toHaveText(reservee, {
-      useInnerText: true
-    })
+    await expect(this.findByDataQa(`reservee-${id}`)).toHaveText(reservee)
   }
 }
 

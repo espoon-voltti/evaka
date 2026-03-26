@@ -298,10 +298,7 @@ test.describe('Child Information placement create (feature flag place guarantee 
     const modal = new Modal(evaka.findByDataQa('modal'))
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
-    await expect(modal.findByDataQa('create-placement-end-date')).toHaveText(
-      '',
-      { useInnerText: true }
-    )
+    await expect(modal.findByDataQa('create-placement-end-date')).toHaveText('')
     await modal.submitButton.assertDisabled(true)
   })
 

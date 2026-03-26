@@ -119,8 +119,7 @@ test.describe('Citizen map page', () => {
     await mapPage.listItemFor(testDaycare2).click()
     await expect(mapPage.unitDetailsPanel).toBeVisible()
     await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
-      testDaycare2.name,
-      { useInnerText: true }
+      testDaycare2.name
     )
 
     await mapPage.unitDetailsPanel.backButton.click()
@@ -128,8 +127,7 @@ test.describe('Citizen map page', () => {
 
     await expect(mapPage.unitDetailsPanel).toBeVisible()
     await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
-      swedishDaycare.name,
-      { useInnerText: true }
+      swedishDaycare.name
     )
   })
 
@@ -138,8 +136,7 @@ test.describe('Citizen map page', () => {
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await expect(mapPage.unitDetailsPanel).toBeVisible()
     await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
-      swedishDaycare.name,
-      { useInnerText: true }
+      swedishDaycare.name
     )
   })
 
@@ -148,8 +145,7 @@ test.describe('Citizen map page', () => {
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await expect(mapPage.unitDetailsPanel).toBeVisible()
     await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
-      swedishDaycare.name,
-      { useInnerText: true }
+      swedishDaycare.name
     )
   })
 
@@ -174,8 +170,6 @@ test.describe('Citizen map page', () => {
     await mapPage.testMapPopup(privateDaycareWithoutPeriods)
     await expect(
       mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying
-    ).toHaveText('Ei hakua eVakan kautta, ota yhteys yksikköön', {
-      useInnerText: true
-    })
+    ).toHaveText('Ei hakua eVakan kautta, ota yhteys yksikköön')
   })
 })
