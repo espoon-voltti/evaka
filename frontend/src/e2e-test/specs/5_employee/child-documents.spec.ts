@@ -165,7 +165,7 @@ test.describe('Employee - Child documents', () => {
     // Assert answer was saved
     await childDocument.editButton.click()
     question = childDocument.getTextQuestion(sectionName, questionName)
-    await question.assertValueEquals(answer)
+    await expect(question).toHaveValue(answer)
 
     // Publish without changing status
     await childDocument.previewButton.click()

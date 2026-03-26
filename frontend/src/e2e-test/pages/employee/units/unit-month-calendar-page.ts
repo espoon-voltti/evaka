@@ -124,7 +124,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
 
   async assertStaffAttendance(n: number, staffCount: string) {
     const input = new TextInput(this.#staffAttendanceCells.nth(n).find('input'))
-    await input.assertValueEquals(staffCount)
+    await expect(input).toHaveValue(staffCount)
   }
 }
 

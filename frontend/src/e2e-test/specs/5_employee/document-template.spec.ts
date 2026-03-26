@@ -96,9 +96,11 @@ test.describe('Employee - Document templates', () => {
     const modal = templates.templateModal
     await expect(modal).toBeVisible()
 
-    await modal.processDefinitionNumberInput.assertValueEquals('12.34.56')
-    await modal.archiveDurationMonthsInput.assertValueEquals('240')
-    await modal.confidentialityDurationYearsInput.assertValueEquals('50')
-    await modal.confidentialityBasisInput.assertValueEquals('Test legal basis')
+    await expect(modal.processDefinitionNumberInput).toHaveValue('12.34.56')
+    await expect(modal.archiveDurationMonthsInput).toHaveValue('240')
+    await expect(modal.confidentialityDurationYearsInput).toHaveValue('50')
+    await expect(modal.confidentialityBasisInput).toHaveValue(
+      'Test legal basis'
+    )
   })
 })

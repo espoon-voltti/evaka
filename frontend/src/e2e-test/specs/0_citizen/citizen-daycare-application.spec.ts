@@ -354,7 +354,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.modalOkBtn.click()
     await applicationsPage.editApplication(applicationId)
     await editorPage.openSection('contactInfo')
-    await editorPage.guardianPhoneInput.assertValueEquals('040123456789')
+    await expect(editorPage.guardianPhoneInput).toHaveValue('040123456789')
   })
 
   test('If user has a verified email, that one is used in the application and cannot be changed', async () => {

@@ -132,7 +132,7 @@ test.describe('Reservation calendar child date modal', () => {
     ).toBeVisible()
 
     await reservationsTable.openChildDateModal(childId, date)
-    await modal.reservationStart(0).assertValueEquals('09:00')
+    await expect(modal.reservationStart(0)).toHaveValue('09:00')
     await modal.reservationStart(0).fill('10:15')
     await modal.reservationRemove(1).click()
     await modal.submit()
@@ -169,7 +169,7 @@ test.describe('Reservation calendar child date modal', () => {
     })
 
     await reservationsTable.openChildDateModal(childId, date)
-    await modal.attendanceStart(0).assertValueEquals('09:00')
+    await expect(modal.attendanceStart(0)).toHaveValue('09:00')
     await modal.attendanceStart(0).fill('10:15')
     await modal.attendanceRemove(1).click()
     await modal.submit()

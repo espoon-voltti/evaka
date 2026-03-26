@@ -430,10 +430,10 @@ for (const env of ['desktop', 'mobile'] as const) {
       const dayView = await calendarPage.openDayView(reservationDay)
       const absencesModal = await dayView.createAbsence()
 
-      await absencesModal.startDateInput.assertValueEquals(
+      await expect(absencesModal.startDateInput).toHaveValue(
         reservationDay.format()
       )
-      await absencesModal.endDateInput.assertValueEquals(
+      await expect(absencesModal.endDateInput).toHaveValue(
         reservationDay.format()
       )
     })

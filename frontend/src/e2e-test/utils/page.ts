@@ -343,10 +343,6 @@ export class TextInput extends Element {
       .waitFor({ state: 'visible' })
       .then(() => this.locator.inputValue())
   }
-
-  async assertValueEquals(expectedValue: string): Promise<void> {
-    await expect(this.locator).toHaveValue(expectedValue)
-  }
 }
 
 export class PinInput extends Element {
@@ -370,7 +366,7 @@ export class DatePicker extends Element {
   }
 
   async assertValueEquals(value: string) {
-    await this.#input.assertValueEquals(value)
+    await expect(this.#input.locator).toHaveValue(value)
   }
 }
 

@@ -109,7 +109,7 @@ test.describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.chooseIncomeEffect('INCOME')
-    await incomesSection.incomeEndDateInput.assertValueEquals('31.12.2020')
+    await expect(incomesSection.incomeEndDateInput).toHaveValue('31.12.2020')
     await incomesSection.fillIncomeEndDate('')
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
