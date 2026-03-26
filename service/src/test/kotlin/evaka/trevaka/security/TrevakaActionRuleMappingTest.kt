@@ -379,6 +379,8 @@ private fun translate(action: Global) =
             Global.READ_DECISION_UNITS -> "Päätösluonnoksen yksiköiden luku"
             Global.READ_CHILD_DOCUMENT_DECISIONS_REPORT -> "Muut päätökset -raportti"
             Global.READ_DECISIONS_REPORT -> "Päätökset-raportti"
+            Global.READ_DECISION_REASONINGS -> "Päätösten perustelujen luku"
+            Global.WRITE_DECISION_REASONINGS -> "Päätösten perustelujen muokkaus"
             Global.READ_DUPLICATE_PEOPLE_REPORT -> "Monistuneet kuntalaiset -raportti"
             Global.READ_ENDED_PLACEMENTS_REPORT ->
                 "Varhaiskasvatuksessa lopettavat lapset -raportti"
