@@ -188,10 +188,11 @@ export class CitizenChildPage {
   ) {
     const table = this.page.findByDataQa('absence-applications-table')
     const rows = table.findAllByDataQa('absence-application-row')
-    await rows.assertTextsEqual(
+    await expect(rows).toHaveText(
       expected.map(
         (e) => `${e.range}\n${e.status}\nPoissaolon syy\n${e.description}\nPeru`
-      )
+      ),
+      { useInnerText: true }
     )
   }
 

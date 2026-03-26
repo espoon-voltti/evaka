@@ -554,7 +554,7 @@ export class PreschoolApplicationReport {
 
   async assertRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 }
 
@@ -795,15 +795,16 @@ export class OccupanciesReport {
 
   async assertReportDateColumns(expected: LocalDate[]) {
     const columns = this.page.findAllByDataQa('table-header-date')
-    await columns.assertTextsEqual(
-      expected.map((date) => date.format('dd.MM.'))
+    await expect(columns).toHaveText(
+      expected.map((date) => date.format('dd.MM.')),
+      { useInnerText: true }
     )
   }
 
   async assertReportUnitNameRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('table-body-row-unit')
     const names = rows.findAllByDataQa('table-body-row-unit-name')
-    await names.assertTextsEqual(expected)
+    await expect(names).toHaveText(expected, { useInnerText: true })
   }
 }
 
@@ -920,7 +921,7 @@ export class SextetReport {
 
   async assertRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('data-rows')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async assertSum(expected: number) {

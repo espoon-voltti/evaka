@@ -232,13 +232,13 @@ export class AbsenceApplicationsSection extends Section {
   async assertIncompleted(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-incompleted')
     const rows = table.findAllByDataQa('absence-applications-incompleted-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async assertCompleted(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-completed')
     const rows = table.findAllByDataQa('absence-applications-completed-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async openRejectModal(index: number) {

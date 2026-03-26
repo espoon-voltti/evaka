@@ -410,11 +410,14 @@ class CitizenApplicationEditor {
     placementType: PlacementType,
     options: ServiceNeedOption[]
   ) {
-    await this.page
-      .findAll(
+    await expect(
+      this.page.findAll(
         `[data-qa*="${this.serviceNeedOptionDataQaPrefix(placementType)}"]`
       )
-      .assertTextsEqual(options.map((option) => option.nameFi))
+    ).toHaveText(
+      options.map((option) => option.nameFi),
+      { useInnerText: true }
+    )
   }
 
   async assertSelectedPreferredUnits(unitIds: UUID[]) {

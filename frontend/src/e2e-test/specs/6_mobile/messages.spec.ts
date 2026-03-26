@@ -635,7 +635,10 @@ test.describe('Messages page', () => {
 
     messageEditor = await firstDraft.editDraft()
 
-    await messageEditor.recipients.values.assertTextsEqual([daycareGroup.name])
+    await expect(messageEditor.recipients.values).toHaveText(
+      [daycareGroup.name],
+      { useInnerText: true }
+    )
     await expect(messageEditor.title).toHaveValue(message.title)
     await expect(messageEditor.content).toHaveValue(message.content)
     await messageEditor.send.click()

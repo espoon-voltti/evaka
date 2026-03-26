@@ -179,10 +179,6 @@ export class ElementCollection {
     return this.findAll(`[data-qa="${dataQa}"]`)
   }
 
-  async assertTextsEqual(values: string[]) {
-    await expect(this.locator).toHaveText(values, { useInnerText: true })
-  }
-
   async assertTextsEqualAnyOrder(values: string[]) {
     const expected = values.slice().sort()
     await expect
@@ -585,7 +581,7 @@ export class Combobox extends Element {
 
   async assertOptions(expected: string[]) {
     const options = this.findAllByDataQa('item')
-    await options.assertTextsEqual(expected)
+    await expect(options.locator).toHaveText(expected, { useInnerText: true })
   }
 
   async selectItem(dataQa: string) {
@@ -626,7 +622,9 @@ export class MultiSelect extends Element {
 
   async assertOptions(options: string[]) {
     const actualOptions = this.findAllByDataQa('option')
-    await actualOptions.assertTextsEqual(options)
+    await expect(actualOptions.locator).toHaveText(options, {
+      useInnerText: true
+    })
   }
 }
 

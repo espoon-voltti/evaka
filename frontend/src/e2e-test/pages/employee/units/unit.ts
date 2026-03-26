@@ -801,7 +801,7 @@ export class ApplicationProcessPage {
   async assertAbsenceApplications(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-table')
     const rows = table.findAllByDataQa('absence-application-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async openAbsenceApplication(index: number) {
@@ -918,11 +918,12 @@ class PlacementProposalsSection {
 class TransferApplicationsSection extends Element {
   async assertTable(expected: TransferApplicationUnitSummary[]) {
     const rows = this.findAllByDataQa('transfer-application-row')
-    await rows.assertTextsEqual(
+    await expect(rows).toHaveText(
       expected.map(
         (row) =>
           `${row.lastName} ${row.firstName}\n${row.dateOfBirth.format()}\n\t${row.preferredStartDate.format()}`
-      )
+      ),
+      { useInnerText: true }
     )
   }
 }
