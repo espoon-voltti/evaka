@@ -67,12 +67,12 @@ private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> 
                 """
 SELECT
     child_id,
-    errored_at AS updated,
-    coalesce(last_success_at, created_at) AS created,
+    errored_at,
+    errored_since,
     error
 FROM varda_state
 WHERE errored_at IS NOT NULL
-ORDER BY updated DESC
+ORDER BY errored_at DESC
     """
             )
         }
@@ -80,8 +80,8 @@ ORDER BY updated DESC
 
 data class VardaChildErrorReportRow(
     val childId: ChildId,
-    val updated: HelsinkiDateTime,
-    val created: HelsinkiDateTime,
+    val erroredAt: HelsinkiDateTime,
+    val erroredSince: HelsinkiDateTime,
     val error: String,
 )
 
@@ -92,7 +92,7 @@ private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
                 SELECT
                     vu.evaka_daycare_id AS unit_id,
                     u.name AS unit_name,
-                    coalesce(vu.last_success_at, vu.created_at) AS created_at,
+                    vu.errored_since,
                     vu.errored_at,
                     vu.error
                 FROM varda_unit vu
@@ -106,7 +106,7 @@ private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
 data class VardaUnitErrorReportRow(
     val unitId: DaycareId,
     val unitName: String,
-    val createdAt: HelsinkiDateTime,
+    val erroredSince: HelsinkiDateTime,
     val erroredAt: HelsinkiDateTime,
     val error: String,
 )

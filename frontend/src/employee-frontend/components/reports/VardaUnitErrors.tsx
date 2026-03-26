@@ -49,7 +49,7 @@ export default React.memo(function VardaUnitErrors() {
                 {rows.map((row) => (
                   <Tr key={row.unitId}>
                     <Td data-qa={`age-${row.unitId}`}>
-                      {ageInDays(row.createdAt)}
+                      {ageInDays(row.erroredSince)}
                     </Td>
                     <Td data-qa={`unit-${row.unitId}`}>
                       <Link to={`/units/${row.unitId}/unit-info`}>

@@ -4102,7 +4102,9 @@ CREATE TABLE public.varda_state (
     last_success_at timestamp with time zone,
     errored_at timestamp with time zone,
     error text,
-    CONSTRAINT "check$error_nulls" CHECK (((errored_at IS NULL) = (error IS NULL)))
+    errored_since timestamp with time zone,
+    CONSTRAINT "check$error_nulls" CHECK (((errored_at IS NULL) = (error IS NULL))),
+    CONSTRAINT "check$errored_since_null" CHECK (((errored_at IS NULL) = (errored_since IS NULL)))
 );
 
 -- Name: varda_unit; Type: TABLE; Schema: public
@@ -4115,7 +4117,9 @@ CREATE TABLE public.varda_unit (
     errored_at timestamp with time zone,
     error text,
     state jsonb,
-    CONSTRAINT "check$error_nulls" CHECK (((errored_at IS NULL) = (error IS NULL)))
+    errored_since timestamp with time zone,
+    CONSTRAINT "check$error_nulls" CHECK (((errored_at IS NULL) = (error IS NULL))),
+    CONSTRAINT "check$errored_since_null" CHECK (((errored_at IS NULL) = (errored_since IS NULL)))
 );
 
 -- Name: voucher_value_decision; Type: TABLE; Schema: public
