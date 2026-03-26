@@ -27,7 +27,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -535,7 +535,7 @@ test.describe('Assistance need and actions report', () => {
     // Verify both children appear in child view
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
-    await report.childRows.assertCount(2)
+    await expect(report.childRows).toHaveCount(2)
   })
 
   test('Excludes rejected and expired document decisions from counts', async () => {
@@ -825,7 +825,7 @@ test.describe('Assistance need and actions report', () => {
 
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
-    await report.childRows.assertCount(2)
+    await expect(report.childRows).toHaveCount(2)
   })
 
   test('Provider type filtering works', async () => {
@@ -908,7 +908,7 @@ test.describe('Assistance need and actions report', () => {
       )
 
     await report.providerTypeSelect.fillAndSelectFirst('Palveluseteli')
-    await report.childRows.assertCount(0)
+    await expect(report.childRows).toHaveCount(0)
   })
 
   test('Placement type filtering works', async () => {

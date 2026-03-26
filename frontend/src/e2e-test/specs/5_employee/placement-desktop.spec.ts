@@ -153,14 +153,14 @@ test.describe('Placement desktop', () => {
     await applicationListView.searchButton.click()
     await applicationListView.showAsDesktop()
 
-    await placementDesktopView.applicationCards.assertCount(2)
+    await expect(placementDesktopView.applicationCards).toHaveCount(2)
     const appCard1 = placementDesktopView.applicationCard(0)
     await appCard1.childName.assertTextEquals('Ankka Hupu')
     await appCard1.dueDate.assertTextEquals(dueDate.format())
     await appCard1.preferredStartDate.assertTextEquals(
       preferredStartDate.format()
     )
-    await appCard1.unitPreferences.assertCount(1)
+    await expect(appCard1.unitPreferences).toHaveCount(1)
     await appCard1
       .unitPreference(0)
       .title.assertTextEquals(`1. ${daycare1.name}`)
@@ -170,7 +170,7 @@ test.describe('Placement desktop', () => {
     await appCard2.preferredStartDate.assertTextEquals(
       preferredStartDate.format()
     )
-    await appCard2.unitPreferences.assertCount(2)
+    await expect(appCard2.unitPreferences).toHaveCount(2)
     await appCard2
       .unitPreference(0)
       .title.assertTextEquals(`1. ${daycare1.name}`)
@@ -178,7 +178,7 @@ test.describe('Placement desktop', () => {
       .unitPreference(1)
       .title.assertTextEquals(`2. ${daycare2.name}`)
 
-    await placementDesktopView.daycareCards.assertCount(1)
+    await expect(placementDesktopView.daycareCards).toHaveCount(1)
     const daycareCard1 = placementDesktopView.daycareCard(0)
     await daycareCard1.name.assertTextEquals(daycare1.name)
     await daycareCard1.assertOccupancies(14.3, 14.3, 14.3)
@@ -193,7 +193,7 @@ test.describe('Placement desktop', () => {
 
     const appCard2 = placementDesktopView.applicationCard(1)
 
-    await placementDesktopView.daycareCards.assertCount(1)
+    await expect(placementDesktopView.daycareCards).toHaveCount(1)
     const daycareCard1 = placementDesktopView.daycareCard(0)
     await daycareCard1.assertOccupancies(14.3, 14.3, 14.3)
 
@@ -205,27 +205,27 @@ test.describe('Placement desktop', () => {
     await appCard2
       .unitPreference(1)
       .createPlacementDraftButton.waitUntilVisible()
-    await placementDesktopView.daycareCards.assertCount(2)
+    await expect(placementDesktopView.daycareCards).toHaveCount(2)
     const daycareCard2 = placementDesktopView.daycareCard(1)
     await daycareCard2.assertOccupancies(0, 0, 0)
 
     // draft place to daycare 2
     await appCard2.unitPreference(1).createPlacementDraftButton.click()
-    await daycareCard2.draftPlacementRows.assertCount(1)
+    await expect(daycareCard2.draftPlacementRows).toHaveCount(1)
     await daycareCard2.assertOccupancies(0, 0, 14.3)
 
     // cancel draft placement
     await appCard2.unitPreference(1).cancelPlacementDraftButton.click()
     await daycareCard2.assertOccupancies(0, 0, 0)
-    await daycareCard2.draftPlacementRows.assertCount(0)
+    await expect(daycareCard2.draftPlacementRows).toHaveCount(0)
 
     // place to daycare 3 through combobox
     await appCard2.addOtherUnitButton.click()
     await appCard2.draftPlacementCombobox.fillAndSelectFirst(daycare3.name)
     await appCard2.addOtherUnitButton.waitUntilVisible()
-    await placementDesktopView.daycareCards.assertCount(3)
+    await expect(placementDesktopView.daycareCards).toHaveCount(3)
     const daycareCard3 = placementDesktopView.daycareCard(2)
-    await daycareCard3.draftPlacementRows.assertCount(1)
+    await expect(daycareCard3.draftPlacementRows).toHaveCount(1)
 
     // cancel draft placement through the draft placement row
     const draftPlacementRow = daycareCard3.drawPlacementRow(0)
@@ -235,11 +235,11 @@ test.describe('Placement desktop', () => {
 
     // hide daycare 3
     await daycareCard3.hideUnitButton.click()
-    await placementDesktopView.daycareCards.assertCount(2)
+    await expect(placementDesktopView.daycareCards).toHaveCount(2)
 
     // draft place to daycare 1
     await appCard2.unitPreference(0).createPlacementDraftButton.click()
-    await daycareCard1.draftPlacementRows.assertCount(1)
+    await expect(daycareCard1.draftPlacementRows).toHaveCount(1)
     await daycareCard1.assertOccupancies(14.3, 14.3, 28.6)
 
     // edit placement start
@@ -259,10 +259,10 @@ test.describe('Placement desktop', () => {
     await placementDraftPage.submit()
 
     // verify that draft is removed and planned occupancy updated
-    await placementDesktopView.daycareCards.assertCount(2)
+    await expect(placementDesktopView.daycareCards).toHaveCount(2)
     await daycareCard1.assertOccupancies(14.3, 28.6, 28.6)
-    await daycareCard1.draftPlacementRows.assertCount(0)
-    await placementDesktopView.applicationCards.assertCount(1)
+    await expect(daycareCard1.draftPlacementRows).toHaveCount(0)
+    await expect(placementDesktopView.applicationCards).toHaveCount(1)
   })
 
   test('Verify correct number of requests for performance reasons', async () => {

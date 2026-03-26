@@ -179,10 +179,6 @@ export class ElementCollection {
     return this.findAll(`[data-qa="${dataQa}"]`)
   }
 
-  async assertCount(count: number): Promise<void> {
-    await expect(this.locator).toHaveCount(count)
-  }
-
   async assertTextsEqual(values: string[]) {
     await expect(this.locator).toHaveText(values, { useInnerText: true })
   }

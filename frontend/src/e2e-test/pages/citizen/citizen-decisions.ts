@@ -112,10 +112,10 @@ export default class CitizenDecisionsPage {
   }
 
   async assertChildDecisionCount(n: number, childId: string) {
-    await this.page
+    const sections = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findAll('section')
-      .assertCount(n)
+    await expect(sections).toHaveCount(n)
   }
 
   async viewDecisionMetadata(decisionId: DecisionId) {

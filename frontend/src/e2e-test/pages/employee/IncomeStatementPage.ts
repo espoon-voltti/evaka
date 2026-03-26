@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
@@ -37,7 +38,7 @@ export class IncomeStatementPage {
   ) {
     await this.#childOtherInfo.assertTextEquals(expectedOtherInfo)
     if (expectedAttachmentsCount > 0) {
-      await this.#attachments.assertCount(expectedAttachmentsCount)
+      await expect(this.#attachments).toHaveCount(expectedAttachmentsCount)
     } else {
       await this.#noAttachments.waitUntilVisible()
     }

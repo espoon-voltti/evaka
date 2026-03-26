@@ -679,7 +679,7 @@ class TemporaryEmployeesSection extends Element {
       occupancyCoefficient: boolean
     }[]
   ) {
-    await this.#tableRows.assertCount(rows.length)
+    await expect(this.#tableRows).toHaveCount(rows.length)
     await Promise.all(
       rows.map((fields, index) =>
         this.assertRowFields(this.#tableRows.nth(index), fields)
@@ -825,7 +825,9 @@ class ServiceApplicationsSection {
     await this.page
       .findByDataQa('service-applications-table')
       .waitUntilVisible()
-    await this.page.findAllByDataQa('service-application-row').assertCount(n)
+    await expect(
+      this.page.findAllByDataQa('service-application-row')
+    ).toHaveCount(n)
   }
 
   applicationRow = (n: number) =>
@@ -929,10 +931,10 @@ export class UnitCalendarEventsSection {
   }
 
   async assertNoEventsForDay(date: LocalDate) {
-    await this.page
+    const events = this.page
       .findByDataQa(`calendar-event-day-${date.formatIso()}`)
       .findAllByDataQa('event')
-      .assertCount(0)
+    await expect(events).toHaveCount(0)
   }
 
   get eventEditModal() {

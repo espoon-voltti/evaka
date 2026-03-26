@@ -36,7 +36,7 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import EmployeeNav from '../../pages/employee/employee-nav'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -216,13 +216,13 @@ test.describe('Service Worker Messaging', () => {
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
 
       await folderMessagesPage.moveFirstThread('Kansio 2')
 
-      await folderMessagesPage.messages.assertCount(0)
+      await expect(folderMessagesPage.messages).toHaveCount(0)
       await messagesPage.openFolder('Kansio 2')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
 
       await folderMessagesPage.openFirstThreadReplyEditor()
     })
@@ -242,7 +242,7 @@ test.describe('Service Worker Messaging', () => {
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
       await folderMessagesPage.openFirstThread()
       await folderMessagesPage.assertHasNoMarkUnreadButton()
     })

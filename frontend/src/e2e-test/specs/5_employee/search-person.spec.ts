@@ -24,7 +24,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -127,13 +127,13 @@ test.describe('Search person', () => {
     const searchPage = await openPage(page, specialEducationTeacher)
 
     await searchPage.searchInput.fill(childWithAssistanceNeed.firstName)
-    await searchPage.searchResults.assertCount(1)
+    await expect(searchPage.searchResults).toHaveCount(1)
 
     await searchPage.searchInput.fill(childWithoutAssistanceNeed.firstName)
-    await searchPage.searchResults.assertCount(0)
+    await expect(searchPage.searchResults).toHaveCount(0)
 
     // Child with assistance need and guardian who sent application
     await searchPage.searchInput.fill(childWithoutAssistanceNeed.lastName)
-    await searchPage.searchResults.assertCount(2)
+    await expect(searchPage.searchResults).toHaveCount(2)
   })
 })

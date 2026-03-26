@@ -257,7 +257,7 @@ export class StaffAttendancePage {
 
   async assertEmployeeAttendances(expectedArray: string[]) {
     const attendances = this.staffMemberPage.attendanceTimes
-    await attendances.assertCount(expectedArray.length)
+    await expect(attendances).toHaveCount(expectedArray.length)
     return Promise.all(
       expectedArray.map(async (expected, index) => {
         const attendance = attendances.nth(index)

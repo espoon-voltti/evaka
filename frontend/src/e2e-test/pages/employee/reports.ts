@@ -115,7 +115,7 @@ export class MissingHeadOfFamilyReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('missing-head-of-family-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
       await row.findByDataQa('child-name').assertTextEquals(data.childName)
@@ -146,7 +146,7 @@ export class NonSsnChildrenReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('non-ssn-child-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
       await row.findByDataQa('child-name').assertTextEquals(data.childName)
@@ -237,7 +237,7 @@ export class PlacementGuaranteeReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('placement-guarantee-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
@@ -481,7 +481,7 @@ export class PreschoolAbsenceReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('preschool-absence-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
@@ -557,7 +557,7 @@ export class HolidayPeriodAttendanceReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('holiday-period-attendance-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
@@ -660,7 +660,7 @@ export class ChildAttendanceReservationByChildReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('child-attendance-reservation-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
@@ -776,7 +776,7 @@ export class StartingPlacementsReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('report-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
@@ -806,7 +806,7 @@ export class EndedPlacementsReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('report-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)

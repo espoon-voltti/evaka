@@ -21,7 +21,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -120,7 +120,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
 
     let reservations = reservationsTable.reservationCells(childId, date)
-    await reservations.assertCount(2)
+    await expect(reservations).toHaveCount(2)
     await reservations.nth(0).assertTextEquals('09:00\n16:00*')
     await reservations.nth(1).assertTextEquals('20:30\n23:59 *')
     await reservationsTable
@@ -134,7 +134,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
 
     reservations = reservationsTable.reservationCells(childId, date)
-    await reservations.assertCount(1)
+    await expect(reservations).toHaveCount(1)
     await reservations.nth(0).assertTextEquals('10:15\n16:00*')
   })
 
@@ -154,7 +154,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
 
     let attendances = reservationsTable.attendanceCells(childId, date)
-    await attendances.assertCount(2)
+    await expect(attendances).toHaveCount(2)
     await attendances.nth(0).assertTextEquals('09:00\n16:00')
     await attendances.nth(1).assertTextEquals('20:30\n-')
 
@@ -165,7 +165,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
 
     attendances = reservationsTable.attendanceCells(childId, date)
-    await attendances.assertCount(1)
+    await expect(attendances).toHaveCount(1)
     await attendances.nth(0).assertTextEquals('10:15\n16:00')
   })
 

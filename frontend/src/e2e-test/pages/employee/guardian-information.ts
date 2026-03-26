@@ -357,7 +357,7 @@ export class IncomeSection extends Section {
   }
 
   async assertIncomeStatementRowCount(expected: number) {
-    await this.#incomeStatementRows.assertCount(expected)
+    await expect(this.#incomeStatementRows).toHaveCount(expected)
   }
 
   incomeStatementHandledCheckbox(nth = 0) {

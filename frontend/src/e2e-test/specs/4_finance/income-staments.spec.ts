@@ -23,7 +23,7 @@ import {
   FinancePage,
   IncomeStatementsPage
 } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -77,7 +77,7 @@ test.describe('Income statements', () => {
 
     let incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
-    await incomeStatementsPage.incomeStatementRows.assertCount(2)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
     const personProfilePage =
       await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
 
@@ -105,7 +105,7 @@ test.describe('Income statements', () => {
 
     await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
     await incomeStatementsPage.openNthIncomeStatementForGuardian(0)
 
     await incomesSection
@@ -121,7 +121,7 @@ test.describe('Income statements', () => {
 
     incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
   })
 
   test('Income statement can be filtered by child placement unit provider type', async () => {
@@ -161,20 +161,20 @@ test.describe('Income statements', () => {
     await incomeStatementsPage.waitUntilLoaded()
 
     // No filters -> is shown
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
 
     // Filter by the placed unit provider type -> is shown
     await incomeStatementsPage.selectProviderType(testDaycare.providerType)
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
 
     // Filter by other unit provider type -> not shown
     await incomeStatementsPage.unSelectProviderType(testDaycare.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
-    await incomeStatementsPage.incomeStatementRows.assertCount(0)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(0)
   })
 
   test('Income statement can be filtered by status', async () => {
@@ -212,23 +212,23 @@ test.describe('Income statements', () => {
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
 
-    await incomeStatementsPage.incomeStatementRows.assertCount(2)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
 
     await incomeStatementsPage.selectStatus('SENT')
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
 
     await incomeStatementsPage.unSelectStatus('SENT')
     await incomeStatementsPage.selectStatus('HANDLING')
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
 
     await incomeStatementsPage.selectStatus('SENT')
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
-    await incomeStatementsPage.incomeStatementRows.assertCount(2)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
@@ -245,7 +245,7 @@ test.describe('Income statements', () => {
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
-    await incomeStatementsPage.incomeStatementRows.assertCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,
       `${testChild.lastName} ${testChild.firstName}`,

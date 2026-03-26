@@ -32,7 +32,7 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -172,7 +172,7 @@ test.describe('Employee - Guardian Information', () => {
     await createModal.note.fill('Testimuistiinpano')
     await createModal.submit()
 
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(1)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(1)
     const row = invoiceCorrectionsSection.lastRow()
     await row.productSelect.assertTextEquals('Alennus (maksup.)')
     await row.description.assertTextEquals('Virheen korjaus')
@@ -193,7 +193,7 @@ test.describe('Employee - Guardian Information', () => {
     await row.noteTooltip.assertTextEquals('Muokattu muistiinpano')
 
     await row.deleteRow()
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
   })
 
   test('Invoice corrections show only units with cost center', async () => {
@@ -209,14 +209,14 @@ test.describe('Employee - Guardian Information', () => {
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
     let modal = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await modal.clickAndAssertUnitVisibility(testDaycare.name, true)
 
     await deleteDaycareCostCenter({ daycareId: testDaycare.id })
     await guardianPage.navigateToGuardian(testAdult.id)
     await guardianPage.openCollapsible('invoiceCorrections')
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
     modal = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await modal.clickAndAssertUnitVisibility(testDaycare.name, false)
   })

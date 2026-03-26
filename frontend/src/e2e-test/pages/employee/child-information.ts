@@ -321,7 +321,9 @@ export class DailyServiceTimeSection extends Section {
   }
 
   async assertTableRowCount(count: number) {
-    await this.findAllByDataQa('daily-service-times-row').assertCount(count)
+    await expect(this.findAllByDataQa('daily-service-times-row')).toHaveCount(
+      count
+    )
   }
 }
 
@@ -417,7 +419,7 @@ export class ChildDocumentsSection extends Section {
     const rows = this.page
       .findByDataQa('table-of-internal-child-documents')
       .findAllByDataQa('child-document-row')
-    await rows.assertCount(expectedRows.length)
+    await expect(rows).toHaveCount(expectedRows.length)
     await Promise.all(
       expectedRows.map(async (expected, index) => {
         const row = rows.nth(index)
@@ -776,7 +778,9 @@ export class PlacementsSection extends Section {
   }
 
   assertServiceNeedRowCount = async (expected: number) => {
-    await this.findAll('[data-qa="service-need-row"]').assertCount(expected)
+    await expect(this.findAll('[data-qa="service-need-row"]')).toHaveCount(
+      expected
+    )
   }
 
   #serviceNeedShiftCareCheckBox = new Checkbox(
@@ -796,7 +800,7 @@ export class PlacementsSection extends Section {
     rows: { unitName: string; period: string; status: string }[]
   ) {
     const placements = this.findAllByDataQa('placement-row')
-    await placements.assertCount(rows.length)
+    await expect(placements).toHaveCount(rows.length)
     await Promise.all(
       rows.map(async (row, index) => {
         const placement = placements.nth(index)
@@ -1074,7 +1078,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertAssistanceFactorCount(count: number) {
-    await this.#assistanceFactorRows.assertCount(count)
+    await expect(this.#assistanceFactorRows).toHaveCount(count)
   }
 
   daycareAssistanceRow(nth: number): DaycareAssistanceRow {
@@ -1082,7 +1086,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertDaycareAssistanceCount(count: number) {
-    await this.#daycareAssistanceRows.assertCount(count)
+    await expect(this.#daycareAssistanceRows).toHaveCount(count)
   }
 
   preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
@@ -1090,7 +1094,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertPreschoolAssistanceCount(count: number) {
-    await this.#preschoolAssistanceRows.assertCount(count)
+    await expect(this.#preschoolAssistanceRows).toHaveCount(count)
   }
 
   otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
@@ -1100,7 +1104,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertOtherAssistanceMeasureCount(count: number) {
-    await this.#otherAssistanceMeasureRows.assertCount(count)
+    await expect(this.#otherAssistanceMeasureRows).toHaveCount(count)
   }
 
   readonly assistanceNeedVoucherCoefficientRows = this.page

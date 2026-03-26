@@ -32,7 +32,7 @@ import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { InvoicesPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -419,7 +419,7 @@ test.describe('Invoices', () => {
       const view = invoicePage.replacementInfo
       await view.reason.assertTextEquals('Päiväkirjamerkintä')
       await view.notes.assertTextEquals('Unohtunut päiväkirjamerkintä')
-      await view.attachments.assertCount(1)
+      await expect(view.attachments).toHaveCount(1)
       await view.sentAt.assertTextEquals(now.format())
       await view.sentBy.assertTextEquals(
         `${financeAdmin.lastName} ${financeAdmin.firstName}`

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import { Element } from '../../utils/page'
 
 export class DiscussionReservationModal extends Element {
@@ -23,7 +24,7 @@ export class DiscussionReservationModal extends Element {
   }
 
   assertEventTimes = async (expectedEventTimeIds: string[]) => {
-    await this.findAllByDataQa('discussion-time-duration').assertCount(
+    await expect(this.findAllByDataQa('discussion-time-duration')).toHaveCount(
       expectedEventTimeIds.length
     )
     for (const et of expectedEventTimeIds) {

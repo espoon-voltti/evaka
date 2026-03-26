@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type {
   Page,
   ElementCollection,
@@ -75,7 +76,7 @@ export class CitizenChildPage {
       const rows = this.page.findAllByDataQa(
         `service-need-table-row-${this.env}`
       )
-      await rows.assertCount(data.length)
+      await expect(rows).toHaveCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
@@ -107,7 +108,7 @@ export class CitizenChildPage {
       const rows = this.page.findAllByDataQa(
         `daily-service-time-table-row-${this.env}`
       )
-      await rows.assertCount(data.length)
+      await expect(rows).toHaveCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
@@ -127,17 +128,17 @@ export class CitizenChildPage {
   }
 
   async assertTerminatablePlacementCount(count: number) {
-    await this.terminatablePlacements.assertCount(count)
+    await expect(this.terminatablePlacements).toHaveCount(count)
   }
 
   async assertNonTerminatablePlacementCount(count: number) {
-    await this.page
-      .findAllByDataQa('non-terminatable-placement')
-      .assertCount(count)
+    await expect(
+      this.page.findAllByDataQa('non-terminatable-placement')
+    ).toHaveCount(count)
   }
 
   async assertTerminatedPlacementCount(count: number) {
-    await this.terminatedPlacements.assertCount(count)
+    await expect(this.terminatedPlacements).toHaveCount(count)
   }
 
   async togglePlacement(label: string) {
@@ -207,7 +208,7 @@ export class CitizenChildPage {
   }
 
   assertServiceApplicationsCount = (n: number) =>
-    this.page.findAllByDataQa('service-application-row').assertCount(n)
+    expect(this.page.findAllByDataQa('service-application-row')).toHaveCount(n)
   serviceApplicationRow = (n: number) =>
     this.page.findAllByDataQa('service-application-row').nth(n)
   serviceApplicationSentDate = (n: number) =>

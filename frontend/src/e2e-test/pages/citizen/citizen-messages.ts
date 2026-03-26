@@ -4,6 +4,7 @@
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 
+import { expect } from '../../playwright'
 import type { ElementCollection, EnvType, Page } from '../../utils/page'
 import {
   Element,
@@ -276,7 +277,9 @@ export class CitizenMessageEditor extends Element {
       await this.findByDataQa(`child-${childId}`).waitUntilVisible()
     }
 
-    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+    await expect(this.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async selectRecipients(recipients: string[]) {

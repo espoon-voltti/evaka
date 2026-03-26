@@ -23,7 +23,7 @@ import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -115,7 +115,7 @@ test.describe('Child and group notes', () => {
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await attendancePage.groupNotes.assertCount(1)
+    await expect(attendancePage.groupNotes).toHaveCount(1)
     await attendancePage.groupNotes.nth(0).assertTextEquals(groupNote)
   })
 
@@ -144,7 +144,7 @@ test.describe('Child and group notes', () => {
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await attendancePage.stickyNotes.assertCount(1)
+    await expect(attendancePage.stickyNotes).toHaveCount(1)
     await attendancePage.stickyNotes.nth(0).assertTextEquals('Foobar')
   })
 })

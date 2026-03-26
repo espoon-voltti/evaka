@@ -263,7 +263,7 @@ test.describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(directorPage)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.childDocumentDetails.assertCount(1)
+    await expect(reportPage.childDocumentDetails).toHaveCount(1)
 
     childDocument = await reportPage.clickDocument(0)
     const validity = new DateRange(
@@ -1370,7 +1370,7 @@ test.describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.childDocumentDetails.assertCount(1)
+    await expect(reportPage.childDocumentDetails).toHaveCount(1)
 
     const childDocument = await reportPage.clickDocument(0)
 
@@ -1474,7 +1474,7 @@ test.describe('Employee - Child documents', () => {
     await nav.openTab('reports')
     const reportsPage = new ReportsPage(page)
     const reportPage = await reportsPage.openChildDocumentDecisionsReport()
-    await reportPage.childDocumentDetails.assertCount(1)
+    await expect(reportPage.childDocumentDetails).toHaveCount(1)
     const childDocument = await reportPage.clickDocument(0)
 
     /*

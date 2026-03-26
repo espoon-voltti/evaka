@@ -260,13 +260,15 @@ export default class CitizenCalendarPage {
     if (groups.length === 0) {
       await day.waitUntilVisible()
     }
-    await rows.assertCount(groups.length)
+    await expect(rows).toHaveCount(groups.length)
 
     for (const [i, group] of groups.entries()) {
       const row = rows.nth(i)
       const childIds = uniq(group.childIds)
 
-      await row.findAllByDataQa('child-image').assertCount(childIds.length)
+      await expect(row.findAllByDataQa('child-image')).toHaveCount(
+        childIds.length
+      )
       for (const childId of childIds) {
         await row
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
@@ -344,7 +346,7 @@ export default class CitizenCalendarPage {
     await this.page
       .find('[data-holiday-period-cta-status]')
       .assertAttributeEquals('data-holiday-period-cta-status', 'success')
-    await this.#holidayCtas.assertCount(0)
+    await expect(this.#holidayCtas).toHaveCount(0)
   }
 
   async assertExpiringIncomeCtaNotVisible(): Promise<void> {
@@ -360,7 +362,7 @@ export default class CitizenCalendarPage {
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
     const childImages = this.dayCell(date).findAllByDataQa('child-image')
-    await childImages.assertCount(expectedCount)
+    await expect(childImages).toHaveCount(expectedCount)
   }
 
   async getPageActiveElementDetails() {
@@ -709,7 +711,9 @@ class ReservationModal extends Element {
       await this.findByDataQa(`child-${childId}`).waitUntilVisible()
     }
 
-    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+    await expect(this.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
@@ -769,9 +773,9 @@ class AbsencesModal {
       await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
     }
 
-    await this.page
-      .findAllByDataQa('relevant-child')
-      .assertCount(childIds.length)
+    await expect(this.page.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
