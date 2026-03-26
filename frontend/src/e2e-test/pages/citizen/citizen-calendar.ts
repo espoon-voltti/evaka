@@ -84,9 +84,10 @@ export default class CitizenCalendarPage {
   }
 
   async assertEventCount(date: LocalDate, count: number) {
-    await this.dayCell(date)
-      .findByDataQa('event-count')
-      .assertTextEquals(count.toString())
+    await expect(this.dayCell(date).findByDataQa('event-count')).toHaveText(
+      count.toString(),
+      { useInnerText: true }
+    )
   }
 
   async openReservationModal() {
@@ -203,7 +204,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertMonthTitle(title: string) {
-    await this.monthTitle().assertTextEquals(title)
+    await expect(this.monthTitle()).toHaveText(title, { useInnerText: true })
   }
 
   async openMonthlySummary(year: number, month: number) {
@@ -306,9 +307,10 @@ export default class CitizenCalendarPage {
       row.find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
     ).toBeVisible()
 
-    await row
-      .findByDataQa('reservation-text')
-      .assertTextEquals(formatter(twoPartReservation))
+    await expect(row.findByDataQa('reservation-text')).toHaveText(
+      formatter(twoPartReservation),
+      { useInnerText: true }
+    )
   }
 
   async closeToasts(): Promise<void> {
@@ -330,7 +332,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayCtaContent(content: string): Promise<void> {
-    await this.#holidayCtas.nth(0).assertTextEquals(content)
+    await expect(this.#holidayCtas.nth(0)).toHaveText(content, {
+      useInnerText: true
+    })
   }
 
   async clickHolidayCta(): Promise<void> {
@@ -727,7 +731,9 @@ class ReservationModal extends Element {
   }
 
   async assertHolidayPeriodInfoContent(content: string) {
-    await this.findByDataQa('holiday-period-info').assertTextEquals(content)
+    await expect(this.findByDataQa('holiday-period-info')).toHaveText(content, {
+      useInnerText: true
+    })
   }
 
   async assertIncompletelyAnsweredPeriodsInfoVisible() {
@@ -876,7 +882,9 @@ class DayView extends Element {
   async assertReservations(childId: UUID, reservations: string) {
     const reservationsElement =
       this.#childSection(childId).findByDataQa('reservations')
-    await reservationsElement.assertTextEquals(reservations)
+    await expect(reservationsElement).toHaveText(reservations, {
+      useInnerText: true
+    })
   }
 
   async assertReservationNoTimes(childId: UUID) {
@@ -898,9 +906,9 @@ class DayView extends Element {
   }
 
   async assertAttendances(childId: UUID, attendances: string[]) {
-    await this.#childSection(childId)
-      .findByDataQa('attendances')
-      .assertTextEquals(attendances.join('\n'))
+    await expect(
+      this.#childSection(childId).findByDataQa('attendances')
+    ).toHaveText(attendances.join('\n'), { useInnerText: true })
   }
 
   getServiceUsageWarning(childId: UUID) {
@@ -912,9 +920,9 @@ class DayView extends Element {
   }
 
   async assertAbsence(childId: UUID, value: string) {
-    await this.#childSection(childId)
-      .findByDataQa('absence')
-      .assertTextEquals(value)
+    await expect(
+      this.#childSection(childId).findByDataQa('absence')
+    ).toHaveText(value, { useInnerText: true })
   }
 
   async assertNoActivePlacementsMsgVisible() {
@@ -943,8 +951,13 @@ class DayView extends Element {
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
     await expect(event).toBeVisible()
-    await event.findByDataQa('event-title').assertTextEquals(title)
-    await event.findByDataQa('event-description').assertTextEquals(description)
+    await expect(event.findByDataQa('event-title')).toHaveText(title, {
+      useInnerText: true
+    })
+    await expect(event.findByDataQa('event-description')).toHaveText(
+      description,
+      { useInnerText: true }
+    )
 
     const exportButton = event.findByDataQa(`event-export-button-${eventId}`)
     if (exportable) {
@@ -973,11 +986,16 @@ class DayView extends Element {
     exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await event.findByDataQa('title-text').assertTextEquals(title)
-    await event.findByDataQa('event-description').assertTextEquals(description)
-    await event
-      .findByDataQa(`reservation-time-${eventTimeId}`)
-      .assertTextEquals(reservationText)
+    await expect(event.findByDataQa('title-text')).toHaveText(title, {
+      useInnerText: true
+    })
+    await expect(event.findByDataQa('event-description')).toHaveText(
+      description,
+      { useInnerText: true }
+    )
+    await expect(
+      event.findByDataQa(`reservation-time-${eventTimeId}`)
+    ).toHaveText(reservationText, { useInnerText: true })
     const cancelButton = new TextInput(
       event.findByDataQa(`reservation-cancel-button-${eventTimeId}`)
     )

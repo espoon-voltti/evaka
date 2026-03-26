@@ -38,7 +38,9 @@ export class CitizenChildPage {
   }
 
   async assertChildNameIsShown(name: string) {
-    await this.page.findByDataQa('child-name').assertTextEquals(name)
+    await expect(this.page.findByDataQa('child-name')).toHaveText(name, {
+      useInnerText: true
+    })
   }
 
   async goBack() {
@@ -80,15 +82,18 @@ export class CitizenChildPage {
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
-          await row
-            .findByDataQa('service-need-date-range')
-            .assertTextEquals(expected.dateRange)
-          await row
-            .findByDataQa('service-need-description')
-            .assertTextEquals(expected.description)
-          await row
-            .findByDataQa('service-need-unit')
-            .assertTextEquals(expected.unit)
+          await expect(row.findByDataQa('service-need-date-range')).toHaveText(
+            expected.dateRange,
+            { useInnerText: true }
+          )
+          await expect(row.findByDataQa('service-need-description')).toHaveText(
+            expected.description,
+            { useInnerText: true }
+          )
+          await expect(row.findByDataQa('service-need-unit')).toHaveText(
+            expected.unit,
+            { useInnerText: true }
+          )
         })
       )
     } else {
@@ -112,12 +117,12 @@ export class CitizenChildPage {
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
-          await row
-            .findByDataQa('daily-service-time-date-range')
-            .assertTextEquals(expected.dateRange)
-          await row
-            .findByDataQa('daily-service-time-description')
-            .assertTextEquals(expected.description)
+          await expect(
+            row.findByDataQa('daily-service-time-date-range')
+          ).toHaveText(expected.dateRange, { useInnerText: true })
+          await expect(
+            row.findByDataQa('daily-service-time-description')
+          ).toHaveText(expected.description, { useInnerText: true })
         })
       )
     } else {
@@ -234,17 +239,19 @@ export class CitizenChildPage {
       await this.serviceApplicationRow(n).findByDataQa('open-details').click()
       const modal = this.page.findByDataQa('service-application-modal')
 
-      await modal
-        .findByDataQa('additional-info')
-        .assertTextEquals(additionalInfo)
+      await expect(modal.findByDataQa('additional-info')).toHaveText(
+        additionalInfo,
+        { useInnerText: true }
+      )
       await modal
         .findByDataQa('decision-status')
         .assertText((text) => text.startsWith(status))
 
       if (rejectedReason) {
-        await modal
-          .findByDataQa('rejected-reason')
-          .assertTextEquals(rejectedReason)
+        await expect(modal.findByDataQa('rejected-reason')).toHaveText(
+          rejectedReason,
+          { useInnerText: true }
+        )
       } else {
         await expect(modal.findByDataQa('rejected-reason')).toBeHidden()
       }

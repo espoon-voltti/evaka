@@ -29,9 +29,9 @@ export default class MobileReservationsPage {
     return await Promise.all(
       expected.map(async ({ date, text }) => {
         const reservationDate = this.#findReservationDate(date)
-        await reservationDate
-          .findByDataQa('reservation-text')
-          .assertTextEquals(text)
+        await expect(
+          reservationDate.findByDataQa('reservation-text')
+        ).toHaveText(text, { useInnerText: true })
       })
     )
   }

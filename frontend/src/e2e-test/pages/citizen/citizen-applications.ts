@@ -68,7 +68,9 @@ export default class CitizenApplicationsPage {
           : type === 'CLUB'
             ? 'Kerhohakemus'
             : ''
-    await this.#applicationTitle.assertTextEquals(title)
+    await expect(this.#applicationTitle).toHaveText(title, {
+      useInnerText: true
+    })
 
     return new CitizenApplicationEditor(this.page)
   }
@@ -103,7 +105,9 @@ export default class CitizenApplicationsPage {
   }
 
   async assertChildIsShown(childId: string, childName: string) {
-    await this.#childTitle(childId).assertTextEquals(childName)
+    await expect(this.#childTitle(childId)).toHaveText(childName, {
+      useInnerText: true
+    })
   }
 
   async assertApplicationIsListed(
@@ -112,9 +116,12 @@ export default class CitizenApplicationsPage {
     preferredStartDate: string,
     status: string
   ) {
-    await this.#applicationType(id).assertTextEquals(title)
-    await this.#applicationPreferredStartDate(id).assertTextEquals(
-      preferredStartDate
+    await expect(this.#applicationType(id)).toHaveText(title, {
+      useInnerText: true
+    })
+    await expect(this.#applicationPreferredStartDate(id)).toHaveText(
+      preferredStartDate,
+      { useInnerText: true }
     )
     await this.#applicationStatus(id).assertText((text) =>
       text.toLowerCase().includes(status.toLowerCase())
@@ -393,9 +400,10 @@ class CitizenApplicationEditor {
 
   async assertChildAddress(fullAddress: string) {
     await this.openSection('contactInfo')
-    await this.page
-      .find('[data-qa="child-street-address"]')
-      .assertTextEquals(fullAddress)
+    await expect(this.page.find('[data-qa="child-street-address"]')).toHaveText(
+      fullAddress,
+      { useInnerText: true }
+    )
   }
 
   async assertServiceNeedOptions(
@@ -439,7 +447,9 @@ class CitizenApplicationEditor {
       await expect(this.#preferredStartDateInfo).toBeHidden()
       return
     }
-    await this.#preferredStartDateInfo.assertTextEquals(infoText)
+    await expect(this.#preferredStartDateInfo).toHaveText(infoText, {
+      useInnerText: true
+    })
   }
 
   async setPartTime(partTime: boolean) {
@@ -487,7 +497,9 @@ class CitizenApplicationEditor {
   }
 
   async assertVerifiedReadOnlyEmail(email: string) {
-    await this.page.findByDataQa('verified-email').assertTextEquals(email)
+    await expect(this.page.findByDataQa('verified-email')).toHaveText(email, {
+      useInnerText: true
+    })
     await expect(this.page.findByDataQa('guardianEmail-input')).toBeHidden()
   }
 

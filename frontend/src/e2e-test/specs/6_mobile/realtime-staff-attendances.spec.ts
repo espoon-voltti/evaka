@@ -382,8 +382,11 @@ test.describe('Realtime staff attendance page', () => {
     await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
-    await staffAttendancePage.staffMemberPage.openAttendanceWarning.assertTextEquals(
-      'Avoin kirjaus ke 4.5.2022 - Alkuräjähdyksen päiväkoti. Kirjaus on päätettävä ennen uuden lisäystä.'
+    await expect(
+      staffAttendancePage.staffMemberPage.openAttendanceWarning
+    ).toHaveText(
+      'Avoin kirjaus ke 4.5.2022 - Alkuräjähdyksen päiväkoti. Kirjaus on päätettävä ennen uuden lisäystä.',
+      { useInnerText: true }
     )
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -888,8 +891,13 @@ test.describe('Realtime staff attendance edit page', () => {
     await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
-    await staffAttendancePage.arrivalTime.assertTextEquals(departureTime)
-    await staffAttendancePage.departureTime.assertTextEquals(newDepartureTime)
+    await expect(staffAttendancePage.arrivalTime).toHaveText(departureTime, {
+      useInnerText: true
+    })
+    await expect(staffAttendancePage.departureTime).toHaveText(
+      newDepartureTime,
+      { useInnerText: true }
+    )
   })
 
   test('Staff member can add new attendance with group', async () => {
@@ -1029,12 +1037,14 @@ test.describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.previousAttendancesButton.click()
 
-    await staffAttendancePage.previousAttendancesPage
-      .attendanceOfDate(date, 0)
-      .times.assertTextEquals('09:00 - 17:00')
-    await staffAttendancePage.previousAttendancesPage
-      .attendanceOfDate(date, 0)
-      .groupOrType.assertTextEquals('Koulutus')
+    await expect(
+      staffAttendancePage.previousAttendancesPage.attendanceOfDate(date, 0)
+        .times
+    ).toHaveText('09:00 - 17:00', { useInnerText: true })
+    await expect(
+      staffAttendancePage.previousAttendancesPage.attendanceOfDate(date, 0)
+        .groupOrType
+    ).toHaveText('Koulutus', { useInnerText: true })
     await staffAttendancePage.previousAttendancesPage
       .editAttendancesOfDateButton(date)
       .click()
@@ -1045,9 +1055,10 @@ test.describe('Realtime staff attendance edit page', () => {
     await editPage.submit(pin)
 
     await staffAttendancePage.previousAttendancesButton.click()
-    await staffAttendancePage.previousAttendancesPage
-      .attendanceOfDate(date, 0)
-      .times.assertTextEquals('09:15 - 16:30')
+    await expect(
+      staffAttendancePage.previousAttendancesPage.attendanceOfDate(date, 0)
+        .times
+    ).toHaveText('09:15 - 16:30', { useInnerText: true })
   })
 
   test('Staff member can edit ongoing attendance from yesterday through previous attendances', async () => {
@@ -1070,12 +1081,14 @@ test.describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.previousAttendancesButton.click()
 
-    await staffAttendancePage.previousAttendancesPage
-      .attendanceOfDate(yesterday, 0)
-      .times.assertTextEquals('22:00 -')
-    await staffAttendancePage.previousAttendancesPage
-      .attendanceOfDate(yesterday, 0)
-      .groupOrType.assertTextEquals(testDaycareGroup.name)
+    await expect(
+      staffAttendancePage.previousAttendancesPage.attendanceOfDate(yesterday, 0)
+        .times
+    ).toHaveText('22:00 -', { useInnerText: true })
+    await expect(
+      staffAttendancePage.previousAttendancesPage.attendanceOfDate(yesterday, 0)
+        .groupOrType
+    ).toHaveText(testDaycareGroup.name, { useInnerText: true })
     await staffAttendancePage.previousAttendancesPage
       .editAttendancesOfDateButton(yesterday)
       .click()

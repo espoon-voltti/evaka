@@ -945,7 +945,9 @@ test.describe('Child attendances', () => {
       await childPage.markDepartedLink.click()
 
       await childAttendancePage.setTime('15:15')
-      await childAttendancePage.setTimeInfo.assertTextEquals('Saapui 15:15')
+      await expect(childAttendancePage.setTimeInfo).toHaveText('Saapui 15:15', {
+        useInnerText: true
+      })
       await childAttendancePage.setTime('15:20')
       await childAttendancePage.markDepartedButton.click()
     })
@@ -989,12 +991,15 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
 
       await listPage.selectGroup('all')
-      await listPage
-        .childGroupName(childId)
-        .assertTextEquals(testDaycareGroup.name.toUpperCase())
+      await expect(listPage.childGroupName(childId)).toHaveText(
+        testDaycareGroup.name.toUpperCase(),
+        { useInnerText: true }
+      )
 
       await listPage.selectGroup(testDaycareGroup.id)
-      await listPage.childGroupName(childId).assertTextEquals('')
+      await expect(listPage.childGroupName(childId)).toHaveText('', {
+        useInnerText: true
+      })
     })
 
     test('Child will not be visible in two groups at the same time', async ({
@@ -1065,7 +1070,9 @@ test.describe('Child attendances', () => {
 
       await assertAttendanceCounts(1, 0, 0, 0, 1)
       await listPage.selectChild(child)
-      await childPage.reservation.assertTextEquals('Läsnä')
+      await expect(childPage.reservation).toHaveText('Läsnä', {
+        useInnerText: true
+      })
     })
 
     test('Term break child is shown in absent list', async ({

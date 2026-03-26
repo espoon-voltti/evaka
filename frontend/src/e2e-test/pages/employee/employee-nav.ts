@@ -65,9 +65,10 @@ export default class EmployeeNav {
         break
     }
     if (count > 0) {
-      await tabElem
-        .findByDataQa('notifications')
-        .assertTextEquals(count.toString())
+      await expect(tabElem.findByDataQa('notifications')).toHaveText(
+        count.toString(),
+        { useInnerText: true }
+      )
     } else {
       await expect(tabElem.findByDataQa('no-notifications')).toBeAttached()
     }

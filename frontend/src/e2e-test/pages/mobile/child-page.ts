@@ -111,40 +111,50 @@ export default class MobileChildPage {
       phone: string
     }[]
   ) {
-    await this.basicInfo.name.assertTextEquals(name)
+    await expect(this.basicInfo.name).toHaveText(name, { useInnerText: true })
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
-      await this.basicInfo
-        .contactName(i)
-        .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
+      await expect(this.basicInfo.contactName(i)).toHaveText(
+        `${contact.firstName} ${contact.lastName}`,
+        { useInnerText: true }
+      )
       if (contact.phone) {
-        await this.basicInfo.contactPhone(i).assertTextEquals(contact.phone)
+        await expect(this.basicInfo.contactPhone(i)).toHaveText(contact.phone, {
+          useInnerText: true
+        })
       }
       if (contact.email) {
-        await this.basicInfo.contactEmail(i).assertTextEquals(contact.email)
+        await expect(this.basicInfo.contactEmail(i)).toHaveText(contact.email, {
+          useInnerText: true
+        })
       }
     }
 
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
-      await this.basicInfo
-        .backupPickupName(i)
-        .assertTextEquals(backupPickup.name)
-      await this.basicInfo
-        .backupPickupPhone(i)
-        .assertTextEquals(backupPickup.phone)
+      await expect(this.basicInfo.backupPickupName(i)).toHaveText(
+        backupPickup.name,
+        { useInnerText: true }
+      )
+      await expect(this.basicInfo.backupPickupPhone(i)).toHaveText(
+        backupPickup.phone,
+        { useInnerText: true }
+      )
     }
   }
 
   async assertSensitiveInfo(additionalInfo: DevChild) {
-    await this.sensitiveInfo.allergies.assertTextEquals(
-      additionalInfo.allergies ?? 'should be defined'
+    await expect(this.sensitiveInfo.allergies).toHaveText(
+      additionalInfo.allergies ?? 'should be defined',
+      { useInnerText: true }
     )
-    await this.sensitiveInfo.diet.assertTextEquals(
-      additionalInfo.diet ?? 'should be defined'
+    await expect(this.sensitiveInfo.diet).toHaveText(
+      additionalInfo.diet ?? 'should be defined',
+      { useInnerText: true }
     )
-    await this.sensitiveInfo.medication.assertTextEquals(
-      additionalInfo.medication ?? 'should be defined'
+    await expect(this.sensitiveInfo.medication).toHaveText(
+      additionalInfo.medication ?? 'should be defined',
+      { useInnerText: true }
     )
   }
 

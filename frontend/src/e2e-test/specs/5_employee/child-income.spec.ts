@@ -58,7 +58,11 @@ test.describe('Child Income', () => {
     await incomesSection.save()
 
     await expect(incomesSection.incomeListItems).toHaveCount(1)
-    await incomesSection.incomeSum.assertTextEquals('5000 €')
-    await incomesSection.expensesSum.assertTextEquals('0 €')
+    await expect(incomesSection.incomeSum).toHaveText('5000 €', {
+      useInnerText: true
+    })
+    await expect(incomesSection.expensesSum).toHaveText('0 €', {
+      useInnerText: true
+    })
   })
 })

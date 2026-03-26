@@ -88,21 +88,27 @@ test.describe('Nekku fields are editable', () => {
   })
 
   test('Participates in breakfast information can be unset', async () => {
-    await section.participatesInBreakfast.assertTextEquals('Kyllä')
+    await expect(section.participatesInBreakfast).toHaveText('Kyllä', {
+      useInnerText: true
+    })
 
     await section.editBtn.click()
     await section.participatesInBreakfastCheckbox.uncheck()
     await section.confirmBtn.click()
-    await section.participatesInBreakfast.assertTextEquals('Ei')
+    await expect(section.participatesInBreakfast).toHaveText('Ei', {
+      useInnerText: true
+    })
   })
 
   test('Nekku diet can be edited', async () => {
-    await section.nekkuDiet.assertTextEquals('Seka')
+    await expect(section.nekkuDiet).toHaveText('Seka', { useInnerText: true })
 
     await section.editBtn.click()
     await section.nekkuDietSelect.fillAndSelectFirst('V')
     await section.confirmBtn.click()
-    await section.nekkuDiet.assertTextEquals('Vegaani')
+    await expect(section.nekkuDiet).toHaveText('Vegaani', {
+      useInnerText: true
+    })
   })
 
   test('Special diet fields are rendered correctly', async () => {
@@ -125,10 +131,14 @@ test.describe('Nekku fields are editable', () => {
 
     await section.confirmBtn.click()
 
-    await specialDietEditor
-      .getCheckBoxValue('2', 'b')
-      .assertTextEquals('b1, b3')
-    await specialDietEditor.getTextValue('2', 'a').assertTextEquals('a: Foo')
+    await expect(specialDietEditor.getCheckBoxValue('2', 'b')).toHaveText(
+      'b1, b3',
+      { useInnerText: true }
+    )
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText(
+      'a: Foo',
+      { useInnerText: true }
+    )
   })
 
   test('Special diets are saved to the database correctly', async () => {
@@ -143,7 +153,10 @@ test.describe('Nekku fields are editable', () => {
 
     // we don't really care about this assertion, it just ensures that the
     // data has been updated before we call getNekkuSpecialDietChoices()
-    await specialDietEditor.getTextValue('2', 'a').assertTextEquals('a: Foo')
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText(
+      'a: Foo',
+      { useInnerText: true }
+    )
 
     const savedValues = await getNekkuSpecialDietChoices({ childId })
     if (savedValues.length !== 3) throw Error('Excepted 3 special diet choices')

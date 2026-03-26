@@ -164,13 +164,21 @@ export class UnitOccupanciesSection extends Element {
   }
 
   async assertConfirmed(minimum: string, maximum: string) {
-    await this.#elem('minimum', 'confirmed').assertTextEquals(minimum)
-    await this.#elem('maximum', 'confirmed').assertTextEquals(maximum)
+    await expect(this.#elem('minimum', 'confirmed')).toHaveText(minimum, {
+      useInnerText: true
+    })
+    await expect(this.#elem('maximum', 'confirmed')).toHaveText(maximum, {
+      useInnerText: true
+    })
   }
 
   async assertPlanned(minimum: string, maximum: string) {
-    await this.#elem('minimum', 'planned').assertTextEquals(minimum)
-    await this.#elem('maximum', 'planned').assertTextEquals(maximum)
+    await expect(this.#elem('minimum', 'planned')).toHaveText(minimum, {
+      useInnerText: true
+    })
+    await expect(this.#elem('maximum', 'planned')).toHaveText(maximum, {
+      useInnerText: true
+    })
   }
 }
 
@@ -226,7 +234,9 @@ export class UnitStaffAttendancesTable extends Element {
     const row = this.findByDataQa(`attendance-row-${rowIx}`)
 
     if (name !== undefined) {
-      await row.findByDataQa('staff-attendance-name').assertTextEquals(name)
+      await expect(row.findByDataQa('staff-attendance-name')).toHaveText(name, {
+        useInnerText: true
+      })
     }
 
     if (plannedAttendances !== undefined) {
@@ -234,27 +244,25 @@ export class UnitStaffAttendancesTable extends Element {
         .findAllByDataQa('planned-attendance-day')
         .nth(nth)
       for (const [i, [arrival, departure]] of plannedAttendances.entries()) {
-        await plannedAttendanceDay
-          .findAllByDataQa('planned-attendance-start')
-          .nth(i)
-          .assertTextEquals(arrival)
-        await plannedAttendanceDay
-          .findAllByDataQa('planned-attendance-end')
-          .nth(i)
-          .assertTextEquals(departure)
+        await expect(
+          plannedAttendanceDay
+            .findAllByDataQa('planned-attendance-start')
+            .nth(i)
+        ).toHaveText(arrival, { useInnerText: true })
+        await expect(
+          plannedAttendanceDay.findAllByDataQa('planned-attendance-end').nth(i)
+        ).toHaveText(departure, { useInnerText: true })
       }
     }
     if (attendances !== undefined) {
       const attendanceDay = row.findAllByDataQa('attendance-day').nth(nth)
       for (const [i, [arrival, departure]] of attendances.entries()) {
-        await attendanceDay
-          .findAllByDataQa('arrival-time')
-          .nth(i)
-          .assertTextEquals(arrival)
-        await attendanceDay
-          .findAllByDataQa('departure-time')
-          .nth(i)
-          .assertTextEquals(departure)
+        await expect(
+          attendanceDay.findAllByDataQa('arrival-time').nth(i)
+        ).toHaveText(arrival, { useInnerText: true })
+        await expect(
+          attendanceDay.findAllByDataQa('departure-time').nth(i)
+        ).toHaveText(departure, { useInnerText: true })
       }
     }
 
@@ -293,9 +301,10 @@ export class UnitStaffAttendancesTable extends Element {
     const arrivalTime = cell.findByDataQa('arrival-time')
     await arrivalTime.hover()
 
-    await this.page
-      .findByDataQa('arrival-time-tooltip')
-      .assertTextEquals(expectedTooltipText)
+    await expect(this.page.findByDataQa('arrival-time-tooltip')).toHaveText(
+      expectedTooltipText,
+      { useInnerText: true }
+    )
   }
 
   async assertDepartureTimeTooltip(
@@ -307,9 +316,10 @@ export class UnitStaffAttendancesTable extends Element {
     const departureTime = cell.findByDataQa('departure-time')
     await departureTime.hover()
 
-    await this.page
-      .findByDataQa('departure-time-tooltip')
-      .assertTextEquals(expectedTooltipText)
+    await expect(this.page.findByDataQa('departure-time-tooltip')).toHaveText(
+      expectedTooltipText,
+      { useInnerText: true }
+    )
   }
 
   async assertOpenDetailsVisible(

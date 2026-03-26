@@ -22,7 +22,7 @@ import {
 } from '../../generated/api-clients'
 import type { PedagogicalDocumentsSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -71,12 +71,15 @@ test.describe('Child Information - Pedagogical documents', () => {
 
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
-    await section.startDateElement.assertTextEquals(
-      mockNow.toLocalDate().format()
+    await expect(section.startDateElement).toHaveText(
+      mockNow.toLocalDate().format(),
+      { useInnerText: true }
     )
     await section.setDescription('Test description')
     await section.save()
-    await section.descriptionElement.assertTextEquals('Test description')
+    await expect(section.descriptionElement).toHaveText('Test description', {
+      useInnerText: true
+    })
     await section.fileUpload.upload(testfile1Path)
     await section.fileUpload.upload(testfile2Path)
   })

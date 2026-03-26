@@ -19,7 +19,7 @@ import {
 } from '../../generated/api-clients'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -62,9 +62,9 @@ test.describe('Applications', () => {
 
     await applicationsPage.filterByApplicationStatus('ALL')
     await applicationsPage.searchButton.click()
-    await applicationsPage
-      .applicationRow(application.id)
-      .status.assertTextEquals('Odottaa postitusta')
+    await expect(
+      applicationsPage.applicationRow(application.id).status
+    ).toHaveText('Odottaa postitusta', { useInnerText: true })
   })
 
   test('Application with a dead applicant has an indicator for the date of death', async () => {

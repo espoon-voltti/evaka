@@ -90,8 +90,10 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.assistanceFactorRow(0)
-      await row.capacityFactor.assertTextEquals('1,5')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.capacityFactor).toHaveText('1,5', { useInnerText: true })
+      await expect(row.validDuring).toHaveText(validDuring.format(), {
+        useInnerText: true
+      })
     })
 
     test('can be edited', async () => {
@@ -104,14 +106,14 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.assistanceFactorRow(0)
-      await row.capacityFactor.assertTextEquals('1,5')
+      await expect(row.capacityFactor).toHaveText('1,5', { useInnerText: true })
 
       await row.edit.click()
       const form = assistance.assistanceFactorForm
       await form.capacityFactor.fill('2.5')
       await form.save.click()
 
-      await row.capacityFactor.assertTextEquals('2,5')
+      await expect(row.capacityFactor).toHaveText('2,5', { useInnerText: true })
     })
 
     test('can be deleted', async () => {
@@ -135,9 +137,10 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.assistanceFactorRow(0).delete()
 
       await assistance.assertAssistanceFactorCount(1)
-      await assistance
-        .assistanceFactorRow(0)
-        .capacityFactor.assertTextEquals('1,5')
+      await expect(assistance.assistanceFactorRow(0).capacityFactor).toHaveText(
+        '1,5',
+        { useInnerText: true }
+      )
     })
   })
 
@@ -153,8 +156,12 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.daycareAssistanceRow(0)
-      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.level).toHaveText('Yleinen tuki, ei päätöstä', {
+        useInnerText: true
+      })
+      await expect(row.validDuring).toHaveText(validDuring.format(), {
+        useInnerText: true
+      })
     })
 
     test('can be edited', async () => {
@@ -167,14 +174,18 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.daycareAssistanceRow(0)
-      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
+      await expect(row.level).toHaveText('Yleinen tuki, ei päätöstä', {
+        useInnerText: true
+      })
 
       await row.edit.click()
       const form = assistance.daycareAssistanceForm
       await form.level.selectOption('SPECIAL_SUPPORT')
       await form.save.click()
 
-      await row.level.assertTextEquals('Erityinen tuki')
+      await expect(row.level).toHaveText('Erityinen tuki', {
+        useInnerText: true
+      })
     })
 
     test('can be deleted', async () => {
@@ -198,9 +209,10 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.daycareAssistanceRow(0).delete()
 
       await assistance.assertDaycareAssistanceCount(1)
-      await assistance
-        .daycareAssistanceRow(0)
-        .level.assertTextEquals('Yleinen tuki, ei päätöstä')
+      await expect(assistance.daycareAssistanceRow(0).level).toHaveText(
+        'Yleinen tuki, ei päätöstä',
+        { useInnerText: true }
+      )
     })
   })
 
@@ -216,10 +228,13 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.preschoolAssistanceRow(0)
-      await row.level.assertTextEquals(
-        'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+      await expect(row.level).toHaveText(
+        'Erityinen tuki ilman pidennettyä oppivelvollisuutta',
+        { useInnerText: true }
       )
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.validDuring).toHaveText(validDuring.format(), {
+        useInnerText: true
+      })
     })
 
     test('can be edited', async () => {
@@ -232,8 +247,9 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.preschoolAssistanceRow(0)
-      await row.level.assertTextEquals(
-        'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
+      await expect(row.level).toHaveText(
+        'Erityinen tuki ilman pidennettyä oppivelvollisuutta',
+        { useInnerText: true }
       )
 
       await row.edit.click()
@@ -241,7 +257,9 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.level.selectOption('INTENSIFIED_SUPPORT')
       await form.save.click()
 
-      await row.level.assertTextEquals('Tehostettu tuki')
+      await expect(row.level).toHaveText('Tehostettu tuki', {
+        useInnerText: true
+      })
     })
 
     test('can be deleted', async () => {
@@ -265,9 +283,10 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.preschoolAssistanceRow(0).delete()
 
       await assistance.assertPreschoolAssistanceCount(1)
-      await assistance
-        .preschoolAssistanceRow(0)
-        .level.assertTextEquals('Tehostettu tuki')
+      await expect(assistance.preschoolAssistanceRow(0).level).toHaveText(
+        'Tehostettu tuki',
+        { useInnerText: true }
+      )
     })
   })
 
@@ -283,8 +302,12 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)', {
+        useInnerText: true
+      })
+      await expect(row.validDuring).toHaveText(validDuring.format(), {
+        useInnerText: true
+      })
     })
 
     test('can be edited', async () => {
@@ -297,14 +320,19 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await row.type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
+      await expect(row.type).toHaveText(
+        'Kuljetusetu (esioppilailla Koski-tieto)',
+        { useInnerText: true }
+      )
 
       await row.edit.click()
       const form = assistance.otherAssistanceMeasureForm
       await form.type.selectOption('ACCULTURATION_SUPPORT')
       await form.save.click()
 
-      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)', {
+        useInnerText: true
+      })
     })
 
     test('can be deleted', async () => {
@@ -329,9 +357,10 @@ test.describe('Child Information assistance functionality for employees', () => 
 
       await assistance.assertOtherAssistanceMeasureCount(1)
 
-      await assistance
-        .otherAssistanceMeasureRow(0)
-        .type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
+      await expect(assistance.otherAssistanceMeasureRow(0).type).toHaveText(
+        'Kuljetusetu (esioppilailla Koski-tieto)',
+        { useInnerText: true }
+      )
     })
   })
 
@@ -375,8 +404,14 @@ test.describe('Child Information assistance functionality for employees', () => 
     await logUserIn(unitSupervisor)
 
     await assistance.assertAssistanceFactorCount(2)
-    await assistance.assistanceFactorRow(0).capacityFactor.assertTextEquals('2')
-    await assistance.assistanceFactorRow(1).capacityFactor.assertTextEquals('1')
+    await expect(assistance.assistanceFactorRow(0).capacityFactor).toHaveText(
+      '2',
+      { useInnerText: true }
+    )
+    await expect(assistance.assistanceFactorRow(1).capacityFactor).toHaveText(
+      '1',
+      { useInnerText: true }
+    )
   })
 
   test('assistance factor for preschool for a child in preschool is shown for unit manager', async () => {

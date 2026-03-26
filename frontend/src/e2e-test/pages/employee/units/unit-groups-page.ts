@@ -66,9 +66,9 @@ export class UnitGroupsPage {
   }
 
   async assertChildCapacityFactor(childId: string, factor: string) {
-    await this.page
-      .findByDataQa(`child-capacity-factor-${childId}`)
-      .assertTextEquals(factor)
+    await expect(
+      this.page.findByDataQa(`child-capacity-factor-${childId}`)
+    ).toHaveText(factor, { useInnerText: true })
   }
 
   async assertGroupCount(expectedCount: number) {
@@ -196,17 +196,25 @@ export class MissingPlacementRow extends Element {
     groupMissingDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await this.#childName.assertTextEquals(fields.childName)
+      await expect(this.#childName).toHaveText(fields.childName, {
+        useInnerText: true
+      })
     }
     if (fields.dateOfBirth !== undefined) {
-      await this.#dateOfBirth.assertTextEquals(fields.dateOfBirth)
+      await expect(this.#dateOfBirth).toHaveText(fields.dateOfBirth, {
+        useInnerText: true
+      })
     }
     if (fields.placementDuration !== undefined) {
-      await this.#placementDuration.assertTextEquals(fields.placementDuration)
+      await expect(this.#placementDuration).toHaveText(
+        fields.placementDuration,
+        { useInnerText: true }
+      )
     }
     if (fields.groupMissingDuration !== undefined) {
-      await this.#groupMissingDuration.assertTextEquals(
-        fields.groupMissingDuration
+      await expect(this.#groupMissingDuration).toHaveText(
+        fields.groupMissingDuration,
+        { useInnerText: true }
       )
     }
   }
@@ -245,15 +253,21 @@ export class GroupCollapsible extends Element {
   #noChildren = this.findByDataQa('no-children-placeholder')
 
   async assertGroupName(expectedName: string) {
-    await this.#groupName.assertTextEquals(expectedName)
+    await expect(this.#groupName).toHaveText(expectedName, {
+      useInnerText: true
+    })
   }
 
   async assertGroupStartDate(expectedStartDate: string) {
-    await this.#groupStartDate.assertTextEquals(expectedStartDate)
+    await expect(this.#groupStartDate).toHaveText(expectedStartDate, {
+      useInnerText: true
+    })
   }
 
   async assertGroupEndDate(expectedEndDate: string) {
-    await this.#groupEndDate.assertTextEquals(expectedEndDate)
+    await expect(this.#groupEndDate).toHaveText(expectedEndDate, {
+      useInnerText: true
+    })
   }
 
   childRow(childId: string) {
@@ -362,10 +376,15 @@ export class GroupCollapsibleChildRow extends Element {
     placementDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await this.#childName.assertTextEquals(fields.childName)
+      await expect(this.#childName).toHaveText(fields.childName, {
+        useInnerText: true
+      })
     }
     if (fields.placementDuration !== undefined) {
-      await this.#placementDuration.assertTextEquals(fields.placementDuration)
+      await expect(this.#placementDuration).toHaveText(
+        fields.placementDuration,
+        { useInnerText: true }
+      )
     }
   }
 
@@ -404,7 +423,9 @@ export class ChildDailyNoteModal extends Modal {
   #groupNoteInput = this.findByDataQa('sticky-note')
 
   async assertGroupNote(expectedText: string) {
-    await this.#groupNote.assertTextEquals(expectedText)
+    await expect(this.#groupNote).toHaveText(expectedText, {
+      useInnerText: true
+    })
   }
 
   async assertNoGroupNote() {

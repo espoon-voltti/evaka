@@ -80,11 +80,11 @@ export class CitizenChildIncomeStatementEditPage {
     await this.page
       .findByDataQa('notification-container')
       .assertAttributeEquals('aria-live', 'polite')
-    await this.page
-      .find(
+    await expect(
+      this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-      .assertTextEquals('Tuloselvitys lähetetty')
+    ).toHaveText('Tuloselvitys lähetetty', { useInnerText: true })
   }
 
   async closeNotification() {
@@ -129,9 +129,9 @@ export class CitizenChildIncomeStatementListPage {
   }
 
   async assertChildName(expectedName: string) {
-    await this.childIncomeStatementsSection
-      .find('[data-qa="child-name"]')
-      .assertTextEquals(expectedName)
+    await expect(
+      this.childIncomeStatementsSection.find('[data-qa="child-name"]')
+    ).toHaveText(expectedName, { useInnerText: true })
   }
 
   async assertIncomeStatementMissingWarningIsShown() {

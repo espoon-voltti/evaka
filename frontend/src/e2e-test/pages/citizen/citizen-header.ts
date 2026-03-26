@@ -150,7 +150,10 @@ export default class CitizenHeader {
   async assertUnreadMessagesCount(expectedCount: number) {
     await expect(this.#messagesNav).toBeVisible()
     if (expectedCount !== 0) {
-      await this.#unreadMessagesCount.assertTextEquals(expectedCount.toString())
+      await expect(this.#unreadMessagesCount).toHaveText(
+        expectedCount.toString(),
+        { useInnerText: true }
+      )
     } else {
       await expect(this.#unreadMessagesCount).toBeHidden()
     }
@@ -159,7 +162,10 @@ export default class CitizenHeader {
   async assertUnreadChildrenCount(expectedCount: number) {
     await expect(this.#childrenNav).toBeVisible()
     if (expectedCount !== 0) {
-      await this.#unreadChildrenCount.assertTextEquals(expectedCount.toString())
+      await expect(this.#unreadChildrenCount).toHaveText(
+        expectedCount.toString(),
+        { useInnerText: true }
+      )
     } else {
       await expect(this.#unreadChildrenCount).toBeHidden()
     }

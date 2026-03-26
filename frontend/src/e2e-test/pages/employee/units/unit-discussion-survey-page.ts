@@ -49,12 +49,14 @@ export class DiscussionSurveyListPage {
     const surveyItem = this.surveyList.findByDataQa(
       `survey-${expectedSurvey.id}`
     )
-    await surveyItem
-      .findByDataQa('survey-title')
-      .assertTextEquals(expectedSurvey.title)
-    await surveyItem
-      .findByDataQa('survey-status')
-      .assertTextEquals(expectedSurvey.status)
+    await expect(surveyItem.findByDataQa('survey-title')).toHaveText(
+      expectedSurvey.title,
+      { useInnerText: true }
+    )
+    await expect(surveyItem.findByDataQa('survey-status')).toHaveText(
+      expectedSurvey.status,
+      { useInnerText: true }
+    )
   }
   async assertDiscussionSurveyNotInList(surveyId: string) {
     await expect(
@@ -164,13 +166,17 @@ export class DiscussionSurveyReadView {
   }
 
   async assertSurveyTitle(expectedTitle: string) {
-    await this.page.findByDataQa('survey-title').assertTextEquals(expectedTitle)
+    await expect(this.page.findByDataQa('survey-title')).toHaveText(
+      expectedTitle,
+      { useInnerText: true }
+    )
   }
 
   async assertSurveyDescription(expectedTitle: string) {
-    await this.page
-      .findByDataQa('survey-description')
-      .assertTextEquals(expectedTitle)
+    await expect(this.page.findByDataQa('survey-description')).toHaveText(
+      expectedTitle,
+      { useInnerText: true }
+    )
   }
 
   async assertUnreservedAttendeeExists(attendeeId: string) {
@@ -199,9 +205,10 @@ export class DiscussionSurveyReadView {
     )
     const eventTimeRanges = calendarDay.findAllByDataQa('event-time-range')
 
-    await eventTimeRanges
-      .nth(index)
-      .assertTextEquals(`${eventTime.startTime} – ${eventTime.endTime}`)
+    await expect(eventTimeRanges.nth(index)).toHaveText(
+      `${eventTime.startTime} – ${eventTime.endTime}`,
+      { useInnerText: true }
+    )
   }
 
   async assertNoTimesExist(date: LocalDate) {
@@ -217,10 +224,9 @@ export class DiscussionSurveyReadView {
       `times-calendar-day-${date.formatIso()}`
     )
     const reservationRows = calendarDay.findAllByDataQa('reservation-row')
-    await reservationRows
-      .nth(index)
-      .findByDataQa('reserve-event-time-button')
-      .assertTextEquals(name)
+    await expect(
+      reservationRows.nth(index).findByDataQa('reserve-event-time-button')
+    ).toHaveText(name, { useInnerText: true })
   }
 }
 

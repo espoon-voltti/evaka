@@ -122,13 +122,19 @@ export class CitizenPersonalDetailsSection extends Element {
     backupPhone: string
     email: string | null
   }) {
-    await this.#preferredName.assertTextEquals(data.preferredName)
-    await this.#phone.assertTextEquals(
-      data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
+    await expect(this.#preferredName).toHaveText(data.preferredName, {
+      useInnerText: true
+    })
+    await expect(this.#phone).toHaveText(
+      data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone,
+      { useInnerText: true }
     )
-    await this.#backupPhone.assertTextEquals(data.backupPhone)
-    await this.#email.assertTextEquals(
-      data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
+    await expect(this.#backupPhone).toHaveText(data.backupPhone, {
+      useInnerText: true
+    })
+    await expect(this.#email).toHaveText(
+      data.email === null ? 'Sähköpostiosoite puuttuu' : data.email,
+      { useInnerText: true }
     )
   }
 }

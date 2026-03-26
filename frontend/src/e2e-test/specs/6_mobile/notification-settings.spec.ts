@@ -48,7 +48,9 @@ test.describe('Settings page push permission section', () => {
     const settingsPage = new SettingsPage(page)
     const settings = settingsPage.notificationSettings
 
-    await settings.permissionState.assertTextEquals('Ei käytössä')
+    await expect(settings.permissionState).toHaveText('Ei käytössä', {
+      useInnerText: true
+    })
     await expect(settings.enableButton).toBeVisible()
 
     // testing the actual permission popup is not currently possible with Playwright, but
@@ -56,7 +58,9 @@ test.describe('Settings page push permission section', () => {
     await page.page.context().grantPermissions(['notifications'])
     await page.reload()
 
-    await settings.permissionState.assertTextEquals('Käytössä')
+    await expect(settings.permissionState).toHaveText('Käytössä', {
+      useInnerText: true
+    })
   })
 })
 

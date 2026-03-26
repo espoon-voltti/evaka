@@ -248,10 +248,6 @@ export class Element {
     await expect.poll(() => this.text.then(assertion)).toBe(true)
   }
 
-  async assertTextEquals(expected: string): Promise<void> {
-    await expect(this.locator).toHaveText(expected, { useInnerText: true })
-  }
-
   get visible(): Promise<boolean> {
     return this.locator.isVisible()
   }

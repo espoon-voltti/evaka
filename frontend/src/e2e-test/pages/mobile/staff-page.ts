@@ -187,7 +187,9 @@ export class StaffAttendancePage {
     this.page.find(`[data-qa="staff-link"]`, { hasText: name })
 
   async assertShiftTimeTextShown(expectedText: string) {
-    await this.staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
+    await expect(this.staffMemberPage.shiftTimeText).toHaveText(expectedText, {
+      useInnerText: true
+    })
   }
 
   async assertShiftDescriptionShownInInfo(expectedText: string) {
@@ -232,7 +234,9 @@ export class StaffAttendancePage {
   }
 
   async assertPresentStaffCount(expected: number) {
-    await this.#todayTabs.present.assertTextEquals(`LÄSNÄ\n(${expected})`)
+    await expect(this.#todayTabs.present).toHaveText(`LÄSNÄ\n(${expected})`, {
+      useInnerText: true
+    })
   }
 
   async openStaffPage(name: string) {
@@ -240,7 +244,9 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await this.anyMemberPage.status.assertTextEquals(expected)
+    await expect(this.anyMemberPage.status).toHaveText(expected, {
+      useInnerText: true
+    })
   }
 
   async selectPrimaryTab(tab: 'today' | 'planned') {
@@ -261,13 +267,15 @@ export class StaffAttendancePage {
     return Promise.all(
       expectedArray.map(async (expected, index) => {
         const attendance = attendances.nth(index)
-        await attendance.assertTextEquals(expected)
+        await expect(attendance).toHaveText(expected, { useInnerText: true })
       })
     )
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
-    await this.externalMemberPage.arrivalTime.assertTextEquals(expected)
+    await expect(this.externalMemberPage.arrivalTime).toHaveText(expected, {
+      useInnerText: true
+    })
   }
 
   async selectAttendanceType(type: StaffAttendanceType) {
@@ -351,12 +359,16 @@ export class StaffAttendancePage {
   }
 
   async assertArrivalTimeInputInfo(expected: string) {
-    await this.staffArrivalPage.timeInputWarningText.assertTextEquals(expected)
+    await expect(this.staffArrivalPage.timeInputWarningText).toHaveText(
+      expected,
+      { useInnerText: true }
+    )
   }
 
   async assertDepartureTimeInputInfo(expected: string) {
-    await this.staffDeparturePage.timeInputWarningText.assertTextEquals(
-      expected
+    await expect(this.staffDeparturePage.timeInputWarningText).toHaveText(
+      expected,
+      { useInnerText: true }
     )
   }
 

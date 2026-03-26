@@ -88,9 +88,9 @@ test.describe('Finance basics', () => {
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
     await financeBasicsPage.feesSection.editor.fillInThresholds(data)
     await financeBasicsPage.feesSection.editor.assertSaveIsDisabled()
-    await financeBasicsPage.feesSection.editor
-      .maxFeeError(2)
-      .assertTextEquals('Enimmäismaksu ei täsmää (200 €)')
+    await expect(
+      financeBasicsPage.feesSection.editor.maxFeeError(2)
+    ).toHaveText('Enimmäismaksu ei täsmää (200 €)', { useInnerText: true })
   })
 
   test('Copying existing fee thresholds', async () => {

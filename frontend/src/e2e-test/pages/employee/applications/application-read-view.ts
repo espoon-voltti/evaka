@@ -78,7 +78,7 @@ export default class ApplicationReadView {
   }
 
   async assertPageTitle(expectedTitle: string) {
-    await this.#title.assertTextEquals(expectedTitle)
+    await expect(this.#title).toHaveText(expectedTitle, { useInnerText: true })
   }
 
   async assertGuardianName(expectedName: string) {
@@ -86,7 +86,9 @@ export default class ApplicationReadView {
   }
 
   async assertOtherVtjGuardianName(expectedName: string) {
-    await this.#vtjGuardianName.assertTextEquals(expectedName)
+    await expect(this.#vtjGuardianName).toHaveText(expectedName, {
+      useInnerText: true
+    })
   }
 
   async assertOtherVtjGuardian(
@@ -94,9 +96,15 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await this.#vtjGuardianName.assertTextEquals(expectedName)
-    await this.#vtjGuardianPhone.assertTextEquals(expectedPhone)
-    await this.#vtjGuardianEmail.assertTextEquals(expectedEmail)
+    await expect(this.#vtjGuardianName).toHaveText(expectedName, {
+      useInnerText: true
+    })
+    await expect(this.#vtjGuardianPhone).toHaveText(expectedPhone, {
+      useInnerText: true
+    })
+    await expect(this.#vtjGuardianEmail).toHaveText(expectedEmail, {
+      useInnerText: true
+    })
   }
 
   async assertOtherVtjGuardianMissing() {
@@ -123,8 +131,12 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await this.#givenOtherGuardianPhone.assertTextEquals(expectedPhone)
-    await this.#giveOtherGuardianEmail.assertTextEquals(expectedEmail)
+    await expect(this.#givenOtherGuardianPhone).toHaveText(expectedPhone, {
+      useInnerText: true
+    })
+    await expect(this.#giveOtherGuardianEmail).toHaveText(expectedEmail, {
+      useInnerText: true
+    })
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
@@ -192,9 +204,10 @@ export default class ApplicationReadView {
   }
 
   async assertDueDate(dueDate: LocalDate) {
-    await this.page
-      .findByDataQa('application-due-date')
-      .assertTextEquals(dueDate.format())
+    await expect(this.page.findByDataQa('application-due-date')).toHaveText(
+      dueDate.format(),
+      { useInnerText: true }
+    )
   }
 
   async startEditing(): Promise<ApplicationEditView> {
@@ -217,10 +230,9 @@ export default class ApplicationReadView {
   }
 
   async assertNote(index: number, note: string) {
-    await this.notes
-      .nth(index)
-      .findByDataQa('application-note-content')
-      .assertTextEquals(note)
+    await expect(
+      this.notes.nth(index).findByDataQa('application-note-content')
+    ).toHaveText(note, { useInnerText: true })
   }
 
   async assertNoNotes() {

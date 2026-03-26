@@ -104,23 +104,31 @@ export default class PersonSearchPage {
     postOffice: string
     ssn?: string
   }) {
-    await this.#personData.firstName.assertTextEquals(personData.firstName)
-    await this.#personData.lastName.assertTextEquals(personData.lastName)
-    await this.#personData.dateOfBirth.assertTextEquals(
-      personData.dateOfBirth.format()
+    await expect(this.#personData.firstName).toHaveText(personData.firstName, {
+      useInnerText: true
+    })
+    await expect(this.#personData.lastName).toHaveText(personData.lastName, {
+      useInnerText: true
+    })
+    await expect(this.#personData.dateOfBirth).toHaveText(
+      personData.dateOfBirth.format(),
+      { useInnerText: true }
     )
-    await this.#personData.address.assertTextEquals(
-      `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
+    await expect(this.#personData.address).toHaveText(
+      `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`,
+      { useInnerText: true }
     )
     if (personData.ssn === undefined) {
       await expect(
         this.#personData.ssn.findByDataQa('add-ssn-button')
       ).toBeVisible()
-      await this.#personData.ssn
-        .findByDataQa('add-ssn-button')
-        .assertTextEquals('Aseta hetu')
+      await expect(
+        this.#personData.ssn.findByDataQa('add-ssn-button')
+      ).toHaveText('Aseta hetu', { useInnerText: true })
     } else {
-      await this.#personData.ssn.assertTextEquals(personData.ssn)
+      await expect(this.#personData.ssn).toHaveText(personData.ssn, {
+        useInnerText: true
+      })
     }
   }
 

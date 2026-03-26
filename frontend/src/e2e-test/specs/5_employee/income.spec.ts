@@ -96,8 +96,12 @@ test.describe('Income', () => {
     await incomesSection.save()
 
     await expect(incomesSection.incomeListItems).toHaveCount(1)
-    await incomesSection.incomeSum.assertTextEquals('5100,50 €')
-    await incomesSection.expensesSum.assertTextEquals('35,75 €')
+    await expect(incomesSection.incomeSum).toHaveText('5100,50 €', {
+      useInnerText: true
+    })
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €', {
+      useInnerText: true
+    })
   })
 
   test('Create a new income without end date', async () => {
@@ -137,8 +141,12 @@ test.describe('Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await incomesSection.incomeSum.assertTextEquals('5000 €')
-    await incomesSection.expensesSum.assertTextEquals('0 €')
+    await expect(incomesSection.incomeSum).toHaveText('5000 €', {
+      useInnerText: true
+    })
+    await expect(incomesSection.expensesSum).toHaveText('0 €', {
+      useInnerText: true
+    })
 
     await incomesSection.edit()
 
@@ -148,8 +156,12 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
-    await incomesSection.incomeSum.assertTextEquals('200 €')
-    await incomesSection.expensesSum.assertTextEquals('300 €')
+    await expect(incomesSection.incomeSum).toHaveText('200 €', {
+      useInnerText: true
+    })
+    await expect(incomesSection.expensesSum).toHaveText('300 €', {
+      useInnerText: true
+    })
   })
 
   test('Income coefficients are saved and affect the sum', async () => {
@@ -169,8 +181,12 @@ test.describe('Income', () => {
 
     await incomesSection.save()
 
-    await incomesSection.incomeSum.assertTextEquals('8380 €')
-    await incomesSection.expensesSum.assertTextEquals('35,75 €')
+    await expect(incomesSection.incomeSum).toHaveText('8380 €', {
+      useInnerText: true
+    })
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €', {
+      useInnerText: true
+    })
   })
 
   test('Non-contiguous incomes warning', async () => {
@@ -321,14 +337,17 @@ test.describe('Income', () => {
     await page.reload()
     await incomesSection.toggleNotificationsCollapsible()
     await expect(incomesSection.incomeNotificationRows).toHaveCount(3)
-    await incomesSection.incomeNotificationRows
-      .nth(0)
-      .assertTextEquals('28.02.2020 06:00 (Aloittava asiakas)')
-    await incomesSection.incomeNotificationRows
-      .nth(1)
-      .assertTextEquals('22.02.2020 06:00 (Toinen muistutus)')
-    await incomesSection.incomeNotificationRows
-      .nth(2)
-      .assertTextEquals('15.02.2020 06:00 (Ensimmäinen muistutus)')
+    await expect(incomesSection.incomeNotificationRows.nth(0)).toHaveText(
+      '28.02.2020 06:00 (Aloittava asiakas)',
+      { useInnerText: true }
+    )
+    await expect(incomesSection.incomeNotificationRows.nth(1)).toHaveText(
+      '22.02.2020 06:00 (Toinen muistutus)',
+      { useInnerText: true }
+    )
+    await expect(incomesSection.incomeNotificationRows.nth(2)).toHaveText(
+      '15.02.2020 06:00 (Ensimmäinen muistutus)',
+      { useInnerText: true }
+    )
   })
 })

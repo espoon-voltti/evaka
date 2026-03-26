@@ -15,7 +15,7 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { enduserLogin } from '../../utils/user'
 
 const child = testChild
@@ -59,8 +59,9 @@ test.describe('Daily service times', () => {
     await enduserLogin(evaka, testAdult)
     const calendar = new CitizenCalendarPage(evaka, 'desktop')
 
-    await calendar.dailyServiceTimeNotificationText.assertTextEquals(
-      'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.'
+    await expect(calendar.dailyServiceTimeNotificationText).toHaveText(
+      'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.',
+      { useInnerText: true }
     )
   })
 })

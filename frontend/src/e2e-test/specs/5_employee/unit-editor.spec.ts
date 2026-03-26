@@ -130,16 +130,18 @@ test.describe('Employee - unit details', () => {
     const unitClosingDateModal = await unitDetailsPage.openClosingDateModal()
 
     await unitClosingDateModal.closingDate.fill(placementEnd.subDays(1))
-    await unitClosingDateModal.closingDateInfo.assertTextEquals(
-      'Valitse myöhäisempi päivä'
+    await expect(unitClosingDateModal.closingDateInfo).toHaveText(
+      'Valitse myöhäisempi päivä',
+      { useInnerText: true }
     )
     await unitClosingDateModal.submitButton.assertDisabled(true)
 
     await unitClosingDateModal.closingDate.fill(placementEnd)
     await expect(unitClosingDateModal.closingDateInfo).toBeHidden()
     await unitClosingDateModal.submit()
-    await unitDetailsPage.openingAndClosingDates.assertTextEquals(
-      `- ${placementEnd.format()}`
+    await expect(unitDetailsPage.openingAndClosingDates).toHaveText(
+      `- ${placementEnd.format()}`,
+      { useInnerText: true }
     )
   })
 })

@@ -230,7 +230,9 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdVasu}`)
     ).toBeTruthy()
-    await evaka.find('h1').assertTextEquals('VASU 2023-2024')
+    await expect(evaka.find('h1')).toHaveText('VASU 2023-2024', {
+      useInnerText: true
+    })
   })
 
   test('Published hojks is in the list', async ({ evaka }) => {
@@ -242,7 +244,9 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdHojks}`)
     ).toBeTruthy()
-    await evaka.find('h1').assertTextEquals('HOJKS 2023-2024')
+    await expect(evaka.find('h1')).toHaveText('HOJKS 2023-2024', {
+      useInnerText: true
+    })
   })
 
   test('Published pedagogical report is in the list', async ({ evaka }) => {
@@ -252,7 +256,9 @@ test.describe('Citizen child documents listing page', () => {
     await childPage.openCollapsible('child-documents')
     await childPage.childDocumentLink(documentIdPed).click()
     expect(evaka.url.endsWith(`/child-documents/${documentIdPed}`)).toBeTruthy()
-    await evaka.find('h1').assertTextEquals('Pedagoginen selvitys')
+    await expect(evaka.find('h1')).toHaveText('Pedagoginen selvitys', {
+      useInnerText: true
+    })
   })
 
   test('Published decision is in the list', async ({ evaka }) => {
@@ -264,7 +270,9 @@ test.describe('Citizen child documents listing page', () => {
     expect(
       evaka.url.endsWith(`/child-documents/${documentIdDecision}`)
     ).toBeTruthy()
-    await evaka.find('h1').assertTextEquals('Tuenpäätös')
+    await expect(evaka.find('h1')).toHaveText('Tuenpäätös', {
+      useInnerText: true
+    })
   })
 
   test('Answered by employee does not show name', async ({ evaka }) => {
@@ -326,8 +334,9 @@ test.describe('Citizen child documents listing page', () => {
     const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     const row = childPage.childDocumentRow(document.id)
-    await row.assertTextEquals(
-      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, Henkilökunta\tValmis`
+    await expect(row).toHaveText(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, Henkilökunta\tValmis`,
+      { useInnerText: true }
     )
   })
 })
@@ -393,30 +402,41 @@ test.describe('Citizen child documents editor page', () => {
     const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
     const row = childPage.childDocumentRow(document.id)
-    await row.assertTextEquals(
-      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tEi vastattu\tTäytettävänä huoltajalla`
+    await expect(row).toHaveText(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tEi vastattu\tTäytettävänä huoltajalla`,
+      { useInnerText: true }
     )
     await childPage.childDocumentLink(document.id).click()
     await header.assertUnreadChildrenCount(4)
     const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.editButton.click()
-    await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocumentPage.status).toHaveText(
+      'Täytettävänä huoltajalla',
+      { useInnerText: true }
+    )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
     const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
     await question2.fill('Jonkin sortin vastaus 2')
     await childDocumentPage.previewButton.click()
     const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
-    await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')
+    await expect(answer1).toHaveText('Jonkin sortin vastaus 1\n', {
+      useInnerText: true
+    })
     const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
-    await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
+    await expect(answer2).toHaveText('Jonkin sortin vastaus 2\n', {
+      useInnerText: true
+    })
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
-    await childDocumentPage.status.assertTextEquals('Valmis')
+    await expect(childDocumentPage.status).toHaveText('Valmis', {
+      useInnerText: true
+    })
     await childDocumentPage.returnButton.click()
     await childPage.openCollapsible('child-documents')
-    await row.assertTextEquals(
-      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, ${testAdult.lastName} ${testAdult.firstName}\tValmis`
+    await expect(row).toHaveText(
+      `${mockedNow.toLocalDate().format()}\tLomake kuntalaiselle\tVastattu, ${mockedNow.toLocalDate().format()}, ${testAdult.lastName} ${testAdult.firstName}\tValmis`,
+      { useInnerText: true }
     )
   })
 
@@ -441,28 +461,36 @@ test.describe('Citizen child documents editor page', () => {
 
     await enduserLogin(evaka, testAdult)
     const toast1 = evaka.findByDataQa(`toast-child-document-${document.id}`)
-    await toast1.assertTextEquals(
-      'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja'
+    await expect(toast1).toHaveText(
+      'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja',
+      { useInnerText: true }
     )
     await toast1.click()
     const childDocumentPage = new ChildDocumentPage(evaka)
-    await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocumentPage.status).toHaveText(
+      'Täytettävänä huoltajalla',
+      { useInnerText: true }
+    )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
     const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
     await question2.fill('Jonkin sortin vastaus 2')
     await childDocumentPage.previewButton.click()
     const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
-    await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')
+    await expect(answer1).toHaveText('Jonkin sortin vastaus 1\n', {
+      useInnerText: true
+    })
     const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
-    await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
+    await expect(answer2).toHaveText('Jonkin sortin vastaus 2\n', {
+      useInnerText: true
+    })
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
     await expect(toast1).toBeHidden()
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
-    await toast2.assertTextEquals('Lomake lähetetty')
+    await expect(toast2).toHaveText('Lomake lähetetty', { useInnerText: true })
   })
 
   test('weak auth guardian can navigate via toast, document is in edit mode', async ({
@@ -496,8 +524,9 @@ test.describe('Citizen child documents editor page', () => {
 
     await enduserLoginWeak(evaka, credentials)
     const toast1 = evaka.findByDataQa(`toast-child-document-${document.id}`)
-    await toast1.assertTextEquals(
-      'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja\nAsiakirjan täyttäminen vaatii vahvan tunnistautumisen.'
+    await expect(toast1).toHaveText(
+      'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja\nAsiakirjan täyttäminen vaatii vahvan tunnistautumisen.',
+      { useInnerText: true }
     )
     await toast1.click()
     const strongAuthPage = new MockStrongAuthPage(evaka)
@@ -510,22 +539,29 @@ test.describe('Citizen child documents editor page', () => {
         `/child-documents/${document.id}?returnTo=calendar&readOnly=false`
       )
     ).toBeTruthy()
-    await childDocumentPage.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocumentPage.status).toHaveText(
+      'Täytettävänä huoltajalla',
+      { useInnerText: true }
+    )
     const question1 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 1')
     await question1.fill('Jonkin sortin vastaus 1')
     const question2 = childDocumentPage.getTextQuestion('Testi', 'Kysymys 2')
     await question2.fill('Jonkin sortin vastaus 2')
     await childDocumentPage.previewButton.click()
     const answer1 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 1')
-    await answer1.assertTextEquals('Jonkin sortin vastaus 1\n')
+    await expect(answer1).toHaveText('Jonkin sortin vastaus 1\n', {
+      useInnerText: true
+    })
     const answer2 = childDocumentPage.getTextAnswer('Testi', 'Kysymys 2')
-    await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
+    await expect(answer2).toHaveText('Jonkin sortin vastaus 2\n', {
+      useInnerText: true
+    })
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
     await expect(toast1).toBeHidden()
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
-    await toast2.assertTextEquals('Lomake lähetetty')
+    await expect(toast2).toHaveText('Lomake lähetetty', { useInnerText: true })
   })
 })

@@ -194,9 +194,12 @@ test.describe('Calendar events', () => {
     await creationModal.attendees.close()
     await creationModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(mockedToday.addDays(1), 0)
-      .assertTextEquals('Testailijat: Test event (G)')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(
+        mockedToday.addDays(1),
+        0
+      )
+    ).toHaveText('Testailijat: Test event (G)', { useInnerText: true })
   })
 
   test('Employee can add multi-day event for individual child and edit and delete it', async () => {
@@ -223,12 +226,12 @@ test.describe('Calendar events', () => {
     await expect(creationModal.submitButton).toBeEnabled()
     await creationModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(startDate, 0)
-      .assertTextEquals('Osa ryhmästä: Test event (P)')
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(endDate, 0)
-      .assertTextEquals('Osa ryhmästä: Test event (P)')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
+    ).toHaveText('Osa ryhmästä: Test event (P)', { useInnerText: true })
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
+    ).toHaveText('Osa ryhmästä: Test event (P)', { useInnerText: true })
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 
@@ -239,12 +242,12 @@ test.describe('Calendar events', () => {
     await editModal.description.fill('Edited event description')
     await editModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(startDate, 0)
-      .assertTextEquals('Osa ryhmästä: Edited event title')
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(endDate, 0)
-      .assertTextEquals('Osa ryhmästä: Edited event title')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
+    ).toHaveText('Osa ryhmästä: Edited event title', { useInnerText: true })
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
+    ).toHaveText('Osa ryhmästä: Edited event title', { useInnerText: true })
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 

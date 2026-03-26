@@ -59,8 +59,9 @@ export default class GuardianInformationPage {
     switch (enabled) {
       case true:
         await expect(this.#restrictedDetailsEnabledLabel).toBeVisible()
-        await this.#personStreetAddress.assertTextEquals(
-          'Osoite ei ole saatavilla turvakiellon vuoksi'
+        await expect(this.#personStreetAddress).toHaveText(
+          'Osoite ei ole saatavilla turvakiellon vuoksi',
+          { useInnerText: true }
         )
         break
       default:
@@ -129,7 +130,7 @@ class FamilyOverviewSection extends Section {
 
     if (age !== undefined) {
       const personAge = person.findByDataQa('person-age')
-      await personAge.assertTextEquals(age.toString())
+      await expect(personAge).toHaveText(age.toString(), { useInnerText: true })
     }
 
     if (incomeCents !== undefined) {
@@ -187,7 +188,7 @@ class ChildrenSection extends Section {
 
   async verifyChildAge(age: number) {
     const childAge = this.#childrenTableRow.nth(0).findByDataQa('child-age')
-    await childAge.assertTextEquals(age.toString())
+    await expect(childAge).toHaveText(age.toString(), { useInnerText: true })
   }
 }
 
@@ -261,8 +262,12 @@ class FosterChildrenSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-child-row-${childId}`)
-    await row.findByDataQa('start').assertTextEquals(start.format())
-    await row.findByDataQa('end').assertTextEquals(end?.format() ?? '')
+    await expect(row.findByDataQa('start')).toHaveText(start.format(), {
+      useInnerText: true
+    })
+    await expect(row.findByDataQa('end')).toHaveText(end?.format() ?? '', {
+      useInnerText: true
+    })
   }
 
   async assertRowDoesNotExist(childId: string) {
@@ -355,7 +360,10 @@ export class IncomeSection extends Section {
   confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
-    await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)
+    await expect(this.#childIncomeStatementsTitles.nth(nth)).toHaveText(
+      childName,
+      { useInnerText: true }
+    )
   }
 
   async assertIncomeStatementRowCount(expected: number) {
@@ -480,9 +488,10 @@ class FeeDecisionsSection extends Section {
   }
 
   async checkFeeDecisionSentAt(nth: number, expectedSentAt: LocalDate) {
-    await this.#feeDecisionSentAt
-      .nth(nth)
-      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
+    await expect(this.#feeDecisionSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format('dd.MM.yyyy'),
+      { useInnerText: true }
+    )
   }
 }
 
@@ -503,9 +512,10 @@ class VoucherValueDecisionsSection extends Section {
     nth: number,
     expectedSentAt: LocalDate
   ) {
-    await this.#voucherValueDecisionSentAt
-      .nth(nth)
-      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
+    await expect(this.#voucherValueDecisionSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format('dd.MM.yyyy'),
+      { useInnerText: true }
+    )
   }
 
   async checkVoucherValueDecisionCount(expectedCount: number) {
@@ -626,16 +636,20 @@ class FinanceNotesAndMessagesSection extends Section {
   #deleteThread = this.findAllByDataQa(`archive-finance-thread-button`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
-    await this.#noteCreatedAt
-      .nth(nth)
-      .assertTextEquals(expectedCreatedAt.format())
+    await expect(this.#noteCreatedAt.nth(nth)).toHaveText(
+      expectedCreatedAt.format(),
+      { useInnerText: true }
+    )
   }
 
   async checkThreadLastMessageSentAt(
     nth: number,
     expectedSentAt: HelsinkiDateTime
   ) {
-    await this.#threadSentAt.nth(nth).assertTextEquals(expectedSentAt.format())
+    await expect(this.#threadSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format(),
+      { useInnerText: true }
+    )
   }
 
   async openNewMessageEditor() {

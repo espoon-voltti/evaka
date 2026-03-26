@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 
 export default class CitizenPedagogicalDocumentsPage {
@@ -19,8 +20,12 @@ export default class CitizenPedagogicalDocumentsPage {
     expectedDate: string,
     expectedDescription: string
   ) {
-    await this.#date(id).assertTextEquals(expectedDate)
-    await this.#description(id).assertTextEquals(expectedDescription)
+    await expect(this.#date(id)).toHaveText(expectedDate, {
+      useInnerText: true
+    })
+    await expect(this.#description(id)).toHaveText(expectedDescription, {
+      useInnerText: true
+    })
   }
 
   async downloadAttachment(id: string) {

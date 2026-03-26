@@ -482,7 +482,10 @@ test.describe('Realtime staff attendances', () => {
           realized: '→ – 09:00',
           hours: '9:00'
         })
-      await modal.continuationAttendance.assertTextEquals('21:00\n–\n09:00*')
+      await expect(modal.continuationAttendance).toHaveText(
+        '21:00\n–\n09:00*',
+        { useInnerText: true }
+      )
     })
 
     test('If departure is earlier than arrival, departure is on the next day', async () => {
@@ -583,12 +586,14 @@ test.describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(2, '13:20')
       await modal.setDepartureTime(2, '14:30')
 
-      await modal
-        .gapWarning(1)
-        .assertTextEquals('Kirjaus puuttuu välillä 12:00 – 12:30')
-      await modal
-        .gapWarning(2)
-        .assertTextEquals('Kirjaus puuttuu välillä 13:00 – 13:20')
+      await expect(modal.gapWarning(1)).toHaveText(
+        'Kirjaus puuttuu välillä 12:00 – 12:30',
+        { useInnerText: true }
+      )
+      await expect(modal.gapWarning(2)).toHaveText(
+        'Kirjaus puuttuu välillä 13:00 – 13:20',
+        { useInnerText: true }
+      )
     })
 
     test('Departure time is required when editing days that are not today', async () => {
@@ -601,7 +606,9 @@ test.describe('Realtime staff attendances', () => {
         mockedToday.subDays(1)
       )
       await modal.setArrivalTime(0, '08:00')
-      await modal.departureTimeInfo(0).assertTextEquals('Pakollinen tieto')
+      await expect(modal.departureTimeInfo(0)).toHaveText('Pakollinen tieto', {
+        useInnerText: true
+      })
     })
 
     test('Departure time is NOT required when editing today', async () => {
@@ -611,7 +618,9 @@ test.describe('Realtime staff attendances', () => {
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setArrivalTime(0, '')
-      await modal.arrivalTimeInfo(0).assertTextEquals('Pakollinen tieto')
+      await expect(modal.arrivalTimeInfo(0)).toHaveText('Pakollinen tieto', {
+        useInnerText: true
+      })
       await modal.assertDepartureTimeInfoHidden(0)
     })
 
@@ -684,15 +693,29 @@ test.describe('Realtime staff attendances', () => {
 
     test('Total staff counts', async () => {
       await calendarPage.selectGroup(groupId2)
-      await staffAttendances.personCountSum(0).assertTextEquals('– hlö')
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö', {
+        useInnerText: true
+      })
 
       await calendarPage.selectGroup(groupId)
-      await staffAttendances.personCountSum(0).assertTextEquals('– hlö')
-      await staffAttendances.personCountSum(1).assertTextEquals('1 hlö')
-      await staffAttendances.personCountSum(2).assertTextEquals('2 hlö')
-      await staffAttendances.personCountSum(3).assertTextEquals('– hlö')
-      await staffAttendances.personCountSum(4).assertTextEquals('– hlö')
-      await staffAttendances.personCountSum(5).assertTextEquals('– hlö')
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö', {
+        useInnerText: true
+      })
+      await expect(staffAttendances.personCountSum(1)).toHaveText('1 hlö', {
+        useInnerText: true
+      })
+      await expect(staffAttendances.personCountSum(2)).toHaveText('2 hlö', {
+        useInnerText: true
+      })
+      await expect(staffAttendances.personCountSum(3)).toHaveText('– hlö', {
+        useInnerText: true
+      })
+      await expect(staffAttendances.personCountSum(4)).toHaveText('– hlö', {
+        useInnerText: true
+      })
+      await expect(staffAttendances.personCountSum(5)).toHaveText('– hlö', {
+        useInnerText: true
+      })
     })
   })
 

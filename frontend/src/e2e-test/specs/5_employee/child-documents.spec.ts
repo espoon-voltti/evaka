@@ -132,8 +132,9 @@ test.describe('Employee - Child documents', () => {
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createInternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      'HOJKS 2022-2023'
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      'HOJKS 2022-2023',
+      { useInnerText: true }
     )
     await childDocumentsSection.modalConfirm.check()
     await childDocumentsSection.modalOk.click()
@@ -141,7 +142,9 @@ test.describe('Employee - Child documents', () => {
     // Fill an answer and return
     let childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     const answer = 'Jonkin sortin vastaus'
     let question = childDocument.getTextQuestion(sectionName, questionName)
     await question.fill(answer)
@@ -154,8 +157,8 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(1)
     let row = childDocumentsSection.internalChildDocuments(0)
-    await row.status.assertTextEquals('Luonnos')
-    await row.published.assertTextEquals('-')
+    await expect(row.status).toHaveText('Luonnos', { useInnerText: true })
+    await expect(row.published).toHaveText('-', { useInnerText: true })
     await row.openLink.click()
     const documentUrl = page.url
 
@@ -174,8 +177,8 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(1)
     row = childDocumentsSection.internalChildDocuments(0)
-    await row.status.assertTextEquals('Luonnos')
-    await row.published.assertTextEquals(now.format())
+    await expect(row.status).toHaveText('Luonnos', { useInnerText: true })
+    await expect(row.published).toHaveText(now.format(), { useInnerText: true })
 
     // go to next status twice
     const later = now.addHours(1)
@@ -184,9 +187,13 @@ test.describe('Employee - Child documents', () => {
     await page.goto(documentUrl)
     childDocument = new ChildDocumentPage(page)
     await childDocument.goToNextStatus()
-    await childDocument.status.assertTextEquals('Laadittu')
+    await expect(childDocument.status).toHaveText('Laadittu', {
+      useInnerText: true
+    })
     await childDocument.goToCompletedStatus()
-    await childDocument.status.assertTextEquals('Valmis')
+    await expect(childDocument.status).toHaveText('Valmis', {
+      useInnerText: true
+    })
 
     // Assert status and times
     await childDocument.returnButton.click()
@@ -195,10 +202,12 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(1)
     row = childDocumentsSection.internalChildDocuments(0)
-    await row.status.assertTextEquals('Valmis')
-    await row.modified.assertTextEquals(later.format())
+    await expect(row.status).toHaveText('Valmis', { useInnerText: true })
+    await expect(row.modified).toHaveText(later.format(), {
+      useInnerText: true
+    })
     // Content has not changed since last publishing so published time remains the same
-    await row.published.assertTextEquals(now.format())
+    await expect(row.published).toHaveText(now.format(), { useInnerText: true })
   })
 
   test('Pedagogical report only has two states', async ({ newEvakaPage }) => {
@@ -220,9 +229,13 @@ test.describe('Employee - Child documents', () => {
 
     // go to next status
     const childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await childDocument.goToCompletedStatus()
-    await childDocument.status.assertTextEquals('Valmis')
+    await expect(childDocument.status).toHaveText('Valmis', {
+      useInnerText: true
+    })
   })
 
   test('Accepting, editing validity, and annulling decision', async ({
@@ -245,11 +258,15 @@ test.describe('Employee - Child documents', () => {
     await childDocumentsSection.modalOk.click()
 
     let childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
 
     // send to decision maker (director)
     await childDocument.proposeDecision(director)
-    await childDocument.status.assertTextEquals('Päätösesitys')
+    await expect(childDocument.status).toHaveText('Päätösesitys', {
+      useInnerText: true
+    })
 
     // only the assigned decision maker can accept the decision
     await expect(childDocument.acceptDecisionButton).toBeHidden()
@@ -271,7 +288,9 @@ test.describe('Employee - Child documents', () => {
       now.toLocalDate().addDays(7)
     )
     await childDocument.acceptDecision(validity)
-    await childDocument.status.assertTextEquals('Myönnetty')
+    await expect(childDocument.status).toHaveText('Myönnetty', {
+      useInnerText: true
+    })
 
     await directorPage.goto(config.employeeUrl)
     await new EmployeeNav(directorPage).assertTabNotificationsCount(
@@ -292,14 +311,20 @@ test.describe('Employee - Child documents', () => {
     const newStart = now.toLocalDate().addDays(3)
     const newEnd = now.toLocalDate().addDays(10)
     await row.setDecisionValidity(newStart, newEnd)
-    await row.validity.assertTextEquals(
-      new DateRange(newStart, newEnd).format()
+    await expect(row.validity).toHaveText(
+      new DateRange(newStart, newEnd).format(),
+      { useInnerText: true }
     )
 
     // Director annuls the decision
     await childDocument.annulDecision('Perustelut mitätöinnille')
-    await childDocument.status.assertTextEquals('Mitätöity')
-    await childDocument.annulReason.assertTextEquals('Perustelut mitätöinnille')
+    await expect(childDocument.status).toHaveText('Mitätöity', {
+      useInnerText: true
+    })
+    await expect(childDocument.annulReason).toHaveText(
+      'Perustelut mitätöinnille',
+      { useInnerText: true }
+    )
   })
 
   test('Rejecting decision', async ({ newEvakaPage }) => {
@@ -329,7 +354,9 @@ test.describe('Employee - Child documents', () => {
     await page.goto(documentUrl)
     childDocument = new ChildDocumentPage(page)
     await childDocument.rejectDecision()
-    await childDocument.status.assertTextEquals('Ei myönnetty')
+    await expect(childDocument.status).toHaveText('Ei myönnetty', {
+      useInnerText: true
+    })
   })
 
   test('Staff cannot create decision documents', async ({ newEvakaPage }) => {
@@ -437,14 +464,17 @@ test.describe('Employee - Child documents', () => {
     // Create the document
     await childDocumentsSection.createExternalDocumentButton.click()
 
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      documentName
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      documentName,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
 
     // Verify document was created successfully
     const childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
   })
 
   test('Staff cannot see child documents section for child with placement starting in more than 30 days', async ({
@@ -608,7 +638,9 @@ test.describe('Employee - Child documents', () => {
     await childDocumentsSection.modalOk.click()
     let childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await expect(childDocument.savingIndicator).toBeHidden()
 
     // Admin tries to open the document in edit mode too soon
@@ -704,21 +736,25 @@ test.describe('Employee - Child documents', () => {
     await report.templateSelector.close()
 
     const unitRow = report.getUnitRow(testDaycare.id)
-    await unitRow.name.assertTextEquals(testDaycare.name)
-    await unitRow.drafts.assertTextEquals('1')
-    await unitRow.prepared.assertTextEquals('0')
-    await unitRow.completed.assertTextEquals('0')
-    await unitRow.noDocuments.assertTextEquals('1')
-    await unitRow.total.assertTextEquals('2')
+    await expect(unitRow.name).toHaveText(testDaycare.name, {
+      useInnerText: true
+    })
+    await expect(unitRow.drafts).toHaveText('1', { useInnerText: true })
+    await expect(unitRow.prepared).toHaveText('0', { useInnerText: true })
+    await expect(unitRow.completed).toHaveText('0', { useInnerText: true })
+    await expect(unitRow.noDocuments).toHaveText('1', { useInnerText: true })
+    await expect(unitRow.total).toHaveText('2', { useInnerText: true })
 
     await report.toggleUnitRowGroups(testDaycare.id)
     const groupRow = report.getGroupRow(daycareGroup.id)
-    await groupRow.name.assertTextEquals(daycareGroup.name)
-    await groupRow.drafts.assertTextEquals('1')
-    await groupRow.prepared.assertTextEquals('0')
-    await groupRow.completed.assertTextEquals('0')
-    await groupRow.noDocuments.assertTextEquals('1')
-    await groupRow.total.assertTextEquals('2')
+    await expect(groupRow.name).toHaveText(daycareGroup.name, {
+      useInnerText: true
+    })
+    await expect(groupRow.drafts).toHaveText('1', { useInnerText: true })
+    await expect(groupRow.prepared).toHaveText('0', { useInnerText: true })
+    await expect(groupRow.completed).toHaveText('0', { useInnerText: true })
+    await expect(groupRow.noDocuments).toHaveText('1', { useInnerText: true })
+    await expect(groupRow.total).toHaveText('2', { useInnerText: true })
   })
 
   test('Citizen basic can be sent without filling the form', async ({
@@ -776,22 +812,31 @@ test.describe('Employee - Child documents', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createExternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      documentName
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      documentName,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await childDocument.goToNextStatus()
-    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocument.status).toHaveText('Täytettävänä huoltajalla', {
+      useInnerText: true
+    })
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(0)
     await expect(childDocumentsSection.externalChildDocumentRows).toHaveCount(1)
     const row = childDocumentsSection.externalChildDocuments(0)
-    await row.sent.assertTextEquals(now.toLocalDate().format())
-    await row.answered.assertTextEquals('Ei vastattu')
-    await row.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(row.sent).toHaveText(now.toLocalDate().format(), {
+      useInnerText: true
+    })
+    await expect(row.answered).toHaveText('Ei vastattu', { useInnerText: true })
+    await expect(row.status).toHaveText('Täytettävänä huoltajalla', {
+      useInnerText: true
+    })
     await runJobs({ mockedTime: now })
     const emails = await getSentEmails()
     expect(
@@ -856,11 +901,14 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.externalChildDocumentRows).toHaveCount(1)
     const row = childDocumentsSection.externalChildDocuments(0)
-    await row.sent.assertTextEquals(publishedAt.toLocalDate().format())
-    await row.answered.assertTextEquals(
-      `${answeredAt.toLocalDate().format()}, ${guardian.lastName} ${guardian.firstName}`
+    await expect(row.sent).toHaveText(publishedAt.toLocalDate().format(), {
+      useInnerText: true
+    })
+    await expect(row.answered).toHaveText(
+      `${answeredAt.toLocalDate().format()}, ${guardian.lastName} ${guardian.firstName}`,
+      { useInnerText: true }
     )
-    await row.status.assertTextEquals('Valmis')
+    await expect(row.status).toHaveText('Valmis', { useInnerText: true })
   })
 
   async function fillCitizenBasicDocument(
@@ -919,12 +967,15 @@ test.describe('Employee - Child documents', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createExternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      documentName
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      documentName,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await childDocument.editButton.click()
     const answer = 'Jonkin sortin vastaus'
     const question = childDocument.getTextQuestion(sectionName, questionName)
@@ -932,19 +983,26 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.savingIndicator).toBeHidden()
     await childDocument.previewButton.click()
     await childDocument.goToNextStatus()
-    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocument.status).toHaveText('Täytettävänä huoltajalla', {
+      useInnerText: true
+    })
     await childDocument.goToCompletedStatus()
-    await childDocument.status.assertTextEquals('Valmis')
+    await expect(childDocument.status).toHaveText('Valmis', {
+      useInnerText: true
+    })
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(0)
     await expect(childDocumentsSection.externalChildDocumentRows).toHaveCount(1)
     const row = childDocumentsSection.externalChildDocuments(0)
-    await row.sent.assertTextEquals(now.toLocalDate().format())
-    await row.answered.assertTextEquals(
-      `${now.toLocalDate().format()}, ${fillerRole.lastName} ${fillerRole.firstName}`
+    await expect(row.sent).toHaveText(now.toLocalDate().format(), {
+      useInnerText: true
+    })
+    await expect(row.answered).toHaveText(
+      `${now.toLocalDate().format()}, ${fillerRole.lastName} ${fillerRole.firstName}`,
+      { useInnerText: true }
     )
-    await row.status.assertTextEquals('Valmis')
+    await expect(row.status).toHaveText('Valmis', { useInnerText: true })
     await runJobs({ mockedTime: now })
     const emails = await getSentEmails()
     expect(
@@ -1051,16 +1109,18 @@ test.describe('Employee - Child documents', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createExternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      templateName
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      templateName,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
 
     await childInformationPage.navigateToChild(child2.id)
     await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createExternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      templateName
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      templateName,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
   })
@@ -1126,8 +1186,9 @@ test.describe('Employee - Child documents', () => {
       'osio 1',
       'kysymys 1'
     )
-    await answer1.assertTextEquals(
-      'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3'
+    await expect(answer1).toHaveText(
+      'vaihtoehto 1 : lisäinfoa\nvaihtoehto 2 :\nvaihtoehto 3',
+      { useInnerText: true }
     )
   })
 
@@ -1248,12 +1309,12 @@ test.describe('Employee - Child documents', () => {
       'sektion 1',
       'fråga 1'
     )
-    await answer1.assertTextEquals('Ja')
+    await expect(answer1).toHaveText('Ja', { useInnerText: true })
     const answer2 = childDocumentPageSv.getCheckboxAnswer(
       'sektion 1',
       'fråga 2'
     )
-    await answer2.assertTextEquals('Nej')
+    await expect(answer2).toHaveText('Nej', { useInnerText: true })
 
     await page.goto(`${config.employeeUrl}/child-information/${childFi.id}`)
     const cipFi = new ChildInformationPage(page)
@@ -1262,9 +1323,9 @@ test.describe('Employee - Child documents', () => {
       documentFi.id
     )
     const answer3 = childDocumentPageFi.getCheckboxAnswer('osio 1', 'Kysymys 1')
-    await answer3.assertTextEquals('Kyllä')
+    await expect(answer3).toHaveText('Kyllä', { useInnerText: true })
     const answer4 = childDocumentPageFi.getCheckboxAnswer('osio 1', 'Kysymys 2')
-    await answer4.assertTextEquals('Ei')
+    await expect(answer4).toHaveText('Ei', { useInnerText: true })
   })
 
   test('Employee needs to decide if other decisions are ended when accepting a new decision', async ({
@@ -1363,9 +1424,13 @@ test.describe('Employee - Child documents', () => {
     // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
     await expect(childDocumentPage.documentSection).toBeVisible()
-    await childDocumentPage.status.assertTextEquals('Luonnos')
+    await expect(childDocumentPage.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await childDocumentPage.proposeDecision(director)
-    await childDocumentPage.status.assertTextEquals('Päätösesitys')
+    await expect(childDocumentPage.status).toHaveText('Päätösesitys', {
+      useInnerText: true
+    })
     await expect(childDocumentPage.acceptDecisionButton).toBeHidden()
 
     // Director opens the decision proposal
@@ -1394,7 +1459,9 @@ test.describe('Employee - Child documents', () => {
     await childDocument.confirmOtherDecisionsButton.assertDisabled(false)
     await childDocument.confirmOtherDecisionsButton.click()
     await childDocument.clickModalOkButton()
-    await childDocument.status.assertTextEquals('Myönnetty')
+    await expect(childDocument.status).toHaveText('Myönnetty', {
+      useInnerText: true
+    })
 
     // Unit supervisor checks old and new decisions
     page = await newEvakaPage()
@@ -1405,15 +1472,15 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.decisionChildDocumentRows).toHaveCount(3)
     // First decision is moved to the second row when its end date was updated
-    await childDocumentsSection
-      .decisionChildDocuments(0)
-      .validity.assertTextEquals('01.02.2023 - 08.02.2023')
-    await childDocumentsSection
-      .decisionChildDocuments(1)
-      .validity.assertTextEquals('01.02.2023 - 01.02.2023')
-    await childDocumentsSection
-      .decisionChildDocuments(2)
-      .validity.assertTextEquals('02.02.2023 - 08.02.2023')
+    await expect(
+      childDocumentsSection.decisionChildDocuments(0).validity
+    ).toHaveText('01.02.2023 - 08.02.2023', { useInnerText: true })
+    await expect(
+      childDocumentsSection.decisionChildDocuments(1).validity
+    ).toHaveText('01.02.2023 - 01.02.2023', { useInnerText: true })
+    await expect(
+      childDocumentsSection.decisionChildDocuments(2).validity
+    ).toHaveText('02.02.2023 - 08.02.2023', { useInnerText: true })
   })
 
   test('Other decisions made with the same template are ended automatically when accepting a new decision', async ({
@@ -1467,9 +1534,13 @@ test.describe('Employee - Child documents', () => {
     // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
     await expect(childDocumentPage.documentSection).toBeVisible()
-    await childDocumentPage.status.assertTextEquals('Luonnos')
+    await expect(childDocumentPage.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
     await childDocumentPage.proposeDecision(director)
-    await childDocumentPage.status.assertTextEquals('Päätösesitys')
+    await expect(childDocumentPage.status).toHaveText('Päätösesitys', {
+      useInnerText: true
+    })
     await expect(childDocumentPage.acceptDecisionButton).toBeHidden()
 
     // Director opens the decision proposal
@@ -1494,7 +1565,9 @@ test.describe('Employee - Child documents', () => {
       now.toLocalDate().addDays(7)
     )
     await childDocument.acceptDecision(validity)
-    await childDocument.status.assertTextEquals('Myönnetty')
+    await expect(childDocument.status).toHaveText('Myönnetty', {
+      useInnerText: true
+    })
 
     // Unit supervisor checks old and new decisions
     page = await newEvakaPage()
@@ -1504,12 +1577,12 @@ test.describe('Employee - Child documents', () => {
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.decisionChildDocumentRows).toHaveCount(2)
-    await childDocumentsSection
-      .decisionChildDocuments(0)
-      .validity.assertTextEquals('01.02.2023 - 01.02.2023')
-    await childDocumentsSection
-      .decisionChildDocuments(1)
-      .validity.assertTextEquals('02.02.2023 - 08.02.2023')
+    await expect(
+      childDocumentsSection.decisionChildDocuments(0).validity
+    ).toHaveText('01.02.2023 - 01.02.2023', { useInnerText: true })
+    await expect(
+      childDocumentsSection.decisionChildDocuments(1).validity
+    ).toHaveText('02.02.2023 - 08.02.2023', { useInnerText: true })
   })
 
   test('Error is shown when accepting decision with conflicting validity period', async ({
@@ -1585,7 +1658,9 @@ test.describe('Employee - Child documents', () => {
     await expect(modal).toBeHidden()
 
     // Status should still be decision proposal (not accepted)
-    await childDocument.status.assertTextEquals('Päätösesitys')
+    await expect(childDocument.status).toHaveText('Päätösesitys', {
+      useInnerText: true
+    })
   })
 })
 
@@ -1894,19 +1969,26 @@ test.describe('Employee - Child documents - unit groups page', () => {
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createExternalDocumentButton.click()
-    await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
-      template.name
+    await expect(childDocumentsSection.createModalTemplateSelect).toHaveText(
+      template.name,
+      { useInnerText: true }
     )
     await childDocumentsSection.modalOk.click()
     const childDocument = new ChildDocumentPage(page)
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
 
     await childDocument.goToNextStatus()
-    await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
+    await expect(childDocument.status).toHaveText('Täytettävänä huoltajalla', {
+      useInnerText: true
+    })
 
     //return to draft
     await childDocument.goToPrevStatus()
-    await childDocument.status.assertTextEquals('Luonnos')
+    await expect(childDocument.status).toHaveText('Luonnos', {
+      useInnerText: true
+    })
 
     //fill on behalf of citizen
     await childDocument.editButton.click()
@@ -1927,16 +2009,21 @@ test.describe('Employee - Child documents - unit groups page', () => {
 
     //publish as ready
     await childDocument.goToCompletedStatus()
-    await childDocument.status.assertTextEquals('Valmis')
+    await expect(childDocument.status).toHaveText('Valmis', {
+      useInnerText: true
+    })
 
     await childDocument.returnButton.click()
     await childInformationPage.openCollapsible('childDocuments')
     await expect(childDocumentsSection.internalChildDocumentRows).toHaveCount(0)
     await expect(childDocumentsSection.externalChildDocumentRows).toHaveCount(1)
     const row = childDocumentsSection.externalChildDocuments(0)
-    await row.sent.assertTextEquals(now.toLocalDate().format())
-    await row.answered.assertTextEquals(
-      `${now.toLocalDate().format()}, ${user.lastName} ${user.firstName}`
+    await expect(row.sent).toHaveText(now.toLocalDate().format(), {
+      useInnerText: true
+    })
+    await expect(row.answered).toHaveText(
+      `${now.toLocalDate().format()}, ${user.lastName} ${user.firstName}`,
+      { useInnerText: true }
     )
   }
 })

@@ -92,9 +92,10 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     }
   ) {
     const childRow = this.childRow(childId)
-    await childRow
-      .findByDataQa('reserved-hours')
-      .assertTextEquals(`${expected.reservedHours} h`)
+    await expect(childRow.findByDataQa('reserved-hours')).toHaveText(
+      `${expected.reservedHours} h`,
+      { useInnerText: true }
+    )
     if (expected.reservedHoursWarning) {
       await expect(
         childRow.findByDataQa('reserved-hours-warning')
@@ -102,9 +103,10 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     } else {
       await expect(childRow.findByDataQa('reserved-hours-warning')).toBeHidden()
     }
-    await childRow
-      .findByDataQa('used-hours')
-      .assertTextEquals(`${expected.usedHours} h`)
+    await expect(childRow.findByDataQa('used-hours')).toHaveText(
+      `${expected.usedHours} h`,
+      { useInnerText: true }
+    )
     if (expected.usedHoursWarning) {
       await expect(childRow.findByDataQa('used-hours-warning')).toBeVisible()
     } else {

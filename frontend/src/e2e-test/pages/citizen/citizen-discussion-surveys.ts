@@ -54,9 +54,9 @@ export class DiscussionSurveyModal extends Element {
       `child-survey-${childId}-${surveyId}`
     )
     await expect(surveyElement).toBeVisible()
-    await surveyElement
-      .findByDataQa(`survey-title-${surveyId}`)
-      .assertTextEquals(title)
+    await expect(
+      surveyElement.findByDataQa(`survey-title-${surveyId}`)
+    ).toHaveText(title, { useInnerText: true })
     await expect(
       surveyElement.findByDataQa('open-survey-reservations-button')
     ).toBeVisible()
@@ -78,13 +78,13 @@ export class DiscussionSurveyModal extends Element {
       `child-survey-${childId}-${surveyId}`
     )
     await expect(surveyElement).toBeVisible()
-    await surveyElement
-      .findByDataQa(`survey-title-${surveyId}`)
-      .assertTextEquals(title)
+    await expect(
+      surveyElement.findByDataQa(`survey-title-${surveyId}`)
+    ).toHaveText(title, { useInnerText: true })
 
-    await surveyElement
-      .findByDataQa(`reservation-content-${reservationId}`)
-      .assertTextEquals(reservationText)
+    await expect(
+      surveyElement.findByDataQa(`reservation-content-${reservationId}`)
+    ).toHaveText(reservationText, { useInnerText: true })
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
     await expect(cancelButton).toBeVisible()

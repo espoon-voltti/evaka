@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { DevDaycare } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 
@@ -43,7 +44,10 @@ export default class CitizenMapPage {
   async testMapPopup(daycare: DevDaycare) {
     await this.listItemFor(daycare).click()
     await this.map.markerFor(daycare).click()
-    await this.map.popupFor(daycare).nameElement.assertTextEquals(daycare.name)
+    await expect(this.map.popupFor(daycare).nameElement).toHaveText(
+      daycare.name,
+      { useInnerText: true }
+    )
   }
 }
 

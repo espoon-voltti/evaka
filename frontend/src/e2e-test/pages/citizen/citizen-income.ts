@@ -198,11 +198,11 @@ export default class CitizenIncomePage {
     await this.page
       .findByDataQa('notification-container')
       .assertAttributeEquals('aria-live', 'polite')
-    await this.page
-      .find(
+    await expect(
+      this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-      .assertTextEquals('Tuloselvitys lähetetty')
+    ).toHaveText('Tuloselvitys lähetetty', { useInnerText: true })
   }
 
   async closeNotification() {

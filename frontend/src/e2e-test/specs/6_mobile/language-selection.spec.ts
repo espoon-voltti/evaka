@@ -10,7 +10,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevCareArea, DevDaycare } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -44,19 +44,25 @@ test.describe('Language selection', () => {
     const langSelection = settingsPage.languageSelection
 
     // Default language is Finnish
-    await settingsPage.title.assertTextEquals('Asetukset')
+    await expect(settingsPage.title).toHaveText('Asetukset', {
+      useInnerText: true
+    })
     await langSelection.fi.assertAttributeEquals('aria-checked', 'true')
     await langSelection.sv.assertAttributeEquals('aria-checked', 'false')
 
     // Switch to Swedish
     await langSelection.sv.click()
-    await settingsPage.title.assertTextEquals('Inställningar')
+    await expect(settingsPage.title).toHaveText('Inställningar', {
+      useInnerText: true
+    })
     await langSelection.sv.assertAttributeEquals('aria-checked', 'true')
     await langSelection.fi.assertAttributeEquals('aria-checked', 'false')
 
     // Language persists after reload
     await page.reload()
-    await settingsPage.title.assertTextEquals('Inställningar')
+    await expect(settingsPage.title).toHaveText('Inställningar', {
+      useInnerText: true
+    })
     await langSelection.sv.assertAttributeEquals('aria-checked', 'true')
   })
 })

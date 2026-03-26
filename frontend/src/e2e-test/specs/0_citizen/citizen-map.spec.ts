@@ -118,16 +118,18 @@ test.describe('Citizen map page', () => {
   test('Unit details can be viewed by clicking a list item', async () => {
     await mapPage.listItemFor(testDaycare2).click()
     await expect(mapPage.unitDetailsPanel).toBeVisible()
-    await mapPage.unitDetailsPanel.nameElement.assertTextEquals(
-      testDaycare2.name
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
+      testDaycare2.name,
+      { useInnerText: true }
     )
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
 
     await expect(mapPage.unitDetailsPanel).toBeVisible()
-    await mapPage.unitDetailsPanel.nameElement.assertTextEquals(
-      swedishDaycare.name
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
+      swedishDaycare.name,
+      { useInnerText: true }
     )
   })
 
@@ -135,8 +137,9 @@ test.describe('Citizen map page', () => {
     await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await expect(mapPage.unitDetailsPanel).toBeVisible()
-    await mapPage.unitDetailsPanel.nameElement.assertTextEquals(
-      swedishDaycare.name
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
+      swedishDaycare.name,
+      { useInnerText: true }
     )
   })
 
@@ -144,8 +147,9 @@ test.describe('Citizen map page', () => {
     await mapPage.searchInput.type('svenska')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await expect(mapPage.unitDetailsPanel).toBeVisible()
-    await mapPage.unitDetailsPanel.nameElement.assertTextEquals(
-      swedishDaycare.name
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
+      swedishDaycare.name,
+      { useInnerText: true }
     )
   })
 
@@ -168,10 +172,10 @@ test.describe('Citizen map page', () => {
 
   test('Private unit without any periods will show up on the map', async () => {
     await mapPage.testMapPopup(privateDaycareWithoutPeriods)
-    await mapPage.map
-      .popupFor(privateDaycareWithoutPeriods)
-      .noApplying.assertTextEquals(
-        'Ei hakua eVakan kautta, ota yhteys yksikköön'
-      )
+    await expect(
+      mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying
+    ).toHaveText('Ei hakua eVakan kautta, ota yhteys yksikköön', {
+      useInnerText: true
+    })
   })
 })

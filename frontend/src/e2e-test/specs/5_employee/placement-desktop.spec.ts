@@ -155,32 +155,47 @@ test.describe('Placement desktop', () => {
 
     await expect(placementDesktopView.applicationCards).toHaveCount(2)
     const appCard1 = placementDesktopView.applicationCard(0)
-    await appCard1.childName.assertTextEquals('Ankka Hupu')
-    await appCard1.dueDate.assertTextEquals(dueDate.format())
-    await appCard1.preferredStartDate.assertTextEquals(
-      preferredStartDate.format()
+    await expect(appCard1.childName).toHaveText('Ankka Hupu', {
+      useInnerText: true
+    })
+    await expect(appCard1.dueDate).toHaveText(dueDate.format(), {
+      useInnerText: true
+    })
+    await expect(appCard1.preferredStartDate).toHaveText(
+      preferredStartDate.format(),
+      { useInnerText: true }
     )
     await expect(appCard1.unitPreferences).toHaveCount(1)
-    await appCard1
-      .unitPreference(0)
-      .title.assertTextEquals(`1. ${daycare1.name}`)
+    await expect(appCard1.unitPreference(0).title).toHaveText(
+      `1. ${daycare1.name}`,
+      { useInnerText: true }
+    )
     const appCard2 = placementDesktopView.applicationCard(1)
-    await appCard2.childName.assertTextEquals('Ankka Lupu')
-    await appCard2.dueDate.assertTextEquals(dueDate.format())
-    await appCard2.preferredStartDate.assertTextEquals(
-      preferredStartDate.format()
+    await expect(appCard2.childName).toHaveText('Ankka Lupu', {
+      useInnerText: true
+    })
+    await expect(appCard2.dueDate).toHaveText(dueDate.format(), {
+      useInnerText: true
+    })
+    await expect(appCard2.preferredStartDate).toHaveText(
+      preferredStartDate.format(),
+      { useInnerText: true }
     )
     await expect(appCard2.unitPreferences).toHaveCount(2)
-    await appCard2
-      .unitPreference(0)
-      .title.assertTextEquals(`1. ${daycare1.name}`)
-    await appCard2
-      .unitPreference(1)
-      .title.assertTextEquals(`2. ${daycare2.name}`)
+    await expect(appCard2.unitPreference(0).title).toHaveText(
+      `1. ${daycare1.name}`,
+      { useInnerText: true }
+    )
+    await expect(appCard2.unitPreference(1).title).toHaveText(
+      `2. ${daycare2.name}`,
+      { useInnerText: true }
+    )
 
     await expect(placementDesktopView.daycareCards).toHaveCount(1)
     const daycareCard1 = placementDesktopView.daycareCard(0)
-    await daycareCard1.name.assertTextEquals(daycare1.name)
+    await expect(daycareCard1.name).toHaveText(daycare1.name, {
+      useInnerText: true
+    })
     await daycareCard1.assertOccupancies(14.3, 14.3, 14.3)
   })
 
@@ -229,7 +244,9 @@ test.describe('Placement desktop', () => {
 
     // cancel draft placement through the draft placement row
     const draftPlacementRow = daycareCard3.drawPlacementRow(0)
-    await draftPlacementRow.childName.assertTextEquals('Ankka Lupu')
+    await expect(draftPlacementRow.childName).toHaveText('Ankka Lupu', {
+      useInnerText: true
+    })
     await draftPlacementRow.cancelPlacementDraftButton.click()
     await daycareCard3.assertOccupancies(0, 0, 0)
 
@@ -330,8 +347,9 @@ test.describe('Placement desktop', () => {
     await placementDesktopView.occupancyPeriodStartPicker.fill(
       mockedDate.addWeeks(2)
     )
-    await placementDesktopView.occupancyPeriodEnd.assertTextEquals(
-      mockedDate.addWeeks(2).addMonths(3).format()
+    await expect(placementDesktopView.occupancyPeriodEnd).toHaveText(
+      mockedDate.addWeeks(2).addMonths(3).format(),
+      { useInnerText: true }
     )
     requestsExpectedToDaycares++
     await assertRequests()

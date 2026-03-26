@@ -36,7 +36,9 @@ export class IncomeStatementPage {
     expectedOtherInfo: string,
     expectedAttachmentsCount: number
   ) {
-    await this.#childOtherInfo.assertTextEquals(expectedOtherInfo)
+    await expect(this.#childOtherInfo).toHaveText(expectedOtherInfo, {
+      useInnerText: true
+    })
     if (expectedAttachmentsCount > 0) {
       await expect(this.#attachments).toHaveCount(expectedAttachmentsCount)
     } else {
@@ -49,7 +51,9 @@ export class IncomeStatementPage {
   }
 
   async assertStatus(expectedStatus: string) {
-    await this.#status.assertTextEquals(expectedStatus)
+    await expect(this.#status).toHaveText(expectedStatus, {
+      useInnerText: true
+    })
   }
 
   async moveToHandling() {

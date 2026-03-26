@@ -58,18 +58,22 @@ export class PlacementDraftPage {
     const speculated = this.#unitCard(unitId).find(
       '[data-qa="speculated-occupancies"]'
     )
-    await current
-      .find('[data-qa="3months"]')
-      .assertTextEquals(occupancies.max3Months)
-    await current
-      .find('[data-qa="6months"]')
-      .assertTextEquals(occupancies.max6Months)
-    await speculated
-      .find('[data-qa="3months"]')
-      .assertTextEquals(occupancies.max3MonthsSpeculated)
-    await speculated
-      .find('[data-qa="6months"]')
-      .assertTextEquals(occupancies.max6MonthsSpeculated)
+    await expect(current.find('[data-qa="3months"]')).toHaveText(
+      occupancies.max3Months,
+      { useInnerText: true }
+    )
+    await expect(current.find('[data-qa="6months"]')).toHaveText(
+      occupancies.max6Months,
+      { useInnerText: true }
+    )
+    await expect(speculated.find('[data-qa="3months"]')).toHaveText(
+      occupancies.max3MonthsSpeculated,
+      { useInnerText: true }
+    )
+    await expect(speculated.find('[data-qa="6months"]')).toHaveText(
+      occupancies.max6MonthsSpeculated,
+      { useInnerText: true }
+    )
   }
 
   async addOtherUnit(unitName: string) {

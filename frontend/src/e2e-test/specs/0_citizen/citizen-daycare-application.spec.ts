@@ -330,7 +330,9 @@ test.describe('Citizen daycare applications', () => {
     await expect(applicationReadView.contactInfoSection).toBeHidden()
     await expect(applicationReadView.urgencyAttachments).toBeHidden()
     await expect(applicationReadView.shiftCareAttachments).toBeHidden()
-    await applicationReadView.assistanceNeedDescription.assertTextEquals('')
+    await expect(applicationReadView.assistanceNeedDescription).toHaveText('', {
+      useInnerText: true
+    })
   })
 
   test('Application can be saved as draft', async () => {

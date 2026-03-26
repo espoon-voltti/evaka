@@ -32,12 +32,14 @@ export default class CitizenDecisionsPage {
     const decision = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findByDataQa(`application-decision-${decisionId}`)
-    await decision
-      .findByDataQa('title-decision-type')
-      .assertTextEquals(expectedTitle)
-    await decision
-      .findByDataQa('decision-sent-date')
-      .assertTextEquals(expectedSentDate)
+    await expect(decision.findByDataQa('title-decision-type')).toHaveText(
+      expectedTitle,
+      { useInnerText: true }
+    )
+    await expect(decision.findByDataQa('decision-sent-date')).toHaveText(
+      expectedSentDate,
+      { useInnerText: true }
+    )
     await decision
       .findByDataQa('decision-status')
       .assertText((text) => text.toLowerCase() === expectedStatus.toLowerCase())
@@ -56,12 +58,12 @@ export default class CitizenDecisionsPage {
     if ((await financeDecision.getAttribute('data-status')) === 'closed') {
       await financeDecision.click()
     }
-    await financeDecision
-      .findByDataQa(`finance-decision-title`)
-      .assertTextEquals(expectedTitle)
-    await financeDecision
-      .findByDataQa(`finance-decision-sent-at`)
-      .assertTextEquals(expectedSentAt)
+    await expect(
+      financeDecision.findByDataQa(`finance-decision-title`)
+    ).toHaveText(expectedTitle, { useInnerText: true })
+    await expect(
+      financeDecision.findByDataQa(`finance-decision-sent-at`)
+    ).toHaveText(expectedSentAt, { useInnerText: true })
     for (const coDebtor of expectedCoDebtorNames) {
       await financeDecision
         .findByDataQa(`finance-decision-co-debtors`)
@@ -150,12 +152,13 @@ class CitizenDecisionResponsePage {
     this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
 
   async assertPageTitle(unresolvedCount: number) {
-    await this.#title.assertTextEquals(
+    await expect(this.#title).toHaveText(
       unresolvedCount === 0
         ? 'Vahvistettavat paikat'
         : unresolvedCount === 1
           ? '1 paikka odottaa huoltajan vahvistusta'
-          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`
+          : `${unresolvedCount} paikkaa odottaa huoltajan vahvistusta`,
+      { useInnerText: true }
     )
   }
 
@@ -172,8 +175,12 @@ class CitizenDecisionResponsePage {
     decisionUnitText: string,
     decisionStatusText: string
   ) {
-    await this.#decisionTitle(decisionId).assertTextEquals(decisionTypeText)
-    await this.#decisionUnit(decisionId).assertTextEquals(decisionUnitText)
+    await expect(this.#decisionTitle(decisionId)).toHaveText(decisionTypeText, {
+      useInnerText: true
+    })
+    await expect(this.#decisionUnit(decisionId)).toHaveText(decisionUnitText, {
+      useInnerText: true
+    })
     await this.assertDecisionStatus(decisionId, decisionStatusText)
   }
 
@@ -220,12 +227,14 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   }
 
   if (count === 1) {
-    return await element.assertTextEquals(
-      '1 paikka odottaa huoltajan vahvistusta'
+    return expect(element).toHaveText(
+      '1 paikka odottaa huoltajan vahvistusta',
+      { useInnerText: true }
     )
   }
 
-  return await element.assertTextEquals(
-    `${count} paikkaa odottaa huoltajan vahvistusta`
+  return expect(element).toHaveText(
+    `${count} paikkaa odottaa huoltajan vahvistusta`,
+    { useInnerText: true }
   )
 }

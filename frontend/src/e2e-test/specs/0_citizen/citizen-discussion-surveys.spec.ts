@@ -236,8 +236,9 @@ for (const env of ['desktop', 'mobile'] as const) {
     })
 
     test('Citizen sees discussions toast message', async () => {
-      await calendarPage.discussionsCta.assertTextEquals(
-        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nVaraa keskusteluaika'
+      await expect(calendarPage.discussionsCta).toHaveText(
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.\nVaraa keskusteluaika',
+        { useInnerText: true }
       )
     })
 

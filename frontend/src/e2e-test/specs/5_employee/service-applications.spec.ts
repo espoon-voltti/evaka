@@ -103,18 +103,22 @@ test.describe('Service applications', () => {
     )
     await expect(citizenChildPage.openApplicationInfoBox).toBeVisible()
     await expect(citizenChildPage.createServiceApplicationButton).toBeHidden()
-    await citizenChildPage
-      .serviceApplicationSentDate(0)
-      .assertTextEquals(mockedTime1.toLocalDate().format())
-    await citizenChildPage
-      .serviceApplicationStartDate(0)
-      .assertTextEquals(startDate.format())
-    await citizenChildPage
-      .serviceApplicationServiceNeed(0)
-      .assertTextEquals(serviceNeedOption2.nameFi)
-    await citizenChildPage
-      .serviceApplicationStatus(0)
-      .assertTextEquals('Ehdotettu')
+    await expect(citizenChildPage.serviceApplicationSentDate(0)).toHaveText(
+      mockedTime1.toLocalDate().format(),
+      { useInnerText: true }
+    )
+    await expect(citizenChildPage.serviceApplicationStartDate(0)).toHaveText(
+      startDate.format(),
+      { useInnerText: true }
+    )
+    await expect(citizenChildPage.serviceApplicationServiceNeed(0)).toHaveText(
+      serviceNeedOption2.nameFi,
+      { useInnerText: true }
+    )
+    await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
+      'Ehdotettu',
+      { useInnerText: true }
+    )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)
     ).toBeVisible()
@@ -199,9 +203,10 @@ test.describe('Service applications', () => {
       'service-need-and-daily-service-time'
     )
     await citizenChildPage.createServiceApplicationButton.assertDisabled(false)
-    await citizenChildPage
-      .serviceApplicationStatus(0)
-      .assertTextEquals('Hyväksytty')
+    await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
+      'Hyväksytty',
+      { useInnerText: true }
+    )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)
     ).toBeHidden()
@@ -295,9 +300,10 @@ test.describe('Service applications', () => {
       'service-need-and-daily-service-time'
     )
     await citizenChildPage.createServiceApplicationButton.assertDisabled(false)
-    await citizenChildPage
-      .serviceApplicationStatus(0)
-      .assertTextEquals('Hylätty')
+    await expect(citizenChildPage.serviceApplicationStatus(0)).toHaveText(
+      'Hylätty',
+      { useInnerText: true }
+    )
     await expect(
       citizenChildPage.serviceApplicationCancelButton(0)
     ).toBeHidden()
