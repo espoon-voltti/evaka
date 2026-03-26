@@ -105,7 +105,7 @@ test.describe('unit transfer applications', () => {
       .unitSupervisor(placementUnit1.id)
       .save()
     const page = await openApplicationProcessTab(evaka, user, placementUnit1.id)
-    await page.transferApplications.waitUntilHidden()
+    await expect(page.transferApplications).toBeHidden()
   })
 })
 

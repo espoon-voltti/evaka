@@ -574,19 +574,19 @@ test.describe('Messages page', () => {
     // message editor
     await messageEditor.recipients.open()
     await messageEditor.recipients.option(`${daycareGroup.id}+false`).click()
-    await messageEditor.recipients
-      .option(`${daycareGroup2.id}+false`)
-      .waitUntilHidden()
-    await messageEditor.recipients
-      .option(`${daycareGroup3.id}+false`)
-      .waitUntilHidden()
+    await expect(
+      messageEditor.recipients.option(`${daycareGroup2.id}+false`)
+    ).toBeHidden()
+    await expect(
+      messageEditor.recipients.option(`${daycareGroup3.id}+false`)
+    ).toBeHidden()
 
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
     await expect(messageEditor.manyRecipientsWarning).toBeVisible()
     await messageEditor.manyRecipientsConfirm.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
     // Check that citizen received the message
@@ -600,7 +600,7 @@ test.describe('Messages page', () => {
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
 
     const sentTab = await messagesPage.openSentTab()
     const first = sentTab.message(0)
@@ -631,7 +631,7 @@ test.describe('Messages page', () => {
     await messageEditor.send.click()
 
     await expect(draftsTab.list).toBeVisible()
-    await draftsTab.message(0).waitUntilHidden()
+    await expect(draftsTab.message(0)).toBeHidden()
   })
 
   test('Employee can discard a draft message', async () => {
@@ -650,7 +650,7 @@ test.describe('Messages page', () => {
     await messageEditor.discard.click()
 
     await expect(draftsTab.list).toBeVisible()
-    await draftsTab.message(0).waitUntilHidden()
+    await expect(draftsTab.message(0)).toBeHidden()
   })
 
   test('Message button goes to unread messages if user has no pin session', async () => {

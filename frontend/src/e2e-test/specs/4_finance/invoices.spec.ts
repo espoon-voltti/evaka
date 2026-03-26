@@ -162,7 +162,7 @@ test.describe('Invoices', () => {
       await details.relatedFeeDecisions.assertTextEquals(
         feeDecision.decisionNumber!.toString()
       )
-      await details.replacedInvoice.waitUntilHidden()
+      await expect(details.replacedInvoice).toBeHidden()
 
       const child = invoicePage.nthChild(0)
       await child.childName.assertTextEquals(
@@ -182,10 +182,10 @@ test.describe('Invoices', () => {
       await row.totalPrice.assertTextEquals('289')
 
       await child.totalPrice.assertTextEquals('289')
-      await child.previousTotalPrice.waitUntilHidden()
+      await expect(child.previousTotalPrice).toBeHidden()
 
       await invoicePage.totalPrice.assertTextEquals('289')
-      await invoicePage.previousTotalPrice.waitUntilHidden()
+      await expect(invoicePage.previousTotalPrice).toBeHidden()
 
       await invoicesPage.navigateBackToInvoices()
     })

@@ -84,9 +84,11 @@ export default class CitizenHeader {
     ].includes(tab)
     if (isContainedInSubnav) {
       await this.#subNavMenu.click()
-      await this.page.findByDataQa(`sub-nav-menu-${tab}`).waitUntilHidden()
+      await expect(this.page.findByDataQa(`sub-nav-menu-${tab}`)).toBeHidden()
     } else {
-      await this.page.findByDataQa(`nav-${tab}-${this.type}`).waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`nav-${tab}-${this.type}`)
+      ).toBeHidden()
     }
   }
 
@@ -164,7 +166,7 @@ export default class CitizenHeader {
   }
 
   async assertNoChildrenTab() {
-    await this.#childrenNav.waitUntilHidden()
+    await expect(this.#childrenNav).toBeHidden()
   }
 
   async logout() {

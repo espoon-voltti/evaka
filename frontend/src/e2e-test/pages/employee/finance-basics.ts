@@ -207,7 +207,7 @@ export default class FinanceBasicsPage {
             await page.findByDataQa('modal-okBtn').click()
           }
 
-          await this.feesSection.editor.saveButton.waitUntilHidden()
+          await expect(this.feesSection.editor.saveButton).toBeHidden()
           await expect(this.feesSection.rootLoaded).toBeVisible()
         }
       }

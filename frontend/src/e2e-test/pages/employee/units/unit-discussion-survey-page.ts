@@ -57,7 +57,9 @@ export class DiscussionSurveyListPage {
       .assertTextEquals(expectedSurvey.status)
   }
   async assertDiscussionSurveyNotInList(surveyId: string) {
-    await this.surveyList.findByDataQa(`survey-${surveyId}`).waitUntilHidden()
+    await expect(
+      this.surveyList.findByDataQa(`survey-${surveyId}`)
+    ).toBeHidden()
   }
 }
 
@@ -207,7 +209,7 @@ export class DiscussionSurveyReadView {
       `times-calendar-day-${date.formatIso()}`
     )
     const eventTimeRanges = calendarDay.findAllByDataQa('event-time-range')
-    await eventTimeRanges.nth(0).waitUntilHidden()
+    await expect(eventTimeRanges.nth(0)).toBeHidden()
   }
 
   async assertReservationExists(date: LocalDate, index: number, name: string) {

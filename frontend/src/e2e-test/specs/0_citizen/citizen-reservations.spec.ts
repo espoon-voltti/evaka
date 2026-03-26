@@ -952,7 +952,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await absencesModal.assertChildrenChipDisabled(true, [testChild2.id])
 
       const infoBoxChild1 = absencesModal.getInfoBox(testChild.id)
-      await infoBoxChild1.waitUntilHidden()
+      await expect(infoBoxChild1).toBeHidden()
       const infoBoxChild2 = absencesModal.getInfoBox(testChild2.id)
       await notificationsPage.assertStartingInfoContent(
         infoBoxChild2,
@@ -1823,7 +1823,7 @@ test.describe('Citizen calendar visibility', () => {
 
     // Ensure page has loaded
     await expect(page.findByDataQa('nav-children-desktop')).toBeVisible()
-    await page.findByDataQa('nav-calendar-desktop').waitUntilHidden()
+    await expect(page.findByDataQa('nav-calendar-desktop')).toBeHidden()
   })
 
   test('Child is not visible when placement is in the past', async ({
@@ -1850,7 +1850,7 @@ test.describe('Citizen calendar visibility', () => {
 
     // Ensure page has loaded
     await expect(page.findByDataQa('applications-list')).toBeVisible()
-    await page.findByDataQa('nav-children-desktop').waitUntilHidden()
+    await expect(page.findByDataQa('nav-children-desktop')).toBeHidden()
   })
 })
 

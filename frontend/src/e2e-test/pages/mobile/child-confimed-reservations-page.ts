@@ -27,7 +27,7 @@ export default class ConfirmedDayReservationPage {
   }
 
   async assertDayDoesNotExist(date: LocalDate) {
-    await this.dayRow(date).waitUntilHidden()
+    await expect(this.dayRow(date)).toBeHidden()
   }
 
   async assertDailyCounts(

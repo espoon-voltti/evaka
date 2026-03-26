@@ -228,7 +228,7 @@ export class StaffAttendancePage {
   async assertMarkNewExternalStaffDisabled() {
     await this.#addNewExternalMemberButton.click()
     await this.anyArrivalPage.markArrived.assertDisabled(true)
-    await this.anyArrivalPage.arrivedInput.waitUntilHidden()
+    await expect(this.anyArrivalPage.arrivedInput).toBeHidden()
   }
 
   async assertPresentStaffCount(expected: number) {

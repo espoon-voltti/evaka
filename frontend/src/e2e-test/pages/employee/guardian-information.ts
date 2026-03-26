@@ -64,7 +64,7 @@ export default class GuardianInformationPage {
         )
         break
       default:
-        await this.#restrictedDetailsEnabledLabel.waitUntilHidden()
+        await expect(this.#restrictedDetailsEnabledLabel).toBeHidden()
         await this.#personStreetAddress.assertText(
           (text) => text !== 'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
@@ -199,7 +199,7 @@ class DependantsSection extends Section {
   }
 
   async assertDoesNotContainDependantChild(id: UUID) {
-    await this.#childRow(id).waitUntilHidden()
+    await expect(this.#childRow(id)).toBeHidden()
   }
 }
 
@@ -241,8 +241,8 @@ class FosterChildrenSection extends Section {
       endDate?.format() ?? ''
     )
     await modal.submit()
-    await modal.waitUntilHidden()
-    await this.findByDataQa('spinner').waitUntilHidden()
+    await expect(modal).toBeHidden()
+    await expect(this.findByDataQa('spinner')).toBeHidden()
   }
 
   async deleteFosterChild(childId: string) {
@@ -251,8 +251,8 @@ class FosterChildrenSection extends Section {
       .click()
     const modal = new Modal(this.page.findByDataQa('delete-foster-child-modal'))
     await modal.submit()
-    await modal.waitUntilHidden()
-    await this.findByDataQa('spinner').waitUntilHidden()
+    await expect(modal).toBeHidden()
+    await expect(this.findByDataQa('spinner')).toBeHidden()
   }
 
   async assertRowExists(
@@ -266,7 +266,7 @@ class FosterChildrenSection extends Section {
   }
 
   async assertRowDoesNotExist(childId: string) {
-    await this.findByDataQa(`foster-child-row-${childId}`).waitUntilHidden()
+    await expect(this.findByDataQa(`foster-child-row-${childId}`)).toBeHidden()
   }
 }
 
@@ -412,7 +412,7 @@ export class IncomeSection extends Section {
 
   async save() {
     await this.saveIncomeButton.click()
-    await this.saveIncomeButton.waitUntilHidden()
+    await expect(this.saveIncomeButton).toBeHidden()
   }
 
   async saveFailing() {

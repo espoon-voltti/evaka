@@ -20,7 +20,7 @@ export class DiscussionReservationModal extends Element {
   }
 
   assertEventTimeNotShown = async (eventTimeId: string) => {
-    await this.findByDataQa(`radio-${eventTimeId}`).waitUntilHidden()
+    await expect(this.findByDataQa(`radio-${eventTimeId}`)).toBeHidden()
   }
 
   assertEventTimes = async (expectedEventTimeIds: string[]) => {
@@ -96,7 +96,7 @@ export class DiscussionSurveyModal extends Element {
     if (isExportable) {
       await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 

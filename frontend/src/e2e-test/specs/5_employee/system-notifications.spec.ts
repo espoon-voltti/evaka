@@ -12,7 +12,7 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import TopNav from '../../pages/mobile/top-nav'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import { employeeLogin } from '../../utils/user'
 
@@ -46,7 +46,7 @@ test.describe('System notifications', () => {
     await systemNotificationsPage.dateInput.fill(validTo.toLocalDate().format())
     await systemNotificationsPage.timeInput.fill(validTo.toLocalTime().format())
     await systemNotificationsPage.saveButton.click()
-    await systemNotificationsPage.saveButton.waitUntilHidden()
+    await expect(systemNotificationsPage.saveButton).toBeHidden()
     await adminPage.close()
 
     const citizensPage = await newEvakaPage({ mockedTime: now })
@@ -69,7 +69,7 @@ test.describe('System notifications', () => {
       mockedTime: validTo.addHours(1)
     })
     await citizensPage2.goto(config.enduserLoginUrl)
-    await citizensPage2.findByDataQa('system-notification').waitUntilHidden()
+    await expect(citizensPage2.findByDataQa('system-notification')).toBeHidden()
   })
 
   test('notification for employees', async ({ newEvakaPage }) => {
@@ -89,7 +89,7 @@ test.describe('System notifications', () => {
     await systemNotificationsPage.dateInput.fill(validTo.toLocalDate().format())
     await systemNotificationsPage.timeInput.fill(validTo.toLocalTime().format())
     await systemNotificationsPage.saveButton.click()
-    await systemNotificationsPage.saveButton.waitUntilHidden()
+    await expect(systemNotificationsPage.saveButton).toBeHidden()
     await adminPage.close()
 
     // notification should be visible in employee login page
@@ -111,6 +111,6 @@ test.describe('System notifications', () => {
       t.includes(notificationText)
     )
     await topBar.systemNotificationModalClose.click()
-    await topBar.systemNotificationModal.waitUntilHidden()
+    await expect(topBar.systemNotificationModal).toBeHidden()
   })
 })

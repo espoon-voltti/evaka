@@ -219,7 +219,9 @@ test.describe('Realtime staff attendance page', () => {
     await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
       testDaycareGroup.id
     )
-    await staffAttendancePage.staffArrivalPage.occupancyEffectCheckbox.waitUntilHidden()
+    await expect(
+      staffAttendancePage.staffArrivalPage.occupancyEffectCheckbox
+    ).toBeHidden()
     await staffAttendancePage.anyArrivalPage.markArrived.click()
 
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -880,7 +882,7 @@ test.describe('Realtime staff attendance edit page', () => {
     const newDepartureTime = '16:00'
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.addLink.click()
-    await editPage.addLink.waitUntilHidden()
+    await expect(editPage.addLink).toBeHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)
@@ -909,7 +911,7 @@ test.describe('Realtime staff attendance edit page', () => {
     const newDepartureTime = '16:00'
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.addLink.click()
-    await editPage.addLink.waitUntilHidden()
+    await expect(editPage.addLink).toBeHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)
@@ -941,7 +943,7 @@ test.describe('Realtime staff attendance edit page', () => {
     const newDepartureTime = '16:00'
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.addLink.click()
-    await editPage.addLink.waitUntilHidden()
+    await expect(editPage.addLink).toBeHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)

@@ -61,9 +61,9 @@ export default class MobileListPage {
 
   async assertChildNoteDoesntExist(childId: UUID) {
     await expect(this.childRow(childId)).toBeVisible()
-    await this.childRow(childId)
-      .findByDataQa('link-child-daycare-daily-note')
-      .waitUntilHidden()
+    await expect(
+      this.childRow(childId).findByDataQa('link-child-daycare-daily-note')
+    ).toBeHidden()
   }
 
   async getAttendanceCounts() {

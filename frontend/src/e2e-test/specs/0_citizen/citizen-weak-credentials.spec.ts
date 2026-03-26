@@ -119,7 +119,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.password.fill(newPassword)
     await modal.confirmPassword.fill(newPassword)
     await modal.ok.click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   })
 
   test('a person with a different email can change their username - email updated on the same page', async ({
@@ -239,11 +239,11 @@ test.describe('Citizen weak credentials', () => {
     await modal.password.fill(validPassword)
     await modal.confirmPassword.fill(validPassword)
     await modal.confirmPassword.blur()
-    await modal.passwordInfo.waitUntilHidden()
-    await modal.confirmPasswordInfo.waitUntilHidden()
-    await modal.unacceptablePasswordAlert.waitUntilHidden()
+    await expect(modal.passwordInfo).toBeHidden()
+    await expect(modal.confirmPasswordInfo).toBeHidden()
+    await expect(modal.unacceptablePasswordAlert).toBeHidden()
     await modal.ok.click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   })
 
   test('credentials change invalidates existing weak credential sessions', async ({
@@ -282,7 +282,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.password.fill(newPassword)
     await modal.confirmPassword.fill(newPassword)
     await modal.ok.click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
 
     // Weak session should be logged out
     await weakSession.findByDataQa('desktop-nav').click()

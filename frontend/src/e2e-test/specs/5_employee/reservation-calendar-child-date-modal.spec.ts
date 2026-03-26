@@ -115,8 +115,8 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.addReservationBtn.click()
     await modal.reservationStart(1).type('2030')
     await modal.reservationEnd(1).type('2359')
-    await modal.addReservationBtn.waitUntilHidden() // max 2
-    await modal.addAttendanceBtn.waitUntilHidden() // no attendances in future
+    await expect(modal.addReservationBtn).toBeHidden() // max 2
+    await expect(modal.addAttendanceBtn).toBeHidden() // no attendances in future
     await modal.submit()
 
     let reservations = reservationsTable.reservationCells(childId, date)
@@ -241,8 +241,8 @@ test.describe('Reservation calendar child date modal', () => {
     const date = today.subDays(1)
 
     const modal = await reservationsTable.openChildDateModal(childId, date)
-    await modal.addReservationBtn.waitUntilHidden() // no reservations in preschool
-    await modal.addBillableAbsenceBtn.waitUntilHidden() // no billable absences in preschool
+    await expect(modal.addReservationBtn).toBeHidden() // no reservations in preschool
+    await expect(modal.addBillableAbsenceBtn).toBeHidden() // no billable absences in preschool
     await modal.addNonbillableAbsenceBtn.click()
     await modal.nonbillableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()
@@ -263,7 +263,7 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.addReservationBtn.click()
     await modal.reservationStart(0).fill('09:00')
     await modal.reservationEnd(0).fill('13:00')
-    await modal.addNonbillableAbsenceBtn.waitUntilHidden() // no nonbillable absences in daycare
+    await expect(modal.addNonbillableAbsenceBtn).toBeHidden() // no nonbillable absences in daycare
     await modal.addBillableAbsenceBtn.click()
     await modal.billableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()

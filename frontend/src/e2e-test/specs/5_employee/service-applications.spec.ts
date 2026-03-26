@@ -102,7 +102,7 @@ test.describe('Service applications', () => {
       'service-need-and-daily-service-time'
     )
     await expect(citizenChildPage.openApplicationInfoBox).toBeVisible()
-    await citizenChildPage.createServiceApplicationButton.waitUntilHidden()
+    await expect(citizenChildPage.createServiceApplicationButton).toBeHidden()
     await citizenChildPage
       .serviceApplicationSentDate(0)
       .assertTextEquals(mockedTime1.toLocalDate().format())
@@ -151,7 +151,7 @@ test.describe('Service applications', () => {
       additionalInfo
     )
     await childServiceApplications.acceptApplication()
-    await childServiceApplications.undecidedApplication.waitUntilHidden()
+    await expect(childServiceApplications.undecidedApplication).toBeHidden()
     await childServiceApplications.assertDecidedApplication(
       0,
       startDate.format(),
@@ -202,7 +202,9 @@ test.describe('Service applications', () => {
     await citizenChildPage
       .serviceApplicationStatus(0)
       .assertTextEquals('Hyväksytty')
-    await citizenChildPage.serviceApplicationCancelButton(0).waitUntilHidden()
+    await expect(
+      citizenChildPage.serviceApplicationCancelButton(0)
+    ).toBeHidden()
     await citizenChildPage.assertServiceApplicationDetails(
       0,
       additionalInfo,
@@ -270,7 +272,7 @@ test.describe('Service applications', () => {
     await expect(childServiceApplications.undecidedApplication).toBeVisible()
     const rejectReason = 'Huono syy'
     await childServiceApplications.rejectApplication(rejectReason)
-    await childServiceApplications.undecidedApplication.waitUntilHidden()
+    await expect(childServiceApplications.undecidedApplication).toBeHidden()
     await childServiceApplications.assertDecidedApplication(
       0,
       startDate.format(),
@@ -296,7 +298,9 @@ test.describe('Service applications', () => {
     await citizenChildPage
       .serviceApplicationStatus(0)
       .assertTextEquals('Hylätty')
-    await citizenChildPage.serviceApplicationCancelButton(0).waitUntilHidden()
+    await expect(
+      citizenChildPage.serviceApplicationCancelButton(0)
+    ).toBeHidden()
 
     await citizenChildPage.assertServiceApplicationDetails(
       0,
@@ -344,7 +348,7 @@ test.describe('Service applications', () => {
       'service-need-and-daily-service-time'
     )
     await expect(citizenChildPage.openApplicationInfoBox).toBeVisible()
-    await citizenChildPage.createServiceApplicationButton.waitUntilHidden()
+    await expect(citizenChildPage.createServiceApplicationButton).toBeHidden()
     await citizenChildPage.serviceApplicationCancelButton(0).click()
     await expect(citizenChildPage.createServiceApplicationButton).toBeVisible()
     await citizenChildPage.assertServiceApplicationsCount(0)
@@ -368,6 +372,6 @@ test.describe('Service applications', () => {
     const childServiceApplications = await childInformationPage.openCollapsible(
       'serviceApplications'
     )
-    await childServiceApplications.undecidedApplication.waitUntilHidden()
+    await expect(childServiceApplications.undecidedApplication).toBeHidden()
   })
 })

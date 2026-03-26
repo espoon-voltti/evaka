@@ -460,7 +460,7 @@ test.describe('Realtime staff attendances', () => {
           realized: '21:00 – →',
           hours: '3:00'
         })
-      await modal.continuationAttendance.waitUntilHidden()
+      await expect(modal.continuationAttendance).toBeHidden()
       await modal.close()
 
       await staffAttendances.assertTableRow({

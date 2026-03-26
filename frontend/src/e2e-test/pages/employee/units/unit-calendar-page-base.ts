@@ -323,7 +323,7 @@ export class UnitStaffAttendancesTable extends Element {
     if (visible) {
       await expect(cell.findByDataQa('open-details')).toBeVisible()
     } else {
-      await cell.findByDataQa('open-details').waitUntilHidden()
+      await expect(cell.findByDataQa('open-details')).toBeHidden()
     }
   }
 }
@@ -398,7 +398,7 @@ export class StaffAttendanceDetailsModal extends Element {
   async save() {
     const button = new AsyncButton(this.findByDataQa('save'))
     await button.click()
-    await button.waitUntilHidden()
+    await expect(button).toBeHidden()
   }
 
   async close() {
@@ -427,9 +427,9 @@ export class StaffAttendanceDetailsModal extends Element {
   }
 
   async assertDepartureTimeInfoHidden(index: number) {
-    return await this.findAllByDataQa('departure-time-input-info')
-      .nth(index)
-      .waitUntilHidden()
+    return await expect(
+      this.findAllByDataQa('departure-time-input-info').nth(index)
+    ).toBeHidden()
   }
 }
 

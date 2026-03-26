@@ -584,7 +584,7 @@ export class BackupCaresSection extends Section {
     const modal = this.#backupCares.find('[data-qa="modal"]')
     await expect(modal).toBeVisible()
     await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   async cancelBackupCareForm() {
@@ -644,21 +644,21 @@ export class FamilyContactsSection extends Section {
         .findByDataQa('family-contact-email')
         .assertTextEquals(data.email)
     } else {
-      await row.findByDataQa('family-contact-email').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-email')).toBeHidden()
     }
     if (data.phone) {
       await row
         .findByDataQa('family-contact-phone')
         .assertTextEquals(data.phone)
     } else {
-      await row.findByDataQa('family-contact-phone').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-phone')).toBeHidden()
     }
     if (data.backupPhone) {
       await row
         .findByDataQa('family-contact-backup-phone')
         .assertTextEquals(`${data.backupPhone} (Varanro)`)
     } else {
-      await row.findByDataQa('family-contact-backup-phone').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-backup-phone')).toBeHidden()
     }
   }
 
@@ -674,7 +674,7 @@ export class FamilyContactsSection extends Section {
   }
 
   async assertBackupPickupDoesNotExist(name: string) {
-    await this.#row(name).waitUntilHidden()
+    await expect(this.#row(name)).toBeHidden()
   }
 
   async deleteBackupPickup(name: string) {
@@ -851,7 +851,7 @@ export class PlacementsSection extends Section {
     } else if (partWeek === false) {
       await this.serviceNeedPartWeekCheckbox.uncheck()
     } else {
-      await this.serviceNeedPartWeekCheckbox.waitUntilHidden()
+      await expect(this.serviceNeedPartWeekCheckbox).toBeHidden()
     }
 
     await this.serviceNeedSaveButton.click()
@@ -907,7 +907,7 @@ export class PlacementsSection extends Section {
         '[data-qa="placement-details-start-date"]'
       )
     ).toBeVisible()
-    await this.#terminatedByGuardian(placementId).waitUntilHidden()
+    await expect(this.#terminatedByGuardian(placementId)).toBeHidden()
   }
 
   async assertSource(placementId: string, source: string) {

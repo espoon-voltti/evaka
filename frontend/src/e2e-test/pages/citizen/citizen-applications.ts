@@ -127,7 +127,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertApplicationDoesNotExist(id: string) {
-    await this.#applicationType(id).waitUntilHidden()
+    await expect(this.#applicationType(id)).toBeHidden()
   }
 
   async assertApplicationExists(id: string) {
@@ -436,7 +436,7 @@ class CitizenApplicationEditor {
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
     if (infoText === undefined) {
-      await this.#preferredStartDateInfo.waitUntilHidden()
+      await expect(this.#preferredStartDateInfo).toBeHidden()
       return
     }
     await this.#preferredStartDateInfo.assertTextEquals(infoText)
@@ -488,7 +488,7 @@ class CitizenApplicationEditor {
 
   async assertVerifiedReadOnlyEmail(email: string) {
     await this.page.findByDataQa('verified-email').assertTextEquals(email)
-    await this.page.findByDataQa('guardianEmail-input').waitUntilHidden()
+    await expect(this.page.findByDataQa('guardianEmail-input')).toBeHidden()
   }
 
   private serviceNeedOptionDataQaPrefix(placementType: PlacementType | null) {

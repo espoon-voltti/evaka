@@ -110,7 +110,9 @@ export default class ApplicationEditView {
       this.#connectedDaycarePreferredStartDateInputWarning
     ).toBeVisible()
     await this.#connectedDaycarePreferredStartDate.fill(date)
-    await this.#connectedDaycarePreferredStartDateInputWarning.waitUntilHidden()
+    await expect(
+      this.#connectedDaycarePreferredStartDateInputWarning
+    ).toBeHidden()
   }
 
   async selectPreschoolPlacementType(type: PlacementType) {

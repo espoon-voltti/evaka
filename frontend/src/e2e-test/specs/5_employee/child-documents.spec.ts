@@ -121,7 +121,7 @@ test.describe('Employee - Child documents', () => {
 
     await templateEditor.publishCheckbox.check()
     await templateEditor.saveButton.click()
-    await templateEditor.saveButton.waitUntilHidden()
+    await expect(templateEditor.saveButton).toBeHidden()
     // End of admin creates a template
 
     // Unit supervisor creates a child document
@@ -145,7 +145,7 @@ test.describe('Employee - Child documents', () => {
     const answer = 'Jonkin sortin vastaus'
     let question = childDocument.getTextQuestion(sectionName, questionName)
     await question.fill(answer)
-    await childDocument.savingIndicator.waitUntilHidden()
+    await expect(childDocument.savingIndicator).toBeHidden()
     await childDocument.previewButton.click()
     await childDocument.returnButton.click()
 
@@ -252,7 +252,7 @@ test.describe('Employee - Child documents', () => {
     await childDocument.status.assertTextEquals('Päätösesitys')
 
     // only the assigned decision maker can accept the decision
-    await childDocument.acceptDecisionButton.waitUntilHidden()
+    await expect(childDocument.acceptDecisionButton).toBeHidden()
 
     // Director makes a decision
     const directorPage = await newEvakaPage()
@@ -366,7 +366,9 @@ test.describe('Employee - Child documents', () => {
 
     // Verify the create decision document button is not present
     await expect(childDocumentsSection.decisionHeader).toBeVisible()
-    await childDocumentsSection.createDecisionDocumentButton.waitUntilHidden()
+    await expect(
+      childDocumentsSection.createDecisionDocumentButton
+    ).toBeHidden()
   })
 
   test('Staff can create CITIZEN_BASIC document for child with placement starting in less than 30 days', async ({
@@ -607,7 +609,7 @@ test.describe('Employee - Child documents', () => {
     let childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.status.assertTextEquals('Luonnos')
-    await childDocument.savingIndicator.waitUntilHidden()
+    await expect(childDocument.savingIndicator).toBeHidden()
 
     // Admin tries to open the document in edit mode too soon
     page = await newEvakaPage({ mockedTime: now.addMinutes(3) })
@@ -760,7 +762,7 @@ test.describe('Employee - Child documents', () => {
 
     await templateEditor.publishCheckbox.check()
     await templateEditor.saveButton.click()
-    await templateEditor.saveButton.waitUntilHidden()
+    await expect(templateEditor.saveButton).toBeHidden()
 
     // create child document and send to citizen
     page = await newEvakaPage({
@@ -903,7 +905,7 @@ test.describe('Employee - Child documents', () => {
 
     await templateEditor.publishCheckbox.check()
     await templateEditor.saveButton.click()
-    await templateEditor.saveButton.waitUntilHidden()
+    await expect(templateEditor.saveButton).toBeHidden()
 
     // create child document with selected role and send to citizen
     page = await newEvakaPage({
@@ -927,7 +929,7 @@ test.describe('Employee - Child documents', () => {
     const answer = 'Jonkin sortin vastaus'
     const question = childDocument.getTextQuestion(sectionName, questionName)
     await question.fill(answer)
-    await childDocument.savingIndicator.waitUntilHidden()
+    await expect(childDocument.savingIndicator).toBeHidden()
     await childDocument.previewButton.click()
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Täytettävänä huoltajalla')
@@ -1364,7 +1366,7 @@ test.describe('Employee - Child documents', () => {
     await childDocumentPage.status.assertTextEquals('Luonnos')
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
-    await childDocumentPage.acceptDecisionButton.waitUntilHidden()
+    await expect(childDocumentPage.acceptDecisionButton).toBeHidden()
 
     // Director opens the decision proposal
     page = await newEvakaPage()
@@ -1468,7 +1470,7 @@ test.describe('Employee - Child documents', () => {
     await childDocumentPage.status.assertTextEquals('Luonnos')
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
-    await childDocumentPage.acceptDecisionButton.waitUntilHidden()
+    await expect(childDocumentPage.acceptDecisionButton).toBeHidden()
 
     // Director opens the decision proposal
     page = await newEvakaPage()
@@ -1580,7 +1582,7 @@ test.describe('Employee - Child documents', () => {
 
     // Cancel the modal
     await modal.findByDataQa('modal-cancelBtn').click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
 
     // Status should still be decision proposal (not accepted)
     await childDocument.status.assertTextEquals('Päätösesitys')
@@ -1770,7 +1772,7 @@ test.describe('Employee - Child documents - unit groups page', () => {
     )
     await createChildDocumentsModal1.click()
     await createChildDocumentsModal1.submitButton.click()
-    await createChildDocumentsModal1.waitUntilHidden()
+    await expect(createChildDocumentsModal1).toBeHidden()
 
     const expectedEmail = {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
@@ -1807,7 +1809,7 @@ test.describe('Employee - Child documents - unit groups page', () => {
     await unitPage.navigateToUnit(unit1.id)
     const groupsPage = await unitPage.openGroupsPage()
     const groupCollapsible1 = await groupsPage.openGroupCollapsible(group1.id)
-    await groupCollapsible1.createChildDocumentsButton.waitUntilHidden()
+    await expect(groupCollapsible1.createChildDocumentsButton).toBeHidden()
     const groupCollapsible2 = await groupsPage.openGroupCollapsible(group2.id)
     const createChildDocumentsModal =
       await groupCollapsible2.openCreateChildDocumentsModal()
@@ -1827,7 +1829,7 @@ test.describe('Employee - Child documents - unit groups page', () => {
     await createChildDocumentsModal.childrenSelect.selectItem(child4InGroup2.id)
     await createChildDocumentsModal.click()
     await createChildDocumentsModal.submitButton.click()
-    await createChildDocumentsModal.waitUntilHidden()
+    await expect(createChildDocumentsModal).toBeHidden()
 
     const expectedEmail = {
       from: 'Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>',
@@ -1914,14 +1916,14 @@ test.describe('Employee - Child documents - unit groups page', () => {
       template.content.sections[0].questions[0].label
     )
     await question.fill(answer)
-    await childDocument.savingIndicator.waitUntilHidden()
+    await expect(childDocument.savingIndicator).toBeHidden()
     await childDocument.previewButton.click()
 
     //resend to citizen
     await childDocument.goToNextStatus()
 
     //assert returning to draft no longer possible
-    await page.findByDataQa('prev-status-button').waitUntilHidden()
+    await expect(page.findByDataQa('prev-status-button')).toBeHidden()
 
     //publish as ready
     await childDocument.goToCompletedStatus()

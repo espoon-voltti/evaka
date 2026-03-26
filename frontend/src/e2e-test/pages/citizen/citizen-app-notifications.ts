@@ -24,7 +24,7 @@ export default class CitizenNotificationsPage {
     const notification = this.page.findByDataQa(
       `${notificationPrefix}-${index}`
     )
-    await notification.waitUntilHidden()
+    await expect(notification).toBeHidden()
   }
 
   async assertStartingInfoNotificationContent(

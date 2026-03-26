@@ -114,7 +114,7 @@ test.describe('Service need', () => {
 
     await section.serviceNeedEndDate.fill(mockToday.addDays(5).format())
     await section.serviceNeedSaveButton.assertDisabled(false)
-    await section.partiallyInvalidWarning.waitUntilHidden()
+    await expect(section.partiallyInvalidWarning).toBeHidden()
     await section.serviceNeedSaveButton.click()
     await section.assertNthServiceNeedName(
       0,

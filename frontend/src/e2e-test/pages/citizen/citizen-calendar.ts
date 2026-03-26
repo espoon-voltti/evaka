@@ -286,7 +286,7 @@ export default class CitizenCalendarPage {
     const day = this.page.findByDataQa(
       `${this.type}-calendar-day-${date.formatIso()}`
     )
-    await day.waitUntilHidden()
+    await expect(day).toBeHidden()
   }
 
   async assertTwoPartReservationFromDayCellGroup(
@@ -352,7 +352,7 @@ export default class CitizenCalendarPage {
     await this.page
       .find('[data-expiring-income-cta-status]')
       .assertAttributeEquals('data-expiring-income-cta-status', 'success')
-    await this.expiringIncomeCta.waitUntilHidden()
+    await expect(this.expiringIncomeCta).toBeHidden()
   }
 
   get dailyServiceTimeNotificationText() {
@@ -737,9 +737,9 @@ class ReservationModal extends Element {
   }
 
   async assertIncompletelyAnsweredPeriodsInfoNotVisible() {
-    await this.findByDataQa(
-      'incompletely-answered-periods-info'
-    ).waitUntilHidden()
+    await expect(
+      this.findByDataQa('incompletely-answered-periods-info')
+    ).toBeHidden()
   }
 
   getInfoBox(childId: string) {
@@ -950,14 +950,14 @@ class DayView extends Element {
     if (exportable) {
       await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 
   async assertEventNotShown(childId: UUID, eventId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa(`event-${eventId}`)
-      .waitUntilHidden()
+    await expect(
+      this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    ).toBeHidden()
   }
 
   async assertDiscussionReservation(
@@ -989,7 +989,7 @@ class DayView extends Element {
     if (exportable) {
       await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 
@@ -1045,7 +1045,7 @@ class HolidayModal extends Element {
       await this.#childHolidaySelect(child.id).selectOption(option)
     }
     await this.#modalSendButton.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async markNoHolidays(children: { id: string }[]) {
@@ -1053,7 +1053,7 @@ class HolidayModal extends Element {
       await this.#childHolidaySelect(child.id).selectOption({ index: 0 })
     }
     await this.#modalSendButton.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async markHoliday(child: { id: string }, option: string) {

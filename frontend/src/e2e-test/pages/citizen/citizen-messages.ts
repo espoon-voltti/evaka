@@ -132,7 +132,7 @@ export default class CitizenMessagesPage {
     if (message.urgent ?? false) {
       await expect(this.#threadUrgent).toBeVisible()
     } else {
-      await this.#threadUrgent.waitUntilHidden()
+      await expect(this.#threadUrgent).toBeHidden()
     }
     if (message.childNames) {
       await this.#threadChildren.assertTextsEqualAnyOrder(message.childNames)
@@ -149,7 +149,7 @@ export default class CitizenMessagesPage {
     if (visible) {
       await expect(this.#financeReplyInfo).toBeVisible()
     } else {
-      await this.#financeReplyInfo.waitUntilHidden()
+      await expect(this.#financeReplyInfo).toBeHidden()
     }
   }
   async openStrongAuthPage() {
@@ -164,7 +164,7 @@ export default class CitizenMessagesPage {
   }
 
   async assertHasNoMarkUnreadButton() {
-    await this.markUnreadButton.waitUntilHidden()
+    await expect(this.markUnreadButton).toBeHidden()
   }
 
   async discardReplyEditor() {
@@ -183,7 +183,7 @@ export default class CitizenMessagesPage {
   async sendReply() {
     await this.#sendReplyButton.click()
     // the editor is hidden after sending the reply
-    await this.#sendReplyButton.waitUntilHidden()
+    await expect(this.#sendReplyButton).toBeHidden()
   }
 
   secondaryRecipient(name: string) {
@@ -309,7 +309,7 @@ export class CitizenMessageEditor extends Element {
 
   async sendMessage() {
     await this.#sendMessage.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async assertOutOfOffice(ooo: { name: string; period: FiniteDateRange }) {
@@ -319,6 +319,6 @@ export class CitizenMessageEditor extends Element {
   }
 
   async assertNoOutOfOffice() {
-    await this.#outOfOfficeInfo.waitUntilHidden()
+    await expect(this.#outOfOfficeInfo).toBeHidden()
   }
 }

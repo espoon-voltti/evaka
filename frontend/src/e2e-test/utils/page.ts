@@ -280,10 +280,6 @@ export class Element {
     await this.locator.click()
   }
 
-  async waitUntilHidden(): Promise<void> {
-    await expect(this.locator).toBeHidden()
-  }
-
   async getAttribute(name: string): Promise<string | null> {
     return this.locator.getAttribute(name)
   }

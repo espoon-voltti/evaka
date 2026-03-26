@@ -85,18 +85,18 @@ test.describe('Citizen map page', () => {
     await expect(mapPage.daycareFilter).toBeVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
     await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
-    await mapPage.listItemFor(testClub).waitUntilHidden()
+    await expect(mapPage.listItemFor(testClub)).toBeHidden()
     await expect(mapPage.listItemFor(testPreschool)).toBeVisible()
 
     await mapPage.clubFilter.check()
     await expect(mapPage.listItemFor(testClub)).toBeVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
-    await mapPage.listItemFor(testPreschool).waitUntilHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
+    await expect(mapPage.listItemFor(testPreschool)).toBeHidden()
 
     await mapPage.preschoolFilter.check()
-    await mapPage.listItemFor(testClub).waitUntilHidden()
+    await expect(mapPage.listItemFor(testClub)).toBeHidden()
     await expect(mapPage.listItemFor(testPreschool)).toBeVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
   })
 
   test('Unit language filter affects the unit list', async () => {
@@ -106,13 +106,13 @@ test.describe('Citizen map page', () => {
     await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
 
     await mapPage.setLanguageFilter('fi', true)
-    await mapPage.listItemFor(swedishDaycare).waitUntilHidden()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeHidden()
     await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
 
     await mapPage.setLanguageFilter('sv', true)
     await mapPage.setLanguageFilter('fi', false)
     await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
   })
 
   test('Unit details can be viewed by clicking a list item', async () => {

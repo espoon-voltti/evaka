@@ -395,7 +395,7 @@ export class UnitEditor {
   }
 
   async assertWarningIsNotVisible(dataQa: string) {
-    await this.page.findByDataQa(`${dataQa}`).waitUntilHidden()
+    await expect(this.page.findByDataQa(`${dataQa}`)).toBeHidden()
   }
 
   async selectClosingDate(date: LocalDate) {
@@ -878,7 +878,7 @@ class PlacementProposalsSection {
 
   async submitProposalRejectionReason() {
     await this.page.findByDataQa('modal-okBtn').click()
-    await this.page.findByDataQa('modal-okBtn').waitUntilHidden()
+    await expect(this.page.findByDataQa('modal-okBtn')).toBeHidden()
   }
 
   async waitUntilVisible() {

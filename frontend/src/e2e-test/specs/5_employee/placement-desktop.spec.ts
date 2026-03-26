@@ -198,9 +198,9 @@ test.describe('Placement desktop', () => {
     await daycareCard1.assertOccupancies(14.3, 14.3, 14.3)
 
     // view daycare 2
-    await appCard2
-      .unitPreference(1)
-      .createPlacementDraftButton.waitUntilHidden()
+    await expect(
+      appCard2.unitPreference(1).createPlacementDraftButton
+    ).toBeHidden()
     await appCard2.unitPreference(1).showUnitButton.click()
     await expect(
       appCard2.unitPreference(1).createPlacementDraftButton

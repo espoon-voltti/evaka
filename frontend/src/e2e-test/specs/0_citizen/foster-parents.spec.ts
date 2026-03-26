@@ -147,9 +147,9 @@ test.describe('Foster parents', () => {
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
-    await endedRelationshipPage
-      .findByDataQa(`child-${fosterChild.id}`)
-      .waitUntilHidden()
+    await expect(
+      endedRelationshipPage.findByDataQa(`child-${fosterChild.id}`)
+    ).toBeHidden()
   })
 
   test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async ({
@@ -230,9 +230,9 @@ test.describe('Foster parents', () => {
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
-    await endedRelationshipPage
-      .findByDataQa(`child-${fosterChildNoSsn.id}`)
-      .waitUntilHidden()
+    await expect(
+      endedRelationshipPage.findByDataQa(`child-${fosterChildNoSsn.id}`)
+    ).toBeHidden()
   })
 
   test('Foster parent can receive and reply to messages', async ({

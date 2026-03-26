@@ -180,7 +180,7 @@ export class ApplicationsReport {
     if (exists) {
       await expect(areaElem).toBeVisible()
     } else {
-      await areaElem.waitUntilHidden()
+      await expect(areaElem).toBeHidden()
     }
   }
 
@@ -284,7 +284,7 @@ export class PlacementSketchingReport {
 
   async assertNotRow(applicationId: string) {
     const element = this.page.findByDataQa(`${applicationId}`)
-    await element.waitUntilHidden()
+    await expect(element).toBeHidden()
   }
 
   async toggleApplicationStatus(status: ApplicationStatus) {

@@ -18,7 +18,7 @@ import {
   UnitPage
 } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -136,7 +136,7 @@ test.describe('Employee - unit details', () => {
     await unitClosingDateModal.submitButton.assertDisabled(true)
 
     await unitClosingDateModal.closingDate.fill(placementEnd)
-    await unitClosingDateModal.closingDateInfo.waitUntilHidden()
+    await expect(unitClosingDateModal.closingDateInfo).toBeHidden()
     await unitClosingDateModal.submit()
     await unitDetailsPage.openingAndClosingDates.assertTextEquals(
       `- ${placementEnd.format()}`

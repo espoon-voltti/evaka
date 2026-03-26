@@ -240,18 +240,18 @@ test.describe('Child confirmed reservations', () => {
       confirmedReservationPage.childItem(testDay, shiftCareChild2.id)
     ).toBeVisible()
 
-    await confirmedReservationPage
-      .childItem(testDay, testChild.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChild2.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChildRestricted.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChildNoSsn.id)
-      .waitUntilHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChild.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChild2.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChildRestricted.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChildNoSsn.id)
+    ).toBeHidden()
   })
 
   test('Shift care daily counts are correct', async () => {

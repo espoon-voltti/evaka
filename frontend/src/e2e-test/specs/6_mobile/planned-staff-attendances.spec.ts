@@ -131,21 +131,21 @@ test.describe('Planned staff attendances', () => {
     await initPages()
     await staffPage.selectPrimaryTab('planned')
 
-    await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
+    await expect(plannedAttendancesPage.getExpandedDate(tuesday)).toBeHidden()
     await plannedAttendancesPage.getDateRow(tuesday).click()
     await expect(plannedAttendancesPage.getExpandedDate(tuesday)).toBeVisible()
     await plannedAttendancesPage
       .getPresentEmployee(tuesday, aku.id)
       .assertText((s) => s.includes('Aku Ankka') && s.includes('09:00 - 17:00'))
-    await plannedAttendancesPage
-      .getConfidenceWarning(tuesday, aku.id)
-      .waitUntilHidden()
+    await expect(
+      plannedAttendancesPage.getConfidenceWarning(tuesday, aku.id)
+    ).toBeHidden()
     await plannedAttendancesPage
       .getAbsentEmployee(tuesday, mikki.id)
       .assertText((s) => s.includes('Mikki Hiiri'))
 
     await plannedAttendancesPage.getDateRow(wednesday).click()
-    await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
+    await expect(plannedAttendancesPage.getExpandedDate(tuesday)).toBeHidden()
     await expect(
       plannedAttendancesPage.getExpandedDate(wednesday)
     ).toBeVisible()
@@ -172,12 +172,12 @@ test.describe('Planned staff attendances', () => {
     await expect(
       plannedAttendancesPage.getAbsentEmployee(tuesday, mikki.id)
     ).toBeVisible()
-    await plannedAttendancesPage
-      .getPresentEmployee(tuesday, aku.id)
-      .waitUntilHidden()
-    await plannedAttendancesPage
-      .getAbsentEmployee(tuesday, aku.id)
-      .waitUntilHidden()
+    await expect(
+      plannedAttendancesPage.getPresentEmployee(tuesday, aku.id)
+    ).toBeHidden()
+    await expect(
+      plannedAttendancesPage.getAbsentEmployee(tuesday, aku.id)
+    ).toBeHidden()
   })
 
   test('staff member page has planned attendances', async () => {

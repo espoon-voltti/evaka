@@ -37,7 +37,7 @@ test.describe('Employees PIN', () => {
     )
 
     await pinPage.pinInput.fill('9128')
-    await pinPage.inputInfo.waitUntilHidden()
+    await expect(pinPage.inputInfo).toBeHidden()
   })
 
   test('shows a warning if PIN is locked, and warning disappears when new PIN is set', async () => {
@@ -52,6 +52,6 @@ test.describe('Employees PIN', () => {
     await expect(pinPage.pinLockedAlertBox).toBeVisible()
     await pinPage.pinInput.type('2580')
     await pinPage.pinSendButton.click()
-    await pinPage.pinLockedAlertBox.waitUntilHidden()
+    await expect(pinPage.pinLockedAlertBox).toBeHidden()
   })
 })

@@ -44,24 +44,24 @@ test.describe('Employee - Unit - Service worker note', () => {
     await unitPage.navigateToUnit(daycare.id)
 
     await expect(unitPage.serviceWorkerNote.addButton).toBeVisible()
-    await unitPage.serviceWorkerNote.content.waitUntilHidden()
+    await expect(unitPage.serviceWorkerNote.content).toBeHidden()
 
     await unitPage.serviceWorkerNote.addButton.click()
     const text1 = 'Väistötiloissa joulukuussa, esteellinen sijainti'
     await unitPage.serviceWorkerNote.input.fill(text1)
     await unitPage.serviceWorkerNote.saveButton.click()
-    await unitPage.serviceWorkerNote.saveButton.waitUntilHidden()
+    await expect(unitPage.serviceWorkerNote.saveButton).toBeHidden()
     await unitPage.serviceWorkerNote.content.assertTextEquals(text1)
 
     await unitPage.serviceWorkerNote.editButton.click()
     const text2 = 'Väistötiloissa marraskuussa 2025, esteellinen sijainti'
     await unitPage.serviceWorkerNote.input.fill(text2)
     await unitPage.serviceWorkerNote.saveButton.click()
-    await unitPage.serviceWorkerNote.saveButton.waitUntilHidden()
+    await expect(unitPage.serviceWorkerNote.saveButton).toBeHidden()
     await unitPage.serviceWorkerNote.content.assertTextEquals(text2)
 
     await unitPage.serviceWorkerNote.removeButton.click()
     await expect(unitPage.serviceWorkerNote.addButton).toBeVisible()
-    await unitPage.serviceWorkerNote.content.waitUntilHidden()
+    await expect(unitPage.serviceWorkerNote.content).toBeHidden()
   })
 })

@@ -92,9 +92,9 @@ export class CitizenChildPage {
         })
       )
     } else {
-      await this.page
-        .findByDataQa(`service-need-table-${this.env}`)
-        .waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`service-need-table-${this.env}`)
+      ).toBeHidden()
     }
   }
 
@@ -121,9 +121,9 @@ export class CitizenChildPage {
         })
       )
     } else {
-      await this.page
-        .findByDataQa(`daily-service-time-table-${this.env}`)
-        .waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`daily-service-time-table-${this.env}`)
+      ).toBeHidden()
     }
   }
 
@@ -155,7 +155,7 @@ export class CitizenChildPage {
     await this.page.findAll('text=Irtisano paikka').nth(nth).click()
     const modalOkButton = new AsyncButton(this.page.findByDataQa('modal-okBtn'))
     await modalOkButton.click()
-    await modalOkButton.waitUntilHidden()
+    await expect(modalOkButton).toBeHidden()
   }
 
   nonTerminatablePlacements: ElementCollection
@@ -204,7 +204,7 @@ export class CitizenChildPage {
       this.page.findByDataQa('delete-absence-application-modal')
     )
     await modal.submit()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   assertServiceApplicationsCount = (n: number) =>
@@ -246,7 +246,7 @@ export class CitizenChildPage {
           .findByDataQa('rejected-reason')
           .assertTextEquals(rejectedReason)
       } else {
-        await modal.findByDataQa('rejected-reason').waitUntilHidden()
+        await expect(modal.findByDataQa('rejected-reason')).toBeHidden()
       }
 
       await modal.findByDataQa('close-btn').click()

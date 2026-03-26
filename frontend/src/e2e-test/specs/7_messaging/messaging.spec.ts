@@ -417,7 +417,7 @@ test.describe('Sending and receiving messages', () => {
         await expect(messagesPage.discardMessageButton).toBeVisible()
         await messagesPage.fillReplyContent(defaultContent)
         await messagesPage.discardReplyEditor()
-        await messagesPage.discardMessageButton.waitUntilHidden()
+        await expect(messagesPage.discardMessageButton).toBeHidden()
         await messagesPage.openReplyEditor()
         await messagesPage.assertReplyContentIsEmpty()
       })
@@ -481,7 +481,7 @@ test.describe('Sending and receiving messages', () => {
         await messagesPage.openFirstThreadReplyEditor()
         await messagesPage.fillReplyContent(defaultReply)
         await messagesPage.sendReplyButton.click()
-        await messagesPage.sendReplyButton.waitUntilHidden()
+        await expect(messagesPage.sendReplyButton).toBeHidden()
         await runPendingAsyncJobs(tenDaysBeforePlacementAt11.addMinutes(1))
 
         const tenDaysBeforePlacementAt12 = HelsinkiDateTime.fromLocal(
@@ -840,7 +840,7 @@ test.describe('Sending and receiving messages', () => {
         await expect(citizenMessagesPage.discardMessageButton).toBeVisible()
         await citizenMessagesPage.messageReplyContent.fill(defaultContent)
         await citizenMessagesPage.discardReplyEditor()
-        await citizenMessagesPage.discardMessageButton.waitUntilHidden()
+        await expect(citizenMessagesPage.discardMessageButton).toBeHidden()
         await citizenMessagesPage.startReplyToFirstThread()
         await citizenMessagesPage.messageReplyContent.assertTextEquals('')
       })

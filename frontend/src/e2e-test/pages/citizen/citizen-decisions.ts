@@ -78,9 +78,9 @@ export default class CitizenDecisionsPage {
   }
 
   async assertFinanceDecisionNotShown(decisionId: string) {
-    await this.page
-      .findByDataQa(`finance-decision-${decisionId}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`finance-decision-${decisionId}`)
+    ).toBeHidden()
   }
 
   async assertMetadataForFinanceDecisionShown(financeDecisionId: string) {
@@ -96,9 +96,9 @@ export default class CitizenDecisionsPage {
     ).toBeVisible()
   }
   async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
-    await this.page
-      .findByDataQa(`finance-decision-${financeDecisionId}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`finance-decision-${financeDecisionId}`)
+    ).toBeHidden()
   }
 
   async navigateToDecisionResponse(
@@ -216,7 +216,7 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   const element = page.findByDataQa('alert-box-unconfirmed-decisions-count')
 
   if (count === 0) {
-    return element.waitUntilHidden()
+    return expect(element).toBeHidden()
   }
 
   if (count === 1) {

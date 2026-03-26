@@ -156,7 +156,7 @@ export class FeeDecisionDetailsPage {
 
   async assertPartnerNameNotShown() {
     await expect(this.#headOfFamily).toBeVisible()
-    await this.#partnerName.waitUntilHidden()
+    await expect(this.#partnerName).toBeHidden()
   }
 
   async waitUntilVisible() {
@@ -279,7 +279,7 @@ export class ValueDecisionDetailsPage {
 
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
-    await this.#sendDecisionButton.waitUntilHidden()
+    await expect(this.#sendDecisionButton).toBeHidden()
   }
 
   async assertPartnerName(expectedName: string) {
@@ -288,7 +288,7 @@ export class ValueDecisionDetailsPage {
 
   async assertPartnerNameNotShown() {
     await expect(this.#headOfFamily).toBeVisible()
-    await this.#partnerName.waitUntilHidden()
+    await expect(this.#partnerName).toBeHidden()
   }
 
   async assertDecisionHandler(expectedName: string) {
@@ -334,13 +334,13 @@ export class FinanceDecisionHandlerSelectModal {
 
   async resolveDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
     await this.#decisionHandlerSelectModalResolveBtn.click()
-    await this.#decisionHandlerSelectModalResolveBtn.waitUntilHidden()
+    await expect(this.#decisionHandlerSelectModalResolveBtn).toBeHidden()
     await runPendingAsyncJobs(mockedNow)
   }
 
   async rejectDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
     await this.#decisionHandlerSelectModalRejectBtn.click()
-    await this.#decisionHandlerSelectModalRejectBtn.waitUntilHidden()
+    await expect(this.#decisionHandlerSelectModalRejectBtn).toBeHidden()
     await runPendingAsyncJobs(mockedNow)
   }
 }
@@ -432,11 +432,11 @@ export class InvoicesPage {
     await expect(this.#sendInvoicesDialog).toBeVisible()
     await this.#sendInvoicesDialog.find('[data-qa="title"]').click()
     await this.#sendInvoicesButton.click()
-    await this.#sendInvoicesButton.waitUntilHidden()
+    await expect(this.#sendInvoicesButton).toBeHidden()
 
     await expect(this.#sendInvoicesSuccessOkButton).toBeVisible()
     await this.#sendInvoicesSuccessOkButton.click()
-    await this.#sendInvoicesSuccessOkButton.waitUntilHidden()
+    await expect(this.#sendInvoicesSuccessOkButton).toBeHidden()
   }
 
   async filterByStatus(status: InvoiceStatus) {
@@ -462,7 +462,7 @@ export class InvoicesPage {
 
   async markInvoiceSent() {
     await this.#markInvoiceSentButton.click()
-    await this.#markInvoiceSentButton.waitUntilHidden()
+    await expect(this.#markInvoiceSentButton).toBeHidden()
   }
 
   async assertButtonsDisabled() {
@@ -573,7 +573,7 @@ export class PaymentsPage {
     await expect(modal).toBeVisible()
     const sendButton = new AsyncButton(modal.findByDataQa('modal-okBtn'))
     await sendButton.click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   async deletePayments() {

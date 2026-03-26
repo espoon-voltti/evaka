@@ -424,9 +424,9 @@ test.describe('Unit group calendar', () => {
     await monthCalendar
       .absenceCell(child1Fixture.id, placementEndDate)
       .assertNoAbsence('BILLABLE')
-    await monthCalendar
-      .absenceCell(child1Fixture.id, placementEndDate.addDays(1))
-      .waitUntilHidden()
+    await expect(
+      monthCalendar.absenceCell(child1Fixture.id, placementEndDate.addDays(1))
+    ).toBeHidden()
   })
 
   test('Employee can add reservation', async ({ evaka }) => {

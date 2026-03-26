@@ -98,9 +98,9 @@ export class UnitGroupsPage {
   }
 
   async assertGroupCollapsibleNotHasNekkuOrderButton(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa(`btn-nekku-order`)
-      .waitUntilHidden()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa(`btn-nekku-order`)
+    ).toBeHidden()
   }
 
   async openNekkuOrderModal(groupId: string) {
@@ -311,12 +311,12 @@ export class GroupDailyNoteModal extends Modal {
 
   async save() {
     await this.#save.click()
-    await this.#save.waitUntilHidden()
+    await expect(this.#save).toBeHidden()
   }
 
   async deleteNote() {
     await this.#delete.click()
-    await this.#delete.waitUntilHidden()
+    await expect(this.#delete).toBeHidden()
   }
 }
 

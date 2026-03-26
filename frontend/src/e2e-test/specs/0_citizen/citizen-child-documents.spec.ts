@@ -458,7 +458,7 @@ test.describe('Citizen child documents editor page', () => {
     await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
-    await toast1.waitUntilHidden()
+    await expect(toast1).toBeHidden()
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )
@@ -522,7 +522,7 @@ test.describe('Citizen child documents editor page', () => {
     await answer2.assertTextEquals('Jonkin sortin vastaus 2\n')
     await childDocumentPage.sendButton.click()
     await childDocumentPage.sendingConfirmationModal.submit()
-    await toast1.waitUntilHidden()
+    await expect(toast1).toBeHidden()
     const toast2 = evaka.findByDataQa(
       `toast-child-document-${document.id}-success`
     )

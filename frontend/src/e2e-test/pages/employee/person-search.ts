@@ -87,7 +87,7 @@ export default class PersonSearchPage {
     await this.#createPersonModal.postOfficeInput.type(personData.postOffice)
     await expect(this.#createPersonModal.modal).toBeVisible()
     await this.#modalConfirm.click()
-    await this.#createPersonModal.modal.waitUntilHidden()
+    await expect(this.#createPersonModal.modal).toBeHidden()
   }
 
   async findPerson(searchString: string) {

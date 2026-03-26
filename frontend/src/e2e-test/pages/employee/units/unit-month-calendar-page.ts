@@ -100,7 +100,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
         childRow.findByDataQa('reserved-hours-warning')
       ).toBeVisible()
     } else {
-      await childRow.findByDataQa('reserved-hours-warning').waitUntilHidden()
+      await expect(childRow.findByDataQa('reserved-hours-warning')).toBeHidden()
     }
     await childRow
       .findByDataQa('used-hours')
@@ -108,7 +108,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     if (expected.usedHoursWarning) {
       await expect(childRow.findByDataQa('used-hours-warning')).toBeVisible()
     } else {
-      await childRow.findByDataQa('used-hours-warning').waitUntilHidden()
+      await expect(childRow.findByDataQa('used-hours-warning')).toBeHidden()
     }
   }
 

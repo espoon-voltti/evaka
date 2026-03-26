@@ -224,7 +224,7 @@ export class FolderMessagesPage {
     await this.page.findByDataQa('message-reply-editor-btn').click()
   }
   async assertHasNoMarkUnreadButton() {
-    await this.page.findByDataQa('mark-unread-btn').waitUntilHidden()
+    await expect(this.page.findByDataQa('mark-unread-btn')).toBeHidden()
   }
 }
 
@@ -355,15 +355,15 @@ export class MessageEditor extends Element {
     if (message.confirmManyRecipients) {
       await this.findByDataQa('modal-okBtn').click()
     }
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async assertSimpleViewVisible() {
     await expect(this.inputTitle).toBeVisible()
-    await this.messageTypeMessage.waitUntilHidden()
-    await this.messageTypeBulletin.waitUntilHidden()
-    await this.urgent.waitUntilHidden()
-    await this.fileUpload.waitUntilHidden()
+    await expect(this.messageTypeMessage).toBeHidden()
+    await expect(this.messageTypeBulletin).toBeHidden()
+    await expect(this.urgent).toBeHidden()
+    await expect(this.fileUpload).toBeHidden()
   }
 
   async draftNewMessage(title: string, content: string) {

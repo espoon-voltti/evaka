@@ -100,7 +100,7 @@ test.describe('Employees page', () => {
       await wizard.lastName.fill(person.lastName)
       await wizard.email.fill(person.email)
       await wizard.ok.click()
-      await wizard.waitUntilHidden()
+      await expect(wizard).toBeHidden()
 
       await nav.openAndClickDropdownMenuItem('employees')
       await expect(employeesPage.employeeNames).toHaveText([

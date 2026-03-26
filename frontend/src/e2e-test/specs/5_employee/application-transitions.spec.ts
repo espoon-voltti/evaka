@@ -240,8 +240,8 @@ test.describe('Application transitions', () => {
 
     await expect(applicationReadView.setVerifiedButton).toBeVisible()
     // confidentiality has been set automatically
-    await applicationReadView.confidentialRadioYes.waitUntilHidden()
-    await applicationReadView.confidentialRadioNo.waitUntilHidden()
+    await expect(applicationReadView.confidentialRadioYes).toBeHidden()
+    await expect(applicationReadView.confidentialRadioNo).toBeHidden()
 
     await applicationReadView.setVerifiedButton.click()
     await page.goBack()
@@ -536,9 +536,11 @@ test.describe('Application transitions', () => {
     const preschoolTermValidationWarning = page.findByDataQa(
       'preschool-term-warning'
     )
-    await preschoolTermValidationWarning
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilHidden()
+    await expect(
+      preschoolTermValidationWarning.findText(
+        'Sijoituksen tulee olla esiopetuskaudella'
+      )
+    ).toBeHidden()
 
     await placementDraftPage.endDate?.fill(
       preschoolTerm2021.finnishPreschool.end.addDays(1)
@@ -552,9 +554,11 @@ test.describe('Application transitions', () => {
     await placementDraftPage.endDate?.fill(
       preschoolTerm2021.finnishPreschool.end
     )
-    await preschoolTermValidationWarning
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilHidden()
+    await expect(
+      preschoolTermValidationWarning.findText(
+        'Sijoituksen tulee olla esiopetuskaudella'
+      )
+    ).toBeHidden()
 
     await placementDraftPage.preschoolDaycareEndDate?.fill(
       LocalDate.of(2022, 8, 1)
@@ -568,9 +572,11 @@ test.describe('Application transitions', () => {
     await placementDraftPage.preschoolDaycareEndDate?.fill(
       LocalDate.of(2022, 7, 31)
     )
-    await preschoolTermValidationWarning
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilHidden()
+    await expect(
+      preschoolTermValidationWarning.findText(
+        'Sijoituksen tulee olla esiopetuskaudella'
+      )
+    ).toBeHidden()
 
     await placementDraftPage.submit()
 

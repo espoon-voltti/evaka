@@ -97,7 +97,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilHidden()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeHidden()
   })
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
@@ -327,9 +327,9 @@ test.describe('Citizen daycare applications', () => {
       await applications.viewApplication(applicationId)
 
     await expect(applicationReadView.unitPreferenceSection).toBeVisible()
-    await applicationReadView.contactInfoSection.waitUntilHidden()
-    await applicationReadView.urgencyAttachments.waitUntilHidden()
-    await applicationReadView.shiftCareAttachments.waitUntilHidden()
+    await expect(applicationReadView.contactInfoSection).toBeHidden()
+    await expect(applicationReadView.urgencyAttachments).toBeHidden()
+    await expect(applicationReadView.shiftCareAttachments).toBeHidden()
     await applicationReadView.assistanceNeedDescription.assertTextEquals('')
   })
 

@@ -321,7 +321,7 @@ test.describe('Unit groups - staff', () => {
     }).save()
 
     const groupsPage = await loadUnitGroupsPage(page)
-    await groupsPage.childCapacityFactorColumnHeading.waitUntilHidden()
+    await expect(groupsPage.childCapacityFactorColumnHeading).toBeHidden()
     await groupsPage.assertChildOccupancyFactorColumnNotVisible()
   })
 })

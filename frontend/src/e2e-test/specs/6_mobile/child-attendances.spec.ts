@@ -1256,7 +1256,7 @@ test.describe('Child attendances', () => {
 
       await page.goto(mobileSignupUrl)
       await listPage.selectChild(childWithGuardians.id)
-      await childPage.noGuardiansInfoBox.waitUntilHidden()
+      await expect(childPage.noGuardiansInfoBox).toBeHidden()
     })
 
     test('If child does has foster parent a message about missing guardian is not shown ', async ({
@@ -1287,7 +1287,7 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
       await listPage.comingChildrenTab.click()
       await listPage.selectChild(testChild.id)
-      await childPage.noGuardiansInfoBox.waitUntilHidden()
+      await expect(childPage.noGuardiansInfoBox).toBeHidden()
     })
   })
 

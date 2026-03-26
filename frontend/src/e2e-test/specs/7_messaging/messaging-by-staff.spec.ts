@@ -280,7 +280,7 @@ test.describe('Sending and receiving messages', () => {
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -354,7 +354,7 @@ test.describe('Sending and receiving messages', () => {
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 

@@ -101,7 +101,7 @@ export default class ApplicationReadView {
 
   async assertOtherVtjGuardianMissing() {
     await expect(this.page.findByDataQa('no-other-vtj-guardian')).toBeVisible()
-    await this.#vtjGuardianName.waitUntilHidden()
+    await expect(this.#vtjGuardianName).toBeHidden()
   }
 
   async assertOtherGuardianSameAddress(status: boolean) {
@@ -146,12 +146,14 @@ export default class ApplicationReadView {
 
     const submit = decision.findByDataQa('decision-send-answer-button')
     await submit.click()
-    await submit.waitUntilHidden()
+    await expect(submit).toBeHidden()
   }
 
   async assertDecisionDisabled(type: DecisionType) {
     const decision = this.page.findByDataQa(`application-decision-${type}`)
-    await decision.findByDataQa('decision-send-answer-button').waitUntilHidden()
+    await expect(
+      decision.findByDataQa('decision-send-answer-button')
+    ).toBeHidden()
   }
 
   async assertApplicationStatus(text: string) {
@@ -180,9 +182,9 @@ export default class ApplicationReadView {
   }
 
   async assertExtendedCareAttachmentDoesNotExist(fileName: string) {
-    await this.page
-      .findByDataQa(`extended-care-attachment-${fileName}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`extended-care-attachment-${fileName}`)
+    ).toBeHidden()
   }
 
   async assertApplicantIsDead() {
@@ -225,7 +227,7 @@ export default class ApplicationReadView {
     await expect(
       this.page.findByDataQa('application-notes-list')
     ).toBeAttached()
-    await this.notes.nth(0).waitUntilHidden()
+    await expect(this.notes.nth(0)).toBeHidden()
   }
 
   async clickMessageThreadLinkInNote(index: number): Promise<MessagesPage> {
@@ -239,7 +241,7 @@ export default class ApplicationReadView {
   }
 
   async assertNoteNotEditable(index: number) {
-    await this.notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
+    await expect(this.notes.nth(index).findByDataQa('edit-note')).toBeHidden()
   }
 
   async editNote(index: number, note: string) {
@@ -251,7 +253,7 @@ export default class ApplicationReadView {
   }
 
   async assertNoteNotDeletable(index: number) {
-    await this.notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
+    await expect(this.notes.nth(index).findByDataQa('delete-note')).toBeHidden()
   }
 
   async deleteNote(index: number) {

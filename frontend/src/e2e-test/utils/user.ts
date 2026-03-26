@@ -42,7 +42,7 @@ export async function enduserLoginWeak(
   await new TextInput(form.find('[id="username"]')).fill(credentials.username)
   await new TextInput(form.find('[id="password"]')).fill(credentials.password)
   await form.findByDataQa('login').click()
-  await form.findByDataQa('login').waitUntilHidden()
+  await expect(form.findByDataQa('login')).toBeHidden()
 
   await expect(page.findByDataQa('header-city-logo')).toBeVisible()
 }

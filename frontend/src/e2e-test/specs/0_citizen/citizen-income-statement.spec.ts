@@ -96,7 +96,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         await expect(incomeStatementsPage.incomeStartDateInfo).toBeVisible()
 
         await incomeStatementsPage.setValidFromDate(startDate)
-        await incomeStatementsPage.incomeStartDateInfo.waitUntilHidden()
+        await expect(incomeStatementsPage.incomeStartDateInfo).toBeHidden()
 
         await expect(incomeStatementsPage.incomeEndDateInfo).toBeVisible()
 
@@ -112,7 +112,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         )
 
         await incomeStatementsPage.setValidToDate(endDate)
-        await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
+        await expect(incomeStatementsPage.incomeEndDateInfo).toBeHidden()
         await incomeStatementsPage.submit()
         await incomeStatementsPage.assertAriaLiveExistsAndIncludesNotification()
         await assertIncomeStatementCreated(startDate, now, env)
