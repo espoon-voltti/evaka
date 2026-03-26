@@ -97,6 +97,16 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       config.employee.sessionTimeoutMinutes
     )
   )
+  const citizenMessagingSessions = sessionSupport(
+    'citizen-messaging',
+    redisClient,
+    config.citizenMessaging,
+    Math.max(
+      config.citizen.sessionTimeoutMinutes,
+      config.employee.sessionTimeoutMinutes,
+      config.citizenMessaging.sessionTimeoutMinutes
+    )
+  )
   const citizenProxy = createProxy({
     getUserHeader: (req) => citizenSessions.getUserHeader(req)
   })
@@ -136,7 +146,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       {
         cookieName: sessionCookie('employee'),
         cookieSecret: config.employee.cookieSecret
-      }
+      },
+      citizenMessagingSessions
     )
     router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
   }
@@ -212,6 +223,14 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     citizenSessions.middleware,
     toRequestHandler(async (req, res) => {
       const user = citizenSessions.getUser(req)
+
+      // Always try to destroy messaging session if it exists
+      try {
+        await citizenMessagingSessions.destroy(req, res)
+      } catch {
+        // Ignore errors when destroying messaging session
+      }
+
       switch (user?.authType) {
         case 'sfi':
           if (citizenSfiIntegration)
@@ -264,6 +283,28 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use(csrf)
 
   router.use('/citizen', citizenSessions.middleware)
+
+  // Combined middleware for messaging routes - tries citizen session first, then messaging session
+  const messagingMiddleware: express.RequestHandler = (req, res, next) => {
+    // If citizen session has a user, use it
+    if (citizenSessions.getUser(req)) {
+      return next()
+    }
+    // Otherwise try the messaging session
+    citizenMessagingSessions.middleware(req, res, (err) => {
+      if (err) return next(err)
+      // Set req.user from messaging session if available
+      req.user = citizenMessagingSessions.getUser(req)
+      next()
+    })
+  }
+
+  const messagingProxy = createProxy({
+    getUserHeader: (req) =>
+      citizenSessions.getUserHeader(req) ||
+      citizenMessagingSessions.getUserHeader(req)
+  })
+
   router.get('/citizen/auth/status', citizenAuthStatus(citizenSessions))
   router.post(
     '/citizen/auth/weak-login',
@@ -284,6 +325,24 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.all('/citizen/auth/{*rest}', (_, res) => res.redirect('/'))
   router.use('/citizen/public/map-api', mapRoutes)
   router.all('/citizen/public/{*rest}', citizenProxy)
+
+  // Special handling for messaging routes - allow fallback to messaging session
+  router.all(
+    '/citizen/messages/{*rest}',
+    messagingMiddleware,
+    (req, res, next) => {
+      // Require authentication from either session
+      const user =
+        citizenSessions.getUser(req) || citizenMessagingSessions.getUser(req)
+      if (!user || !user.id) {
+        res.sendStatus(401)
+        return
+      }
+      next()
+    },
+    messagingProxy
+  )
+
   router.all(
     '/citizen/{*rest}',
     citizenSessions.requireAuthentication,

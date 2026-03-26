@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { SAML } from '@node-saml/node-saml'
+import express from 'express'
 import { z } from 'zod'
 
 import type { EvakaSamlConfig } from '../shared/config.ts'
@@ -13,6 +14,7 @@ import { authenticateProfile, createSamlConfig } from '../shared/saml/index.ts'
 import redisCacheProvider from '../shared/saml/node-saml-cache-redis.ts'
 import { citizenLogin, employeeSuomiFiLogin } from '../shared/service-client.ts'
 import type { Sessions } from '../shared/session.ts'
+import { linkMessagingSession } from '../shared/session.ts'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -60,9 +62,10 @@ export function createCitizenSuomiFiIntegration(
   secondaryCookieConfig?: {
     cookieName: string
     cookieSecret: string
-  }
+  },
+  messagingSessions?: Sessions<'citizen-messaging'>
 ) {
-  return createSamlIntegration({
+  const baseIntegration = createSamlIntegration({
     sessions,
     strategyName: 'suomifi',
     saml: new SAML(
@@ -76,6 +79,90 @@ export function createCitizenSuomiFiIntegration(
     citizenCookieSecret,
     secondaryCookieConfig
   })
+
+  if (!messagingSessions) {
+    return baseIntegration
+  }
+
+  // Create custom router that also handles messaging sessions
+  const router = express.Router()
+  router.use(sessions.middleware)
+
+  // Login endpoint - delegate to base integration
+  router.get('/login', (req, res, next) =>
+    baseIntegration.router(req, res, next)
+  )
+
+  // Custom login callback that creates both sessions
+  router.post(
+    '/login/callback',
+    express.urlencoded({ extended: false }),
+    (req, res, next) => {
+      // Run messaging session middleware to prepare req.session for messaging
+      messagingSessions.middleware(req, res, (err) => {
+        if (err) return next(err)
+
+        // Store the primary session ID before creating messaging session
+        const primarySessionId = req.session?.id
+
+        // Now run the base integration's login callback
+        baseIntegration.router(req, res, (callbackErr) => {
+          if (callbackErr) return next(callbackErr)
+
+          // If primary login succeeded, create messaging session too
+          const user = sessions.getUser(req)
+          if (user && user.authType === 'sfi') {
+            messagingSessions
+              .login(req, user)
+              .then(() => {
+                const messagingSessionId = req.session?.id
+
+                // Link the sessions in Redis for cleanup
+                if (
+                  primarySessionId &&
+                  messagingSessionId &&
+                  primarySessionId !== messagingSessionId
+                ) {
+                  return linkMessagingSession(
+                    redisClient,
+                    primarySessionId,
+                    messagingSessionId,
+                    43200 // 30 days in minutes
+                  )
+                }
+              })
+              .catch((msgErr) => {
+                logWarn(`Failed to create messaging session: ${String(msgErr)}`)
+                // Continue even if messaging session fails
+              })
+          }
+        })
+      })
+    }
+  )
+
+  // Logout endpoints - destroy both sessions
+  router.get('/logout/callback', (req, res, next) =>
+    baseIntegration.router(req, res, next)
+  )
+  router.post('/logout/callback', (req, res, next) =>
+    baseIntegration.router(req, res, next)
+  )
+
+  return {
+    router,
+    logout: async (req: express.Request, res: express.Response) => {
+      // Destroy both sessions on logout
+      try {
+        await messagingSessions.destroy(req, res)
+      } catch (msgErr) {
+        logWarn(
+          `Failed to destroy messaging session during logout: ${String(msgErr)}`
+        )
+      }
+      return baseIntegration.logout(req, res)
+    }
+  }
 }
 
 const authenticateEmployee = authenticateProfile(
