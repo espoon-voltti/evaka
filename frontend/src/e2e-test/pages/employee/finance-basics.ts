@@ -208,7 +208,7 @@ export default class FinanceBasicsPage {
           }
 
           await this.feesSection.editor.saveButton.waitUntilHidden()
-          await this.feesSection.rootLoaded.waitUntilVisible()
+          await expect(this.feesSection.rootLoaded).toBeVisible()
         }
       }
     }

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../../playwright'
 import type { Page, Element } from '../../../utils/page'
 import { TextInput } from '../../../utils/page'
 
@@ -33,7 +34,7 @@ export class PairingFlow {
 
   async startPairing() {
     await this.#mobileStartPairingBtn.click()
-    await this.#mobilePairingTitle1.waitUntilVisible()
+    await expect(this.#mobilePairingTitle1).toBeVisible()
   }
 
   async submitChallengeKey(challengeKey: string) {
@@ -42,16 +43,16 @@ export class PairingFlow {
   }
 
   async getResponseKey() {
-    await this.#responseKey.waitUntilVisible()
+    await expect(this.#responseKey).toBeVisible()
     return this.#responseKey.text
   }
 
   async waitUntilPairingWizardFinished() {
-    await this.#mobilePairingTitle3.waitUntilVisible()
+    await expect(this.#mobilePairingTitle3).toBeVisible()
   }
 
   async clickStartCta() {
     await this.#startCtaLink.click()
-    await this.#topBarTitle.waitUntilVisible()
+    await expect(this.#topBarTitle).toBeVisible()
   }
 }

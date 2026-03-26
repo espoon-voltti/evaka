@@ -90,7 +90,7 @@ test.describe('Child and group notes', () => {
 
     await notePage.fillNote(childDailyNote)
     await notePage.saveChildDailyNote()
-    await childPage.notesExistsBubble.waitUntilVisible()
+    await expect(childPage.notesExistsBubble).toBeVisible()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
 

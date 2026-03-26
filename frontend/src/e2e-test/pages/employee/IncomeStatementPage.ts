@@ -40,7 +40,7 @@ export class IncomeStatementPage {
     if (expectedAttachmentsCount > 0) {
       await expect(this.#attachments).toHaveCount(expectedAttachmentsCount)
     } else {
-      await this.#noAttachments.waitUntilVisible()
+      await expect(this.#noAttachments).toBeVisible()
     }
   }
 

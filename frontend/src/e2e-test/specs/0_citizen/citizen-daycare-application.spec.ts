@@ -112,7 +112,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeVisible()
   })
 
   test('Minimal valid daycare application can be sent', async () => {
@@ -326,7 +326,7 @@ test.describe('Citizen daycare applications', () => {
     const applicationReadView =
       await applications.viewApplication(applicationId)
 
-    await applicationReadView.unitPreferenceSection.waitUntilVisible()
+    await expect(applicationReadView.unitPreferenceSection).toBeVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()
     await applicationReadView.urgencyAttachments.waitUntilHidden()
     await applicationReadView.shiftCareAttachments.waitUntilHidden()
@@ -387,15 +387,15 @@ test.describe('Citizen daycare applications', () => {
       },
       true
     )
-    await section.unverifiedEmailStatus.waitUntilVisible()
+    await expect(section.unverifiedEmailStatus).toBeVisible()
     await section.sendVerificationCode.click()
-    await section.verificationCodeField.waitUntilVisible()
+    await expect(section.verificationCodeField).toBeVisible()
     await runJobs({ mockedTime: mockedNow })
     const verificationCode = await getVerificationCodeFromEmail()
     expect(verificationCode).toBeTruthy()
     await section.verificationCodeField.fill(verificationCode ?? '')
     await section.verifyEmail.click()
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
 
     // when user goes back to the application
     await page.reload()

@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
@@ -83,15 +84,15 @@ export class MobileReservationsEditPage {
   }
 
   async assertFixedSchedule(date: LocalDate) {
-    await this.#findReservationDate(date)
-      .findByDataQa('fixed-schedule')
-      .waitUntilVisible()
+    await expect(
+      this.#findReservationDate(date).findByDataQa('fixed-schedule')
+    ).toBeVisible()
   }
 
   async assertTermBreak(date: LocalDate) {
-    await this.#findReservationDate(date)
-      .findByDataQa('term-break')
-      .waitUntilVisible()
+    await expect(
+      this.#findReservationDate(date).findByDataQa('term-break')
+    ).toBeVisible()
   }
 
   #findReservationDate = (date: LocalDate) =>

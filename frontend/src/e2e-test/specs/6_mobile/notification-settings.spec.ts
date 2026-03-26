@@ -11,7 +11,7 @@ import type { DevCareArea, DevDaycare } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
 import UnitListPage from '../../pages/mobile/unit-list-page'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -49,7 +49,7 @@ test.describe('Settings page push permission section', () => {
     const settings = settingsPage.notificationSettings
 
     await settings.permissionState.assertTextEquals('Ei käytössä')
-    await settings.enableButton.waitUntilVisible()
+    await expect(settings.enableButton).toBeVisible()
 
     // testing the actual permission popup is not currently possible with Playwright, but
     // we can add a permission override to the browser context

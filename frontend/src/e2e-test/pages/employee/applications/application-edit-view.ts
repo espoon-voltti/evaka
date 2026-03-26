@@ -6,6 +6,7 @@ import type { OtherGuardianAgreementStatus } from 'lib-common/generated/api-type
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../../playwright'
 import type { Page, Element } from '../../../utils/page'
 import {
   Checkbox,
@@ -105,7 +106,9 @@ export default class ApplicationEditView {
   }
 
   async fillConnectedDaycarePreferredStartDate(date: string) {
-    await this.#connectedDaycarePreferredStartDateInputWarning.waitUntilVisible()
+    await expect(
+      this.#connectedDaycarePreferredStartDateInputWarning
+    ).toBeVisible()
     await this.#connectedDaycarePreferredStartDate.fill(date)
     await this.#connectedDaycarePreferredStartDateInputWarning.waitUntilHidden()
   }
@@ -154,9 +157,9 @@ export default class ApplicationEditView {
     expectedSsn: string,
     expectedAddress: string
   ) {
-    await this.#guardianName.findText(expectedName).waitUntilVisible()
-    await this.#guardianSsn.findText(expectedSsn).waitUntilVisible()
-    await this.#guardianAddress.findText(expectedAddress).waitUntilVisible()
+    await expect(this.#guardianName.findText(expectedName)).toBeVisible()
+    await expect(this.#guardianSsn.findText(expectedSsn)).toBeVisible()
+    await expect(this.#guardianAddress.findText(expectedAddress)).toBeVisible()
   }
 
   #guardianAgreementStatus = (status: OtherGuardianAgreementStatus) =>

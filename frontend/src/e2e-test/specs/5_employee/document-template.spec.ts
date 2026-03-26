@@ -64,7 +64,7 @@ test.describe('Employee - Document templates', () => {
     await modal.nameInput.fill(name)
     await modal.confirmCreateButton.click()
 
-    await templates.templateRow(name).waitUntilVisible()
+    await expect(templates.templateRow(name)).toBeVisible()
   })
 
   test('Duplicating a template copies archive metadata fields', async () => {
@@ -94,7 +94,7 @@ test.describe('Employee - Document templates', () => {
 
     await templates.templateRow(template.name).duplicateButton.click()
     const modal = templates.templateModal
-    await modal.waitUntilVisible()
+    await expect(modal).toBeVisible()
 
     await modal.processDefinitionNumberInput.assertValueEquals('12.34.56')
     await modal.archiveDurationMonthsInput.assertValueEquals('240')

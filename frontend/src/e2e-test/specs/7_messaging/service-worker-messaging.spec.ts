@@ -469,7 +469,7 @@ test.describe('Service Worker Messaging', () => {
       await applReadView.navigateToApplication(applicationId)
 
       // Currently VEO can write notes so use this to ensure page is loaded
-      await staffPage.findByDataQa('add-note').waitUntilVisible()
+      await expect(staffPage.findByDataQa('add-note')).toBeVisible()
       await staffPage.findByDataQa('send-message-button').waitUntilHidden()
     })
   })

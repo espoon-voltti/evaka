@@ -32,7 +32,7 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -199,7 +199,7 @@ test.describe('Unit groups - unit supervisor', () => {
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
-    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await expect(groupsPage.childCapacityFactorColumnHeading).toBeVisible()
     await groupsPage.assertChildCapacityFactor(child1Fixture.id, '—')
   })
 
@@ -223,7 +223,7 @@ test.describe('Unit groups - unit supervisor', () => {
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
-    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await expect(groupsPage.childCapacityFactorColumnHeading).toBeVisible()
     await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.50')
   })
 
@@ -252,7 +252,7 @@ test.describe('Unit groups - unit supervisor', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
     await groupsPage.openGroupCollapsible(groupId)
-    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await expect(groupsPage.childCapacityFactorColumnHeading).toBeVisible()
     await groupsPage.assertChildCapacityFactor(child3Fixture.id, '1.50')
   })
 
@@ -279,7 +279,7 @@ test.describe('Unit groups - unit supervisor', () => {
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
-    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await expect(groupsPage.childCapacityFactorColumnHeading).toBeVisible()
     await groupsPage.assertChildCapacityFactor(child2Fixture.id, '1.89')
   })
 })

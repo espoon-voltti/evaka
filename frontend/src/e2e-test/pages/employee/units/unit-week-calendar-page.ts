@@ -187,22 +187,22 @@ export class ChildDatePresenceModal extends Modal {
   ) {
     await expect(this.#absenceWarnings).toBeAttached()
     if (expectedWarnings.includes('missing-nonbillable-absence')) {
-      await this.#warningMissingNonbillableAbsence.waitUntilVisible()
+      await expect(this.#warningMissingNonbillableAbsence).toBeVisible()
     } else {
       await this.#warningMissingNonbillableAbsence.waitUntilHidden()
     }
     if (expectedWarnings.includes('extra-nonbillable-absence')) {
-      await this.#warningExtraNonbillableAbsence.waitUntilVisible()
+      await expect(this.#warningExtraNonbillableAbsence).toBeVisible()
     } else {
       await this.#warningExtraNonbillableAbsence.waitUntilHidden()
     }
     if (expectedWarnings.includes('missing-billable-absence')) {
-      await this.#warningMissingBillableAbsence.waitUntilVisible()
+      await expect(this.#warningMissingBillableAbsence).toBeVisible()
     } else {
       await this.#warningMissingBillableAbsence.waitUntilHidden()
     }
     if (expectedWarnings.includes('extra-billable-absence')) {
-      await this.#warningExtraBillableAbsence.waitUntilVisible()
+      await expect(this.#warningExtraBillableAbsence).toBeVisible()
     } else {
       await this.#warningExtraBillableAbsence.waitUntilHidden()
     }

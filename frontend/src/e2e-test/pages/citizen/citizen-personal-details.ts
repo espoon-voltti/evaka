@@ -63,7 +63,7 @@ export class CitizenPersonalDetailsSection extends Element {
   }
 
   async checkMissingEmailWarningIsShown() {
-    await this.#missingEmailOrPhoneBox.waitUntilVisible()
+    await expect(this.#missingEmailOrPhoneBox).toBeVisible()
     await this.#missingEmailOrPhoneBox.assertText((text) =>
       text.includes('Sähköpostiosoitteesi puuttuu')
     )

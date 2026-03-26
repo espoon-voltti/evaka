@@ -10,7 +10,7 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import FinanceBasicsPage from '../../pages/employee/finance-basics'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -33,7 +33,7 @@ test.describe('Finance basics', () => {
 
   test('Navigate to finance basics page', async () => {
     await nav.openAndClickDropdownMenuItem('finance-basics')
-    await financeBasicsPage.feesSection.root.waitUntilVisible()
+    await expect(financeBasicsPage.feesSection.root).toBeVisible()
   })
 
   test('Create a new set of retroactive fee thresholds', async () => {
@@ -45,7 +45,7 @@ test.describe('Finance basics', () => {
     await financeBasicsPage.feesSection.editor.save(true)
 
     const newThresholdsItem = financeBasicsPage.feesSection.item(0)
-    await newThresholdsItem.element.waitUntilVisible()
+    await expect(newThresholdsItem.element).toBeVisible()
     await newThresholdsItem.assertItemContains(data)
   })
 
@@ -64,7 +64,7 @@ test.describe('Finance basics', () => {
     await financeBasicsPage.feesSection.editor.save(true)
 
     const newThresholdsItem = financeBasicsPage.feesSection.item(0)
-    await newThresholdsItem.element.waitUntilVisible()
+    await expect(newThresholdsItem.element).toBeVisible()
     await newThresholdsItem.assertItemContains(newData)
 
     const oldData = {
@@ -74,7 +74,7 @@ test.describe('Finance basics', () => {
       )
     }
     const oldThresholdsItem = financeBasicsPage.feesSection.item(1)
-    await oldThresholdsItem.element.waitUntilVisible()
+    await expect(oldThresholdsItem.element).toBeVisible()
     await oldThresholdsItem.assertItemContains(oldData)
   })
 
@@ -98,7 +98,7 @@ test.describe('Finance basics', () => {
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const originalThresholdsItem = financeBasicsPage.feesSection.item(0)
-    await originalThresholdsItem.element.waitUntilVisible()
+    await expect(originalThresholdsItem.element).toBeVisible()
 
     const newDateRange = new DateRange(
       originalData.validDuring.start.addYears(1),
@@ -114,14 +114,14 @@ test.describe('Finance basics', () => {
     await financeBasicsPage.feesSection.editor.save(true)
 
     const newThresholdsItem = financeBasicsPage.feesSection.item(0)
-    await newThresholdsItem.element.waitUntilVisible()
+    await expect(newThresholdsItem.element).toBeVisible()
     await newThresholdsItem.assertItemContains({
       ...originalData,
       validDuring: newDateRange
     })
 
     const oldThresholdsItem = financeBasicsPage.feesSection.item(1)
-    await oldThresholdsItem.element.waitUntilVisible()
+    await expect(oldThresholdsItem.element).toBeVisible()
     await oldThresholdsItem.assertItemContains({
       ...originalData,
       validDuring: originalData.validDuring.withEnd(
@@ -135,7 +135,7 @@ test.describe('Finance basics', () => {
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const thresholdsItem = financeBasicsPage.feesSection.item(0)
-    await thresholdsItem.element.waitUntilVisible()
+    await expect(thresholdsItem.element).toBeVisible()
 
     await thresholdsItem.edit()
     await financeBasicsPage.feesSection.editor.minFeeInput.fill('20')

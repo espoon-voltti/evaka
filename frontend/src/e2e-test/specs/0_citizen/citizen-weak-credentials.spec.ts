@@ -50,9 +50,11 @@ test.describe('Citizen weak credentials', () => {
     })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    await personalDetailsPage.personalDetailsSection.unverifiedEmailStatus.waitUntilVisible()
+    await expect(
+      personalDetailsPage.personalDetailsSection.unverifiedEmailStatus
+    ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await section.weakLoginDisabled.waitUntilVisible()
+    await expect(section.weakLoginDisabled).toBeVisible()
     await section.activateCredentials.assertDisabled(true)
   })
 
@@ -69,9 +71,11 @@ test.describe('Citizen weak credentials', () => {
     const validPassword = 'aifiefaeC3io?dee'
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    await personalDetailsPage.personalDetailsSection.verifiedEmailStatus.waitUntilVisible()
+    await expect(
+      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+    ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await section.weakLoginDisabled.waitUntilVisible()
+    await expect(section.weakLoginDisabled).toBeVisible()
     await section.activateCredentials.click()
 
     const modal = new WeakCredentialsModal(evaka)
@@ -81,7 +85,7 @@ test.describe('Citizen weak credentials', () => {
     // two clicks because there's a separate confirmation page
     await modal.ok.click()
     await modal.ok.click()
-    await section.weakLoginEnabled.waitUntilVisible()
+    await expect(section.weakLoginEnabled).toBeVisible()
     await section.username.assertTextEquals(email)
   })
 
@@ -102,9 +106,11 @@ test.describe('Citizen weak credentials', () => {
     const newPassword = 'EeyahShoqu+oe7th'
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    await personalDetailsPage.personalDetailsSection.verifiedEmailStatus.waitUntilVisible()
+    await expect(
+      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+    ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await section.weakLoginEnabled.waitUntilVisible()
+    await expect(section.weakLoginEnabled).toBeVisible()
     await section.username.assertTextEquals(email)
     await section.updatePassword.click()
 
@@ -145,14 +151,14 @@ test.describe('Citizen weak credentials', () => {
       true
     )
 
-    await section.verificationCodeField.waitUntilVisible()
+    await expect(section.verificationCodeField).toBeVisible()
     await runJobs({ mockedTime })
     const verificationCode = await getVerificationCodeFromEmail()
     expect(verificationCode).toBeTruthy()
     await section.verificationCodeField.fill(verificationCode ?? '')
     await section.verifyEmail.click()
 
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
     await personalDetailsPage.loginDetailsSection.username.assertTextEquals(
       newEmail
     )
@@ -178,14 +184,14 @@ test.describe('Citizen weak credentials', () => {
     const section = personalDetailsPage.personalDetailsSection
 
     await section.updateUsername.click()
-    await section.verificationCodeField.waitUntilVisible()
+    await expect(section.verificationCodeField).toBeVisible()
     await runJobs({ mockedTime })
     const verificationCode = await getVerificationCodeFromEmail()
     expect(verificationCode).toBeTruthy()
     await section.verificationCodeField.fill(verificationCode ?? '')
     await section.verifyEmail.click()
 
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
     await personalDetailsPage.loginDetailsSection.username.assertTextEquals(
       newEmail
     )
@@ -209,9 +215,11 @@ test.describe('Citizen weak credentials', () => {
     await upsertPasswordBlacklist({ body: [unacceptablePassword] })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    await personalDetailsPage.personalDetailsSection.verifiedEmailStatus.waitUntilVisible()
+    await expect(
+      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+    ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await section.weakLoginEnabled.waitUntilVisible()
+    await expect(section.weakLoginEnabled).toBeVisible()
     await section.updatePassword.click()
 
     const modal = new WeakCredentialsModal(evaka)
@@ -226,7 +234,7 @@ test.describe('Citizen weak credentials', () => {
     await modal.ok.assertDisabled(true)
     await modal.confirmPassword.fill(unacceptablePassword)
     await modal.ok.click()
-    await modal.unacceptablePasswordAlert.waitUntilVisible()
+    await expect(modal.unacceptablePasswordAlert).toBeVisible()
 
     await modal.password.fill(validPassword)
     await modal.confirmPassword.fill(validPassword)
@@ -265,7 +273,7 @@ test.describe('Citizen weak credentials', () => {
     await header.selectTab('personal-details')
     const personalDetailsPage = new CitizenPersonalDetailsPage(strongSession)
     const section = personalDetailsPage.loginDetailsSection
-    await section.weakLoginEnabled.waitUntilVisible()
+    await expect(section.weakLoginEnabled).toBeVisible()
     await section.username.assertTextEquals(email)
     await section.updatePassword.click()
 
@@ -278,6 +286,8 @@ test.describe('Citizen weak credentials', () => {
 
     // Weak session should be logged out
     await weakSession.findByDataQa('desktop-nav').click()
-    await weakSession.findByDataQa('session-expired-modal').waitUntilVisible()
+    await expect(
+      weakSession.findByDataQa('session-expired-modal')
+    ).toBeVisible()
   })
 })

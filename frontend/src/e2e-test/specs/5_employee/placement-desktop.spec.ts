@@ -202,9 +202,9 @@ test.describe('Placement desktop', () => {
       .unitPreference(1)
       .createPlacementDraftButton.waitUntilHidden()
     await appCard2.unitPreference(1).showUnitButton.click()
-    await appCard2
-      .unitPreference(1)
-      .createPlacementDraftButton.waitUntilVisible()
+    await expect(
+      appCard2.unitPreference(1).createPlacementDraftButton
+    ).toBeVisible()
     await expect(placementDesktopView.daycareCards).toHaveCount(2)
     const daycareCard2 = placementDesktopView.daycareCard(1)
     await daycareCard2.assertOccupancies(0, 0, 0)
@@ -222,7 +222,7 @@ test.describe('Placement desktop', () => {
     // place to daycare 3 through combobox
     await appCard2.addOtherUnitButton.click()
     await appCard2.draftPlacementCombobox.fillAndSelectFirst(daycare3.name)
-    await appCard2.addOtherUnitButton.waitUntilVisible()
+    await expect(appCard2.addOtherUnitButton).toBeVisible()
     await expect(placementDesktopView.daycareCards).toHaveCount(3)
     const daycareCard3 = placementDesktopView.daycareCard(2)
     await expect(daycareCard3.draftPlacementRows).toHaveCount(1)

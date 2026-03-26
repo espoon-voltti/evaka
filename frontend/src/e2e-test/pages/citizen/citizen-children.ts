@@ -70,9 +70,9 @@ export class CitizenChildPage {
     }[]
   ) {
     if (data.length > 0) {
-      await this.page
-        .findByDataQa(`service-need-table-${this.env}`)
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa(`service-need-table-${this.env}`)
+      ).toBeVisible()
       const rows = this.page.findAllByDataQa(
         `service-need-table-row-${this.env}`
       )
@@ -102,9 +102,9 @@ export class CitizenChildPage {
     data: { dateRange: string; description: string }[]
   ) {
     if (data.length > 0) {
-      await this.page
-        .findByDataQa(`daily-service-time-table-${this.env}`)
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa(`daily-service-time-table-${this.env}`)
+      ).toBeVisible()
       const rows = this.page.findAllByDataQa(
         `daily-service-time-table-row-${this.env}`
       )

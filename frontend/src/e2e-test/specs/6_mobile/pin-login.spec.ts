@@ -185,7 +185,7 @@ test.describe('Mobile PIN login', () => {
     await childPage.assertBasicInfoIsShown(childName, contacts, backupPickups)
     await childPage.sensitiveInfo.diet.waitUntilHidden()
     await childPage.showSensitiveInfoButton.click()
-    await childPage.sensitiveInfo.diet.waitUntilVisible()
+    await expect(childPage.sensitiveInfo.diet).toBeVisible()
 
     await childPage.assertSensitiveInfo(childAdditionalInfo)
   })

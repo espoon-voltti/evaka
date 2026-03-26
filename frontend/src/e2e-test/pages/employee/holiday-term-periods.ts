@@ -5,6 +5,7 @@
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page, ElementCollection, Element } from '../../utils/page'
 import { Checkbox, DatePicker, Radio, TextInput } from '../../utils/page'
 
@@ -140,7 +141,7 @@ export class HolidayAndTermPeriodsPage {
   async assertQuestionnaireContainsText(nth: number, texts: string[]) {
     const row = this.questionnaires.nth(nth)
     for (const text of texts) {
-      await row.findText(text).waitUntilVisible()
+      await expect(row.findText(text)).toBeVisible()
     }
   }
 

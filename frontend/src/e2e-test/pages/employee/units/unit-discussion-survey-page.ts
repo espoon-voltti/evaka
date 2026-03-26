@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Element,
@@ -109,9 +110,9 @@ export class DiscussionSurveyReadView {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .findByDataQa('survey-reservation-calendar-title')
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa('survey-reservation-calendar-title')
+    ).toBeVisible()
   }
 
   async addEventTimeForDay(date: LocalDate, eventTime: TestEventTime) {
@@ -123,7 +124,7 @@ export class DiscussionSurveyReadView {
       calendarDay.findByDataQa(`time-input-container`)
     )
 
-    await dayEditor.waitUntilVisible()
+    await expect(dayEditor).toBeVisible()
     await dayEditor.startTimeInput.fill(eventTime.startTime)
     await dayEditor.endTimeInput.fill(eventTime.endTime)
     await dayEditor.submitButton.click()
@@ -171,17 +172,19 @@ export class DiscussionSurveyReadView {
   }
 
   async assertUnreservedAttendeeExists(attendeeId: string) {
-    await this.page
-      .findByDataQa('unreserved-attendees')
-      .findByDataQa(`attendee-${attendeeId}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa('unreserved-attendees')
+        .findByDataQa(`attendee-${attendeeId}`)
+    ).toBeVisible()
   }
 
   async assertReservedAttendeeExists(attendeeId: string) {
-    await this.page
-      .findByDataQa('reserved-attendees')
-      .findByDataQa(`attendee-${attendeeId}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa('reserved-attendees')
+        .findByDataQa(`attendee-${attendeeId}`)
+    ).toBeVisible()
   }
 
   async assertEventTimeExists(
@@ -236,7 +239,7 @@ export class DiscussionSurveyEditor {
   }
 
   async waitUntilLoaded() {
-    await this.submitButton.waitUntilVisible()
+    await expect(this.submitButton).toBeVisible()
   }
 
   async submit() {

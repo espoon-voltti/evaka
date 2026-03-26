@@ -95,7 +95,7 @@ export default class MobileChildPage {
   }
 
   async waitUntilLoaded() {
-    await this.childName.waitUntilVisible()
+    await expect(this.childName).toBeVisible()
   }
 
   async assertBasicInfoIsShown(
@@ -150,7 +150,7 @@ export default class MobileChildPage {
 
   async openNotes() {
     await this.notesLink.click()
-    await this.saveNoteButton.waitUntilVisible()
+    await expect(this.saveNoteButton).toBeVisible()
   }
 
   async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {

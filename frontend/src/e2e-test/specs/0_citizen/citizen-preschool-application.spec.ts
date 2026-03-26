@@ -169,7 +169,7 @@ test.describe('Citizen preschool applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeVisible()
   })
 })
 

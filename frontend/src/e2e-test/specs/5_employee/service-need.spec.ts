@@ -110,7 +110,7 @@ test.describe('Service need', () => {
       partiallyInactiveServiceNeedOption.id
     )
     await section.serviceNeedSaveButton.assertDisabled(true)
-    await section.partiallyInvalidWarning.waitUntilVisible()
+    await expect(section.partiallyInvalidWarning).toBeVisible()
 
     await section.serviceNeedEndDate.fill(mockToday.addDays(5).format())
     await section.serviceNeedSaveButton.assertDisabled(false)

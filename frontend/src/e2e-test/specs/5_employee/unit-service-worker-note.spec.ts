@@ -13,7 +13,7 @@ import type {
   DevEmployee
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -43,7 +43,7 @@ test.describe('Employee - Unit - Service worker note', () => {
     const unitPage = new UnitPage(page)
     await unitPage.navigateToUnit(daycare.id)
 
-    await unitPage.serviceWorkerNote.addButton.waitUntilVisible()
+    await expect(unitPage.serviceWorkerNote.addButton).toBeVisible()
     await unitPage.serviceWorkerNote.content.waitUntilHidden()
 
     await unitPage.serviceWorkerNote.addButton.click()
@@ -61,7 +61,7 @@ test.describe('Employee - Unit - Service worker note', () => {
     await unitPage.serviceWorkerNote.content.assertTextEquals(text2)
 
     await unitPage.serviceWorkerNote.removeButton.click()
-    await unitPage.serviceWorkerNote.addButton.waitUntilVisible()
+    await expect(unitPage.serviceWorkerNote.addButton).toBeVisible()
     await unitPage.serviceWorkerNote.content.waitUntilHidden()
   })
 })

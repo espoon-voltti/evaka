@@ -93,12 +93,12 @@ for (const env of ['desktop', 'mobile'] as const) {
         await incomeStatementsPage.setValidFromDate(
           now.toLocalDate().subMonths(12).subDays(1).format('d.M.yyyy')
         )
-        await incomeStatementsPage.incomeStartDateInfo.waitUntilVisible()
+        await expect(incomeStatementsPage.incomeStartDateInfo).toBeVisible()
 
         await incomeStatementsPage.setValidFromDate(startDate)
         await incomeStatementsPage.incomeStartDateInfo.waitUntilHidden()
 
-        await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
+        await expect(incomeStatementsPage.incomeEndDateInfo).toBeVisible()
 
         await incomeStatementsPage.checkIncomesRegisterConsent()
         await incomeStatementsPage.checkAssured()
@@ -160,7 +160,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
         // Try to submit without attachments
         await incomeStatementsPage.submit()
-        await incomeStatementsPage.invalidForm.waitUntilVisible()
+        await expect(incomeStatementsPage.invalidForm).toBeVisible()
 
         // Add the missing attachment
         await incomeStatementsPage

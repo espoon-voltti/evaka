@@ -280,10 +280,6 @@ export class Element {
     await this.locator.click()
   }
 
-  async waitUntilVisible(): Promise<void> {
-    await expect(this.locator).toBeVisible()
-  }
-
   async waitUntilHidden(): Promise<void> {
     await expect(this.locator).toBeHidden()
   }
@@ -414,11 +410,11 @@ export class FileUpload extends Element {
   async upload(path: string | string[]) {
     const fileCountBefore = await this.fileCount
     await this.#input.setInputFiles(path)
-    await this.#uploadedFilesContainer
-      .find(
+    await expect(
+      this.#uploadedFilesContainer.find(
         `:nth-child(${fileCountBefore + 1}) [data-qa="file-download-button"]`
-      )
-      .waitUntilVisible()
+      ).locator
+    ).toBeVisible()
   }
 
   async uploadTestFile() {
@@ -637,7 +633,7 @@ export class MultiSelect extends Element {
   }
 
   async assertNoOptions() {
-    await this.findByDataQa('no-options').waitUntilVisible()
+    await expect(this.findByDataQa('no-options').locator).toBeVisible()
   }
 
   async assertOptions(options: string[]) {

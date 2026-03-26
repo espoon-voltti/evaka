@@ -1089,7 +1089,7 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(0, 0, 0, 1, 1)
       await listPage.absentChildrenTab.click()
       await listPage.selectChild(child)
-      await childPage.termBreak.waitUntilVisible()
+      await expect(childPage.termBreak).toBeVisible()
     })
 
     test('Non operational day child is shown in absent list', async ({
@@ -1113,7 +1113,7 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(0, 0, 0, 1, 1)
       await listPage.absentChildrenTab.click()
       await listPage.selectChild(child)
-      await childPage.termBreak.waitUntilVisible()
+      await expect(childPage.termBreak).toBeVisible()
     })
 
     test('Child with shift care is shown in coming list even on weekend', async ({
@@ -1252,7 +1252,7 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
       await listPage.comingChildrenTab.click()
       await listPage.selectChild(testChild.id)
-      await childPage.noGuardiansInfoBox.waitUntilVisible()
+      await expect(childPage.noGuardiansInfoBox).toBeVisible()
 
       await page.goto(mobileSignupUrl)
       await listPage.selectChild(childWithGuardians.id)

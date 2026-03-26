@@ -13,7 +13,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AdditionalInformationSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
@@ -109,10 +109,10 @@ test.describe('Nekku fields are editable', () => {
     await section.editBtn.click()
 
     const specialDietEditor = section.getNekkuSpecialDietEditor()
-    await specialDietEditor.getCheckBox('2', 'b', 'b1').waitUntilVisible()
-    await specialDietEditor.getCheckBox('2', 'b', 'b2').waitUntilVisible()
-    await specialDietEditor.getCheckBox('2', 'b', 'b3').waitUntilVisible()
-    await specialDietEditor.getTextField('2', 'a').waitUntilVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b1')).toBeVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b2')).toBeVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b3')).toBeVisible()
+    await expect(specialDietEditor.getTextField('2', 'a')).toBeVisible()
   })
 
   test('Special diet fields can be edited', async () => {

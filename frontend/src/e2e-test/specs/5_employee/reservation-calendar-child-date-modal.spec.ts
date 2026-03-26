@@ -123,9 +123,9 @@ test.describe('Reservation calendar child date modal', () => {
     await expect(reservations).toHaveCount(2)
     await reservations.nth(0).assertTextEquals('09:00\n16:00*')
     await reservations.nth(1).assertTextEquals('20:30\n23:59 *')
-    await reservationsTable
-      .outsideOpeningHoursWarning(childId, date, 1)
-      .waitUntilVisible()
+    await expect(
+      reservationsTable.outsideOpeningHoursWarning(childId, date, 1)
+    ).toBeVisible()
 
     await reservationsTable.openChildDateModal(childId, date)
     await modal.reservationStart(0).assertValueEquals('09:00')
@@ -375,17 +375,17 @@ test.describe('Reservation calendar child date modal', () => {
       await modal.reservationEnd(0).fill('21:00')
       await modal.submit()
 
-      await reservationsTable
-        .outsideOpeningHoursWarning(childId, date1, 0)
-        .waitUntilVisible()
+      await expect(
+        reservationsTable.outsideOpeningHoursWarning(childId, date1, 0)
+      ).toBeVisible()
       await reservationsTable
         .attendanceCells(childId, date1)
         .nth(0)
         .assertTextEquals('Tee varasijoitus ')
 
-      await reservationsTable
-        .outsideOpeningHoursWarning(childId, date2, 0)
-        .waitUntilVisible()
+      await expect(
+        reservationsTable.outsideOpeningHoursWarning(childId, date2, 0)
+      ).toBeVisible()
       await reservationsTable
         .attendanceCells(childId, date2)
         .nth(0)

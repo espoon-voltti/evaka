@@ -74,11 +74,12 @@ export default class MessagesPage {
   threadAttachments: ElementCollection
 
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
-    await this.page
-      .findAllByDataQa('received-message-row')
-      .nth(nth)
-      .find('[data-qa="participants"]', { hasText: str })
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findAllByDataQa('received-message-row')
+        .nth(nth)
+        .find('[data-qa="participants"]', { hasText: str })
+    ).toBeVisible()
   }
 
   async openInbox(index: number) {
@@ -141,7 +142,7 @@ export default class MessagesPage {
 
   async assertNoDrafts() {
     await this.#draftMessagesBoxRow.click()
-    await this.#emptyInboxText.waitUntilVisible()
+    await expect(this.#emptyInboxText).toBeVisible()
   }
 
   async assertCopyContent(title: string, content: string) {
@@ -161,7 +162,7 @@ export default class MessagesPage {
 
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
-    await this.#emptyInboxText.waitUntilVisible()
+    await expect(this.#emptyInboxText).toBeVisible()
   }
 
   secondaryRecipient(name: string) {
@@ -358,7 +359,7 @@ export class MessageEditor extends Element {
   }
 
   async assertSimpleViewVisible() {
-    await this.inputTitle.waitUntilVisible()
+    await expect(this.inputTitle).toBeVisible()
     await this.messageTypeMessage.waitUntilHidden()
     await this.messageTypeBulletin.waitUntilHidden()
     await this.urgent.waitUntilHidden()
@@ -383,8 +384,8 @@ export class MessageEditor extends Element {
   }
 
   async assertFiltersVisible() {
-    await this.yearsOfBirthSelection.waitUntilVisible()
-    await this.shiftcare.waitUntilVisible()
-    await this.familyDaycare.waitUntilVisible()
+    await expect(this.yearsOfBirthSelection).toBeVisible()
+    await expect(this.shiftcare).toBeVisible()
+    await expect(this.familyDaycare).toBeVisible()
   }
 }

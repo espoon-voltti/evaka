@@ -111,7 +111,7 @@ export default class ApplicationListView {
   }
 
   async assertApplicationIsVisible(applicationId: string) {
-    await this.#application(applicationId).waitUntilVisible()
+    await expect(this.#application(applicationId)).toBeVisible()
   }
 
   async assertApplicationCount(n: number) {
@@ -187,7 +187,7 @@ export class DecisionEditorPage {
   constructor(private page: Page) {}
 
   async waitUntilLoaded() {
-    await this.page.findByDataQa('save-decisions-button').waitUntilVisible()
+    await expect(this.page.findByDataQa('save-decisions-button')).toBeVisible()
   }
 
   async selectUnit(type: DecisionType, unitId: UUID) {

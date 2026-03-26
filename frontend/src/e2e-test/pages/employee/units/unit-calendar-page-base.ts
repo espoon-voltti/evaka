@@ -52,9 +52,9 @@ export class UnitCalendarPageBase {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-attendances"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async setFilterStartDate(date: LocalDate) {
@@ -115,9 +115,11 @@ export class UnitCalendarPageBase {
   }
 
   async waitForWeekLoaded() {
-    await this.page
-      .find('[data-qa="staff-attendances-status"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="staff-attendances-status"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertDateRange(expectedRange: FiniteDateRange) {
@@ -149,16 +151,16 @@ export class UnitOccupanciesSection extends Element {
   ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
 
   async assertGraphIsVisible() {
-    await this.#graph.waitUntilVisible()
+    await expect(this.#graph).toBeVisible()
   }
 
   async assertGraphHasNoData() {
-    await this.#noDataPlaceholder.waitUntilVisible()
+    await expect(this.#noDataPlaceholder).toBeVisible()
   }
 
   async assertNoValidValues() {
-    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
-    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+    await expect(this.#elem('no-valid-values', 'confirmed')).toBeVisible()
+    await expect(this.#elem('no-valid-values', 'planned')).toBeVisible()
   }
 
   async assertConfirmed(minimum: string, maximum: string) {
@@ -258,11 +260,13 @@ export class UnitStaffAttendancesTable extends Element {
 
     if (hasStaffOccupancyEffect !== undefined) {
       if (hasStaffOccupancyEffect) {
-        await row
-          .findByDataQa('icon-occupancy-coefficient-pos')
-          .waitUntilVisible()
+        await expect(
+          row.findByDataQa('icon-occupancy-coefficient-pos')
+        ).toBeVisible()
       } else {
-        await row.findByDataQa('icon-occupancy-coefficient').waitUntilVisible()
+        await expect(
+          row.findByDataQa('icon-occupancy-coefficient')
+        ).toBeVisible()
       }
     }
   }
@@ -317,7 +321,7 @@ export class UnitStaffAttendancesTable extends Element {
     await cell.hover()
 
     if (visible) {
-      await cell.findByDataQa('open-details').waitUntilVisible()
+      await expect(cell.findByDataQa('open-details')).toBeVisible()
     } else {
       await cell.findByDataQa('open-details').waitUntilHidden()
     }
@@ -344,7 +348,7 @@ export class StaffAttendanceDetailsModal extends Element {
     const select = new Select(
       this.findAllByDataQa('attendance-type-select').nth(row)
     )
-    await select.waitUntilVisible()
+    await expect(select).toBeVisible()
     return select
   }
 
@@ -471,12 +475,12 @@ export class StaffAttendanceAddPersonModal extends Element {
   }
 
   async timeErrorVisible() {
-    await this.findByDataQa(
-      'add-person-arrival-time-input-info'
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa('add-person-arrival-time-input-info')
+    ).toBeVisible()
   }
 
   async nameErrorVisible() {
-    await this.findByDataQa('add-person-name-input-info').waitUntilVisible()
+    await expect(this.findByDataQa('add-person-name-input-info')).toBeVisible()
   }
 }

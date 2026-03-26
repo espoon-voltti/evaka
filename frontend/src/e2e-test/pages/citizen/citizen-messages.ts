@@ -90,12 +90,12 @@ export default class CitizenMessagesPage {
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()
     const editor = new CitizenMessageEditor(this.#messageEditor)
-    await editor.waitUntilVisible()
+    await expect(editor).toBeVisible()
     return editor
   }
 
   async assertInboxIsEmpty() {
-    await this.#inboxEmpty.waitUntilVisible()
+    await expect(this.#inboxEmpty).toBeVisible()
   }
 
   async assertTimedNotification(dataQa: string, content: string) {
@@ -130,7 +130,7 @@ export default class CitizenMessagesPage {
     )
     await this.threadMessages.only().assertTextEquals(message.content)
     if (message.urgent ?? false) {
-      await this.#threadUrgent.waitUntilVisible()
+      await expect(this.#threadUrgent).toBeVisible()
     } else {
       await this.#threadUrgent.waitUntilHidden()
     }
@@ -140,14 +140,14 @@ export default class CitizenMessagesPage {
   }
   async assertThreadIsRedacted() {
     await this.#threadListItem.click()
-    await this.#redactedThreadTitle.waitUntilVisible()
+    await expect(this.#redactedThreadTitle).toBeVisible()
   }
   async assertOpenReplyEditorButtonIsHidden() {
     await expect(this.#openReplyEditorButtonHidden).toBeAttached()
   }
   async assertFinanceReplyInfo(visible: boolean) {
     if (visible) {
-      await this.#financeReplyInfo.waitUntilVisible()
+      await expect(this.#financeReplyInfo).toBeVisible()
     } else {
       await this.#financeReplyInfo.waitUntilHidden()
     }
@@ -274,7 +274,7 @@ export class CitizenMessageEditor extends Element {
   }
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
-      await this.findByDataQa(`child-${childId}`).waitUntilVisible()
+      await expect(this.findByDataQa(`child-${childId}`)).toBeVisible()
     }
 
     await expect(this.findAllByDataQa('relevant-child')).toHaveCount(

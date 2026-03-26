@@ -953,7 +953,7 @@ test.describe('Additional filters', () => {
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.filtersButton.waitUntilVisible()
+    await expect(messageEditor.filtersButton).toBeVisible()
     await messageEditor.filtersButton.click()
     await messageEditor.assertFiltersVisible()
   })
@@ -964,7 +964,7 @@ test.describe('Additional filters', () => {
     const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.unitReceived.click()
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.sendButton.waitUntilVisible()
+    await expect(messageEditor.sendButton).toBeVisible()
     expect(await messageEditor.filtersButtonCount).toBe(0)
   })
 

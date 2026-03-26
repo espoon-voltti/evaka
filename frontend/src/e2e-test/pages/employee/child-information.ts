@@ -54,9 +54,11 @@ export default class ChildInformationPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="person-details-section"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="person-details-section"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertName(lastName: string, firstName: string) {
@@ -71,7 +73,7 @@ export default class ChildInformationPage {
   }
 
   async deceasedIconIsShown() {
-    await this.#deceased.waitUntilVisible()
+    await expect(this.#deceased).toBeVisible()
   }
 
   async assertOphPersonOid(expected: string) {
@@ -423,9 +425,9 @@ export class ChildDocumentsSection extends Section {
     await Promise.all(
       expectedRows.map(async (expected, index) => {
         const row = rows.nth(index)
-        await row
-          .findByDataQa(`child-document-${expected.id}`)
-          .waitUntilVisible()
+        await expect(
+          row.findByDataQa(`child-document-${expected.id}`)
+        ).toBeVisible()
       })
     )
   }
@@ -533,7 +535,7 @@ export class BackupCaresSection extends Section {
   ) {
     await this.fillNewBackupCareFields(daycareName, startDate, endDate)
     await this.find('[data-qa="submit-backup-care-form"]').click()
-    await this.#backupCares.waitUntilVisible()
+    await expect(this.#backupCares).toBeVisible()
   }
 
   async fillNewBackupCareFields(
@@ -563,7 +565,7 @@ export class BackupCaresSection extends Section {
   }
 
   async getBackupCares(): Promise<{ unit: string; period: string }[]> {
-    await this.#backupCares.waitUntilVisible()
+    await expect(this.#backupCares).toBeVisible()
     return this.evaluate((el) =>
       Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
         (row) => ({
@@ -580,7 +582,7 @@ export class BackupCaresSection extends Section {
       .click()
 
     const modal = this.#backupCares.find('[data-qa="modal"]')
-    await modal.waitUntilVisible()
+    await expect(modal).toBeVisible()
     await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
     await modal.waitUntilHidden()
   }
@@ -635,7 +637,7 @@ export class FamilyContactsSection extends Section {
 
   async assertFamilyContactDetails(id: string, data: FamilyContactDetails) {
     const row = this.#familyContactRow(id)
-    await row.waitUntilVisible()
+    await expect(row).toBeVisible()
 
     if (data.email) {
       await row
@@ -668,7 +670,7 @@ export class FamilyContactsSection extends Section {
   }
 
   async assertBackupPickupExists(name: string) {
-    await this.#row(name).waitUntilVisible()
+    await expect(this.#row(name)).toBeVisible()
   }
 
   async assertBackupPickupDoesNotExist(name: string) {
@@ -686,7 +688,7 @@ export class GuardiansSection extends Section {
     this.findByDataQa(`table-guardian-row-${id}`)
 
   async assertGuardianExists(id: UUID) {
-    await this.guardianRow(id).waitUntilVisible()
+    await expect(this.guardianRow(id)).toBeVisible()
   }
 
   async assertFosterParentExists(
@@ -873,9 +875,9 @@ export class PlacementsSection extends Section {
     index: number,
     shiftCareType: ShiftCareType
   ) {
-    await this.#serviceNeedRow(index)
-      .findByDataQa(`shift-care-${shiftCareType}`)
-      .waitUntilVisible()
+    await expect(
+      this.#serviceNeedRow(index).findByDataQa(`shift-care-${shiftCareType}`)
+    ).toBeVisible()
   }
 
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
@@ -896,13 +898,15 @@ export class PlacementsSection extends Section {
   }
 
   async assertTerminatedByGuardianIsShown(placementId: string) {
-    await this.#terminatedByGuardian(placementId).waitUntilVisible()
+    await expect(this.#terminatedByGuardian(placementId)).toBeVisible()
   }
 
   async assertTerminatedByGuardianIsNotShown(placementId: string) {
-    await this.#placementRow(placementId)
-      .find('[data-qa="placement-details-start-date"]')
-      .waitUntilVisible()
+    await expect(
+      this.#placementRow(placementId).find(
+        '[data-qa="placement-details-start-date"]'
+      )
+    ).toBeVisible()
     await this.#terminatedByGuardian(placementId).waitUntilHidden()
   }
 
@@ -1257,7 +1261,7 @@ class FeeAlterationEditorPage {
   }
 
   async waitUntilReady() {
-    await this.dateRangePicker.start.waitUntilVisible()
+    await expect(this.dateRangePicker.start).toBeVisible()
   }
 }
 
@@ -1282,10 +1286,9 @@ export class FeeAlterationsSection extends Section {
   }
 
   async assertAttachmentExists(name: string) {
-    await this.page
-      .findAllByDataQa('attachment')
-      .find(`text="${name}"`)
-      .waitUntilVisible()
+    await expect(
+      this.page.findAllByDataQa('attachment').find(`text="${name}"`)
+    ).toBeVisible()
   }
 }
 

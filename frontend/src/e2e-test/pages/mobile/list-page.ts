@@ -4,6 +4,7 @@
 
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 import { Checkbox } from '../../utils/page'
 
@@ -45,7 +46,7 @@ export default class MobileListPage {
   }
 
   async assertChildExists(childId: UUID) {
-    await this.childRow(childId).waitUntilVisible()
+    await expect(this.childRow(childId)).toBeVisible()
   }
 
   async selectChild(childId: UUID) {
@@ -59,7 +60,7 @@ export default class MobileListPage {
   }
 
   async assertChildNoteDoesntExist(childId: UUID) {
-    await this.childRow(childId).waitUntilVisible()
+    await expect(this.childRow(childId)).toBeVisible()
     await this.childRow(childId)
       .findByDataQa('link-child-daycare-daily-note')
       .waitUntilHidden()
@@ -87,7 +88,7 @@ export default class MobileListPage {
   async selectGroup(id: string) {
     await this.groupSelectorButton.click()
     await this.groupChipElement(id).click()
-    await this.selectedGroupElement(id).waitUntilVisible()
+    await expect(this.selectedGroupElement(id)).toBeVisible()
   }
 
   async selectSortType(sortType: string) {

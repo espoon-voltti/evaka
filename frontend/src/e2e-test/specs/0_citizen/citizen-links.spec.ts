@@ -8,7 +8,7 @@ import {
   resetServiceState,
   upsertWeakCredentials
 } from '../../generated/api-clients'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
@@ -35,7 +35,7 @@ test.describe('Citizen links', () => {
   test.describe('without login', () => {
     test('accessibility page can be accessed', async () => {
       await page.goto(`${config.enduserUrl}/accessibility`)
-      await page.findByDataQa('accessibility-statement').waitUntilVisible()
+      await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })
 
@@ -43,7 +43,7 @@ test.describe('Citizen links', () => {
     test('accessibility page can be accessed', async () => {
       await enduserLogin(page, testAdult)
       await page.goto(`${config.enduserUrl}/accessibility`)
-      await page.findByDataQa('accessibility-statement').waitUntilVisible()
+      await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })
 
@@ -51,7 +51,7 @@ test.describe('Citizen links', () => {
     test('accessibility page can be accessed', async () => {
       await enduserLoginWeak(page, credentials)
       await page.goto(`${config.enduserUrl}/accessibility`)
-      await page.findByDataQa('accessibility-statement').waitUntilVisible()
+      await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })
 })

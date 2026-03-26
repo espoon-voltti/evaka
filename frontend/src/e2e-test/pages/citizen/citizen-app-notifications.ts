@@ -50,7 +50,7 @@ export default class CitizenNotificationsPage {
     daycareName: string,
     startDate: LocalDate
   ) {
-    await parentElement.waitUntilVisible()
+    await expect(parentElement).toBeVisible()
     const content = await parentElement.text
 
     const name = formatPersonName(child, 'FirstFirst')

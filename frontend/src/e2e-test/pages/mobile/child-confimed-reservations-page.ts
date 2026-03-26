@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export type ReservationChildDetails = {
@@ -22,7 +23,7 @@ export default class ConfirmedDayReservationPage {
     this.dayRow(date).findByDataQa(`child-${childId}`)
 
   async assertDayExists(date: LocalDate) {
-    await this.dayRow(date).waitUntilVisible()
+    await expect(this.dayRow(date)).toBeVisible()
   }
 
   async assertDayDoesNotExist(date: LocalDate) {

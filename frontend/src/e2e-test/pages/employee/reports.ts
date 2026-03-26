@@ -171,14 +171,14 @@ export class ApplicationsReport {
   }
 
   private async areaWithNameExists(area: string, exists = true) {
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
 
     const areaElem = this.#table
       .findAll(`[data-qa="care-area-name"]:has-text("${area}")`)
       .first()
 
     if (exists) {
-      await areaElem.waitUntilVisible()
+      await expect(areaElem).toBeVisible()
     } else {
       await areaElem.waitUntilHidden()
     }
@@ -193,13 +193,14 @@ export class ApplicationsReport {
   }
 
   async assertContainsServiceProviders(providers: string[]) {
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
 
     for (const provider of providers) {
-      await this.#table
-        .findAll(`[data-qa="unit-provider-type"]:has-text("${provider}")`)
-        .first()
-        .waitUntilVisible()
+      await expect(
+        this.#table
+          .findAll(`[data-qa="unit-provider-type"]:has-text("${provider}")`)
+          .first()
+      ).toBeVisible()
     }
   }
 
@@ -268,7 +269,7 @@ export class PlacementSketchingReport {
     currentUnitName: string | null = null
   ) {
     const element = this.page.findByDataQa(`${applicationId}`)
-    await element.waitUntilVisible()
+    await expect(element).toBeVisible()
 
     await element
       .find('[data-qa="requested-unit"]')
@@ -330,7 +331,7 @@ export class VoucherServiceProvidersReport {
     expectedMonthlySum: string
   ) {
     const row = this.page.findByDataQa(`${unitId}`)
-    await row.waitUntilVisible()
+    await expect(row).toBeVisible()
     expect(await row.find(`[data-qa="child-count"]`).text).toStrictEqual(
       expectedChildCount
     )
@@ -517,7 +518,7 @@ export class PreschoolApplicationReport {
 
   async assertNoResults() {
     const noResults = this.page.findByDataQa('no-results')
-    await noResults.waitUntilVisible()
+    await expect(noResults).toBeVisible()
   }
 
   async assertRows(expected: string[]) {

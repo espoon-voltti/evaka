@@ -21,7 +21,7 @@ import {
   StaffAttendancePage,
   StaffMemberPlannedAttendancesPage
 } from '../../pages/mobile/staff-page'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -133,7 +133,7 @@ test.describe('Planned staff attendances', () => {
 
     await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
     await plannedAttendancesPage.getDateRow(tuesday).click()
-    await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilVisible()
+    await expect(plannedAttendancesPage.getExpandedDate(tuesday)).toBeVisible()
     await plannedAttendancesPage
       .getPresentEmployee(tuesday, aku.id)
       .assertText((s) => s.includes('Aku Ankka') && s.includes('09:00 - 17:00'))
@@ -146,10 +146,12 @@ test.describe('Planned staff attendances', () => {
 
     await plannedAttendancesPage.getDateRow(wednesday).click()
     await plannedAttendancesPage.getExpandedDate(tuesday).waitUntilHidden()
-    await plannedAttendancesPage.getExpandedDate(wednesday).waitUntilVisible()
-    await plannedAttendancesPage
-      .getAbsentEmployee(wednesday, aku.id)
-      .waitUntilVisible()
+    await expect(
+      plannedAttendancesPage.getExpandedDate(wednesday)
+    ).toBeVisible()
+    await expect(
+      plannedAttendancesPage.getAbsentEmployee(wednesday, aku.id)
+    ).toBeVisible()
     await plannedAttendancesPage
       .getPresentEmployee(wednesday, mikki.id)
       .assertText((s) => s.includes('09:00 - 12:00') && s.includes('22:00 - →'))
@@ -167,9 +169,9 @@ test.describe('Planned staff attendances', () => {
 
     // On Tuesday Mikki is absent while Aku is neither present nor absent
     await plannedAttendancesPage.getDateRow(tuesday).click()
-    await plannedAttendancesPage
-      .getAbsentEmployee(tuesday, mikki.id)
-      .waitUntilVisible()
+    await expect(
+      plannedAttendancesPage.getAbsentEmployee(tuesday, mikki.id)
+    ).toBeVisible()
     await plannedAttendancesPage
       .getPresentEmployee(tuesday, aku.id)
       .waitUntilHidden()

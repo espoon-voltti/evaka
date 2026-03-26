@@ -11,7 +11,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
@@ -80,7 +80,7 @@ test.describe('child document with person duplicate', () => {
     await employeeLogin(evaka, daycareSupervisor)
     await evaka.goto(`${config.employeeUrl}/child-documents/${document.id}`)
     const childDocumentPage = new ChildDocumentPage(evaka)
-    await childDocumentPage.status.waitUntilVisible()
+    await expect(childDocumentPage.status).toBeVisible()
   })
 
   test('unit supervisor sees hojks documents from duplicate', async ({
@@ -165,7 +165,7 @@ test.describe('child document with person duplicate', () => {
     const childDocumentPage = await childDocumentsSection.openChildDocument(
       hojksDocument.id
     )
-    await childDocumentPage.status.waitUntilVisible()
+    await expect(childDocumentPage.status).toBeVisible()
     await childDocumentPage.returnButton.click()
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.assertName(child.lastName, child.firstName)

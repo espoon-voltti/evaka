@@ -91,9 +91,9 @@ export default class CitizenDecisionsPage {
       await financeDecision.click()
     }
     await this.#decisionMetadataButton(financeDecisionId).click()
-    await financeDecision
-      .findByDataQa('process-number-field')
-      .waitUntilVisible()
+    await expect(
+      financeDecision.findByDataQa('process-number-field')
+    ).toBeVisible()
   }
   async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
     await this.page
@@ -124,7 +124,7 @@ export default class CitizenDecisionsPage {
       .findAll('button')
       .first()
       .click()
-    await this.page.findByDataQa('process-number-field').waitUntilVisible()
+    await expect(this.page.findByDataQa('process-number-field')).toBeVisible()
   }
 }
 

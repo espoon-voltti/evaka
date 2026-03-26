@@ -409,7 +409,7 @@ export class StaffAttendanceEditPage {
 
   async typeSelect(index: number) {
     const select = new Select(this.page.findAllByDataQa('type').nth(index))
-    await select.waitUntilVisible()
+    await expect(select).toBeVisible()
     return select
   }
 

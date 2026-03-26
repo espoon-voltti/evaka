@@ -28,7 +28,7 @@ export class DiscussionReservationModal extends Element {
       expectedEventTimeIds.length
     )
     for (const et of expectedEventTimeIds) {
-      await this.findByDataQa(`radio-${et}`).waitUntilVisible()
+      await expect(this.findByDataQa(`radio-${et}`)).toBeVisible()
     }
   }
 
@@ -48,18 +48,18 @@ export class DiscussionSurveyModal extends Element {
     title: string
   ) => {
     const childElement = this.findByDataQa(`discussion-child-${childId}`)
-    await childElement.waitUntilVisible()
+    await expect(childElement).toBeVisible()
 
     const surveyElement = childElement.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
     await surveyElement
       .findByDataQa(`survey-title-${surveyId}`)
       .assertTextEquals(title)
-    await surveyElement
-      .findByDataQa('open-survey-reservations-button')
-      .waitUntilVisible()
+    await expect(
+      surveyElement.findByDataQa('open-survey-reservations-button')
+    ).toBeVisible()
   }
 
   assertChildReservation = async (
@@ -72,12 +72,12 @@ export class DiscussionSurveyModal extends Element {
     isExportable = true
   ) => {
     const childElement = this.findByDataQa(`discussion-child-${childId}`)
-    await childElement.waitUntilVisible()
+    await expect(childElement).toBeVisible()
 
     const surveyElement = childElement.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
     await surveyElement
       .findByDataQa(`survey-title-${surveyId}`)
       .assertTextEquals(title)
@@ -87,14 +87,14 @@ export class DiscussionSurveyModal extends Element {
       .assertTextEquals(reservationText)
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
-    await cancelButton.waitUntilVisible()
+    await expect(cancelButton).toBeVisible()
     await cancelButton.assertDisabled(!isCancellable)
 
     const exportButton = surveyElement.findByDataQa(
       `event-export-button-${reservationId}`
     )
     if (isExportable) {
-      await exportButton.waitUntilVisible()
+      await expect(exportButton).toBeVisible()
     } else {
       await exportButton.waitUntilHidden()
     }
@@ -104,7 +104,7 @@ export class DiscussionSurveyModal extends Element {
     const surveyElement = this.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
 
     const surveyReservationButton = surveyElement.findByDataQa(
       'open-survey-reservations-button'
@@ -116,10 +116,10 @@ export class DiscussionSurveyModal extends Element {
     const surveyElement = this.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
-    await cancelButton.waitUntilVisible()
+    await expect(cancelButton).toBeVisible()
     await cancelButton.assertDisabled(false)
     await cancelButton.click()
   }

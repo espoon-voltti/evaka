@@ -44,10 +44,10 @@ test.describe('Citizen e-mail verification', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     const section = personalDetailsPage.personalDetailsSection
-    await section.unverifiedEmailStatus.waitUntilVisible()
+    await expect(section.unverifiedEmailStatus).toBeVisible()
 
     await section.sendVerificationCode.click()
-    await section.verificationCodeField.waitUntilVisible()
+    await expect(section.verificationCodeField).toBeVisible()
     await runJobs({ mockedTime })
 
     const verificationCode = await getVerificationCodeFromEmail()
@@ -55,7 +55,7 @@ test.describe('Citizen e-mail verification', () => {
     await section.verificationCodeField.fill(verificationCode ?? '')
     await section.verifyEmail.click()
 
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
   })
 
   test('if a person has a verified e-mail and they change it, it requires re-verification', async ({
@@ -70,7 +70,7 @@ test.describe('Citizen e-mail verification', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     const section = personalDetailsPage.personalDetailsSection
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
 
     await section.editPersonalData(
       {
@@ -81,6 +81,6 @@ test.describe('Citizen e-mail verification', () => {
       },
       true
     )
-    await section.sendVerificationCode.waitUntilVisible()
+    await expect(section.sendVerificationCode).toBeVisible()
   })
 })

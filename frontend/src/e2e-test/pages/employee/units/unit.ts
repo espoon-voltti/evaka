@@ -87,9 +87,9 @@ export class UnitPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-attendances"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async openUnitInformation(): Promise<UnitInfoPage> {
@@ -185,7 +185,7 @@ export class UnitDetailsPage {
   }
 
   async waitUntilLoaded() {
-    await this.#editUnitButton.waitUntilVisible()
+    await expect(this.#editUnitButton).toBeVisible()
   }
 
   async assertUnitName(expectedName: string) {
@@ -391,7 +391,7 @@ export class UnitEditor {
   }
 
   async assertWarningIsVisible(dataQa: string) {
-    await this.page.findByDataQa(`${dataQa}`).waitUntilVisible()
+    await expect(this.page.findByDataQa(`${dataQa}`)).toBeVisible()
   }
 
   async assertWarningIsNotVisible(dataQa: string) {
@@ -535,7 +535,7 @@ class AclSection extends Element {
       await this.addModal.coefficientCheckbox.check()
     }
     await this.addModal.submitButton.click()
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
   }
 
   async deleteAcl(id: UUID) {
@@ -557,7 +557,7 @@ class AclSection extends Element {
     await row.findByDataQa('email').assertTextEquals(fields.email)
     await row.findByDataQa('role').assertTextEquals(fields.role)
     if (fields.occupancyCoefficient) {
-      await row.findByDataQa('coefficient-on').waitUntilVisible()
+      await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
       await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
@@ -630,7 +630,7 @@ class TemporaryEmployeesSection extends Element {
     }
     await this.addModal.pinCode.fill(pinCode)
     await this.addModal.submitButton.click()
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
   }
 
   async softDeleteTemporaryEmployeeByIndex(index: number) {
@@ -663,7 +663,7 @@ class TemporaryEmployeesSection extends Element {
   ) {
     await row.findByDataQa('name').assertTextEquals(fields.name)
     if (fields.occupancyCoefficient) {
-      await row.findByDataQa('coefficient-on').waitUntilVisible()
+      await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
       await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
@@ -775,7 +775,7 @@ export class ApplicationProcessPage {
   }
 
   async waitUntilVisible() {
-    await this.waitingConfirmation.waitUntilVisible()
+    await expect(this.waitingConfirmation).toBeVisible()
   }
 
   async assertAbsenceApplications(expected: string[]) {
@@ -812,9 +812,11 @@ class WaitingConfirmationSection extends Element {
   }
 
   async assertRow(applicationId: string, rejected: boolean) {
-    await this.find(
-      `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
-    ).waitUntilVisible()
+    await expect(
+      this.find(
+        `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
+      )
+    ).toBeVisible()
   }
 }
 
@@ -822,9 +824,9 @@ class ServiceApplicationsSection {
   constructor(private readonly page: Page) {}
 
   async assertApplicationCount(n: number) {
-    await this.page
-      .findByDataQa('service-applications-table')
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa('service-applications-table')
+    ).toBeVisible()
     await expect(
       this.page.findAllByDataQa('service-application-row')
     ).toHaveCount(n)
@@ -880,7 +882,7 @@ class PlacementProposalsSection {
   }
 
   async waitUntilVisible() {
-    await this.#placementProposalTable.waitUntilVisible()
+    await expect(this.#placementProposalTable).toBeVisible()
   }
 
   async assertPlacementProposalRowCount(expected: number) {

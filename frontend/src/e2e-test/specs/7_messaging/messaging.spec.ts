@@ -414,7 +414,7 @@ test.describe('Sending and receiving messages', () => {
         messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
         await messagesPage.openFirstThreadReplyEditor()
-        await messagesPage.discardMessageButton.waitUntilVisible()
+        await expect(messagesPage.discardMessageButton).toBeVisible()
         await messagesPage.fillReplyContent(defaultContent)
         await messagesPage.discardReplyEditor()
         await messagesPage.discardMessageButton.waitUntilHidden()
@@ -837,7 +837,7 @@ test.describe('Sending and receiving messages', () => {
           'desktop'
         )
         await citizenMessagesPage.startReplyToFirstThread()
-        await citizenMessagesPage.discardMessageButton.waitUntilVisible()
+        await expect(citizenMessagesPage.discardMessageButton).toBeVisible()
         await citizenMessagesPage.messageReplyContent.fill(defaultContent)
         await citizenMessagesPage.discardReplyEditor()
         await citizenMessagesPage.discardMessageButton.waitUntilHidden()
@@ -959,7 +959,7 @@ test.describe('Sending and receiving messages', () => {
         await messagesPage.assertMessageContent(0, defaultContent)
         await expect(messagesPage.receivedMessages).toHaveCount(0)
 
-        await messagesPage.markUnreadButton.waitUntilVisible()
+        await expect(messagesPage.markUnreadButton).toBeVisible()
         await messagesPage.markUnreadButton.click()
         await expect(messagesPage.receivedMessages).toHaveCount(1)
 
@@ -977,7 +977,7 @@ test.describe('Sending and receiving messages', () => {
         await messagesPage2.assertMessageContent(0, defaultContent)
         await expect(messagesPage2.receivedMessages).toHaveCount(0)
 
-        await messagesPage2.markUnreadButton.waitUntilVisible()
+        await expect(messagesPage2.markUnreadButton).toBeVisible()
         await messagesPage2.markUnreadButton.click()
         await expect(messagesPage2.receivedMessages).toHaveCount(1)
       })

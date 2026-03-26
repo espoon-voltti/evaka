@@ -182,8 +182,8 @@ test.describe('Child Information - header', () => {
       config.employeeUrl + '/child-information/' + testChildRestricted.id
     )
     await childInformationPage.waitUntilLoaded()
-    await childInformationPage.restrictedWarning.waitUntilVisible()
-    await childInformationPage.noGuardianInfo.waitUntilVisible()
+    await expect(childInformationPage.restrictedWarning).toBeVisible()
+    await expect(childInformationPage.noGuardianInfo).toBeVisible()
   })
 
   test('Deceased child indicator is shown', async () => {

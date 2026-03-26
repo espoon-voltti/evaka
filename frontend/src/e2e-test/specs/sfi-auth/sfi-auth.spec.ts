@@ -8,7 +8,7 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { Page } from '../../utils/page'
 import { employeeSfiLogin, enduserLogin } from '../../utils/user'
 
@@ -38,13 +38,15 @@ test.describe('SFI authentication', () => {
       `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
     )
     await employeeTab.find('[type=submit]').findText('Jatka').click()
-    await employeeTab.findByDataQa('username').waitUntilVisible()
+    await expect(employeeTab.findByDataQa('username')).toBeVisible()
     const header = new CitizenHeader(citizenTab)
     await header.logout()
 
     // Verify that the employee SFI session has been logged out
     await employeeTab.findByDataQa('header').click()
-    await employeeTab.findByDataQa('session-expired-modal').waitUntilVisible()
+    await expect(
+      employeeTab.findByDataQa('session-expired-modal')
+    ).toBeVisible()
 
     // Login again to both SFIs and logout from employee SFI
     await employeeSfiLogin(employeeTab, ssnEmployee)
@@ -52,13 +54,13 @@ test.describe('SFI authentication', () => {
       `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`
     )
     await citizenTab.find('[type=submit]').findText('Jatka').click()
-    await citizenTab.findByDataQa('header-city-logo').waitUntilVisible()
+    await expect(citizenTab.findByDataQa('header-city-logo')).toBeVisible()
     await employeeTab.findByDataQa('username').click()
     await employeeTab.findByDataQa('logout-btn').click()
 
     // Verify that the citizen SFI session has been logged out
     await citizenTab.findByDataQa('desktop-nav').click()
     await citizenTab.bringToFront()
-    await citizenTab.findByDataQa('session-expired-modal').waitUntilVisible()
+    await expect(citizenTab.findByDataQa('session-expired-modal')).toBeVisible()
   })
 })

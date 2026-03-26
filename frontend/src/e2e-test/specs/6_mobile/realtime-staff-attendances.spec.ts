@@ -259,7 +259,9 @@ test.describe('Realtime staff attendance page', () => {
       await staffAttendancePage.staffDeparturePage.departureTime.fill(
         departureTime
       )
-      await staffAttendancePage.staffDeparturePage.departureIsBeforeArrival.waitUntilVisible()
+      await expect(
+        staffAttendancePage.staffDeparturePage.departureIsBeforeArrival
+      ).toBeVisible()
       await staffAttendancePage.staffDeparturePage.departureIsBeforeArrival.assertText(
         (text) => text.endsWith(arrivalTime)
       )
@@ -295,7 +297,9 @@ test.describe('Realtime staff attendance page', () => {
     await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
       testDaycareGroup.id
     )
-    await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.waitUntilVisible()
+    await expect(
+      staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture
+    ).toBeVisible()
     await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
       (text) => text.endsWith(departureTime)
     )
@@ -783,7 +787,9 @@ test.describe('Realtime staff attendance page', () => {
     await staffAttendancePage.externalMemberPage.departureTimeInput.fill(
       departureTime
     )
-    await staffAttendancePage.externalMemberPage.departureIsBeforeArrival.waitUntilVisible()
+    await expect(
+      staffAttendancePage.externalMemberPage.departureIsBeforeArrival
+    ).toBeVisible()
     await staffAttendancePage.externalMemberPage.departureIsBeforeArrival.assertText(
       (text) => text.endsWith(arrivalTime)
     )
@@ -876,7 +882,7 @@ test.describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.click()
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
-    await editPage.addLink.waitUntilVisible()
+    await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -905,7 +911,7 @@ test.describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.click()
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
-    await editPage.addLink.waitUntilVisible()
+    await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -937,7 +943,7 @@ test.describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.click()
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
-    await editPage.addLink.waitUntilVisible()
+    await expect(editPage.addLink).toBeVisible()
     await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')

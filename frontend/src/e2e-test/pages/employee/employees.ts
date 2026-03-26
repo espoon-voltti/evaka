@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { DevEmployee } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { ElementCollection, Page } from '../../utils/page'
 import { Checkbox, Element, TextInput } from '../../utils/page'
 
@@ -42,7 +43,7 @@ export class EmployeesPage {
   }
 
   async clickDeactivatedEmployees() {
-    await this.hideDeactivated.waitUntilVisible()
+    await expect(this.hideDeactivated).toBeVisible()
     await this.hideDeactivated.click()
   }
 

@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page, ElementCollection, Element } from '../../utils/page'
 import { Checkbox, TextInput } from '../../utils/page'
 
@@ -84,7 +85,7 @@ export default class PersonSearchPage {
     )
     await this.#createPersonModal.postalCodeInput.type(personData.postalCode)
     await this.#createPersonModal.postOfficeInput.type(personData.postOffice)
-    await this.#createPersonModal.modal.waitUntilVisible()
+    await expect(this.#createPersonModal.modal).toBeVisible()
     await this.#modalConfirm.click()
     await this.#createPersonModal.modal.waitUntilHidden()
   }
@@ -112,9 +113,9 @@ export default class PersonSearchPage {
       `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
-      await this.#personData.ssn
-        .findByDataQa('add-ssn-button')
-        .waitUntilVisible()
+      await expect(
+        this.#personData.ssn.findByDataQa('add-ssn-button')
+      ).toBeVisible()
       await this.#personData.ssn
         .findByDataQa('add-ssn-button')
         .assertTextEquals('Aseta hetu')
@@ -131,9 +132,9 @@ export default class PersonSearchPage {
 
   async checkAddSsnButtonVisibility(visible: boolean) {
     if (visible) {
-      await this.#addSsnButton.waitUntilVisible()
+      await expect(this.#addSsnButton).toBeVisible()
     } else {
-      await this.#noSsnText.waitUntilVisible()
+      await expect(this.#noSsnText).toBeVisible()
     }
   }
 

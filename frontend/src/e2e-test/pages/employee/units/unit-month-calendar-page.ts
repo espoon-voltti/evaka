@@ -96,7 +96,9 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
       .findByDataQa('reserved-hours')
       .assertTextEquals(`${expected.reservedHours} h`)
     if (expected.reservedHoursWarning) {
-      await childRow.findByDataQa('reserved-hours-warning').waitUntilVisible()
+      await expect(
+        childRow.findByDataQa('reserved-hours-warning')
+      ).toBeVisible()
     } else {
       await childRow.findByDataQa('reserved-hours-warning').waitUntilHidden()
     }
@@ -104,7 +106,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
       .findByDataQa('used-hours')
       .assertTextEquals(`${expected.usedHours} h`)
     if (expected.usedHoursWarning) {
-      await childRow.findByDataQa('used-hours-warning').waitUntilVisible()
+      await expect(childRow.findByDataQa('used-hours-warning')).toBeVisible()
     } else {
       await childRow.findByDataQa('used-hours-warning').waitUntilHidden()
     }
@@ -146,7 +148,7 @@ export class AbsenceCell extends Element {
       type === 'empty'
         ? ':not([data-absence-type])'
         : `[data-absence-type="${type}"]`
-    await this.cell.find(positionAttr + absenceTypeAttr).waitUntilVisible()
+    await expect(this.cell.find(positionAttr + absenceTypeAttr)).toBeVisible()
   }
 
   async assertNoAbsence(category: AbsenceCategory) {

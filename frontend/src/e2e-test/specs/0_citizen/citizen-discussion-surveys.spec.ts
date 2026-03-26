@@ -32,7 +32,7 @@ import type { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test, type NewEvakaPage } from '../../playwright'
+import { test, type NewEvakaPage, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Modal } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -365,7 +365,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       )
 
       const confirmationModal = new Modal(calendarPage.cancelConfirmModal)
-      await confirmationModal.waitUntilVisible()
+      await expect(confirmationModal).toBeVisible()
       await confirmationModal.submit()
 
       await dayView.assertEventNotShown(testChild.id, individualEventId)
@@ -384,7 +384,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
       await surveyModal.cancelReservation(individualEventId, testChild.id)
       const confirmationModal = new Modal(calendarPage.cancelConfirmModal)
-      await confirmationModal.waitUntilVisible()
+      await expect(confirmationModal).toBeVisible()
       await confirmationModal.submit()
 
       await surveyModal.assertChildSurvey(

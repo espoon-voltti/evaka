@@ -155,14 +155,14 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitUntilVisible()
+    await expect(this.#headOfFamily).toBeVisible()
     await this.#partnerName.waitUntilHidden()
   }
 
   async waitUntilVisible() {
-    await this.page
-      .find('[data-qa="fee-decision-details-page"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="fee-decision-details-page"]')
+    ).toBeVisible()
   }
 
   async openDecisionHandlerModal() {
@@ -287,7 +287,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitUntilVisible()
+    await expect(this.#headOfFamily).toBeVisible()
     await this.#partnerName.waitUntilHidden()
   }
 
@@ -300,9 +300,9 @@ export class ValueDecisionDetailsPage {
   }
 
   async waitUntilVisible() {
-    await this.page
-      .find('[data-qa="voucher-value-decision-page"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="voucher-value-decision-page"]')
+    ).toBeVisible()
   }
 
   async openDecisionHandlerModal() {
@@ -389,7 +389,7 @@ export class InvoicesPage {
   }
 
   async assertLoaded() {
-    await this.#invoicesPage.waitUntilVisible()
+    await expect(this.#invoicesPage).toBeVisible()
   }
 
   async searchInvoices() {
@@ -429,12 +429,12 @@ export class InvoicesPage {
 
   async sendInvoices() {
     await this.#openSendInvoicesDialogButton.click()
-    await this.#sendInvoicesDialog.waitUntilVisible()
+    await expect(this.#sendInvoicesDialog).toBeVisible()
     await this.#sendInvoicesDialog.find('[data-qa="title"]').click()
     await this.#sendInvoicesButton.click()
     await this.#sendInvoicesButton.waitUntilHidden()
 
-    await this.#sendInvoicesSuccessOkButton.waitUntilVisible()
+    await expect(this.#sendInvoicesSuccessOkButton).toBeVisible()
     await this.#sendInvoicesSuccessOkButton.click()
     await this.#sendInvoicesSuccessOkButton.waitUntilHidden()
   }
@@ -445,13 +445,13 @@ export class InvoicesPage {
 
   async openFirstInvoice(): Promise<InvoiceDetailsPage> {
     await this.#invoiceInList.click()
-    await this.#invoiceDetailsPage.waitUntilVisible()
+    await expect(this.#invoiceDetailsPage).toBeVisible()
     return new InvoiceDetailsPage(this.page)
   }
 
   async navigateBackToInvoices() {
     await this.#navigateBack.click()
-    await this.#invoicesPage.waitUntilVisible()
+    await expect(this.#invoicesPage).toBeVisible()
   }
 
   async freeTextFilter(text: string) {
@@ -570,7 +570,7 @@ export class PaymentsPage {
   async sendPayments() {
     await this.page.findByDataQa('open-send-payments-dialog').click()
     const modal = this.page.findByDataQa('send-payments-modal')
-    await modal.waitUntilVisible()
+    await expect(modal).toBeVisible()
     const sendButton = new AsyncButton(modal.findByDataQa('modal-okBtn'))
     await sendButton.click()
     await modal.waitUntilHidden()

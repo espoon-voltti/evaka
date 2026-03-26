@@ -5,6 +5,7 @@
 import config from '../config'
 import type { DevEmployee, DevPerson } from '../generated/api-types'
 import CitizenCalendarPage from '../pages/citizen/citizen-calendar'
+import { expect } from '../playwright'
 
 import type { Page } from './page'
 import { TextInput } from './page'
@@ -19,7 +20,7 @@ export async function enduserLogin(page: Page, person: DevPerson) {
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
 
-  await page.findByDataQa('header-city-logo').waitUntilVisible()
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
   await page.waitForUrl(/.*\/(calendar|applications)/)
 
   if (page.url.includes('/calendar')) {
@@ -43,7 +44,7 @@ export async function enduserLoginWeak(
   await form.findByDataQa('login').click()
   await form.findByDataQa('login').waitUntilHidden()
 
-  await page.findByDataQa('header-city-logo').waitUntilVisible()
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
 }
 
 export async function employeeLogin(
@@ -105,5 +106,5 @@ export async function employeeSfiLogin(page: Page, employee: DevEmployee) {
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
 
-  await page.findByDataQa('username').waitUntilVisible()
+  await expect(page.findByDataQa('username')).toBeVisible()
 }

@@ -43,9 +43,9 @@ export class UnitGroupsPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-groups-page"][data-loading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-groups-page"][data-loading="false"]')
+    ).toBeVisible()
   }
 
   #groupCollapsible = (groupId: string) =>
@@ -86,15 +86,15 @@ export class UnitGroupsPage {
   }
 
   async assertGroupCollapsibleIsOpen(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa('group-name')
-      .waitUntilVisible()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa('group-name')
+    ).toBeVisible()
   }
 
   async assertGroupCollapsibleHasNekkuOrderButton(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa(`btn-nekku-order`)
-      .waitUntilVisible()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa(`btn-nekku-order`)
+    ).toBeVisible()
   }
 
   async assertGroupCollapsibleNotHasNekkuOrderButton(groupId: string) {
@@ -108,12 +108,12 @@ export class UnitGroupsPage {
       .findByDataQa(`btn-nekku-order`)
       .click()
 
-    await this.page.findByDataQa('nekku-order-modal').waitUntilVisible()
+    await expect(this.page.findByDataQa('nekku-order-modal')).toBeVisible()
     return new NekkuOrderModal(this.page.findByDataQa('nekku-order-modal'))
   }
 
   async waitUntilVisible() {
-    await this.page.findByDataQa('groups-title-bar').waitUntilVisible()
+    await expect(this.page.findByDataQa('groups-title-bar')).toBeVisible()
   }
 
   async assertChildOccupancyFactorColumnNotVisible() {
@@ -262,7 +262,7 @@ export class GroupCollapsible extends Element {
 
   async assertChildCount(expectedCount: number) {
     if (expectedCount === 0) {
-      await this.#noChildren.waitUntilVisible()
+      await expect(this.#noChildren).toBeVisible()
     } else {
       await expect(this.#childRows).toHaveCount(expectedCount)
     }
@@ -408,7 +408,7 @@ export class ChildDailyNoteModal extends Modal {
   }
 
   async assertNoGroupNote() {
-    await this.#groupNoteInput.waitUntilVisible()
+    await expect(this.#groupNoteInput).toBeVisible()
   }
 }
 

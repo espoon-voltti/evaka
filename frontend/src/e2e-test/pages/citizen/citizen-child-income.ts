@@ -28,10 +28,11 @@ export class CitizenChildIncomeStatementViewPage {
     attachmentType: IncomeStatementAttachmentType,
     name: string
   ) {
-    await this.page
-      .findByDataQa(`attachments-${attachmentType}`)
-      .findByDataQa(`file-${name}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa(`attachments-${attachmentType}`)
+        .findByDataQa(`file-${name}`)
+    ).toBeVisible()
   }
 }
 
@@ -142,16 +143,16 @@ export class CitizenChildIncomeStatementListPage {
   }
 
   async assertChildCount(expected: number) {
-    await this.page
-      .find('[data-qa="children-income-statements"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="children-income-statements"]')
+    ).toBeVisible()
     await expect(
       this.page.findAll(`[data-qa="child-income-statements"]`)
     ).toHaveCount(expected)
   }
 
   async assertChildIncomeStatementRowCount(expected: number) {
-    await this.childIncomeStatementsList.waitUntilVisible()
+    await expect(this.childIncomeStatementsList).toBeVisible()
     await expect(this.childIncomeStatementRows).toHaveCount(expected)
   }
 

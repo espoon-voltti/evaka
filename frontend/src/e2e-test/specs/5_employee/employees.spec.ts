@@ -75,12 +75,14 @@ test.describe('Employees page', () => {
 
     test('can navigate to employee page', async () => {
       const employeePage = await employeesPage.openEmployeePage(employee)
-      await employeePage.content
-        .findTextExact(`${employee.firstName} ${employee.lastName}`)
-        .waitUntilVisible()
-      await employeePage.content
-        .findTextExact(employee.email!)
-        .waitUntilVisible()
+      await expect(
+        employeePage.content.findTextExact(
+          `${employee.firstName} ${employee.lastName}`
+        )
+      ).toBeVisible()
+      await expect(
+        employeePage.content.findTextExact(employee.email!)
+      ).toBeVisible()
     })
 
     test('a new employee can be added with SSN and deleted', async () => {

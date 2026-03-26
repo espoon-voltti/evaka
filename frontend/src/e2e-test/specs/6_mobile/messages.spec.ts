@@ -386,7 +386,7 @@ test.describe('Messages page', () => {
 
   async function userSeesNewMessagesIndicator() {
     await page.goto(config.mobileUrl)
-    await listPage.unreadMessagesIndicator.waitUntilVisible()
+    await expect(listPage.unreadMessagesIndicator).toBeVisible()
   }
 
   async function userSeesNewMessageIndicatorAndClicks() {
@@ -415,7 +415,7 @@ test.describe('Messages page', () => {
     await unreadMessageCountsPage.pinLoginButton.click()
     await pinLoginPage.login(employeeName, pin)
     const linkToGroup = unreadMessageCountsPage.linkToGroup(daycareGroupId)
-    await linkToGroup.waitUntilVisible()
+    await expect(linkToGroup).toBeVisible()
     await linkToGroup.click()
   }
 
@@ -485,7 +485,7 @@ test.describe('Messages page', () => {
 
     await threadView.goBack.click()
 
-    await messagesPage.thread(0).draftIndicator.waitUntilVisible()
+    await expect(messagesPage.thread(0).draftIndicator).toBeVisible()
   })
 
   test('Employee replies as a group to message sent to group', async () => {
@@ -584,7 +584,7 @@ test.describe('Messages page', () => {
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
-    await messageEditor.manyRecipientsWarning.waitUntilVisible()
+    await expect(messageEditor.manyRecipientsWarning).toBeVisible()
     await messageEditor.manyRecipientsConfirm.click()
     await messageEditor.waitUntilHidden()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
@@ -630,7 +630,7 @@ test.describe('Messages page', () => {
     await messageEditor.content.assertValueEquals(message.content)
     await messageEditor.send.click()
 
-    await draftsTab.list.waitUntilVisible()
+    await expect(draftsTab.list).toBeVisible()
     await draftsTab.message(0).waitUntilHidden()
   })
 
@@ -649,7 +649,7 @@ test.describe('Messages page', () => {
     messageEditor = await firstDraft.editDraft()
     await messageEditor.discard.click()
 
-    await draftsTab.list.waitUntilVisible()
+    await expect(draftsTab.list).toBeVisible()
     await draftsTab.message(0).waitUntilHidden()
   })
 
@@ -701,7 +701,7 @@ test.describe('Messages page', () => {
 
   test('Staff without group access sees info that no accounts were found', async () => {
     await staff2LoginsToMessagesPage()
-    await messagesPage.noAccountInfo.waitUntilVisible()
+    await expect(messagesPage.noAccountInfo).toBeVisible()
   })
 })
 
@@ -739,8 +739,8 @@ test.describe('Personal mobile device', () => {
     await pinLoginPage.personalDeviceLogin(pin)
     await unreadMessageCountsPage.linkToGroup(daycareGroup.id).click()
 
-    await messagesPage.receivedTab.waitUntilVisible()
-    await messagesPage.sentTab.waitUntilVisible()
-    await messagesPage.draftsTab.waitUntilVisible()
+    await expect(messagesPage.receivedTab).toBeVisible()
+    await expect(messagesPage.sentTab).toBeVisible()
+    await expect(messagesPage.draftsTab).toBeVisible()
   })
 })

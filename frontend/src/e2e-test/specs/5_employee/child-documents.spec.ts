@@ -365,7 +365,7 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
 
     // Verify the create decision document button is not present
-    await childDocumentsSection.decisionHeader.waitUntilVisible()
+    await expect(childDocumentsSection.decisionHeader).toBeVisible()
     await childDocumentsSection.createDecisionDocumentButton.waitUntilHidden()
   })
 
@@ -427,8 +427,10 @@ test.describe('Employee - Child documents', () => {
       await childInformationPage.openCollapsible('childDocuments')
 
     // Verify the create external document button is visible and enabled
-    await childDocumentsSection.externalHeader.waitUntilVisible()
-    await childDocumentsSection.createExternalDocumentButton.waitUntilVisible()
+    await expect(childDocumentsSection.externalHeader).toBeVisible()
+    await expect(
+      childDocumentsSection.createExternalDocumentButton
+    ).toBeVisible()
 
     // Create the document
     await childDocumentsSection.createExternalDocumentButton.click()
@@ -579,7 +581,9 @@ test.describe('Employee - Child documents', () => {
 
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.createInternalDocumentButton.waitUntilVisible()
+    await expect(
+      childDocumentsSection.createInternalDocumentButton
+    ).toBeVisible()
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async ({
@@ -617,7 +621,8 @@ test.describe('Employee - Child documents', () => {
     childDocument = new ChildDocumentPage(page)
     await childDocument.editButton.click()
     await childDocument.closeConcurrentEditErrorModal()
-    await childDocument.editButton.waitUntilVisible() // back in read mode
+    // back in read mode
+    await expect(childDocument.editButton).toBeVisible()
 
     // Admin opens the document in edit mode after lock expires
     page = await newEvakaPage({ mockedTime: now.addMinutes(6) })
@@ -1355,7 +1360,7 @@ test.describe('Employee - Child documents', () => {
 
     // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.documentSection.waitUntilVisible()
+    await expect(childDocumentPage.documentSection).toBeVisible()
     await childDocumentPage.status.assertTextEquals('Luonnos')
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
@@ -1459,7 +1464,7 @@ test.describe('Employee - Child documents', () => {
 
     // Decision proposal is sent to decision maker (director)
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.documentSection.waitUntilVisible()
+    await expect(childDocumentPage.documentSection).toBeVisible()
     await childDocumentPage.status.assertTextEquals('Luonnos')
     await childDocumentPage.proposeDecision(director)
     await childDocumentPage.status.assertTextEquals('Päätösesitys')
@@ -1567,7 +1572,7 @@ test.describe('Employee - Child documents', () => {
     // Confirmation modal should display the error
     const modal = childDocument.sendingConfirmationModal
     const errorBox = modal.find('[data-qa*="accept-decision-error"]')
-    await errorBox.waitUntilVisible()
+    await expect(errorBox).toBeVisible()
 
     // The OK button should be disabled due to the error
     const okButton = modal.findByDataQa('modal-okBtn')

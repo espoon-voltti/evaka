@@ -4,6 +4,7 @@
 
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 import { Combobox, DatePicker } from '../../utils/page'
 
@@ -38,16 +39,16 @@ export class PlacementDraftPage {
       .find(`[data-qa="placement-item-${unitId}"]`)
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="placement-draft-page"][data-isloading="false"]')
-      .waitUntilVisible()
-    await this.page
-      .find('[data-qa^="placement-item-"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="placement-draft-page"][data-isloading="false"]')
+    ).toBeVisible()
+    await expect(
+      this.page.find('[data-qa^="placement-item-"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async assertRestrictedDetailsWarning() {
-    await this.#restrictedDetailsWarning.waitUntilVisible()
+    await expect(this.#restrictedDetailsWarning).toBeVisible()
   }
 
   async assertOccupancies(unitId: UUID, occupancies: OccupancyValues) {

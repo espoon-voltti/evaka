@@ -45,18 +45,20 @@ export default class GuardianInformationPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="person-info-section"][data-isloading="false"]')
-      .waitUntilVisible()
-    await this.page
-      .find('[data-qa="family-overview-section"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="person-info-section"][data-isloading="false"]')
+    ).toBeVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="family-overview-section"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
       case true:
-        await this.#restrictedDetailsEnabledLabel.waitUntilVisible()
+        await expect(this.#restrictedDetailsEnabledLabel).toBeVisible()
         await this.#personStreetAddress.assertTextEquals(
           'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
@@ -106,9 +108,9 @@ class PersonInfoSection extends Section {
   #ssn = this.findByDataQa('person-ssn')
 
   async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
-    await this.#lastName.findText(lastName).waitUntilVisible()
-    await this.#firstName.findText(firstName).waitUntilVisible()
-    await this.#ssn.findText(ssn).waitUntilVisible()
+    await expect(this.#lastName.findText(lastName)).toBeVisible()
+    await expect(this.#firstName.findText(firstName)).toBeVisible()
+    await expect(this.#ssn.findText(ssn)).toBeVisible()
   }
 }
 
@@ -123,7 +125,7 @@ class FamilyOverviewSection extends Section {
     incomeCents?: number
   }) {
     const person = this.findByDataQa(`table-family-overview-row-${personId}`)
-    await person.waitUntilVisible()
+    await expect(person).toBeVisible()
 
     if (age !== undefined) {
       const personAge = person.findByDataQa('person-age')
@@ -193,7 +195,7 @@ class DependantsSection extends Section {
   #childRow = (id: UUID) => this.page.findByDataQa(`table-dependant-row-${id}`)
 
   async assertContainsDependantChild(id: UUID) {
-    await this.#childRow(id).waitUntilVisible()
+    await expect(this.#childRow(id)).toBeVisible()
   }
 
   async assertDoesNotContainDependantChild(id: UUID) {
@@ -281,8 +283,8 @@ class ApplicationsSection extends Section {
     unitName: string
   ) {
     const row = this.#applicationRows.nth(n)
-    await row.findText(childName).waitUntilVisible()
-    await row.findText(unitName).waitUntilVisible()
+    await expect(row.findText(childName)).toBeVisible()
+    await expect(row.findText(unitName)).toBeVisible()
   }
 }
 
@@ -300,9 +302,9 @@ class DecisionsSection extends Section {
     status: string
   ) {
     const row = this.#decisionRows.nth(n)
-    await row.findText(childName).waitUntilVisible()
-    await row.findText(unitName).waitUntilVisible()
-    await row.findText(status).waitUntilVisible()
+    await expect(row.findText(childName)).toBeVisible()
+    await expect(row.findText(unitName)).toBeVisible()
+    await expect(row.findText(status)).toBeVisible()
   }
 }
 
@@ -528,8 +530,8 @@ class InvoicesSection extends Section {
 
   async assertInvoice(n: number, period: string, status: string) {
     const row = this.#invoiceRows.nth(n)
-    await row.findText(period).waitUntilVisible()
-    await row.findText(status).waitUntilVisible()
+    await expect(row.findText(period)).toBeVisible()
+    await expect(row.findText(status)).toBeVisible()
   }
 }
 
