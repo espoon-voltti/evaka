@@ -1911,6 +1911,7 @@ export const sv: typeof fi = {
       customer: 'Klient',
       area: 'Område',
       sentAt: 'Skickad',
+      citizenModifiedAt: 'Redigerad',
       startDate: 'Gäller fr.o.m.',
       incomeEndDate: 'Inkomstuppgift upphör',
       type: 'Typ',

@@ -227,6 +227,7 @@ export type IncomeStatementAttachmentType = typeof incomeStatementAttachmentType
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
+  citizenModifiedAt: HelsinkiDateTime
   handlerNote: string
   id: IncomeStatementId
   incomeEndDate: LocalDate | null
@@ -294,6 +295,7 @@ export type IncomeStatementSortParam =
   | 'TYPE'
   | 'HANDLER_NOTE'
   | 'PERSON_NAME'
+  | 'CITIZEN_MODIFIED_AT'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementStatus
@@ -493,6 +495,7 @@ export function deserializeJsonIncomeStatement(json: JsonOf<IncomeStatement>): I
 export function deserializeJsonIncomeStatementAwaitingHandler(json: JsonOf<IncomeStatementAwaitingHandler>): IncomeStatementAwaitingHandler {
   return {
     ...json,
+    citizenModifiedAt: HelsinkiDateTime.parseIso(json.citizenModifiedAt),
     incomeEndDate: (json.incomeEndDate != null) ? LocalDate.parseIso(json.incomeEndDate) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt),
     startDate: LocalDate.parseIso(json.startDate)

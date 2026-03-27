@@ -215,4 +215,5 @@ enum class IncomeStatementSortParam {
     TYPE,
     HANDLER_NOTE,
     PERSON_NAME,
+    CITIZEN_MODIFIED_AT,
 }

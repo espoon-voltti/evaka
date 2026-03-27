@@ -84,6 +84,12 @@ function IncomeStatementsList({
             {i18n.incomeStatement.table.sentAt}
           </SortableTh>
           <SortableTh
+            sorted={isSorted('CITIZEN_MODIFIED_AT')}
+            onClick={toggleSort('CITIZEN_MODIFIED_AT')}
+          >
+            {i18n.incomeStatement.table.citizenModifiedAt}
+          </SortableTh>
+          <SortableTh
             sorted={isSorted('START_DATE')}
             onClick={toggleSort('START_DATE')}
           >
@@ -124,6 +130,7 @@ function IncomeStatementsList({
             </Td>
             <Td>{row.primaryCareArea}</Td>
             <Td>{row.sentAt.toLocalDate().format()}</Td>
+            <Td>{row.citizenModifiedAt.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>
             <Td>{row.incomeEndDate?.format() ?? '-'}</Td>
             <Td data-qa="income-statement-type">
@@ -161,8 +168,10 @@ const RowIcon = styled(FontAwesomeIcon)`
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
-  const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('SENT_AT')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+  const [sortBy, setSortBy] = useState<IncomeStatementSortParam>(
+    'CITIZEN_MODIFIED_AT'
+  )
+  const [sortDirection, setSortDirection] = useState<SortDirection>('DESC')
 
   const {
     incomeStatements: { confirmedSearchFilters: searchFilters, page, setPage }

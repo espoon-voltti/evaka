@@ -3255,6 +3255,7 @@ CREATE TABLE public.income_statement (
     company_name text NOT NULL,
     business_id text NOT NULL,
     gross_no_income_description text,
+    citizen_modified_at timestamp with time zone,
     CONSTRAINT income_statement_status_check CHECK ((((status = 'HANDLED'::public.income_statement_status) = (handler_id IS NOT NULL)) AND ((status = 'HANDLED'::public.income_statement_status) = (handled_at IS NOT NULL)) AND ((status = 'DRAFT'::public.income_statement_status) = (sent_at IS NULL))))
 );
 
@@ -5927,6 +5928,10 @@ CREATE INDEX "idx$income_created_by" ON public.income USING btree (created_by);
 
 CREATE INDEX "idx$income_notification_receiver_id" ON public.income_notification USING btree (receiver_id);
 
+-- Name: idx$income_statement_citizen_modified_at_awaiting_handler; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$income_statement_citizen_modified_at_awaiting_handler" ON public.income_statement USING btree (citizen_modified_at DESC NULLS LAST) WHERE ((status = 'SENT'::public.income_statement_status) OR (status = 'HANDLING'::public.income_statement_status));
+
 -- Name: idx$income_statement_created_by; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$income_statement_created_by" ON public.income_statement USING btree (created_by);
@@ -5949,7 +5954,7 @@ CREATE INDEX "idx$income_statement_person_gist" ON public.income_statement USING
 
 -- Name: idx$income_statement_sent_at_awaiting_handler; Type: INDEX; Schema: public
 
-CREATE INDEX "idx$income_statement_sent_at_awaiting_handler" ON public.income_statement USING btree (sent_at) WHERE (status = 'SENT'::public.income_statement_status);
+CREATE INDEX "idx$income_statement_sent_at_awaiting_handler" ON public.income_statement USING btree (sent_at) WHERE ((status = 'SENT'::public.income_statement_status) OR (status = 'HANDLING'::public.income_statement_status));
 
 -- Name: idx$income_updated_by; Type: INDEX; Schema: public
 
