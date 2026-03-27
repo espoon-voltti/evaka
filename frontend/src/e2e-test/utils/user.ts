@@ -68,30 +68,7 @@ export async function employeeLogin(
     lastName,
     email: email ?? ''
   })
-
-  if (!page.url.startsWith(config.employeeUrl)) {
-    // We must be in the correct domain to be able to fetch()
-    await page.goto(config.employeeLoginUrl)
-  }
-
-  await page.page.evaluate(
-    ({ preset, authUrl }: { preset: string; authUrl: string }) => {
-      const params = new URLSearchParams()
-      params.append('preset', preset)
-      return fetch(authUrl, {
-        method: 'POST',
-        body: params,
-        redirect: 'manual'
-      }).then((response) => {
-        if (response.status >= 400) {
-          throw new Error(
-            `Fetch to {authUrl} failed with status ${response.status}`
-          )
-        }
-      })
-    },
-    { preset, authUrl }
-  )
+  await page.page.request.post(authUrl, { form: { preset } })
 }
 
 export async function employeeSfiLogin(page: Page, employee: DevEmployee) {
