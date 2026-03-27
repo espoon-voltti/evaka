@@ -27,17 +27,6 @@ type EvakaFixtures = {
 }
 
 export const test = base.extend<EvakaFixtures>({
-  // Auto fixture that ensures test mode is enabled before any test code runs
-  testMode: [
-    // eslint-disable-next-line no-empty-pattern
-    async ({}, use) => {
-      await setTestMode({ enabled: true })
-      await use()
-      await setTestMode({ enabled: false })
-    },
-    { auto: true }
-  ],
-
   evakaOptions: [{}, { option: true }],
 
   context: async ({ context, evakaOptions }, use) => {
@@ -93,6 +82,14 @@ export const test = base.extend<EvakaFixtures>({
       await context.close()
     }
   }
+})
+
+test.beforeAll(async () => {
+  await setTestMode({ enabled: true })
+})
+
+test.afterAll(async () => {
+  await setTestMode({ enabled: false })
 })
 
 export { expect } from '@playwright/test'
