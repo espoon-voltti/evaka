@@ -141,7 +141,7 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: false,
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
-    showMetadataToCitizen: false,
+    showMetadataToCitizen: true,
     placementDesktop: true
   }
 }
