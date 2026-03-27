@@ -485,6 +485,17 @@ export interface CitizenChildren {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.CitizenDecisionDetails
+*/
+export interface CitizenDecisionDetails {
+  endDate: LocalDate
+  resolved: LocalDate | null
+  sentDate: LocalDate
+  startDate: LocalDate
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.application.ClubDetails
 */
 export interface ClubDetails {
@@ -1074,6 +1085,17 @@ export function deserializeJsonCitizenChildren(json: JsonOf<CitizenChildren>): C
   return {
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonCitizenDecisionDetails(json: JsonOf<CitizenDecisionDetails>): CitizenDecisionDetails {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    resolved: (json.resolved != null) ? LocalDate.parseIso(json.resolved) : null,
+    sentDate: LocalDate.parseIso(json.sentDate),
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

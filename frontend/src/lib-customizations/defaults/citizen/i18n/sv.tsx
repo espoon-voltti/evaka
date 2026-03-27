@@ -1706,6 +1706,7 @@ const sv: Translations = {
           'Bekräfta först beslutet om förskoleundervisning eller förberedande undervisning. Därefter kan du bekräfta det tillhörande beslutet om småbarnspedagogik.'
       },
       openPdf: 'Visa beslut',
+      additionalDetails: 'Ytterligare information',
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'Ett annat beslut väntar på ditt godkännande',
