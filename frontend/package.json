@@ -13,8 +13,8 @@
     "type-check": "tsc --build --force .",
     "type-check:watch": "yarn type-check --watch --preserveWatchOutput",
     "build": "vite build",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest src/*-frontend src/lib-* eslint-plugin",
-    "test:watch": "yarn test --watchAll",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
     "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
@@ -70,7 +70,6 @@
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
     "@types/autosize": "4.0.3",
-    "@types/jest": "30.0.0",
     "@types/leaflet": "1.9.21",
     "@types/linkify-it": "5.0.0",
     "@types/lodash": "4.17.24",
@@ -91,24 +90,19 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.0.1",
     "globals": "17.4.0",
-    "jest": "30.3.0",
-    "jest-circus": "30.3.0",
-    "jest-environment-jsdom": "30.3.0",
-    "jest-environment-jsdom-global": "4.0.0",
-    "jest-environment-node": "30.3.0",
-    "jest-junit": "16.0.0",
+    "jsdom": "^29.0.1",
     "make-error-cause": "2.3.0",
     "playwright": "1.58.2",
     "postcss": "8.5.8",
     "postcss-preset-env": "11.2.0",
     "prettier": "3.8.1",
     "terser": "5.46.1",
-    "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.2",
-    "vite": "8.0.2"
+    "vite": "8.0.2",
+    "vitest": "4.1.2"
   },
   "peerDependencies": {
     "@fortawesome/pro-light-svg-icons": "^6.4.0",
@@ -150,30 +144,6 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "none"
-  },
-  "jest": {
-    "testRunner": "jest-circus/runner",
-    "projects": [
-      "./src/citizen-frontend",
-      "./src/employee-frontend",
-      "./src/lib-common",
-      "./src/lib-components",
-      "./eslint-plugin"
-    ],
-    "reporters": [
-      "default",
-      "jest-junit"
-    ],
-    "modulePathIgnorePatterns": [
-      "<rootDir>/node_modules/"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
-    }
-  },
-  "jest-junit": {
-    "outputDirectory": "test-results/",
-    "addFileAttribute": "true"
   },
   "postcss": {
     "plugins": {

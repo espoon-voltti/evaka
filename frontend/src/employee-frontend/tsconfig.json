@@ -5,7 +5,6 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/employee-frontend",
-    "types": ["jest"],
     "skipLibCheck": true
   },
   "references": [

@@ -4,8 +4,8 @@
 
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import '@testing-library/jest-dom'
 import React, { cloneElement } from 'react'
+import { describe, expect, it, vi } from 'vitest'
 
 import LocalDate from 'lib-common/local-date'
 
@@ -53,7 +53,7 @@ describe('DatePicker', () => {
     })
 
     it('controlling', () => {
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       const { rerender } = render(
         jsx(<DatePicker date={null} onChange={onChange} locale="fi" />)
@@ -75,7 +75,7 @@ describe('DatePicker', () => {
 
     it('calls onChange for valid and invalid inputs', async () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       const { rerender } = render(
         jsx(<DatePicker date={null} onChange={onChange} locale="fi" />)
@@ -93,7 +93,7 @@ describe('DatePicker', () => {
 
     it('does NOT call onChange if value is beyond min/max', async () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       render(
         jsx(
@@ -117,7 +117,7 @@ describe('DatePicker', () => {
 
     it('does NOT call onChange if value is invalid', async () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       render(
         jsx(
@@ -163,7 +163,7 @@ describe('DatePicker', () => {
     })
 
     it('controlling', () => {
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       const { rerender } = render(
         jsx(<DatePicker date={null} onChange={onChange} locale="fi" />)
@@ -185,7 +185,7 @@ describe('DatePicker', () => {
 
     it('calls onChange for valid and invalid inputs', () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       const { rerender } = render(
         jsx(<DatePicker date={null} onChange={onChange} locale="fi" />)
@@ -203,7 +203,7 @@ describe('DatePicker', () => {
 
     it('does NOT call onChange if value is beyond min/max', () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       render(
         jsx(
@@ -227,7 +227,7 @@ describe('DatePicker', () => {
 
     it('does NOT call onChange if value is invalid', () => {
       const date = LocalDate.of(2023, 9, 13)
-      const onChange = jest.fn()
+      const onChange = vi.fn()
 
       render(
         jsx(

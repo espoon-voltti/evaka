@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, it } from 'vitest'
+
 import HelsinkiDateTime from './helsinki-date-time'
 import LocalTime from './local-time'
 

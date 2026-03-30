@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, test } from 'vitest'
+
 import LocalTime from './local-time'
 import TimeRange from './time-range'
 

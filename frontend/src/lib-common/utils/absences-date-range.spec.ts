@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, it } from 'vitest'
+
 import type { Absence } from 'lib-common/generated/api-types/absence'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'

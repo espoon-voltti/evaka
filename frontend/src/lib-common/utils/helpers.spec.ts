@@ -1,31 +1,30 @@
-/**
- * @jest-environment jsdom-global
- */
+// @vitest-environment jsdom
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { type JSDOM } from 'jsdom'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { isProduction, getEnvironment } from './helpers'
 
-declare global {
-  var jsdom: JSDOM
-}
-
 function withHost(host: string, fn: () => void) {
-  const oldHref = window.location.href
-  global.jsdom.reconfigure({ url: `http://${host}` })
+  const locationSpy = vi.spyOn(window, 'location', 'get')
+  locationSpy.mockReturnValue({
+    ...window.location,
+    hostname: host.split(':')[0],
+    host,
+    href: `http://${host}`
+  } as Location)
   try {
     fn()
   } finally {
-    global.jsdom.reconfigure({ url: oldHref })
+    locationSpy.mockRestore()
   }
 }
 
 describe('helpers', () => {
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   describe('isProduction', () => {

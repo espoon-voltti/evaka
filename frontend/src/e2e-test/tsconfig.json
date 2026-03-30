@@ -5,7 +5,7 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/e2e-test",
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
   "references": [
     { "path": "../lib-common" },
