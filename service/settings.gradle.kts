@@ -14,8 +14,6 @@ include("codegen")
 
 include("custom-ktlint-rules")
 
-include("sarmamodel")
-
 dependencyResolutionManagement {
     repositories {
         mavenCentral()

@@ -44,9 +44,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
     aromiIntegration: true,
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
@@ -89,9 +86,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: true,
     multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
     aromiIntegration: true,
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
@@ -132,9 +126,6 @@ const features: Features = {
     invoiceDisplayAccountNumber: true,
     serviceApplications: false,
     multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
     aromiIntegration: true,
     citizenChildDocumentTypes: true,
     decisionChildDocumentTypes: true,
