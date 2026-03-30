@@ -4,31 +4,36 @@
 
 import config from '../config'
 import type { DevEmployee, DevPerson } from '../generated/api-types'
-import CitizenCalendarPage from '../pages/citizen/citizen-calendar'
 import { expect } from '../playwright'
 
 import type { Page } from './page'
 import { TextInput } from './page'
 
-export async function enduserLogin(page: Page, person: DevPerson) {
+export async function enduserLogin(
+  page: Page,
+  person: DevPerson,
+  url?: string
+) {
   if (!person.ssn) {
     throw new Error('Person does not have an SSN: cannot login')
   }
+  await page.page.request.post(`${config.devApiGwUrl}/auth/sfi-login`, {
+    data: { type: 'citizen', ssn: person.ssn }
+  })
+  if (url) {
+    await page.goto(url)
+  }
+}
 
+export async function enduserLoginSfi(page: Page, person: DevPerson) {
+  if (!person.ssn) {
+    throw new Error('Person does not have an SSN: cannot login')
+  }
   await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
   await page.find(`[id="${person.ssn}"]`).locator.check()
   await page.find('[type=submit]').findText('Kirjaudu').click()
   await page.find('[type=submit]').findText('Jatka').click()
-
   await expect(page.findByDataQa('header-city-logo')).toBeVisible()
-  await page.waitForUrl(/.*\/(calendar|applications)/)
-
-  if (page.url.includes('/calendar')) {
-    // Need to wait until calendar page is fully loaded, as it may  otherwise interrupt
-    // header dropdown navigation in multiple places
-    const calendarPage = new CitizenCalendarPage(page, 'desktop')
-    await calendarPage.waitUntilLoaded()
-  }
 }
 
 export async function enduserLoginWeak(
@@ -75,7 +80,20 @@ export async function employeeSfiLogin(page: Page, employee: DevEmployee) {
   if (!employee.ssn) {
     throw new Error('Employee does not have an SSN: cannot login')
   }
+  await page.page.request.post(`${config.devApiGwUrl}/auth/sfi-login`, {
+    data: {
+      type: 'employee',
+      ssn: employee.ssn,
+      firstName: employee.firstName,
+      lastName: employee.lastName
+    }
+  })
+}
 
+export async function employeeSfiLoginForm(page: Page, employee: DevEmployee) {
+  if (!employee.ssn) {
+    throw new Error('Employee does not have an SSN: cannot login')
+  }
   await page.goto(
     `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
   )
