@@ -152,14 +152,8 @@ export function createCitizenSuomiFiIntegration(
   return {
     router,
     logout: async (req: express.Request, res: express.Response) => {
-      // Destroy both sessions on logout
-      try {
-        await messagingSessions.destroy(req, res)
-      } catch (msgErr) {
-        logWarn(
-          `Failed to destroy messaging session during logout: ${String(msgErr)}`
-        )
-      }
+      // Let the base integration handle the logout flow
+      // The Redis cleanup in logoutWithToken and destroy will handle messaging sessions
       return baseIntegration.logout(req, res)
     }
   }

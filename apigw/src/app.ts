@@ -224,13 +224,6 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     toRequestHandler(async (req, res) => {
       const user = citizenSessions.getUser(req)
 
-      // Always try to destroy messaging session if it exists
-      try {
-        await citizenMessagingSessions.destroy(req, res)
-      } catch {
-        // Ignore errors when destroying messaging session
-      }
-
       switch (user?.authType) {
         case 'sfi':
           if (citizenSfiIntegration)
@@ -246,6 +239,14 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
           // should not happen, but we'll still destroy the session normally
           break
       }
+
+      // For non-SFI logouts, manually destroy messaging session
+      try {
+        await citizenMessagingSessions.destroy(req, res)
+      } catch {
+        // Ignore errors when destroying messaging session
+      }
+
       await citizenSessions.destroy(req, res)
       res.redirect('/')
     })
