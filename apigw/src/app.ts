@@ -30,7 +30,7 @@ import { internalAuthStatus } from './internal/routes/auth-status.ts'
 import { integrationUserHeader } from './shared/auth/index.ts'
 import type { Config } from './shared/config.ts'
 import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
-import { toRequestHandler } from './shared/express.ts'
+import { assertStringProp, toRequestHandler } from './shared/express.ts'
 import { cacheControl } from './shared/middleware/cache-control.ts'
 import { csrf } from './shared/middleware/csrf.ts'
 import { createEndpointDisablingMiddleware } from './shared/middleware/endpoint-disabling.ts'
@@ -40,6 +40,7 @@ import type { RedisClient } from './shared/redis-client.ts'
 import { handleCspReport } from './shared/routes/csp.ts'
 import type { SamlIntegration } from './shared/routes/saml.ts'
 import { validateRelayStateUrl } from './shared/saml/index.ts'
+import { citizenLogin, employeeSuomiFiLogin } from './shared/service-client.ts'
 import { sessionCookie, sessionSupport } from './shared/session.ts'
 
 export function apiRouter(config: Config, redisClient: RedisClient) {
@@ -198,6 +199,59 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       employeeMobileSessions.middleware,
       cookieParser(config.employee.cookieSecret),
       devApiE2ESignup(employeeMobileSessions)
+    )
+    router.post(
+      '/dev-api/auth/sfi-login',
+      express.json(),
+      toRequestHandler(async (req, res) => {
+        const type = assertStringProp(req.body, 'type')
+        const ssn = assertStringProp(req.body, 'ssn')
+
+        const initSession = (
+          sessions: typeof citizenSessions | typeof employeeSessions
+        ) =>
+          new Promise<void>((resolve, reject) =>
+            sessions.middleware(req, res, (err?: unknown) =>
+              err ? reject(err as Error) : resolve()
+            )
+          )
+
+        if (type === 'citizen') {
+          await initSession(citizenSessions)
+          const user = await citizenLogin(req, {
+            socialSecurityNumber: ssn,
+            firstName: '',
+            lastName: ''
+          })
+          await citizenSessions.login(req, {
+            id: user.id,
+            authType: 'dev',
+            userType: 'CITIZEN_STRONG'
+          })
+        } else if (type === 'employee') {
+          await initSession(employeeSessions)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const firstName = String(req.body.firstName ?? '')
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const lastName = String(req.body.lastName ?? '')
+          const user = await employeeSuomiFiLogin(req, {
+            ssn,
+            firstName,
+            lastName
+          })
+          await employeeSessions.login(req, {
+            id: user.id,
+            authType: 'dev',
+            userType: 'EMPLOYEE',
+            globalRoles: user.globalRoles,
+            allScopedRoles: user.allScopedRoles
+          })
+        } else {
+          res.sendStatus(400)
+          return
+        }
+        res.sendStatus(200)
+      })
     )
     router.all(
       '/dev-api/{*rest}',
