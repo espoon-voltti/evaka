@@ -50,7 +50,7 @@ test.describe('Citizen pedagogical documents', () => {
     })
 
     page = evaka
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/')
     header = new CitizenHeader(page)
     pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
   })

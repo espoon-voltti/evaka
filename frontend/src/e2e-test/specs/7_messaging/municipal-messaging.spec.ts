@@ -144,9 +144,9 @@ test.describe('Municipal messaging -', () => {
     await employeeLogin(staffPage, staff)
   }
 
-  async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+  async function openCitizenPage(mockedTime: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({ mockedTime })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
   test('Messaging role can send messages to multiple areas', async () => {
@@ -161,8 +161,7 @@ test.describe('Municipal messaging -', () => {
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
-    await openCitizenPage(messageReadTime)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await openCitizenPage(messageReadTime, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(defaultMessage)
   })

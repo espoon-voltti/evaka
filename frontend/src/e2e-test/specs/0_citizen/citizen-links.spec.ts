@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../config'
 import { testAdult } from '../../dev-api/fixtures'
 import {
   resetServiceState,
@@ -34,15 +33,14 @@ test.describe('Citizen links', () => {
 
   test.describe('without login', () => {
     test('accessibility page can be accessed', async () => {
-      await page.goto(`${config.enduserUrl}/accessibility`)
+      await page.goto('/accessibility')
       await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })
 
   test.describe('Interactions with direct login', () => {
     test('accessibility page can be accessed', async () => {
-      await enduserLogin(page, testAdult)
-      await page.goto(`${config.enduserUrl}/accessibility`)
+      await enduserLogin(page, testAdult, '/accessibility')
       await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })
@@ -50,7 +48,7 @@ test.describe('Citizen links', () => {
   test.describe('Interactions with weak login', () => {
     test('accessibility page can be accessed', async () => {
       await enduserLoginWeak(page, credentials)
-      await page.goto(`${config.enduserUrl}/accessibility`)
+      await page.goto('/accessibility')
       await expect(page.findByDataQa('accessibility-statement')).toBeVisible()
     })
   })

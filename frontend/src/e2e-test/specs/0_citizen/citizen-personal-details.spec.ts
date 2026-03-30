@@ -37,7 +37,7 @@ test.describe('Citizen personal details', () => {
     })
     page = evaka
 
-    await enduserLogin(page, citizenFixture)
+    await enduserLogin(page, citizenFixture, '/personal-details')
     header = new CitizenHeader(page)
 
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
@@ -46,7 +46,6 @@ test.describe('Citizen personal details', () => {
 
   test('Citizen sees indications of missing email and phone', async () => {
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-    await header.selectTab('personal-details')
     await section.checkMissingEmailWarningIsShown()
     await section.checkMissingPhoneWarningIsShown()
   })
@@ -59,7 +58,6 @@ test.describe('Citizen personal details', () => {
       email: null
     }
 
-    await header.selectTab('personal-details')
     await section.editPersonalData(data, true)
     await section.checkPersonalData(data)
     await section.assertAlertIsNotShown()
@@ -73,7 +71,6 @@ test.describe('Citizen personal details', () => {
       email: 'a@b.com'
     }
 
-    await header.selectTab('personal-details')
     await section.editPersonalData(data, false)
     await section.assertSaveIsDisabled()
   })
@@ -86,7 +83,6 @@ test.describe('Citizen personal details', () => {
       email: 'a@b.com'
     }
 
-    await header.selectTab('personal-details')
     await section.editPersonalData(data, true)
     await section.checkPersonalData(data)
     await section.assertAlertIsNotShown()
@@ -103,10 +99,9 @@ test.describe('Citizen notification settings', () => {
     })
     page = evaka
 
-    await enduserLogin(page, citizenFixture)
+    await enduserLogin(page, citizenFixture, '/personal-details')
     header = new CitizenHeader(page)
 
-    await header.selectTab('personal-details')
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
     section = personalDetailsPage.notificationSettingsSectiong
   })

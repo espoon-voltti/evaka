@@ -19,7 +19,6 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -34,12 +33,9 @@ test.beforeEach(async () => {
 })
 
 async function openApplicationsPage(page: Page, citizen: DevPerson) {
-  await enduserLogin(page, citizen)
-  const header = new CitizenHeader(page)
-  await header.selectTab('applications')
+  await enduserLogin(page, citizen, '/applications')
   const applicationsPage = new CitizenApplicationsPage(page)
   return {
-    header,
     applicationsPage
   }
 }

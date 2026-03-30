@@ -20,17 +20,15 @@ import {
   updateIncomeStatementHandled
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { testFileName } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 async function setupPageObjects(page: Page, env: EnvType) {
-  await enduserLogin(page, testAdult)
-  const header = new CitizenHeader(page, env)
+  await enduserLogin(page, testAdult, '/income')
   const listPage = new CitizenChildIncomeStatementListPage(page, 0, env)
-  return { header, listPage }
+  return { listPage }
 }
 
 const now = HelsinkiDateTime.of(2024, 11, 25, 12)
@@ -75,8 +73,7 @@ for (const env of ['desktop', 'mobile'] as const) {
     })
 
     test('Shows a warning of missing income statement', async ({ evaka }) => {
-      const { header, listPage } = await setupPageObjects(evaka, env)
-      await header.selectTab('income')
+      const { listPage } = await setupPageObjects(evaka, env)
       await listPage.assertChildName(
         'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
       )
@@ -86,9 +83,8 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Create child income statement, edit, send, edit again and delete', async ({
       evaka
     }) => {
-      const { header, listPage } = await setupPageObjects(evaka, env)
+      const { listPage } = await setupPageObjects(evaka, env)
       // Create
-      await header.selectTab('income')
       await listPage.assertChildCount(1)
 
       const editPage = await listPage.createIncomeStatement()
@@ -126,8 +122,7 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Create child income statement, mark as handled, and view', async ({
       evaka
     }) => {
-      const { header, listPage } = await setupPageObjects(evaka, env)
-      await header.selectTab('income')
+      const { listPage } = await setupPageObjects(evaka, env)
       await listPage.assertChildCount(1)
 
       const editPage = await listPage.createIncomeStatement()
@@ -162,7 +157,7 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Citizen cannot delete child income statement while employee is handling it', async ({
       evaka
     }) => {
-      const { header, listPage } = await setupPageObjects(evaka, env)
+      const { listPage } = await setupPageObjects(evaka, env)
       const employee = await Fixture.employee().save()
       const incomeStatement = await Fixture.incomeStatement({
         personId: testChild.id,
@@ -176,7 +171,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         status: 'SENT'
       }).save()
 
-      await header.selectTab('income')
       await listPage.assertNthIncomeStatementDeleteButtonDisabled(0, false)
 
       await updateIncomeStatementHandled({

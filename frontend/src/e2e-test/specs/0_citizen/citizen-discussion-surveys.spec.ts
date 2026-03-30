@@ -31,7 +31,6 @@ import {
 import type { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, type NewEvakaPage, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Modal } from '../../utils/page'
@@ -54,7 +53,6 @@ let reservationData: DevCalendarEventTime
 for (const env of ['desktop', 'mobile'] as const) {
   test.describe(`Citizen calendar discussion surveys (${env})`, () => {
     let page: Page
-    let header: CitizenHeader
     let calendarPage: CitizenCalendarPage
     let children: DevPerson[]
 
@@ -222,10 +220,8 @@ for (const env of ['desktop', 'mobile'] as const) {
       }).save()
 
       page = evaka
-      await enduserLogin(page, testAdult)
-      header = new CitizenHeader(page, env)
+      await enduserLogin(page, testAdult, '/calendar')
       calendarPage = new CitizenCalendarPage(page, env)
-      await header.selectTab('calendar')
     })
 
     test('Citizen sees correct amount of event counts', async () => {
@@ -522,11 +518,8 @@ for (const env of ['desktop', 'mobile'] as const) {
       user: DevPerson
     ): Promise<CitizenCalendarPage> {
       const page = await newEvakaPage({ viewport })
-      await enduserLogin(page, user)
-      const calendarPage = new CitizenCalendarPage(page, env)
-      const header = new CitizenHeader(page, env)
-      await header.selectTab('calendar')
-      return calendarPage
+      await enduserLogin(page, user, '/calendar')
+      return new CitizenCalendarPage(page, env)
     }
 
     test('Citizen receives only one correct set of event times despite 2 placements', async ({

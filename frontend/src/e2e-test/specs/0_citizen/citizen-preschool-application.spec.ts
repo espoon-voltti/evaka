@@ -60,13 +60,12 @@ test.describe('Citizen preschool applications', () => {
     })
 
     page = evaka
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/applications')
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
   test('Sending incomplete preschool application gives validation error', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -76,7 +75,6 @@ test.describe('Citizen preschool applications', () => {
   })
 
   test('Minimal valid preschool application can be sent', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -91,7 +89,6 @@ test.describe('Citizen preschool applications', () => {
   })
 
   test('Full valid preschool application can be sent', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -106,7 +103,6 @@ test.describe('Citizen preschool applications', () => {
   })
 
   test('Citizen cannot move preferred start date before a previously selected date', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -195,7 +191,7 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     })
 
     page = evaka
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/applications')
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
   })
@@ -204,7 +200,6 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     const preferredStartDate = LocalDate.of(2021, 8, 11)
     const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 11)
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -237,7 +232,6 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     const preferredStartDate = LocalDate.of(2021, 8, 11)
     const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 12)
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -270,7 +264,6 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     const preferredStartDate = LocalDate.of(2021, 8, 11)
     const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 10)
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -303,7 +296,6 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     const preferredStartDate = LocalDate.of(2021, 8, 11)
     const connectedDaycarePreferredStartDate = LocalDate.of(2021, 7, 31)
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'
@@ -329,7 +321,6 @@ test.describe('Citizen preschool applications - connected daycare preferred star
     const preferredStartDate = LocalDate.of(2021, 8, 12)
     const connectedDaycarePreferredStartDate = LocalDate.of(2021, 8, 11)
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'

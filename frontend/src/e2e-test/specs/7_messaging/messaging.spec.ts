@@ -179,14 +179,18 @@ test.describe('Sending and receiving messages', () => {
     await employeeLogin(unitSupervisorPage, unitSupervisor)
   }
 
-  async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+  async function openCitizenPage(mockedTime: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({ mockedTime })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
-  async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+  async function openCitizenPageWeak(
+    mockedTime: HelsinkiDateTime,
+    path?: string
+  ) {
     citizenPage = await newPage({ mockedTime })
     await enduserLoginWeak(citizenPage, credentials)
+    if (path) await citizenPage.goto(config.enduserUrl + path)
   }
 
   for (const [name, openCitizen] of [
@@ -202,8 +206,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -261,8 +264,7 @@ test.describe('Sending and receiving messages', () => {
           `${testChild2.lastName} ${testChild2.firstName}`
         )
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -297,8 +299,7 @@ test.describe('Sending and receiving messages', () => {
           ]
         })
 
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -321,8 +322,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(message)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -351,8 +351,7 @@ test.describe('Sending and receiving messages', () => {
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -381,8 +380,7 @@ test.describe('Sending and receiving messages', () => {
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -399,8 +397,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -424,8 +421,7 @@ test.describe('Sending and receiving messages', () => {
 
       test('Citizen sends a message to the unit supervisor', async () => {
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -454,8 +450,7 @@ test.describe('Sending and receiving messages', () => {
           LocalTime.of(10, 2)
         )
         const recipients = ['Esimies Essi']
-        await openCitizen(tenDaysbeforePlacementAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(tenDaysbeforePlacementAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -488,8 +483,7 @@ test.describe('Sending and receiving messages', () => {
           mockedDate.addDays(-10),
           LocalTime.of(12, 13)
         )
-        await openCitizen(tenDaysBeforePlacementAt12)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(tenDaysBeforePlacementAt12, '/messages')
         const citizenMessagesPageLater = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -501,8 +495,7 @@ test.describe('Sending and receiving messages', () => {
 
       test('Citizen can send a message and receive a notification on success', async () => {
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -537,8 +530,7 @@ test.describe('Sending and receiving messages', () => {
         }).save()
 
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -563,8 +555,7 @@ test.describe('Sending and receiving messages', () => {
 
       test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -612,8 +603,7 @@ test.describe('Sending and receiving messages', () => {
         })
 
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -686,8 +676,7 @@ test.describe('Sending and receiving messages', () => {
         }).save()
         await createMessageAccounts()
 
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -750,8 +739,7 @@ test.describe('Sending and receiving messages', () => {
           .addDays(1)
           .toHelsinkiDateTime(LocalTime.of(12, 0))
 
-        await openCitizen(dayAfterPlacementEnds)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(dayAfterPlacementEnds, '/messages')
         const citizenMessagesPageAfterPlacement = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -768,8 +756,7 @@ test.describe('Sending and receiving messages', () => {
         })
 
         const recipients = ['Esimies Essi']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -798,8 +785,7 @@ test.describe('Sending and receiving messages', () => {
 
       test('Citizen sends message to the unit supervisor and the group', async () => {
         const recipients = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -830,8 +816,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -853,8 +838,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -876,8 +860,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -898,8 +881,7 @@ test.describe('Sending and receiving messages', () => {
 
       test('Mark unread button is hidden for citizen if there are no messages from staff in the thread', async () => {
         const recipients = ['Kosmiset vakiot (Henkilökunta)']
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -927,8 +909,7 @@ test.describe('Sending and receiving messages', () => {
           .groupAcl(testDaycareGroup.id, mockedDateAt10, mockedDateAt10)
           .save()
 
-        await openCitizen(mockedDateAt10)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt10, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -994,8 +975,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await openCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -1022,8 +1002,7 @@ test.describe('Sending and receiving messages', () => {
           await messageEditor.sendNewMessage(defaultMessage)
           await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-          await openCitizen(mockedDateAt11)
-          await citizenPage.goto(config.enduserMessagesUrl)
+          await openCitizen(mockedDateAt11, '/messages')
           const citizenMessagesPage = new CitizenMessagesPage(
             citizenPage,
             'desktop'
@@ -1041,8 +1020,7 @@ test.describe('Sending and receiving messages', () => {
           await messageEditor.sendNewMessage(defaultMessage)
           await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-          await openCitizen(mockedDateAt11)
-          await citizenPage.goto(config.enduserMessagesUrl)
+          await openCitizen(mockedDateAt11, '/messages')
           const citizenMessagesPage = new CitizenMessagesPage(
             citizenPage,
             'desktop'
@@ -1158,8 +1136,7 @@ test.describe('Sending and receiving messages', () => {
 
       async function openCitizenThread(time: HelsinkiDateTime) {
         const citizenPage = await newEvakaPage({ mockedTime: time })
-        await enduserLogin(citizenPage, testAdult)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await enduserLogin(citizenPage, testAdult, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -1302,8 +1279,7 @@ test.describe('Foster parent messaging', () => {
     const fosterParentPage = await newPage({
       mockedTime: mockedDateAt10
     })
-    await enduserLogin(fosterParentPage, fosterParent)
-    await fosterParentPage.goto(config.enduserMessagesUrl)
+    await enduserLogin(fosterParentPage, fosterParent, '/messages')
     const fosterParentMessagesPage = new CitizenMessagesPage(
       fosterParentPage,
       'desktop'
@@ -1367,8 +1343,7 @@ test.describe('Foster parent messaging', () => {
     const fosterParentPage = await newPage({
       mockedTime: mockedDateAt11
     })
-    await enduserLogin(fosterParentPage, fosterParent)
-    await fosterParentPage.goto(config.enduserMessagesUrl)
+    await enduserLogin(fosterParentPage, fosterParent, '/messages')
     const fosterParentMessagesPage = new CitizenMessagesPage(
       fosterParentPage,
       'desktop'

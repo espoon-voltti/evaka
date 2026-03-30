@@ -56,7 +56,7 @@ test.describe('Daily service times', () => {
       guardianId: guardian.id
     }).save()
 
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/calendar')
     const calendar = new CitizenCalendarPage(evaka, 'desktop')
 
     await expect(calendar.dailyServiceTimeNotificationText).toHaveText(

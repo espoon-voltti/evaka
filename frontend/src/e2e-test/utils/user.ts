@@ -12,7 +12,7 @@ import { TextInput } from './page'
 export async function enduserLogin(
   page: Page,
   person: DevPerson,
-  url?: string
+  path?: string
 ) {
   if (!person.ssn) {
     throw new Error('Person does not have an SSN: cannot login')
@@ -20,8 +20,8 @@ export async function enduserLogin(
   await page.page.request.post(`${config.devApiGwUrl}/auth/sfi-login`, {
     data: { type: 'citizen', ssn: person.ssn }
   })
-  if (url) {
-    await page.goto(url)
+  if (path) {
+    await page.goto(config.enduserUrl + path)
   }
 }
 

@@ -69,7 +69,7 @@ test.describe('Citizen children page', () => {
       )
     })
 
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/')
     const header = new CitizenHeader(evaka)
     const childPage = new CitizenChildPage(evaka)
 
@@ -101,7 +101,7 @@ test.describe('Citizen children page', () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -131,7 +131,7 @@ test.describe('Citizen children page', () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, testClub.id, 'CLUB')
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -157,7 +157,7 @@ test.describe('Citizen children page', () => {
         startDate
       )
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -191,11 +191,9 @@ test.describe('Citizen children page', () => {
       )
       await createApplications({ body: [application] })
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/applications')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
-
-      await header.selectTab('applications')
       await new CitizenApplicationsPage(evaka).assertApplicationExists(
         applicationFixtureId
       )
@@ -263,7 +261,7 @@ test.describe('Citizen children page', () => {
         endDate: daycareAfterPreschoolEnd
       }).save()
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -311,7 +309,7 @@ test.describe('Citizen children page', () => {
         endDate: daycare2end
       }).save()
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -374,7 +372,7 @@ test.describe('Citizen children page', () => {
         endDate: daycareAfterPreschoolEnd
       }).save()
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 
@@ -435,7 +433,7 @@ test.describe('Citizen children page', () => {
         'PRESCHOOL_DAYCARE'
       )
 
-      await enduserLogin(evaka, testAdult)
+      await enduserLogin(evaka, testAdult, '/')
       const header = new CitizenHeader(evaka)
       const childPage = new CitizenChildPage(evaka)
 

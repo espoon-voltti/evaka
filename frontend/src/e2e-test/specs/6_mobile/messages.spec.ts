@@ -215,12 +215,12 @@ test.describe('Messages in child page', () => {
     await page.goto(mobileSignupUrl)
   })
 
-  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+  async function initCitizenPage(mockedTime: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({
       viewport: mobileViewport,
       mockedTime
     })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
   test('Employee can open editor and send message', async () => {
@@ -246,8 +246,7 @@ test.describe('Messages in child page', () => {
     await childPage.waitUntilLoaded()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
-    await initCitizenPage(mockedDateAt12)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initCitizenPage(mockedDateAt12, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
     await citizenMessagesPage.assertThreadContent(message)
   })
@@ -333,12 +332,12 @@ test.describe('Messages page', () => {
     await page.goto(mobileSignupUrl)
   })
 
-  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+  async function initCitizenPage(mockedTime: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({
       viewport: mobileViewport,
       mockedTime
     })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
   async function citizenSendsMessageToGroup() {
@@ -378,8 +377,7 @@ test.describe('Messages page', () => {
     content: string
     urgent?: boolean
   }) {
-    await initCitizenPage(mockedDateAt12)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initCitizenPage(mockedDateAt12, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'mobile')
     await citizenMessagesPage.assertThreadContent(message)
   }

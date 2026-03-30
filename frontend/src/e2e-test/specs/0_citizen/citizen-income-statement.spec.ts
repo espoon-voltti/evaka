@@ -9,14 +9,12 @@ import {
   resetServiceState,
   updateIncomeStatementHandled
 } from '../../generated/api-clients'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let header: CitizenHeader
 let incomeStatementsPage: IncomeStatementsPage
 
 const now = HelsinkiDateTime.of(2024, 11, 25, 12)
@@ -65,14 +63,12 @@ for (const env of ['desktop', 'mobile'] as const) {
       })
 
       page = evaka
-      await enduserLogin(page, testAdult)
-      header = new CitizenHeader(page, env)
+      await enduserLogin(page, testAdult, '/income')
       incomeStatementsPage = new IncomeStatementsPage(page, env)
     })
 
     test.describe('With the bare minimum selected', () => {
       test('Highest fee', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('highest-fee')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -83,8 +79,6 @@ for (const env of ['desktop', 'mobile'] as const) {
       })
 
       test('Gross income', async () => {
-        await header.selectTab('income')
-
         await incomeStatementsPage.createNewIncomeStatement()
 
         await incomeStatementsPage.selectIncomeStatementType('gross-income')
@@ -128,7 +122,6 @@ for (const env of ['desktop', 'mobile'] as const) {
 
     test.describe('Entrepreneur income', () => {
       test('Limited liability company', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('gross-income')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -172,7 +165,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         await assertIncomeStatementCreated(startDate, now, env)
       })
       test('Self employed', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('gross-income')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -213,7 +205,6 @@ for (const env of ['desktop', 'mobile'] as const) {
       })
 
       test('Light entrepreneur', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('gross-income')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -250,7 +241,6 @@ for (const env of ['desktop', 'mobile'] as const) {
       })
 
       test('Partnership', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('gross-income')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -289,7 +279,6 @@ for (const env of ['desktop', 'mobile'] as const) {
 
     test.describe('Saving as draft', () => {
       test('No need to check assured', async () => {
-        await header.selectTab('income')
         await incomeStatementsPage.createNewIncomeStatement()
         await incomeStatementsPage.selectIncomeStatementType('highest-fee')
         await incomeStatementsPage.setValidFromDate(startDate)
@@ -321,7 +310,7 @@ for (const env of ['desktop', 'mobile'] as const) {
           status: 'SENT'
         }).save()
 
-        await header.selectTab('income')
+        await page.reload()
         await incomeStatementsPage.assertNthIncomeStatementDeleteButtonDisabled(
           0,
           false

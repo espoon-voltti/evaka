@@ -18,7 +18,6 @@ import {
 } from '../../dev-api/fixtures'
 import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import { fullClubForm, minimalClubForm } from '../../utils/application-forms'
 import { enduserLogin } from '../../utils/user'
@@ -48,11 +47,8 @@ test.describe('Citizen club applications', () => {
   test('Sending incomplete club application gives validation error', async ({
     evaka
   }) => {
-    await enduserLogin(evaka, testAdult)
-    const header = new CitizenHeader(evaka)
+    await enduserLogin(evaka, testAdult, '/applications')
     const applicationsPage = new CitizenApplicationsPage(evaka)
-
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'CLUB'
@@ -62,11 +58,8 @@ test.describe('Citizen club applications', () => {
   })
 
   test('Minimal valid club application can be sent', async ({ evaka }) => {
-    await enduserLogin(evaka, testAdult)
-    const header = new CitizenHeader(evaka)
+    await enduserLogin(evaka, testAdult, '/applications')
     const applicationsPage = new CitizenApplicationsPage(evaka)
-
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'CLUB'
@@ -81,11 +74,8 @@ test.describe('Citizen club applications', () => {
   })
 
   test('Full valid club application can be sent', async ({ evaka }) => {
-    await enduserLogin(evaka, testAdult)
-    const header = new CitizenHeader(evaka)
+    await enduserLogin(evaka, testAdult, '/applications')
     const applicationsPage = new CitizenApplicationsPage(evaka)
-
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'CLUB'
@@ -102,11 +92,8 @@ test.describe('Citizen club applications', () => {
   test('Citizen cannot move preferred start date before a previously selected date', async ({
     evaka
   }) => {
-    await enduserLogin(evaka, testAdult)
-    const header = new CitizenHeader(evaka)
+    await enduserLogin(evaka, testAdult, '/applications')
     const applicationsPage = new CitizenApplicationsPage(evaka)
-
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'CLUB'

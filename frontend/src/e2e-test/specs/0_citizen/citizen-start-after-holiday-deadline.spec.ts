@@ -17,7 +17,6 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -68,8 +67,7 @@ test.describe('Placement start after deadline end', () => {
   })
 
   test('citizen can mark repeating attendances', async () => {
-    await enduserLogin(page, guardian)
-    await new CitizenHeader(page).selectTab('calendar')
+    await enduserLogin(page, guardian, '/calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
     await calendar.navigateToNextMonth()
@@ -100,8 +98,7 @@ test.describe('Placement start after deadline end', () => {
   })
 
   test('citizen can mark single day attendances', async () => {
-    await enduserLogin(page, guardian)
-    await new CitizenHeader(page).selectTab('calendar')
+    await enduserLogin(page, guardian, '/calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
     await calendar.navigateToNextMonth()

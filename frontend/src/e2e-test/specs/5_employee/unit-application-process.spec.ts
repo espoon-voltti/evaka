@@ -33,7 +33,6 @@ import type {
   DevPerson
 } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import type { ApplicationProcessPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { test } from '../../playwright'
@@ -257,9 +256,7 @@ test.describe('Unit groups - placement plans / proposals', () => {
 
     // Guardian accepts the first decision
     page = await newEvakaPage()
-    await enduserLogin(page, mockAdult)
-    let header = new CitizenHeader(page)
-    await header.selectTab('decisions')
+    await enduserLogin(page, mockAdult, '/decisions')
     let citizenDecisionsPage = new CitizenDecisionsPage(page)
     let responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
       testApplication.id,
@@ -279,9 +276,7 @@ test.describe('Unit groups - placement plans / proposals', () => {
 
     // Guardian accepts the second decision
     page = await newEvakaPage()
-    await enduserLogin(page, mockAdult)
-    header = new CitizenHeader(page)
-    await header.selectTab('decisions')
+    await enduserLogin(page, mockAdult, '/decisions')
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
       testApplication.id,

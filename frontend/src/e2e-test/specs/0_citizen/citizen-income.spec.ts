@@ -129,9 +129,8 @@ for (const env of ['desktop', 'mobile'] as const) {
         endDate: placementEnd
       }).save()
 
-      await enduserLogin(page, guardian)
+      await enduserLogin(page, guardian, '/calendar')
       const header = new CitizenHeader(page, env)
-      await header.selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await expect(calendar.expiringIncomeCta).toHaveText(
         'Muista päivittää tulotietosi 01.02.2022 mennessä'

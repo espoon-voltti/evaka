@@ -19,7 +19,6 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import type { DecisionEditorPage } from '../../pages/employee/applications/application-list-view'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -167,9 +166,7 @@ async function citizenCreatesPreschoolDaycareApplication(
   newEvakaPage: NewEvakaPage
 ): Promise<ApplicationId> {
   const citizenPage = await newEvakaPage({ mockedTime })
-  await enduserLogin(citizenPage, adult)
-  const header = new CitizenHeader(citizenPage)
-  await header.selectTab('applications')
+  await enduserLogin(citizenPage, adult, '/applications')
   const applicationsPage = new CitizenApplicationsPage(citizenPage)
   const editorPage = await applicationsPage.createApplication(
     child.id,

@@ -45,7 +45,7 @@ test.describe('Citizen login redirects - direct login', () => {
     })
 
     test('Login takes to the desired page', async () => {
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
       await page.page.waitForURL(`${config.enduserUrl}/applications`)
     })
   })
@@ -89,7 +89,7 @@ test.describe('Citizen login redirects - direct login', () => {
     })
 
     test('Login with placement takes to the desired page', async () => {
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
       await page.page.waitForURL(`${config.enduserUrl}/calendar`)
     })
   })

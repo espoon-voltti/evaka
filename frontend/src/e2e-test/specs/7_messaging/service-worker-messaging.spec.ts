@@ -69,9 +69,9 @@ test.describe('Service Worker Messaging', () => {
     newPage = newEvakaPage
   })
 
-  async function openCitizenPage(time: HelsinkiDateTime) {
+  async function openCitizenPage(time: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({ mockedTime: time })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
   async function openStaffPage(time: HelsinkiDateTime, employee: DevEmployee) {
@@ -83,7 +83,7 @@ test.describe('Service Worker Messaging', () => {
 
   test.describe('Citizen only', () => {
     test('should NOT show the messaging section for a citizen', async () => {
-      await openCitizenPage(mockedTime)
+      await openCitizenPage(mockedTime, '/')
       const header = new CitizenHeader(citizenPage)
       await header.assertNoTab('messages')
     })
@@ -113,9 +113,7 @@ test.describe('Service Worker Messaging', () => {
       await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
-      await openCitizenPage(mockedTime.addHours(1))
-      const header = new CitizenHeader(citizenPage)
-      await header.selectTab('messages')
+      await openCitizenPage(mockedTime.addHours(1), '/messages')
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'
@@ -136,9 +134,7 @@ test.describe('Service Worker Messaging', () => {
       await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
-      await openCitizenPage(mockedTime.addHours(1))
-      const header = new CitizenHeader(citizenPage)
-      await header.selectTab('messages')
+      await openCitizenPage(mockedTime.addHours(1), '/messages')
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'
@@ -171,9 +167,8 @@ test.describe('Service Worker Messaging', () => {
       )
 
       // Citizen replies to the application related message
-      await openCitizenPage(mockedTime.addHours(1))
+      await openCitizenPage(mockedTime.addHours(1), '/messages')
       const header = new CitizenHeader(citizenPage)
-      await header.selectTab('messages')
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'
@@ -316,9 +311,7 @@ test.describe('Service Worker Messaging', () => {
       await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
-      await openCitizenPage(mockedTime.addHours(1))
-      const header = new CitizenHeader(citizenPage)
-      await header.selectTab('messages')
+      await openCitizenPage(mockedTime.addHours(1), '/messages')
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'
@@ -348,9 +341,7 @@ test.describe('Service Worker Messaging', () => {
       await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
-      await openCitizenPage(mockedTime.addHours(1))
-      const header = new CitizenHeader(citizenPage)
-      await header.selectTab('messages')
+      await openCitizenPage(mockedTime.addHours(1), '/messages')
       const citizenMessagesPage = new CitizenMessagesPage(
         citizenPage,
         'desktop'

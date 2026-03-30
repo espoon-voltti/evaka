@@ -78,7 +78,7 @@ test.describe('Service applications', () => {
 
     let citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, '/')
     let citizenHeader = new CitizenHeader(citizenPage)
     await citizenHeader.openChildPage(testChild.id)
     let citizenChildPage = new CitizenChildPage(citizenPage)
@@ -191,7 +191,7 @@ test.describe('Service applications', () => {
     )
     citizenPage = await newEvakaPage({ mockedTime: mockedTime3 })
 
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, '/')
     citizenHeader = new CitizenHeader(citizenPage)
     await citizenHeader.openChildPage(testChild.id)
     citizenChildPage = new CitizenChildPage(citizenPage)
@@ -227,7 +227,7 @@ test.describe('Service applications', () => {
 
     let citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, '/')
     let citizenHeader = new CitizenHeader(citizenPage)
     await citizenHeader.openChildPage(testChild.id)
     let citizenChildPage = new CitizenChildPage(citizenPage)
@@ -287,7 +287,7 @@ test.describe('Service applications', () => {
     )
     citizenPage = await newEvakaPage({ mockedTime: mockedTime3 })
 
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, '/')
     citizenHeader = new CitizenHeader(citizenPage)
     await citizenHeader.openChildPage(testChild.id)
     citizenChildPage = new CitizenChildPage(citizenPage)
@@ -324,7 +324,7 @@ test.describe('Service applications', () => {
 
     const citizenPage = await newEvakaPage({ mockedTime: mockedTime1 })
 
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, '/')
     const citizenHeader = new CitizenHeader(citizenPage)
     await citizenHeader.openChildPage(testChild.id)
     const citizenChildPage = new CitizenChildPage(citizenPage)

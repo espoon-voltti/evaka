@@ -7,7 +7,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState, runJobs } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import { test, expect } from '../../playwright'
 import { getVerificationCodeFromEmail } from '../../utils/email'
@@ -27,9 +26,7 @@ test.describe('Citizen e-mail verification', () => {
 
   async function openPersonalDetailsPage(evaka: Page, citizen: DevPerson) {
     page = evaka
-    await enduserLogin(page, citizen)
-    const header = new CitizenHeader(page)
-    await header.selectTab('personal-details')
+    await enduserLogin(page, citizen, '/personal-details')
     return new CitizenPersonalDetailsPage(page)
   }
 
