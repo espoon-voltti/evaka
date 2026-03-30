@@ -6,14 +6,12 @@ package fi.espoo.evaka.oulu.email
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.EmailContent
-import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.oulu.AbstractIntegrationTest
+import fi.espoo.evaka.oulu.OuluEmailMessageProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
-internal class EmailMessageProviderTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+class EmailMessageProviderTest {
+    private val emailMessageProvider = OuluEmailMessageProvider()
 
     @Test
     fun testNonPreschoolMessagesDoNotContainEspooText() {

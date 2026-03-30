@@ -4,56 +4,16 @@
 
 package fi.espoo.evaka.oulu.invoice.config
 
-import com.jcraft.jsch.JSch
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeType
-import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.invoicing.service.ProductWithName
-import fi.espoo.evaka.oulu.EvakaOuluProperties
-import fi.espoo.evaka.oulu.invoice.service.EVakaOuluInvoiceClient
-import fi.espoo.evaka.oulu.invoice.service.ProEInvoiceGenerator
-import fi.espoo.evaka.oulu.invoice.service.SftpConnector
-import fi.espoo.evaka.oulu.invoice.service.SftpSender
 import fi.espoo.evaka.placement.PlacementType
 import java.math.BigDecimal
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
-import org.springframework.context.annotation.Profile
-
-@Profile("evakaoulu")
-@Configuration
-class InvoiceConfiguration {
-    @Primary
-    @Bean(name = ["evakaOuluInvoiceIntegrationClient"])
-    fun invoiceIntegrationClient(
-        properties: EvakaOuluProperties,
-        invoiceGenerator: ProEInvoiceGenerator,
-        sftpConnector: SftpConnector,
-    ): InvoiceIntegrationClient {
-        val sftpSender = SftpSender(properties.intimeInvoices, sftpConnector)
-        return EVakaOuluInvoiceClient(sftpSender, invoiceGenerator)
-    }
-
-    @Bean fun jsch(): JSch = JSch()
-
-    @Bean fun incomeTypesProvider(): IncomeTypesProvider = OuluIncomeTypesProvider()
-
-    @Bean
-    fun incomeCoefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
-        OuluIncomeCoefficientMultiplierProvider()
-
-    @Bean fun invoiceProductProvider(): InvoiceProductProvider = OuluInvoiceProductProvider()
-
-    @Bean fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(1)
-}
 
 class OuluIncomeTypesProvider : IncomeTypesProvider {
     override fun get(): Map<String, IncomeType> =

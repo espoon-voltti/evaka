@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
 
-enum class EvakaOuluScheduledJob(
-    val fn: (EvakaOuluScheduledJobs, Database.Connection, EvakaClock) -> Unit,
+enum class OuluScheduledJob(
+    val fn: (OuluScheduledJobs, Database.Connection, EvakaClock) -> Unit,
     val defaultSettings: ScheduledJobSettings,
 ) {
     PlanDwExportJobs(
@@ -37,9 +37,9 @@ enum class EvakaOuluScheduledJob(
     ),
 }
 
-class EvakaOuluScheduledJobs(
-    private val asyncJobRunner: AsyncJobRunner<EvakaOuluAsyncJob>,
-    env: ScheduledJobsEnv<EvakaOuluScheduledJob>,
+class OuluScheduledJobs(
+    private val asyncJobRunner: AsyncJobRunner<OuluAsyncJob>,
+    env: ScheduledJobsEnv<OuluScheduledJob>,
 ) : JobSchedule {
     private val logger = KotlinLogging.logger {}
 
@@ -52,10 +52,10 @@ class EvakaOuluScheduledJobs(
         val queries = selectedQueries ?: DwQuery.entries
         logger.info { "Planning DW jobs for ${queries.size} queries" }
         db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(EvakaOuluAsyncJob.SendDWQuery::class)))
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendDWQuery::class)))
             asyncJobRunner.plan(
                 tx,
-                queries.asSequence().map(EvakaOuluAsyncJob::SendDWQuery),
+                queries.asSequence().map(OuluAsyncJob::SendDWQuery),
                 runAt = clock.now(),
                 retryCount = 1,
             )
@@ -70,10 +70,10 @@ class EvakaOuluScheduledJobs(
         val queries = selectedQueries ?: FabricQuery.entries
         logger.info { "Planning Fabric jobs for ${queries.size} queries" }
         db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(EvakaOuluAsyncJob.SendFabricQuery::class)))
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendFabricQuery::class)))
             asyncJobRunner.plan(
                 tx,
-                queries.asSequence().map(EvakaOuluAsyncJob::SendFabricQuery),
+                queries.asSequence().map(OuluAsyncJob::SendFabricQuery),
                 runAt = clock.now(),
                 retryCount = 1,
             )
@@ -88,12 +88,10 @@ class EvakaOuluScheduledJobs(
         val queries = selectedQueries ?: FabricHistoryQuery.entries
         logger.info { "Planning Fabric History jobs for ${queries.size} queries" }
         db.transaction { tx ->
-            tx.removeUnclaimedJobs(
-                setOf(AsyncJobType(EvakaOuluAsyncJob.SendFabricHistoryQuery::class))
-            )
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendFabricHistoryQuery::class)))
             asyncJobRunner.plan(
                 tx,
-                queries.asSequence().map(EvakaOuluAsyncJob::SendFabricHistoryQuery),
+                queries.asSequence().map(OuluAsyncJob::SendFabricHistoryQuery),
                 runAt = clock.now(),
                 retryCount = 1,
             )

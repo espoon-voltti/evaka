@@ -17,8 +17,8 @@ class SftpSender(val sftpProperties: SftpProperties, val sftpConnector: SftpConn
         try {
             sftpConnector.connect(
                 sftpProperties.address,
-                sftpProperties.username,
-                sftpProperties.password,
+                sftpProperties.username.value,
+                sftpProperties.password.value,
             )
 
             sftpConnector.send(filepath, content, encoding)

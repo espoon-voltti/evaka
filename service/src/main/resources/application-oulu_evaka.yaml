@@ -39,3 +39,26 @@ evaka:
         street_address: "PL 75"
         postal_code: "90015"
         post_office: "Oulu"
+
+---
+spring.config.activate.on-profile: local
+evakaoulu:
+  intime_invoices:
+    username: user
+    password: pass
+    address: address
+    path: path
+  intime_payments:
+    username: user
+    password: pass
+    address: address
+    path: path
+  bucket:
+    export: evakaoulu-export-it
+  dw_export:
+    prefix: reports
+    sftp:
+      username: user
+      password: pass
+      address: address
+      path: path

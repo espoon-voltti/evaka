@@ -6,6 +6,7 @@ package fi.espoo.evaka.oulu.dw
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.oulu.AbstractIntegrationTest
+import fi.espoo.evaka.oulu.OuluEnv
 import fi.espoo.evaka.oulu.invoice.service.SftpSender
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -42,11 +43,13 @@ class DwExportJobTest : AbstractIntegrationTest() {
 
     @Autowired private lateinit var sftpSender: SftpSender
 
+    @Autowired private lateinit var ouluEnv: OuluEnv
+
     private lateinit var job: DwExportJob
 
     @BeforeAll
     fun beforeAll() {
-        val exportClient = FileDwExportClient(s3AsyncClient, sftpSender, properties)
+        val exportClient = FileDwExportClient(s3AsyncClient, sftpSender, ouluEnv)
         job = DwExportJob(exportClient)
     }
 

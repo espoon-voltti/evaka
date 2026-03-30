@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.oulu.emailclient.config
+package fi.espoo.evaka.oulu
 
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentNotificationType
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
@@ -25,17 +24,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 
-@Profile("evakaoulu")
-@Configuration
-class EmailConfiguration {
-    @Bean fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EmailMessageProvider(env)
-}
-
-internal class EmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
+class OuluEmailMessageProvider : IEmailMessageProvider {
     val subjectForPendingDecisionEmail: String =
         "Toimenpiteitäsi odotetaan / Waiting for your action"
     val subjectForClubApplicationReceivedEmail: String =

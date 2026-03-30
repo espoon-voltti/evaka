@@ -13,33 +13,30 @@ import fi.espoo.evaka.shared.async.AsyncJobPool
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 
-sealed interface EvakaOuluAsyncJob : AsyncJobPayload {
-    data class SendDWQuery(val query: DwQuery) : EvakaOuluAsyncJob {
+sealed interface OuluAsyncJob : AsyncJobPayload {
+    data class SendDWQuery(val query: DwQuery) : OuluAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendFabricQuery(val query: FabricQuery) : EvakaOuluAsyncJob {
+    data class SendFabricQuery(val query: FabricQuery) : OuluAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendFabricHistoryQuery(val query: FabricHistoryQuery) : EvakaOuluAsyncJob {
+    data class SendFabricHistoryQuery(val query: FabricHistoryQuery) : OuluAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
     companion object {
         val pool =
             AsyncJobRunner.Pool(
-                AsyncJobPool.Id(EvakaOuluAsyncJob::class, "oulu"),
+                AsyncJobPool.Id(OuluAsyncJob::class, "oulu"),
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(SendDWQuery::class, SendFabricQuery::class, SendFabricHistoryQuery::class),
             )
     }
 }
 
-class EvakaOuluAsyncJobRegistration(
-    runner: AsyncJobRunner<EvakaOuluAsyncJob>,
-    dwExportJob: DwExportJob,
-) {
+class OuluAsyncJobRegistration(runner: AsyncJobRunner<OuluAsyncJob>, dwExportJob: DwExportJob) {
     init {
         dwExportJob.let { runner.registerHandler(it::sendDwQuery) }
         dwExportJob.let { runner.registerHandler(it::sendFabricQuery) }

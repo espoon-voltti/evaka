@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.oulu.message.config
+package fi.espoo.evaka.oulu
 
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -12,24 +12,12 @@ import java.util.Locale
 import java.util.Properties
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean
 import org.springframework.context.MessageSource
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.AbstractMessageSource
-import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 
 internal const val PREFIX: String = "fi.espoo.evaka.oulu.MessageProvider"
 
-@Configuration
-class MessageConfiguration {
-    @Bean
-    fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages.yaml"))
-        return EVakaOuluMessageProvider(messageSource)
-    }
-}
-
-internal class EVakaOuluMessageProvider(val messageSource: MessageSource) : IMessageProvider {
+class OuluMessageProvider(val messageSource: MessageSource) : IMessageProvider {
     override fun getDecisionHeader(lang: OfficialLanguage): String =
         messageSource.getMessage("$PREFIX.DECISION_HEADER", null, resolveLocale(lang))
 
@@ -123,7 +111,7 @@ If you accept the assigned pre-school place, you don't have to do anything.
     }
 }
 
-internal class YamlMessageSource(resource: Resource) : AbstractMessageSource() {
+class YamlMessageSource(resource: Resource) : AbstractMessageSource() {
     private val properties: Properties =
         YamlPropertiesFactoryBean()
             .apply {

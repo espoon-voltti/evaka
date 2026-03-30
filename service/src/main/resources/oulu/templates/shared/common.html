@@ -270,7 +270,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 </div>
                 <div>
                     <span th:text="#{header.date}"></span>
-                    <span th:replace="~{oulu/shared/common :: format-date(${decision.sentDate})}"></span>
+                    <span th:replace="~{shared/common :: format-date(${decision.sentDate})}"></span>
                 </div>
                 <div>
                     <span th:text="#{header.decisionNumber}"></span>
@@ -308,7 +308,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 </div>
                 <div>
                     <span th:text="#{header.date}"></span>
-                    <span th:replace="~{oulu/shared/common :: format-date(${decision.decisionMade})}"></span>
+                    <span th:replace="~{shared/common :: format-date(${decision.decisionMade})}"></span>
                 </div>
                 <div>
                     <span th:text="#{header.decisionNumber}"></span>
@@ -400,7 +400,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
             <span th:utext="#{decision.details.date}">on tehty varhaiskasvatuspäätös varhaiskasvatukseen
                 ajalle</span>
-            <span th:replace="~{oulu/shared/common :: placement-dates}"></span>
+            <span th:replace="~{shared/common :: placement-dates}"></span>
         </p>
     </div>
 
@@ -445,7 +445,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
             <span th:utext="#{decision.details.date}">on tehty varhaiskasvatuspäätös varhaiskasvatukseen
                 ajalle</span>
-            <span th:replace="~{oulu/shared/common :: placement-dates}"></span>
+            <span th:replace="~{shared/common :: placement-dates}"></span>
         </p>
     </div>
 
@@ -501,7 +501,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
             <strong th:if="${type == 'notice'}" th:text="#{notice.sentDate}">Ilmoituspäivä</strong>
             <strong th:unless="${type == 'notice'}" th:text="#{decision.sentDate}">Päätöspäivä</strong>
-            <span th:replace="~{oulu/shared/common :: format-date(${decision.sentDate})}"></span>
+            <span th:replace="~{shared/common :: format-date(${decision.sentDate})}"></span>
         </p>
     </div>
 </div>

@@ -6,28 +6,25 @@ package fi.espoo.evaka.oulu.dw
 
 import fi.espoo.evaka.espoo.bi.CSV_CHARSET
 import fi.espoo.evaka.espoo.bi.EspooBiJob
-import fi.espoo.evaka.oulu.EvakaOuluAsyncJob
+import fi.espoo.evaka.oulu.OuluAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.Duration
 
 class DwExportJob(private val client: DwExportClient) {
-    fun sendDwQuery(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: EvakaOuluAsyncJob.SendDWQuery,
-    ) = sendQuery(db, clock, msg.query.queryName, msg.query.query, prefix = "")
+    fun sendDwQuery(db: Database.Connection, clock: EvakaClock, msg: OuluAsyncJob.SendDWQuery) =
+        sendQuery(db, clock, msg.query.queryName, msg.query.query, prefix = "")
 
     fun sendFabricQuery(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: EvakaOuluAsyncJob.SendFabricQuery,
+        msg: OuluAsyncJob.SendFabricQuery,
     ) = sendQuery(db, clock, msg.query.queryName, msg.query.query, "fabric_")
 
     fun sendFabricHistoryQuery(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: EvakaOuluAsyncJob.SendFabricHistoryQuery,
+        msg: OuluAsyncJob.SendFabricHistoryQuery,
     ) = sendQuery(db, clock, msg.query.queryName, msg.query.query, "fabric-history_")
 
     fun sendQuery(

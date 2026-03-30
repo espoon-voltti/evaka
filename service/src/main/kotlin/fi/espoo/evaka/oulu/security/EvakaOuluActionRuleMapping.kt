@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 
-class EvakaOuluActionRuleMapping : ActionRuleMapping {
+class OuluActionRuleMapping : ActionRuleMapping {
     override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
         when (action) {
             Action.Global.READ_TAMPERE_REGIONAL_SURVEY_REPORT,

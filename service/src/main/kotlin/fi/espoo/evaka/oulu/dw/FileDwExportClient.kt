@@ -5,7 +5,7 @@
 package fi.espoo.evaka.oulu.dw
 
 import fi.espoo.evaka.espoo.bi.EspooBiJob
-import fi.espoo.evaka.oulu.EvakaOuluProperties
+import fi.espoo.evaka.oulu.OuluEnv
 import fi.espoo.evaka.oulu.invoice.service.SftpSender
 import fi.espoo.evaka.shared.domain.EvakaClock
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient
 class FileDwExportClient(
     private val asyncClient: S3AsyncClient,
     private val sftpSender: SftpSender,
-    private val properties: EvakaOuluProperties,
+    private val ouluEnv: OuluEnv,
 ) : DwExportClient {
     private val logger = KotlinLogging.logger {}
 
@@ -32,8 +32,8 @@ class FileDwExportClient(
         val date = clock.now().toLocalDate()
         val fileName = "$fileNamePrefix$queryName${date.format(DateTimeFormatter.ISO_DATE)}.csv"
         val tempFile = Files.createTempFile("", fileName)
-        val bucket = properties.bucket.export
-        val prefix = properties.dwExport.prefix
+        val bucket = ouluEnv.bucket.export
+        val prefix = ouluEnv.dwExport.prefix
         val key = "$prefix/$fileName"
 
         try {

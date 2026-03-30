@@ -91,8 +91,8 @@ class IntegrationTestConfiguration {
             .build()
 
     @Bean
-    fun sftpSender(properties: EvakaOuluProperties, connector: SftpConnector): SftpSender =
-        SftpSender(properties.dwExport.sftp, connector)
+    fun sftpSender(ouluEnv: OuluEnv, connector: SftpConnector): SftpSender =
+        SftpSender(ouluEnv.dwExport.sftp, connector)
 
     @Bean
     fun jwtAlgorithm(): Algorithm {

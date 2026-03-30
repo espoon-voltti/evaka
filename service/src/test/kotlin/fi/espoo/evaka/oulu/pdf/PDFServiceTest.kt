@@ -23,10 +23,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.FeeDecisionPdfData
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionPdfData
-import fi.espoo.evaka.oulu.template.config.TemplateConfiguration
-import fi.espoo.evaka.pdfgen.Page
+import fi.espoo.evaka.oulu.template.config.OuluTemplateProvider
 import fi.espoo.evaka.pdfgen.PdfGenerator
-import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.AreaId
@@ -46,11 +44,9 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import org.thymeleaf.context.Context
 
 private val reportsPath: String = "${Paths.get("build").toAbsolutePath()}/reports"
 
@@ -60,22 +56,12 @@ private val settings =
         SettingType.DECISION_MAKER_TITLE to "Asiakaspalvelupäällikkö",
     )
 
-@Tag("PDFGenerationTest")
-internal class PDFServiceTest {
+class PDFServiceTest {
     private lateinit var pdfService: PdfGenerator
 
     @BeforeEach
     fun setup() {
-        pdfService =
-            PdfGenerator(
-                TemplateConfiguration().templateProvider(),
-                PDFConfig().defaultTemplateEngine(),
-            )
-    }
-
-    @Test
-    fun render() {
-        pdfService.render(Page(Template("test"), Context()))
+        pdfService = PdfGenerator(OuluTemplateProvider(), PDFConfig.templateEngine("oulu"))
     }
 
     @Test

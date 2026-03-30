@@ -4,32 +4,49 @@
 
 package fi.espoo.evaka.oulu
 
+import com.jcraft.jsch.JSch
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.DefaultPasswordSpecification
 import fi.espoo.evaka.holidayperiod.QuestionnaireType
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
+import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceNumberProvider
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.invoicing.service.InvoiceNumberProvider
+import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.oulu.dw.DwExportClient
 import fi.espoo.evaka.oulu.dw.DwExportJob
 import fi.espoo.evaka.oulu.dw.FileDwExportClient
+import fi.espoo.evaka.oulu.invoice.config.OuluIncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.oulu.invoice.config.OuluIncomeTypesProvider
+import fi.espoo.evaka.oulu.invoice.config.OuluInvoiceProductProvider
+import fi.espoo.evaka.oulu.invoice.service.OuluInvoiceClient
+import fi.espoo.evaka.oulu.invoice.service.ProEInvoiceGenerator
 import fi.espoo.evaka.oulu.invoice.service.SftpConnector
 import fi.espoo.evaka.oulu.invoice.service.SftpSender
 import fi.espoo.evaka.oulu.payment.service.OuluPaymentIntegrationClient
 import fi.espoo.evaka.oulu.payment.service.ProEPaymentGenerator
-import fi.espoo.evaka.oulu.security.EvakaOuluActionRuleMapping
+import fi.espoo.evaka.oulu.security.OuluActionRuleMapping
+import fi.espoo.evaka.oulu.template.config.OuluTemplateProvider
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
+import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import io.opentelemetry.api.trace.Tracer
 import java.time.MonthDay
@@ -41,13 +58,18 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.core.io.ClassPathResource
+import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 
 @Configuration
-@Import(EvakaOuluAsyncJobRegistration::class)
-class EVakaOuluConfig {
+@Profile("oulu_evaka")
+@Import(OuluAsyncJobRegistration::class)
+class OuluConfig {
+    @Bean fun ouluEnv(env: Environment): OuluEnv = OuluEnv.fromEnvironment(env)
+
     @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
@@ -114,17 +136,51 @@ class EVakaOuluConfig {
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 20),
         )
 
-    @Bean fun actionRuleMapping(): ActionRuleMapping = EvakaOuluActionRuleMapping()
+    @Bean fun actionRuleMapping(): ActionRuleMapping = OuluActionRuleMapping()
+
+    @Bean
+    fun messageProvider(): IMessageProvider {
+        val messageSource = YamlMessageSource(ClassPathResource("oulu/messages.yaml"))
+        return OuluMessageProvider(messageSource)
+    }
+
+    @Bean fun emailMessageProvider(): IEmailMessageProvider = OuluEmailMessageProvider()
+
+    @Bean fun templateProvider(): ITemplateProvider = OuluTemplateProvider()
+
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("oulu")
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic // TODO: implement
 
     @Bean
+    fun invoiceIntegrationClient(
+        ouluEnv: OuluEnv,
+        invoiceGenerator: ProEInvoiceGenerator,
+        sftpConnector: SftpConnector,
+    ): InvoiceIntegrationClient {
+        val sftpSender = SftpSender(ouluEnv.intimeInvoices, sftpConnector)
+        return OuluInvoiceClient(sftpSender, invoiceGenerator)
+    }
+
+    @Bean fun sftpConnector(): SftpConnector = SftpConnector(JSch())
+
+    @Bean fun incomeTypesProvider(): IncomeTypesProvider = OuluIncomeTypesProvider()
+
+    @Bean
+    fun incomeCoefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
+        OuluIncomeCoefficientMultiplierProvider()
+
+    @Bean fun invoiceProductProvider(): InvoiceProductProvider = OuluInvoiceProductProvider()
+
+    @Bean fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(1)
+
+    @Bean
     fun paymentIntegrationClient(
-        evakaProperties: EvakaOuluProperties,
+        ouluEnv: OuluEnv,
         paymentGenerator: ProEPaymentGenerator,
         sftpConnector: SftpConnector,
     ): PaymentIntegrationClient {
-        val sftpSender = SftpSender(evakaProperties.intimePayments, sftpConnector)
+        val sftpSender = SftpSender(ouluEnv.intimePayments, sftpConnector)
         return OuluPaymentIntegrationClient(paymentGenerator, sftpSender)
     }
 
@@ -164,37 +220,33 @@ class EVakaOuluConfig {
     fun fileDwExportClient(
         asyncClient: S3AsyncClient,
         sftpConnector: SftpConnector,
-        properties: EvakaOuluProperties,
+        ouluEnv: OuluEnv,
     ): DwExportClient =
-        FileDwExportClient(
-            asyncClient,
-            SftpSender(properties.dwExport.sftp, sftpConnector),
-            properties,
-        )
+        FileDwExportClient(asyncClient, SftpSender(ouluEnv.dwExport.sftp, sftpConnector), ouluEnv)
 
     @Bean
-    fun evakaOuluAsyncJobRunner(
+    fun OuluAsyncJobRunner(
         jdbi: Jdbi,
         tracer: Tracer,
         env: Environment,
-    ): AsyncJobRunner<EvakaOuluAsyncJob> =
-        AsyncJobRunner(EvakaOuluAsyncJob::class, listOf(EvakaOuluAsyncJob.pool), jdbi, tracer)
+    ): AsyncJobRunner<OuluAsyncJob> =
+        AsyncJobRunner(OuluAsyncJob::class, listOf(OuluAsyncJob.pool), jdbi, tracer)
 
     @Bean fun evakaOuluDWJob(dwExportClient: DwExportClient) = DwExportJob(dwExportClient)
 
     @Bean
-    fun evakaOuluScheduledJobEnv(env: Environment): ScheduledJobsEnv<EvakaOuluScheduledJob> =
+    fun OuluScheduledJobEnv(env: Environment): ScheduledJobsEnv<OuluScheduledJob> =
         ScheduledJobsEnv.fromEnvironment(
-            EvakaOuluScheduledJob.entries.associateWith { it.defaultSettings },
+            OuluScheduledJob.entries.associateWith { it.defaultSettings },
             "oulu.job",
             env,
         )
 
     @Bean
-    fun evakaOuluScheduledJobs(
-        evakaOuluRunner: AsyncJobRunner<EvakaOuluAsyncJob>,
-        env: ScheduledJobsEnv<EvakaOuluScheduledJob>,
-    ): EvakaOuluScheduledJobs = EvakaOuluScheduledJobs(evakaOuluRunner, env)
+    fun ouluScheduledJobs(
+        evakaOuluRunner: AsyncJobRunner<OuluAsyncJob>,
+        env: ScheduledJobsEnv<OuluScheduledJob>,
+    ): OuluScheduledJobs = OuluScheduledJobs(evakaOuluRunner, env)
 
     @Bean
     fun passwordSpecification(): PasswordSpecification =

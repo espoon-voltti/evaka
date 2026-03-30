@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
 
-class EVakaOuluInvoiceClient(
+class OuluInvoiceClient(
     private val sftpSender: SftpSender,
     private val invoiceGenerator: ProEInvoiceGenerator,
 ) : InvoiceIntegrationClient {

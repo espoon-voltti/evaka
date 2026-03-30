@@ -15,7 +15,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.oulu.template.config.TemplateConfiguration
+import fi.espoo.evaka.oulu.template.config.OuluTemplateProvider
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
@@ -52,7 +52,7 @@ class DecisionServiceTest {
 
     @BeforeEach
     fun setup() {
-        templateProvider = TemplateConfiguration().templateProvider()
+        templateProvider = OuluTemplateProvider()
         pdfService = PdfGenerator(templateProvider, PDFConfig().defaultTemplateEngine())
     }
 

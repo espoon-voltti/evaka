@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.oulu.invoice.service
 
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.oulu.SftpProperties
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -17,7 +18,7 @@ internal class InvoiceSenderTest {
     @Test
     fun `should send invoice`() {
         val path = "/some/path"
-        val sftpProperties = SftpProperties("", path, "", "")
+        val sftpProperties = SftpProperties("", path, 22, Sensitive(""), Sensitive(""))
         val proEInvoice = "one"
         val sftpConnector = mock<SftpConnector>()
         val sftpSender = SftpSender(sftpProperties, sftpConnector)
@@ -28,7 +29,11 @@ internal class InvoiceSenderTest {
         )
 
         verify(sftpConnector)
-            .connect(sftpProperties.address, sftpProperties.username, sftpProperties.password)
+            .connect(
+                sftpProperties.address,
+                sftpProperties.username.value,
+                sftpProperties.password.value,
+            )
         val fileNamePattern = """$path/proe-\d{8}-\d{6}.txt"""
         verify(sftpConnector)
             .send(

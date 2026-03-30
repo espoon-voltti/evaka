@@ -28,8 +28,6 @@ abstract class AbstractIntegrationTest(private val resetDbBeforeEach: Boolean = 
 
     @Autowired protected lateinit var s3Client: S3Client
 
-    @Autowired protected lateinit var properties: EvakaOuluProperties
-
     @BeforeAll
     protected fun initializeJdbi() {
         db = Database(jdbi, noopTracer()).connectWithManualLifecycle()
