@@ -36,7 +36,7 @@ dependencies {
         api("org.jsoup:jsoup:1.22.1")
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
-        api("org.mockito.kotlin:mockito-kotlin:6.2.3")
+        api("org.mockito.kotlin:mockito-kotlin:6.3.0")
         api("org.postgresql:postgresql:42.7.10")
         api("org.checkerframework:checker-qual:3.54.0")
         api("org.skyscreamer:jsonassert:1.5.3")
