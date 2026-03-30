@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useMemo } from 'react'
+import { useState, useContext, useMemo } from 'react'
 
 import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'

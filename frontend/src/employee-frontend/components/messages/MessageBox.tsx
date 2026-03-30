@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
-import React, { useCallback, useContext } from 'react'
+import { useCallback, useContext } from 'react'
 import styled, { css } from 'styled-components'
 
 import type { MessageAccount } from 'lib-common/generated/api-types/messaging'

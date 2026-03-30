@@ -88,11 +88,14 @@ export default [
       'jsx-expressions': fixupPluginRules(jsxExpressionsPlugin)
     },
     settings: {
-      react: { version: 'detect' }
+      react: { version: 'detect' },
+      parserOptions: { jsx: true }
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off',
       'react/jsx-curly-brace-presence': ['error', 'never'],
       'react/prop-types': 'off',
       'react/self-closing-comp': ['error', { component: true, html: true }],

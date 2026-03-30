@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import type { Id } from 'lib-common/id-type'

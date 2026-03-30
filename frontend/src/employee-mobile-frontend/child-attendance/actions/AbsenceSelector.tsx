@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import { Fragment } from 'react'
 
 import type { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'

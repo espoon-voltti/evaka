@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type { Action } from 'lib-common/generated/action'
 import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import Tooltip from 'lib-components/atoms/Tooltip'

@@ -4,7 +4,7 @@
 
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { string } from 'lib-common/form/fields'

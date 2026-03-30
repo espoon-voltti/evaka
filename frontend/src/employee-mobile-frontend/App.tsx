@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 import { ThemeProvider } from 'styled-components'
 import { Router, Route, Redirect, useLocation, Switch } from 'wouter'
 

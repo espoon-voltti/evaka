@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ReactNode } from 'react'
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'

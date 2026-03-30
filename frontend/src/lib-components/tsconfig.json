@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "outDir": "../../dist/lib-components",
     "types": ["node"],
   },
