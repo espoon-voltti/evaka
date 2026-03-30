@@ -48,6 +48,40 @@ interface ArchivalIntegrationClient {
         evakaUser: EvakaUser,
     ): String?
 
+    class MockClient : ArchivalIntegrationClient {
+        override fun uploadDecisionToArchive(
+            caseProcess: CaseProcess,
+            child: PersonDTO,
+            decision: Decision,
+            document: Document,
+            user: EvakaUser,
+        ): String = "mock-instance-id"
+
+        override fun uploadFeeDecisionToArchive(
+            caseProcess: CaseProcess,
+            decision: FeeDecisionDetailed,
+            document: Document,
+            user: EvakaUser,
+        ): String = "mock-instance-id"
+
+        override fun uploadVoucherValueDecisionToArchive(
+            caseProcess: CaseProcess,
+            decision: VoucherValueDecisionDetailed,
+            document: Document,
+            user: EvakaUser,
+        ): String = "mock-instance-id"
+
+        override fun uploadChildDocumentToArchive(
+            documentId: ChildDocumentId,
+            caseProcess: CaseProcess?,
+            childInfo: PersonDTO,
+            childDocumentDetails: ChildDocumentDetails,
+            documentMetadata: DocumentMetadata,
+            documentContent: Document,
+            evakaUser: EvakaUser,
+        ): String = "mock-instance-id"
+    }
+
     class FailingClient() : ArchivalIntegrationClient {
         override fun uploadDecisionToArchive(
             caseProcess: CaseProcess,

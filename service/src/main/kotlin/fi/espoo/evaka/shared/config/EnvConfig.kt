@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.config
 
-import fi.espoo.evaka.ArchiveEnv
 import fi.espoo.evaka.AromiEnv
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ChildDocumentArchivalEnv
@@ -101,13 +100,6 @@ class EnvConfig {
     fun aromiEnv(evakaEnv: EvakaEnv, env: Environment): AromiEnv? =
         when (evakaEnv.aromiEnabled) {
             true -> AromiEnv.fromEnvironment(env)
-            false -> null
-        }
-
-    @Bean
-    fun archiveEnv(evakaEnv: EvakaEnv, env: Environment): ArchiveEnv? =
-        when (evakaEnv.archivalEnabled) {
-            true -> ArchiveEnv.fromEnvironment(env)
             false -> null
         }
 
