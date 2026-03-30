@@ -10,9 +10,8 @@
     "type-check": "tsc",
     "lint": "eslint --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_ENV=test vitest run",
     "dev": "concurrently --prefix '[{name}]' --names 'tsc,node' 'tsc --preserveWatchOutput --watch' 'NODE_ENV=local node --watch-preserve-output --watch src/index.ts'",
-    "test-ci": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "prepack": "exit 1"
   },
   "dependencies": {
@@ -45,7 +44,6 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
-    "@jest/globals": "30.3.0",
     "@types/cookie-parser": "1.4.10",
     "@types/cookie-signature": "1.1.2",
     "@types/express-http-proxy": "1.6.7",
@@ -64,21 +62,15 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-prettier": "5.5.5",
-    "jest": "30.3.0",
-    "jest-junit": "16.0.0",
     "nock": "14.0.11",
     "node-forge": "1.4.0",
     "prettier": "3.8.1",
     "tough-cookie": "6.0.1",
-    "ts-jest": "29.4.6",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.2",
+    "vitest": "latest",
     "xml-crypto": "6.1.2",
     "xml2js": "0.6.2"
-  },
-  "jest-junit": {
-    "outputDirectory": "./build/test-reports/",
-    "outputName": "jest-junit.xml"
   },
   "prettier": {
     "arrowParens": "always",

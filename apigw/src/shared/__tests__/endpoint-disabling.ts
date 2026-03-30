@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type express from 'express'
 import {
   afterAll,
   afterEach,
@@ -9,9 +10,8 @@ import {
   describe,
   expect,
   it,
-  jest
-} from '@jest/globals'
-import type express from 'express'
+  vi
+} from 'vitest'
 
 import { configFromEnv } from '../config.ts'
 import {
@@ -130,13 +130,13 @@ describe('endpointDisablingMiddleware', () => {
     await refreshCache()
 
     const req = { method: 'GET', path: '/citizen/test' } as express.Request
-    const statusFn = jest.fn().mockReturnThis()
-    const jsonFn = jest.fn().mockReturnThis()
+    const statusFn = vi.fn().mockReturnThis()
+    const jsonFn = vi.fn().mockReturnThis()
     const res = {
       status: statusFn,
       json: jsonFn
     } as unknown as express.Response
-    const next = jest.fn()
+    const next = vi.fn()
 
     middleware(req, res, next)
     expect(statusFn).toHaveBeenCalledWith(503)
@@ -155,7 +155,7 @@ describe('endpointDisablingMiddleware', () => {
 
     const req = { method: 'GET', path: '/citizen/test' } as express.Request
     const res = {} as express.Response
-    const next = jest.fn()
+    const next = vi.fn()
 
     middleware(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -171,7 +171,7 @@ describe('endpointDisablingMiddleware', () => {
 
     const req = { method: 'GET', path: '/citizen/test' } as express.Request
     const res = {} as express.Response
-    const next = jest.fn()
+    const next = vi.fn()
 
     middleware(req, res, next)
     expect(next).toHaveBeenCalled()
@@ -186,13 +186,13 @@ describe('endpointDisablingMiddleware', () => {
     await refreshCache()
 
     const req = { method: 'GET', path: '/citizen/test' } as express.Request
-    const statusFn = jest.fn().mockReturnThis()
-    const jsonFn = jest.fn().mockReturnThis()
+    const statusFn = vi.fn().mockReturnThis()
+    const jsonFn = vi.fn().mockReturnThis()
     const res = {
       status: statusFn,
       json: jsonFn
     } as unknown as express.Response
-    const next = jest.fn()
+    const next = vi.fn()
 
     middleware(req, res, next)
     expect(statusFn).toHaveBeenCalledWith(503)

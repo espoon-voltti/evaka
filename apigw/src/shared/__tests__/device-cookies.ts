@@ -4,9 +4,9 @@
 
 import { createHash } from 'node:crypto'
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { unsign } from 'cookie-signature'
 import type express from 'express'
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import {
   AUTH_HISTORY_COOKIE_PREFIX,
@@ -56,7 +56,7 @@ describe('device-cookies', () => {
         [nameInvalid]: false
       }
 
-      const cb = jest.fn()
+      const cb = vi.fn()
       const result = filterValidDeviceAuthHistory(signedCookies, cb)
       expect(result).toEqual([validHash])
       expect(cb).toHaveBeenCalledWith(nameInvalid, invalidHash)
@@ -65,17 +65,14 @@ describe('device-cookies', () => {
 
   describe('setDeviceAuthHistoryCookie', () => {
     const testSecret = 'test-cookie-secret'
-    let mockResponse: jest.Mocked<express.Response>
-    let cookieFn: jest.MockedFunction<
-      (name: string, value: string, options: object) => void
-    >
+    let mockResponse: express.Response
+    let cookieFn: Mock<(name: string, value: string, options: object) => void>
 
     beforeEach(() => {
-      cookieFn =
-        jest.fn<(name: string, value: string, options: object) => void>()
+      cookieFn = vi.fn<(name: string, value: string, options: object) => void>()
       mockResponse = {
         cookie: cookieFn
-      } as unknown as jest.Mocked<express.Response>
+      } as unknown as express.Response
     })
 
     it('sets cookie with a value that cookie-parser can unsign', () => {
@@ -99,6 +96,7 @@ describe('device-cookies', () => {
           httpOnly: true,
           sameSite: 'strict',
           signed: false,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           expires: expect.any(Date)
         })
       )

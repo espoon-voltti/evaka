@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { describe, beforeEach, expect, it, test } from '@jest/globals'
 import type { CacheProvider } from '@node-saml/node-saml'
+import { describe, beforeEach, expect, it, test } from 'vitest'
 
 import redisCacheProvider from '../saml/node-saml-cache-redis.ts'
 import { MockRedisClient } from '../test/mock-redis-client.ts'

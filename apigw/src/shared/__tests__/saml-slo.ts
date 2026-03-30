@@ -4,11 +4,11 @@
 
 import zlib from 'node:zlib'
 
-import { afterEach, beforeEach, describe, expect, test } from '@jest/globals'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import xmldom from '@xmldom/xmldom'
 import type { AxiosResponse } from 'axios'
 import type { Cookie } from 'tough-cookie'
+import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import xml2js from 'xml2js'
 
 import type { Config } from '../config.ts'

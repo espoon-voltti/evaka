@@ -4,11 +4,11 @@
 
 import { createHash } from 'node:crypto'
 
-import { afterEach, beforeEach, describe, expect, test } from '@jest/globals'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import type { AxiosResponse } from 'axios'
 import { unsign } from 'cookie-signature'
 import { Cookie } from 'tough-cookie'
+import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 
 import type { Config } from '../config.ts'
 import { configFromEnv } from '../config.ts'

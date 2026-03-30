@@ -4,14 +4,7 @@
 
 import { randomUUID as uuid } from 'node:crypto'
 
-import {
-  describe,
-  beforeAll,
-  afterEach,
-  afterAll,
-  expect,
-  it
-} from '@jest/globals'
+import { describe, beforeAll, afterEach, afterAll, expect, it } from 'vitest'
 
 import { appCommit, configFromEnv } from '../../shared/config.ts'
 import type { UUID } from '../../shared/service-client.ts'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { describe, expect, it, test } from '@jest/globals'
+import { describe, expect, it, test } from 'vitest'
 
 import { createSha256Hash } from '../crypto.ts'
 import {
