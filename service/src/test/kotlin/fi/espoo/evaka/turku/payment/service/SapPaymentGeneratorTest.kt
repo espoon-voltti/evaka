@@ -21,7 +21,10 @@ class SapPaymentGeneratorTest {
     fun `result should be equal to a known good format`() {
         val payment = validPayment()
         val correctPayment =
-            object {}.javaClass.getResource("/payment-client/CorrectSapPayment.txt")?.readText()
+            object {}
+                .javaClass
+                .getResource("/turku/payment-client/CorrectSapPayment.txt")
+                ?.readText()
         val result =
             SapPaymentGenerator(PaymentMarshaller(), IdocGenerator())
                 .generatePayments(listOf(payment), mockFetcher)

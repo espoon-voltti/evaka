@@ -4,15 +4,19 @@
 
 package fi.espoo.evaka.oulu.dw
 
+import com.jcraft.jsch.JSch
+import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.oulu.AbstractIntegrationTest
+import fi.espoo.evaka.oulu.BucketProperties
+import fi.espoo.evaka.oulu.DwExportProperties
 import fi.espoo.evaka.oulu.OuluEnv
+import fi.espoo.evaka.oulu.SftpProperties
+import fi.espoo.evaka.oulu.invoice.service.SftpConnector
 import fi.espoo.evaka.oulu.invoice.service.SftpSender
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -33,22 +37,84 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.springframework.beans.factory.annotation.Autowired
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 
-class DwExportJobTest : AbstractIntegrationTest() {
+class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2019, 7, 15), LocalTime.of(23, 0)))
 
-    @Autowired private lateinit var s3AsyncClient: S3AsyncClient
-
-    @Autowired private lateinit var sftpSender: SftpSender
-
-    @Autowired private lateinit var ouluEnv: OuluEnv
+    @Autowired private lateinit var bucketEnv: BucketEnv
+    @Autowired private lateinit var s3Client: S3Client
 
     private lateinit var job: DwExportJob
 
+    companion object {
+        private val sftpPort = System.getenv("EVAKA_SFTP_PORT")?.toIntOrNull() ?: 2222
+        private const val EXPORT_BUCKET = "evakaoulu-export-it"
+    }
+
     @BeforeAll
-    fun beforeAll() {
+    fun setup() {
+        val ouluEnv =
+            OuluEnv(
+                intimeInvoices =
+                    SftpProperties(
+                        address = "localhost",
+                        port = 22,
+                        path = "path",
+                        username = Sensitive("user"),
+                        password = Sensitive("pass"),
+                    ),
+                intimePayments =
+                    SftpProperties(
+                        address = "localhost",
+                        port = 22,
+                        path = "path",
+                        username = Sensitive("user"),
+                        password = Sensitive("pass"),
+                    ),
+                bucket = BucketProperties(export = EXPORT_BUCKET),
+                dwExport =
+                    DwExportProperties(
+                        prefix = "reports",
+                        sftp =
+                            SftpProperties(
+                                address = "localhost",
+                                port = sftpPort,
+                                path = "upload",
+                                username = Sensitive("foo"),
+                                password = Sensitive("pass"),
+                            ),
+                    ),
+            )
+
+        val existingBuckets = s3Client.listBuckets().buckets().map { it.name()!! }
+        if (EXPORT_BUCKET !in existingBuckets) {
+            s3Client.createBucket(CreateBucketRequest.builder().bucket(EXPORT_BUCKET).build())
+        }
+
+        val s3AsyncClient =
+            S3AsyncClient.crtBuilder()
+                .httpConfiguration { it.trustAllCertificatesEnabled(true) }
+                .region(Region.EU_WEST_1)
+                .forcePathStyle(true)
+                .endpointOverride(bucketEnv.localS3Url)
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(
+                            bucketEnv.localS3AccessKeyId,
+                            bucketEnv.localS3SecretAccessKey,
+                        )
+                    )
+                )
+                .build()
+
+        val sftpSender = SftpSender(ouluEnv.dwExport.sftp, SftpConnector(JSch()))
         val exportClient = FileDwExportClient(s3AsyncClient, sftpSender, ouluEnv)
         job = DwExportJob(exportClient)
     }
@@ -88,20 +154,11 @@ class DwExportJobTest : AbstractIntegrationTest() {
 
     private fun insertCriticalTestData() {
         db.transaction { tx ->
-            val employeeId = tx.insert(DevEmployee())
-            val areaId =
-                tx.createQuery(
-                        QuerySql { sql("select id from care_area order by short_name limit 1") }
-                    )
-                    .exactlyOne<AreaId>()
-            val snoId =
-                tx.createQuery(
-                        QuerySql {
-                            sql("select id from service_need_option order by name_fi limit 1")
-                        }
-                    )
-                    .exactlyOne<ServiceNeedOptionId>()
-            val daycareId = tx.insert(DevDaycare(areaId = areaId))
+            val employee = DevEmployee()
+            tx.insert(employee)
+            val area = DevCareArea()
+            tx.insert(area)
+            val daycareId = tx.insert(DevDaycare(areaId = area.id))
             val groupId = tx.insert(DevDaycareGroup(daycareId = daycareId))
             val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
@@ -110,19 +167,18 @@ class DwExportJobTest : AbstractIntegrationTest() {
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
-                        createdBy = EvakaUserId(employeeId.raw),
-                        modifiedBy = EvakaUserId(employeeId.raw),
+                        createdBy = employee.evakaUserId,
+                        modifiedBy = employee.evakaUserId,
                     )
                 )
             tx.insert(
                 DevDaycareGroupPlacement(daycarePlacementId = placementId, daycareGroupId = groupId)
             )
-
             tx.insert(
                 DevAbsence(
                     childId = childId,
                     date = LocalDate.of(2019, 7, 15),
-                    modifiedBy = EvakaUserId(employeeId.raw),
+                    modifiedBy = employee.evakaUserId,
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )

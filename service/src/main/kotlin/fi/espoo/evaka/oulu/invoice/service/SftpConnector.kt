@@ -9,9 +9,7 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
-import org.springframework.stereotype.Component
 
-@Component
 class SftpConnector(val jsch: JSch) {
     var jschSession: Session? = null
     var channelSftp: ChannelSftp? = null

@@ -4,7 +4,8 @@
 
 package fi.espoo.evaka.oulu.message
 
-import fi.espoo.evaka.oulu.AbstractIntegrationTest
+import fi.espoo.evaka.oulu.OuluMessageProvider
+import fi.espoo.evaka.oulu.YamlMessageSource
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import java.lang.reflect.Method
@@ -14,10 +15,11 @@ import kotlin.reflect.jvm.javaMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junitpioneer.jupiter.cartesian.ArgumentSets
 import org.junitpioneer.jupiter.cartesian.CartesianTest
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ClassPathResource
 
-internal class MessageProviderTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var messageProvider: IMessageProvider
+internal class MessageProviderTest {
+    private val messageProvider: IMessageProvider =
+        OuluMessageProvider(YamlMessageSource(ClassPathResource("oulu/messages.yaml")))
 
     @CartesianTest()
     @CartesianTest.MethodFactory("methodsWithLang")

@@ -53,7 +53,7 @@ class DecisionServiceTest {
     @BeforeEach
     fun setup() {
         templateProvider = OuluTemplateProvider()
-        pdfService = PdfGenerator(templateProvider, PDFConfig().defaultTemplateEngine())
+        pdfService = PdfGenerator(templateProvider, PDFConfig.templateEngine("oulu"))
     }
 
     @ParameterizedTest

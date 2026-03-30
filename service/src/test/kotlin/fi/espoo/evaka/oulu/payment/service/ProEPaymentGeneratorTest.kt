@@ -82,7 +82,10 @@ class ProEPaymentGeneratorTest {
         val generationResult = proEPaymentGenerator.generatePayments(payments)
 
         val correctPayments =
-            object {}.javaClass.getResource("/payment-client/CorrectProEPayments.txt")?.readText()
+            object {}
+                .javaClass
+                .getResource("/oulu/payment-client/CorrectProEPayments.txt")
+                ?.readText()
 
         Assertions.assertEquals(correctPayments, generationResult.paymentString)
     }

@@ -73,7 +73,10 @@ internal class ProEInvoiceGeneratorTest {
         val generationResult = proEInvoiceGenerator.generateInvoice(invoiceList)
 
         val correctInvoice =
-            object {}.javaClass.getResource("/invoice-client/CorrectProEInvoice.txt")?.readText()
+            object {}
+                .javaClass
+                .getResource("/oulu/invoice-client/CorrectProEInvoice.txt")
+                ?.readText()
 
         assertEquals(correctInvoice, generationResult.invoiceString)
     }
