@@ -148,8 +148,7 @@ Some official documentation:
 
 ### Unit tests
 
-Unit tests are written using [Jest](https://jestjs.io/)
-JavaScript testing framework.
+Unit tests are written using [vitest](https://vitest.dev/) JavaScript testing framework.
 
 ```bash
 # Run all tests
@@ -158,19 +157,13 @@ yarn test
 
 ### E2E tests
 
-E2E tests are written using Typescript, Jest and Playwright.
-
-**NOTE:** For all test scripts, you can override the target URL with:
-
-```sh
-BASE_URL=http://localhost:9099 yarn <cmd>
-```
+E2E tests are written using Playwright.
 
 #### Creating a new test
 
-- Create a new test under the right test folder (= enduser)
+- Create a new test under the right test folder
 - Name test file clearly to represent test case
-- Oraganize tests into categories ([describe](https://jestjs.io/docs/api#describename-fn))
+- Oraganize tests into categories with `describe`.
 - Create [Page objects](https://playwright.dev/docs/pom) for pages/views that are tested
 
 #### Run all tests locally
@@ -178,7 +171,7 @@ BASE_URL=http://localhost:9099 yarn <cmd>
 All E2E tests can be run with the following command:
 
 ```sh
-yarn e2e-test
+yarn e2e
 ```
 
 If you don't want to wipe data from your dev environment,
@@ -194,15 +187,13 @@ You can run a single spec by specifying the corresponding subdirectory. For exam
 in order to only run tests related to messaging, use the following command:
 
 ```sh
-yarn jest --runInBand src/e2e-test/specs/7_messaging
+yarn e2e src/e2e-test/specs/7_messaging
 ```
 
-[Playwright traces](https://playwright.dev/docs/trace-viewer) are collected from
-failed tests to the `traces/` directory. Use the following command to inspect a
-trace in the Playwright trace viewer:
+Use the following command to show test report, inspect traces of failed tests, etc.
 
 ```
-yarn exec playwright show-trace traces/<filename>.zip
+yarn exec playwright show-report test-results/html
 ```
 
 #### Scheduled CircleCI run for wip branch
