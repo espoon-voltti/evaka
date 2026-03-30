@@ -64,6 +64,12 @@ evaka:
         trust_store:
           password: password
           type: JKS
+    sarma:
+      enabled: true
+      use_mock_client: true
+      url: https://eoy3xw8tftt5shn.m.pipedream.net/archive-core/
+      user_id: eVaka
+      user_role: xa-api-integration
   not_for_prod:
     force_unpublish_document_template_enabled: true
   jwt:

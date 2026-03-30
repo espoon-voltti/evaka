@@ -12,9 +12,7 @@ import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationType
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.DaycareFormV0
-import evaka.core.caseprocess.CaseProcess
 import evaka.core.caseprocess.DocumentConfidentiality
-import evaka.core.caseprocess.DocumentMetadata
 import evaka.core.caseprocess.insertCaseProcess
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
@@ -24,11 +22,8 @@ import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.*
 import evaka.core.invoicing.data.getFeeDecision
 import evaka.core.invoicing.data.getVoucherValueDecision
-import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionStatus
-import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.pis.service.PersonDTO
 import evaka.core.placement.PlacementType
 import evaka.core.s3.Document
 import evaka.core.s3.DocumentKey
@@ -42,6 +37,7 @@ import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.config.testArchiveEnv
 import evaka.core.shared.dev.*
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -50,7 +46,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.toDaycareFormAdult
 import evaka.core.toDaycareFormChild
-import evaka.core.user.EvakaUser
+import evaka.instance.espoo.archival.SärmäChildDocumentClient
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -75,7 +71,7 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     private lateinit var clientSpy: ArchivalIntegrationClient
     private var documentService = TestDocumentService()
-    private var testArchivalClient = TestArchivalClient()
+    private var särmäClient = TestSärmäClient()
     private val logAppender = TestAppender()
 
     private val applicationId = ApplicationId(UUID.randomUUID())
@@ -130,56 +126,51 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         override fun delete(location: DocumentLocation) {}
     }
 
-    // Test implementation of ArchivalIntegrationClient that captures calls for verification
-    class TestArchivalClient : ArchivalIntegrationClient {
-        data class ChildDocumentCall(val documentId: ChildDocumentId, val documentContent: Document)
+    // Client for Särmä archival system that only captures calls for verification
+    class TestSärmäClient : ArchivalClient {
+        data class Call(
+            val documentContent: Document,
+            val metadataXml: String,
+            val masterId: String,
+            val classId: String,
+            val virtualArchiveId: String,
+        )
 
-        val childDocumentCalls = mutableListOf<ChildDocumentCall>()
+        val calls = mutableListOf<Call>()
+        private var responseCode = 200
+        private var responseString =
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=354319&"
 
-        fun clear() {
-            childDocumentCalls.clear()
+        fun setResponse(code: Int, response: String) {
+            responseCode = code
+            responseString = response
         }
 
-        override fun uploadDecisionToArchive(
-            caseProcess: CaseProcess,
-            child: PersonDTO,
-            decision: evaka.core.decision.Decision,
-            document: Document,
-            user: EvakaUser,
-        ): String = "test-instance-id"
+        fun resetResponse() {
+            responseCode = 200
+            responseString =
+                "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=354319&"
+        }
 
-        override fun uploadFeeDecisionToArchive(
-            caseProcess: CaseProcess,
-            decision: FeeDecisionDetailed,
-            document: Document,
-            user: EvakaUser,
-        ): String = "test-instance-id"
+        fun clearCalls() {
+            calls.clear()
+        }
 
-        override fun uploadVoucherValueDecisionToArchive(
-            caseProcess: CaseProcess,
-            decision: VoucherValueDecisionDetailed,
-            document: Document,
-            user: EvakaUser,
-        ): String = "test-instance-id"
-
-        override fun uploadChildDocumentToArchive(
-            documentId: ChildDocumentId,
-            caseProcess: CaseProcess?,
-            childInfo: PersonDTO,
-            childDocumentDetails: ChildDocumentDetails,
-            documentMetadata: DocumentMetadata,
+        override fun putDocument(
             documentContent: Document,
-            evakaUser: EvakaUser,
-        ): String? {
-            childDocumentCalls.add(ChildDocumentCall(documentId, documentContent))
-            return "test-instance-id"
+            metadataXml: String,
+            masterId: String,
+            classId: String,
+            virtualArchiveId: String,
+        ): Pair<Int, String?> {
+            calls.add(Call(documentContent, metadataXml, masterId, classId, virtualArchiveId))
+            return Pair(responseCode, responseString)
         }
     }
 
     @BeforeEach
     fun setUp() {
-        testArchivalClient.clear()
-        clientSpy = spy(testArchivalClient)
+        clientSpy = spy(SärmäChildDocumentClient(särmäClient, testArchiveEnv))
         archivalService = ArchivalService(null, clientSpy, documentService)
 
         // Setup the test appender
@@ -187,6 +178,10 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         logAppender.start()
         root.addAppender(logAppender)
         logAppender.clear()
+
+        // Reset and clear Särmä client for clean test state
+        särmäClient.resetResponse()
+        särmäClient.clearCalls()
 
         // Set up test data
         db.transaction { tx ->
@@ -474,16 +469,21 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             assertNotNull(document)
             assertNotNull(document.archivedAt)
 
-            // Verify that our test client was used
-            assertEquals(1, testArchivalClient.childDocumentCalls.size)
+            // Verify that our test client was used correctly
+            assertEquals(1, särmäClient.calls.size)
+            assertEquals(testArchiveEnv.masterId, särmäClient.calls[0].masterId)
+            assertEquals("12.06.01.SL1.RT34", särmäClient.calls[0].classId)
+            assertEquals(testArchiveEnv.virtualArchiveId, särmäClient.calls[0].virtualArchiveId)
         }
     }
 
     @Test
-    fun `uploadToArchive does not mark document as archived when client throws`() {
-        doThrow(RuntimeException("Archive upload failed"))
-            .whenever(clientSpy)
-            .uploadChildDocumentToArchive(any(), any(), any(), any(), any(), any(), any())
+    fun `uploadToArchive does not mark document as archived when Särmä returns error`() {
+        // Configure Särmä client to return an validation error response
+        särmäClient.setResponse(
+            200,
+            "status_message=No message associated with the status code.&transaction_id=2868078&protocol_version=1.0&status_code=-2176&",
+        )
 
         // Execute the archive method and expect exception
         assertThrows<RuntimeException> {
@@ -495,10 +495,70 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         // Verify the document was NOT marked as archived in the database
         db.read { tx ->
+            // Verify that our test client was called
+            assertEquals(1, särmäClient.calls.size)
+
             val document = tx.getChildDocument(documentId)
             assertNotNull(document)
             assertNull(document.archivedAt)
         }
+    }
+
+    @Test
+    fun `uploadToArchive extracts and logs instance ID from successful response`() {
+        // Configure Särmä client with response including instance_ids
+        val instanceId = "354319"
+        särmäClient.setResponse(
+            200,
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&instance_ids=$instanceId&",
+        )
+
+        // Execute the archive method
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId)
+            assertNotNull(document)
+            assertNotNull(document.archivedAt)
+        }
+
+        val logContainsInstanceId =
+            logAppender.events.any { event ->
+                event.argumentArray?.any { arg ->
+                    arg.toString().contains("instanceId=$instanceId")
+                } ?: false
+            }
+
+        assert(logContainsInstanceId) { "Logs should contain the instance ID in its metadata" }
+    }
+
+    @Test
+    fun `uploadToArchive handles missing instance ID in response`() {
+        // Configure Särmä client with response without instance_ids
+        särmäClient.setResponse(
+            200,
+            "status_message=Success.&transaction_id=2872934&protocol_version=1.0&status_code=200&",
+        )
+
+        // Execute the archive method
+        archivalService.uploadChildDocumentToArchive(db, AsyncJob.ArchiveChildDocument(documentId))
+
+        // Verify the document was marked as archived in the database
+        db.read { tx ->
+            val document = tx.getChildDocument(documentId)
+            assertNotNull(document)
+            assertNotNull(document.archivedAt)
+        }
+
+        // Verify that an error was logged about the missing instance ID
+        val errorMessages =
+            logAppender.getErrorMessages().filter { it.contains("No instance ID found") }
+        assertEquals(
+            1,
+            errorMessages.size,
+            "Error log message with ERROR level should be created when instance ID is missing",
+        )
     }
 
     @Test
@@ -573,8 +633,8 @@ class ArchivalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         }
 
         // Verify the latest version's PDF was used for archival
-        assertEquals(1, testArchivalClient.childDocumentCalls.size)
-        val archivedDocument = testArchivalClient.childDocumentCalls.first().documentContent
+        assertEquals(1, särmäClient.calls.size)
+        val archivedDocument = särmäClient.calls.first().documentContent
         assertEquals("test-document.pdf", archivedDocument.name)
     }
 

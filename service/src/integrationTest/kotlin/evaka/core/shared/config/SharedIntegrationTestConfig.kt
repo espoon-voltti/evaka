@@ -7,9 +7,11 @@ package evaka.core.shared.config
 import com.auth0.jwt.algorithms.Algorithm
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import evaka.core.ArchiveEnv
 import evaka.core.BucketEnv
 import evaka.core.EvakaEnv
 import evaka.core.TestInvoiceProductProvider
+import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
 import evaka.core.emailclient.IEmailMessageProvider
@@ -47,6 +49,8 @@ import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.instance.espoo.DefaultPasswordSpecification
+import evaka.instance.espoo.archival.SärmäChildDocumentClient
+import evaka.instance.espoo.archival.SärmäMockClient
 import evaka.instance.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
@@ -235,10 +239,28 @@ class SharedIntegrationTestConfig {
             PasswordConstraints.UNCONSTRAINED.copy(minLength = 8, minDigits = 1)
         )
 
+    @Bean fun särmäClient(): ArchivalClient = SärmäMockClient()
+
+    @Bean fun archiveEnv(): ArchiveEnv = testArchiveEnv
+
     @Bean
-    fun archivalIntegrationClient(): ArchivalIntegrationClient =
-        ArchivalIntegrationClient.MockClient()
+    fun archivalIntegrationClient(
+        archivalClient: ArchivalClient,
+        archiveEnv: ArchiveEnv,
+    ): ArchivalIntegrationClient = SärmäChildDocumentClient(archivalClient, archiveEnv)
 }
+
+val testArchiveEnv =
+    ArchiveEnv(
+        url = java.net.URI.create("http://localhost/archive-placeholder/"),
+        useMockClient = true,
+        userId = "test-user",
+        userRole = "test-role",
+        metadataMainNamespace = "urn:example:record-metadata",
+        metadataPolicyNamespace = "urn:example:records-schedule",
+        masterId = "placeholder",
+        virtualArchiveId = "PLACEHOLDER",
+    )
 
 val testFeatureConfig =
     FeatureConfig(
