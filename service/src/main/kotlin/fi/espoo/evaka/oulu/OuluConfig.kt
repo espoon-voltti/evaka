@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
+import fi.espoo.evaka.oulu.database.DevDataInitializer
 import fi.espoo.evaka.oulu.dw.DwExportClient
 import fi.espoo.evaka.oulu.dw.DwExportJob
 import fi.espoo.evaka.oulu.dw.FileDwExportClient
@@ -137,6 +138,10 @@ class OuluConfig {
         )
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = OuluActionRuleMapping()
+
+    @Bean
+    @Profile("local")
+    fun devDataInitializer(jdbi: Jdbi): DevDataInitializer = DevDataInitializer(jdbi)
 
     @Bean
     fun messageProvider(): IMessageProvider {
