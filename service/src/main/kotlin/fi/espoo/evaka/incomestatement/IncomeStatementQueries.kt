@@ -473,7 +473,8 @@ INSERT INTO income_statement (
     accountant_email,
     student,
     alimony_payer,
-    other_info
+    other_info,
+    citizen_modified_at
 ) VALUES (
     ${bind(now)},
     ${bind(userId)},
@@ -509,7 +510,8 @@ INSERT INTO income_statement (
     ${bind(bindings.accountantEmail)},
     ${bind(bindings.student)},
     ${bind(bindings.alimonyPayer)},
-    ${bind(bindings.otherInfo)}
+    ${bind(bindings.otherInfo)},
+    ${bind(if (draft) null else now)}
 )
 RETURNING id
         """
@@ -534,6 +536,7 @@ UPDATE income_statement SET
     modified_by = ${bind(userId)},
     status = CASE WHEN status = 'DRAFT'::income_statement_status THEN ${bind(if (draft) IncomeStatementStatus.DRAFT else IncomeStatementStatus.SENT)} ELSE status END,
     sent_at = coalesce(sent_at, ${bind(if (draft) null else now)}),
+    citizen_modified_at = coalesce(citizen_modified_at, ${bind(if (draft) null else now)}),
     start_date = ${bind(bindings.startDate)},
     end_date = ${bind(bindings.endDate)},
     type = ${bind(bindings.type)},
@@ -581,7 +584,8 @@ fun Database.Transaction.updateIncomeStatementOtherInfo(
 UPDATE income_statement
 SET modified_at = ${bind(now)},
     modified_by = ${bind(userId)},
-    other_info = ${bind(otherInfo)}
+    other_info = ${bind(otherInfo)},
+    citizen_modified_at = ${bind(now)}
 WHERE id = ${bind(incomeStatementId)}
 """
         )
@@ -623,6 +627,7 @@ fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
 data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
     val sentAt: HelsinkiDateTime,
+    val citizenModifiedAt: HelsinkiDateTime,
     val startDate: LocalDate,
     val incomeEndDate: LocalDate?,
     val handlerNote: String,
@@ -675,6 +680,7 @@ SELECT DISTINCT ON (sent_at, start_date, income_end_date, type, handler_note, la
     i.id,
     i.type,
     i.sent_at,
+    i.citizen_modified_at,
     i.start_date,
     i.handler_note,
     person.id AS personId,
@@ -766,38 +772,37 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             status,
         )
     val count = createQuery { sql("SELECT COUNT(*) FROM (${subquery(query)}) q") }.exactlyOne<Int>()
-    val sortColumn =
+    val secondarySortColumns =
+        listOf(
+            "citizen_modified_at",
+            "sent_at",
+            "start_date",
+            "income_end_date",
+            "type",
+            "handler_note",
+            "person_last_name",
+            "person_first_name",
+        )
+    val primaryColumns =
         when (sortBy) {
-            IncomeStatementSortParam.SENT_AT -> {
-                "i.sent_at ${sortDirection.name}, i.start_date, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
-            }
-
-            IncomeStatementSortParam.START_DATE -> {
-                "i.start_date ${sortDirection.name}, i.sent_at, income_end_date, i.type, i.handler_note, person.last_name, person.first_name"
-            }
-
-            IncomeStatementSortParam.INCOME_END_DATE -> {
-                "income_end_date ${sortDirection.name}, i.sent_at, i.start_date, i.type, i.handler_note, person.last_name, person.first_name"
-            }
-
-            IncomeStatementSortParam.TYPE -> {
-                "i.type ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.handler_note, person.last_name, person.first_name"
-            }
-
-            IncomeStatementSortParam.HANDLER_NOTE -> {
-                "i.handler_note ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.type, person.last_name, person.first_name"
-            }
-
-            IncomeStatementSortParam.PERSON_NAME -> {
-                "person.last_name ${sortDirection.name}, person.first_name ${sortDirection.name}, i.sent_at, i.start_date, income_end_date, i.type, i.handler_note"
-            }
+            IncomeStatementSortParam.SENT_AT -> listOf("sent_at")
+            IncomeStatementSortParam.CITIZEN_MODIFIED_AT -> listOf("citizen_modified_at")
+            IncomeStatementSortParam.START_DATE -> listOf("start_date")
+            IncomeStatementSortParam.INCOME_END_DATE -> listOf("income_end_date")
+            IncomeStatementSortParam.TYPE -> listOf("type")
+            IncomeStatementSortParam.HANDLER_NOTE -> listOf("handler_note")
+            IncomeStatementSortParam.PERSON_NAME -> listOf("person_last_name", "person_first_name")
         }
+    val primaryColumnNames = primaryColumns.toSet()
+    val primarySort = primaryColumns.joinToString(", ") { "$it ${sortDirection.name}" }
+    val secondarySort = secondarySortColumns.filter { it !in primaryColumnNames }.joinToString(", ")
+    val sortExpression = "$primarySort, $secondarySort"
     val rows =
         createQuery {
                 sql(
                     """
-${subquery(query)}
-ORDER BY $sortColumn, i.id, ca.id  -- order by area to get the same result each time
+SELECT * FROM (${subquery(query)}) q
+ORDER BY $sortExpression, id
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
                 )

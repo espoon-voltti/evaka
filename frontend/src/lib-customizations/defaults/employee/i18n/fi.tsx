@@ -1900,6 +1900,7 @@ export const fi = {
       customer: 'Asiakas',
       area: 'Alue',
       sentAt: 'Lähetetty',
+      citizenModifiedAt: 'Muokattu',
       startDate: 'Voimassa',
       incomeEndDate: 'Tulotieto päättyy',
       type: 'Tyyppi',

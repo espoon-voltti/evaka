@@ -623,6 +623,7 @@ fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId {
             modified_by = ${bind(row.modifiedBy)},
             status = ${bind(row.status)},
             sent_at = ${bind(row.sentAt)},
+            citizen_modified_at = ${bind(row.sentAt)},
             handler_id = ${bind(row.handlerId)},
             handled_at = ${bind(row.handledAt)}
         WHERE id = ${bind(databaseGeneratedId)}
