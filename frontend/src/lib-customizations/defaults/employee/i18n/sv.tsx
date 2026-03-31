@@ -2078,7 +2078,7 @@ export const sv: typeof fi = {
       },
       groups: 'Tillstånd till grupper',
       noGroups: 'Inga tillstånd',
-      hasOccupancyCoefficient: 'Uppfostringsansvarig'
+      hasOccupancyCoefficient: 'Vårdansvarig'
     },
     filters: {
       title: 'Visa uppgifter',
@@ -2125,7 +2125,7 @@ export const sv: typeof fi = {
       }
     },
     staffOccupancies: {
-      title: 'Uppfostringsansvar',
+      title: 'Vårdansvar',
       occupancyCoefficientEnabled: 'Inräknad i belastningsgraden'
     },
     applicationProcess: {
@@ -2270,7 +2270,7 @@ export const sv: typeof fi = {
         },
         create: {
           title: 'Lägg till ny händelse',
-          text: 'Lägg till här händelser som det är viktigt för vårdnadshavaren att komma ihåg: händelsen kommer att synas i vårdnadshavarens eVaka-kalender. Om andra händelser är det bra att informera vårdnadshavaren via meddelande.',
+          text: 'Lägg här till de händelser som är viktiga för vårdnadshavaren att komma ihåg: händelsen kommer att synas i vårdnadshavarens eVaka-kalender. För andra typer av händelser är det bra att informera vårdnadshavaren via ett meddelande.',
           add: 'Lägg till händelse',
           period: 'Tidpunkt',
           attendees: 'Händelsens deltagare',
@@ -4626,7 +4626,7 @@ export const sv: typeof fi = {
       ownMessages: 'Egna meddelanden',
       groupsMessages: 'Gruppernas meddelanden',
       noAccountAccess:
-        'Meddelanden kan inte visas, eftersom du inte har behörighet till gruppen. Begär behörighet från din ledare.'
+        'Du har inte rättigheter till gruppen. Begär rättigheter av din ledare.'
     },
     messageBoxes: {
       names: {
