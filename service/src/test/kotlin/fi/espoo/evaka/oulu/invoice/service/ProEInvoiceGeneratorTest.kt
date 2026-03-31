@@ -4,12 +4,11 @@
 
 package fi.espoo.evaka.oulu.invoice.service
 
-import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.oulu.util.FieldType
 import fi.espoo.evaka.oulu.util.FinanceDateProvider
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 internal class ProEInvoiceGeneratorTest {
     val financeDateProvider = FinanceDateProvider(MockEvakaClock(2022, 5, 5, 12, 34, 56))
@@ -21,9 +20,9 @@ internal class ProEInvoiceGeneratorTest {
         val invoiceList = listOf(invoice, invoice)
 
         val generationResult = proEInvoiceGenerator.generateInvoice(invoiceList)
-        assertEquals(generationResult.sendResult.succeeded, invoiceList)
-        assertEquals(generationResult.sendResult.manuallySent, listOf<InvoiceDetailed>())
-        assertEquals(generationResult.sendResult.failed, listOf<InvoiceDetailed>())
+        assertEquals(invoiceList, generationResult.sendResult.succeeded)
+        assertEquals(listOf(), generationResult.sendResult.manuallySent)
+        assertEquals(listOf(), generationResult.sendResult.failed)
     }
 
     @Test
@@ -33,9 +32,9 @@ internal class ProEInvoiceGeneratorTest {
         val invoiceList = listOf(restrictedInvoice, invoiceWithoutSsn)
 
         val generationResult = proEInvoiceGenerator.generateInvoice(invoiceList)
-        assertEquals(generationResult.sendResult.succeeded, listOf<InvoiceDetailed>())
-        assertEquals(generationResult.sendResult.manuallySent, invoiceList)
-        assertEquals(generationResult.sendResult.failed, listOf<InvoiceDetailed>())
+        assertEquals(listOf(), generationResult.sendResult.succeeded)
+        assertEquals(invoiceList, generationResult.sendResult.manuallySent)
+        assertEquals(listOf(), generationResult.sendResult.failed)
     }
 
     @Test
@@ -61,7 +60,7 @@ internal class ProEInvoiceGeneratorTest {
 
         val result = proEInvoiceGenerator.generateRow(format, invoiceDataMap).toString()
 
-        assertEquals(result, "121212A121AJokunen Jaska                 00004200\n")
+        assertEquals("121212A121AJokunen Jaska                 00004200\n", result)
     }
 
     @Test
