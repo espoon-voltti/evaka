@@ -4,7 +4,9 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { ApplicationType } from './application'
 import type { CaseProcessId } from './shared'
+import type { DecisionType } from './decision'
 import type { EvakaUser } from './user'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
@@ -58,11 +60,13 @@ export interface DocumentConfidentiality {
 * Generated from evaka.core.caseprocess.DocumentMetadata
 */
 export interface DocumentMetadata {
+  applicationType: ApplicationType | null
   confidential: boolean | null
   confidentiality: DocumentConfidentiality | null
   createdAtDate: LocalDate | null
   createdAtTime: LocalTime | null
   createdBy: EvakaUser | null
+  decisionType: DecisionType | null
   documentId: UUID
   downloadPath: string | null
   name: string

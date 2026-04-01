@@ -190,6 +190,7 @@ const components: Translations = {
   metadata: {
     title: 'Arkistoitava metadata',
     notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+    case: 'Asia',
     caseIdentifier: 'Asiatunnus',
     processName: 'Asiaprosessi',
     organization: 'Organisaatio',
@@ -197,7 +198,6 @@ const components: Translations = {
     primaryDocument: 'Ensisijainen asiakirja',
     secondaryDocuments: 'Muut asiakirjat',
     documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
     createdAt: 'Laatimisajankohta',
     createdBy: 'Laatija',
     publishedVersions: 'Julkaistut versiot',
@@ -234,6 +234,21 @@ const components: Translations = {
     section: {
       show: 'Näytä lisätiedot',
       hide: 'Piilota lisätiedot'
+    },
+    applicationDocumentNames: {
+      DAYCARE: 'Hakemus varhaiskasvatukseen',
+      PRESCHOOL:
+        'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
+      CLUB: 'Kerhohakemus'
+    },
+    decisionDocumentNames: {
+      CLUB: 'Päätös kerhosta',
+      DAYCARE: 'Päätös varhaiskasvatuksesta',
+      DAYCARE_PART_TIME: 'Päätös osa-aikaisesta varhaiskasvatuksesta',
+      PRESCHOOL: 'Päätös esiopetuksesta',
+      PRESCHOOL_DAYCARE: 'Päätös liittyvästä varhaiskasvatuksesta',
+      PRESCHOOL_CLUB: 'Päätös esiopetuksen kerhosta',
+      PREPARATORY_EDUCATION: 'Päätös valmistavasta opetuksesta'
     }
   }
 }

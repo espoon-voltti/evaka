@@ -6,6 +6,8 @@ package evaka.core.caseprocess
 
 import evaka.core.Audit
 import evaka.core.AuditId
+import evaka.core.application.ApplicationType
+import evaka.core.decision.DecisionType
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.childdocument.getChildDocument
 import evaka.core.shared.ApplicationId
@@ -55,6 +57,8 @@ data class DocumentVersion(
 data class DocumentMetadata(
     val documentId: UUID,
     val name: String,
+    val applicationType: ApplicationType? = null,
+    val decisionType: DecisionType? = null,
     val createdAtDate: LocalDate?,
     val createdAtTime: LocalTime?,
     @Nested("created_by") val createdBy: EvakaUser?,

@@ -1726,7 +1726,7 @@ const en: Translations = {
       unit: 'Unit',
       period: 'Time period',
       sentDate: 'Decision made',
-      resolved: 'Decision confirmed',
+      resolved: 'Confirmed',
       confirmation: 'Confirmation',
       statusLabel: 'Status',
       summary:

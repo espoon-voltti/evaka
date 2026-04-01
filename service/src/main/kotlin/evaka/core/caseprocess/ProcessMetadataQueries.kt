@@ -140,24 +140,24 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
             )
         }
         .map {
+            val applicationType = column<ApplicationType>("type")
             DocumentMetadata(
                 documentId = column("id"),
                 name =
-                    column<ApplicationType>("type").let { type ->
-                        when (type) {
-                            ApplicationType.DAYCARE -> {
-                                "Varhaiskasvatus- ja palvelusetelihakemus"
-                            }
+                    when (applicationType) {
+                        ApplicationType.DAYCARE -> {
+                            "Varhaiskasvatus- ja palvelusetelihakemus"
+                        }
 
-                            ApplicationType.PRESCHOOL -> {
-                                "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
-                            }
+                        ApplicationType.PRESCHOOL -> {
+                            "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
+                        }
 
-                            ApplicationType.CLUB -> {
-                                "Kerhohakemus"
-                            }
+                        ApplicationType.CLUB -> {
+                            "Kerhohakemus"
                         }
                     },
+                applicationType = applicationType,
                 createdAtDate = column("sentdate"),
                 createdAtTime = column("senttime"),
                 createdBy =
@@ -226,40 +226,40 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
             )
         }
         .map {
+            val decisionType = column<DecisionType>("type")
             DocumentMetadata(
                 documentId = column("id"),
                 name =
-                    column<DecisionType>("type").let {
-                        when (it) {
-                            DecisionType.DAYCARE -> {
-                                "Päätös varhaiskasvatuksesta"
-                            }
+                    when (decisionType) {
+                        DecisionType.DAYCARE -> {
+                            "Päätös varhaiskasvatuksesta"
+                        }
 
-                            DecisionType.DAYCARE_PART_TIME -> {
-                                "Päätös osa-aikaisesta varhaiskasvatuksesta"
-                            }
+                        DecisionType.DAYCARE_PART_TIME -> {
+                            "Päätös osa-aikaisesta varhaiskasvatuksesta"
+                        }
 
-                            DecisionType.PRESCHOOL -> {
-                                "Päätös esiopetuksesta"
-                            }
+                        DecisionType.PRESCHOOL -> {
+                            "Päätös esiopetuksesta"
+                        }
 
-                            DecisionType.PREPARATORY_EDUCATION -> {
-                                "Päätös valmistavasta opetuksesta"
-                            }
+                        DecisionType.PREPARATORY_EDUCATION -> {
+                            "Päätös valmistavasta opetuksesta"
+                        }
 
-                            DecisionType.PRESCHOOL_DAYCARE -> {
-                                "Päätös liittyvästä varhaiskasvatuksesta"
-                            }
+                        DecisionType.PRESCHOOL_DAYCARE -> {
+                            "Päätös liittyvästä varhaiskasvatuksesta"
+                        }
 
-                            DecisionType.CLUB -> {
-                                "Päätös kerhosta"
-                            }
+                        DecisionType.CLUB -> {
+                            "Päätös kerhosta"
+                        }
 
-                            DecisionType.PRESCHOOL_CLUB -> {
-                                "Päätös esiopetuksen kerhosta"
-                            }
+                        DecisionType.PRESCHOOL_CLUB -> {
+                            "Päätös esiopetuksen kerhosta"
                         }
                     },
+                decisionType = decisionType,
                 createdAtDate = column("sent_date"),
                 createdAtTime = column("sent_time"),
                 createdBy =
