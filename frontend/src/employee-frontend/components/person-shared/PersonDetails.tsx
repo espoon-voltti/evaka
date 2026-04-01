@@ -13,10 +13,13 @@ import styled from 'styled-components'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { Action } from 'lib-common/generated/action'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type {
+  PersonBasicInfo,
+  PersonSensitiveDetails
+} from 'lib-common/generated/api-types/pis'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
-import { useMutation } from 'lib-common/query'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   InlineExternalLinkButton,
@@ -37,7 +40,15 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import LabelValueList from 'lib-components/molecules/LabelValueList'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { faCalendar, faFileAlt, faPen, faSync } from 'lib-icons'
+import { Gap } from 'lib-components/white-space'
+import {
+  faCalendar,
+  faChevronDown,
+  faChevronUp,
+  faFileAlt,
+  faPen,
+  faSync
+} from 'lib-icons'
 
 import { getAddressPagePdf } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
@@ -46,6 +57,7 @@ import { UIContext } from '../../state/ui'
 import { isEmailValid } from '../../utils/validation/validations'
 import {
   disableSsnMutation,
+  sensitiveDetailsQuery,
   updatePersonAndFamilyFromVtjMutation,
   updatePersonDetailsMutation
 } from '../person-profile/queries'
@@ -67,9 +79,11 @@ const PostalCodeAndOffice = styled.div`
 `
 
 interface Props {
-  person: PersonJSON
+  person: PersonBasicInfo
   isChild: boolean
   permittedActions: Set<Action.Child | Action.Person>
+  sensitiveDetailsOpen: boolean
+  onToggleSensitiveDetails: () => void
 }
 
 interface Form {
@@ -91,6 +105,11 @@ interface Form {
   ophPersonOid: string
 }
 
+const CenteredRow = styled.div`
+  display: flex;
+  justify-content: center;
+`
+
 const RightAlignedRow = styled.div`
   display: flex;
   align-items: baseline;
@@ -101,10 +120,363 @@ const ButtonSpacer = styled.div`
   margin-right: 25px;
 `
 
+interface SensitiveDetailsProps {
+  person: PersonBasicInfo
+  sensitiveDetails: PersonSensitiveDetails
+  isChild: boolean
+  permittedActions: Set<Action.Child | Action.Person>
+  editing: boolean
+  powerEditing: boolean
+  form: Form
+  updateForm: UpdateStateFn<Form>
+  emailIsValid: boolean
+}
+
+const SensitivePersonDetails = React.memo(function SensitivePersonDetails({
+  person,
+  sensitiveDetails,
+  isChild,
+  permittedActions,
+  editing,
+  powerEditing,
+  form,
+  updateForm,
+  emailIsValid
+}: SensitiveDetailsProps) {
+  const { i18n } = useTranslation()
+  const { toggleUiMode } = useContext<UiState>(UIContext)
+  const { mutate: disableSsnAdding, isPending: disablingSsn } =
+    useMutation(disableSsnMutation)
+
+  const [showSsnAddingDisabledInfo, setShowSsnAddingDisabledInfo] =
+    useState(false)
+  const toggleShowSsnAddingDisabledInfo = useCallback(
+    () => setShowSsnAddingDisabledInfo((state) => !state),
+    [setShowSsnAddingDisabledInfo]
+  )
+
+  const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
+
+  const language = useMemo(
+    () =>
+      sensitiveDetails.language
+        ? (Object.values(isoLanguages).find(
+            ({ alpha2 }) => alpha2 === sensitiveDetails.language
+          )?.nameFi ?? sensitiveDetails.language)
+        : null,
+    [sensitiveDetails.language]
+  )
+
+  return (
+    <LabelValueList
+      spacing="small"
+      contents={[
+        {
+          label: i18n.childInformation.personDetails.language,
+          dataQa: 'person-language',
+          value: language
+        },
+        {
+          label: i18n.common.form.socialSecurityNumber,
+          dataQa: 'person-ssn',
+          value: sensitiveDetails.socialSecurityNumber ?? (
+            <FixedSpaceColumn $spacing="xs">
+              {editing ||
+              !permittedActions.has('ADD_SSN') ||
+              (person.ssnAddingDisabled &&
+                !permittedActions.has('ENABLE_SSN_ADDING')) ? (
+                <span data-qa="no-ssn">{i18n.personProfile.noSsn}</span>
+              ) : (
+                <Button
+                  appearance="inline"
+                  onClick={() => toggleUiMode('add-ssn-modal')}
+                  text={i18n.personProfile.addSsn}
+                  disabled={!permittedActions.has('ADD_SSN')}
+                  data-qa="add-ssn-button"
+                />
+              )}
+              {(person.ssnAddingDisabled &&
+                permittedActions.has('ENABLE_SSN_ADDING')) ||
+              (!person.ssnAddingDisabled &&
+                permittedActions.has('DISABLE_SSN_ADDING')) ? (
+                <FixedSpaceRow $spacing="s" $alignItems="center">
+                  <Checkbox
+                    checked={person.ssnAddingDisabled}
+                    label={i18n.personProfile.ssnAddingDisabledCheckbox}
+                    disabled={disablingSsn}
+                    onChange={(checked) =>
+                      disableSsnAdding({
+                        personId: person.id,
+                        body: { disabled: checked }
+                      })
+                    }
+                    data-qa="disable-ssn-adding"
+                  />
+                  <InfoButton
+                    onClick={toggleShowSsnAddingDisabledInfo}
+                    aria-label={i18n.common.openExpandingInfo}
+                  />
+                </FixedSpaceRow>
+              ) : (
+                person.ssnAddingDisabled && (
+                  <FixedSpaceRow $spacing="s" $alignItems="center">
+                    <span>{i18n.personProfile.ssnAddingDisabledCheckbox}</span>
+                    <InfoButton
+                      onClick={toggleShowSsnAddingDisabledInfo}
+                      aria-label={i18n.common.openExpandingInfo}
+                    />
+                  </FixedSpaceRow>
+                )
+              )}
+            </FixedSpaceColumn>
+          )
+        },
+        ...(showSsnAddingDisabledInfo
+          ? [
+              {
+                value: (
+                  <ExpandingInfoBox
+                    info={i18n.personProfile.ssnAddingDisabledInfo}
+                    close={toggleShowSsnAddingDisabledInfo}
+                  />
+                ),
+                onlyValue: true
+              }
+            ]
+          : []),
+        {
+          label: i18n.common.form.address,
+          dataQa: 'person-address',
+          valueWidth: '100%',
+          value:
+            powerEditing && canEditPersonalDetails ? (
+              <>
+                <InputField
+                  width="L"
+                  value={form.streetAddress}
+                  placeholder={i18n.common.form.streetAddress}
+                  onChange={(value) => updateForm({ streetAddress: value })}
+                />
+                <PostalCodeAndOffice>
+                  <InputField
+                    id="postal-code"
+                    value={form.postalCode}
+                    placeholder={i18n.common.form.postalCode}
+                    onChange={(value) => updateForm({ postalCode: value })}
+                  />
+                  <InputField
+                    id="post-office"
+                    value={form.postOffice}
+                    placeholder={i18n.common.form.postOffice}
+                    onChange={(value) => updateForm({ postOffice: value })}
+                  />
+                </PostalCodeAndOffice>
+              </>
+            ) : (
+              <span data-qa="person-details-street-address">
+                {person.restrictedDetailsEnabled
+                  ? i18n.common.form.addressRestricted
+                  : `${sensitiveDetails.streetAddress ?? ''}, ${
+                      sensitiveDetails.postalCode ?? ''
+                    } ${sensitiveDetails.postOffice ?? ''}`}
+              </span>
+            )
+        },
+        {
+          label: i18n.common.form.municipalityOfResidence,
+          dataQa: 'municipality-of-residence',
+          valueWidth: '100%',
+          value:
+            powerEditing && canEditPersonalDetails ? (
+              <InputField
+                width="L"
+                value={form.municipalityOfResidence}
+                placeholder={i18n.common.form.municipalityOfResidence}
+                onChange={(value) =>
+                  updateForm({ municipalityOfResidence: value })
+                }
+              />
+            ) : (
+              <span data-qa="person-details-municipality-of-residence">
+                {person.restrictedDetailsEnabled
+                  ? i18n.common.form.addressRestricted
+                  : sensitiveDetails.municipalityOfResidence}
+              </span>
+            )
+        },
+        {
+          label: i18n.common.form.updatedFromVtj,
+          value: sensitiveDetails.updatedFromVtj
+            ? sensitiveDetails.updatedFromVtj.format()
+            : ''
+        },
+        ...(permittedActions.has('READ_OPH_OID')
+          ? [
+              {
+                label: i18n.common.form.ophPersonOid,
+                dataQa: 'person-oph-person-oid',
+                valueWidth: '100%',
+                value:
+                  editing && permittedActions.has('UPDATE_OPH_OID') ? (
+                    <InputField
+                      width="L"
+                      value={form.ophPersonOid}
+                      placeholder={i18n.common.form.ophPersonOid}
+                      onChange={(value) =>
+                        updateForm({ ophPersonOid: value.trim() })
+                      }
+                    />
+                  ) : (
+                    (sensitiveDetails.ophPersonOid ?? '')
+                  )
+              }
+            ]
+          : []),
+        ...(!isChild && permittedActions.has('READ_INVOICE_ADDRESS')
+          ? [
+              {
+                label: i18n.common.form.invoicingAddress,
+                value:
+                  editing && permittedActions.has('UPDATE_INVOICE_ADDRESS') ? (
+                    <>
+                      <InputField
+                        value={form.invoiceRecipientName}
+                        placeholder={i18n.common.form.invoiceRecipient}
+                        onChange={(value) =>
+                          updateForm({ invoiceRecipientName: value })
+                        }
+                      />
+                      <InputField
+                        value={form.invoicingStreetAddress}
+                        placeholder={i18n.common.form.streetAddress}
+                        onChange={(value) =>
+                          updateForm({ invoicingStreetAddress: value })
+                        }
+                      />
+                      <PostalCodeAndOffice>
+                        <InputField
+                          id="postal-code"
+                          value={form.invoicingPostalCode}
+                          placeholder={i18n.common.form.postalCode}
+                          onChange={(value) =>
+                            updateForm({ invoicingPostalCode: value })
+                          }
+                        />
+                        <InputField
+                          id="post-office"
+                          value={form.invoicingPostOffice}
+                          placeholder={i18n.common.form.postOffice}
+                          onChange={(value) =>
+                            updateForm({ invoicingPostOffice: value })
+                          }
+                        />
+                      </PostalCodeAndOffice>
+                    </>
+                  ) : sensitiveDetails.invoicingStreetAddress &&
+                    sensitiveDetails.invoicingPostalCode &&
+                    sensitiveDetails.invoicingPostOffice ? (
+                    <>
+                      {sensitiveDetails.invoiceRecipientName ? (
+                        <div>{sensitiveDetails.invoiceRecipientName}</div>
+                      ) : null}
+                      <div>
+                        {`${sensitiveDetails.invoicingStreetAddress}, ${sensitiveDetails.invoicingPostalCode} ${sensitiveDetails.invoicingPostOffice}`}
+                      </div>
+                    </>
+                  ) : (
+                    ''
+                  )
+              },
+              {
+                label: i18n.personProfile.forceManualFeeDecisionsLabel,
+                value: editing ? (
+                  <FixedSpaceColumn data-qa="force-manual-fee-decisions">
+                    <Radio
+                      label={i18n.personProfile.forceManualFeeDecisionsChecked}
+                      checked={form.forceManualFeeDecisions === true}
+                      onChange={() =>
+                        updateForm({ forceManualFeeDecisions: true })
+                      }
+                      data-qa="force-manual-fee-decisions-true"
+                    />
+                    <Radio
+                      label={
+                        i18n.personProfile.forceManualFeeDecisionsUnchecked
+                      }
+                      checked={form.forceManualFeeDecisions === false}
+                      onChange={() =>
+                        updateForm({ forceManualFeeDecisions: false })
+                      }
+                      data-qa="force-manual-fee-decisions-false"
+                    />
+                  </FixedSpaceColumn>
+                ) : sensitiveDetails.forceManualFeeDecisions ? (
+                  i18n.personProfile.forceManualFeeDecisionsChecked
+                ) : (
+                  i18n.personProfile.forceManualFeeDecisionsUnchecked
+                )
+              }
+            ]
+          : []),
+        ...(!isChild
+          ? [
+              {
+                label: i18n.common.form.email,
+                value: editing ? (
+                  <InputField
+                    value={form.email}
+                    onChange={(value) => {
+                      updateForm({ email: value.trim() })
+                    }}
+                    info={
+                      emailIsValid
+                        ? undefined
+                        : {
+                            text: i18n.validationErrors.email,
+                            status: 'warning' as const
+                          }
+                    }
+                    data-qa="person-email-input"
+                  />
+                ) : (
+                  sensitiveDetails.email
+                )
+              },
+              {
+                label: i18n.common.form.phone,
+                value: editing ? (
+                  <InputField
+                    value={form.phone}
+                    onChange={(value) => updateForm({ phone: value })}
+                  />
+                ) : (
+                  sensitiveDetails.phone
+                )
+              },
+              {
+                label: i18n.common.form.backupPhone,
+                value: editing ? (
+                  <InputField
+                    value={form.backupPhone}
+                    onChange={(value) => updateForm({ backupPhone: value })}
+                  />
+                ) : (
+                  sensitiveDetails.backupPhone
+                )
+              }
+            ]
+          : [])
+      ]}
+    />
+  )
+})
+
 export default React.memo(function PersonDetails({
   person,
   isChild,
-  permittedActions
+  permittedActions,
+  sensitiveDetailsOpen,
+  onToggleSensitiveDetails
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
@@ -131,43 +503,40 @@ export default React.memo(function PersonDetails({
     () => form.email === '' || isEmailValid(form.email),
     [form.email]
   )
-  const { mutate: disableSsnAdding, isPending: disablingSsn } =
-    useMutation(disableSsnMutation)
 
-  const [showSsnAddingDisabledInfo, setShowSsnAddingDisabledInfo] =
-    useState(false)
-  const toggleShowSsnAddingDisabledInfo = useCallback(
-    () => setShowSsnAddingDisabledInfo((state) => !state),
-    [setShowSsnAddingDisabledInfo]
-  )
+  const sensitiveDetails: PersonSensitiveDetails | undefined = useQueryResult(
+    sensitiveDetailsQuery({ personId: person.id }),
+    { enabled: sensitiveDetailsOpen }
+  ).getOrElse(undefined)
 
   useEffect(() => {
-    if (editing) {
+    if (editing && sensitiveDetails) {
       setForm({
         firstName: person.firstName || '',
         lastName: person.lastName || '',
         dateOfBirth: person.dateOfBirth,
-        email: person.email || '',
-        phone: person.phone || '',
-        backupPhone: person.backupPhone || '',
-        streetAddress: person.streetAddress || '',
-        postalCode: person.postalCode || '',
-        postOffice: person.postOffice || '',
-        municipalityOfResidence: person.municipalityOfResidence || '',
-        invoiceRecipientName: person.invoiceRecipientName ?? '',
-        invoicingStreetAddress: person.invoicingStreetAddress ?? '',
-        invoicingPostalCode: person.invoicingPostalCode ?? '',
-        invoicingPostOffice: person.invoicingPostOffice ?? '',
-        forceManualFeeDecisions: person.forceManualFeeDecisions ?? false,
-        ophPersonOid: person.ophPersonOid ?? ''
+        email: sensitiveDetails.email || '',
+        phone: sensitiveDetails.phone || '',
+        backupPhone: sensitiveDetails.backupPhone || '',
+        streetAddress: sensitiveDetails.streetAddress || '',
+        postalCode: sensitiveDetails.postalCode || '',
+        postOffice: sensitiveDetails.postOffice || '',
+        municipalityOfResidence: sensitiveDetails.municipalityOfResidence || '',
+        invoiceRecipientName: sensitiveDetails.invoiceRecipientName ?? '',
+        invoicingStreetAddress: sensitiveDetails.invoicingStreetAddress ?? '',
+        invoicingPostalCode: sensitiveDetails.invoicingPostalCode ?? '',
+        invoicingPostOffice: sensitiveDetails.invoicingPostOffice ?? '',
+        forceManualFeeDecisions:
+          sensitiveDetails.forceManualFeeDecisions ?? false,
+        ophPersonOid: sensitiveDetails.ophPersonOid ?? ''
       })
     }
-  }, [person, editing])
+  }, [person, sensitiveDetails, editing])
 
-  // clear ui mode when dismounting component
   useEffect(() => clearUiMode, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const powerEditing = editing && person.socialSecurityNumber == null
+  const powerEditing =
+    editing && sensitiveDetails?.socialSecurityNumber === null
 
   const updateForm: UpdateStateFn<Form> = (values) => {
     setForm({
@@ -177,17 +546,6 @@ export default React.memo(function PersonDetails({
   }
 
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
-
-  const language = useMemo(
-    () =>
-      (person.language
-        ? Object.values(isoLanguages).find(
-            ({ alpha2 }) => alpha2 === person.language
-          )
-        : null
-      )?.nameFi ?? person.language,
-    [person.language]
-  )
 
   return (
     <>
@@ -223,7 +581,9 @@ export default React.memo(function PersonDetails({
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
             <InlineExternalLinkButton
-              href={getAddressPagePdf({ guardianId: person.id }).url.toString()}
+              href={getAddressPagePdf({
+                guardianId: person.id
+              }).url.toString()}
               icon={faFileAlt}
               text={i18n.personProfile.downloadAddressPage}
               newTab={true}
@@ -231,10 +591,12 @@ export default React.memo(function PersonDetails({
             />
           </ButtonSpacer>
         ) : null}
-        {(!isChild && permittedActions.has('UPDATE')) ||
-        (person.socialSecurityNumber === null && canEditPersonalDetails) ||
-        permittedActions.has('UPDATE_INVOICE_ADDRESS') ||
-        permittedActions.has('UPDATE_OPH_OID') ? (
+        {sensitiveDetailsOpen &&
+        ((!isChild && permittedActions.has('UPDATE')) ||
+          (sensitiveDetails?.socialSecurityNumber === null &&
+            canEditPersonalDetails) ||
+          permittedActions.has('UPDATE_INVOICE_ADDRESS') ||
+          permittedActions.has('UPDATE_OPH_OID')) ? (
           <Button
             appearance="inline"
             icon={faPen}
@@ -295,330 +657,39 @@ export default React.memo(function PersonDetails({
               ) : (
                 person.dateOfBirth.format()
               )
-          },
-          {
-            label: i18n.childInformation.personDetails.language,
-            dataQa: 'person-language',
-            value: language
-          },
-          {
-            label: i18n.common.form.socialSecurityNumber,
-            dataQa: 'person-ssn',
-            value: person.socialSecurityNumber ?? (
-              <FixedSpaceColumn $spacing="xs">
-                {editing ||
-                !permittedActions.has('ADD_SSN') ||
-                (person.ssnAddingDisabled &&
-                  !permittedActions.has('ENABLE_SSN_ADDING')) ? (
-                  <span data-qa="no-ssn">{i18n.personProfile.noSsn}</span>
-                ) : (
-                  <Button
-                    appearance="inline"
-                    onClick={() => toggleUiMode('add-ssn-modal')}
-                    text={i18n.personProfile.addSsn}
-                    disabled={!permittedActions.has('ADD_SSN')}
-                    data-qa="add-ssn-button"
-                  />
-                )}
-                {(person.ssnAddingDisabled &&
-                  permittedActions.has('ENABLE_SSN_ADDING')) ||
-                (!person.ssnAddingDisabled &&
-                  permittedActions.has('DISABLE_SSN_ADDING')) ? (
-                  <FixedSpaceRow $spacing="s" $alignItems="center">
-                    <Checkbox
-                      checked={person.ssnAddingDisabled}
-                      label={i18n.personProfile.ssnAddingDisabledCheckbox}
-                      disabled={disablingSsn}
-                      onChange={(checked) =>
-                        disableSsnAdding({
-                          personId: person.id,
-                          body: { disabled: checked }
-                        })
-                      }
-                      data-qa="disable-ssn-adding"
-                    />
-                    <InfoButton
-                      onClick={toggleShowSsnAddingDisabledInfo}
-                      aria-label={i18n.common.openExpandingInfo}
-                    />
-                  </FixedSpaceRow>
-                ) : (
-                  person.ssnAddingDisabled && (
-                    <FixedSpaceRow $spacing="s" $alignItems="center">
-                      <span>
-                        {i18n.personProfile.ssnAddingDisabledCheckbox}
-                      </span>
-                      <InfoButton
-                        onClick={toggleShowSsnAddingDisabledInfo}
-                        aria-label={i18n.common.openExpandingInfo}
-                      />
-                    </FixedSpaceRow>
-                  )
-                )}
-              </FixedSpaceColumn>
-            )
-          },
-          ...(showSsnAddingDisabledInfo
-            ? [
-                {
-                  value: (
-                    <ExpandingInfoBox
-                      info={i18n.personProfile.ssnAddingDisabledInfo}
-                      close={toggleShowSsnAddingDisabledInfo}
-                    />
-                  ),
-                  onlyValue: true
-                }
-              ]
-            : []),
-          {
-            label: i18n.common.form.address,
-            dataQa: 'person-address',
-            valueWidth: '100%',
-            value:
-              powerEditing && canEditPersonalDetails ? (
-                <>
-                  <InputField
-                    width="L"
-                    value={form.streetAddress}
-                    placeholder={i18n.common.form.streetAddress}
-                    onChange={(value) =>
-                      updateForm({
-                        streetAddress: value
-                      })
-                    }
-                  />
-                  <PostalCodeAndOffice>
-                    <InputField
-                      id="postal-code"
-                      value={form.postalCode}
-                      placeholder={i18n.common.form.postalCode}
-                      onChange={(value) => updateForm({ postalCode: value })}
-                    />
-                    <InputField
-                      id="post-office"
-                      value={form.postOffice}
-                      placeholder={i18n.common.form.postOffice}
-                      onChange={(value) => updateForm({ postOffice: value })}
-                    />
-                  </PostalCodeAndOffice>
-                </>
-              ) : (
-                <span data-qa="person-details-street-address">
-                  {person.restrictedDetailsEnabled
-                    ? i18n.common.form.addressRestricted
-                    : `${person.streetAddress ?? ''}, ${
-                        person.postalCode ?? ''
-                      } ${person.postOffice ?? ''}`}
-                </span>
-              )
-          },
-          {
-            label: i18n.common.form.municipalityOfResidence,
-            dataQa: 'municipality-of-residence',
-            valueWidth: '100%',
-            value:
-              powerEditing && canEditPersonalDetails ? (
-                <InputField
-                  width="L"
-                  value={form.municipalityOfResidence}
-                  placeholder={i18n.common.form.municipalityOfResidence}
-                  onChange={(value) =>
-                    updateForm({
-                      municipalityOfResidence: value
-                    })
-                  }
-                />
-              ) : (
-                <span data-qa="person-details-municipality-of-residence">
-                  {person.restrictedDetailsEnabled
-                    ? i18n.common.form.addressRestricted
-                    : person.municipalityOfResidence}
-                </span>
-              )
-          },
-          {
-            label: i18n.common.form.updatedFromVtj,
-            value: person.updatedFromVtj ? person.updatedFromVtj.format() : ''
-          },
-          ...(permittedActions.has('READ_OPH_OID')
-            ? [
-                {
-                  label: i18n.common.form.ophPersonOid,
-                  dataQa: 'person-oph-person-oid',
-                  valueWidth: '100%',
-                  value:
-                    editing && permittedActions.has('UPDATE_OPH_OID') ? (
-                      <>
-                        <InputField
-                          width="L"
-                          value={form.ophPersonOid}
-                          placeholder={i18n.common.form.ophPersonOid}
-                          onChange={(value) =>
-                            updateForm({
-                              ophPersonOid: value.trim()
-                            })
-                          }
-                        />
-                      </>
-                    ) : (
-                      (person.ophPersonOid ?? '')
-                    )
-                }
-              ]
-            : []),
-          ...(!isChild && permittedActions.has('READ_INVOICE_ADDRESS')
-            ? [
-                {
-                  label: i18n.common.form.invoicingAddress,
-                  value:
-                    editing &&
-                    permittedActions.has('UPDATE_INVOICE_ADDRESS') ? (
-                      <>
-                        <InputField
-                          value={form.invoiceRecipientName}
-                          placeholder={i18n.common.form.invoiceRecipient}
-                          onChange={(value) =>
-                            updateForm({
-                              invoiceRecipientName: value
-                            })
-                          }
-                        />
-
-                        <InputField
-                          value={form.invoicingStreetAddress}
-                          placeholder={i18n.common.form.streetAddress}
-                          onChange={(value) =>
-                            updateForm({
-                              invoicingStreetAddress: value
-                            })
-                          }
-                        />
-                        <PostalCodeAndOffice>
-                          <InputField
-                            id="postal-code"
-                            value={form.invoicingPostalCode}
-                            placeholder={i18n.common.form.postalCode}
-                            onChange={(value) =>
-                              updateForm({
-                                invoicingPostalCode: value
-                              })
-                            }
-                          />
-                          <InputField
-                            id="post-office"
-                            value={form.invoicingPostOffice}
-                            placeholder={i18n.common.form.postOffice}
-                            onChange={(value) =>
-                              updateForm({
-                                invoicingPostOffice: value
-                              })
-                            }
-                          />
-                        </PostalCodeAndOffice>
-                      </>
-                    ) : person.invoicingStreetAddress &&
-                      person.invoicingPostalCode &&
-                      person.invoicingPostOffice ? (
-                      <>
-                        {person.invoiceRecipientName ? (
-                          <div>{person.invoiceRecipientName}</div>
-                        ) : null}
-                        <div>
-                          {`${person.invoicingStreetAddress}, ${person.invoicingPostalCode} ${person.invoicingPostOffice}`}
-                        </div>
-                      </>
-                    ) : (
-                      ''
-                    )
-                },
-                {
-                  label: i18n.personProfile.forceManualFeeDecisionsLabel,
-                  value: editing ? (
-                    <FixedSpaceColumn data-qa="force-manual-fee-decisions">
-                      <Radio
-                        label={
-                          i18n.personProfile.forceManualFeeDecisionsChecked
-                        }
-                        checked={form.forceManualFeeDecisions === true}
-                        onChange={() =>
-                          updateForm({
-                            forceManualFeeDecisions: true
-                          })
-                        }
-                        data-qa="force-manual-fee-decisions-true"
-                      />
-                      <Radio
-                        label={
-                          i18n.personProfile.forceManualFeeDecisionsUnchecked
-                        }
-                        checked={form.forceManualFeeDecisions === false}
-                        onChange={() =>
-                          updateForm({
-                            forceManualFeeDecisions: false
-                          })
-                        }
-                        data-qa="force-manual-fee-decisions-false"
-                      />
-                    </FixedSpaceColumn>
-                  ) : person.forceManualFeeDecisions ? (
-                    i18n.personProfile.forceManualFeeDecisionsChecked
-                  ) : (
-                    i18n.personProfile.forceManualFeeDecisionsUnchecked
-                  )
-                }
-              ]
-            : []),
-          ...(!isChild
-            ? [
-                {
-                  label: i18n.common.form.email,
-                  value: editing ? (
-                    <InputField
-                      value={form.email}
-                      onChange={(value) => {
-                        updateForm({ email: value.trim() })
-                      }}
-                      info={
-                        emailIsValid
-                          ? undefined
-                          : {
-                              text: i18n.validationErrors.email,
-                              status: 'warning'
-                            }
-                      }
-                      data-qa="person-email-input"
-                    />
-                  ) : (
-                    person.email
-                  )
-                },
-                {
-                  label: i18n.common.form.phone,
-                  value: editing ? (
-                    <InputField
-                      value={form.phone}
-                      onChange={(value) => updateForm({ phone: value })}
-                    />
-                  ) : (
-                    person.phone
-                  )
-                },
-                {
-                  label: i18n.common.form.backupPhone,
-                  value: editing ? (
-                    <InputField
-                      value={form.backupPhone}
-                      onChange={(value) => updateForm({ backupPhone: value })}
-                    />
-                  ) : (
-                    person.backupPhone
-                  )
-                }
-              ]
-            : [])
+          }
         ]}
       />
+      <Gap $size="L" />
+      <CenteredRow>
+        <Button
+          appearance="inline"
+          onClick={onToggleSensitiveDetails}
+          disabled={editing}
+          data-qa="toggle-person-details-button"
+          text={
+            sensitiveDetailsOpen
+              ? i18n.personProfile.hideDetails
+              : i18n.personProfile.showDetails
+          }
+          icon={sensitiveDetailsOpen ? faChevronUp : faChevronDown}
+          order="text-icon"
+        />
+      </CenteredRow>
+      <Gap $size="L" />
+      {sensitiveDetailsOpen && sensitiveDetails && (
+        <SensitivePersonDetails
+          person={person}
+          sensitiveDetails={sensitiveDetails}
+          isChild={isChild}
+          permittedActions={permittedActions}
+          editing={editing}
+          powerEditing={powerEditing}
+          form={form}
+          updateForm={updateForm}
+          emailIsValid={emailIsValid}
+        />
+      )}
       {editing && (
         <RightAlignedRow>
           <FixedSpaceRow>
@@ -628,7 +699,7 @@ export default React.memo(function PersonDetails({
             />
             <MutateButton
               primary
-              disabled={!emailIsValid}
+              disabled={!emailIsValid || !sensitiveDetails}
               mutation={updatePersonDetailsMutation}
               onClick={() => ({ personId: person.id, body: form })}
               onSuccess={clearUiMode}

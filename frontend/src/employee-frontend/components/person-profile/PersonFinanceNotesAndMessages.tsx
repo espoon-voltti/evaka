@@ -117,7 +117,7 @@ export default React.memo(function PersonFinanceNotesAndMessages({
       person
         .map<
           [string | undefined, boolean]
-        >((p) => [formatPersonName(p, 'Last First'), !!p.socialSecurityNumber])
+        >((p) => [formatPersonName(p, 'Last First'), p.hasSsn])
         .getOrElse([undefined, false]),
     [person]
   )

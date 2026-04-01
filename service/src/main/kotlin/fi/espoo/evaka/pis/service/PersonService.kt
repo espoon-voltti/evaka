@@ -528,6 +528,78 @@ data class PersonJSON(
     }
 }
 
+data class PersonBasicInfo(
+    val id: PersonId,
+    val duplicateOf: PersonId?,
+    val hasSsn: Boolean,
+    val ssnAddingDisabled: Boolean,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val dateOfDeath: LocalDate?,
+    val restrictedDetailsEnabled: Boolean,
+) {
+    companion object {
+        fun from(p: PersonDTO): PersonBasicInfo =
+            PersonBasicInfo(
+                id = p.id,
+                duplicateOf = p.duplicateOf,
+                hasSsn = p.identity is ExternalIdentifier.SSN,
+                ssnAddingDisabled = p.ssnAddingDisabled,
+                firstName = p.firstName,
+                lastName = p.lastName,
+                dateOfBirth = p.dateOfBirth,
+                dateOfDeath = p.dateOfDeath,
+                restrictedDetailsEnabled = p.restrictedDetailsEnabled,
+            )
+    }
+}
+
+data class PersonSensitiveDetails(
+    val socialSecurityNumber: String?,
+    val language: String?,
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val residenceCode: String,
+    val municipalityOfResidence: String,
+    val email: String?,
+    val phone: String,
+    val backupPhone: String,
+    val invoiceRecipientName: String,
+    val invoicingStreetAddress: String,
+    val invoicingPostalCode: String,
+    val invoicingPostOffice: String,
+    val forceManualFeeDecisions: Boolean,
+    val ophPersonOid: String?,
+    val updatedFromVtj: HelsinkiDateTime?,
+) {
+    companion object {
+        fun from(p: PersonDTO, includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
+            PersonSensitiveDetails(
+                socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
+                language = p.language,
+                streetAddress = p.streetAddress,
+                postalCode = p.postalCode,
+                postOffice = p.postOffice,
+                residenceCode = p.residenceCode,
+                municipalityOfResidence = p.municipalityOfResidence,
+                email = p.email,
+                phone = p.phone,
+                backupPhone = p.backupPhone,
+                invoiceRecipientName = if (includeInvoiceAddress) p.invoiceRecipientName else "",
+                invoicingStreetAddress =
+                    if (includeInvoiceAddress) p.invoicingStreetAddress else "",
+                invoicingPostalCode = if (includeInvoiceAddress) p.invoicingPostalCode else "",
+                invoicingPostOffice = if (includeInvoiceAddress) p.invoicingPostOffice else "",
+                forceManualFeeDecisions =
+                    if (includeInvoiceAddress) p.forceManualFeeDecisions else false,
+                ophPersonOid = if (includeOphOid) p.ophPersonOid else null,
+                updatedFromVtj = p.updatedFromVtj,
+            )
+    }
+}
+
 data class PersonPatch(
     val firstName: String? = null,
     val lastName: String? = null,

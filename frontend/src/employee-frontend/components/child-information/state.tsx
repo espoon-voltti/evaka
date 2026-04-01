@@ -7,7 +7,7 @@ import React, { createContext, useMemo } from 'react'
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
 import type { Action } from 'lib-common/generated/action'
-import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonBasicInfo } from 'lib-common/generated/api-types/pis'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 
@@ -15,7 +15,7 @@ import { childQuery } from './queries'
 
 export interface ChildState {
   childId: ChildId | undefined
-  person: Result<PersonJSON>
+  person: Result<PersonBasicInfo>
   permittedActions: Set<Action.Child | Action.Person>
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
   hasGuardian: Result<boolean>

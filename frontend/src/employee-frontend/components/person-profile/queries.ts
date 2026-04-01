@@ -55,6 +55,7 @@ import {
   getParentships,
   getPartnerships,
   getPerson,
+  getPersonSensitiveDetails,
   retryParentship,
   retryPartnership,
   updateFosterParentRelationshipValidity,
@@ -70,13 +71,16 @@ const q = new Queries()
 
 export const personQuery = q.query(getPerson)
 
+export const sensitiveDetailsQuery = q.query(getPersonSensitiveDetails)
+
 export const familyByPersonQuery = q.query(getFamilyByPerson)
 
 export const parentshipsQuery = q.query(getParentships)
 
 export const updatePersonDetailsMutation = q.mutation(updatePersonDetails, [
   ({ personId }) => personQuery({ personId }),
-  ({ personId }) => childQuery({ childId: personId })
+  ({ personId }) => childQuery({ childId: personId }),
+  ({ personId }) => sensitiveDetailsQuery({ personId })
 ])
 
 export const updatePersonAndFamilyFromVtjMutation = q.mutation(
@@ -84,6 +88,7 @@ export const updatePersonAndFamilyFromVtjMutation = q.mutation(
   [
     ({ personId }) => personQuery({ personId }),
     ({ personId }) => childQuery({ childId: personId }),
+    ({ personId }) => sensitiveDetailsQuery({ personId }),
     ({ personId }) => familyByPersonQuery({ id: personId }),
     ({ personId }) => parentshipsQuery({ headOfChildId: personId })
   ]
@@ -91,12 +96,14 @@ export const updatePersonAndFamilyFromVtjMutation = q.mutation(
 
 export const disableSsnMutation = q.mutation(disableSsn, [
   ({ personId }) => personQuery({ personId }),
-  ({ personId }) => childQuery({ childId: personId })
+  ({ personId }) => childQuery({ childId: personId }),
+  ({ personId }) => sensitiveDetailsQuery({ personId })
 ])
 
 export const addSsnMutation = q.mutation(addSsn, [
   ({ personId }) => personQuery({ personId }),
-  ({ personId }) => childQuery({ childId: personId })
+  ({ personId }) => childQuery({ childId: personId }),
+  ({ personId }) => sensitiveDetailsQuery({ personId })
 ])
 
 export const createParentshipMutation = q.mutation(createParentship, [

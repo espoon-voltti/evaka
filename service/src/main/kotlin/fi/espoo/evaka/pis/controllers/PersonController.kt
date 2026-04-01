@@ -16,8 +16,10 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
+import fi.espoo.evaka.pis.service.PersonBasicInfo
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.pis.service.PersonSensitiveDetails
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.blockGuardian
@@ -79,13 +81,55 @@ class PersonController(
                     )
                     tx.getPersonById(personId)?.let {
                         PersonResponse(
-                            PersonJSON.from(it),
+                            PersonBasicInfo.from(it),
                             accessControl.getPermittedActions(tx, user, clock, personId),
                         )
                     }
                 } ?: throw NotFound("Person $personId not found")
             }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
+            .also { Audit.PersonRead.log(targetId = AuditId(personId)) }
+    }
+
+    @GetMapping("/{personId}/sensitive-details")
+    fun getPersonSensitiveDetails(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable personId: PersonId,
+    ): PersonSensitiveDetails {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ,
+                        personId,
+                    )
+                    val person =
+                        tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
+                    PersonSensitiveDetails.from(
+                        person,
+                        includeInvoiceAddress =
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Person.READ_INVOICE_ADDRESS,
+                                personId,
+                            ),
+                        includeOphOid =
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Person.READ_OPH_OID,
+                                personId,
+                            ),
+                    )
+                }
+            }
+            .also { Audit.PersonSensitiveDetailsRead.log(targetId = AuditId(personId)) }
     }
 
     @GetMapping("/details/{personId}")
@@ -599,7 +643,7 @@ class PersonController(
             }
             .also { Audit.AddressPageDownloadPdf.log(targetId = AuditId(guardianId)) }
 
-    data class PersonResponse(val person: PersonJSON, val permittedActions: Set<Action.Person>)
+    data class PersonResponse(val person: PersonBasicInfo, val permittedActions: Set<Action.Person>)
 
     data class MergeRequest(val master: PersonId, val duplicate: PersonId)
 

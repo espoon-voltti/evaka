@@ -42,6 +42,7 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type { PersonPatch } from 'lib-common/generated/api-types/pis'
 import type { PersonResponse } from 'lib-common/generated/api-types/pis'
+import type { PersonSensitiveDetails } from 'lib-common/generated/api-types/pis'
 import type { PersonSummary } from 'lib-common/generated/api-types/pis'
 import type { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import type { PinCode } from 'lib-common/generated/api-types/pis'
@@ -61,6 +62,7 @@ import { deserializeJsonParentshipWithPermittedActions } from 'lib-common/genera
 import { deserializeJsonPartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonResponse } from 'lib-common/generated/api-types/pis'
+import { deserializeJsonPersonSensitiveDetails } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonSummary } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
@@ -816,6 +818,22 @@ export async function getPersonIdentity(
     method: 'GET'
   })
   return deserializeJsonPersonJSON(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonSensitiveDetails
+*/
+export async function getPersonSensitiveDetails(
+  request: {
+    personId: PersonId
+  }
+): Promise<PersonSensitiveDetails> {
+  const { data: json } = await client.request<JsonOf<PersonSensitiveDetails>>({
+    url: uri`/employee/person/${request.personId}/sensitive-details`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonPersonSensitiveDetails(json)
 }
 
 

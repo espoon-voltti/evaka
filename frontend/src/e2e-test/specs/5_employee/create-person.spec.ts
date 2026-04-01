@@ -40,6 +40,7 @@ test.describe('Create person', () => {
     }
     await personSearchPage.createPerson(person)
     await personSearchPage.findPerson(person.firstName)
+    await personSearchPage.toggleSensitiveDetails()
     await personSearchPage.assertPersonData(person)
   })
 
@@ -54,6 +55,7 @@ test.describe('Create person', () => {
     }
     await personSearchPage.createPerson(person)
     await personSearchPage.findPerson(person.firstName)
+    await personSearchPage.toggleSensitiveDetails()
     await personSearchPage.assertPersonData(person)
 
     // data from addLegacyVtjMocks()

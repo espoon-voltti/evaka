@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -27,6 +28,8 @@ export default React.memo(function ChildDetails({ id }: Props) {
   const { person, permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(true)
+  const [sensitiveDetailsOpen, { toggle: toggleSensitiveDetails }] =
+    useBoolean(false)
 
   return (
     <div data-qa="person-details-section" data-isloading={isLoading(person)}>
@@ -42,13 +45,19 @@ export default React.memo(function ChildDetails({ id }: Props) {
             person={person}
             isChild={true}
             permittedActions={permittedActions}
+            sensitiveDetailsOpen={sensitiveDetailsOpen}
+            onToggleSensitiveDetails={toggleSensitiveDetails}
           />
         ))}
-        {permittedActions.has('READ_ADDITIONAL_INFO') && (
-          <div className="additional-information">
-            <AdditionalInformation childId={id} />
-          </div>
-        )}
+        {sensitiveDetailsOpen &&
+          permittedActions.has('READ_ADDITIONAL_INFO') && (
+            <div
+              className="additional-information"
+              data-qa="additional-information"
+            >
+              <AdditionalInformation childId={id} />
+            </div>
+          )}
       </CollapsibleContentArea>
     </div>
   )

@@ -34,7 +34,9 @@ export default class PersonSearchPage {
     address: Element
     ssn: Element
   }
+  #page: Page
   constructor(page: Page) {
+    this.#page = page
     this.searchInput = new TextInput(page.findByDataQa('search-input'))
     this.searchResults = page.findAllByDataQa('person-row')
     this.#createPersonButton = page.findByDataQa('create-person-button')
@@ -93,6 +95,10 @@ export default class PersonSearchPage {
   async findPerson(searchString: string) {
     await this.searchInput.fill(searchString)
     await this.#personLink.click()
+  }
+
+  async toggleSensitiveDetails() {
+    await this.#page.findByDataQa('toggle-person-details-button').click()
   }
 
   async assertPersonData(personData: {

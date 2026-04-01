@@ -93,6 +93,7 @@ test.describe('Child Information - edit child information', () => {
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
+    await childInformationPage.toggleSensitiveDetails()
     await childInformationPage.clickEdit()
     await childInformationPage.assertOphPersonOid('')
     await childInformationPage.setOphPersonOid('1.2.3')
@@ -102,7 +103,8 @@ test.describe('Child Information - edit child information', () => {
 
 test.describe('Child Information - edit additional information', () => {
   let section: AdditionalInformationSection
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
+    await childInformationPage.toggleSensitiveDetails()
     section = childInformationPage.additionalInformationSection()
   })
 
@@ -131,6 +133,7 @@ test.describe('Child Information - edit additional information', () => {
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
+    await childInformationPage.toggleSensitiveDetails()
     await expect(section.languageAtHome).toHaveText('')
     await expect(section.languageAtHomeDetails).toHaveText('')
     await section.editBtn.click()
@@ -164,6 +167,7 @@ test.describe('Child Information - edit additional information', () => {
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
+    await childInformationPage.toggleSensitiveDetails()
     await expect(section.specialDiet).toHaveText('-')
     await section.editBtn.click()
     await section.specialDietCombobox.fillAndSelectItem(
@@ -615,5 +619,17 @@ test.describe('Child information - guardian information', () => {
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.openCollapsible('guardians')
     await section.assertGuardianExists(familyWithTwoGuardians.guardian.id)
+  })
+})
+
+test.describe('Child Information - person details toggle', () => {
+  test('sensitive fields can be toggled on and off', async () => {
+    await childInformationPage.assertSensitiveFieldsHidden()
+
+    await childInformationPage.toggleSensitiveDetails()
+    await childInformationPage.assertSensitiveFieldsVisible()
+
+    await childInformationPage.toggleSensitiveDetails()
+    await childInformationPage.assertSensitiveFieldsHidden()
   })
 })
