@@ -49,7 +49,7 @@ evaka:
       basic_auth: ""
       organizer: Espoo
       source_system: SourceSystemVarda
-      url: ""
+      url: "http://localhost"
     vtj:
       password: ""
       username: ""
