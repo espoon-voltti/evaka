@@ -22,6 +22,11 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.util.Locale
 import java.util.UUID
+import kotlin.reflect.jvm.javaType
+import kotlin.reflect.typeOf
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.core.ResolvableType
 import org.springframework.core.env.Environment
 import org.springframework.core.io.UrlResource
 
@@ -631,7 +636,7 @@ data class Sensitive<T>(@JsonValue val value: T) {
 }
 
 inline fun <reified T> Environment.lookup(key: String, vararg deprecatedKeys: String): T {
-    val value = lookup(key, deprecatedKeys, T::class.java)
+    val value = lookup<T>(key, deprecatedKeys, ResolvableType.forType(typeOf<T>().javaType))
     if (value == null && null !is T) {
         error("Missing required configuration: $key (environment variable ${key.toSystemEnvKey()})")
     } else {
@@ -644,27 +649,32 @@ private val logger = KotlinLogging.logger {}
 fun <T> Environment.lookup(
     key: String,
     deprecatedKeys: Array<out String>,
-    clazz: Class<out T>,
-): T? =
-    deprecatedKeys
-        .asSequence()
-        .mapNotNull { legacyKey ->
+    type: ResolvableType,
+): T? {
+    val binder = Binder.get(this)
+    val bindable = Bindable.of<T & Any>(type)
+    for (legacyKey in deprecatedKeys) {
+        val result =
             try {
-                getProperty(legacyKey, clazz)?.also {
-                    logger.warn {
-                        "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
-                    }
-                }
+                binder.bind(legacyKey.toBinderKey(), bindable)
             } catch (e: Exception) {
                 throw EnvLookupException(legacyKey, e)
             }
+        if (result.isBound) {
+            logger.warn {
+                "Using deprecated configuration key $legacyKey instead of $key (environment variable ${key.toSystemEnvKey()})"
+            }
+            return result.get()
         }
-        .firstOrNull()
-        ?: try {
-            getProperty(key, clazz)
+    }
+    val result =
+        try {
+            binder.bind(key.toBinderKey(), bindable)
         } catch (e: Exception) {
             throw EnvLookupException(key, e)
         }
+    return if (result.isBound) result.get() else null
+}
 
 class EnvLookupException(key: String, cause: Throwable) :
     RuntimeException(
@@ -674,6 +684,9 @@ class EnvLookupException(key: String, cause: Throwable) :
 
 // Reference: Spring SystemEnvironmentPropertySource
 fun String.toSystemEnvKey() = uppercase(Locale.ENGLISH).replace('.', '_').replace('-', '_')
+
+// Reference: Spring ConfigurationPropertyName (only allows kebab-case element names)
+private fun String.toBinderKey() = replace('_', '-')
 
 private fun snakeCaseName(job: Enum<*>): String =
     job.name
