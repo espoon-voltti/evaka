@@ -5145,47 +5145,7 @@ export const fi = {
     confirm: 'Vahvista'
   },
   metadata: {
-    title: 'Arkistoitava metadata',
-    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-    caseIdentifier: 'Asiatunnus',
-    processName: 'Asiaprosessi',
-    organization: 'Organisaatio',
-    archiveDurationMonths: 'Arkistointiaika',
-    primaryDocument: 'Ensisijainen asiakirja',
-    secondaryDocuments: 'Muut asiakirjat',
-    documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
-    createdAt: 'Laatimisajankohta',
-    createdBy: 'Laatija',
-    monthsUnit: 'kuukautta',
-    confidentiality: 'Julkisuus',
-    confidential: 'Salassapidettävä',
-    public: 'Julkinen',
-    notSet: 'Asettamatta',
-    confidentialityDuration: 'Salassapitoaika',
-    confidentialityBasis: 'Salassapitoperuste',
-    years: 'vuotta',
-    receivedBy: {
-      label: 'Saapumistapa',
-      PAPER: 'Paperilla',
-      ELECTRONIC: 'Sähköisesti'
-    },
-    sfiDelivery: {
-      label: 'Suomi.fi -toimitukset',
-      method: {
-        ELECTRONIC: 'Sähköisesti',
-        PAPER_MAIL: 'Postitse',
-        PENDING: 'Odottaa toimitusta'
-      }
-    },
-    history: 'Prosessin historia',
-    downloadPdf: 'Lataa PDF',
-    states: {
-      INITIAL: 'Asian vireillepano / -tulo',
-      PREPARATION: 'Asian valmistelu',
-      DECIDING: 'Päätöksenteko',
-      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
-    }
+    ...components.metadata
   },
   systemNotifications: {
     title: {

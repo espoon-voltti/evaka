@@ -167,6 +167,7 @@ export interface Translations {
   metadata: {
     title: string
     notFound: string
+    case: string
     caseIdentifier: string
     processName: string
     organization: string
@@ -211,6 +212,20 @@ export interface Translations {
     section: {
       show: string
       hide: string
+    }
+    applicationDocumentNames: {
+      DAYCARE: string
+      PRESCHOOL: string
+      CLUB: string
+    }
+    decisionDocumentNames: {
+      DAYCARE: string
+      DAYCARE_PART_TIME: string
+      PRESCHOOL: string
+      PREPARATORY_EDUCATION: string
+      PRESCHOOL_DAYCARE: string
+      CLUB: string
+      PRESCHOOL_CLUB: string
     }
   }
 }

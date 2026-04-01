@@ -26,6 +26,21 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
 }) {
   const i18n = useTranslations()
 
+  const documentName = useMemo(() => {
+    const { decisionType, applicationType, name } = document
+    if (decisionType) {
+      return i18n.metadata.decisionDocumentNames[decisionType]
+    }
+    if (applicationType) {
+      return i18n.metadata.applicationDocumentNames[applicationType]
+    }
+    return name
+  }, [
+    document,
+    i18n.metadata.decisionDocumentNames,
+    i18n.metadata.applicationDocumentNames
+  ])
+
   const createdAt = useMemo(() => {
     const values = [
       document.createdAtDate?.format(),
@@ -51,15 +66,10 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
           }}
         />
       )}
-      <Gap $size="m" />
-
+      <H3>{documentName}</H3>
       <LabelValueList
         spacing="small"
         contents={[
-          {
-            label: i18n.metadata.name,
-            value: document.name
-          },
           {
             label: i18n.metadata.documentId,
             value: document.documentId
@@ -141,9 +151,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
                         (d) => d.recipientName
                       ).map((delivery, i) => (
                         <li key={i}>
-                          {delivery.recipientName} -{' '}
-                          {i18n.metadata.sfiDelivery.method[delivery.method]} (
-                          {delivery.time.format()})
+                          {`${delivery.recipientName} - ${i18n.metadata.sfiDelivery.method[delivery.method]} (${delivery.time.format()})`}
                         </li>
                       ))}
                     </UnorderedList>
@@ -192,6 +200,7 @@ export const Metadatas = React.memo(function Metadatas({
   ) : (
     <div>
       <HorizontalLine $slim />
+      <H3>{i18n.metadata.case}</H3>
       <LabelValueList
         spacing="small"
         contents={[
@@ -244,7 +253,8 @@ export const Metadatas = React.memo(function Metadatas({
       )}
       {metadata.process.history.length > 0 && (
         <>
-          <Gap />
+          <HorizontalLine $slim />
+          <Gap $size="xxs" />
           <H3>{i18n.metadata.history}</H3>
           <ul>
             {metadata.process.history.map((row) => (

@@ -194,6 +194,7 @@ const components: Translations = {
   metadata: {
     title: 'Archivable metadata',
     notFound: 'No archivable metadata for the document',
+    case: 'Case',
     caseIdentifier: 'Case identifier',
     processName: 'Case process',
     organization: 'Organization',
@@ -238,6 +239,20 @@ const components: Translations = {
     section: {
       show: 'Show more information',
       hide: 'Hide more information'
+    },
+    applicationDocumentNames: {
+      DAYCARE: 'Daycare application',
+      PRESCHOOL: 'Preschool application',
+      CLUB: 'Club application'
+    },
+    decisionDocumentNames: {
+      CLUB: 'Club decision',
+      DAYCARE: 'Daycare decision',
+      DAYCARE_PART_TIME: 'Part-time daycare decision',
+      PRESCHOOL: 'Preschool decision',
+      PRESCHOOL_DAYCARE: 'Connected daycare decision',
+      PRESCHOOL_CLUB: 'Preschool club decision',
+      PREPARATORY_EDUCATION: 'Preparatory education decision'
     }
   }
 }

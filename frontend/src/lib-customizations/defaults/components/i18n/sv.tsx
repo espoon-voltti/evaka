@@ -194,6 +194,7 @@ const components: Translations = {
   metadata: {
     title: 'Arkiverbar metadata',
     notFound: 'Det finns ingen arkiverbar metadata för dokumentet',
+    case: 'Ärende',
     caseIdentifier: 'Ärendekod',
     processName: 'Ärendeprocess',
     organization: 'Organisation',
@@ -238,6 +239,21 @@ const components: Translations = {
     section: {
       show: 'Visa mer information',
       hide: 'Dölj mer information'
+    },
+    applicationDocumentNames: {
+      DAYCARE: 'Ansökan om småbarnspedagogik',
+      PRESCHOOL: 'Ansökan om förskoleundervisning',
+      CLUB: 'Ansökan om klubb'
+    },
+    decisionDocumentNames: {
+      CLUB: 'Beslut om klubb',
+      DAYCARE: 'Beslut om småbarnspedagogik',
+      DAYCARE_PART_TIME: 'Beslut om deltidssmåbarnspedagogik',
+      PRESCHOOL: 'Beslut om förskoleundervisning',
+      PRESCHOOL_DAYCARE:
+        'Beslut om småbarnspedagogik ansluten till förskoleundervisning',
+      PRESCHOOL_CLUB: 'Beslut om förskoleklubb',
+      PREPARATORY_EDUCATION: 'Beslut om förberedande undervisning'
     }
   }
 }

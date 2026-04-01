@@ -4,6 +4,7 @@
 
 package evaka.core.caseprocess
 
+<<<<<<< HEAD:service/src/main/kotlin/evaka/core/caseprocess/ProcessMetadataController.kt
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.document.ChildDocumentType
@@ -20,6 +21,26 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.user.EvakaUser
+=======
+import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.document.ChildDocumentType
+import fi.espoo.evaka.document.childdocument.getChildDocument
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.user.EvakaUser
+>>>>>>> 39e3ba3e06 (WIP translations and targeted gray extendable info box for metadata):service/src/main/kotlin/fi/espoo/evaka/caseprocess/ProcessMetadataController.kt
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -55,6 +76,8 @@ data class DocumentVersion(
 data class DocumentMetadata(
     val documentId: UUID,
     val name: String,
+    val applicationType: ApplicationType? = null,
+    val decisionType: DecisionType? = null,
     val createdAtDate: LocalDate?,
     val createdAtTime: LocalTime?,
     @Nested("created_by") val createdBy: EvakaUser?,

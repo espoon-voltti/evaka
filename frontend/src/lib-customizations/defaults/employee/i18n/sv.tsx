@@ -5173,47 +5173,7 @@ export const sv: typeof fi = {
     confirm: 'Bekräfta'
   },
   metadata: {
-    title: 'Arkiverbar metadata',
-    notFound: 'Dokumentet har ingen arkiverbar metadata',
-    caseIdentifier: 'Ärendetunnus',
-    processName: 'Ärendeprocess',
-    organization: 'Organisation',
-    archiveDurationMonths: 'Arkiveringstid',
-    primaryDocument: 'Primärt dokument',
-    secondaryDocuments: 'Övriga dokument',
-    documentId: 'Dokumentidentifierare',
-    name: 'Dokumentnamn',
-    createdAt: 'Upprättandetidpunkt',
-    createdBy: 'Upprättare',
-    monthsUnit: 'månader',
-    confidentiality: 'Offentlighet',
-    confidential: 'Sekretessbelagt',
-    public: 'Offentligt',
-    notSet: 'Ej angiven',
-    confidentialityDuration: 'Sekretessperiod',
-    confidentialityBasis: 'Sekretessgrund',
-    years: 'år',
-    receivedBy: {
-      label: 'Ankomstsätt',
-      PAPER: 'På papper',
-      ELECTRONIC: 'Elektroniskt'
-    },
-    sfiDelivery: {
-      label: 'Suomi.fi -leveranser',
-      method: {
-        ELECTRONIC: 'Elektroniskt',
-        PAPER_MAIL: 'Per post',
-        PENDING: 'Väntar på leverans'
-      }
-    },
-    history: 'Processhistoria',
-    downloadPdf: 'Ladda ner PDF',
-    states: {
-      INITIAL: 'Ärendets initiering / -ankomst',
-      PREPARATION: 'Ärendeberedning',
-      DECIDING: 'Beslutfattande',
-      COMPLETED: 'Verkställighet / Avslutande / Stängning'
-    }
+    ...components.metadata
   },
   systemNotifications: {
     title: {

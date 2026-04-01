@@ -174,6 +174,7 @@ export const testTranslations: Translations = {
   metadata: {
     title: '',
     notFound: '',
+    case: '',
     caseIdentifier: '',
     processName: '',
     organization: '',
@@ -218,6 +219,20 @@ export const testTranslations: Translations = {
     section: {
       show: '',
       hide: ''
+    },
+    applicationDocumentNames: {
+      DAYCARE: '',
+      PRESCHOOL: '',
+      CLUB: ''
+    },
+    decisionDocumentNames: {
+      CLUB: '',
+      DAYCARE: '',
+      DAYCARE_PART_TIME: '',
+      PRESCHOOL: '',
+      PRESCHOOL_DAYCARE: '',
+      PRESCHOOL_CLUB: '',
+      PREPARATORY_EDUCATION: ''
     }
   }
 }
